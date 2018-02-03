@@ -66,6 +66,87 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $this->depth = $depth;
     }
 
+    // No-ops for frequent node types
+    public function visitVar(Node $node) : Context
+    {
+        $context = $this->context->withLineNumberStart(
+            $node->lineno ?? 0
+        );
+
+        // Let any configured plugins do a pre-order
+        // analysis of the node.
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+
+        \assert(!empty($context), 'Context cannot be null');
+
+        // With a context that is inside of the node passed
+        // to this method, we analyze all children of the
+        // node.
+        $name_node = $node->children['name'];
+        // E.g. ${expr()} is valid PHP. Recurse if that's a node.
+        if ($name_node instanceof Node) {
+            // Step into each child node and get an
+            // updated context for the node
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $name_node);
+        }
+
+        $context = $this->postOrderAnalyze($context, $node);
+
+        return $context;
+    }
+
+    public function visitParam(Node $node) : Context
+    {
+        // Could invoke plugins, but not right now
+        return $this->context;
+    }
+
+    public function visitUseElem(Node $node) : Context
+    {
+        // Could invoke plugins, but not right now
+        return $this->context;
+    }
+
+    public function visitName(Node $node) : Context
+    {
+        // Could invoke plugins, but not right now
+        return $this->context;
+    }
+
+    public function visitStmtList(Node $node) : Context
+    {
+        $context = $this->context;
+        $plugin_set = ConfigPluginSet::instance();
+        $plugin_set->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+        foreach ($node->children as $child_node) {
+            // Skip any non Node children.
+            if (!($child_node instanceof Node)) {
+                continue;
+            }
+            $context->clearCachedUnionTypes();
+
+            // Step into each child node and get an
+            // updated context for the node
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
+        }
+        $plugin_set->analyzeNode(
+            $this->code_base,
+            $context,
+            $node,
+            $this->parent_node
+        );
+        return $context;
+    }
+    // end No-ops
+
     /**
      * For non-special nodes, we propagate the context and scope
      * from the parent, through the children and return the
@@ -100,7 +181,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $context = (new PreOrderAnalysisVisitor(
             $this->code_base,
             $context
-        ))($node);
+        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
         // Let any configured plugins do a pre-order
         // analysis of the node.
@@ -115,7 +196,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
         // node.
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
                 continue;
@@ -203,7 +284,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
         // node.
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
                 continue;
@@ -465,7 +546,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
         // node.
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
                 continue;
@@ -522,7 +603,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $fallthrough_context = $context;
         }
 
-        $child_nodes = $node->children ?? [];
+        $child_nodes = $node->children;
         $excluded_elem_count = 0;
 
         // With a context that is inside of the node passed
@@ -658,7 +739,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // them
         $catch_context_list = [$try_context];
 
-        foreach ($node->children['catches']->children ?? [] as $catch_node) {
+        foreach ($node->children['catches']->children as $catch_node) {
             // Note: ContextMergeVisitor expects to get each individual catch
             assert($catch_node instanceof Node);
             // The conditions need to communicate to the outer
@@ -866,10 +947,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // with anything we learn and get a new context
         // indicating the state of the world within the
         // given node
+        // Equivalent to (new PostOrderAnalysisVisitor(...)($node)) but faster than using __invoke()
         $context = (new PreOrderAnalysisVisitor(
             $this->code_base,
             $context
-        ))($node);
+        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
         // Let any configured plugins do a pre-order
         // analysis of the node.
@@ -898,11 +980,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // Now that we know all about our context (like what
         // 'self' means), we can analyze statements like
         // assignments and method calls.
+        // Equivalent to (new PostOrderAnalysisVisitor(...)($node)) but faster than using __invoke()
         $context = (new PostOrderAnalysisVisitor(
             $this->code_base,
             $context->withLineNumberStart($node->lineno ?? 0),
             $this->parent_node
-        ))($node);
+        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
         // let any configured plugins analyze the node
         ConfigPluginSet::instance()->analyzeNode(
@@ -937,7 +1020,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $context = (new PreOrderAnalysisVisitor(
             $this->code_base,
             $context
-        ))($node);
+        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
         // Let any configured plugins do a pre-order
         // analysis of the node.

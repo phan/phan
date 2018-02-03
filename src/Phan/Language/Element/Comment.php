@@ -279,7 +279,7 @@ class Comment
                 [],
                 [],
                 new None,
-                new UnionType(),
+                UnionType::empty(),
                 [],
                 [],
                 [],
@@ -291,7 +291,7 @@ class Comment
         $parameter_list = [];
         $template_type_list = [];
         $inherited_type = new None;
-        $return_union_type = new UnionType();
+        $return_union_type = UnionType::empty();
         $suppress_issue_list = [];
         $magic_property_list = [];
         $magic_method_list = [];
@@ -321,42 +321,43 @@ class Comment
             if (\strpos($line, '@') === false) {
                 continue;
             }
+            // https://secure.php.net/manual/en/regexp.reference.internal-options.php
+            // (?i) makes this case sensitive, (?-1) makes it case insensitive
+            if (\preg_match('/@((?i)param|var|return|returns|inherits|suppress|phan-[a-z0-9_-]*(?-i)|method|property|template|PhanClosureScope)\b/', $line, $matches)) {
+                $type = \strtolower($matches[1]);
 
-            if (\stripos($line, '@param') !== false) {
-                if (\preg_match('/@param\b/i', $line)) {
+                if ($type === 'param') {
                     $check_compatible('@param', Comment::FUNCTION_LIKE, $i, $line);
                     $parameter_list[] =
                         self::parameterFromCommentLine($code_base, $context, $line, false, $lineno, $i, $comment_lines_count);
-                }
-            } elseif (\stripos($line, '@var') !== false && \preg_match('/@var\b/i', $line)) {
-                $check_compatible('@var', Comment::HAS_VAR_ANNOTATION, $i, $line);
-                $comment_var = self::parameterFromCommentLine($code_base, $context, $line, true, $lineno, $i, $comment_lines_count);
-                if ($comment_var->getName() !== '' || !\in_array($comment_type, self::FUNCTION_LIKE)) {
-                    $variable_list[] = $comment_var;
-                }
-            } elseif (\strpos($line, '@template') !== false) {
-                // Make sure support for generic types is enabled
-                if (Config::getValue('generic_types_enabled')) {
-                    $check_compatible('@template', [Comment::ON_CLASS], $i, $line);
-                    if (($template_type =
-                        self::templateTypeFromCommentLine($line))
-                    ) {
-                        $template_type_list[] = $template_type;
+                } elseif ($type === 'var') {
+                    $check_compatible('@var', Comment::HAS_VAR_ANNOTATION, $i, $line);
+                    $comment_var = self::parameterFromCommentLine($code_base, $context, $line, true, $lineno, $i, $comment_lines_count);
+                    if ($comment_var->getName() !== '' || !\in_array($comment_type, self::FUNCTION_LIKE)) {
+                        $variable_list[] = $comment_var;
                     }
-                }
-            } elseif (\stripos($line, '@inherits') !== false) {
-                $check_compatible('@inherits', [Comment::ON_CLASS], $i, $line);
-                // Make sure support for generic types is enabled
-                if (Config::getValue('generic_types_enabled')) {
-                    $inherited_type =
-                        self::inheritsFromCommentLine($context, $line);
-                }
-            } elseif (\stripos($line, '@return') !== false) {
-                if (preg_match('/@return\b/i', $line)) {
+                } elseif ($type === 'template') {
+                    // Make sure support for generic types is enabled
+                    if (Config::getValue('generic_types_enabled')) {
+                        $check_compatible('@template', [Comment::ON_CLASS], $i, $line);
+                        if (($template_type =
+                            self::templateTypeFromCommentLine($line))
+                        ) {
+                            $template_type_list[] = $template_type;
+                        }
+                    }
+                } elseif ($type === 'inherits') {
+                    $check_compatible('@inherits', [Comment::ON_CLASS], $i, $line);
+                    // Make sure support for generic types is enabled
+                    if (Config::getValue('generic_types_enabled')) {
+                        $inherited_type =
+                            self::inheritsFromCommentLine($context, $line);
+                    }
+                } elseif ($type === 'return') {
                     $check_compatible('@return', Comment::FUNCTION_LIKE, $i, $line);
                     $return_union_type =
                         self::returnTypeFromCommentLine($context, $line);
-                } elseif (\stripos($line, '@returns') !== false) {
+                } elseif ($type === 'returns') {
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -365,57 +366,56 @@ class Comment
                         '@returns',
                         '@return'
                     );
-                }
-            } elseif (\stripos($line, '@suppress') !== false) {
-                $suppress_issue_type = self::suppressIssueFromCommentLine($line);
-                if ($suppress_issue_type !== '') {
-                    $suppress_issue_list[] = $suppress_issue_type;
-                }
-            } elseif (\strpos($line, '@property') !== false) {
-                $check_compatible('@property', [Comment::ON_CLASS], $i, $line);
-                // Make sure support for magic properties is enabled.
-                if (Config::getValue('read_magic_property_annotations')) {
-                    $magic_property = self::magicPropertyFromCommentLine($code_base, $context, $line, $lineno);
-                    if ($magic_property !== null) {
-                        $magic_property_list[] = $magic_property;
+                } elseif ($type === 'suppress') {
+                    $suppress_issue_type = self::suppressIssueFromCommentLine($line);
+                    if ($suppress_issue_type !== '') {
+                        $suppress_issue_list[] = $suppress_issue_type;
                     }
-                }
-            } elseif (\strpos($line, '@method') !== false) {
-                // Make sure support for magic methods is enabled.
-                if (Config::getValue('read_magic_method_annotations')) {
-                    $check_compatible('@method', [Comment::ON_CLASS], $i, $line);
-                    $magic_method = self::magicMethodFromCommentLine($code_base, $context, $line, $lineno, $i, $comment_lines_count);
-                    if ($magic_method !== null) {
-                        $magic_method_list[] = $magic_method;
+                } elseif ($type === 'property') {
+                    $check_compatible('@property', [Comment::ON_CLASS], $i, $line);
+                    // Make sure support for magic properties is enabled.
+                    if (Config::getValue('read_magic_property_annotations')) {
+                        $magic_property = self::magicPropertyFromCommentLine($code_base, $context, $line, $lineno);
+                        if ($magic_property !== null) {
+                            $magic_property_list[] = $magic_property;
+                        }
                     }
-                }
-            } elseif (\strpos($line, '@PhanClosureScope') !== false) {
-                // TODO: different type for closures
-                $check_compatible('@PhanClosureScope', Comment::FUNCTION_LIKE, $i, $line);
-                $closure_scope = self::getPhanClosureScopeFromCommentLine($context, $line);
-            } elseif (\stripos($line, '@phan-') !== false) {
-                if (\stripos($line, '@phan-forbid-undeclared-magic-properties') !== false) {
-                    $check_compatible('@phan-forbid-undeclared-magic-properties', [Comment::ON_CLASS], $i, $line);
-                    $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
-                } elseif (\stripos($line, '@phan-forbid-undeclared-magic-methods') !== false) {
-                    $check_compatible('@phan-forbid-undeclared-magic-methods', [Comment::ON_CLASS], $i, $line);
-                    $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS;
-                } elseif (\stripos($line, '@phan-closure-scope') !== false && \preg_match('/@phan-closure-scope\b/', $line)) {
-                    $check_compatible('@phan-closure-scope', Comment::FUNCTION_LIKE, $i, $line);
+                } elseif ($type === 'method') {
+                    // Make sure support for magic methods is enabled.
+                    if (Config::getValue('read_magic_method_annotations')) {
+                        $check_compatible('@method', [Comment::ON_CLASS], $i, $line);
+                        $magic_method = self::magicMethodFromCommentLine($code_base, $context, $line, $lineno, $i, $comment_lines_count);
+                        if ($magic_method !== null) {
+                            $magic_method_list[] = $magic_method;
+                        }
+                    }
+                } elseif ($type === 'phanclosurescope' || $type === 'phan-closure_scope') {
+                    // TODO: different type for closures
+                    $check_compatible('@PhanClosureScope', Comment::FUNCTION_LIKE, $i, $line);
                     $closure_scope = self::getPhanClosureScopeFromCommentLine($context, $line);
-                } elseif (\stripos($line, '@phan-override') !== false) {
-                    $check_compatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i, $line);
-                    $comment_flags |= Flags::IS_OVERRIDE_INTENDED;
-                } elseif (\stripos($line, '@phan-') !== false) {
-                    \preg_match('/@phan-\S*/', $line, $match);
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::MisspelledAnnotation,
-                        self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line),
-                        $match[0],
-                        '@phan-forbid-undeclared-magic-methods @phan-forbid-undeclared-magic-properties @phan-closure-scope @phan-override'
-                    );
+                } elseif (\strpos($type, 'phan-') === 0) {
+                    if ($type === 'phan-forbid-undeclared-magic-properties') {
+                        $check_compatible('@phan-forbid-undeclared-magic-properties', [Comment::ON_CLASS], $i, $line);
+                        $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
+                    } elseif ($type === 'phan-forbid-undeclared-magic-methods') {
+                        $check_compatible('@phan-forbid-undeclared-magic-methods', [Comment::ON_CLASS], $i, $line);
+                        $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS;
+                    } elseif ($type === 'phan-closure-scope') {
+                        $check_compatible('@phan-closure-scope', Comment::FUNCTION_LIKE, $i, $line);
+                        $closure_scope = self::getPhanClosureScopeFromCommentLine($context, $line);
+                    } elseif ($type === 'phan-override') {
+                        $check_compatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i, $line);
+                        $comment_flags |= Flags::IS_OVERRIDE_INTENDED;
+                    } else {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::MisspelledAnnotation,
+                            self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line),
+                            '@' . $matches[1],
+                            '@phan-forbid-undeclared-magic-methods @phan-forbid-undeclared-magic-properties @phan-closure-scope @phan-override'
+                        );
+                    }
                 }
             }
 
@@ -558,7 +558,7 @@ class Comment
         // Warn if there is neither a union type nor a variable
         if (\preg_match(self::param_comment_regex, $line, $match) && (isset($match[2]) || isset($match[17]))) {
             if (!isset($match[2])) {
-                return new CommentParameter('', new UnionType());
+                return new CommentParameter('', UnionType::empty());
             }
             $original_type = $match[2];
 
@@ -585,7 +585,7 @@ class Comment
                         Type::FROM_PHPDOC
                     );
             } else {
-                $union_type = new UnionType();
+                $union_type = UnionType::empty();
             }
             $is_output_parameter = \stripos($line, '@phan-output-reference') !== false;
 
@@ -612,7 +612,7 @@ class Comment
             }
         }
 
-        return new CommentParameter('', new UnionType());
+        return new CommentParameter('', UnionType::empty());
     }
 
     /**
@@ -960,6 +960,15 @@ class Comment
     public function getReturnType() : UnionType
     {
         return $this->return_union_type;
+    }
+
+    /**
+     * Sets A UnionType defined by a (at)return directive
+     * @return void
+     */
+    public function setReturnType(UnionType $return_union_type)
+    {
+        $this->return_union_type = $return_union_type;
     }
 
     /**

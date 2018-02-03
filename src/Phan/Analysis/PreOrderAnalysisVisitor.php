@@ -34,13 +34,16 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * The context of the parser at the node for which we'd
      * like to determine a type
      */
+    /*
     public function __construct(
         CodeBase $code_base,
         Context $context
     ) {
         parent::__construct($code_base, $context);
     }
+     */
 
+    /** @param Node $unused_node implementation for unhandled nodes */
     public function visit(Node $unused_node) : Context
     {
         return $this->context;
@@ -463,7 +466,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $func->setHasYield(true);
         if ($func->getUnionType()->isEmpty()) {
             $func->setIsReturnTypeUndefined(true);
-            $func->getUnionType()->addUnionType(Type::fromNamespaceAndName('\\', 'Generator', false)->asUnionType());
+            $func->setUnionType($func->getUnionType()->withType(Type::fromNamespaceAndName('\\', 'Generator', false)));
         }
         if (!$func->isReturnTypeUndefined()) {
             $func_return_type = $func->getUnionType();
@@ -509,7 +512,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $expression_union_type->genericArrayElementTypes();
 
         if ($node->children['value']->kind == \ast\AST_ARRAY) {
-            foreach ($node->children['value']->children ?? [] as $child_node) {
+            foreach ($node->children['value']->children as $child_node) {
                 // $key_node = $child_node->children['key'] ?? null;
                 $value_node = $child_node->children['value'] ?? null;
 
@@ -642,7 +645,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 false
             );
 
-            $union_type->addType(Type::fromFullyQualifiedString('\Throwable'));
+            $union_type = $union_type->withType(Type::fromFullyQualifiedString('\Throwable'));
         }
 
         $variable_name = (new ContextNode(

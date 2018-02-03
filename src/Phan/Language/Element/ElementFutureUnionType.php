@@ -56,9 +56,9 @@ trait ElementFutureUnionType
         $union_type = $future_union_type->get();
 
         // Don't set 'null' as the type if that's the default
-        // given that its the default default.
+        // given that its the default.
         if ($union_type->isType(NullType::instance(false))) {
-            $union_type = new UnionType();
+            $union_type = UnionType::empty();
         }
 
         return $union_type;

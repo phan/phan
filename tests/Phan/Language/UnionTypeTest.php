@@ -51,6 +51,9 @@ class UnionTypeTest extends BaseTest
             'canonical_object_map',
             'internal_fn_cache',
         ],
+        'Phan\Language\UnionType' => [
+            'empty_instance',
+        ],
         // Back this up because it takes 306 ms.
         'Phan\Tests\Language\UnionTypeTest' => [
             'code_base',

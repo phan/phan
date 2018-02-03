@@ -506,8 +506,21 @@ class Type
      */
     public static function fromObject($object) : Type
     {
+        static $type_map = null;
+        if ($type_map === null) {
+            $type_map = [
+                'integer' => IntType::instance(false),
+                'boolean' => BoolType::instance(false),
+                'double'   => FloatType::instance(false),
+                'string'  => StringType::instance(false),
+                'object'  => ObjectType::instance(false),
+                'NULL'    => NullType::instance(false),
+                'array'   => ArrayType::instance(false),
+                'resource' => ResourceType::instance(false),  // For inferring the type of constants STDIN, etc.
+            ];
+        }
         // gettype(2) doesn't return 'int', it returns 'integer', so use FROM_PHPDOC
-        return Type::fromInternalTypeName(\gettype($object), false, self::FROM_PHPDOC);
+        return $type_map[\gettype($object)];
     }
 
     /**
@@ -635,7 +648,17 @@ class Type
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
     ) : Type {
+        static $type_cache = [];
+        return $type_cache[$fully_qualified_string] ?? ($type_cache[$fully_qualified_string] = self::fromFullyQualifiedStringInner($fully_qualified_string));
+    }
 
+
+    public static function fromFullyQualifiedStringInner(
+        string $fully_qualified_string
+    ) : Type {
+        if (empty($fully_qualified_string)) {
+            debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        }
         \assert(
             !empty($fully_qualified_string),
             "Type cannot be empty"
@@ -699,7 +722,7 @@ class Type
             return UnionType::fromFullyQualifiedString($type_name);
         }, $template_parameter_type_name_list);
 
-        if (0 !== strpos($namespace, '\\')) {
+        if (0 !== \strpos($namespace, '\\')) {
             $namespace = '\\' . $namespace;
         }
 
@@ -992,9 +1015,9 @@ class Type
     }
 
     /**
-     * @var ?array<int,Type> - [$this]
+     * @var ?UnionType of [$this]
      */
-    protected $singleton_type_list;
+    protected $singleton_union_type;
 
     /**
      * @return UnionType
@@ -1004,10 +1027,7 @@ class Type
     {
         // return new UnionType([$this]);
         // Memoize the set of types. The constructed UnionType object can be modified later, so it isn't memoized.
-        return new UnionType(
-            ($this->singleton_type_list) ?? ($this->singleton_type_list = [$this]),
-            true
-        );
+        return $this->singleton_union_type ?? ($this->singleton_union_type = new UnionType([$this], true));
     }
 
     /**
@@ -1198,7 +1218,7 @@ class Type
      */
     public function isSelfType() : bool
     {
-        return self::isSelfTypeString((string)$this);
+        return $this->namespace === '\\' && self::isSelfTypeString($this->name);
     }
 
     /**
@@ -1333,7 +1353,7 @@ class Type
      */
     private static function isGenericArrayString(string $type_name) : bool
     {
-        if (strrpos($type_name, '[]') !== false) {
+        if (\strrpos($type_name, '[]') !== false) {
             return $type_name !== '[]';
         }
         return false;
@@ -1351,7 +1371,7 @@ class Type
             "Cannot call genericArrayElementType on non-generic array"
         );
 
-        if (($pos = strrpos($this->getName(), '[]')) !== false) {
+        if (($pos = \strrpos($this->getName(), '[]')) !== false) {
             \assert(
                 $this->getName() !== '[]' && $this->getName() !== 'array',
                 "Non-generic type requested to be non-generic"
@@ -1491,23 +1511,23 @@ class Type
 
             $clazz = $code_base->getClassByFQSEN($class_fqsen);
 
-            $union_type->addUnionType(
+            $union_type = $union_type->withUnionType(
                 $clazz->getUnionType()
             );
 
             // Recurse up the tree to include all types
             $representation = (string)$this;
-            $recursive_union_type = new UnionType();
+            $recursive_union_type_builder = new UnionTypeBuilder();
             foreach ($union_type->getTypeSet() as $clazz_type) {
                 if ((string)$clazz_type != $representation) {
-                    $recursive_union_type->addUnionType(
+                    $recursive_union_type_builder->addUnionType(
                         $clazz_type->asExpandedTypes(
                             $code_base,
                             $recursion_depth + 1
                         )
                     );
                 } else {
-                    $recursive_union_type->addType($clazz_type);
+                    $recursive_union_type_builder->addType($clazz_type);
                 }
             }
 
@@ -1516,14 +1536,14 @@ class Type
             $fqsen_aliases = $code_base->getClassAliasesByFQSEN($class_fqsen);
             foreach ($fqsen_aliases as $alias_fqsen_record) {
                 $alias_fqsen = $alias_fqsen_record->alias_fqsen;
-                $recursive_union_type->addUnionType(
-                    $alias_fqsen->asUnionType()
+                $recursive_union_type_builder->addType(
+                    $alias_fqsen->asType()
                 );
             }
 
-            return $recursive_union_type;
+            return $recursive_union_type_builder->getUnionType();
         });
-        return clone($union_type);
+        return $union_type;
     }
 
     /**
@@ -1760,7 +1780,7 @@ class Type
     private function templateParameterTypeListAsString() : string
     {
         return '<' .
-            implode(',', array_map(function (UnionType $type) {
+            \implode(',', \array_map(function (UnionType $type) {
                 return (string)$type;
             }, $this->template_parameter_type_list)) . '>';
     }
@@ -1799,8 +1819,18 @@ class Type
      * 4: The shape components, if any. Null unless this is an array shape type string such as 'array{field:int}'
      *
      * NOTE: callers must check for the generic array symbol in the type name or for type names beginning with 'array{' (case insensitive)
+     *
+     * NOTE: callers must not mutate the result.
      */
     private static function typeStringComponents(
+        string $type_string
+    ) {
+        // This doesn't depend on any configs; the result can be safely cached.
+        static $cache = [];
+        return $cache[$type_string] ?? ($cache[$type_string] = self::typeStringComponentsInner($type_string));
+    }
+
+    private static function typeStringComponentsInner(
         string $type_string
     ) {
         // Check to see if we have template parameter types
@@ -1847,7 +1877,7 @@ class Type
             (string)\array_pop($fq_class_name_elements);
 
         $namespace = ($is_fully_qualified ? '\\' : '')
-            . implode('\\', \array_filter(
+            . \implode('\\', \array_filter(
                 $fq_class_name_elements
             ));
 

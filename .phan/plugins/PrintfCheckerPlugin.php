@@ -468,7 +468,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 }
                 $expected_union_type = new UnionType();
                 foreach ($expected_set as $type_name => $_) {
-                    $expected_union_type->addType(Type::fromFullyQualifiedString($type_name));
+                    $expected_union_type = $expected_union_type->withType(Type::fromFullyQualifiedString($type_name));
                 }
                 if ($actual_union_type->canCastToUnionType($expected_union_type)) {
                     continue;

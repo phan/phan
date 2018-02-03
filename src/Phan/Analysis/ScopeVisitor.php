@@ -20,12 +20,14 @@ abstract class ScopeVisitor extends AnalysisVisitor
      * The context of the parser at the node for which we'd
      * like to determine a type
      */
+    /*
     public function __construct(
         CodeBase $code_base,
         Context $context
     ) {
         parent::__construct($code_base, $context);
     }
+     */
 
     /**
      * Default visitor for node kinds that do not have
@@ -97,7 +99,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
      */
     public function visitGroupUse(Node $node) : Context
     {
-        $children = $node->children ?? [];
+        $children = $node->children;
 
         $prefix = \array_shift($children);
 
@@ -169,7 +171,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
         );
 
         $map = [];
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             $target = $child_node->children['name'];
 
             if (empty($child_node->children['alias'])) {

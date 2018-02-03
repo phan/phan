@@ -259,7 +259,7 @@ class ConditionVisitor extends KindVisitorImplementation
             $context->setScope($context->getScope()->withVariable(new Variable(
                 $context->withLineNumberStart($var_node->lineno ?? 0),
                 $var_name,
-                new UnionType(),
+                UnionType::empty(),
                 $var_node->flags ?? 0
             )));
         }
@@ -360,16 +360,16 @@ class ConditionVisitor extends KindVisitorImplementation
         // (E.g. T|false becomes T, object|T[]|iterable|null becomes object)
         // TODO: Convert `iterable` to `Traversable`?
         // TODO: move to UnionType?
-        $newType = $variable->getUnionType()->objectTypes();
-        if ($newType->isEmpty()) {
-            $newType->addType(ObjectType::instance(false));
+        $new_type = $variable->getUnionType()->objectTypes();
+        if ($new_type->isEmpty()) {
+            $new_type = $new_type->withType(ObjectType::instance(false));
         } else {
             // Convert inferred ?MyClass to MyClass, ?object to object
-            if ($newType->containsNullable()) {
-                $newType = $newType->nonNullableClone();
+            if ($new_type->containsNullable()) {
+                $new_type = $new_type->nonNullableClone();
             }
         }
-        $variable->setUnionType($newType);
+        $variable->setUnionType($new_type);
     }
 
     /**
@@ -390,7 +390,7 @@ class ConditionVisitor extends KindVisitorImplementation
             return static function (Variable $variable, array $args) use ($type) {
                 // Otherwise, overwrite the type for any simple
                 // primitive types.
-                $variable->setUnionType(clone($type));
+                $variable->setUnionType($type);
             };
         };
 
@@ -399,16 +399,16 @@ class ConditionVisitor extends KindVisitorImplementation
             // Change the type to match the is_a relationship
             // If we already have generic array types, then keep those
             // (E.g. T[]|false becomes T[], ?array|null becomes array
-            $newType = $variable->getUnionType()->genericArrayTypes();
-            if ($newType->isEmpty()) {
-                $newType->addType(ArrayType::instance(false));
+            $new_type = $variable->getUnionType()->genericArrayTypes();
+            if ($new_type->isEmpty()) {
+                $new_type = ArrayType::instance(false)->asUnionType();
             } else {
                 // Convert inferred (?T)[] to T[], ?array to array
-                if ($newType->containsNullable()) {
-                    $newType = $newType->nonNullableClone();
+                if ($new_type->containsNullable()) {
+                    $new_type = $new_type->nonNullableClone();
                 }
             }
-            $variable->setUnionType($newType);
+            $variable->setUnionType($new_type);
         };
 
         /** @return void */
@@ -416,16 +416,16 @@ class ConditionVisitor extends KindVisitorImplementation
             // Change the type to match the is_a relationship
             // If we already have the `object` type or generic object types, then keep those
             // (E.g. T|false becomes T, object|T[]|iterable|null becomes object)
-            $newType = $variable->getUnionType()->objectTypes();
-            if ($newType->isEmpty()) {
-                $newType->addType(ObjectType::instance(false));
+            $new_type = $variable->getUnionType()->objectTypes();
+            if ($new_type->isEmpty()) {
+                $new_type = ObjectType::instance(false)->asUnionType();
             } else {
                 // Convert inferred ?MyClass to MyClass, ?object to object
-                if ($newType->containsNullable()) {
-                    $newType = $newType->nonNullableClone();
+                if ($new_type->containsNullable()) {
+                    $new_type = $new_type->nonNullableClone();
                 }
             }
-            $variable->setUnionType($newType);
+            $variable->setUnionType($new_type);
         };
         /** @return void */
         $is_a_callback = function (Variable $variable, array $args) use ($object_callback) {
@@ -463,16 +463,16 @@ class ConditionVisitor extends KindVisitorImplementation
             // Change the type to match the is_a relationship
             // If we already have possible callable types, then keep those
             // (E.g. Closure|false becomes Closure)
-            $newType = $variable->getUnionType()->callableTypes();
-            if ($newType->isEmpty()) {
+            $new_type = $variable->getUnionType()->callableTypes();
+            if ($new_type->isEmpty()) {
                 // If there are no inferred types, or the only type we saw was 'null',
                 // assume there this can be any possible scalar.
                 // (Excludes `resource`, which is technically a scalar)
-                $newType->addType(CallableType::instance(false));
-            } elseif ($newType->containsNullable()) {
-                $newType = $newType->nonNullableClone();
+                $new_type = CallableType::instance(false)->asUnionType();
+            } elseif ($new_type->containsNullable()) {
+                $new_type = $new_type->nonNullableClone();
             }
-            $variable->setUnionType($newType);
+            $variable->setUnionType($new_type);
         };
 
         $float_callback = $make_basic_assertion_callback('float');
@@ -538,7 +538,7 @@ class ConditionVisitor extends KindVisitorImplementation
              $map = self::initTypeModifyingClosuresForVisitCall();
         }
 
-        $function_name = strtolower($raw_function_name);
+        $function_name = \strtolower($raw_function_name);
         $type_modification_callback = $map[$function_name] ?? null;
         if ($type_modification_callback === null) {
             return $this->context;

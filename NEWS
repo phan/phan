@@ -52,10 +52,16 @@ New Features(Analysis)
 
 Plugins
 + Fix bugs in NonBoolBranchPlugin and NonBoolInLogicalArithPlugin (#1413, #1410)
++ **Make UnionType instances immutable.**
+  This will affect plugins that used addType/addUnionType/removeType. withType/withUnionType/withoutType should be used instead.
+  To modify the type of elements(properties, method return types, parameters, variables, etc),
+  `Element->setUnionType(plugin_modifier_function(Element->getUnionType()))` should be used.
+
 
 Bug fixes
 + Warn when attempting to call an instance method on an expression with type string (#1314).
 + Fix a bug in `tool/make_stubs` when generating stubs of global functions.
++ Fix some bugs that occurred when Phan resolved inherited class constants in class elements such as properties. (#537 and #454)
 
 20 Jan 2018, Phan 0.11.1
 ------------------------
@@ -70,6 +76,7 @@ New Features(CLI, Configs)
   Keep `PHP-Parser` as a dependency for now for parsing strings.
 
 Maintenance
++ Various performance optimizations, including caching of inferred union types to avoid unnecessary recalculation.
 + Make `phan_client` and the vim snippet in `plugins/vim/phansnippet.vim` more compatible with neovim
 + Upgrade felixfbecker/advanced-json-rpc dependency to ^3.0.0 (#1354)
 + Performance improvements.

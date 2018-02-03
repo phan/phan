@@ -663,7 +663,7 @@ class ParameterTypesAnalyzer
                 if ($parent_parameter_type->isEmpty()) {
                     continue;
                 }
-                $parameter->setUnionType(clone($parent_parameter_type));
+                $parameter->setUnionType($parent_parameter_type);
             }
         }
 
@@ -671,7 +671,7 @@ class ParameterTypesAnalyzer
         if ($phpdoc_return_type->isEmpty()) {
             $parent_phpdoc_return_type = $o_method->getUnionType();
             if (!$parent_phpdoc_return_type->isEmpty()) {
-                $method->setUnionType(clone($parent_phpdoc_return_type));
+                $method->setUnionType($parent_phpdoc_return_type);
             }
         }
     }
@@ -876,10 +876,8 @@ class ParameterTypesAnalyzer
             // Attempting to narrow nullable to non-nullable is usually a mistake, currently not supported.
             return null;
         }
-        // Create a clone, converting "T|S|null" to "T|S"
-        $phpdoc_param_union_type = $phpdoc_param_union_type->nullableClone();
-        $phpdoc_param_union_type->removeType(NullType::instance(false));
-        return $phpdoc_param_union_type;
+        // Create a clone, converting "T|S|null" to "?T|?S"
+        return $phpdoc_param_union_type->nullableClone()->withoutType(NullType::instance(false));
     }
 
     /**
