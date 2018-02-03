@@ -49,7 +49,7 @@ class Request
     /** @var string */
     private $method;
 
-    /** @var string[]|null */
+    /** @var array<int,string>|null */
     private $files = null;
 
     private static $child_pids = [];
@@ -73,7 +73,7 @@ class Request
 
     /**
      * @param resource $response_connection a socket to write a response on
-     * @param string[] $filenames absolute path of file(s) to analyze
+     * @param array<int,string> $filenames absolute path of file(s) to analyze
      * @param CodeBase $code_base (for refreshing parse state)
      * @param Closure $file_path_lister (for refreshing parse state)
      * @param FileMapping $file_mapping object tracking the overrides made by a client.
@@ -154,8 +154,8 @@ class Request
 
 
     /**
-     * @param string[] $analyze_file_path_list
-     * @return string[]
+     * @param array<int,string> $analyze_file_path_list
+     * @return array<int,string>
      */
     public function filterFilesToAnalyze(array $analyze_file_path_list) : array
     {
@@ -184,7 +184,7 @@ class Request
 
     /**
      * TODO: convert absolute path to relative paths.
-     * @return string[] - Maps original relative file paths to contents.
+     * @return array<string,string> - Maps original relative file paths to contents.
      */
     public function getTemporaryFileMapping() : array
     {
@@ -270,7 +270,7 @@ class Request
     }
 
     /**
-     * @param string[] $file_mapping_contents
+     * @param array<string,string> $file_mapping_contents
      * @param ?string &$error_message @phan-output-reference
      */
     public static function normalizeFileMappingContents($file_mapping_contents, &$error_message) : array

@@ -14,7 +14,7 @@ class Variable extends UnaddressableTypedElement
 {
     /**
      * @access private
-     * @var string[] - Maps from a built in superglobal name to a UnionType spec string.
+     * @var array<string,string> - Maps from a built in superglobal name to a UnionType spec string.
      * The string array keys **can** be integers in edge cases, but those should be rare.
      * (e.g. ${4} = 'x'; adds 4 to $GLOBALS.
      * And user-provided input of integer representations of strings as keys would also become integers.
@@ -33,7 +33,9 @@ class Variable extends UnaddressableTypedElement
     ];
 
     /**
-     * The string array keys **can** be integers in edge cases, but those should be rare.
+     * @var array<string,string>
+     *
+     * NOTE: The string array keys of superglobals **can** be integers in edge cases, but those should be rare.
      * (e.g. ${4} = 'x'; adds 4 to $GLOBALS.
      * And user-provided input of integer representations of strings as keys would also become integers.
      */

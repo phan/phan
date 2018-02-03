@@ -37,7 +37,7 @@ class CLI
     }
 
     /**
-     * @var string[]
+     * @var array<int,string>
      * The set of file names to analyze
      */
     private $file_list = [];
@@ -172,7 +172,7 @@ class CLI
                     foreach ($file_list as $file_name) {
                         $file_path = Config::projectPath($file_name);
                         if (is_file($file_path) && is_readable($file_path)) {
-                            /** @var string[] */
+                            /** @var array<int,string> */
                             $this->file_list = array_merge(
                                 $this->file_list,
                                 file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)
@@ -397,7 +397,7 @@ class CLI
             );
 
             // Merge in any files given in the config
-            /** @var string[] */
+            /** @var array<int,string> */
             $this->file_list = array_merge(
                 $this->file_list,
                 Config::getValue('file_list')
@@ -459,7 +459,7 @@ class CLI
     }
 
     /**
-     * @return string[]
+     * @return array<int,string>
      * Get the set of files to analyze
      */
     public function getFileList() : array
@@ -653,7 +653,7 @@ EOB;
      * @param string $directory_name
      * The name of a directory to scan for files ending in `.php`.
      *
-     * @return string[]
+     * @return array<int,string>
      * A list of PHP files in the given directory
      */
     private function directoryNameToFileList(

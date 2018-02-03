@@ -1,0 +1,6 @@
+src/020_bool.php:20 PhanPluginNonBoolBranch Non bool value of type int evaluated in if clause
+src/020_bool.php:21 PhanPluginNonBoolBranch Non bool value of type null evaluated in if clause
+src/020_bool.php:22 PhanPluginNonBoolBranch Non bool value of type ?bool evaluated in if clause
+src/020_bool.php:23 PhanPluginNonBoolBranch Non bool value of type array|bool evaluated in if clause
+src/020_bool.php:26 PhanPluginNonBoolBranch Non bool value of type ?bool evaluated in if clause
+src/020_bool.php:30 PhanPluginNonBoolBranch Non bool value of type array|bool evaluated in if clause

@@ -1,6 +1,6 @@
 <?php
 $v = [];
-if (true) {
+if (rand() % 2 > 0) {
     try {
         $v = 'string';
     } catch (Exception $e) {
@@ -9,5 +9,5 @@ if (true) {
 } else {
     $v = false;
 }
-function f(int $p) {}
+function f(int $p) {}  // type should be inferred as string|false. The original array type no longer exists.
 f($v);

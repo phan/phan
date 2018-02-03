@@ -8,10 +8,10 @@ namespace Phan;
 class ForkPool
 {
 
-    /** @var int[] */
+    /** @var array<int,int> */
     private $child_pid_list = [];
 
-    /** @var resource[] */
+    /** @var array<int,resource> */
     private $read_streams = [];
 
     /** @var bool */
@@ -122,7 +122,7 @@ class ForkPool
      * Prepare the socket pair to be used in a parent process and
      * return the stream the parent will use to read results.
      *
-     * @param resource[] $sockets the socket pair for IPC
+     * @param array<int,resource> $sockets the socket pair for IPC
      * @return resource
      */
     private static function streamForParent(array $sockets)
@@ -147,7 +147,7 @@ class ForkPool
      * Prepare the socket pair to be used in a child process and return
      * the stream the child will use to write results.
      *
-     * @param resource[] $sockets the socket pair for IPC.
+     * @param array<int,resource> $sockets the socket pair for IPC.
      * @return resource
      */
     private static function streamForChild(array $sockets)

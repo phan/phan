@@ -48,7 +48,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
     }
 
     /**
-     * @return \Closure[]
+     * @return array<string,\Closure>
      */
     private static function getReturnTypeOverridesStatic(CodeBase $code_base) : array
     {
@@ -168,7 +168,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
     }
 
     /**
-     * @return \Closure[]
+     * @return array<string,\Closure>
      */
     private static function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
     {
@@ -226,7 +226,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
     }
 
     /**
-     * @return \Closure[]
+     * @return array<string,\Closure>
      * @override
      */
     public function getReturnTypeOverrides(CodeBase $code_base) : array
@@ -240,7 +240,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
     }
 
     /**
-     * @return \Closure[]
+     * @return array<string,\Closure>
      * @override
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
@@ -277,8 +277,8 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
      *
      * @param CodeBase $code_base
      * @param Context $context
-     * @param FunctionInterface[] $function_like_list
-     * @param Node[]|string[]|int[] $arguments
+     * @param array<int,FunctionInterface> $function_like_list
+     * @param array<int,Node|string|int|float> $arguments
      *
      * @return void
      */

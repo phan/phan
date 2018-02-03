@@ -14,6 +14,8 @@ New Features(Analysis)
   Mixed union types in keys can cast to/from any key type.
 
   - To allow casting `array<int,T>` to `array<string,T>`, enable `scalar_array_key_cast` in your `.phan/config.php`.
+
+  Warn when fetching with the wrong type of array keys (E.g. string key for `array<int,T>`) (Issue #1390)
 + Infer array key types of `int`, `string`, or `int|string` in foreach over arrays. (#1300)
   (Phan's type system doesn't support inferring key types for `iterable` or `Traversable` right now)
 + Support **parsing** PHPDoc array shapes
@@ -25,9 +27,35 @@ New Features(Analysis)
   - The field value types can be any union type.
   - Field keys are currently limited to keys matching the regex `[-_.a-zA-Z0-9\x7f-\xff]+`. (Identifiers, numbers, '-', and '.')
     Escape mechanisms such as backslashes (e.g. "\x20" for " ") may be supported in the future.
++ Add `PhanTypeMismatchUnpackKey` and `PhanTypeMismatchUnpackValue` to analyze array unpacking operator (also known as splat) (#1384)
+
+  Emit `PhanTypeMismatchUnpackKey` when passing iterables/arrays with invalid keys to the unpacking operator (i.e. `...`).
+
+  Emit `PhanTypeMismatchUnpackValue` when passing values that aren't iterables or arrays to the unpacking operator.
+  (See https://secure.php.net/manual/en/migration56.new-features.php#migration56.new-features.splat)
++ When determining the union type of an array literal,
+  base it on the union types of **all** of the values (and all of the keys) instead of just the first 5 array elements.
++ When determining the union type of the possible value types of a array literal,
+  combine the generic types into a union type instead of simplifying the types to `array`.
+  In practical terms, this means that `[1,2,'a']` is seen as `array<int,int|string>`,
+  which Phan represents as `array<int,int>|array<int,string>`.
+
+  In the previous phan release, that would be represented as `int[]|string[]`,
+  which is equivalent to `array<mixed,int>|array<mixed,string>`
+
+  Another example: `[$strKey => new MyClass(), $strKey2 => $unknown]` will be represented as
+  `array<string,MyClass>|array<string,mixed>`.
+  (If phan can't infer a type of a key or value, `mixed` gets added to that key or value.)
++ Improve analysis of try/catch/finally blocks (#1408)
+  Analyze catch blocks with the inferences about the try block.
+  Analyze a finally block with the inferences from the try and catch blocks.
+
+Plugins
++ Fix bugs in NonBoolBranchPlugin and NonBoolInLogicalArithPlugin (#1413, #1410)
 
 Bug fixes
 + Warn when attempting to call an instance method on an expression with type string (#1314).
++ Fix a bug in `tool/make_stubs` when generating stubs of global functions.
 
 20 Jan 2018, Phan 0.11.1
 ------------------------

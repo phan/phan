@@ -4,6 +4,7 @@
 %s:11 PhanTypeMismatchArgument Argument 1 (x) is false|float but \p364() takes \stdClass defined at %s:45
 %s:13 PhanTypeMismatchArgument Argument 1 (x) is false|float but \p364() takes \stdClass defined at %s:45
 %s:14 PhanTypeMismatchArgument Argument 1 (x) is false|float but \p364() takes \stdClass defined at %s:45
+%s:15 PhanTypeMismatchArgument Argument 1 (x) is false|int|string but \p364() takes \stdClass defined at %s:45
 %s:16 PhanTypeMismatchArgument Argument 1 (x) is false|float but \p364() takes \stdClass defined at %s:45
 %s:17 PhanTypeMismatchArgument Argument 1 (x) is false|float but \p364() takes \stdClass defined at %s:45
 %s:18 PhanTypeMismatchArgument Argument 1 (x) is array<string,int> but \p364() takes \stdClass defined at %s:45

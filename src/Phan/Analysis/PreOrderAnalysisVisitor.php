@@ -610,13 +610,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitCatch(Node $node) : Context
     {
-        try {
-            $union_type = UnionTypeVisitor::unionTypeFromClassNode(
-                $this->code_base,
-                $this->context,
-                $node->children['class']
-            );
+        $union_type = UnionTypeVisitor::unionTypeFromClassNode(
+            $this->code_base,
+            $this->context,
+            $node->children['class']
+        );
 
+        try {
             $class_list = (new ContextNode(
                 $this->code_base,
                 $this->context,
@@ -632,6 +632,17 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 $node->lineno ?? 0,
                 (string)$exception->getFQSEN()
             );
+
+            // The class doesn't exist. Analyze the variable as if it's a Throwable.
+            // (Wouldn't work for php 5.6, but phan doesn't support php < 7.
+            $variable = Variable::fromNodeInContext(
+                $node->children['var'],
+                $this->context,
+                $this->code_base,
+                false
+            );
+
+            $union_type->addType(Type::fromFullyQualifiedString('\Throwable'));
         }
 
         $variable_name = (new ContextNode(

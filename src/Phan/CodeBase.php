@@ -11,6 +11,7 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionFactory;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
+use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Property;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
@@ -126,7 +127,7 @@ class CodeBase
     private $class_fqsen_class_map_map;
 
     /**
-     * @var Set[]
+     * @var array<string,Set>
      * A map from a string method name to a Set of
      * Methods
      */
@@ -226,7 +227,7 @@ class CodeBase
     }
 
     /**
-     * @return string[] - The list of files which are successfully parsed.
+     * @return array<int,string> - The list of files which are successfully parsed.
      * This changes whenever the file list is reloaded from disk.
      * This also includes files which don't declare classes or functions or globals,
      * because those files use classes/functions/constants.
@@ -320,9 +321,9 @@ class CodeBase
     }
 
     /**
-     * @param string[] $new_file_list
-     * @param string[] $file_mapping_contents maps relative path to absolute paths
-     * @return string[] - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
+     * @param array<int,string> $new_file_list
+     * @param array<string,string> $file_mapping_contents maps relative path to absolute paths
+     * @return array<int,string> - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
      */
     public function updateFileList(array $new_file_list, array $file_mapping_contents = [])
     {
@@ -842,7 +843,7 @@ class CodeBase
     }
 
     /**
-     * @return string[][] -
+     * @return array<string,array<string,string>>
      * A human readable encoding of $this->func_and_method_set [string $function_or_method_name => [int|string $pos => string $spec]]
      * Excludes internal functions and methods.
      *
@@ -1189,6 +1190,12 @@ class CodeBase
                 $canonical_fqsen,
                 $signature
             ) as $function) {
+                if ($found) {
+                    $reflection_function = new \ReflectionFunction($name);
+                    $function->setIsDeprecated($reflection_function->isDeprecated());
+                    $function->setRealReturnType(UnionType::fromReflectionType($reflection_function->getReturnType()));
+                    $function->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_function->getParameters()));
+                }
                 $this->addFunction($function);
             }
 
@@ -1262,7 +1269,7 @@ class CodeBase
     }
 
     /**
-     * @return string[] every constant name except user-defined constants.
+     * @return array<int,string> every constant name except user-defined constants.
      */
     public static function getPHPInternalConstantNameList() : array
     {

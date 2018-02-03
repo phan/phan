@@ -26,7 +26,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
     private $context;
 
     /**
-     * @var Context[]
+     * @var array<int,Context>
      * A list of the contexts returned after depth-first
      * parsing of all first-level children of this node
      */
@@ -42,7 +42,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
      * The context of the parser at the node for which we'd
      * like to determine a type
      *
-     * @param Context[] $child_context_list
+     * @param array<int,Context> $child_context_list
      * A list of the contexts returned after depth-first
      * parsing of all first-level children of this node
      */
@@ -77,28 +77,85 @@ class ContextMergeVisitor extends KindVisitorImplementation
         return \end($this->child_context_list) ?: $this->context;
     }
 
-    public function visitTry(Node $node) : Context
+    /**
+     * Merges the only try block of a try/catch node into the parent context.
+     * This acts as though the entire block succeeds or throws on the first statement, which isn't necessarily the case.
+     *
+     * visitTry() was split out into multiple functions for the following reasons:
+     *
+     * 1. The try{} block affects the Context of catch blocks (and finally block), if any
+     * 2. The catch blocks affect the Context of the finally block, if any
+     *
+     * TODO: Look at ways to improve accuracy based on inferences of the exit status of the node?
+     */
+    public function mergeTryContext(Node $node) : Context
     {
+        \assert(\count($this->child_context_list) === 1);
+
         // Get the list of scopes for each branch of the
         // conditional
-        $scope_list = \array_map(function (Context $context) : Scope {
+        $context = $this->context;
+        $try_context = $this->child_context_list[0];
+
+        if ($this->willRemainingStatementsBeAnalyzedAsIfTryMightFail($node)) {
+            return $this->combineScopeList([
+                $context->getScope(),
+                $try_context->getScope()
+            ]);
+        }
+        return $try_context;
+    }
+
+    private function willRemainingStatementsBeAnalyzedAsIfTryMightFail(Node $node) : bool
+    {
+        if ($node->children['finally'] !== null) {
+            // We want to analyze finally as if the try block (and one or more of the catch blocks) was or wasn't executed.
+            // ... This isn't optimal.
+            // A better solution would be to analyze finally{} twice,
+            // 1. As if try could fail
+            // 2. As if try did not fail, using the latter to analyze statements after the finally{}.
+            return true;
+        }
+        // E.g. after analyzing the following code:
+        //      try { $x = expr(); } catch (Exception $e) { echo "Caught"; return; } catch (OtherException $e) { continue; }
+        // Phan should infer that $x is guaranteed to be defined.
+        foreach ($node->children['catches']->children ?? [] as $catch_node) {
+            if (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function mergeCatchContext(Node $node) : Context
+    {
+        \assert(\count($this->child_context_list) >= 2);  // first context is the try
+        // Get the list of scopes for each branch of the
+        // conditional
+        $scope_list = \array_map(function (Context $context) {
             return $context->getScope();
         }, $this->child_context_list);
-
-        // The 0th scope is the scope from Try
-        $try_scope = $scope_list[0];
-        assert($try_scope instanceof Scope);
 
         $catch_scope_list = [];
         $catch_nodes = $node->children['catches']->children ?? [];
         foreach ($catch_nodes as $i => $catch_node) {
             if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node)) {
-                $catch_scope_list[] = $scope_list[((int)$i)+1];
+                $catch_scope_list[] = $scope_list[$i + 1];
             }
         }
         // TODO: Check if try node unconditionally returns.
 
         // Merge in the types for any variables found in a catch.
+        // if ($node->children['finally'] !== null) {
+            // If we have to analyze a finally statement later,
+            // then be conservative and assume the try statement may or may not have failed.
+            // E.g. the below example must have a inferred type of string|false
+            //      $x = new stdClass(); try {...; $x = (string)fn(); } catch(Exception $e) { $x = false; }
+            // $try_scope = $this->context->getScope();
+        // } else {
+            // If we don't have to worry about analyzing the finally statement, then assume that the entire try statement succeeded or the a catch statement succeeded.
+            $try_scope = \reset($this->child_context_list)->getScope();
+        // }
         foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
             $variable_name = (string)$variable_name;  // e.g. ${42}
             foreach ($catch_scope_list as $catch_scope) {
@@ -131,43 +188,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
             }
         }
 
-        // If we have a finally, overwrite types for each
-        // element
-        if (!empty($node->children['finally'])) {
-            \assert(\count($scope_list) === 2 + \count($catch_nodes));
-            // Don't bother checking if finally unconditionally returns here
-            // If it does, dead code detection would also warn.
-            $finally_scope = $scope_list[\count($scope_list)-1];
-            assert($finally_scope instanceof Scope);
-
-            foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
-                if ($finally_scope->hasVariableWithName($variable_name)) {
-                    $finally_variable =
-                        $finally_scope->getVariableByName($variable_name);
-
-                    // Overwrite the variable with the type from the
-                    // finally
-                    if (!$finally_variable->getUnionType()->isEmpty()) {
-                        $variable->setUnionType(
-                            $finally_variable->getUnionType()
-                        );
-                    }
-                }
-            }
-
-            // Look for variables that exist in finally, but not try
-            foreach ($finally_scope->getVariableMap() as $variable_name => $variable) {
-                if (!$try_scope->hasVariableWithName($variable_name)) {
-                    $try_scope->addVariable($variable);
-                }
-            }
-        } else {
-            \assert(\count($scope_list) === 1 + \count($catch_nodes));
-        }
-
-        // Return the context of the try with the types of
-        // variables within its scope limited appropriately
-        return $this->child_context_list[0];
+        // Set the new scope with only the variables and types
+        // that are common to all branches
+        return $this->context->withScope($try_scope);
     }
 
     /**
@@ -191,7 +214,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
             function (bool $carry, $child_node) {
                 return $carry || (
                     $child_node instanceof Node
-                    && empty($child_node->children['cond'])
+                    && \is_null($child_node->children['cond'])
                 );
             },
             false
@@ -206,9 +229,18 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // If there weren't multiple branches, continue on
         // as if the conditional never happened
         if (\count($scope_list) < 2) {
-            return \array_values($this->child_context_list)[0];
+            return \reset($this->child_context_list);
         }
 
+        return $this->combineScopeList($scope_list);
+    }
+
+    /**
+     * @param array<int,Scope> $scope_list
+     */
+    public function combineScopeList(array $scope_list) : Context
+    {
+        \assert(\count($scope_list) >= 2);
         // Get a list of all variables in all scopes
         $variable_map = [];
         foreach ($scope_list as $scope) {

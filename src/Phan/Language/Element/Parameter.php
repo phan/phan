@@ -165,7 +165,7 @@ class Parameter extends Variable
     }
 
     /**
-     * @return Parameter[]
+     * @return array<int,Parameter>
      * A list of parameters from an AST node.
      * @suppress PhanPluginUnusedVariable
      */
@@ -201,8 +201,8 @@ class Parameter extends Variable
     }
 
     /**
-     * @param \ReflectionParameter[] $reflection_parameters
-     * @return Parameter[]
+     * @param array<int,\ReflectionParameter> $reflection_parameters
+     * @return array<int,Parameter>
      */
     public static function listFromReflectionParameterList(
         array $reflection_parameters

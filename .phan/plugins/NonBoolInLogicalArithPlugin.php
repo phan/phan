@@ -61,11 +61,24 @@ class NonBoolInLogicalArithVisitor extends PluginAwareAnalysisVisitor
             $right_type = UnionType::fromNode($this->context, $this->code_base, $right_node);
 
             // if left or right type is NOT boolean, emit issue
-            if ($left_type->serialize() !== "bool" || $right_type->serialize() !== "bool") {
+            if (!$left_type->isExclusivelyBoolTypes())  {
+                if ($left_node instanceof Node) {
+                    $this->context = $this->context->withLineNumberStart($left_node->lineno);
+                }
                 $this->emit(
                     'PhanPluginNonBoolInLogicalArith',
-                    'Non bool value in logical arithmetic',
-                    []
+                    'Non bool value of type {TYPE} in logical arithmetic',
+                    [(string)$left_type]
+                );
+            }
+            if (!$right_type->isExclusivelyBoolTypes()) {
+                if ($right_node instanceof Node) {
+                    $this->context = $this->context->withLineNumberStart($right_node->lineno);
+                }
+                $this->emit(
+                    'PhanPluginNonBoolInLogicalArith',
+                    'Non bool value of type {TYPE} in logical arithmetic',
+                    [(string)$right_type]
                 );
             }
         }

@@ -14,7 +14,7 @@ try {
 
 function f(string $p) {}
 f($a);
-f($b);
+f($b);  // int|true: If the try block fails to define $b as int, the only catch block will define $b as true. (If the catch block throws, this is unreachable)
 f($c);
 print $d->format('Y') . "\n";
 f($e);

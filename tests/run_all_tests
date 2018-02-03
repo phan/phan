@@ -5,8 +5,9 @@ if [ "$#" != 0 ]; then
 	exit 1
 fi
 
-TEST_SUITES="PhanTest UtilTest PHP72Test RasmusTest LanguageTest"
-TEST_SUITES+=" __FakeSelfTest __FakeRewritingTest __FakePluginTest __FakeFallbackTest"
+TEST_SUITES="PhanTest"
+TEST_SUITES+=" UtilTest PHP72Test RasmusTest LanguageTest"
+TEST_SUITES+=" __FakeSelfTest __FakeRewritingTest __FakePluginTest __FakeFallbackTest __FakeToolTest"
 
 FAILURES=""
 for TEST_SUITE in $TEST_SUITES; do

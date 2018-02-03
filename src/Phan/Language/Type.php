@@ -124,7 +124,7 @@ class Type
        . ')';
 
     /**
-     * @var bool[] - For checking if a string is an internal type. This is used for case insensitive lookup.
+     * @var array<string,bool> - For checking if a string is an internal type. This is used for case insensitive lookup.
      */
     const _internal_type_set = [
         'array'     => true,
@@ -196,7 +196,7 @@ class Type
     protected $name = '';
 
     /**
-     * @var UnionType[]
+     * @var array<int,UnionType>
      * A possibly empty list of concrete types that
      * act as parameters to this type if it is a templated
      * type.
@@ -210,7 +210,7 @@ class Type
     protected $is_nullable = false;
 
     /**
-     * @var Type[] - Maps a key to a Type or subclass of Type
+     * @var array<string,Type> - Maps a key to a Type or subclass of Type
      */
     private static $canonical_object_map = [];
 
@@ -222,7 +222,7 @@ class Type
      * The (optional) namespace of the type such as '\'
      * or '\Phan\Language'.
      *
-     * @param UnionType[] $template_parameter_type_list
+     * @param array<int,UnionType> $template_parameter_type_list
      * A (possibly empty) list of template parameter types
      *
      * @param bool $is_nullable
@@ -262,7 +262,7 @@ class Type
      * @param string $type_name
      * The name of the type such as 'int' or 'MyClass'
      *
-     * @param UnionType[] $template_parameter_type_list
+     * @param array<int,UnionType> $template_parameter_type_list
      * A (possibly empty) list of template parameter types
      *
      * @param bool $is_nullable
@@ -393,7 +393,7 @@ class Type
      * The base type of this generic type referencing a
      * generic class
      *
-     * @param UnionType[] $template_parameter_type_list
+     * @param array<int,UnionType> $template_parameter_type_list
      * A map from a template type identifier to a
      * concrete union type
      */
@@ -429,7 +429,7 @@ class Type
     }
 
     /**
-     * @return NativeType[] a map from the **uppercase** reserved constant name to the subclass of NativeType for that constant.
+     * @return array<string,NativeType> a map from the **uppercase** reserved constant name to the subclass of NativeType for that constant.
      * Uses the constants and types from https://secure.php.net/manual/en/reserved.constants.php
      */
     private static function createReservedConstantNameLookup() : array
@@ -981,9 +981,10 @@ class Type
      * @param int $source
      * @return array<string|int,Type> The types for the representations of types, in the given $context
      */
-    private static function shapeComponentStringsToTypes(array $shape_components, Context $context, int $source) : array {
+    private static function shapeComponentStringsToTypes(array $shape_components, Context $context, int $source) : array
+    {
         return array_map(
-            function(string $component_string) use ($context, $source) : Type {
+            function (string $component_string) use ($context, $source) : Type {
                 return Type::fromStringInContext($component_string, $context, $source);
             },
             $shape_components
@@ -991,7 +992,7 @@ class Type
     }
 
     /**
-     * @var ?Type[] - [$this]
+     * @var ?array<int,Type> - [$this]
      */
     protected $singleton_type_list;
 
@@ -1314,6 +1315,15 @@ class Type
     }
 
     /**
+     * @return bool - Returns true if this is \Traversable (nullable or not)
+     */
+    public function isTraversable() : bool
+    {
+        return (\strcasecmp($this->getName(), 'Traversable') === 0
+            && $this->getNamespace() === '\\');
+    }
+
+    /**
      * @param string $type_name
      * A non-namespaced type name like 'int[]'
      *
@@ -1393,7 +1403,7 @@ class Type
     }
 
     /**
-     * @return UnionType[]
+     * @return array<int,UnionType>
      * The set of types filling in template parameter types defined
      * on the class specified by this type.
      */
@@ -1406,7 +1416,7 @@ class Type
      * @param CodeBase $code_base
      * The code base to look up classes against
      *
-     * @return UnionType[]
+     * @return array<string,UnionType>
      * A map from template type identifier to a concrete type
      */
     public function getTemplateParameterTypeMap(CodeBase $code_base)
@@ -1874,7 +1884,7 @@ class Type
 
     /**
      * Extracts the inner parts of a template name list (i.e. within <>) or a shape component list (i.e. within {})
-     * @return string[]
+     * @return array<int,string>
      * @suppress PhanPluginUnusedVariable
      */
     private static function extractNameList(string $list_string) : array
@@ -1895,8 +1905,8 @@ class Type
                     }  // ignore unparseable data such as "<T,T2>>" or "T, T2{}}"
                     $prev_parts = [];
                     $delta = 0;
-                    continue;
                 }
+                continue;
             }
             if ($open_bracket_count === 0) {
                 $results[] = $result;

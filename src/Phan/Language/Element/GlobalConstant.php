@@ -81,7 +81,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         return $string;
     }
 
-    /** @return string[] [string $namespace, string $text] */
+    /** @return array{0:string,1:string} [string $namespace, string $text] */
     public function toStubInfo() : array
     {
         $fqsen = (string)$this->getFQSEN();

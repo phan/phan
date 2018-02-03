@@ -50,8 +50,8 @@ function testNumericalEqualityPlugin() {
     var_dump(2.0 != 2);  // this is fine
 }
 testNumericalEqualityPlugin();
-
-/** @suppress PhanParamTooFew - testing UnusedSuppressionPlugin */
+/** @suppress PhanParamTooFew - testing UnusedSuppressionPlugin
+ * @suppresssuffix PhanParamTooMany should be ignored due to suffix */
 function testUnusedSuppressionPlugin() {
     var_dump(intdiv(84, 2));
 }

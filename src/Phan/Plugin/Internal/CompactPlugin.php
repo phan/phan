@@ -28,7 +28,7 @@ final class CompactPlugin extends PluginV2 implements
     }
 
     /**
-     * @return \Closure[]
+     * @return array<string,\Closure>
      */
     private static function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
     {

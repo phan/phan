@@ -55,34 +55,34 @@ final class ConfigPluginSet extends PluginV2 implements
     ReturnTypeOverrideCapability
 {
 
-    /** @var Plugin[]|null - Cached plugin set for this instance. Lazily generated. */
+    /** @var array<int,Plugin>|null - Cached plugin set for this instance. Lazily generated. */
     private $pluginSet;
 
-    /** @var \Closure[]|null - plugins to analyze nodes in pre order. */
+    /** @var array<int,\Closure>|null - plugins to analyze nodes in pre order. */
     private $preAnalyzeNodePluginSet;
 
-    /** @var \Closure[]|null - plugins to analyze nodes in post order. */
+    /** @var array<int,\Closure>|null - plugins to analyze nodes in post order. */
     private $analyzeNodePluginSet;
 
-    /** @var AnalyzeClassCapability[]|null - plugins to analyze class declarations. */
+    /** @var array<int,AnalyzeClassCapability>|null - plugins to analyze class declarations. */
     private $analyzeClassPluginSet;
 
-    /** @var AnalyzeFunctionCallCapability[]|null - plugins to analyze invocations of subsets of functions and methods. */
+    /** @var array<int,AnalyzeFunctionCallCapability>|null - plugins to analyze invocations of subsets of functions and methods. */
     private $analyzeFunctionCallPluginSet;
 
-    /** @var AnalyzeFunctionCapability[]|null - plugins to analyze function declarations. */
+    /** @var array<int,AnalyzeFunctionCapability>|null - plugins to analyze function declarations. */
     private $analyzeFunctionPluginSet;
 
-    /** @var AnalyzePropertyCapability[]|null - plugins to analyze property declarations. */
+    /** @var array<int,AnalyzePropertyCapability>|null - plugins to analyze property declarations. */
     private $analyzePropertyPluginSet;
 
-    /** @var AnalyzeMethodCapability[]|null - plugins to analyze method declarations.*/
+    /** @var array<int,AnalyzeMethodCapability>|null - plugins to analyze method declarations.*/
     private $analyzeMethodPluginSet;
 
-    /** @var FinalizeProcessCapability[]|null - plugins to call finalize() on after analysis is finished. */
+    /** @var array<int,FinalizeProcessCapability>|null - plugins to call finalize() on after analysis is finished. */
     private $finalizeProcessPluginSet;
 
-    /** @var ReturnTypeOverrideCapability[]|null - plugins which generate return UnionTypes of functions based on arguments. */
+    /** @var array<int,ReturnTypeOverrideCapability>|null - plugins which generate return UnionTypes of functions based on arguments. */
     private $returnTypeOverridePluginSet;
 
     /**
@@ -193,7 +193,7 @@ final class ConfigPluginSet extends PluginV2 implements
             );
         }
         if ($this->hasAnalyzePropertyPlugins()) {
-            foreach ($class->getPropertyList($code_base) as $property) {
+            foreach ($class->getPropertyMap($code_base) as $property) {
                 $this->analyzeProperty($code_base, $property);
             }
         }
@@ -318,7 +318,7 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
-     * @return \Closure[] maps FQSEN string to closure
+     * @return array<string,\Closure> maps FQSEN string to closure
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
     {
@@ -342,7 +342,7 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
-     * @return \Closure[] maps FQSEN string to closure
+     * @return array<string,\Closure> maps FQSEN string to closure
      */
     public function getReturnTypeOverrides(CodeBase $code_base) : array
     {
@@ -423,7 +423,8 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
-     * @return array
+     * @param array<int,PluginV2> $plugin_set
+     * @return array<int,mixed> (TODO: Can't precisely annotate without improved (at)template analysis)
      */
     private static function filterOutEmptyMethodBodies(array $plugin_set, string $method_name) : array
     {
@@ -440,7 +441,8 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
-     * @return \Closure[] - [function(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null): void]
+     * @return array<int,\Closure>
+     *         Returned value maps ast\Node->kind to [function(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null): void]
      */
     private static function filterPreAnalysisPlugins(array $plugin_set) : array
     {
@@ -501,8 +503,7 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
-     * @return \Closure[] - [function(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null): void]
-     * @var \Closure[][] $closures_for_kind
+     * @return array<int,\Closure> - [function(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null): void]
      */
     private static function filterAnalysisPlugins(array $plugin_set) : array
     {
@@ -584,7 +585,7 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
-     * @return Plugin[]
+     * @return array<int,Plugin>
      */
     private function getPlugins() : array
     {

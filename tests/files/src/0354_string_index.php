@@ -26,6 +26,6 @@ class A354 {
         $b = $arr['offset'];
         $c = $arr[[]];  // wrong
         $c = $arr[null];  // wrong
-        $c = $arr[0];  // Phan isn't able to tell that this is wrong.
+        $c = $arr[0];  // Phan can tell that this is wrong, by tracking that the keys are strings.
     }
 }

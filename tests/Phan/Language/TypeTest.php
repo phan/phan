@@ -210,6 +210,12 @@ class TypeTest extends BaseTest
         $this->assertParsesAsType($expectedStringArrayArrayType, 'array<mixed,array<mixed,string>>');
     }
 
+    public function testArrayNested()
+    {
+        $deeplyNestedArray = self::makePHPDocType('array<int,array<mixed,array<mixed,stdClass>>>');
+        $this->assertSame('array<int,\stdClass[][]>', (string)$deeplyNestedArray);
+    }
+
     public function testArrayExtraBrackets()
     {
         $stringArrayType = self::makePHPDocType('?(float[])');
@@ -268,7 +274,8 @@ class TypeTest extends BaseTest
     /**
      * @dataProvider arrayShapeProvider
      */
-    public function testArrayShape($normalized_union_type_string, $type_string) {
+    public function testArrayShape($normalized_union_type_string, $type_string)
+    {
         $this->assertTrue(\preg_match('@^' . Type::type_regex . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex");
         $this->assertTrue(\preg_match('@^' . Type::type_regex_or_this . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex_or_this");
         $actual_type = self::makePHPDocType($type_string);
@@ -279,7 +286,8 @@ class TypeTest extends BaseTest
         $this->assertTrue($expected_flattened_type->isEqualTo($actual_flattened_type), "expected $actual_flattened_type to equal $expected_flattened_type");
     }
 
-    public function arrayShapeProvider() {
+    public function arrayShapeProvider()
+    {
         return [
             [
                 'array',
@@ -325,12 +333,14 @@ class TypeTest extends BaseTest
     }
 
     /** @dataProvider unparseableArrayShapeProvider */
-    public function testUnparseableArrayShape($type_string) {
+    public function testUnparseableArrayShape($type_string)
+    {
         $this->assertFalse(\preg_match('@^' . Type::type_regex . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex");
         $this->assertFalse(\preg_match('@^' . Type::type_regex_or_this . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex_or_this");
     }
 
-    public function unparseableArrayShapeProvider() {
+    public function unparseableArrayShapeProvider()
+    {
         return [
             ['array{'],
             ['{}'],

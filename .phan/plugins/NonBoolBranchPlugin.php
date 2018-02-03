@@ -2,6 +2,7 @@
 # .phan/plugins/NonBoolBranchPlugin.php
 
 use Phan\AST\AnalysisVisitor;
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
@@ -28,27 +29,43 @@ class NonBoolBranchVisitor extends PluginAwareAnalysisVisitor
     // A plugin's visitors should not override visit() unless they need to.
 
     /** @override */
-    public function visitIfelem(Node $node) : Context
+    public function visitIf(Node $node) : Context
     {
-        $condition = $node->children['cond'];
+        // Here, we visit the group of if/elseif/else instead of the individuals (visitIfElem)
+        // so that we have the Union types of the variables **before** the PreOrderAnalysisVisitor makes inferences
+        foreach ($node->children as $if_node) {
+            $condition = $if_node->children['cond'];
 
-        // dig nodes to avoid NOT('!') operator's converting its value to boolean type
-        while (isset($condition->flags) && $condition->flags === ast\flags\UNARY_BOOL_NOT) {
-            $condition = $condition->children['expr'];
-        }
+            // dig nodes to avoid NOT('!') operator's converting its value to boolean type
+            // Also, use right hand side of $x = (expr)
+            while (($condition instanceof Node) && (
+                ($condition->flags === ast\flags\UNARY_BOOL_NOT && $condition->kind === ast\AST_UNARY_OP)
+                || (\in_array($condition->kind, [\ast\AST_ASSIGN, \ast\AST_ASSIGN_REF], true)))
+            ) {
+                $condition = $condition->children['expr'];
+            }
 
-        // evaluate the type of conditional expression
-        $union_type = UnionType::fromNode($this->context, $this->code_base, $condition);
-        // $condition === null will be appeared in else-clause, then avoid them
-        if (($union_type->serialize() !== "bool") && $condition !== null) {
-            $this->emit(
-                'PhanPluginNonBoolBranch',
-                'Non bool value evaluated in if clause',
-                []
-            );
+            if ($condition === null) {
+                // $condition === null will be appeared in else-clause, then avoid them
+                continue;
+            }
+
+            if ($condition instanceof Node) {
+                $this->context = $this->context->withLineNumberStart($condition->lineno);
+            }
+            // evaluate the type of conditional expression
+            $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $condition);
+            if (!$union_type->isExclusivelyBoolTypes()) {
+                $this->emit(
+                    'PhanPluginNonBoolBranch',
+                    'Non bool value of type {TYPE} evaluated in if clause',
+                    [(string)$union_type]
+                );
+            }
         }
         return $this->context;
     }
+
 }
 
 return new NonBoolBranchPlugin;

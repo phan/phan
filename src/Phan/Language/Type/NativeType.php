@@ -57,6 +57,11 @@ abstract class NativeType extends Type
         return false;
     }
 
+    public function isTraversable() : bool
+    {
+        return false;
+    }
+
     public function isObject() : bool
     {
         return false;
@@ -100,7 +105,7 @@ abstract class NativeType extends Type
     }
 
     /**
-     * @return bool[][]
+     * @return array<string,array<string,bool>>
      */
     private static function initializeTypeCastingMatrix() : array
     {

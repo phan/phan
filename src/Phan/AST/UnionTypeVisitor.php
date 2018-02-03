@@ -727,47 +727,34 @@ class UnionTypeVisitor extends AnalysisVisitor
             && $children[0] instanceof Node
             && $children[0]->kind == \ast\AST_ARRAY_ELEM
         ) {
-            /** @var UnionType[] */
+            /** @var array<int,UnionType> */
             $element_types = [];
 
-            // Check the first 5 (completely arbitrary) elements
-            // and assume the rest are the same type
-            foreach ($children as $i => $child) {
-                if (empty($child)) {
-                    // Check to see if we're out of elements (shouldn't happen)
-                    break;
-                }
-                if ($i >= 5) {
-                    break;
-                }
+            $unique_string_type = null;
+            $value_types = new UnionType();
+            $is_mixed = false;
 
+            foreach ($children as $child) {
                 $value = $child->children['value'];
                 if ($value instanceof Node) {
-                    $element_types[] = UnionTypeVisitor::unionTypeFromNode(
+                    $element_value_type = UnionTypeVisitor::unionTypeFromNode(
                         $this->code_base,
                         $this->context,
                         $value,
                         $this->should_catch_issue_exception
                     );
+                    if ($element_value_type->isEmpty()) {
+                        $value_types->addType(MixedType::instance(false));
+                    } else {
+                        $value_types->addUnionType($element_value_type);
+                    }
                 } else {
-                    $element_types[] = Type::fromObject(
-                        $value
-                    )->asUnionType();
+                    $value_types->addType(Type::fromObject($value));
                 }
             }
-
-            // Should be slightly faster than checking if array_unique is of length 1, doesn't require sorting.
-            // Not using isEqualTo() because the old behavior is that closures cast to the same string ('callable').
-            $common_type = \array_pop($element_types);
-            $common_type_repr = (string)$common_type;
-            foreach ($element_types as $type) {
-                if ((string)$type !== $common_type_repr) {
-                    // 2 or more unique types exist, give up.
-                    return ArrayType::instance(false)->asUnionType();
-                }
-            }
-            $key_type_enum = GenericArrayType::getKeyTypeOfArrayNode($this->code_base, $this->context, $node);
-            return $common_type->asNonEmptyGenericArrayTypes($key_type_enum);
+            // TODO: Normalize value_types, e.g. false+true=bool, array<int,T>+array<string,T>=array<mixed,T>
+            $key_type_enum = GenericArrayType::getKeyTypeOfArrayNode($this->code_base, $this->context, $node, $this->should_catch_issue_exception);
+            return $value_types->asNonEmptyGenericArrayTypes($key_type_enum);
         }
 
         // TODO: Also return types such as array<int, mixed>?
@@ -1034,8 +1021,8 @@ class UnionTypeVisitor extends AnalysisVisitor
         static $simple_xml_element_type;  // SimpleXMLElement doesn't `implement` ArrayAccess, but can be accessed that way. See #542
         static $null_type;
         static $string_type;
-        static $int_or_string_union_type;
         static $int_union_type;
+        static $int_or_string_union_type;
         if ($array_access_type === null) {
             // array offsets work on strings, unfortunately
             // Double check that any classes in the type don't
@@ -1046,8 +1033,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                 Type::fromNamespaceAndName('\\', 'SimpleXMLElement', false);
             $null_type = NullType::instance(false);
             $string_type = StringType::instance(false);
-            $int_or_string_union_type = UnionType::fromFullyQualifiedString('int|string');
             $int_union_type = IntType::instance(false)->asUnionType();
+            $int_or_string_union_type = new UnionType([IntType::instance(false), StringType::instance(false)], true);
         }
         $dim_type = self::unionTypeFromNode(
             $this->code_base,
@@ -1063,15 +1050,25 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // If we have generics, we're all set
         if (!$generic_types->isEmpty()) {
-            if (!$union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
-                if (!$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_or_string_union_type)) {
-                    $this->emitIssue(
-                        Issue::TypeMismatchDimFetch,
-                        $node->lineno ?? 0,
-                        $union_type,
-                        (string)$dim_type,
-                        $int_or_string_union_type
-                    );
+            if (!$dim_type->isEmpty()) {
+                if (!$union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
+                    if (Config::getValue('scalar_array_key_cast')) {
+                        $expected_key_type = $int_or_string_union_type;
+                    } else {
+                        $expected_key_type = GenericArrayType::unionTypeForKeyType(
+                            GenericArrayType::keyTypeFromUnionTypeKeys($union_type),
+                            GenericArrayType::CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE
+                        );
+                    }
+                    if (!$dim_type->canCastToUnionType($expected_key_type)) {
+                        throw new IssueException(
+                            Issue::fromType(Issue::TypeMismatchDimFetch)(
+                                $this->context->getFile(),
+                                $node->lineno ?? 0,
+                                [$union_type, (string)$dim_type, $expected_key_type]
+                            )
+                        );
+                    }
                 }
             }
             return $generic_types;
@@ -1128,6 +1125,62 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         return $element_types;
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_DIM`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     */
+    public function visitUnpack(Node $node) : UnionType
+    {
+        $union_type = self::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['expr'],
+            $this->should_catch_issue_exception
+        );
+
+        if ($union_type->isEmpty()) {
+            return $union_type;
+        }
+
+        // Figure out what the types of accessed array
+        // elements would be
+        // TODO: Account for Traversable once there are generics for Traversable
+        $generic_types =
+            $union_type->genericArrayElementTypes();
+
+        // If we have generics, we're all set
+        if ($generic_types->isEmpty()) {
+            if (!$union_type->asExpandedTypes($this->code_base)->hasIterable() && !$union_type->hasType(MixedType::instance(false))) {
+                throw new IssueException(
+                    Issue::fromType(Issue::TypeMismatchUnpackValue)(
+                        $this->context->getFile(),
+                        $node->lineno ?? 0,
+                        [(string)$union_type]
+                    )
+                );
+            }
+            return $generic_types;
+        }
+        // TODO: Once we have generic template types for Traversable and subclasses, rewrite this check to account for `new ArrayObject([2])`, etc.
+        if (GenericArrayType::KEY_STRING === GenericArrayType::keyTypeFromUnionTypeKeys($union_type)) {
+            throw new IssueException(
+                Issue::fromType(Issue::TypeMismatchUnpackKey)(
+                    $this->context->getFile(),
+                    $node->lineno ?? 0,
+                    [(string)$union_type, 'string']
+                )
+            );
+        }
+        return $generic_types;
     }
 
     /**
@@ -1806,7 +1859,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
         }
 
-        $class_name = $node->children['name'];
+        $class_name = (string)$node->children['name'];
 
         if ('parent' === $class_name) {
             if (!$context->isInClassScope()) {
@@ -1944,7 +1997,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param Context $context
      * @param string|Node $node the node to fetch CallableType instances for.
      * @param bool $log_error whether or not to log errors while searching
-     * @return FunctionInterface[]
+     * @return array<int,FunctionInterface>
      */
     public static function functionLikeListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $log_error) : array
     {
@@ -1973,7 +2026,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param CodeBase $code_base
      * @param Context $context
      * @param string|Node $node the node to fetch CallableType instances for.
-     * @return FullyQualifiedFunctionLikeName[]
+     * @return array<int,FullyQualifiedFunctionLikeName>
      * @suppress PhanUnreferencedPublicMethod may be used in the future.
      */
     public static function functionLikeFQSENListFromNodeAndContext(CodeBase $code_base, Context $context, $node) : array
@@ -1985,7 +2038,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param string|Node $class_or_expr
      * @param string $method_name
      *
-     * @return FullyQualifiedMethodName[]
+     * @return array<int,FullyQualifiedMethodName>
      * A list of CallableTypes associated with the given node
      */
     private function methodFQSENListFromObjectAndMethodName($class_or_expr, $method_name) : array
@@ -2135,7 +2188,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param string|Node $class_or_expr
      * @param string $method_name
      *
-     * @return FullyQualifiedMethodName[]
+     * @return array<int,FullyQualifiedMethodName>
      * A list of CallableTypes associated with the given node
      */
     private function methodFQSENListFromParts($class_or_expr, $method_name) : array
@@ -2234,7 +2287,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * @param string|Node $node
      *
-     * @return FullyQualifiedFunctionLikeName[]
+     * @return array<int,FullyQualifiedFunctionLikeName>
      * A list of CallableTypes associated with the given node
      *
      * @throws IssueException
@@ -2333,23 +2386,23 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         $key_enum_type = GenericArrayType::keyTypeFromUnionTypeKeys($union_type);
         switch ($key_enum_type) {
-        case GenericArrayType::KEY_INT:
-            return $int_type->asUnionType();
-        case GenericArrayType::KEY_STRING:
-            return $string_type->asUnionType();
-        default:
-            foreach ($union_type->getTypeSet() as $type) {
-                // The exact class Type is potentially invalid (includes objects) but not the subclass NativeType.
-                // The subclass IterableType of Native type is invalid, but ArrayType is a valid subclass of IterableType.
-                // And we just ignore scalars.
-                // And mixed could be a Traversable.
-                // So, don't infer anything if the union type contains any instances of the four classes.
-                // TODO: Check the expanded union type instead of anything with a class of exactly Type, searching for Traversable?
-                if (\in_array(\get_class($type), [Type::class, IterableType::class, TemplateType::class, MixedType::class])) {
-                    return null;
+            case GenericArrayType::KEY_INT:
+                return $int_type->asUnionType();
+            case GenericArrayType::KEY_STRING:
+                return $string_type->asUnionType();
+            default:
+                foreach ($union_type->getTypeSet() as $type) {
+                    // The exact class Type is potentially invalid (includes objects) but not the subclass NativeType.
+                    // The subclass IterableType of Native type is invalid, but ArrayType is a valid subclass of IterableType.
+                    // And we just ignore scalars.
+                    // And mixed could be a Traversable.
+                    // So, don't infer anything if the union type contains any instances of the four classes.
+                    // TODO: Check the expanded union type instead of anything with a class of exactly Type, searching for Traversable?
+                    if (\in_array(\get_class($type), [Type::class, IterableType::class, TemplateType::class, MixedType::class])) {
+                        return null;
+                    }
                 }
-            }
-            return new UnionType([$int_type, $string_type], true);
+                return new UnionType([$int_type, $string_type], true);
         }
     }
 }

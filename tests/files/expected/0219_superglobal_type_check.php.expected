@@ -7,8 +7,8 @@
 %s:20 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<string,string> but \strlen() takes string
 %s:22 PhanTypeMismatchArgumentInternal Argument 1 (var) is string but \count() takes \Countable|array
 %s:27 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<string,mixed> but \strlen() takes string
-%s:35 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
-%s:37 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array<string,int>|array<string,string>|string but \intdiv() takes int
+%s:34 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<string,array<int,int>>|array<string,array<int,string>>|array<string,int>|array<string,string> but \strlen() takes string
+%s:37 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array<string,array<int,int>>|array<string,array<int,string>>|array<string,int>|array<string,string> but \intdiv() takes int
 %s:40 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,string>|null but \strlen() takes string
 %s:49 PhanUndeclaredVariable Variable $argc is undeclared
 %s:50 PhanUndeclaredVariable Variable $argv is undeclared

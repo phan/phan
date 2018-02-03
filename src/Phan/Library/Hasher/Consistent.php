@@ -14,9 +14,9 @@ class Consistent implements Hasher
     const MAX = 0x40000000;  // i.e. (1 << 30)
     /** @var int */
     protected $groupCount;
-    /** @var int[] - Sorted list of hash values, for binary search. */
+    /** @var array<int,int> - Sorted list of hash values, for binary search. */
     protected $hashRingIds;
-    /** @var int[] - Groups corresponding to hash values in hashRingIds */
+    /** @var array<int,int> - Groups corresponding to hash values in hashRingIds */
     protected $hashRingGroups;
 
     public function __construct(int $groupCount)
@@ -77,7 +77,7 @@ class Consistent implements Hasher
     }
 
     /**
-     * @return int[]
+     * @return array<int,int>
      */
     public static function getHashesForGroup(int $group) : array
     {
