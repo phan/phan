@@ -1218,19 +1218,43 @@ class ParseVisitor extends ScopeVisitor
 
     // common no-ops
     /** @return Context */
-    public function visitArrayElem(Node $node) { return $this->context; }
+    public function visitArrayElem(Node $node)
+    {
+        return $this->context;
+    }
     /** @return Context */
-    public function visitVar(Node $node) { return $this->context; }
+    public function visitVar(Node $node)
+    {
+        return $this->context;
+    }
     /** @return Context */
-    public function visitName(Node $node) { return $this->context; }
+    public function visitName(Node $node)
+    {
+        return $this->context;
+    }
     /** @return Context */
-    public function visitArgList(Node $node) { return $this->context; }
+    public function visitArgList(Node $node)
+    {
+        return $this->context;
+    }
     /** @return Context */
-    public function visitStmtList(Node $node) { return $this->context; }
+    public function visitStmtList(Node $node)
+    {
+        return $this->context;
+    }
     /** @return Context */
-    public function visitProp(Node $node) { return $this->context; }
+    public function visitProp(Node $node)
+    {
+        return $this->context;
+    }
     /** @return Context */
-    public function visitArray(Node $node) { return $this->context; }
+    public function visitArray(Node $node)
+    {
+        return $this->context;
+    }
     /** @return Context */
-    public function visitBinaryOp(Node $node) { return $this->context; }
+    public function visitBinaryOp(Node $node)
+    {
+        return $this->context;
+    }
 }

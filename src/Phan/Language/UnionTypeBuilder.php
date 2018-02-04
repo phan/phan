@@ -2,19 +2,22 @@
 
 namespace Phan\Language;
 
-final class UnionTypeBuilder {
+final class UnionTypeBuilder
+{
     /** @var array<int,Type> */
     private $type_set;
 
     /** @param array<int,Type> $type_set (must be unique) */
-    public function __construct(array $type_set = []) {
+    public function __construct(array $type_set = [])
+    {
         $this->type_set = $type_set;
     }
 
     /**
      * @return void
      */
-    public function addType(Type $type) {
+    public function addType(Type $type)
+    {
         if (\in_array($type, $this->type_set, true)) {
             return;
         }
@@ -24,7 +27,8 @@ final class UnionTypeBuilder {
     /**
      * @return void
      */
-    public function addUnionType(UnionType $union_type) {
+    public function addUnionType(UnionType $union_type)
+    {
         $old_type_set = $this->type_set;
         foreach ($union_type->getTypeSet() as $type) {
             if (!\in_array($type, $old_type_set, true)) {
@@ -36,7 +40,8 @@ final class UnionTypeBuilder {
     /**
      * @return void
      */
-    public function removeType(Type $type) {
+    public function removeType(Type $type)
+    {
         $i = \array_search($type, $this->type_set, true);
         if ($i !== false) {
             // equivalent to unset($new_type_set[$i]) but fills in the gap in array keys.
@@ -48,18 +53,21 @@ final class UnionTypeBuilder {
         }
     }
 
-    public function isEmpty() : bool {
+    public function isEmpty() : bool
+    {
         return \count($this->type_set) === 0;
     }
 
     /**
      * @return array<int,Type>
      */
-    public function getTypeSet() : array {
+    public function getTypeSet() : array
+    {
         return $this->type_set;
     }
 
-    public function getUnionType() : UnionType {
+    public function getUnionType() : UnionType
+    {
         return UnionType::of($this->type_set);
     }
 }

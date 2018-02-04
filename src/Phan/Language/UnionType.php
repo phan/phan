@@ -104,7 +104,8 @@ class UnionType implements \Serializable
     /**
      * @return EmptyUnionType (Real return type omitted for performance)
      */
-    public static function empty() {
+    public static function empty()
+    {
         return self::$empty_instance;
     }
 
@@ -112,7 +113,8 @@ class UnionType implements \Serializable
      * @return void
      * @internal
      */
-    public static function init() {
+    public static function init()
+    {
         if (is_null(self::$empty_instance)) {
             self::$empty_instance = EmptyUnionType::instance();
         }
@@ -2099,7 +2101,8 @@ class UnionType implements \Serializable
         $builder->addType($bool_type);
     }
 
-    public static function createBuilderFromTypeList(array $type_list) : UnionTypeBuilder {
+    public static function createBuilderFromTypeList(array $type_list) : UnionTypeBuilder
+    {
         return new UnionTypeBuilder(\count($type_list) <= 1 ? $type_list : self::getUniqueTypes($type_list));
     }
 }

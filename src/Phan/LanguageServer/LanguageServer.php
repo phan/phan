@@ -551,7 +551,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         });
     }
 
-    private function makeTextDocumentSyncOptions() : TextDocumentSyncOptions {
+    private function makeTextDocumentSyncOptions() : TextDocumentSyncOptions
+    {
         $textDocumentSyncOptions = new TextDocumentSyncOptions();
         $textDocumentSyncOptions->openClose = true;
         $textDocumentSyncOptions->change = Config::getValue('language_server_analyze_only_on_save') ? TextDocumentSyncKind::NONE : TextDocumentSyncKind::FULL;
