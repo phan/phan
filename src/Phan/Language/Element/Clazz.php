@@ -63,6 +63,11 @@ class Clazz extends AddressableElement
     private $trait_adaptations_map = [];
 
     /**
+     * @var bool - hydrate() will check for this to avoid prematurely hydrating while looking for values of class constants.
+     */
+    private $did_finish_parsing = true;
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -1319,6 +1324,12 @@ class Clazz extends AddressableElement
             $name
         );
 
+        if ($code_base->hasMethodWithFQSEN($method_fqsen)) {
+            return true;
+        }
+        if (!$this->hydrateIndicatingFirstTime($code_base)) {
+            return false;
+        }
         return $code_base->hasMethodWithFQSEN($method_fqsen);
     }
 
@@ -2410,5 +2421,50 @@ class Clazz extends AddressableElement
             $code_base,
             $this
         );
+    }
+
+    /**
+     * @return void
+     */
+    public function setDidFinishParsing(bool $did_finish_parsing) {
+        $this->did_finish_parsing = $did_finish_parsing;
+    }
+
+    /**
+     * This method must be called before analysis
+     * begins.
+     *
+     * @return void
+     * @override
+     */
+    public function hydrate(CodeBase $code_base)
+    {
+        if (!$this->did_finish_parsing) {
+            return;
+        }
+        if ($this->is_hydrated) {  // Same as isFirstExecution(), inlined due to being called frequently.
+            return;
+        }
+        $this->is_hydrated = true;
+
+        $this->hydrateOnce($code_base);
+    }
+
+    /**
+     * This method must be called before analysis begins.
+     * This is identical to hydrate(), but returns true only if this is the first time the element was hydrated.
+     */
+    public function hydrateIndicatingFirstTime(CodeBase $code_base) : bool
+    {
+        if (!$this->did_finish_parsing) {
+            return false;
+        }
+        if ($this->is_hydrated) {  // Same as isFirstExecution(), inlined due to being called frequently.
+            return false;
+        }
+        $this->is_hydrated = true;
+
+        $this->hydrateOnce($code_base);
+        return true;
     }
 }

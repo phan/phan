@@ -59,6 +59,10 @@ Plugins
   To modify the type of elements(properties, method return types, parameters, variables, etc),
   `Element->setUnionType(plugin_modifier_function(Element->getUnionType()))` should be used.
 
+Language server:
++ Add a CLI option `--language-server-analyze-only-on-save` to prevent the client from sending change notifications. (#1325)
+  (Only notify the language server when the user saves a document)
+  This significantly reduces CPU usage, but clients won't get notifications about issues immediately.
 
 Bug fixes
 + Warn when attempting to call an instance method on an expression with type string (#1314).

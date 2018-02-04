@@ -1,0 +1,2 @@
+%s:5 PhanUndeclaredConstant Reference to undeclared constant \HydrateExample::INVALID
+%s:12 PhanUndeclaredConstant Reference to undeclared constant \HydrateExampleStep::INVALID

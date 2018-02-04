@@ -231,7 +231,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     }
 
     /** @var bool */
-    private $is_hydrated = false;
+    protected $is_hydrated = false;
 
     /**
      * This method must be called before analysis
@@ -240,7 +240,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @return void
      * @override
      */
-    final public function hydrate(CodeBase $code_base)
+    public function hydrate(CodeBase $code_base)
     {
         if ($this->is_hydrated) {  // Same as isFirstExecution(), inlined due to being called frequently.
             return;
@@ -254,7 +254,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * This method must be called before analysis begins.
      * This is identical to hydrate(), but returns true only if this is the first time the element was hydrated.
      */
-    final public function hydrateIndicatingFirstTime(CodeBase $code_base) : bool
+    public function hydrateIndicatingFirstTime(CodeBase $code_base) : bool
     {
         if ($this->is_hydrated) {  // Same as isFirstExecution(), inlined due to being called frequently.
             return false;

@@ -632,6 +632,9 @@ class Config
         // ['tcp' => string (address client is listening on)
         'language_server_config' => false,
 
+        // Valid values: false, true. Should only be set via CLI (--language-server-analyze-only-on-save)
+        'language_server_analyze_only_on_save' => false,
+
         // Valid values: null, 'info'. Used when developing or debugging a language server client of Phan.
         'language_server_debug_level' => null,
 
