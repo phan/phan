@@ -75,13 +75,13 @@ final class ArrayShapeType extends ArrayType
     /** @override */
     public function hasArrayShapeTypeInstances() : bool
     {
-        return false;
+        return true;
     }
 
     /** @return array<int,type> */
     private function computeGenericArrayTypeInstances() : array
     {
-        $union_type_builder = new uniontypebuilder();
+        $union_type_builder = new UnionTypeBuilder();
         foreach ($this->field_types as $key => $field_union_type) {
             foreach ($field_union_type->getTypeSet() as $type) {
                 $union_type_builder->addType(GenericArrayType::fromElementType($type, $this->is_nullable, \is_string($key) ? GenericArrayType::KEY_STRING : GenericArrayType::KEY_INT));
@@ -266,9 +266,52 @@ final class ArrayShapeType extends ArrayType
         }
         if (\count($this->field_types) === 0) {
             // there are 0 fields, so we know nothing about the field types (and there's no way to indicate an empty array yet)
-            return $this->as_generic_array_type_instances = [arraytype::instance($this->is_nullable)];
+            return $this->as_generic_array_type_instances = [ArrayType::instance($this->is_nullable)];
         }
 
-        return $this->as_generic_array_type_instances = $this->computegenericarraytypeinstances();
+        return $this->as_generic_array_type_instances = $this->computeGenericArrayTypeInstances();
+    }
+
+    public function asGenericArrayType(int $key_type) : Type
+    {
+        return GenericArrayType::fromElementType($this, false, $key_type);
+    }
+
+    /**
+     * Computes the union of two or more array shape types.
+     *
+     * E.g. array{0: string} + array{0:int,1:int} === array{0:int|string,1:int}
+     * @param array<int,ArrayShapeType> $array_shape_types
+     */
+    public static function union(array $array_shape_types) : ArrayShapeType
+    {
+        \assert(\count($array_shape_types) > 0);
+        if (\count($array_shape_types) === 1) {
+            return $array_shape_types[0];
+        }
+        $field_types = $array_shape_types[0]->field_types;
+        unset($array_shape_types[0]);
+
+        foreach ($array_shape_types as $type) {
+            foreach ($type->field_types as $key => $union_type) {
+                $old_union_type = $field_types[$key] ?? null;
+                if (!isset($old_union_type)) {
+                    $field_types[$key] = $union_type;
+                    continue;
+                }
+                $field_types[$key] = $old_union_type->withUnionType($union_type);
+            }
+        }
+        return self::fromFieldTypes($field_types, false);
+    }
+
+    /**
+     * Computes the union of two array shape types.
+     *
+     * E.g. array{0: string} + array{0:stdClass,1:int} === array{0:string,1:int}
+     */
+    public static function combineWithPrecedence(ArrayShapeType $left, ArrayShapeType $right) : ArrayShapeType
+    {
+        return self::fromFieldTypes($left->field_types + $right->field_types, false);
     }
 }

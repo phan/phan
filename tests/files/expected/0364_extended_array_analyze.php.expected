@@ -9,7 +9,7 @@
 %s:17 PhanTypeMismatchArgument Argument 1 (x) is false|float but \p364() takes \stdClass defined at %s:45
 %s:18 PhanTypeMismatchArgument Argument 1 (x) is array<string,int> but \p364() takes \stdClass defined at %s:45
 %s:19 PhanTypeMismatchArgument Argument 1 (x) is array<string,\stdClass> but \p364() takes \stdClass defined at %s:45
-%s:20 PhanTypeMismatchArgument Argument 1 (x) is array<string,array<int,int>> but \p364() takes \stdClass defined at %s:45
+%s:20 PhanTypeMismatchArgument Argument 1 (x) is array<string,array{0:int}> but \p364() takes \stdClass defined at %s:45
 %s:21 PhanTypeMismatchArgument Argument 1 (x) is array<int,string> but \p364() takes \stdClass defined at %s:45
 %s:22 PhanTypeMismatchArgument Argument 1 (x) is int[] but \p364() takes \stdClass defined at %s:45
 %s:23 PhanTypeMismatchArgument Argument 1 (x) is array<int,float> but \p364() takes \stdClass defined at %s:45
@@ -21,7 +21,7 @@
 %s:29 PhanTypeMismatchArgument Argument 1 (x) is array<int,float> but \p364() takes \stdClass defined at %s:45
 %s:30 PhanTypeMismatchArgument Argument 1 (x) is array<int,int>|array<int,string> but \p364() takes \stdClass defined at %s:45
 %s:31 PhanTypeMismatchArgument Argument 1 (x) is array<int,int>|array<int,string> but \p364() takes \stdClass defined at %s:45
-%s:32 PhanTypeMismatchArgument Argument 1 (x) is array<int,int>|array<int,string> but \p364() takes \stdClass defined at %s:45
+%s:32 PhanTypeMismatchArgument Argument 1 (x) is array<int,string>|array{0:int,1:int} but \p364() takes \stdClass defined at %s:45
 %s:33 PhanTypeMismatchArgument Argument 1 (x) is array<int,int>|array<int,string> but \p364() takes \stdClass defined at %s:45
 %s:34 PhanTypeMismatchArgument Argument 1 (x) is array<int,int>|array<int,string> but \p364() takes \stdClass defined at %s:45
 %s:35 PhanTypeMismatchArgument Argument 1 (x) is array<int,\stdClass> but \p364() takes \stdClass defined at %s:45
@@ -30,5 +30,6 @@
 %s:38 PhanTypeMismatchArgument Argument 1 (x) is array<int,\stdClass> but \p364() takes \stdClass defined at %s:45
 %s:39 PhanTypeMismatchArgument Argument 1 (x) is array<int,string> but \p364() takes \stdClass defined at %s:45
 %s:40 PhanTypeMismatchArgument Argument 1 (x) is array<int,string> but \p364() takes \stdClass defined at %s:45
+%s:41 PhanParamTypeMismatch Argument 3 is \Closure but \array_uintersect_assoc() takes array
 %s:41 PhanTypeMismatchArgument Argument 1 (x) is array<int,string> but \p364() takes \stdClass defined at %s:45
 %s:42 PhanTypeMismatchArgument Argument 1 (x) is array<int,string> but \p364() takes \stdClass defined at %s:45

@@ -459,4 +459,9 @@ final class GenericArrayType extends ArrayType
         }
         return $results;
     }
+
+    public function asGenericArrayType(int $key_type) : Type
+    {
+        return GenericArrayType::fromElementType($this, false, $key_type);
+    }
 }

@@ -700,6 +700,7 @@ class ArgumentType
         $arglist = $node->children['args'];
         $argcount = \count($arglist->children);
 
+        // TODO: We can replace many of these with Plugin\Internal\ArrayReturnTypePlugin
         switch ($method->getName()) {
             case 'join':
             case 'implode':
@@ -826,7 +827,7 @@ class ArgumentType
                         $arglist->children[$i],
                         $context,
                         $code_base,
-                        CallableType::instance(false)->asUnionType(),
+                        ArrayType::instance(false)->asUnionType(),
                         function (UnionType $node_type) use ($context, $method, $i) {
                         // "arg#".($i+1)." is %s but {$method->getFQSEN()}() takes array"
                             return Issue::fromType(Issue::ParamTypeMismatch)(

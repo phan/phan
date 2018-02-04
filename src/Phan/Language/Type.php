@@ -1386,18 +1386,11 @@ class Type
      * this type. For instance, 'int' will produce 'int[]'.
      *
      * As a special case to reduce false positives, 'array' (with no known types) will produce 'array'
+     *
+     * Overridden in subclasses
      */
     public function asGenericArrayType(int $key_type) : Type
     {
-        if (!($this instanceof GenericArrayType)
-            && (
-                $this->name === 'array'
-                || $this->name === 'mixed'
-            )
-        ) {
-            return ArrayType::instance(false);
-        }
-
         return GenericArrayType::fromElementType($this, false, $key_type);
     }
 
