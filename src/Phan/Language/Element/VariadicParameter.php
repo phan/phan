@@ -4,7 +4,8 @@ namespace Phan\Language\Element;
 use Phan\Language\UnionType;
 use Phan\Language\Type\GenericArrayType;
 
-class VariadicParameter extends Parameter {
+class VariadicParameter extends Parameter
+{
     // __construct inherited from Parameter
 
     /**

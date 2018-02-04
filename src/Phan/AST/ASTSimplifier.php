@@ -196,15 +196,15 @@ class ASTSimplifier
             return true;
         }
         switch ($node->kind) {
-        case \ast\AST_CONST:
-        case \ast\AST_MAGIC_CONST:
-        case \ast\AST_NAME:
-            return true;
-        case \ast\AST_BINARY_OP:
-        case \ast\AST_CLASS_CONST:
-            return self::isExpressionWithoutSideEffects($node->children['class']);
-        default:
-            return false;
+            case \ast\AST_CONST:
+            case \ast\AST_MAGIC_CONST:
+            case \ast\AST_NAME:
+                return true;
+            case \ast\AST_BINARY_OP:
+            case \ast\AST_CLASS_CONST:
+                return self::isExpressionWithoutSideEffects($node->children['class']);
+            default:
+                return false;
         }
     }
 

@@ -65,7 +65,6 @@ class NonBoolBranchVisitor extends PluginAwareAnalysisVisitor
         }
         return $this->context;
     }
-
 }
 
 return new NonBoolBranchPlugin;

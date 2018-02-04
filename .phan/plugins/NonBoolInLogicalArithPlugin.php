@@ -61,7 +61,7 @@ class NonBoolInLogicalArithVisitor extends PluginAwareAnalysisVisitor
             $right_type = UnionType::fromNode($this->context, $this->code_base, $right_node);
 
             // if left or right type is NOT boolean, emit issue
-            if (!$left_type->isExclusivelyBoolTypes())  {
+            if (!$left_type->isExclusivelyBoolTypes()) {
                 if ($left_node instanceof Node) {
                     $this->context = $this->context->withLineNumberStart($left_node->lineno);
                 }
