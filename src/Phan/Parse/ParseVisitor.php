@@ -123,125 +123,129 @@ class ParseVisitor extends ScopeVisitor
             $node->flags ?? 0,
             $class_fqsen
         );
+        $class->setDidFinishParsing(false);
+        try {
+            // Set the scope of the class's context to be the
+            // internal scope of the class
+            $class_context = $class_context->withScope(
+                $class->getInternalScope()
+            );
 
-        // Set the scope of the class's context to be the
-        // internal scope of the class
-        $class_context = $class_context->withScope(
-            $class->getInternalScope()
-        );
+            // Get a comment on the class declaration
+            $comment = Comment::fromStringInContext(
+                $node->children['docComment'] ?? '',
+                $this->code_base,
+                $this->context,
+                $node->lineno ?? 0,
+                Comment::ON_CLASS
+            );
 
-        // Get a comment on the class declaration
-        $comment = Comment::fromStringInContext(
-            $node->children['docComment'] ?? '',
-            $this->code_base,
-            $this->context,
-            $node->lineno ?? 0,
-            Comment::ON_CLASS
-        );
+            // Add any template types parameterizing a generic class
+            foreach ($comment->getTemplateTypeList() as $template_type) {
+                $class->getInternalScope()->addTemplateType($template_type);
+            }
 
-        // Add any template types parameterizing a generic class
-        foreach ($comment->getTemplateTypeList() as $template_type) {
-            $class->getInternalScope()->addTemplateType($template_type);
-        }
+            $class->setIsDeprecated($comment->isDeprecated());
+            $class->setIsNSInternal($comment->isNSInternal());
 
-        $class->setIsDeprecated($comment->isDeprecated());
-        $class->setIsNSInternal($comment->isNSInternal());
+            $class->setSuppressIssueList(
+                $comment->getSuppressIssueList()
+            );
 
-        $class->setSuppressIssueList(
-            $comment->getSuppressIssueList()
-        );
+            // Add the class to the code base as a globally
+            // accessible object
+            $this->code_base->addClass($class);
 
-        // Add the class to the code base as a globally
-        // accessible object
-        $this->code_base->addClass($class);
+            // Depends on code_base for checking existence of __get and __set.
+            // TODO: Add a check in analyzeClasses phase that magic @property declarations
+            // are limited to classes with either __get or __set declared (or interface/abstract
+            $class->setMagicPropertyMap(
+                $comment->getMagicPropertyMap(),
+                $this->code_base
+            );
 
-        // Depends on code_base for checking existence of __get and __set.
-        // TODO: Add a check in analyzeClasses phase that magic @property declarations
-        // are limited to classes with either __get or __set declared (or interface/abstract
-        $class->setMagicPropertyMap(
-            $comment->getMagicPropertyMap(),
-            $this->code_base
-        );
+            // Depends on code_base for checking existence of __call or __callStatic.
+            // TODO: Add a check in analyzeClasses phase that magic @method declarations
+            // are limited to classes with either __get or __set declared (or interface/abstract)
+            $class->setMagicMethodMap(
+                $comment->getMagicMethodMap(),
+                $this->code_base
+            );
 
-        // Depends on code_base for checking existence of __call or __callStatic.
-        // TODO: Add a check in analyzeClasses phase that magic @method declarations
-        // are limited to classes with either __get or __set declared (or interface/abstract)
-        $class->setMagicMethodMap(
-            $comment->getMagicMethodMap(),
-            $this->code_base
-        );
+            // usually used together with magic @property annotations
+            $class->setForbidUndeclaredMagicProperties($comment->getForbidUndeclaredMagicProperties());
 
-        // usually used together with magic @property annotations
-        $class->setForbidUndeclaredMagicProperties($comment->getForbidUndeclaredMagicProperties());
+            // usually used together with magic @method annotations
+            $class->setForbidUndeclaredMagicMethods($comment->getForbidUndeclaredMagicMethods());
 
-        // usually used together with magic @method annotations
-        $class->setForbidUndeclaredMagicMethods($comment->getForbidUndeclaredMagicMethods());
+            // Look to see if we have a parent class
+            $extends_node = $node->children['extends'] ?? null;
+            if ($extends_node instanceof Node) {
+                $parent_class_name =
+                    (string)$extends_node->children['name'];
 
-        // Look to see if we have a parent class
-        $extends_node = $node->children['extends'] ?? null;
-        if ($extends_node instanceof Node) {
-            $parent_class_name =
-                (string)$extends_node->children['name'];
-
-            // Check to see if the name isn't fully qualified
-            if ($extends_node->flags & \ast\flags\NAME_NOT_FQ) {
-                if ($this->context->hasNamespaceMapFor(
-                    \ast\flags\USE_NORMAL,
-                    $parent_class_name
-                )) {
-                    // Get a fully-qualified name
-                    $parent_class_name =
-                        (string)($this->context->getNamespaceMapFor(
-                            \ast\flags\USE_NORMAL,
-                            $parent_class_name
-                        ));
-                } else {
+                // Check to see if the name isn't fully qualified
+                if ($extends_node->flags & \ast\flags\NAME_NOT_FQ) {
+                    if ($this->context->hasNamespaceMapFor(
+                        \ast\flags\USE_NORMAL,
+                        $parent_class_name
+                    )) {
+                        // Get a fully-qualified name
+                        $parent_class_name =
+                            (string)($this->context->getNamespaceMapFor(
+                                \ast\flags\USE_NORMAL,
+                                $parent_class_name
+                            ));
+                    } else {
+                        $parent_class_name =
+                            $this->context->getNamespace() . '\\' . $parent_class_name;
+                    }
+                } elseif ($extends_node->flags & \ast\flags\NAME_RELATIVE) {
                     $parent_class_name =
                         $this->context->getNamespace() . '\\' . $parent_class_name;
                 }
-            } elseif ($extends_node->flags & \ast\flags\NAME_RELATIVE) {
-                $parent_class_name =
-                    $this->context->getNamespace() . '\\' . $parent_class_name;
-            }
-            // $extends_node->flags is 0 when it is fully qualified?
+                // $extends_node->flags is 0 when it is fully qualified?
 
-            // The name is fully qualified. Make sure it looks
-            // like it is
-            if (0 !== \strpos($parent_class_name, '\\')) {
-                $parent_class_name = '\\' . $parent_class_name;
-            }
+                // The name is fully qualified. Make sure it looks
+                // like it is
+                if (0 !== \strpos($parent_class_name, '\\')) {
+                    $parent_class_name = '\\' . $parent_class_name;
+                }
 
-            $parent_fqsen = FullyQualifiedClassName::fromStringInContext(
-                $parent_class_name,
-                $this->context
-            );
-
-            // Set the parent for the class
-            $class->setParentType($parent_fqsen->asType());
-        }
-
-        // If the class explicitly sets its overriding extension type,
-        // set that on the class
-        $inherited_type_option = $comment->getInheritedTypeOption();
-        if ($inherited_type_option->isDefined()) {
-            $class->setParentType($inherited_type_option->get());
-        }
-
-        // Add any implemented interfaces
-        if (!empty($node->children['implements'])) {
-            $interface_list = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node->children['implements']
-            ))->getQualifiedNameList();
-
-            foreach ($interface_list as $name) {
-                $class->addInterfaceClassFQSEN(
-                    FullyQualifiedClassName::fromFullyQualifiedString(
-                        $name
-                    )
+                $parent_fqsen = FullyQualifiedClassName::fromStringInContext(
+                    $parent_class_name,
+                    $this->context
                 );
+
+                // Set the parent for the class
+                $class->setParentType($parent_fqsen->asType());
             }
+
+            // If the class explicitly sets its overriding extension type,
+            // set that on the class
+            $inherited_type_option = $comment->getInheritedTypeOption();
+            if ($inherited_type_option->isDefined()) {
+                $class->setParentType($inherited_type_option->get());
+            }
+
+            // Add any implemented interfaces
+            if (!empty($node->children['implements'])) {
+                $interface_list = (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $node->children['implements']
+                ))->getQualifiedNameList();
+
+                foreach ($interface_list as $name) {
+                    $class->addInterfaceClassFQSEN(
+                        FullyQualifiedClassName::fromFullyQualifiedString(
+                            $name
+                        )
+                    );
+                }
+            }
+        } finally {
+            $class->setDidFinishParsing(true);
         }
 
         return $class_context;

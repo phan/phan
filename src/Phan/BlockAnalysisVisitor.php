@@ -10,8 +10,10 @@ use Phan\Analysis\ContextMergeVisitor;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\PreOrderAnalysisVisitor;
 use Phan\Language\Context;
+use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
+use Phan\Language\Scope\PropertyScope;
 use Phan\Plugin\ConfigPluginSet;
 use ast\Node;
 
@@ -1208,13 +1210,15 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     {
         $prop_name = (string)$node->children['name'];
 
-        $class = $this->context->getClassInScope($this->code_base);
+        $context = $this->context;
+        $class = $context->getClassInScope($this->code_base);
         $is_static = ($this->parent_node->flags & \ast\flags\MODIFIER_STATIC) !== 0;
-        $property = $class->getPropertyByNameInContext($this->code_base, $prop_name, $this->context, $is_static);
+        $property = $class->getPropertyByNameInContext($this->code_base, $prop_name, $context, $is_static);
 
-        $context = $this->context->withScope(
-            $property->getInternalScope()
-        )->withLineNumberStart(
+        $context = $this->context->withScope(new PropertyScope(
+            $context->getScope(),
+            FullyQualifiedPropertyName::make($class->getFQSEN(), $prop_name)
+        ))->withLineNumberStart(
             $node->lineno ?? 0
         );
 
