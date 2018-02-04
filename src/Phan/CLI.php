@@ -363,18 +363,16 @@ class CLI
         Phan::setPrinter($printer);
         Phan::setIssueCollector($collector);
 
-        $pruneargv = array();
+        $pruneargv = [];
         foreach ($opts ?? [] as $opt => $value) {
             foreach ($argv as $key => $chunk) {
                 $regex = '/^'. (isset($opt[1]) ? '--' : '-') . $opt . '/';
 
-                if (($chunk == $value
-                    || (\is_array($value) && in_array($chunk, $value))
-                    )
+                if (in_array($chunk, is_array($value) ? $value : [$value])
                     && $argv[$key-1][0] == '-'
                     || preg_match($regex, $chunk)
                 ) {
-                    array_push($pruneargv, $key);
+                    $pruneargv[] = $key;
                 }
             }
         }

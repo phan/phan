@@ -47,6 +47,10 @@ New Features(Analysis)
 + Improve analysis of try/catch/finally blocks (#1408)
   Analyze catch blocks with the inferences about the try block.
   Analyze a finally block with the inferences from the try and catch blocks.
++ Account for side effects of `&&` and `||` operators in expressions, outside of `if`/`assert` statements. (#1415)
+  E.g. `$isValid = ($x instanceof MyClass && $x->isValid())` will now consistently check that isValid() exists on MyClass.
++ Improve analysis of cases such as `if (!($x instanceof MyClass) || $x->method())`
+  or `if (!(cond($x) && othercond($x)))`
 
 Plugins
 + Fix bugs in NonBoolBranchPlugin and NonBoolInLogicalArithPlugin (#1413, #1410)

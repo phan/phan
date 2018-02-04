@@ -236,6 +236,20 @@ class ContextMergeVisitor extends KindVisitorImplementation
     }
 
     /**
+     * A generic helper method to merge multiple Contexts. (e.g. for use outside of BlockAnalysisVisitor)
+     * If you wish to include the base context, add it to $child_context_list in the constructor of ContextMergeVisitor.
+     */
+    public function combineChildContextList() : Context {
+        $child_context_list = $this->child_context_list;
+        \assert(\count($child_context_list) >= 2);
+        $scope_list = \array_map(function (Context $context) {
+            return $context->getScope();
+        }, $child_context_list);
+        return $this->combineScopeList($scope_list);
+
+    }
+
+    /**
      * @param array<int,Scope> $scope_list
      */
     public function combineScopeList(array $scope_list) : Context

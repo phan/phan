@@ -441,7 +441,8 @@ class Request
             $code_base->flushDependenciesForFile($file_path);
 
             // If the file is gone, no need to continue
-            if (($real = realpath($file_path)) === false || !file_exists($real)) {
+            $real = realpath($file_path);  // TODO: Improve nested analysis of expressions such as if (($real = expr()) === false || !cond($real)
+            if ($real === false || !file_exists($real)) {
                 Daemon::debugf("file $file_path does not exist");
                 continue;
             }
@@ -489,7 +490,8 @@ class Request
             $code_base->flushDependenciesForFile($file_path);
 
             // If the file is gone, no need to continue
-            if (($real = realpath($file_path)) === false || !file_exists($real)) {
+            $real = realpath($file_path);
+            if ($real === false || !file_exists($real)) {
                 Daemon::debugf("file $file_path no longer exists on disk, but we tried to replace it?");
                 continue;
             }
