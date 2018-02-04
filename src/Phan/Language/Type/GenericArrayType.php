@@ -424,7 +424,7 @@ final class GenericArrayType extends ArrayType
                 } elseif ($key_node !== null) {
                     if (\is_string($key_node)) {
                         $key_type_enum |= GenericArrayType::KEY_STRING;
-                    } elseif (\is_int($key_node) || \is_float($key_node)) {
+                    } elseif (\is_scalar($key_node)) {
                         $key_type_enum |= GenericArrayType::KEY_INT;
                     }
                 } else {

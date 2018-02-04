@@ -106,8 +106,8 @@ class UnionTypeTest extends BaseTest
     public function testArrayUniform()
     {
         $this->assertUnionTypeStringEqual(
-            '[1, 2, 3]',
-            'array{0:int,1:int,2:int}'
+            '[false => "string"]',
+            'array{0:string}'
         );
     }
 
