@@ -1,3 +1,3 @@
 %s:6 PhanTypeMismatchArgument Argument 1 (p) is array but \g() takes int defined at %s:5
-%s:7 PhanTypeMismatchArgument Argument 1 (p) is int[] but \g() takes int defined at %s:5
+%s:7 PhanTypeMismatchArgument Argument 1 (p) is array<int,int> but \g() takes int defined at %s:5
 %s:12 PhanTypeInvalidLeftOperand Invalid operator: right operand is array and left is not

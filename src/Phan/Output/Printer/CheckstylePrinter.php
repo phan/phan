@@ -11,7 +11,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
     /** @var OutputInterface */
     private $output;
 
-    /** @var string[][] */
+    /** @var array<string,array<int,array>> */
     private $files = [];
 
     /** @param IssueInstance $instance */
@@ -52,9 +52,9 @@ final class CheckstylePrinter implements BufferedPrinterInterface
 
                 // Write each element of the error as an attribute
                 // of the error
-                 $error->appendChild(
-                     new \DOMAttr('line', htmlspecialchars((string)$error_map['line'], ENT_NOQUOTES, 'UTF-8'))
-                 );
+                $error->appendChild(
+                    new \DOMAttr('line', htmlspecialchars((string)$error_map['line'], ENT_NOQUOTES, 'UTF-8'))
+                );
 
                 // Map phan severity to Jenkins/Checkstyle severity levels
                 switch ($error_map['severity']) {

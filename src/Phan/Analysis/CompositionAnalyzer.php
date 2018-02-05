@@ -37,11 +37,11 @@ class CompositionAnalyzer
 
         // For each property, find out every inherited class that defines it
         // and check to see if the types line up.
-        foreach ($class->getPropertyList($code_base) as $property) {
+        foreach ($class->getPropertyMap($code_base) as $property) {
             try {
                 $property_union_type = $property->getUnionType();
             } catch (IssueException $exception) {
-                $property_union_type = new UnionType;
+                $property_union_type = UnionType::empty();
             }
 
             // Check for that property on each inherited

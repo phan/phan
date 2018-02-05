@@ -19,6 +19,7 @@ use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\StringType;
@@ -203,7 +204,7 @@ class AssignmentVisitor extends AnalysisVisitor
         $element_type =
             $this->right_type->genericArrayElementTypes();
 
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             // Some times folks like to pass a null to
             // a list to throw the element away. I'm not
             // here to judge.
@@ -279,10 +280,6 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     public function visitDim(Node $node) : Context
     {
-        // Make the right type a generic (i.e. int -> int[])
-        $right_type =
-            $this->right_type->asGenericArrayTypes();
-
         if ($node->children['expr']->kind == \ast\AST_VAR) {
             $variable_name = (new ContextNode(
                 $this->code_base,
@@ -310,6 +307,19 @@ class AssignmentVisitor extends AnalysisVisitor
         } else {
             $dim_type = null;
         }
+
+        if ($dim_type !== null) {
+            $key_type_enum = GenericArrayType::keyTypeFromUnionTypeValues($dim_type);
+        } elseif ($dim_node !== null) {
+            $key_type_enum = GenericArrayType::KEY_MIXED;
+        } else {
+            $key_type_enum = GenericArrayType::KEY_INT;
+        }
+
+        // Make the right type a generic (i.e. int -> int[])
+        $right_type =
+            $this->right_type->asGenericArrayTypes($key_type_enum);
+
 
         // Recurse into whatever we're []'ing
         $context = (new AssignmentVisitor(
@@ -525,7 +535,7 @@ class AssignmentVisitor extends AnalysisVisitor
     {
         $property_types = $property->getUnionType();
         if ($property_types->isEmpty()) {
-            $property_types->addUnionType($this->right_type);
+            $property->setUnionType($this->right_type);
             return;
         }
         if ($this->is_dim_assignment) {
@@ -535,12 +545,11 @@ class AssignmentVisitor extends AnalysisVisitor
         }
         // Don't add MixedType to a non-empty property - It makes inferences on that property useless.
         if ($new_types->hasType(MixedType::instance(false))) {
-            $new_types = clone($new_types);
-            $new_types->removeType(MixedType::instance(false));
+            $new_types = $new_types->withoutType(MixedType::instance(false));
         }
         // TODO: Add an option to check individual types, not just the whole union type?
         //       If that is implemented, verify that generic arrays will properly cast to regular arrays (public $x = [];)
-        $property_types->addUnionType($new_types);
+        $property->setUnionType($property_types->withUnionType($new_types));
     }
 
     /**
@@ -625,17 +634,17 @@ class AssignmentVisitor extends AnalysisVisitor
                 // its union type rather than replace it.
                 if ($this->is_dim_assignment) {
                     $right_type = $this->typeCheckDimAssignment($property->getUnionType(), $node);
-                    $property->getUnionType()->addUnionType(
+                    $property->setUnionType($property->getUnionType()->withUnionType(
                         $right_type
-                    );
+                    ));
                     return $this->context;
                 }
             }
 
             // After having checked it, add this type to it
-            $property->getUnionType()->addUnionType(
+            $property->setUnionType($property->getUnionType()->withUnionType(
                 $this->right_type
-            );
+            ));
 
             return $this->context;
         }
@@ -699,9 +708,9 @@ class AssignmentVisitor extends AnalysisVisitor
             // its union type rather than replace it.
             if ($this->is_dim_assignment) {
                 $right_type = $this->typeCheckDimAssignment($variable->getUnionType(), $node);
-                $variable->getUnionType()->addUnionType(
+                $variable->setUnionType($variable->getUnionType()->withUnionType(
                     $right_type
-                );
+                ));
             } else {
                 // If the variable isn't a pass-by-reference parameter
                 // we clone it so as to not disturb its previous types
@@ -741,9 +750,9 @@ class AssignmentVisitor extends AnalysisVisitor
         );
 
         // Set that type on the variable
-        $variable->getUnionType()->addUnionType(
+        $variable->setUnionType($variable->getUnionType()->withUnionType(
             $this->right_type
-        );
+        ));
 
         // Note that we're not creating a new scope, just
         // adding variables to the existing scope

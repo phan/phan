@@ -11,6 +11,7 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionFactory;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
+use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Property;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
@@ -143,7 +144,7 @@ class CodeBase
     private $class_fqsen_class_map_map;
 
     /**
-     * @var Set[]
+     * @var array<string,Set>
      * A map from a string method name to a Set of
      * Methods
      */
@@ -243,7 +244,7 @@ class CodeBase
     }
 
     /**
-     * @return string[] - The list of files which are successfully parsed.
+     * @return array<int,string> - The list of files which are successfully parsed.
      * This changes whenever the file list is reloaded from disk.
      * This also includes files which don't declare classes or functions or globals,
      * because those files use classes/functions/constants.
@@ -337,9 +338,9 @@ class CodeBase
     }
 
     /**
-     * @param string[] $new_file_list
-     * @param string[] $file_mapping_contents maps relative path to absolute paths
-     * @return string[] - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
+     * @param array<int,string> $new_file_list
+     * @param array<string,string> $file_mapping_contents maps relative path to absolute paths
+     * @return array<int,string> - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
      */
     public function updateFileList(array $new_file_list, array $file_mapping_contents = [])
     {
@@ -755,7 +756,6 @@ class CodeBase
      */
     public function addMethod(Method $method)
     {
-
         // Add the method to the map
         $this->getClassMapByFQSEN(
             $method->getFQSEN()
@@ -787,7 +787,9 @@ class CodeBase
     public function hasMethodWithFQSEN(
         FullyQualifiedMethodName $fqsen
     ) : bool {
-        return $this->getClassMapByFQSEN($fqsen)->hasMethodWithName(
+        return $this->getClassMapByFullyQualifiedClassName(
+            $fqsen->getFullyQualifiedClassName()
+        )->hasMethodWithName(
             $fqsen->getNameWithAlternateId()
         );
     }
@@ -802,7 +804,9 @@ class CodeBase
     public function getMethodByFQSEN(
         FullyQualifiedMethodName $fqsen
     ) : Method {
-        return $this->getClassMapByFQSEN($fqsen)->getMethodByName(
+        return $this->getClassMapByFullyQualifiedClassName(
+            $fqsen->getFullyQualifiedClassName()
+        )->getMethodByName(
             $fqsen->getNameWithAlternateId()
         );
     }
@@ -859,7 +863,7 @@ class CodeBase
     }
 
     /**
-     * @return string[][] -
+     * @return array<string,array<string,string>>
      * A human readable encoding of $this->func_and_method_set [string $function_or_method_name => [int|string $pos => string $spec]]
      * Excludes internal functions and methods.
      *
@@ -964,8 +968,8 @@ class CodeBase
      */
     public function addClassConstant(ClassConstant $class_constant)
     {
-        return $this->getClassMapByFQSEN(
-            $class_constant->getFQSEN()
+        return $this->getClassMapByFullyQualifiedClassName(
+            $class_constant->getClassFQSEN()
         )->addClassConstant($class_constant);
     }
 
@@ -976,8 +980,8 @@ class CodeBase
     public function hasClassConstantWithFQSEN(
         FullyQualifiedClassConstantName $fqsen
     ) : bool {
-        return $this->getClassMapByFQSEN(
-            $fqsen
+        return $this->getClassMapByFullyQualifiedClassName(
+            $fqsen->getFullyQualifiedClassName()
         )->hasClassConstantWithName($fqsen->getNameWithAlternateId());
     }
 
@@ -991,8 +995,8 @@ class CodeBase
     public function getClassConstantByFQSEN(
         FullyQualifiedClassConstantName $fqsen
     ) : ClassConstant {
-        return $this->getClassMapByFQSEN(
-            $fqsen
+        return $this->getClassMapByFullyQualifiedClassName(
+            $fqsen->getFullyQualifiedClassName()
         )->getClassConstantByName($fqsen->getNameWithAlternateId());
     }
 
@@ -1066,8 +1070,8 @@ class CodeBase
      */
     public function addProperty(Property $property)
     {
-        return $this->getClassMapByFQSEN(
-            $property->getFQSEN()
+        return $this->getClassMapByFullyQualifiedClassName(
+            $property->getClassFQSEN()
         )->addProperty($property);
     }
 
@@ -1078,8 +1082,8 @@ class CodeBase
     public function hasPropertyWithFQSEN(
         FullyQualifiedPropertyName $fqsen
     ) : bool {
-        return $this->getClassMapByFQSEN(
-            $fqsen
+        return $this->getClassMapByFullyQualifiedClassName(
+            $fqsen->getFullyQualifiedClassName()
         )->hasPropertyWithName($fqsen->getNameWithAlternateId());
     }
 
@@ -1093,8 +1097,8 @@ class CodeBase
     public function getPropertyByFQSEN(
         FullyQualifiedPropertyName $fqsen
     ) : Property {
-        return $this->getClassMapByFQSEN(
-            $fqsen
+        return $this->getClassMapByFullyQualifiedClassName(
+            $fqsen->getFullyQualifiedClassName()
         )->getPropertyByName($fqsen->getNameWithAlternateId());
     }
 
@@ -1137,11 +1141,12 @@ class CodeBase
     private function getClassMapByFullyQualifiedClassName(
         FullyQualifiedClassName $fqsen
     ) : ClassMap {
-        if (!$this->class_fqsen_class_map_map->offsetExists($fqsen)) {
-            $this->class_fqsen_class_map_map[$fqsen] = new ClassMap;
+        $class_fqsen_class_map_map = $this->class_fqsen_class_map_map;
+        if ($class_fqsen_class_map_map->offsetExists($fqsen)) {
+            return $class_fqsen_class_map_map->offsetGet($fqsen);
         }
-
-        return $this->class_fqsen_class_map_map[$fqsen];
+        $class_fqsen_class_map_map->offsetSet($fqsen, new ClassMap);
+        return $class_fqsen_class_map_map->offsetGet($fqsen);
     }
 
     /**
@@ -1176,7 +1181,7 @@ class CodeBase
             }
             // If we already created the alternates, do nothing.
             // TODO: This assumes we call hasFunctionWithFQSEN before adding.
-            if (isset($this->fqsen_func_map[$canonical_fqsen])) {
+            if ($this->fqsen_func_map->offsetExists($canonical_fqsen)) {
                 return false;
             }
         }
@@ -1197,7 +1202,7 @@ class CodeBase
         // Don't need to track this any more
         unset($this->internal_function_fqsen_set[$canonical_fqsen]);
 
-        if (!empty($function_signature_map[$name])) {
+        if (isset($function_signature_map[$name])) {
             $signature = $function_signature_map[$name];
 
             // Add each method returned for the signature
@@ -1206,6 +1211,12 @@ class CodeBase
                 $canonical_fqsen,
                 $signature
             ) as $function) {
+                if ($found) {
+                    $reflection_function = new \ReflectionFunction($name);
+                    $function->setIsDeprecated($reflection_function->isDeprecated());
+                    $function->setRealReturnType(UnionType::fromReflectionType($reflection_function->getReturnType()));
+                    $function->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_function->getParameters()));
+                }
                 $this->addFunction($function);
             }
 
@@ -1279,7 +1290,7 @@ class CodeBase
     }
 
     /**
-     * @return string[] every constant name except user-defined constants.
+     * @return array<int,string> every constant name except user-defined constants.
      */
     public static function getPHPInternalConstantNameList() : array
     {

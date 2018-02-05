@@ -17,5 +17,8 @@ abstract class BaseTest extends TestCase
             'canonical_object_map',
             'internal_fn_cache',
         ],
+        'Phan\Language\UnionType' => [
+            'empty_instance',
+        ],
     ];
 }

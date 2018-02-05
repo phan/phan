@@ -2,6 +2,7 @@
 namespace Phan;
 
 use Phan\Daemon\Request;
+use Phan\Language\Type;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Logger as LanguageServerLogger;
 use Phan\Library\FileCache;
@@ -76,7 +77,7 @@ class Phan implements IgnoredFilesFilterInterface
      * it to be initialized before any classes or files are
      * loaded.
      *
-     * @param \Closure string[] $file_path_lister
+     * @param \Closure $file_path_lister
      * Returns a list of files to scan (string[])
      *
      * @return bool
@@ -138,7 +139,8 @@ class Phan implements IgnoredFilesFilterInterface
             $code_base->flushDependenciesForFile($file_path);
 
             // If the file is gone, no need to continue
-            if (($real = realpath($file_path)) === false || !file_exists($real)) {
+            $real = realpath($file_path);
+            if ($real === false || !file_exists($real)) {
                 continue;
             }
             try {
@@ -172,6 +174,7 @@ class Phan implements IgnoredFilesFilterInterface
         $temporary_file_mapping = [];
 
         $request = null;
+        Type::clearAllMemoizations();
         if ($is_undoable_request) {
             \assert($code_base->isUndoTrackingEnabled());
             if ($is_daemon_request) {
@@ -401,7 +404,7 @@ class Phan implements IgnoredFilesFilterInterface
      * A set of files to expand with the set of dependencies
      * on those files.
      *
-     * @return string[]
+     * @return array<int,string>
      * Get an expanded list of files and dependencies for
      * the given file list
      *

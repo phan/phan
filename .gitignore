@@ -4,6 +4,7 @@ composer.phar
 /build
 samples
 all_output.*
+*.swo
 *.swp
 /tags
 .phan/config.local.php

@@ -60,7 +60,7 @@ interface TypedElementInterface
     public function setIsDeprecated(bool $is_deprecated);
 
     /**
-     * @param string[] $suppress_issue_list
+     * @param array<int,string> $suppress_issue_list
      * Set the set of issue names to suppress
      *
      * @return void
@@ -68,7 +68,8 @@ interface TypedElementInterface
     public function setSuppressIssueList(array $suppress_issue_list);
 
     /**
-     * @return int[]
+     * @return array<string,int>
+     * Returns a map from issue name to count of suppressions
      */
     public function getSuppressIssueList() : array;
 

@@ -24,21 +24,19 @@ abstract class NativeType extends Type
         if ($is_nullable) {
             static $nullable_instance = null;
 
-            if (empty($nullable_instance)) {
+            if ($nullable_instance === null) {
                 $nullable_instance = static::make('\\', static::NAME, [], true, Type::FROM_NODE);
             }
-            \assert($nullable_instance instanceof static);
 
             return $nullable_instance;
         }
 
         static $instance = null;
 
-        if (empty($instance)) {
+        if ($instance === null) {
             $instance = static::make('\\', static::NAME, [], false, Type::FROM_NODE);
         }
 
-        \assert($instance instanceof static);
         return $instance;
     }
 
@@ -53,6 +51,11 @@ abstract class NativeType extends Type
     }
 
     public function isArrayAccess() : bool
+    {
+        return false;
+    }
+
+    public function isTraversable() : bool
     {
         return false;
     }
@@ -100,7 +103,7 @@ abstract class NativeType extends Type
     }
 
     /**
-     * @return bool[][]
+     * @return array<string,array<string,bool>>
      */
     private static function initializeTypeCastingMatrix() : array
     {

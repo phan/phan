@@ -162,14 +162,6 @@ class Analysis
      */
     public static function parseNodeInContext(CodeBase $code_base, Context $context, Node $node) : Context
     {
-        return self::parseNodeInContextInner($code_base, $context, $node);
-    }
-
-    /**
-     * @see self::parseNodeInContext
-     */
-    private static function parseNodeInContextInner(CodeBase $code_base, Context $context, Node $node) : Context
-    {
         // Save a reference to the outer context
         $outer_context = $context;
 
@@ -199,7 +191,7 @@ class Analysis
 
         // Recurse into each child node
         $child_context = $context;
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
                 continue;
@@ -207,7 +199,7 @@ class Analysis
 
             // Step into each child node and get an
             // updated context for the node
-            $child_context = self::parseNodeInContextInner($code_base, $child_context, $child_node);
+            $child_context = self::parseNodeInContext($code_base, $child_context, $child_node);
 
             \assert(!empty($child_context), 'Context cannot be null');
         }

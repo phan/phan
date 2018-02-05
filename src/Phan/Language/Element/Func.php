@@ -148,7 +148,7 @@ class Func extends AddressableElement implements FunctionInterface
         $func = new Func(
             $context,
             (string)$node->children['name'],
-            new UnionType(),
+            UnionType::empty(),
             $node->flags ?? 0,
             $fqsen
         );
@@ -178,7 +178,7 @@ class Func extends AddressableElement implements FunctionInterface
         }
 
 
-        // @var Parameter[]
+        // @var array<int,Parameter>
         // The list of parameters specified on the
         // function
         $parameter_list = Parameter::listFromNode(
@@ -244,7 +244,7 @@ class Func extends AddressableElement implements FunctionInterface
             );
             $func->setRealReturnType($union_type);
 
-            $func->getUnionType()->addUnionType($union_type);
+            $func->setUnionType($func->getUnionType()->withUnionType($union_type));
         }
 
         if ($comment->hasReturnUnionType()) {
@@ -256,7 +256,7 @@ class Func extends AddressableElement implements FunctionInterface
                 "Function referencing self in $context"
             );
 
-            $func->getUnionType()->addUnionType($union_type);
+            $func->setUnionType($func->getUnionType()->withUnionType($union_type));
             $func->setPHPDocReturnType($union_type);
         }
 
@@ -330,7 +330,7 @@ class Func extends AddressableElement implements FunctionInterface
         return $string;
     }
 
-    /** @return string[] [string $namespace, string $text] */
+    /** @return array{0:string,1:string} [string $namespace, string $text] */
     public function toStubInfo() : array
     {
         $stub = 'function ';

@@ -3,6 +3,7 @@ namespace Phan;
 
 use ast\Node;
 use ast\flags;
+use Phan\Analysis\BlockExitStatusChecker;
 
 /**
  * Debug utilities
@@ -135,7 +136,7 @@ class Debug
 
         $string .= "\n";
 
-        foreach ($node->children ?? [] as $name => $child_node) {
+        foreach ($node->children as $name => $child_node) {
             $string .= self::nodeToString(
                 $child_node,
                 $name,
@@ -242,8 +243,11 @@ class Debug
                 }
             }
 
-            if (\ast\kind_uses_flags($ast->kind) || $ast->flags != 0) {
-                $result .= "\n    flags: " . self::formatFlags($ast->kind, $ast->flags);
+            if (\ast\kind_uses_flags($ast->kind)) {
+                $flags_without_phan_additions = $ast->flags & ~BlockExitStatusChecker::STATUS_BITMASK;
+                if ($flags_without_phan_additions != 0) {
+                    $result .= "\n    flags: " . self::formatFlags($ast->kind, $ast->flags);
+                }
             }
             foreach ($ast->children as $i => $child) {
                 $result .= "\n    $i: " . str_replace("\n", "\n    ", self::astDump($child, $options));
@@ -260,7 +264,7 @@ class Debug
 
     /**
      * Source: https://github.com/nikic/php-ast/blob/master/util.php
-     * @return string[][][]
+     * @return array<int,array<int,array<int,string>>>
      * Return value is [string[][] $exclusive, string[][] $combinable]. Maps node id to flag id to name.
      */
     private static function getFlagInfo() : array

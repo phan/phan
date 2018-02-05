@@ -4,6 +4,7 @@ namespace Phan\Analysis;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
+use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\IssueException;
@@ -22,10 +23,12 @@ use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
+use Phan\Language\UnionTypeBuilder;
 use ast\Node;
 
 // TODO: Make $x != null remove FalseType and NullType from $x
 // TODO: Make $x > 0, $x < 0, $x >= 50, etc.  remove FalseType and NullType from $x
+// TODO: if (a || b || c || d) might get really slow, due to creating both ConditionVisitor and NegatedConditionVisitor
 class NegatedConditionVisitor extends KindVisitorImplementation
 {
     use ConditionVisitorUtil;
@@ -109,6 +112,8 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         $flags = ($node->flags ?? 0);
         if ($flags === \ast\flags\BINARY_BOOL_OR) {
             return $this->analyzeShortCircuitingOr($node->children['left'], $node->children['right']);
+        } elseif ($flags === \ast\flags\BINARY_BOOL_AND) {
+            return $this->analyzeShortCircuitingAnd($node->children['left'], $node->children['right']);
         } elseif ($flags === \ast\flags\BINARY_IS_IDENTICAL) {
             $this->checkVariablesDefined($node);
             return $this->analyzeIsIdentical($node->children['left'], $node->children['right']);
@@ -165,6 +170,51 @@ class NegatedConditionVisitor extends KindVisitorImplementation
     public function visitOr(Node $node) : Context
     {
         return $this->analyzeShortCircuitingOr($node->children['left'], $node->children['right']);
+    }
+
+    /**
+     * Helper method
+     * @param Node|mixed $left
+     * a Node or non-node to parse (possibly an AST literal)
+     *
+     * @param Node|mixed $right
+     * a Node or non-node to parse (possibly an AST literal)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    private function analyzeShortCircuitingAnd($left, $right) : Context
+    {
+        // Analyze expressions such as if (!(is_string($x) || is_int($x)))
+        // which would be equivalent to if (!is_string($x)) { if (!is_int($x)) { ... }}
+
+        // Aside: If left/right is not a node, left/right is a literal such as a number/string, and is either always truthy or always falsey.
+        // Inside of this conditional may be dead or redundant code.
+
+        // Aside: If left/right is not a node, left/right is a literal such as a number/string, and is either always truthy or always falsey.
+        // Inside of this conditional may be dead or redundant code.
+        if (!($left instanceof Node)) {
+            if (!$left) {
+                return $this->context;
+            }
+            return $this($right);
+        }
+        if (!($right instanceof Node)) {
+            if (!$right) {
+                return $this->context;
+            }
+            return $this($left);
+        }
+        $code_base = $this->code_base;
+        $context = $this->context;
+        $left_false_context = (new NegatedConditionVisitor($code_base, $context))($left);
+        $left_true_context = (new ConditionVisitor($code_base, $context))($left);
+        // We analyze the right hand side of `cond($x) && cond2($x)` as if `cond($x)` was true.
+        $right_false_context = (new NegatedConditionVisitor($code_base, $left_true_context))($right);
+        // When the NegatedConditionVisitor is false, at least one of the left or right contexts must be false.
+        // (NegatedConditionVisitor returns a context for when the input Node's value was falsey)
+        return (new ContextMergeVisitor($code_base, $context, [$left_false_context, $right_false_context]))->combineChildContextList();
     }
 
     /**
@@ -246,7 +296,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
 
         $context = $this->context;
         if (self::isArgumentListWithVarAsFirstArgument($args)) {
-            $function_name = strtolower(ltrim($raw_function_name, '\\'));
+            $function_name = \strtolower(\ltrim($raw_function_name, '\\'));
             if (\count($args) !== 1) {
                 if (\strcasecmp($function_name, 'is_a') === 0) {
                     return $this->analyzeNegationOfVariableIsA($args, $context);
@@ -286,7 +336,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
     }
 
     /**
-     * @return \Closure[] (ConditionVisitor $cv, Node $var_node, Context $context) -> Context
+     * @return array<string,\Closure> (ConditionVisitor $cv, Node $var_node, Context $context) -> Context
      */
     private static function createNegationCallbackMap() : array
     {
@@ -306,7 +356,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                         });
                     },
                     function (UnionType $union_type) use ($base_class_name) : UnionType {
-                        $new_type = new UnionType();
+                        $new_type_builder = new UnionTypeBuilder();
                         $has_null = false;
                         $has_other_nullable_types = false;
                         // Add types which are not instances of $base_class_name
@@ -317,13 +367,13 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                             }
                             assert($type instanceof Type);
                             $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
-                            $new_type->addType($type);
+                            $new_type_builder->addType($type);
                         }
                         // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
                         if ($has_null && !$has_other_nullable_types) {
-                            $new_type->addType(NullType::instance(false));
+                            $new_type_builder->addType(NullType::instance(false));
                         }
-                        return $new_type;
+                        return $new_type_builder->getUnionType();
                     },
                     false
                 );
@@ -342,7 +392,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                     });
                 },
                 function (UnionType $union_type) : UnionType {
-                    $new_type = new UnionType();
+                    $new_type_builder = new UnionTypeBuilder();
                     $has_null = false;
                     $has_other_nullable_types = false;
                     // Add types which are not scalars
@@ -353,13 +403,13 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                         }
                         assert($type instanceof Type);
                         $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
-                        $new_type->addType($type);
+                        $new_type_builder->addType($type);
                     }
                     // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
                     if ($has_null && !$has_other_nullable_types) {
-                        $new_type->addType(NullType::instance(false));
+                        $new_type_builder->addType(NullType::instance(false));
                     }
-                    return $new_type;
+                    return $new_type_builder->getUnionType();
                 },
                 false
             );
@@ -376,7 +426,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                     });
                 },
                 function (UnionType $union_type) : UnionType {
-                    $new_type = new UnionType();
+                    $new_type_builder = new UnionTypeBuilder();
                     $has_null = false;
                     $has_other_nullable_types = false;
                     // Add types which are not callable
@@ -387,13 +437,13 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                         }
                         assert($type instanceof Type);
                         $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
-                        $new_type->addType($type);
+                        $new_type_builder->addType($type);
                     }
                     // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
                     if ($has_null && !$has_other_nullable_types) {
-                        $new_type->addType(NullType::instance(false));
+                        $new_type_builder->addType(NullType::instance(false));
                     }
-                    return $new_type;
+                    return $new_type_builder->getUnionType();
                 },
                 false
             );
@@ -469,14 +519,14 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                     $context->setScope($context->getScope()->withVariable(new Variable(
                         $context->withLineNumberStart($var_node->lineno ?? 0),
                         $var_name,
-                        new UnionType(),
+                        UnionType::empty(),
                         $var_node->flags ?? 0
                     )));
                 }
                 $context->setScope($context->getScope()->withVariable(new Variable(
                     $context->withLineNumberStart($var_node->lineno ?? 0),
                     $var_name,
-                    new UnionType(),
+                    UnionType::empty(),
                     $var_node->flags ?? 0
                 )));
                 return $this->removeFalseyFromVariable($var_node, $context, true);
@@ -515,5 +565,37 @@ class NegatedConditionVisitor extends KindVisitorImplementation
             // TODO: emit no-op warning
             return $this->context;
         }
+    }
+
+    /**
+     * Useful for analyzing `if ($x = foo() && $x->method())`
+     *
+     * TODO: Convert $x to empty/false/null types
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitAssign(Node $node) : Context
+    {
+        return (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssign($node);
+    }
+
+    /**
+     * Useful for analyzing `if ($x =& foo() && $x->method())`
+     * TODO: Convert $x to empty/false/null types
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitAssignRef(Node $node) : Context
+    {
+        return (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssignRef($node);
     }
 }

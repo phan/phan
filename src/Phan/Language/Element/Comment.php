@@ -76,26 +76,26 @@ class Comment
     private $comment_flags = 0;
 
     /**
-     * @var CommentParameter[]
+     * @var array<int,CommentParameter>
      * A list of CommentParameters from var declarations
      */
     private $variable_list = [];
 
     /**
-     * @var CommentParameter[]
+     * @var array<int,CommentParameter>
      * A list of CommentParameters from param declarations
      */
     private $parameter_list = [];
 
     /**
-     * @var CommentParameter[]
+     * @var array<string,CommentParameter>
      * A map from variable name to CommentParameters from
      * param declarations
      */
     private $parameter_map = [];
 
     /**
-     * @var string[]
+     * @var array<int,string>
      * A list of template types parameterizing a generic class
      */
     private $template_type_list = [];
@@ -114,19 +114,19 @@ class Comment
     private $return_union_type = null;
 
     /**
-     * @var string[]
+     * @var array<int,string>
      * A list of issue types to be suppressed
      */
     private $suppress_issue_list = [];
 
     /**
-     * @var CommentParameter[]
+     * @var array<string,CommentParameter>
      * A mapping from magic property parameters to types.
      */
     private $magic_property_map = [];
 
     /**
-     * @var CommentMethod[]
+     * @var array<string,CommentMethod>
      * A mapping from magic methods to parsed parameters, name, and return types.
      */
     private $magic_method_map = [];
@@ -149,11 +149,11 @@ class Comment
      * - Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES
      * - Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS
      *
-     * @param CommentParameter[] $variable_list
+     * @param array<int,CommentParameter> $variable_list
      *
-     * @param CommentParameter[] $parameter_list
+     * @param array<int,CommentParameter> $parameter_list
      *
-     * @param string[] $template_type_list
+     * @param array<int,string> $template_type_list
      * A list of template types parameterizing a generic class
      *
      * @param Option<Type>|None $inherited_type (Note: some issues with templates and narrowing signature types to phpdoc type, added None as a workaround)
@@ -161,12 +161,12 @@ class Comment
      *
      * @param UnionType $return_union_type
      *
-     * @param string[] $suppress_issue_list
+     * @param array<int,string> $suppress_issue_list
      * A list of tags for error type to be suppressed
      *
-     * @param CommentParameter[] $magic_property_list
+     * @param array<int,CommentParameter> $magic_property_list
      *
-     * @param CommentMethod[] $magic_method_list
+     * @param array<int,CommentMethod> $magic_method_list
      *
      * @param Option<Type>|None $closure_scope
      * For closures: Allows us to document the class of the object
@@ -279,7 +279,7 @@ class Comment
                 [],
                 [],
                 new None,
-                new UnionType(),
+                UnionType::empty(),
                 [],
                 [],
                 [],
@@ -291,7 +291,7 @@ class Comment
         $parameter_list = [];
         $template_type_list = [];
         $inherited_type = new None;
-        $return_union_type = new UnionType();
+        $return_union_type = UnionType::empty();
         $suppress_issue_list = [];
         $magic_property_list = [];
         $magic_method_list = [];
@@ -302,7 +302,7 @@ class Comment
         $comment_lines_count = \count($lines);
 
         /**
-         * @param int[] $validTypes
+         * @param array<int,int> $validTypes
          * @return void
          */
         $check_compatible = function (string $paramName, array $validTypes, int $i, string $line) use ($code_base, $context, $comment_type, $lineno, $comment_lines_count) {
@@ -321,42 +321,43 @@ class Comment
             if (\strpos($line, '@') === false) {
                 continue;
             }
+            // https://secure.php.net/manual/en/regexp.reference.internal-options.php
+            // (?i) makes this case sensitive, (?-1) makes it case insensitive
+            if (\preg_match('/@((?i)param|var|return|returns|inherits|suppress|phan-[a-z0-9_-]*(?-i)|method|property|template|PhanClosureScope)\b/', $line, $matches)) {
+                $type = \strtolower($matches[1]);
 
-            if (\stripos($line, '@param') !== false) {
-                if (\preg_match('/@param\b/i', $line)) {
+                if ($type === 'param') {
                     $check_compatible('@param', Comment::FUNCTION_LIKE, $i, $line);
                     $parameter_list[] =
                         self::parameterFromCommentLine($code_base, $context, $line, false, $lineno, $i, $comment_lines_count);
-                }
-            } elseif (\stripos($line, '@var') !== false && \preg_match('/@var\b/i', $line)) {
-                $check_compatible('@var', Comment::HAS_VAR_ANNOTATION, $i, $line);
-                $comment_var = self::parameterFromCommentLine($code_base, $context, $line, true, $lineno, $i, $comment_lines_count);
-                if ($comment_var->getName() !== '' || !\in_array($comment_type, self::FUNCTION_LIKE)) {
-                    $variable_list[] = $comment_var;
-                }
-            } elseif (\strpos($line, '@template') !== false) {
-                // Make sure support for generic types is enabled
-                if (Config::getValue('generic_types_enabled')) {
-                    $check_compatible('@template', [Comment::ON_CLASS], $i, $line);
-                    if (($template_type =
-                        self::templateTypeFromCommentLine($line))
-                    ) {
-                        $template_type_list[] = $template_type;
+                } elseif ($type === 'var') {
+                    $check_compatible('@var', Comment::HAS_VAR_ANNOTATION, $i, $line);
+                    $comment_var = self::parameterFromCommentLine($code_base, $context, $line, true, $lineno, $i, $comment_lines_count);
+                    if ($comment_var->getName() !== '' || !\in_array($comment_type, self::FUNCTION_LIKE)) {
+                        $variable_list[] = $comment_var;
                     }
-                }
-            } elseif (\stripos($line, '@inherits') !== false) {
-                $check_compatible('@inherits', [Comment::ON_CLASS], $i, $line);
-                // Make sure support for generic types is enabled
-                if (Config::getValue('generic_types_enabled')) {
-                    $inherited_type =
-                        self::inheritsFromCommentLine($context, $line);
-                }
-            } elseif (\stripos($line, '@return') !== false) {
-                if (preg_match('/@return\b/i', $line)) {
+                } elseif ($type === 'template') {
+                    // Make sure support for generic types is enabled
+                    if (Config::getValue('generic_types_enabled')) {
+                        $check_compatible('@template', [Comment::ON_CLASS], $i, $line);
+                        if (($template_type =
+                            self::templateTypeFromCommentLine($line))
+                        ) {
+                            $template_type_list[] = $template_type;
+                        }
+                    }
+                } elseif ($type === 'inherits') {
+                    $check_compatible('@inherits', [Comment::ON_CLASS], $i, $line);
+                    // Make sure support for generic types is enabled
+                    if (Config::getValue('generic_types_enabled')) {
+                        $inherited_type =
+                            self::inheritsFromCommentLine($context, $line);
+                    }
+                } elseif ($type === 'return') {
                     $check_compatible('@return', Comment::FUNCTION_LIKE, $i, $line);
                     $return_union_type =
                         self::returnTypeFromCommentLine($context, $line);
-                } elseif (\stripos($line, '@returns') !== false) {
+                } elseif ($type === 'returns') {
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -365,55 +366,56 @@ class Comment
                         '@returns',
                         '@return'
                     );
-                }
-            } elseif (\stripos($line, '@suppress') !== false) {
-                $suppress_issue_list[] =
-                    self::suppressIssueFromCommentLine($line);
-            } elseif (\strpos($line, '@property') !== false) {
-                $check_compatible('@property', [Comment::ON_CLASS], $i, $line);
-                // Make sure support for magic properties is enabled.
-                if (Config::getValue('read_magic_property_annotations')) {
-                    $magic_property = self::magicPropertyFromCommentLine($code_base, $context, $line, $lineno);
-                    if ($magic_property !== null) {
-                        $magic_property_list[] = $magic_property;
+                } elseif ($type === 'suppress') {
+                    $suppress_issue_type = self::suppressIssueFromCommentLine($line);
+                    if ($suppress_issue_type !== '') {
+                        $suppress_issue_list[] = $suppress_issue_type;
                     }
-                }
-            } elseif (\strpos($line, '@method') !== false) {
-                // Make sure support for magic methods is enabled.
-                if (Config::getValue('read_magic_method_annotations')) {
-                    $check_compatible('@method', [Comment::ON_CLASS], $i, $line);
-                    $magic_method = self::magicMethodFromCommentLine($code_base, $context, $line, $lineno, $i, $comment_lines_count);
-                    if ($magic_method !== null) {
-                        $magic_method_list[] = $magic_method;
+                } elseif ($type === 'property') {
+                    $check_compatible('@property', [Comment::ON_CLASS], $i, $line);
+                    // Make sure support for magic properties is enabled.
+                    if (Config::getValue('read_magic_property_annotations')) {
+                        $magic_property = self::magicPropertyFromCommentLine($code_base, $context, $line, $lineno);
+                        if ($magic_property !== null) {
+                            $magic_property_list[] = $magic_property;
+                        }
                     }
-                }
-            } elseif (\strpos($line, '@PhanClosureScope') !== false) {
-                // TODO: different type for closures
-                $check_compatible('@PhanClosureScope', Comment::FUNCTION_LIKE, $i, $line);
-                $closure_scope = self::getPhanClosureScopeFromCommentLine($context, $line);
-            } elseif (\stripos($line, '@phan-') !== false) {
-                if (\stripos($line, '@phan-forbid-undeclared-magic-properties') !== false) {
-                    $check_compatible('@phan-forbid-undeclared-magic-properties', [Comment::ON_CLASS], $i, $line);
-                    $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
-                } elseif (\stripos($line, '@phan-forbid-undeclared-magic-methods') !== false) {
-                    $check_compatible('@phan-forbid-undeclared-magic-methods', [Comment::ON_CLASS], $i, $line);
-                    $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS;
-                } elseif (\stripos($line, '@phan-closure-scope') !== false && \preg_match('/@phan-closure-scope\b/', $line)) {
-                    $check_compatible('@phan-closure-scope', Comment::FUNCTION_LIKE, $i, $line);
+                } elseif ($type === 'method') {
+                    // Make sure support for magic methods is enabled.
+                    if (Config::getValue('read_magic_method_annotations')) {
+                        $check_compatible('@method', [Comment::ON_CLASS], $i, $line);
+                        $magic_method = self::magicMethodFromCommentLine($code_base, $context, $line, $lineno, $i, $comment_lines_count);
+                        if ($magic_method !== null) {
+                            $magic_method_list[] = $magic_method;
+                        }
+                    }
+                } elseif ($type === 'phanclosurescope' || $type === 'phan-closure_scope') {
+                    // TODO: different type for closures
+                    $check_compatible('@PhanClosureScope', Comment::FUNCTION_LIKE, $i, $line);
                     $closure_scope = self::getPhanClosureScopeFromCommentLine($context, $line);
-                } elseif (\stripos($line, '@phan-override') !== false) {
-                    $check_compatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i, $line);
-                    $comment_flags |= Flags::IS_OVERRIDE_INTENDED;
-                } elseif (\stripos($line, '@phan-') !== false) {
-                    \preg_match('/@phan-\S*/', $line, $match);
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::MisspelledAnnotation,
-                        self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line),
-                        $match[0],
-                        '@phan-forbid-undeclared-magic-methods @phan-forbid-undeclared-magic-properties @phan-closure-scope @phan-override'
-                    );
+                } elseif (\strpos($type, 'phan-') === 0) {
+                    if ($type === 'phan-forbid-undeclared-magic-properties') {
+                        $check_compatible('@phan-forbid-undeclared-magic-properties', [Comment::ON_CLASS], $i, $line);
+                        $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
+                    } elseif ($type === 'phan-forbid-undeclared-magic-methods') {
+                        $check_compatible('@phan-forbid-undeclared-magic-methods', [Comment::ON_CLASS], $i, $line);
+                        $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS;
+                    } elseif ($type === 'phan-closure-scope') {
+                        $check_compatible('@phan-closure-scope', Comment::FUNCTION_LIKE, $i, $line);
+                        $closure_scope = self::getPhanClosureScopeFromCommentLine($context, $line);
+                    } elseif ($type === 'phan-override') {
+                        $check_compatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i, $line);
+                        $comment_flags |= Flags::IS_OVERRIDE_INTENDED;
+                    } else {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::MisspelledAnnotation,
+                            self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line),
+                            '@' . $matches[1],
+                            '@phan-forbid-undeclared-magic-methods @phan-forbid-undeclared-magic-properties @phan-closure-scope @phan-override'
+                        );
+                    }
                 }
             }
 
@@ -472,6 +474,9 @@ class Comment
         );
     }
 
+    // TODO: Is `@return &array` valid phpdoc2?
+    const return_comment_regex = '/@return\s+(&\s*)?(' . UnionType::union_type_regex_or_this . '+)/';
+
     /**
      * @param Context $context
      * The context in which the comment line appears
@@ -488,13 +493,10 @@ class Comment
     ) {
         $return_union_type_string = '';
 
-        if (preg_match('/@return\s+/', $line)) {
-            // TODO: Is `@return &array` valid phpdoc2?
-            if (preg_match('/@return\s+(&\s*)?(' . UnionType::union_type_regex_or_this . '+)/', $line, $match)) {
-                $return_union_type_string = $match[2];
-            }
-            // Not emitting any issues about failing to extract, e.g. `@return - Description of what this returns` is a valid comment.
+        if (\preg_match(self::return_comment_regex, $line, $match)) {
+            $return_union_type_string = $match[2];
         }
+        // Not emitting any issues about failing to extract, e.g. `@return - Description of what this returns` is a valid comment.
         $return_union_type_string = self::rewritePHPDocType($return_union_type_string);
 
         $return_union_type = UnionType::fromStringInContext(
@@ -516,6 +518,9 @@ class Comment
         }
         return $original_type;
     }
+
+    const param_comment_regex =
+        '/@(param|var)\b\s*(' . UnionType::union_type_regex . ')?(?:\s*(\.\.\.)?\s*&?(?:\\$' . self::WORD_REGEX . '))?/';
 
     /**
      * @param CodeBase $code_base
@@ -548,21 +553,22 @@ class Comment
         int $i,
         int $comment_lines_count
     ) {
+        $matched = \preg_match(self::param_comment_regex, $line, $match);
         // Parse https://docs.phpdoc.org/references/phpdoc/tags/param.html
         // Exceptions: Deliberately allow "&" in "@param int &$x" when documenting references.
         // Warn if there is neither a union type nor a variable
-        if (\preg_match('/@(param|var)\b\s*(' . UnionType::union_type_regex . ')?(?:\s*(\.\.\.)?\s*&?(?:\\$' . self::WORD_REGEX . '))?/', $line, $match) && (isset($match[2]) || isset($match[17]))) {
+        if ($matched && (isset($match[2]) || isset($match[17]))) {
             if (!isset($match[2])) {
-                return new CommentParameter('', new UnionType());
+                return new CommentParameter('', UnionType::empty());
             }
             $original_type = $match[2];
 
-            $is_variadic = ($match[16] ?? '') === '...';
+            $is_variadic = ($match[18] ?? '') === '...';
 
             if ($is_var && $is_variadic) {
                 $variable_name = '';  // "@var int ...$x" is nonsense and invalid phpdoc.
             } else {
-                $variable_name = $match[17] ?? '';
+                $variable_name = $match[19] ?? '';
             }
             // Fix typos or non-standard phpdoc tags, according to the user's configuration.
             // Does nothing by default.
@@ -580,7 +586,7 @@ class Comment
                         Type::FROM_PHPDOC
                     );
             } else {
-                $union_type = new UnionType();
+                $union_type = UnionType::empty();
             }
             $is_output_parameter = \stripos($line, '@phan-output-reference') !== false;
 
@@ -607,7 +613,7 @@ class Comment
             }
         }
 
-        return new CommentParameter('', new UnionType());
+        return new CommentParameter('', UnionType::empty());
     }
 
     /**
@@ -704,8 +710,8 @@ class Comment
                 $context,
                 Type::FROM_PHPDOC
             );
-            $is_variadic = $param_match[15] === '...';
-            $default_str = $param_match[17];
+            $is_variadic = $param_match[17] === '...';
+            $default_str = $param_match[19];
             $has_default_value = $default_str !== '';
             if ($has_default_value) {
                 $default_value_repr = trim(explode('=', $default_str, 2)[1]);
@@ -713,7 +719,7 @@ class Comment
                     $union_type = $union_type->nullableClone();
                 }
             }
-            $var_name = $param_match[16];
+            $var_name = $param_match[18];
             if ($var_name === '') {
                 // placeholder names are p1, p2, ...
                 $var_name = 'p' . ($param_index + 1);
@@ -740,8 +746,6 @@ class Comment
         int $comment_line_offset,
         int $comment_lines_count
     ) {
-        // Note that the type of a property can be left out (@property $myVar) - This is equivalent to @property mixed $myVar
-        // TODO: properly handle duplicates...
         // https://phpdoc.org/docs/latest/references/phpdoc/tags/method.html
         // > Going to assume "static" is a magic keyword, based on https://github.com/phpDocumentor/phpDocumentor2/issues/822
         // > TODO: forbid in trait?
@@ -766,9 +770,9 @@ class Comment
                 // > When the intended method does not have a return value then the return type MAY be omitted; in which case 'void' is implied.
                 $return_union_type = VoidType::instance(false)->asUnionType();
             }
-            $method_name = $match[20];
+            $method_name = $match[24];
 
-            $arg_list = trim($match[21]);
+            $arg_list = trim($match[25]);
             $comment_params = [];
             // Special check if param list has 0 params.
             if ($arg_list !== '') {
@@ -834,7 +838,7 @@ class Comment
         if (\preg_match('/@(property|property-read|property-write)(?:\s+(' . UnionType::union_type_regex . '))?(?:\s+(?:\\$' . self::WORD_REGEX . '))/', $line, $match)) {
             $type = $match[2] ?? '';
 
-            $property_name = $match[16] ?? '';
+            $property_name = $match[18] ?? '';
             if ($property_name === '') {
                 return null;
             }
@@ -960,6 +964,15 @@ class Comment
     }
 
     /**
+     * Sets A UnionType defined by a (at)return directive
+     * @return void
+     */
+    public function setReturnType(UnionType $return_union_type)
+    {
+        $this->return_union_type = $return_union_type;
+    }
+
+    /**
      * @return bool
      * True if this doc block contains a (at)return
      * directive specifying a type.
@@ -980,7 +993,7 @@ class Comment
     }
 
     /**
-     * @return CommentParameter[] (The leftover parameters without a name)
+     * @return array<int,CommentParameter> (The leftover parameters without a name)
      *
      * @suppress PhanUnreferencedPublicMethod
      */
@@ -990,7 +1003,7 @@ class Comment
     }
 
     /**
-     * @return CommentParameter[] (maps the names of parameters to their values. Does not include parameters which didn't provide names)
+     * @return array<string,CommentParameter> (maps the names of parameters to their values. Does not include parameters which didn't provide names)
      *
      * @suppress PhanUnreferencedPublicMethod
      */
@@ -1000,7 +1013,7 @@ class Comment
     }
 
     /**
-     * @return TemplateType[]
+     * @return array<int,TemplateType>
      * A list of template types parameterizing a generic class
      */
     public function getTemplateTypeList() : array
@@ -1018,7 +1031,7 @@ class Comment
     }
 
     /**
-     * @return string[]
+     * @return array<int,string>
      * A set of issue names like 'PhanUnreferencedPublicMethod' to suppress
      */
     public function getSuppressIssueList() : array
@@ -1079,7 +1092,7 @@ class Comment
     }
 
     /**
-     * @return CommentParameter[] map from parameter name to parameter
+     * @return array<string,CommentParameter> map from parameter name to parameter
      */
     public function getMagicPropertyMap() : array
     {
@@ -1087,7 +1100,7 @@ class Comment
     }
 
     /**
-     * @return CommentMethod[] map from method name to method info
+     * @return array<string,CommentMethod> map from method name to method info
      */
     public function getMagicMethodMap() : array
     {
@@ -1095,7 +1108,7 @@ class Comment
     }
 
     /**
-     * @return CommentParameter[]
+     * @return array<int,CommentParameter>
      */
     public function getVariableList() : array
     {

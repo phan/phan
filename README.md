@@ -344,6 +344,15 @@ class C {
 Just like in PHP, any type can be nulled in the function declaration which also
 means a null is allowed to be passed in for that parameter.
 
+In the next release (0.10.4+ and other minor version releases on the same date):
+Phan checks the type of every single element of arrays (Including keys and values).
+In practical terms, this means that `[1,2,'a']` is seen as `array<int,int|string>`,
+which Phan represents as `array<int,int>|array<int,string>`.
+`[$strKey => new MyClass(), $strKey2 => $unknown]` will be represented as
+`array<string,MyClass>|array<string,mixed>`.
+(Note that Phan also started tracking the key types of generic arrays in 0.10.4)
+
+In older versions (<= 0.10.3 and other minor version releases from the same date):
 By default, and completely arbitrarily, for things like `int[]` it checks the first 5
 elements. If the first 5 are of the same type, it assumes the rest are as well. If it can't
 determine the array sub-type it just becomes `array` which will pass through most type

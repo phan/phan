@@ -16,13 +16,14 @@ class TraitAdaptations
     private $trait_fqsen;
 
     /**
-     * @var TraitAliasSource[] maps alias methods from this trait
-     *                         to the info about the source method
+     * @var array<string,TraitAliasSource>
+     * maps alias methods from this trait
+     * to the info about the source method
      */
     public $alias_methods = [];
 
     /**
-     * @var bool[] Has an entry mapping name to true if a method with a given name is hidden.
+     * @var array<string,bool> Has an entry mapping name to true if a method with a given name is hidden.
      */
     public $hidden_methods = [];
 

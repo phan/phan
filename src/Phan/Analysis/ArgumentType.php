@@ -47,7 +47,7 @@ class ArgumentType
         // better multi-signature error messages
         self::checkIsDeprecatedOrInternal($code_base, $context, $method);
         if ($method->hasFunctionCallAnalyzer()) {
-            $method->analyzeFunctionCall($code_base, $context->withLineNumberStart($node->lineno ?? 0), $node->children['args']->children ?? []);
+            $method->analyzeFunctionCall($code_base, $context->withLineNumberStart($node->lineno ?? 0), $node->children['args']->children);
         }
 
         if ($method->isPHPInternal()) {
@@ -218,7 +218,7 @@ class ArgumentType
 
     /**
      * Figure out if any of the arguments are a call to unpack()
-     * @param Node[]|string[]|int[] $children
+     * @param array<int,Node|string|int|false> $children
      */
     private static function isUnpack(array $children) : bool
     {
@@ -236,7 +236,7 @@ class ArgumentType
      * @param FunctionInterface $method
      * The function/method we're analyzing arguments for
      *
-     * @param Node[]|string[]|int[] $arg_nodes $node
+     * @param array<int,Node|string|int|false> $arg_nodes $node
      * The node holding the arguments of the call we're looking at
      *
      * @param Context $context
@@ -330,7 +330,7 @@ class ArgumentType
      * @param FunctionInterface $method
      * The method we're analyzing arguments for
      *
-     * @param Node[]|string[]|int[] $arg_nodes $node
+     * @param array<int,Node|string|int> $arg_nodes $node
      * The node holding the arguments of the call we're looking at
      *
      * @param Context $context
@@ -401,7 +401,7 @@ class ArgumentType
             }
         }
 
-        foreach ($node->children ?? [] as $i => $argument) {
+        foreach ($node->children as $i => $argument) {
             // Get the parameter associated with this argument
             $parameter = $method->getParameterForCaller($i);
 

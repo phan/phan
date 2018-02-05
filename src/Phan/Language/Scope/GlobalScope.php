@@ -8,7 +8,7 @@ class GlobalScope extends Scope
 {
 
     /**
-     * @var Variable[]
+     * @var array<string,Variable>
      * A map from name to variables for all
      * variables registered under $GLOBALS.
      */
@@ -51,7 +51,7 @@ class GlobalScope extends Scope
     }
 
     /**
-     * @return Variable[]
+     * @return array<string,Variable>
      * A map from name to Variable in this scope
      */
     public function getVariableMap() : array

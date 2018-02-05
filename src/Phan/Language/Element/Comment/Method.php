@@ -22,7 +22,7 @@ class Method
     private $type;
 
     /**
-     * @var Parameter[]
+     * @var array<int,Parameter>
      * A list of phpdoc parameters
      */
     private $parameters;
@@ -40,7 +40,7 @@ class Method
      * @param UnionType $type
      * The return type of the method
      *
-     * @param Parameter[] $parameters
+     * @param array<int,Parameter> $parameters
      * 0 or more comment parameters for this magic method
      *
      * @param bool $is_static
@@ -77,7 +77,7 @@ class Method
     }
 
     /**
-     * @return Parameter[] - comment parameters of magic method, from phpdoc.
+     * @return array<int,Parameter> - comment parameters of magic method, from phpdoc.
      */
     public function getParameterList() : array
     {

@@ -3,6 +3,7 @@ namespace Phan\Language\Type;
 
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Phan\Language\UnionTypeBuilder;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\CodeBase;
 
@@ -17,19 +18,28 @@ final class GenericMultiArrayType extends ArrayType
     const NAME = 'array';
 
     /**
-     * @var Type[]
+     * @var array<int,Type>
      * The list of possible types of every element in this array (2 or more)
      */
     private $element_types = [];
 
     /**
-     * @param Type[] $types
+     * @var int
+     * Corresponds to the type of the array keys. Set this to a GenericArrayType::KEY_* constant.
+     */
+    private $key_type;
+
+    /**
+     * @param array<int,Type> $types
      * The 2 or more possible types of every element in this array
      *
      * @param bool $is_nullable
      * Set to true if the type should be nullable, else pass false
+     *
+     * @param int $key_type
+     * Corresponds to the type of the array keys. Set this to a GenericArrayType::KEY_* constant.
      */
-    protected function __construct(array $types, bool $is_nullable)
+    protected function __construct(array $types, bool $is_nullable, int $key_type)
     {
         \assert(\count($types) >= 2);
         // Could de-duplicate, but callers should be able to do that as well when converting to UnionType.
@@ -37,6 +47,7 @@ final class GenericMultiArrayType extends ArrayType
         parent::__construct('\\', self::NAME, [], false);
         $this->element_types = $types;
         $this->is_nullable = $is_nullable;
+        $this->key_type = $key_type;
     }
 
     /**
@@ -56,30 +67,32 @@ final class GenericMultiArrayType extends ArrayType
 
         return GenericMultiArrayType::fromElementTypes(
             $this->element_types,
-            $is_nullable
+            $is_nullable,
+            $this->key_type
         );
     }
 
     /**
-     * @return GenericArrayType[]
+     * @return array<int,GenericArrayType>
      */
     public function asGenericArrayTypeInstances() : array
     {
         return \array_map(function (Type $type) {
-            return GenericArrayType::fromElementType($type, $this->is_nullable);
-        }, $this->element_types);
+            return GenericArrayType::fromElementType($type, $this->is_nullable, $this->key_type);
+        }, UnionType::normalizeGenericMultiArrayTypes($this->element_types));
     }
 
     /**
-     * @param Type[] $element_types
+     * @param array<int,Type> $element_types
      * @param bool $is_nullable
      * @return GenericMultiArrayType
      */
     public static function fromElementTypes(
         array $element_types,
-        bool $is_nullable
+        bool $is_nullable,
+        int $key_type
     ) : GenericMultiArrayType {
-        return new self($element_types, $is_nullable);
+        return new self($element_types, $is_nullable, $key_type);
     }
 
     /**
@@ -119,7 +132,7 @@ final class GenericMultiArrayType extends ArrayType
     }
 
     /**
-     * @return Type[]
+     * @return array<int,Type>
      * A variation of this type that is not generic.
      * i.e. 'int[]' becomes 'int'.
      */
@@ -163,10 +176,16 @@ final class GenericMultiArrayType extends ArrayType
             "Recursion has gotten out of hand"
         );
         // TODO: Use UnionType::merge from a future change?
-        $result = new UnionType();
+        $result = new UnionTypeBuilder();
         foreach ($this->element_types as $type) {
-            $result->addUnionType(GenericArrayType::fromElementType($type, $this->is_nullable)->asExpandedTypes($code_base, $recursion_depth + 1));
+            $result->addUnionType(
+                GenericArrayType::fromElementType(
+                    $type,
+                    $this->is_nullable,
+                    $this->key_type
+                )->asExpandedTypes($code_base, $recursion_depth + 1)
+            );
         }
-        return $result;
+        return $result->getUnionType();
     }
 }

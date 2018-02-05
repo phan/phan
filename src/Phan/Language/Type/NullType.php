@@ -18,7 +18,7 @@ final class NullType extends ScalarType
      * The (optional) namespace of the type such as '\'
      * or '\Phan\Language'.
      *
-     * @param UnionType[] $template_parameter_type_list
+     * @param array<int,UnionType> $template_parameter_type_list
      * A (possibly empty) list of template parameter types
      *
      * @param bool $is_nullable (@phan-unused-param)

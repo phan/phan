@@ -1,2 +1,1 @@
-%s:9 PhanTypeMismatchArgument Argument 1 (arg) is int[] but \A::test() takes string defined at %s:4
-
+%s:9 PhanTypeMismatchArgument Argument 1 (arg) is array<int,int> but \A::test() takes string defined at %s:4

@@ -10,8 +10,10 @@ use Phan\Analysis\ContextMergeVisitor;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\PreOrderAnalysisVisitor;
 use Phan\Language\Context;
+use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
+use Phan\Language\Scope\PropertyScope;
 use Phan\Plugin\ConfigPluginSet;
 use ast\Node;
 
@@ -66,6 +68,87 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $this->depth = $depth;
     }
 
+    // No-ops for frequent node types
+    public function visitVar(Node $node) : Context
+    {
+        $context = $this->context->withLineNumberStart(
+            $node->lineno ?? 0
+        );
+
+        // Let any configured plugins do a pre-order
+        // analysis of the node.
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+
+        \assert(!empty($context), 'Context cannot be null');
+
+        // With a context that is inside of the node passed
+        // to this method, we analyze all children of the
+        // node.
+        $name_node = $node->children['name'];
+        // E.g. ${expr()} is valid PHP. Recurse if that's a node.
+        if ($name_node instanceof Node) {
+            // Step into each child node and get an
+            // updated context for the node
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $name_node);
+        }
+
+        $context = $this->postOrderAnalyze($context, $node);
+
+        return $context;
+    }
+
+    public function visitParam(Node $node) : Context
+    {
+        // Could invoke plugins, but not right now
+        return $this->context;
+    }
+
+    public function visitUseElem(Node $node) : Context
+    {
+        // Could invoke plugins, but not right now
+        return $this->context;
+    }
+
+    public function visitName(Node $node) : Context
+    {
+        // Could invoke plugins, but not right now
+        return $this->context;
+    }
+
+    public function visitStmtList(Node $node) : Context
+    {
+        $context = $this->context;
+        $plugin_set = ConfigPluginSet::instance();
+        $plugin_set->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+        foreach ($node->children as $child_node) {
+            // Skip any non Node children.
+            if (!($child_node instanceof Node)) {
+                continue;
+            }
+            $context->clearCachedUnionTypes();
+
+            // Step into each child node and get an
+            // updated context for the node
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
+        }
+        $plugin_set->analyzeNode(
+            $this->code_base,
+            $context,
+            $node,
+            $this->parent_node
+        );
+        return $context;
+    }
+    // end No-ops
+
     /**
      * For non-special nodes, we propagate the context and scope
      * from the parent, through the children and return the
@@ -100,7 +183,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $context = (new PreOrderAnalysisVisitor(
             $this->code_base,
             $context
-        ))($node);
+        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
         // Let any configured plugins do a pre-order
         // analysis of the node.
@@ -115,7 +198,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
         // node.
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
                 continue;
@@ -203,7 +286,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
         // node.
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
                 continue;
@@ -384,10 +467,20 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $node->lineno ?? 0
         );
 
-        $context = $this->preOrderAnalyze($context, $node);
+        // NOTE: This is different from other analysis visitors because analyzing 'cond' with `||` has side effects
+        // after supporting visitAnd() and visitOr() in BlockAnalysisVisitor
+        // TODO: Calling analyzeAndGetUpdatedContext before preOrderAnalyze is a hack.
 
-        \assert(!empty($context), 'Context cannot be null');
+        // TODO: This is redundant and has worse knowledge of the specific types of blocks than ConditionVisitor does.
+        // TODO: Implement a hybrid BlockAnalysisVisitor+ConditionVisitor that will do a better job of inferences and reducing false positives? (and reduce the redundant work)
 
+        // E.g. the below code would update the context of BlockAnalysisVisitor in BlockAnalysisVisitor->visitOr()
+        //
+        //     if (!(is_string($x) || $x === null)) {}
+        //
+        // But we want to let BlockAnalysisVisitor modify the context for cases such as the below:
+        //
+        // $result = !($x instanceof User) || $x->meetsCondition()
         $condition_node = $node->children['cond'];
         if ($condition_node instanceof Node) {
             $context = $this->analyzeAndGetUpdatedContext(
@@ -396,6 +489,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $condition_node
             );
         }
+
+        $context = $this->preOrderAnalyze($context, $node);
+
+        \assert(!empty($context), 'Context cannot be null');
 
         if ($stmts_node = $node->children['stmts']) {
             if ($stmts_node instanceof Node) {
@@ -465,7 +562,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
         // node.
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
                 continue;
@@ -522,7 +619,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $fallthrough_context = $context;
         }
 
-        $child_nodes = $node->children ?? [];
+        $child_nodes = $node->children;
         $excluded_elem_count = 0;
 
         // With a context that is inside of the node passed
@@ -618,11 +715,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         \assert(!empty($context), 'Context cannot be null');
 
-        // We collect all child context so that the
-        // PostOrderAnalysisVisitor can optionally operate on
-        // them
-        $child_context_list = [];
-
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
         // node.
@@ -644,10 +736,26 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // Step into each try node and get an
         // updated context for the node
         $try_context = $this->analyzeAndGetUpdatedContext($try_context, $node, $try_node);
-        // NOTE: We let ContextMergeVisitor->visitTry decide if the block exit status is valid.
-        $child_context_list[] = $try_context;
 
-        foreach ($node->children['catches']->children ?? [] as $catch_node) {
+        // Analyze the catch blocks and finally blocks with a mix of the types
+        // from the try block and the catch blocks.
+        // NOTE: when strict_mode = 1, variables that are only defined in some Contexts
+        // but not others will be treated as absent.
+        // TODO: Improve in future releases
+        // NOTE: We let ContextMergeVisitor->visitTry decide if the block exit status is valid.
+        $original_context = $context;
+        $context = (new ContextMergeVisitor(
+            $this->code_base,
+            $context,
+            [$try_context]
+        ))->mergeTryContext($node);
+
+        // We collect all child context so that the
+        // PostOrderAnalysisVisitor can optionally operate on
+        // them
+        $catch_context_list = [$try_context];
+
+        foreach ($node->children['catches']->children as $catch_node) {
             // Note: ContextMergeVisitor expects to get each individual catch
             assert($catch_node instanceof Node);
             // The conditions need to communicate to the outer
@@ -664,38 +772,41 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // updated context for the node
             $catch_context = $this->analyzeAndGetUpdatedContext($catch_context, $node, $catch_node);
             // NOTE: We let ContextMergeVisitor->visitTry decide if the block exit status is valid.
-            $child_context_list[] = $catch_context;
+            $catch_context_list[] = $catch_context;
         }
 
-        $finally_node = $node->children['finally'] ?? null;
-        if ($finally_node) {
-            assert($finally_node instanceof Node);
-            // The conditions need to communicate to the outer
-            // scope for things like assigning veriables.
-            $finally_context = $context->withScope(
-                new BranchScope($context->getScope())
-            );
-
-            $finally_context->withLineNumberStart(
-                $finally_node->lineno ?? 0
-            );
-
-            // Step into each finally node and get an
-            // updated context for the node
-            $finally_context = $this->analyzeAndGetUpdatedContext($finally_context, $node, $finally_node);
-            // NOTE: We let ContextMergeVisitor->visitTry decide if the block exit status is valid.
-            $child_context_list[] = $finally_context;
-        }
-
-        if (count($child_context_list) > 0) {
+        // first context is the try. If there's a second context, it's a catch.
+        if (count($catch_context_list) >= 2) {
             // For switch/try statements, we need to merge the contexts
             // of all child context into a single scope based
             // on any possible branching structure
             $context = (new ContextMergeVisitor(
                 $this->code_base,
                 $context,
-                $child_context_list
-            ))($node);
+                $catch_context_list
+            ))->mergeCatchContext($node);
+        }
+
+        $finally_node = $node->children['finally'] ?? null;
+        if ($finally_node) {
+            assert($finally_node instanceof Node);
+            // Because finally is always executed, we reuse $context
+
+            // The conditions need to communicate to the outer
+            // scope for things like assigning veriables.
+            $context = $context->withScope(
+                new BranchScope($context->getScope())
+            );
+
+            $context->withLineNumberStart(
+                $finally_node->lineno ?? 0
+            );
+
+            // Step into each finally node and get an
+            // updated context for the node.
+            // Don't bother checking if finally unconditionally returns here
+            // If it does, dead code detection would also warn.
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $finally_node);
         }
 
         $context = $this->postOrderAnalyze($context, $node);
@@ -703,6 +814,150 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // When coming out of a scoped element, we pop the
         // context to be the incoming context. Otherwise,
         // we pass our new context up to our parent
+        return $context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitBinaryOp(Node $node) : Context
+    {
+        $flags = ($node->flags ?? 0);
+        if ($flags === \ast\flags\BINARY_BOOL_AND) {
+            return $this->visitAnd($node);
+        } elseif ($flags === \ast\flags\BINARY_BOOL_OR) {
+            return $this->visitOr($node);
+        }
+        return $this->visit($node);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse (for `&&` or `and` operator)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitAnd(Node $node) : Context
+    {
+        $context = $this->context->withLineNumberStart(
+            $node->lineno ?? 0
+        );
+
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+
+        $left_node = $node->children['left'];
+        $right_node = $node->children['right'];
+
+        // With (left) && (right)
+        // 1. Update context with any side effects of left
+        // 2. Create a context to analyze the right hand side with any inferences possible from left (e.g. ($x instanceof MyClass) && $x->foo()
+        // 3. Analyze the right hand side
+        // 4. Merge the possibly evaluated $right_context for the right hand side into the original context. (The left_node is guaranteed to have been evaluated, so it becomes $context)
+
+        // TODO: Warn about non-node, they're guaranteed to be always false or true
+        if ($left_node instanceof Node) {
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $left_node);
+
+            $base_context = $context;
+            $base_context_scope = $base_context->getScope();
+            if ($base_context_scope instanceof GlobalScope) {
+                $base_context = $context->withScope(new BranchScope($base_context_scope));
+            }
+            $context_with_left_condition = (new ConditionVisitor(
+                $this->code_base,
+                $base_context
+            ))($left_node);
+        } else {
+            $context_with_left_condition = $context;
+        }
+
+        if ($right_node instanceof Node) {
+            $right_context = $this->analyzeAndGetUpdatedContext($context_with_left_condition, $node, $right_node);
+            $context = (new ContextMergeVisitor(
+                $this->code_base,
+                $context,
+                [$context, $context_with_left_condition, $right_context]
+            ))($node);
+        }
+
+        $context = $this->postOrderAnalyze($context, $node);
+
+        return $context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse (for `||` or `or` operator)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitOr(Node $node) : Context
+    {
+        $context = $this->context->withLineNumberStart(
+            $node->lineno ?? 0
+        );
+
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+
+        $left_node = $node->children['left'];
+        $right_node = $node->children['right'];
+
+        // With (left) || (right)
+        // 1. Update context with any side effects of left
+        // 2. Create a context to analyze the right hand side with any inferences possible from left (e.g. (!($x instanceof MyClass)) || $x->foo()
+        // 3. Analyze the right hand side
+        // 4. Merge the possibly evaluated $right_context for the right hand side into the original context. (The left_node is guaranteed to have been evaluated, so it becomes $context)
+
+        // TODO: Warn about non-node, they're guaranteed to be always false or true
+        if ($left_node instanceof Node) {
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $left_node);
+
+            $base_context = $context;
+            $base_context_scope = $base_context->getScope();
+            if ($base_context_scope instanceof GlobalScope) {
+                $base_context = $context->withScope(new BranchScope($base_context_scope));
+            }
+            $context_with_false_left_condition = (new NegatedConditionVisitor(
+                $this->code_base,
+                $base_context
+            ))($left_node);
+            $context_with_true_left_condition = (new ConditionVisitor(
+                $this->code_base,
+                $base_context
+            ))($left_node);
+        } else {
+            $context_with_false_left_condition = $context;
+            $context_with_true_left_condition = $context;
+        }
+
+        if ($right_node instanceof Node) {
+            $right_context = $this->analyzeAndGetUpdatedContext($context_with_false_left_condition, $node, $right_node);
+            $context = (new ContextMergeVisitor(
+                $this->code_base,
+                $context,
+                [$context, $context_with_true_left_condition, $right_context]
+            ))->combineChildContextList();
+        }
+
+        $context = $this->postOrderAnalyze($context, $node);
+
         return $context;
     }
 
@@ -852,10 +1107,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // with anything we learn and get a new context
         // indicating the state of the world within the
         // given node
+        // Equivalent to (new PostOrderAnalysisVisitor(...)($node)) but faster than using __invoke()
         $context = (new PreOrderAnalysisVisitor(
             $this->code_base,
             $context
-        ))($node);
+        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
         // Let any configured plugins do a pre-order
         // analysis of the node.
@@ -884,11 +1140,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // Now that we know all about our context (like what
         // 'self' means), we can analyze statements like
         // assignments and method calls.
+        // Equivalent to (new PostOrderAnalysisVisitor(...)($node)) but faster than using __invoke()
         $context = (new PostOrderAnalysisVisitor(
             $this->code_base,
             $context->withLineNumberStart($node->lineno ?? 0),
             $this->parent_node
-        ))($node);
+        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
         // let any configured plugins analyze the node
         ConfigPluginSet::instance()->analyzeNode(
@@ -923,7 +1180,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $context = (new PreOrderAnalysisVisitor(
             $this->code_base,
             $context
-        ))($node);
+        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
         // Let any configured plugins do a pre-order
         // analysis of the node.
@@ -953,13 +1210,15 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     {
         $prop_name = (string)$node->children['name'];
 
-        $class = $this->context->getClassInScope($this->code_base);
+        $context = $this->context;
+        $class = $context->getClassInScope($this->code_base);
         $is_static = ($this->parent_node->flags & \ast\flags\MODIFIER_STATIC) !== 0;
-        $property = $class->getPropertyByNameInContext($this->code_base, $prop_name, $this->context, $is_static);
+        $property = $class->getPropertyByNameInContext($this->code_base, $prop_name, $context, $is_static);
 
-        $context = $this->context->withScope(
-            $property->getInternalScope()
-        )->withLineNumberStart(
+        $context = $this->context->withScope(new PropertyScope(
+            $context->getScope(),
+            FullyQualifiedPropertyName::make($class->getFQSEN(), $prop_name)
+        ))->withLineNumberStart(
             $node->lineno ?? 0
         );
 

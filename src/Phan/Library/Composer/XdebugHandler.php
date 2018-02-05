@@ -82,6 +82,16 @@ class XdebugHandler
         $args = explode('|', strval(getenv(self::ENV_ALLOW)), 2);
 
         if ($this->needsRestart($args[0])) {
+            if (!getenv('PHAN_DISABLE_XDEBUG_WARN')) {
+                fwrite(STDERR, <<<EOT
+        Automatically disabling xdebug, it's unnecessary unless you are debugging or developing phan itself, and makes phan slower.
+        To run Phan with xdebug, set the environment variable PHAN_ALLOW_XDEBUG to 1.
+        To disable this warning, set the environment variable PHAN_DISABLE_XDEBUG_WARN to 1.
+        To include function signatures of xdebug, see .phan/internal_stubs/xdebug.phan_php
+
+EOT
+                );
+            }
             if ($this->prepareRestart()) {
                 $command = $this->getCommand();
                 $this->restart($command);

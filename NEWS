@@ -1,6 +1,75 @@
 Phan NEWS
 
-20 Jan 2018, Phan 0.8.11 (dev)
+20 Jan 2018, Phan 0.8.12 (dev)
+------------------------
+
+New Features(Analysis)
+
++ Support array key types of `int`, `string`, and `mixed` (i.e. `int|string`) in union types such as `array<int,T>` (#824)
+
+  Check that the array key types match when assigning Expected param types, return types, property types, etc.
+  They don't match when casting a union type of `int` to `string`, or vice versa.
+  Mixed union types in keys can cast to/from any key type.
+
+  - To allow casting `array<int,T>` to `array<string,T>`, enable `scalar_array_key_cast` in your `.phan/config.php`.
+
+  Warn when fetching with the wrong type of array keys (E.g. string key for `array<int,T>`) (Issue #1390)
++ Infer array key types of `int`, `string`, or `int|string` in foreach over arrays. (#1300)
+  (Phan's type system doesn't support inferring key types for `iterable` or `Traversable` right now)
++ Support **parsing** PHPDoc array shapes
+  (E.g. a function expecting `['field' => 'a string']` can document this as `@param array{field:string}` $options)
+  For now, this is converted to generic arrays (Equivalent to `string[]`).
+
+  `[[0, ...], new stdClass]` would have type `array{0:int[], 1:string}`
+
+  - The field value types can be any union type.
+  - Field keys are currently limited to keys matching the regex `[-_.a-zA-Z0-9\x7f-\xff]+`. (Identifiers, numbers, '-', and '.')
+    Escape mechanisms such as backslashes (e.g. "\x20" for " ") may be supported in the future.
++ Add `PhanTypeMismatchUnpackKey` and `PhanTypeMismatchUnpackValue` to analyze array unpacking operator (also known as splat) (#1384)
+
+  Emit `PhanTypeMismatchUnpackKey` when passing iterables/arrays with invalid keys to the unpacking operator (i.e. `...`).
+
+  Emit `PhanTypeMismatchUnpackValue` when passing values that aren't iterables or arrays to the unpacking operator.
+  (See https://secure.php.net/manual/en/migration56.new-features.php#migration56.new-features.splat)
++ When determining the union type of an array literal,
+  base it on the union types of **all** of the values (and all of the keys) instead of just the first 5 array elements.
++ When determining the union type of the possible value types of a array literal,
+  combine the generic types into a union type instead of simplifying the types to `array`.
+  In practical terms, this means that `[1,2,'a']` is seen as `array<int,int|string>`,
+  which Phan represents as `array<int,int>|array<int,string>`.
+
+  In the previous phan release, that would be represented as `int[]|string[]`,
+  which is equivalent to `array<mixed,int>|array<mixed,string>`
+
+  Another example: `[$strKey => new MyClass(), $strKey2 => $unknown]` will be represented as
+  `array<string,MyClass>|array<string,mixed>`.
+  (If phan can't infer a type of a key or value, `mixed` gets added to that key or value.)
++ Improve analysis of try/catch/finally blocks (#1408)
+  Analyze catch blocks with the inferences about the try block.
+  Analyze a finally block with the inferences from the try and catch blocks.
++ Account for side effects of `&&` and `||` operators in expressions, outside of `if`/`assert` statements. (#1415)
+  E.g. `$isValid = ($x instanceof MyClass && $x->isValid())` will now consistently check that isValid() exists on MyClass.
++ Improve analysis of cases such as `if (!($x instanceof MyClass) || $x->method())`
+  or `if (!(cond($x) && othercond($x)))`
+
+Plugins
++ Fix bugs in NonBoolBranchPlugin and NonBoolInLogicalArithPlugin (#1413, #1410)
++ **Make UnionType instances immutable.**
+  This will affect plugins that used addType/addUnionType/removeType. withType/withUnionType/withoutType should be used instead.
+  To modify the type of elements(properties, method return types, parameters, variables, etc),
+  `Element->setUnionType(plugin_modifier_function(Element->getUnionType()))` should be used.
+
+Language server:
++ Add a CLI option `--language-server-analyze-only-on-save` to prevent the client from sending change notifications. (#1325)
+  (Only notify the language server when the user saves a document)
+  This significantly reduces CPU usage, but clients won't get notifications about issues immediately.
+
+Bug fixes
++ Warn when attempting to call an instance method on an expression with type string (#1314).
++ Fix a bug in `tool/make_stubs` when generating stubs of global functions.
++ Fix some bugs that occurred when Phan resolved inherited class constants in class elements such as properties. (#537 and #454)
+
+20 Jan 2018, Phan 0.8.11
 ------------------------
 
 ### Backported from Phan 0.10.3 (dev)
@@ -13,6 +82,7 @@ New Features(CLI, Configs)
   Keep `PHP-Parser` as a dependency for now for parsing strings.
 
 Maintenance
++ Various performance optimizations, including caching of inferred union types to avoid unnecessary recalculation.
 + Make `phan_client` and the vim snippet in `plugins/vim/phansnippet.vim` more compatible with neovim
 + Upgrade felixfbecker/advanced-json-rpc dependency to ^3.0.0 (#1354)
 + Performance improvements.

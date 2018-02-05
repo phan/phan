@@ -233,7 +233,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     }
 
     /**
-     * @param Node[] $siblings
+     * @param array<int,Node> $siblings
      */
     private function getStatusOfSwitchCase(Node $case_node, int $index, array $siblings) : int
     {
@@ -308,9 +308,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     {
         $inner_status = $this->check($node->children['stmts']);
         // for loops have an expression list as a condition.
-        $cond_nodes = $node->children['cond']->children ?? [];
+        $cond_nodes = $node->children['cond']->children ?? [];  // NOTE: $node->children['cond'] is null for the expression `for (;;)`
         // TODO: Check for unconditionally false conditions.
-        if (count($cond_nodes) === 0 || self::isTruthyLiteral(end($cond_nodes))) {
+        if (count($cond_nodes) === 0 || self::isTruthyLiteral(\end($cond_nodes))) {
             // Use a special case to analyze "while (1) {exprs}" or "for (; true; ) {exprs}"
             // TODO: identify infinite loops, mark those as STATUS_NO_PROCEED or STATUS_RETURN.
             return $this->computeDerivedStatusOfInfiniteLoop($inner_status);
@@ -429,7 +429,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if (!\is_string($name)) {
             return self::STATUS_PROCEED;
         }
-        if (\in_array($name, ['E_ERROR', 'E_PARSE', 'E_CORE_ERROR', 'E_COMPILE_ERROR', 'E_USER_ERROR'])) {
+        if (\in_array($name, ['E_ERROR', 'E_PARSE', 'E_CORE_ERROR', 'E_COMPILE_ERROR', 'E_USER_ERROR'], true)) {
             return self::STATUS_RETURN;
         }
         if ($name === 'E_RECOVERABLE_ERROR') {
@@ -450,7 +450,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if ($status) {
             return $status;
         }
-        $status = $this->computeStatusOfBlock($node->children ?? []);
+        $status = $this->computeStatusOfBlock($node->children);
         $node->flags = $status;
         return $status;
     }
@@ -540,7 +540,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     }
 
     /**
-     * @param \ast\Node[] $block
+     * @param array<int,Node> $block
      * @return int the exit status of a block (whether or not it would unconditionally exit, return, throw, etc.
      */
     private function computeStatusOfBlock(array $block) : int

@@ -47,7 +47,7 @@ abstract class UnaddressableTypedElement
     private $phan_flags = 0;
 
     /**
-     * @var int[]
+     * @var array<string,int>
      * A set of issues types to be suppressed
      */
     private $suppress_issue_list = [];
@@ -84,19 +84,6 @@ abstract class UnaddressableTypedElement
     }
 
     /**
-     * After a clone is called on this object, clone our
-     * type and fqsen so that they survive copies intact
-     *
-     * @return null
-     */
-    public function __clone()
-    {
-        $this->type = $this->type
-            ? clone($this->type)
-            : $this->type;
-    }
-
-    /**
      * @return string
      * The (not fully-qualified) name of this element.
      */
@@ -122,7 +109,7 @@ abstract class UnaddressableTypedElement
      */
     public function setUnionType(UnionType $type)
     {
-        $this->type = clone($type);
+        $this->type = $type;
     }
 
     /**
@@ -244,7 +231,7 @@ abstract class UnaddressableTypedElement
     }
 
     /**
-     * @return int[]
+     * @return array<string,int>
      */
     public function getSuppressIssueList() : array
     {
