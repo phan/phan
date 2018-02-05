@@ -10,8 +10,10 @@ use Phan\Analysis\ContextMergeVisitor;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\PreOrderAnalysisVisitor;
 use Phan\Language\Context;
+use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
+use Phan\Language\Scope\PropertyScope;
 use Phan\Plugin\ConfigPluginSet;
 use ast\Node;
 
@@ -465,10 +467,20 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $node->lineno ?? 0
         );
 
-        $context = $this->preOrderAnalyze($context, $node);
+        // NOTE: This is different from other analysis visitors because analyzing 'cond' with `||` has side effects
+        // after supporting visitAnd() and visitOr() in BlockAnalysisVisitor
+        // TODO: Calling analyzeAndGetUpdatedContext before preOrderAnalyze is a hack.
 
-        \assert(!empty($context), 'Context cannot be null');
+        // TODO: This is redundant and has worse knowledge of the specific types of blocks than ConditionVisitor does.
+        // TODO: Implement a hybrid BlockAnalysisVisitor+ConditionVisitor that will do a better job of inferences and reducing false positives? (and reduce the redundant work)
 
+        // E.g. the below code would update the context of BlockAnalysisVisitor in BlockAnalysisVisitor->visitOr()
+        //
+        //     if (!(is_string($x) || $x === null)) {}
+        //
+        // But we want to let BlockAnalysisVisitor modify the context for cases such as the below:
+        //
+        // $result = !($x instanceof User) || $x->meetsCondition()
         $condition_node = $node->children['cond'];
         if ($condition_node instanceof Node) {
             $context = $this->analyzeAndGetUpdatedContext(
@@ -477,6 +489,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $condition_node
             );
         }
+
+        $context = $this->preOrderAnalyze($context, $node);
+
+        \assert(!empty($context), 'Context cannot be null');
 
         if ($stmts_node = $node->children['stmts']) {
             if ($stmts_node instanceof Node) {
@@ -801,6 +817,150 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         return $context;
     }
 
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitBinaryOp(Node $node) : Context
+    {
+        $flags = ($node->flags ?? 0);
+        if ($flags === \ast\flags\BINARY_BOOL_AND) {
+            return $this->visitAnd($node);
+        } elseif ($flags === \ast\flags\BINARY_BOOL_OR) {
+            return $this->visitOr($node);
+        }
+        return $this->visit($node);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse (for `&&` or `and` operator)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitAnd(Node $node) : Context
+    {
+        $context = $this->context->withLineNumberStart(
+            $node->lineno ?? 0
+        );
+
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+
+        $left_node = $node->children['left'];
+        $right_node = $node->children['right'];
+
+        // With (left) && (right)
+        // 1. Update context with any side effects of left
+        // 2. Create a context to analyze the right hand side with any inferences possible from left (e.g. ($x instanceof MyClass) && $x->foo()
+        // 3. Analyze the right hand side
+        // 4. Merge the possibly evaluated $right_context for the right hand side into the original context. (The left_node is guaranteed to have been evaluated, so it becomes $context)
+
+        // TODO: Warn about non-node, they're guaranteed to be always false or true
+        if ($left_node instanceof Node) {
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $left_node);
+
+            $base_context = $context;
+            $base_context_scope = $base_context->getScope();
+            if ($base_context_scope instanceof GlobalScope) {
+                $base_context = $context->withScope(new BranchScope($base_context_scope));
+            }
+            $context_with_left_condition = (new ConditionVisitor(
+                $this->code_base,
+                $base_context
+            ))($left_node);
+        } else {
+            $context_with_left_condition = $context;
+        }
+
+        if ($right_node instanceof Node) {
+            $right_context = $this->analyzeAndGetUpdatedContext($context_with_left_condition, $node, $right_node);
+            $context = (new ContextMergeVisitor(
+                $this->code_base,
+                $context,
+                [$context, $context_with_left_condition, $right_context]
+            ))($node);
+        }
+
+        $context = $this->postOrderAnalyze($context, $node);
+
+        return $context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse (for `||` or `or` operator)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitOr(Node $node) : Context
+    {
+        $context = $this->context->withLineNumberStart(
+            $node->lineno ?? 0
+        );
+
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+
+        $left_node = $node->children['left'];
+        $right_node = $node->children['right'];
+
+        // With (left) || (right)
+        // 1. Update context with any side effects of left
+        // 2. Create a context to analyze the right hand side with any inferences possible from left (e.g. (!($x instanceof MyClass)) || $x->foo()
+        // 3. Analyze the right hand side
+        // 4. Merge the possibly evaluated $right_context for the right hand side into the original context. (The left_node is guaranteed to have been evaluated, so it becomes $context)
+
+        // TODO: Warn about non-node, they're guaranteed to be always false or true
+        if ($left_node instanceof Node) {
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $left_node);
+
+            $base_context = $context;
+            $base_context_scope = $base_context->getScope();
+            if ($base_context_scope instanceof GlobalScope) {
+                $base_context = $context->withScope(new BranchScope($base_context_scope));
+            }
+            $context_with_false_left_condition = (new NegatedConditionVisitor(
+                $this->code_base,
+                $base_context
+            ))($left_node);
+            $context_with_true_left_condition = (new ConditionVisitor(
+                $this->code_base,
+                $base_context
+            ))($left_node);
+        } else {
+            $context_with_false_left_condition = $context;
+            $context_with_true_left_condition = $context;
+        }
+
+        if ($right_node instanceof Node) {
+            $right_context = $this->analyzeAndGetUpdatedContext($context_with_false_left_condition, $node, $right_node);
+            $context = (new ContextMergeVisitor(
+                $this->code_base,
+                $context,
+                [$context, $context_with_true_left_condition, $right_context]
+            ))->combineChildContextList();
+        }
+
+        $context = $this->postOrderAnalyze($context, $node);
+
+        return $context;
+    }
+
     public function visitConditional(Node $node) : Context
     {
         $context = $this->context->withLineNumberStart(
@@ -1050,13 +1210,15 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     {
         $prop_name = (string)$node->children['name'];
 
-        $class = $this->context->getClassInScope($this->code_base);
+        $context = $this->context;
+        $class = $context->getClassInScope($this->code_base);
         $is_static = ($this->parent_node->flags & \ast\flags\MODIFIER_STATIC) !== 0;
-        $property = $class->getPropertyByNameInContext($this->code_base, $prop_name, $this->context, $is_static);
+        $property = $class->getPropertyByNameInContext($this->code_base, $prop_name, $context, $is_static);
 
-        $context = $this->context->withScope(
-            $property->getInternalScope()
-        )->withLineNumberStart(
+        $context = $this->context->withScope(new PropertyScope(
+            $context->getScope(),
+            FullyQualifiedPropertyName::make($class->getFQSEN(), $prop_name)
+        ))->withLineNumberStart(
             $node->lineno ?? 0
         );
 

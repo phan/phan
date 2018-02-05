@@ -4,6 +4,7 @@ namespace Phan\Analysis;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
+use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\IssueException;
@@ -27,6 +28,7 @@ use ast\Node;
 
 // TODO: Make $x != null remove FalseType and NullType from $x
 // TODO: Make $x > 0, $x < 0, $x >= 50, etc.  remove FalseType and NullType from $x
+// TODO: if (a || b || c || d) might get really slow, due to creating both ConditionVisitor and NegatedConditionVisitor
 class NegatedConditionVisitor extends KindVisitorImplementation
 {
     use ConditionVisitorUtil;
@@ -110,6 +112,8 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         $flags = ($node->flags ?? 0);
         if ($flags === \ast\flags\BINARY_BOOL_OR) {
             return $this->analyzeShortCircuitingOr($node->children['left'], $node->children['right']);
+        } elseif ($flags === \ast\flags\BINARY_BOOL_AND) {
+            return $this->analyzeShortCircuitingAnd($node->children['left'], $node->children['right']);
         } elseif ($flags === \ast\flags\BINARY_IS_IDENTICAL) {
             $this->checkVariablesDefined($node);
             return $this->analyzeIsIdentical($node->children['left'], $node->children['right']);
@@ -166,6 +170,51 @@ class NegatedConditionVisitor extends KindVisitorImplementation
     public function visitOr(Node $node) : Context
     {
         return $this->analyzeShortCircuitingOr($node->children['left'], $node->children['right']);
+    }
+
+    /**
+     * Helper method
+     * @param Node|mixed $left
+     * a Node or non-node to parse (possibly an AST literal)
+     *
+     * @param Node|mixed $right
+     * a Node or non-node to parse (possibly an AST literal)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    private function analyzeShortCircuitingAnd($left, $right) : Context
+    {
+        // Analyze expressions such as if (!(is_string($x) || is_int($x)))
+        // which would be equivalent to if (!is_string($x)) { if (!is_int($x)) { ... }}
+
+        // Aside: If left/right is not a node, left/right is a literal such as a number/string, and is either always truthy or always falsey.
+        // Inside of this conditional may be dead or redundant code.
+
+        // Aside: If left/right is not a node, left/right is a literal such as a number/string, and is either always truthy or always falsey.
+        // Inside of this conditional may be dead or redundant code.
+        if (!($left instanceof Node)) {
+            if (!$left) {
+                return $this->context;
+            }
+            return $this($right);
+        }
+        if (!($right instanceof Node)) {
+            if (!$right) {
+                return $this->context;
+            }
+            return $this($left);
+        }
+        $code_base = $this->code_base;
+        $context = $this->context;
+        $left_false_context = (new NegatedConditionVisitor($code_base, $context))($left);
+        $left_true_context = (new ConditionVisitor($code_base, $context))($left);
+        // We analyze the right hand side of `cond($x) && cond2($x)` as if `cond($x)` was true.
+        $right_false_context = (new NegatedConditionVisitor($code_base, $left_true_context))($right);
+        // When the NegatedConditionVisitor is false, at least one of the left or right contexts must be false.
+        // (NegatedConditionVisitor returns a context for when the input Node's value was falsey)
+        return (new ContextMergeVisitor($code_base, $context, [$left_false_context, $right_false_context]))->combineChildContextList();
     }
 
     /**
@@ -517,5 +566,37 @@ class NegatedConditionVisitor extends KindVisitorImplementation
             // TODO: emit no-op warning
             return $this->context;
         }
+    }
+
+    /**
+     * Useful for analyzing `if ($x = foo() && $x->method())`
+     *
+     * TODO: Convert $x to empty/false/null types
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitAssign(Node $node) : Context
+    {
+        return (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssign($node);
+    }
+
+    /**
+     * Useful for analyzing `if ($x =& foo() && $x->method())`
+     * TODO: Convert $x to empty/false/null types
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitAssignRef(Node $node) : Context
+    {
+        return (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssignRef($node);
     }
 }

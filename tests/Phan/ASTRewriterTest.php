@@ -15,8 +15,7 @@ class ASTRewriterTest extends AbstractPhanFileTest
     {
         /** @return string[] - Original file and expected file */
         return array_map(function (array $values) : array {
-            assert(count($values[0]) === 1, 'expected only one source file');
-            return [$values[0][0], $values[1]];
+            return [$values[0], $values[1]];
         }, $this->scanSourceFilesDir(AST_TEST_FILE_DIR, AST_EXPECTED_DIR));
     }
 
@@ -34,9 +33,11 @@ class ASTRewriterTest extends AbstractPhanFileTest
      */
     public function testFiles($test_file_list, $expected_file_path, $config_file_path = null)
     {
+        $this->assertCount(1, $test_file_list);
+        list($original_file_path) = $test_file_list;
         // Read the expected output
         $original_src =
-            file_get_contents($expected_file_path);
+            file_get_contents($original_file_path);
         $expected_src =
             file_get_contents($expected_file_path);
         $this->assertNotEquals(false, $original_src);
@@ -51,7 +52,7 @@ class ASTRewriterTest extends AbstractPhanFileTest
             $this->assertNotEquals(Debug::astDump($expected), Debug::astDump($beforeTransform), 'Expected the input asts to be different');
         }
         $actual = ASTSimplifier::applyStatic($beforeTransform);
-        $this->assertInstanceOf('AST\Node', $actual, 'should return an AST');
+        $this->assertInstanceOf(\ast\Node::class, $actual, 'should return an AST');
         $this->assertSame(\ast\AST_STMT_LIST, $actual->kind, 'should return an AST of kind AST_STMT_LIST');
         $actualRepr = Debug::astDump($actual);
         $expectedRepr = Debug::astDump($expected);

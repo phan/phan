@@ -553,10 +553,11 @@ class Comment
         int $i,
         int $comment_lines_count
     ) {
+        $matched = \preg_match(self::param_comment_regex, $line, $match);
         // Parse https://docs.phpdoc.org/references/phpdoc/tags/param.html
         // Exceptions: Deliberately allow "&" in "@param int &$x" when documenting references.
         // Warn if there is neither a union type nor a variable
-        if (\preg_match(self::param_comment_regex, $line, $match) && (isset($match[2]) || isset($match[17]))) {
+        if ($matched && (isset($match[2]) || isset($match[17]))) {
             if (!isset($match[2])) {
                 return new CommentParameter('', UnionType::empty());
             }

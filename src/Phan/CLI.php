@@ -104,6 +104,7 @@ class CLI
                 'language-server-on-stdin',
                 'language-server-tcp-server:',
                 'language-server-tcp-connect:',
+                'language-server-analyze-only-on-save',
                 'language-server-verbose',
                 'extended-help',
             ]
@@ -323,6 +324,9 @@ class CLI
                 case 'language-server-tcp-connect':
                     Config::setValue('language_server_config', ['tcp' => $value]);
                     break;
+                case 'language-server-analyze-only-on-save':
+                    Config::setValue('language_server_analyze_only_on_save', true);
+                    break;
                 case 'language-server-verbose':
                     Config::setValue('language_server_debug_level', 'info');
                     break;
@@ -363,18 +367,16 @@ class CLI
         Phan::setPrinter($printer);
         Phan::setIssueCollector($collector);
 
-        $pruneargv = array();
+        $pruneargv = [];
         foreach ($opts ?? [] as $opt => $value) {
             foreach ($argv as $key => $chunk) {
                 $regex = '/^'. (isset($opt[1]) ? '--' : '-') . $opt . '/';
 
-                if (($chunk == $value
-                    || (\is_array($value) && in_array($chunk, $value))
-                    )
+                if (in_array($chunk, is_array($value) ? $value : [$value])
                     && $argv[$key-1][0] == '-'
                     || preg_match($regex, $chunk)
                 ) {
-                    array_push($pruneargv, $key);
+                    $pruneargv[] = $key;
                 }
             }
         }
@@ -598,6 +600,10 @@ Usage: {$argv[0]} [options] [files...]
 
  --language-server-tcp-connect <addr>
   Start the language server and connect to the client listening on <addr> (e.g. 127.0.0.1:<port>)
+
+ --language-server-analyze-only-on-save
+  Prevent the client from sending change notifications (Only notify the language server when the user saves a document)
+  This significantly reduces CPU usage, but clients won't get notifications about issues immediately.
 
  -v, --version
   Print phan's version number
