@@ -2426,7 +2426,8 @@ class Clazz extends AddressableElement
     /**
      * @return void
      */
-    public function setDidFinishParsing(bool $did_finish_parsing) {
+    public function setDidFinishParsing(bool $did_finish_parsing)
+    {
         $this->did_finish_parsing = $did_finish_parsing;
     }
 

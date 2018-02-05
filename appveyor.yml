@@ -11,7 +11,7 @@ platform: x86
 environment:
   matrix:
     - PHP_EXT_VERSION: '7.2'
-      PHP_VERSION: '7.2.1'
+      PHP_VERSION: '7.2.2'
       VC_VERSION: 15
 
 branches:

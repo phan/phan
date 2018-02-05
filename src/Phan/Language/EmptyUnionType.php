@@ -22,7 +22,8 @@ final class EmptyUnionType extends UnionType
     /**
      * Use UnionType::empty() instead elsewhere in the codebase.
      */
-    protected static function instance() : EmptyUnionType {
+    protected static function instance() : EmptyUnionType
+    {
         static $self = null;
         return $self ?? ($self = new EmptyUnionType());
     }
@@ -562,7 +563,9 @@ final class EmptyUnionType extends UnionType
     public function asClassFQSENList(
         Context $context
     ) {
-        if (false) yield;
+        if (false) {
+            yield;
+        }
     }
 
     /**
@@ -590,7 +593,9 @@ final class EmptyUnionType extends UnionType
         CodeBase $code_base,
         Context $context
     ) {
-        if (false) yield;  // This is a generator yielding 0 results.
+        if (false) {
+            yield;  // This is a generator yielding 0 results.
+        }
     }
 
     /**
