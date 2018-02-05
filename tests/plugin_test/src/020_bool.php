@@ -1,6 +1,6 @@
 <?php
-
-function maybe_bool() : ?bool {
+/** @return ?bool */
+function maybe_bool() {
     switch (rand() % 3) {
     case 0: return true;
     case 1: return false;
