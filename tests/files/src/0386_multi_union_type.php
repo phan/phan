@@ -5,7 +5,7 @@
  */
 function testPipeInTemplate386() {
     if (rand() % 2 > 0) {
-        return [new stdClass()];
+        return [new stdClass()];  // incorrect
     } else {
         return [false, true, null];
     }

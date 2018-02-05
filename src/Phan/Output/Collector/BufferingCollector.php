@@ -9,7 +9,7 @@ use Phan\Output\IssueFilterInterface;
 final class BufferingCollector implements IssueCollectorInterface
 {
 
-    /** @var  IssueInstance[] */
+    /** @var array<string,IssueInstance> */
     private $issues = [];
 
     /** @var IssueFilterInterface|null */
@@ -55,7 +55,7 @@ final class BufferingCollector implements IssueCollectorInterface
     }
 
     /**
-     * @return IssueInstance[]
+     * @return array<string,IssueInstance>
      */
     public function getCollectedIssues():array
     {
@@ -75,7 +75,7 @@ final class BufferingCollector implements IssueCollectorInterface
      * Remove all collected issues (from the parse phase) for the given file paths.
      * Called from daemon mode.
      *
-     * @param string[] $files - the relative paths to those files
+     * @param array<int,string> $files - the relative paths to those files
      * @return void
      */
     public function removeIssuesForFiles(array $files)

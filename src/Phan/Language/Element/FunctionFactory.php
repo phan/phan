@@ -13,7 +13,7 @@ class FunctionFactory
 {
 
     /**
-     * @return Func[]
+     * @return array<int,Func>
      * One or more (alternate) functions/methods begotten from
      * reflection info and internal method data
      */
@@ -30,7 +30,7 @@ class FunctionFactory
     }
 
     /**
-     * @return Func[]
+     * @return array<int,Func>
      * One or more (alternate) functions begotten from
      * reflection info and internal functions data
      */
@@ -45,7 +45,7 @@ class FunctionFactory
         $function = new Func(
             $context,
             $fqsen->getNamespacedName(),
-            new UnionType(),
+            UnionType::empty(),
             0,
             $fqsen
         );
@@ -66,7 +66,7 @@ class FunctionFactory
     }
 
     /**
-     * @return Func[]
+     * @return array<int,Func>
      * One or more (alternate) methods begotten from
      * reflection info and internal method data
      */
@@ -96,7 +96,7 @@ class FunctionFactory
     }
 
     /**
-     * @return Method[]
+     * @return array<int,Method>
      */
     public static function methodListFromReflectionClassAndMethod(
         Context $context,
@@ -118,7 +118,7 @@ class FunctionFactory
         $method = new Method(
             $context,
             $reflection_method->name,
-            new UnionType(),
+            UnionType::empty(),
             $reflection_method->getModifiers(),
             $method_fqsen
         );
@@ -154,7 +154,7 @@ class FunctionFactory
      * @param CodeBase $code_base
      * The global code base holding all state
      *
-     * @return FunctionInterface[]
+     * @return array<int,FunctionInterface>
      * A list of typed functions/methods based on the given method
      */
     public static function functionListFromFunction(
@@ -221,7 +221,7 @@ class FunctionFactory
                     $parameter_name = \str_replace('=', '', $parameter_name);
                 }
 
-                $parameter = new Parameter(
+                $parameter = Parameter::create(
                     $function->getContext(),
                     $parameter_name,
                     $parameter_type,

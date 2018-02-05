@@ -27,12 +27,12 @@ class UndoTracker
     private $current_parsed_file;
 
     /**
-     * @var \Closure[][] operations to undo for a current path
+     * @var array<string,array<int,\Closure>> operations to undo for a current path
      */
     private $undoOperationsForPath = [];
 
     /**
-     * @var string[] Maps file paths to the modification dates and file size of the paths. - On ext4, milliseconds are available, but php APIs all return seconds.
+     * @var array<string,string> Maps file paths to the modification dates and file size of the paths. - On ext4, milliseconds are available, but php APIs all return seconds.
      */
     private $fileModificationState = [];
 
@@ -41,7 +41,7 @@ class UndoTracker
     }
 
     /**
-     * @return string[] - The list of files which are successfully parsed.
+     * @return array<int,string> - The list of files which are successfully parsed.
      * This changes whenever the file list is reloaded from disk.
      * This also includes files which don't declare classes or functions or globals,
      * because those files use classes/functions/constants.
@@ -142,8 +142,8 @@ class UndoTracker
 
     /**
      * @param CodeBase $code_base - code base owning this tracker
-     * @param string[] $new_file_list
-     * @return string[] - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
+     * @param array<int,string> $new_file_list
+     * @return array<int,string> - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
      */
     public function updateFileList(CodeBase $code_base, array $new_file_list, array $file_mapping_contents)
     {

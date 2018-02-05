@@ -1,5 +1,5 @@
 %s:7 PhanTypeMismatchArgument Argument 1 (var) is array but \f() takes resource defined at %s:3
-%s:7 PhanTypeMismatchArgument Argument 1 (var) is string[] but \f() takes resource defined at %s:3
+%s:7 PhanTypeMismatchArgument Argument 1 (var) is array<int,string> but \f() takes resource defined at %s:3
 %s:9 PhanTypeMismatchArgument Argument 1 (var) is bool but \f() takes resource defined at %s:3
+%s:12 PhanTypeMismatchReturn Returning type array<int,string>|bool but g() is declared to return resource
 %s:12 PhanTypeMismatchReturn Returning type array|bool but g() is declared to return resource
-%s:12 PhanTypeMismatchReturn Returning type bool|string[] but g() is declared to return resource

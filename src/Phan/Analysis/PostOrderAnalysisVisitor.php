@@ -22,6 +22,7 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\ClosureType;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
@@ -651,7 +652,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
                     // Set the inferred type of the method based
                     // on what we're returning
-                    $method->getUnionType()->addUnionType($expression_type);
+                    $method->setUnionType($method->getUnionType()->withUnionType($expression_type));
                 }
 
                 // No point in comparing this type to the
@@ -715,8 +716,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             yield from self::deduplicateUnionTypes($this->getReturnTypesOfConditional($context, $node));
             return;
         } elseif ($kind === \ast\AST_ARRAY) {
+            $key_type_enum = GenericArrayType::getKeyTypeOfArrayNode($this->code_base, $context, $node);
             foreach (self::deduplicateUnionTypes($this->getReturnTypesOfArray($context, $node)) as $elem_type) {
-                yield $elem_type->asGenericArrayTypes();
+                yield $elem_type->asGenericArrayTypes($key_type_enum);  // TODO: Infer corresponding key types
             }
             return;
         }
@@ -831,16 +833,17 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 }
 
                 // Don't bother recursing more than one level to iterate over possible types.
-                if ($node->children[$i]->children['value'] instanceof Node) {
+                $value_node = $node->children[$i]->children['value'];
+                if ($value_node instanceof Node) {
                     yield UnionTypeVisitor::unionTypeFromNode(
                         $this->code_base,
                         $context,
-                        $node->children[$i]->children['value'],
+                        $value_node,
                         true
                     );
                 } else {
                     yield Type::fromObject(
-                        $node->children[$i]->children['value']
+                        $value_node
                     )->asUnionType();
                 }
             }
@@ -915,7 +918,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $method = $context_node->getMethod(
                 '__construct',
                 false,
-                false
+                false,
+                true
             );
 
             $class_list = $context_node->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
@@ -1056,7 +1060,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Get the name of the static class being referenced
         $static_class = '';
         if ($node->children['class']->kind == \ast\AST_NAME) {
-            $static_class = $node->children['class']->children['name'];
+            $static_class = (string)$node->children['class']->children['name'];
         }
 
         $method = $this->getStaticMethodOrEmitIssue($node);
@@ -1851,9 +1855,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                                 // Phan already warned about incompatible types.
                                 // But analyze the following statements as if it could have been the type expected,
                                 // to reduce false positives.
-                                $variable->getUnionType()->addUnionType(
+                                $variable->setUnionType($variable->getUnionType()->withUnionType(
                                     $reference_parameter_type
-                                );
+                                ));
                             }
                             // don't modify - assume the function takes the same type in that it returns,
                             // and we want to preserve generic array types for sorting functions (May change later on)
@@ -1863,9 +1867,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         default:
                             // We have no idea what type of reference this is.
                             // Probably user defined code.
-                            $variable->getUnionType()->addUnionType(
+                            $variable->setUnionType($variable->getUnionType()->withUnionType(
                                 $reference_parameter_type
-                            );
+                            ));
                             break;
                     }
                 }
@@ -1892,7 +1896,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * This is used when analyzing callbacks and closures, e.g. in array_map.
      *
-     * @param UnionType[] $argument_types
+     * @param array<int,UnionType> $argument_types
      * An AST node listing the arguments
      *
      * @param FunctionInterface $method
@@ -2135,10 +2139,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // on the argument's type. We'll use this to
         // retest the method with the passed in types
         // TODO: if $argument_type is non-empty and !isType(NullType), instead use setUnionType?
-        $parameter->getNonVariadicUnionType()->addUnionType(
-            $argument_type
-        );
-
+        if (!$parameter->isCloneOfVariadic()) {
+            $parameter->setUnionType($parameter->getUnionType()->withUnionType(
+                $argument_type
+            ));
+        }
 
         // If we're passing by reference, get the variable
         // we're dealing with wrapped up and shoved into

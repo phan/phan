@@ -12,7 +12,7 @@ function test364() {
     $x = get_array_by_ref364();
     p364(next($x));
     p364(prev($x));
-    p364(key($x));  // TODO: Should be stricter if $x had an array type or was an iterator with known key type
+    p364(key($x));  // Guaranteed to be int, string, or false. Only returns keys of arrays or the internal hash table of objects.
     p364(pos(get_array_by_ref364()));
     p364(reset(get_array_by_ref364()));
     p364(array_change_key_case(['X' => 3], CASE_LOWER));

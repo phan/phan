@@ -49,8 +49,9 @@ abstract class TypedElement implements TypedElementInterface
     private $context = null;
 
     /**
-     * @var int[]
-     * A set of issues types to be suppressed
+     * @var array<string,int>
+     * A set of issues types to be suppressed.
+     * Maps to the number of times an issue type was suppressed.
      */
     private $suppress_issue_list = [];
 
@@ -95,10 +96,6 @@ abstract class TypedElement implements TypedElementInterface
         $this->context = $this->context
             ? clone($this->context)
             : $this->context;
-
-        $this->type = $this->type
-            ? clone($this->type)
-            : $this->type;
     }
 
     /**
@@ -123,11 +120,13 @@ abstract class TypedElement implements TypedElementInterface
      * @param UnionType $type
      * Set the type of this element
      *
+     * TODO: A helper addUnionType(), accounting for variadic
+     *
      * @return void
      */
     public function setUnionType(UnionType $type)
     {
-        $this->type = clone($type);
+        $this->type = $type;
     }
 
     /**
@@ -260,7 +259,7 @@ abstract class TypedElement implements TypedElementInterface
     }
 
     /**
-     * @return int[]
+     * @return array<string,int>
      */
     public function getSuppressIssueList() : array
     {

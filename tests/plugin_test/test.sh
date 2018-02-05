@@ -5,7 +5,7 @@ if [ ! -d expected  ]; then
 	echo "Error: must run this script from tests/plugin_test folder" 1>&2
 	exit 1
 fi
-echo "Generting test cases"
+echo "Generating test cases"
 for path in $(echo expected/*.php.expected | LC_ALL=C sort); do cat $path; done > $EXPECTED_PATH
 if [[ $? != 0 ]]; then
 	echo "Failed to concatenate test cases" 1>&2

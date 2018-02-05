@@ -1,0 +1,4 @@
+%s:6 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:9 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:12 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:18 PhanTypeMismatchArgumentInternal Argument 1 (object) is int|string but \get_class() takes object

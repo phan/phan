@@ -208,7 +208,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     }
 
     /**
-     * @return FileRef[]
+     * @return array<string,FileRef>
      * A list of references to this typed structural element.
      */
     public function getReferenceList() : array
@@ -230,6 +230,9 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         return \count($this->reference_list);
     }
 
+    /** @var bool */
+    protected $is_hydrated = false;
+
     /**
      * This method must be called before analysis
      * begins.
@@ -237,13 +240,29 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @return void
      * @override
      */
-    final public function hydrate(CodeBase $code_base)
+    public function hydrate(CodeBase $code_base)
     {
-        if (!$this->isFirstExecution(__METHOD__)) {
+        if ($this->is_hydrated) {  // Same as isFirstExecution(), inlined due to being called frequently.
             return;
         }
+        $this->is_hydrated = true;
 
         $this->hydrateOnce($code_base);
+    }
+
+    /**
+     * This method must be called before analysis begins.
+     * This is identical to hydrate(), but returns true only if this is the first time the element was hydrated.
+     */
+    public function hydrateIndicatingFirstTime(CodeBase $code_base) : bool
+    {
+        if ($this->is_hydrated) {  // Same as isFirstExecution(), inlined due to being called frequently.
+            return false;
+        }
+        $this->is_hydrated = true;
+
+        $this->hydrateOnce($code_base);
+        return true;
     }
 
     protected function hydrateOnce(CodeBase $unused_code_base)

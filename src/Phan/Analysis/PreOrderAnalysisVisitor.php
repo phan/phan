@@ -20,6 +20,7 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Scope\ClassScope;
 use Phan\Language\Scope\ClosureScope;
 use Phan\Language\Type;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\UnionType;
 use ast\Node;
 
@@ -33,13 +34,16 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * The context of the parser at the node for which we'd
      * like to determine a type
      */
+    /*
     public function __construct(
         CodeBase $code_base,
         Context $context
     ) {
         parent::__construct($code_base, $context);
     }
+     */
 
+    /** @param Node $unused_node implementation for unhandled nodes */
     public function visit(Node $unused_node) : Context
     {
         return $this->context;
@@ -462,7 +466,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $func->setHasYield(true);
         if ($func->getUnionType()->isEmpty()) {
             $func->setIsReturnTypeUndefined(true);
-            $func->getUnionType()->addUnionType(Type::fromNamespaceAndName('\\', 'Generator', false)->asUnionType());
+            $func->setUnionType($func->getUnionType()->withType(Type::fromNamespaceAndName('\\', 'Generator', false)));
         }
         if (!$func->isReturnTypeUndefined()) {
             $func_return_type = $func->getUnionType();
@@ -508,7 +512,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $expression_union_type->genericArrayElementTypes();
 
         if ($node->children['value']->kind == \ast\AST_ARRAY) {
-            foreach ($node->children['value']->children ?? [] as $child_node) {
+            foreach ($node->children['value']->children as $child_node) {
                 // $key_node = $child_node->children['key'] ?? null;
                 $value_node = $child_node->children['value'] ?? null;
 
@@ -582,6 +586,14 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 $this->code_base,
                 false
             );
+            if (!$expression_union_type->isEmpty()) {
+                // TODO: Support Traversable<Key, T> then return Key.
+                // If we see array<int,T> or array<string,T> and no other array types, we're reasonably sure the foreach key is an integer or a string, so set it.
+                $union_type_of_array_key = UnionTypeVisitor::arrayKeyUnionTypeOfUnionType($expression_union_type);
+                if ($union_type_of_array_key !== null) {
+                    $variable->setUnionType($union_type_of_array_key);
+                }
+            }
 
             $this->context->addScopeVariable($variable);
         }
@@ -601,13 +613,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitCatch(Node $node) : Context
     {
-        try {
-            $union_type = UnionTypeVisitor::unionTypeFromClassNode(
-                $this->code_base,
-                $this->context,
-                $node->children['class']
-            );
+        $union_type = UnionTypeVisitor::unionTypeFromClassNode(
+            $this->code_base,
+            $this->context,
+            $node->children['class']
+        );
 
+        try {
             $class_list = (new ContextNode(
                 $this->code_base,
                 $this->context,
@@ -623,6 +635,17 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 $node->lineno ?? 0,
                 (string)$exception->getFQSEN()
             );
+
+            // The class doesn't exist. Analyze the variable as if it's a Throwable.
+            // (Wouldn't work for php 5.6, but phan doesn't support php < 7.
+            $variable = Variable::fromNodeInContext(
+                $node->children['var'],
+                $this->context,
+                $this->code_base,
+                false
+            );
+
+            $union_type = $union_type->withType(Type::fromFullyQualifiedString('\Throwable'));
         }
 
         $variable_name = (new ContextNode(

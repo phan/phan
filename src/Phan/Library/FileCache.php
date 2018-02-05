@@ -13,7 +13,7 @@ final class FileCache
     private static $max_size;
 
     /**
-     * @var FileCacheEntry[] - An ordered php associative array, with most recently used at the end of the array.
+     * @var array<string,FileCacheEntry> - An ordered php associative array, with most recently used at the end of the array.
      */
     private static $cache_entries = [];
 
@@ -97,7 +97,7 @@ final class FileCache
     }
 
     /**
-     * @return string[] list of file paths with most recently used entries at the end.
+     * @return array<int,string> list of file paths with most recently used entries at the end.
      */
     public static function getCachedFileList() : array
     {

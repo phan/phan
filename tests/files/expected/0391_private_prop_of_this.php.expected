@@ -1,0 +1,5 @@
+%s:24 PhanAccessPropertyPrivate Cannot access private property \Subclass391::$_prop
+%s:25 PhanUndeclaredProperty Reference to undeclared property \Subclass391->_propOther
+%s:25 PhanUndeclaredProperty Reference to undeclared property \Trait391->_propOther
+%s:29 PhanAccessPropertyPrivate Cannot access private property \Subclass391::$_prop2
+%s:29 PhanUndeclaredProperty Reference to undeclared property \Trait391->_prop2Other

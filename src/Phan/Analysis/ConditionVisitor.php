@@ -4,6 +4,7 @@ namespace Phan\Analysis;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
+use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\IssueException;
@@ -26,6 +27,7 @@ use ast\Node;
 
 // TODO: Make $x != null remove FalseType and NullType from $x
 // TODO: Make $x > 0, $x < 0, $x >= 50, etc.  remove FalseType and NullType from $x
+// TODO: if (a || b || c || d) might get really slow, due to creating both ConditionVisitor and NegatedConditionVisitor
 class ConditionVisitor extends KindVisitorImplementation
 {
     use ConditionVisitorUtil;
@@ -106,9 +108,11 @@ class ConditionVisitor extends KindVisitorImplementation
      */
     public function visitBinaryOp(Node $node) : Context
     {
-        $flags = ($node->flags ?? 0);
+        $flags = $node->flags;
         if ($flags === \ast\flags\BINARY_BOOL_AND) {
             return $this->analyzeShortCircuitingAnd($node->children['left'], $node->children['right']);
+        } elseif ($flags === \ast\flags\BINARY_BOOL_OR) {
+            return $this->analyzeShortCircuitingOr($node->children['left'], $node->children['right']);
         } elseif ($flags === \ast\flags\BINARY_IS_IDENTICAL) {
             $this->checkVariablesDefined($node);
             return $this->analyzeIsIdentical($node->children['left'], $node->children['right']);
@@ -170,6 +174,19 @@ class ConditionVisitor extends KindVisitorImplementation
     }
 
     /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitOr(Node $node) : Context
+    {
+        return $this->analyzeShortCircuitingOr($node->children['left'], $node->children['right']);
+    }
+
+    /**
      * Helper method
      * @param Node|mixed $left
      * a Node or non-node to parse (possibly an AST literal)
@@ -188,10 +205,49 @@ class ConditionVisitor extends KindVisitorImplementation
         if ($left instanceof Node) {
             $this->context = $this($left);
         }
+        // TODO: Warn if !$left
         if ($right instanceof Node) {
             return $this($right);
         }
         return $this->context;
+    }
+
+    /**
+     * Helper method
+     * @param Node|mixed $left
+     * a Node or non-node to parse (possibly an AST literal)
+     *
+     * @param Node|mixed $right
+     * a Node or non-node to parse (possibly an AST literal)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    private function analyzeShortCircuitingOr($left, $right) : Context
+    {
+        // Aside: If left/right is not a node, left/right is a literal such as a number/string, and is either always truthy or always falsey.
+        // Inside of this conditional may be dead or redundant code.
+        if (!($left instanceof Node)) {
+            if ($left) {
+                return $this->context;
+            }
+            return $this($right);
+        }
+        if (!($right instanceof Node)) {
+            if ($right) {
+                return $this->context;
+            }
+            return $this($left);
+        }
+        $code_base = $this->code_base;
+        $context = $this->context;
+        $left_false_context = (new NegatedConditionVisitor($code_base, $context))($left);
+        $left_true_context = (new ConditionVisitor($code_base, $context))($left);
+        // We analyze the right hand side of `cond($x) || cond2($x)` as if `cond($x)` was false.
+        $right_true_context = (new ConditionVisitor($code_base, $left_false_context))($right);
+        // When the ConditionVisitor is true, at least one of the left or right contexts must be true.
+        return (new ContextMergeVisitor($code_base, $context, [$left_true_context, $right_true_context]))->combineChildContextList();
     }
 
     /**
@@ -205,7 +261,7 @@ class ConditionVisitor extends KindVisitorImplementation
     public function visitUnaryOp(Node $node) : Context
     {
         $expr_node = $node->children['expr'];
-        if (($node->flags ?? 0) !== \ast\flags\UNARY_BOOL_NOT) {
+        if ($node->flags !== \ast\flags\UNARY_BOOL_NOT) {
             if ($expr_node instanceof Node) {
                 $this->checkVariablesDefined($expr_node);
             }
@@ -259,8 +315,8 @@ class ConditionVisitor extends KindVisitorImplementation
             $context->setScope($context->getScope()->withVariable(new Variable(
                 $context->withLineNumberStart($var_node->lineno ?? 0),
                 $var_name,
-                new UnionType(),
-                $var_node->flags ?? 0
+                UnionType::empty(),
+                $var_node->flags
             )));
         }
         return $this->removeNullFromVariable($var_node, $context, true);
@@ -360,16 +416,16 @@ class ConditionVisitor extends KindVisitorImplementation
         // (E.g. T|false becomes T, object|T[]|iterable|null becomes object)
         // TODO: Convert `iterable` to `Traversable`?
         // TODO: move to UnionType?
-        $newType = $variable->getUnionType()->objectTypes();
-        if ($newType->isEmpty()) {
-            $newType->addType(ObjectType::instance(false));
+        $new_type = $variable->getUnionType()->objectTypes();
+        if ($new_type->isEmpty()) {
+            $new_type = $new_type->withType(ObjectType::instance(false));
         } else {
             // Convert inferred ?MyClass to MyClass, ?object to object
-            if ($newType->containsNullable()) {
-                $newType = $newType->nonNullableClone();
+            if ($new_type->containsNullable()) {
+                $new_type = $new_type->nonNullableClone();
             }
         }
-        $variable->setUnionType($newType);
+        $variable->setUnionType($new_type);
     }
 
     /**
@@ -377,7 +433,7 @@ class ConditionVisitor extends KindVisitorImplementation
      *
      * This contains Phan's logic for inferring the resulting union types of variables, e.g. in \is_array($x).
      *
-     * @return \Closure[] - The closures to call for a given
+     * @return array<string,\Closure> - The closures to call for a given global function
      */
     private static function initTypeModifyingClosuresForVisitCall() : array
     {
@@ -390,7 +446,7 @@ class ConditionVisitor extends KindVisitorImplementation
             return static function (Variable $variable, array $args) use ($type) {
                 // Otherwise, overwrite the type for any simple
                 // primitive types.
-                $variable->setUnionType(clone($type));
+                $variable->setUnionType($type);
             };
         };
 
@@ -399,16 +455,16 @@ class ConditionVisitor extends KindVisitorImplementation
             // Change the type to match the is_a relationship
             // If we already have generic array types, then keep those
             // (E.g. T[]|false becomes T[], ?array|null becomes array
-            $newType = $variable->getUnionType()->genericArrayTypes();
-            if ($newType->isEmpty()) {
-                $newType->addType(ArrayType::instance(false));
+            $new_type = $variable->getUnionType()->genericArrayTypes();
+            if ($new_type->isEmpty()) {
+                $new_type = ArrayType::instance(false)->asUnionType();
             } else {
                 // Convert inferred (?T)[] to T[], ?array to array
-                if ($newType->containsNullable()) {
-                    $newType = $newType->nonNullableClone();
+                if ($new_type->containsNullable()) {
+                    $new_type = $new_type->nonNullableClone();
                 }
             }
-            $variable->setUnionType($newType);
+            $variable->setUnionType($new_type);
         };
 
         /** @return void */
@@ -416,16 +472,16 @@ class ConditionVisitor extends KindVisitorImplementation
             // Change the type to match the is_a relationship
             // If we already have the `object` type or generic object types, then keep those
             // (E.g. T|false becomes T, object|T[]|iterable|null becomes object)
-            $newType = $variable->getUnionType()->objectTypes();
-            if ($newType->isEmpty()) {
-                $newType->addType(ObjectType::instance(false));
+            $new_type = $variable->getUnionType()->objectTypes();
+            if ($new_type->isEmpty()) {
+                $new_type = ObjectType::instance(false)->asUnionType();
             } else {
                 // Convert inferred ?MyClass to MyClass, ?object to object
-                if ($newType->containsNullable()) {
-                    $newType = $newType->nonNullableClone();
+                if ($new_type->containsNullable()) {
+                    $new_type = $new_type->nonNullableClone();
                 }
             }
-            $variable->setUnionType($newType);
+            $variable->setUnionType($new_type);
         };
         /** @return void */
         $is_a_callback = function (Variable $variable, array $args) use ($object_callback) {
@@ -463,16 +519,16 @@ class ConditionVisitor extends KindVisitorImplementation
             // Change the type to match the is_a relationship
             // If we already have possible callable types, then keep those
             // (E.g. Closure|false becomes Closure)
-            $newType = $variable->getUnionType()->callableTypes();
-            if ($newType->isEmpty()) {
+            $new_type = $variable->getUnionType()->callableTypes();
+            if ($new_type->isEmpty()) {
                 // If there are no inferred types, or the only type we saw was 'null',
                 // assume there this can be any possible scalar.
                 // (Excludes `resource`, which is technically a scalar)
-                $newType->addType(CallableType::instance(false));
-            } elseif ($newType->containsNullable()) {
-                $newType = $newType->nonNullableClone();
+                $new_type = CallableType::instance(false)->asUnionType();
+            } elseif ($new_type->containsNullable()) {
+                $new_type = $new_type->nonNullableClone();
             }
-            $variable->setUnionType($newType);
+            $variable->setUnionType($new_type);
         };
 
         $float_callback = $make_basic_assertion_callback('float');
@@ -537,7 +593,7 @@ class ConditionVisitor extends KindVisitorImplementation
              $map = self::initTypeModifyingClosuresForVisitCall();
         }
 
-        $function_name = strtolower($raw_function_name);
+        $function_name = \strtolower($raw_function_name);
         $type_modification_callback = $map[$function_name] ?? null;
         if ($type_modification_callback === null) {
             return $this->context;
@@ -620,5 +676,36 @@ class ConditionVisitor extends KindVisitorImplementation
             // TODO: emit no-op warning
             return $this->context;
         }
+    }
+
+    /**
+     * Useful for analyzing `if ($x = foo() && $x->method())`
+     * TODO: Remove empty/false/null types from $x
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitAssign(Node $node) : Context
+    {
+        return (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssign($node);
+    }
+
+    /**
+     * Useful for analyzing `if ($x = foo() && $x->method())`
+     * TODO: Remove empty/false/null types from $x
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitAssignRef(Node $node) : Context
+    {
+        return (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssignRef($node);
     }
 }

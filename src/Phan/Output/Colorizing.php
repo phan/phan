@@ -92,14 +92,14 @@ class Colorizing
 
     /**
      * @param string $template
-     * @param int[]|string[] $template_parameters
+     * @param array<int,int|string> $template_parameters
      */
     public static function colorizeTemplate(
         string $template,
         array $template_parameters
     ) : string {
         $i = 0;
-        /** @param string[] $matches */
+        /** @param array<int,string> $matches */
         return preg_replace_callback('/{([A-Z_]+)}|%[sdf]/', function (array $matches) use ($template, $template_parameters, &$i) : string {
             $j = $i++;
             if ($j >= count($template_parameters)) {
@@ -170,7 +170,7 @@ class Colorizing
     {
         self::$color_scheme = self::DEFAULT_COLOR_FOR_TEMPLATE;
         foreach (Config::getValue('color_scheme') ?? [] as $template_type => $color_name) {
-            if (!\is_scalar($color_name) || !\array_key_exists($color_name, self::STYLES)) {
+            if (!\is_string($color_name) || !\array_key_exists($color_name, self::STYLES)) {
                 error_log("Invalid color name ($color_name)");
                 continue;
             }

@@ -47,7 +47,14 @@ return [
 
     // If enabled, scalars (int, float, bool, string, null)
     // are treated as if they can cast to each other.
+    // This does not affect checks of array keys. See scalar_array_key_cast.
     'scalar_implicit_cast' => false,
+
+    // If enabled, any scalar array keys (int, string)
+    // are treated as if they can cast to each other.
+    // E.g. array<int,stdClass> can cast to array<string,stdClass> and vice versa.
+    // Normally, a scalar type such as int could only cast to/from int and mixed.
+    'scalar_array_key_cast' => false,
 
     // If this has entries, scalars (int, float, bool, string, null)
     // are allowed to perform the casts listed.
@@ -422,6 +429,7 @@ return [
     // Use a different extension from php to avoid accidentally loading these.
     // The 'mkstubs' script can be used to generate your own stubs (compatible with php 7.0+ right now)
     'autoload_internal_extension_signatures' => [
+        'ctype'       => '.phan/internal_stubs/ctype.phan_php',
         'pcntl'       => '.phan/internal_stubs/pcntl.phan_php',
         'posix'       => '.phan/internal_stubs/posix.phan_php',
         'readline'    => '.phan/internal_stubs/readline.phan_php',

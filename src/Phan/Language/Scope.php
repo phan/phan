@@ -15,7 +15,7 @@ abstract class Scope
     /**
      * @var Scope|null
      */
-    private $parent_scope = null;
+    protected $parent_scope = null;
 
     /**
      * @var FQSEN|null
@@ -23,12 +23,12 @@ abstract class Scope
     protected $fqsen = null;
 
     /**
-     * @var Variable[]
+     * @var array<string,Variable>
      */
     protected $variable_map = [];
 
     /**
-     * @var TemplateType[]
+     * @var array<string,TemplateType>
      * A map from template type identifiers to the
      * TemplateType that parameterizes the generic class
      * in this scope.
@@ -53,10 +53,7 @@ abstract class Scope
      */
     public function hasParentScope() : bool
     {
-        return (
-            !empty($this->parent_scope)
-            && $this->parent_scope !== null
-        );
+        return $this->parent_scope !== null;
     }
 
     /**
@@ -74,7 +71,7 @@ abstract class Scope
      */
     public function hasFQSEN() : bool
     {
-        return !empty($this->fqsen);
+        return $this->fqsen !== null;
     }
 
     /**
@@ -164,7 +161,7 @@ abstract class Scope
      */
     public function hasVariableWithName(string $name) : bool
     {
-        return (!empty($this->variable_map[$name]));
+        return \array_key_exists($name, $this->variable_map);
     }
 
     /**
@@ -176,7 +173,7 @@ abstract class Scope
     }
 
     /**
-     * @return Variable[]
+     * @return array<string,Variable>
      * A map from name to Variable in this scope
      */
     public function getVariableMap() : array
@@ -267,7 +264,7 @@ abstract class Scope
     }
 
     /**
-     * @return TemplateType[]
+     * @return array<string,TemplateType>
      * The set of all template types parameterizing this generic
      * class
      */

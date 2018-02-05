@@ -10,7 +10,7 @@ class Prep
      * Scan a list of files, applying the given closure to every
      * AST node
      *
-     * @param string[] $file_list
+     * @param array<int,string> $file_list
      * A list of files to scan
      *
      * @param \Closure $visit_node
@@ -62,7 +62,7 @@ class Prep
         $visit_node($node, $file_path);
 
         // Scan all children recursively
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             if (!($child_node instanceof Node)) {
                 continue;
             }

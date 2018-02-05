@@ -14,7 +14,10 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
+use Phan\Language\Type\IntType;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
@@ -31,23 +34,48 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
 {
 
     /**
-     * @return \Closure[]
+     * @return array<string,\Closure>
      */
     private static function getReturnTypeOverridesStatic(CodeBase $code_base) : array
     {
-        $mixed_type = MixedType::instance(false);
-        $false_type = FalseType::instance(false);
-        $array_type = ArrayType::instance(false);
+        $mixed_type  = MixedType::instance(false);
+        $false_type  = FalseType::instance(false);
+        $array_type  = ArrayType::instance(false);
+        $int_type    = IntType::instance(false);
+        $string_type = StringType::instance(false);
+        $int_or_string_or_false = new UnionType([$int_type, $string_type, $false_type]);
+
         $get_element_type_of_first_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type, $false_type) : UnionType {
             if (\count($args) >= 1) {
                 $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
                 $element_types = $array_type->genericArrayElementTypes();
                 if (!$element_types->isEmpty()) {
-                    $element_types->addType($false_type);
-                    return $element_types;
+                    return $element_types->withType($false_type);
                 }
             }
             return $mixed_type->asUnionType();
+        };
+        $get_key_type_of_first_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($int_or_string_or_false, $false_type) : UnionType {
+            if (\count($args) >= 1) {
+                $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+                $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($array_type);
+                if ($key_type_enum !== GenericArrayType::KEY_MIXED) {
+                    $key_type = GenericArrayType::unionTypeForKeyType($key_type_enum);
+                    return $key_type->withType($false_type);
+                }
+            }
+            return $int_or_string_or_false;
+        };
+        $get_key_type_of_second_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($int_or_string_or_false, $false_type) : UnionType {
+            if (\count($args) >= 2) {
+                $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
+                $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($array_type);
+                if ($key_type_enum !== GenericArrayType::KEY_MIXED) {
+                    $key_type = GenericArrayType::unionTypeForKeyType($key_type_enum);
+                    return $key_type->withType($false_type);
+                }
+            }
+            return $int_or_string_or_false;
         };
         $get_first_array_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) >= 1) {
@@ -71,7 +99,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             if (\count($args) == 2) {
                 $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
                 if (!$element_types->isEmpty()) {
-                    return $element_types->asNonEmptyGenericArrayTypes();
+                    $key_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+                    $key_type_enum = GenericArrayType::keyTypeFromUnionTypeValues($key_types);
+                    return $element_types->asNonEmptyGenericArrayTypes($key_type_enum);
                 }
             }
             return $array_type->asUnionType();
@@ -80,7 +110,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
         $array_fill_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) == 3) {
                 $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2]);
-                return $element_types->asNonEmptyGenericArrayTypes();
+                return $element_types->asNonEmptyGenericArrayTypes(GenericArrayType::KEY_INT);
             }
             return $array_type->asUnionType();
         };
@@ -130,25 +160,25 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             if (\count($function_like_list) === 0) {
                 return $mixed_type->asUnionType();
             }
-            $function_return_types = new UnionType();
+            $function_return_types = UnionType::empty();
             foreach ($function_like_list as $function_like) {
                 // TODO: Support analysis of map/reduce functions with dependent union types?
-                $function_return_types->addUnionType($function_like->getUnionType());
+                $function_return_types = $function_return_types->withUnionType($function_like->getUnionType());
             }
             if ($function_return_types->isEmpty()) {
-                $function_return_types->addType($mixed_type);
+                $function_return_types = $function_return_types->withType($mixed_type);
             }
             return $function_return_types;
         };
 
         $merge_array_types_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
-            $types = new UnionType();
+            $types = UnionType::empty();
             foreach ($args as $arg) {
                 $passed_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg);
-                $types->addUnionType($passed_array_type->genericArrayTypes());
+                $types = $types->withUnionType($passed_array_type->genericArrayTypes());
             }
             if ($types->isEmpty()) {
-                $types->addType($array_type);
+                $types = $types->withType($array_type);
             }
             return $types;
         };
@@ -167,19 +197,29 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
                 return $array_type->asUnionType();
             }
             $arguments = \array_slice($args, 1);
-            $possible_return_types = new UnionType();
-            $cache = [];
-            // Don't calculate argument types more than once.
-            $get_argument_type_for_array_map = function ($argument, int $i) use ($code_base, $context, &$cache) : UnionType {
-                if (isset($cache[$i])) {
-                    return $cache[$i];
+            $possible_return_types = UnionType::empty();
+            $cache_outer = [];
+            $get_argument_type = function ($argument, int $i) use ($code_base, $context, &$cache_outer) : UnionType {
+                if (isset($cache_outer[$i])) {
+                    return $cache_outer[$i];
                 }
                 $argument_type = UnionTypeVisitor::unionTypeFromNode(
                     $code_base,
                     $context,
                     $argument,
                     true
-                )->genericArrayElementTypes();
+                );
+                $cache_outer[$i] = $argument_type;
+                return $argument_type;
+            };
+            $cache = [];
+            // Don't calculate argument types more than once.
+            $get_argument_type_for_array_map = function ($argument, int $i) use ($get_argument_type, &$cache) : UnionType {
+                if (isset($cache[$i])) {
+                    return $cache[$i];
+                }
+                // Convert T[] to T
+                $argument_type = $get_argument_type($argument, $i)->genericArrayElementTypes();
                 $cache[$i] = $argument_type;
                 return $argument_type;
             };
@@ -192,9 +232,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
                     $get_argument_type_for_array_map
                 );
                 if ($map_function->hasDependentReturnType()) {
-                    $possible_return_types->addUnionType($map_function->getDependentReturnType($code_base, $context, $arguments));
+                    $possible_return_types = $possible_return_types->withUnionType($map_function->getDependentReturnType($code_base, $context, $arguments));
                 } else {
-                    $possible_return_types->addUnionType($map_function->getUnionType());
+                    $possible_return_types = $possible_return_types->withUnionType($map_function->getUnionType());
                 }
             }
             if (Config::get_track_references()) {
@@ -215,19 +255,31 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             if ($possible_return_types->isEmpty()) {
                 return $array_type->asUnionType();
             }
-            return $possible_return_types->elementTypesToGenericArray();
+            $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($get_argument_type($arguments[0], 0));
+
+            return $possible_return_types->elementTypesToGenericArray($key_type_enum);
         };
         $array_pad_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) != 3) {
                 return $array_type->asUnionType();
             }
             $padded_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
-            $result_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2])->asGenericArrayTypes();
-            $result_types->addUnionType($padded_array_type->genericArrayTypes());
+            $result_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2])->asGenericArrayTypes(GenericArrayType::KEY_INT);
+            $result_types = $result_types->withUnionType($padded_array_type->genericArrayTypes());
             if ($result_types->isEmpty()) {
-                $result_types->addType($array_type);
+                $result_types = $result_types->withType($array_type);
             }
             return $result_types;
+        };
+        $array_keys_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type, $int_type, $string_type) : UnionType {
+            if (\count($args) != 1) {
+                return $array_type->asUnionType();
+            }
+            $key_union_type = UnionTypeVisitor::unionTypeOfArrayKeyForNode($code_base, $context, $args[0]);
+            if ($key_union_type === null) {
+                $key_union_type = new UnionType([$int_type, $string_type], true);
+            }
+            return $key_union_type->asGenericArrayTypes(GenericArrayType::KEY_INT);
         };
         return [
             // Gets the element types of the first
@@ -239,6 +291,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             'pos'         => $get_element_type_of_first_arg,  // alias of 'current'
             'prev'        => $get_element_type_of_first_arg,
             'reset'       => $get_element_type_of_first_arg,
+
+            'key'          => $get_key_type_of_first_arg,
+            'array_search' => $get_key_type_of_second_arg,
 
             // array_filter and array_map
             'array_map'    => $array_map_callback,
@@ -259,6 +314,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             'array_intersect_key'       => $merge_array_types_callback,
             'array_intersect_uassoc'    => $merge_array_types_callback,
             'array_intersect_ukey'      => $merge_array_types_callback,
+            'array_keys'                => $array_keys_callback,
             'array_merge'               => $merge_array_types_callback,
             'array_merge_recursive'     => $merge_array_types_callback,
             'array_pad'                 => $array_pad_callback,
@@ -277,7 +333,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
     }
 
     /**
-     * @return \Closure[]
+     * @return array<string,\Closure>
      */
     public function getReturnTypeOverrides(CodeBase $code_base) : array
     {
