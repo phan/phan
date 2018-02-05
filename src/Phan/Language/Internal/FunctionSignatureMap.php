@@ -4475,7 +4475,7 @@ return [
 'Iterator::key' => ['int|string'],
 'Iterator::next' => ['void'],
 'Iterator::rewind' => ['void'],
-'iterator_to_array' => ['array', 'it'=>'Traversable', 'use_keys='=>'bool'],
+'iterator_to_array' => ['array', 'it'=>'iterable', 'use_keys='=>'bool'],
 'Iterator::valid' => ['bool'],
 'java_last_exception_clear' => [''],
 'java_last_exception_get' => ['object'],

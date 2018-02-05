@@ -1,0 +1,1 @@
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 (it) is string but \iterator_to_array() takes iterable
