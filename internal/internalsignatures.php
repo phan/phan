@@ -305,7 +305,7 @@ class IncompatibleSignatureDetector {
             $new_signatures[$method_name] = self::updateSignature($method_name, $arguments);
         }
         $new_signature_path = $original_signature_path . '.new';
-        self::info("Saving modified function signatures to $new_signature_path (Only updating return types)\n");
+        self::info("Saving modified function signatures to $new_signature_path (updating param and return types)\n");
         file_put_contents($new_signature_path, self::serializeSignatures($new_signatures));
     }
 
@@ -342,14 +342,36 @@ class IncompatibleSignatureDetector {
      */
     private function updateSignature(string $function_like_name, array $arguments_from_phan) {
         $return_type = $arguments_from_phan[0];
+        $arguments_from_svn = null;
         if ($return_type === '') {
-            $arguments_from_svn = $this->parseFunctionLikeSignature($function_like_name);
-            if (!is_null($arguments_from_svn)) {
-                $svn_return_type = $arguments_from_svn[0];
-                if ($svn_return_type !== '') {
-                    self::debug("A better Phan return type for $function_like_name is " . $svn_return_type . "\n");
-                    $arguments_from_phan[0] = $svn_return_type;
-                }
+            $arguments_from_svn = $arguments_from_svn ?? $this->parseFunctionLikeSignature($function_like_name);
+            if (is_null($arguments_from_svn)) {
+                return $arguments_from_phan;
+            }
+            $svn_return_type = $arguments_from_svn[0] ?? '';
+            if ($svn_return_type !== '') {
+                self::debug("A better Phan return type for $function_like_name is " . $svn_return_type . "\n");
+                $arguments_from_phan[0] = $svn_return_type;
+            }
+        }
+        $param_index = 0;
+        foreach ($arguments_from_phan as $param_name => $param_type_from_phan) {
+            if ($param_name === 0) {
+                continue;
+            }
+            $param_index++;
+            if ($param_type_from_phan !== '') {
+                continue;
+            }
+            $arguments_from_svn = $arguments_from_svn ?? $this->parseFunctionLikeSignature($function_like_name);
+            if (is_null($arguments_from_svn)) {
+                return $arguments_from_phan;
+            }
+            $arguments_from_svn_list = array_values($arguments_from_svn);  // keys are 0, 1, 2,...
+            $param_from_svn = $arguments_from_svn_list[$param_index] ?? '';
+            if ($param_from_svn !== '') {
+                self::debug("A better Phan param type for $function_like_name (for param #$param_index called \$$param_name) is $param_from_svn\n");
+                $arguments_from_phan[$param_name] = $param_from_svn;
             }
         }
         // TODO: Update param types
@@ -369,7 +391,7 @@ class IncompatibleSignatureDetector {
 
     private static function debug(string $msg) {
         // uncomment the below line to see debug output
-        // fwrite(STDERR, $msg;
+        // fwrite(STDERR, $msg);
     }
 
     private static function info(string $msg) {
