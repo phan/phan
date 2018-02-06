@@ -4430,7 +4430,7 @@ return [
 'ip2long' => ['int|false', 'ip_address'=>'string'],
 'iptcembed' => ['array', 'iptcdata'=>'string', 'jpeg_file_name'=>'string', 'spool='=>'int'],
 'iptcparse' => ['array|false', 'iptcdata'=>'string'],
-'is_a' => ['bool', 'object_or_string'=>'object', 'class_name'=>'string', 'allow_string='=>'bool'],
+'is_a' => ['bool', 'object_or_string'=>'object|string', 'class_name'=>'string', 'allow_string='=>'bool'],
 'is_array' => ['bool', 'var'=>'mixed'],
 'is_bool' => ['bool', 'var'=>'mixed'],
 'is_callable' => ['bool', 'var'=>'mixed', 'syntax_only='=>'bool', '&w_callable_name='=>'string'],
