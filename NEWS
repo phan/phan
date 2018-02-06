@@ -51,6 +51,9 @@ New Features(Analysis)
   E.g. `$isValid = ($x instanceof MyClass && $x->isValid())` will now consistently check that isValid() exists on MyClass.
 + Improve analysis of cases such as `if (!($x instanceof MyClass) || $x->method())`
   or `if (!(cond($x) && othercond($x)))`
++ Add a large number of param and return type signatures for internal functions and methods,
+  for params and return types that were previously untyped.
+  (Imported from docs.php.net's SVN repo)
 
 Plugins
 + Fix bugs in NonBoolBranchPlugin and NonBoolInLogicalArithPlugin (#1413, #1410)
