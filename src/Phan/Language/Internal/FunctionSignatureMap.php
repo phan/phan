@@ -7726,7 +7726,7 @@ return [
 'ReflectionMethod::setAccessible' => ['void', 'visible'=>'bool'],
 'ReflectionMethod::__toString' => ['string'],
 'ReflectionObject::__construct' => ['void', 'argument'=>'object'],
-'ReflectionObject::export' => ['?string', 'argument'=>'string|object', 'return='=>'bool'],
+'ReflectionObject::export' => ['?string', 'argument'=>'object', 'return='=>'bool'],
 'ReflectionParameter::allowsNull' => ['bool'],
 'ReflectionParameter::canBePassedByValue' => ['bool'],
 'ReflectionParameter::__clone' => ['void'],
