@@ -13,6 +13,7 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Type\StringType;
+use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\PluginV2;
@@ -38,6 +39,8 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
     private static function getReturnTypeOverridesStatic(CodeBase $code_base) : array
     {
         $string_union_type = StringType::instance(false)->asUnionType();
+        $true_union_type = TrueType::instance(false)->asUnionType();
+        $string_or_true_union_type = $string_union_type->withUnionType($true_union_type);
         $void_union_type = VoidType::instance(false)->asUnionType();
         $nullable_string_union_type = StringType::instance(true)->asUnionType();
 
@@ -71,21 +74,12 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             };
         };
 
-        $make_string_or_void_method = static function (int $expected_bool_pos) use (
-            $string_union_type,
-            $void_union_type,
-            $nullable_string_union_type,
-            $make_dependent_type_method
-        ) : \Closure {
-            return $make_dependent_type_method($expected_bool_pos, $string_union_type, $void_union_type, $nullable_string_union_type);
-        };
-
         $json_decode_array_types = UnionType::fromFullyQualifiedString('array|string|float|int|bool|null');
         $json_decode_object_types = UnionType::fromFullyQualifiedString('\stdClass|array<int,mixed>|string|float|int|bool|null');
         $json_decode_array_or_object_types = UnionType::fromFullyQualifiedString('\stdClass|array|string|float|int|bool|null');
 
-        $string_if_2_true = $make_string_or_void_method(1);
-        $string_if_3_true = $make_string_or_void_method(2);
+        $string_if_2_true           = $make_dependent_type_method(1, $string_union_type, $void_union_type, $nullable_string_union_type);
+        $string_if_2_true_else_true = $make_dependent_type_method(1, $string_union_type, $true_union_type, $string_or_true_union_type);
 
         /** @return UnionType */
         $json_decode_return_type_handler = static function (
@@ -121,7 +115,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
         return [
             // commonly used functions where the return type depends on a passed in boolean
             'var_export'                => $string_if_2_true,
-            'print_r'                   => $string_if_3_true,
+            'print_r'                   => $string_if_2_true_else_true,
             'json_decode'               => $json_decode_return_type_handler,
         ];
     }

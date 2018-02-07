@@ -7157,7 +7157,7 @@ return [
 'prev' => ['mixed', '&rw_array_arg'=>'array'],
 'printf' => ['int', 'format'=>'string', '...args='=>'string|int|float'],
 'print' => ['int', 'arg'=>'string'],
-'print_r' => ['string|null', 'var'=>'mixed', 'return='=>'bool'],
+'print_r' => ['string|true', 'var'=>'mixed', 'return='=>'bool'],
 'proc_close' => ['int', 'process'=>'resource'],
 'proc_get_status' => ['array', 'process'=>'resource'],
 'proc_nice' => ['bool', 'priority'=>'int'],
