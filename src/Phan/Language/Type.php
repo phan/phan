@@ -1293,6 +1293,16 @@ class Type
 
     /**
      * @return bool
+     * True if this type is possibly an object (or the phpdoc `object`)
+     * This is the same as isObject(), except that it returns true for the exact class of IterableType.
+     */
+    public function isPossiblyObject() : bool
+    {
+        return true;  // Overridden in various subclasses
+    }
+
+    /**
+     * @return bool
      * True if this type is iterable.
      */
     public function isIterable() : bool

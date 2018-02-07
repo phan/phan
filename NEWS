@@ -55,6 +55,8 @@ New Features(Analysis)
   for params and return types that were previously untyped.
   (Imported from docs.php.net's SVN repo)
 + More precise analysis of the return types of `var_export()`, `print_r()`, and `json_decode()` (#1326, #1327)
++ Improve type narrowing from `iterable` to `\Traversable`/`array` (#1427)
+  This change affects `is_array()`/`is_object()` checks and their negations.
 
 Plugins
 + Fix bugs in NonBoolBranchPlugin and NonBoolInLogicalArithPlugin (#1413, #1410)
