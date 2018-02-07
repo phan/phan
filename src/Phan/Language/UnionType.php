@@ -1576,6 +1576,20 @@ class UnionType implements \Serializable
     }
 
     /**
+     * Returns true if at least one type could possibly be an object.
+     * E.g. returns true for iterator.
+     * NOTE: this returns false for `mixed`
+     *
+     * @return bool
+     */
+    public function hasPossiblyObjectTypes() : bool
+    {
+        return $this->hasTypeMatchingCallback((function (Type $type) : bool {
+            return $type->isPossiblyObject();
+        }));
+    }
+
+    /**
      * Returns the types for which is_scalar($x) would be true.
      * This means null/nullable is removed.
      * Takes "MyClass|int|?bool|array|?object" and returns "int|bool"

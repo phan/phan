@@ -61,4 +61,9 @@ final class TemplateType extends Type
         // Not sure if this will be called.
         return true;
     }
+
+    public function isPossiblyObject() : bool
+    {
+        return true;
+    }
 }

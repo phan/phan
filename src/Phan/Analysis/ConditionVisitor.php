@@ -23,6 +23,7 @@ use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
+use Phan\Language\UnionTypeBuilder;
 use ast\Node;
 
 // TODO: Make $x != null remove FalseType and NullType from $x
@@ -390,7 +391,7 @@ class ConditionVisitor extends KindVisitorImplementation
                         (string)$type
                     );
                 }
-                $this->analyzeIsObjectAssertion($variable);
+                self::analyzeIsObjectAssertion($variable);
             }
             // Overwrite the variable with its new type
             $context = $context->withScopeVariable(
@@ -413,19 +414,19 @@ class ConditionVisitor extends KindVisitorImplementation
     {
         // Change the type to match is_object relationship
         // If we already have the `object` type or generic object types, then keep those
-        // (E.g. T|false becomes T, object|T[]|iterable|null becomes object)
-        // TODO: Convert `iterable` to `Traversable`?
-        // TODO: move to UnionType?
-        $new_type = $variable->getUnionType()->objectTypes();
-        if ($new_type->isEmpty()) {
-            $new_type = $new_type->withType(ObjectType::instance(false));
-        } else {
-            // Convert inferred ?MyClass to MyClass, ?object to object
-            if ($new_type->containsNullable()) {
-                $new_type = $new_type->nonNullableClone();
+        // (E.g. T|false becomes T, T[]|iterable|null becomes Traversable, object|bool becomes object)
+        $new_type_builder = new UnionTypeBuilder();
+        foreach ($variable->getUnionType()->getTypeSet() as $type) {
+            if ($type->isObject()) {
+                $new_type_builder->addType($type->withIsNullable(false));
+                continue;
+            }
+            if (\get_class($type) === IterableType::class) {
+                // An iterable is either an array or a Traversable.
+                $new_type_builder->addType(Type::fromFullyQualifiedString('\Traversable'));
             }
         }
-        $variable->setUnionType($new_type);
+        $variable->setUnionType($new_type_builder->isEmpty() ? ObjectType::instance(false)->asUnionType() : $new_type_builder->getUnionType());
     }
 
     /**
@@ -451,37 +452,28 @@ class ConditionVisitor extends KindVisitorImplementation
         };
 
         /** @return void */
-        $array_callback = static function (Variable $variable, array $args) {
+        $array_type = ArrayType::instance(false);
+        $array_callback = static function (Variable $variable, array $args) use ($array_type) {
             // Change the type to match the is_a relationship
             // If we already have generic array types, then keep those
             // (E.g. T[]|false becomes T[], ?array|null becomes array
-            $new_type = $variable->getUnionType()->genericArrayTypes();
-            if ($new_type->isEmpty()) {
-                $new_type = ArrayType::instance(false)->asUnionType();
-            } else {
-                // Convert inferred (?T)[] to T[], ?array to array
-                if ($new_type->containsNullable()) {
-                    $new_type = $new_type->nonNullableClone();
+            $new_type_builder = new UnionTypeBuilder();
+            foreach ($variable->getUnionType()->getTypeSet() as $type) {
+                if ($type->isGenericArray()) {
+                    $new_type_builder->addType($type->withIsNullable(false));
+                    continue;
+                }
+                if (\get_class($type) === IterableType::class) {
+                    // An iterable is either an array or a Traversable.
+                    $new_type_builder->addType($array_type);
                 }
             }
-            $variable->setUnionType($new_type);
+            $variable->setUnionType($new_type_builder->isEmpty() ? $array_type->asUnionType() : $new_type_builder->getUnionType());
         };
 
         /** @return void */
         $object_callback = static function (Variable $variable, array $args) {
-            // Change the type to match the is_a relationship
-            // If we already have the `object` type or generic object types, then keep those
-            // (E.g. T|false becomes T, object|T[]|iterable|null becomes object)
-            $new_type = $variable->getUnionType()->objectTypes();
-            if ($new_type->isEmpty()) {
-                $new_type = ObjectType::instance(false)->asUnionType();
-            } else {
-                // Convert inferred ?MyClass to MyClass, ?object to object
-                if ($new_type->containsNullable()) {
-                    $new_type = $new_type->nonNullableClone();
-                }
-            }
-            $variable->setUnionType($new_type);
+            self::analyzeIsObjectAssertion($variable);
         };
         /** @return void */
         $is_a_callback = function (Variable $variable, array $args) use ($object_callback) {
