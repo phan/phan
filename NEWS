@@ -54,6 +54,7 @@ New Features(Analysis)
 + Add a large number of param and return type signatures for internal functions and methods,
   for params and return types that were previously untyped.
   (Imported from docs.php.net's SVN repo)
++ More precise analysis of the return types of `var_export()`, `print_r()`, and `json_decode()` (#1326, #1327)
 
 Plugins
 + Fix bugs in NonBoolBranchPlugin and NonBoolInLogicalArithPlugin (#1413, #1410)
