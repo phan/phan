@@ -410,10 +410,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     // If this is not pass-by-reference variable we
                     // have a problem
                     if (!($use->flags & \ast\flags\PARAM_REF)) {
-                        $this->emitIssue(
+                        Issue::maybeEmitWithParameters(
+                            $this->code_base,
+                            clone($context)->withLineNumberStart($use->lineno),
                             Issue::UndeclaredVariable,
                             $node->lineno ?? 0,
-                            $variable_name
+                            [$variable_name]
                         );
                         continue;
                     } else {
