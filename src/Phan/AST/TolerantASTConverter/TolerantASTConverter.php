@@ -2494,9 +2494,11 @@ Node\SourceFileNode
     {
         $nameParts = $name->nameParts;
         // TODO: Handle error case
-        return \implode('', \array_map(function (Token $token) : string {
-            return \trim(self::tokenToString($token));
-        }, $nameParts));
+        $result = '';
+        foreach ($nameParts as $part) {
+            $result .= \trim(self::tokenToString($part));
+        }
+        return $result;
     }
 
     const _NODES_WITH_NULL_DOC_COMMENT = [
