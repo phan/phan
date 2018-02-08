@@ -105,11 +105,11 @@ class NodeDumper
                 $this->include_offset ? ' (@' . $ast_node->getStart() . ')' : ''
             );
 
-            $result = [$first_part];
+            $result = $first_part;
             foreach ($ast_node->getChildNodesAndTokens() as $name => $child) {
-                $result[] = $this->dumpTreeAsString($child, $name, $padding . $this->indent);
+                $result .= $this->dumpTreeAsString($child, $name, $padding . $this->indent);
             }
-            return \implode('', $result);
+            return $result;
         } elseif ($ast_node instanceof Token) {
             return \sprintf(
                 "%s%s%s: %s%s%s: %s\n",

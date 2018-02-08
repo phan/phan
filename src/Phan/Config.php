@@ -937,10 +937,7 @@ class Config
             return $relative_path;
         }
 
-        return \implode(DIRECTORY_SEPARATOR, [
-            Config::getProjectRootDirectory(),
-            $relative_path
-        ]);
+        return Config::getProjectRootDirectory() . DIRECTORY_SEPARATOR .  $relative_path;
     }
 }
 

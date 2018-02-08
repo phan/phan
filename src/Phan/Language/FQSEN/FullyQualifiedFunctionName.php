@@ -71,7 +71,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
 
         // For functions we don't use the context's namespace if
         // there is no NS on the call.
-        $namespace = implode('\\', array_filter($parts));
+        $namespace = \implode('\\', array_filter($parts));
 
         return static::make(
             $namespace,
@@ -84,12 +84,11 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
         Context $context,
         Node $node
     ) : FullyQualifiedFunctionName {
-        $hash_material = implode('|', [
-            $context->getFile(),
-            $context->getLineNumberStart(),
-            $node->children['__declId'],
-        ]);
-        // TODO: hash args
+        $hash_material =
+            $context->getFile() . '|' .
+            $context->getLineNumberStart() . '|' .
+            $node->children['__declId'];
+
         $name = 'closure_' . substr(md5($hash_material), 0, 12);
 
         return static::fromStringInContext(
