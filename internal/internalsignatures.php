@@ -54,21 +54,29 @@ class IncompatibleSignatureDetector {
         return $this->files_for_function_name_list;
     }
 
+    private function scandirForXML(string $dir) : array {
+        $result = [];
+        foreach (self::scandir($dir) as $basename) {
+            if (substr($basename, -4) !== '.xml') {
+                continue;
+            }
+            $full_path = "$dir/$basename";
+            if (is_file($full_path)) {
+                $normalized_name = strtolower(str_replace('-', '_', substr($basename, 0, -4)));
+                $result[$full_path] = $normalized_name;
+            }
+        }
+        return $result;;
+    }
+
     private function populateFilesForFunctionNameList() {
         $this->files_for_function_name_list = [];
         $reference_directory = $this->reference_directory;
         foreach (self::scandir($reference_directory) as $subpath) {
             $functions_subsubdir = "$reference_directory/$subpath/functions";
             if (is_dir($functions_subsubdir)) {
-                foreach (self::scandir($functions_subsubdir) as $function_doc_file) {
-                    if (substr($function_doc_file, -4) !== '.xml') {
-                        continue;
-                    }
-                    $function_doc_fullpath = "$functions_subsubdir/$function_doc_file";
-                    if (is_file($function_doc_fullpath)) {
-                        $function_name = strtolower(str_replace('-', '_', substr($function_doc_file, 0, -4)));
-                        $this->files_for_function_name_list[$function_name][$function_doc_fullpath] = $function_doc_fullpath;
-                    }
+                foreach (self::scandirForXML($functions_subsubdir) as $function_doc_fullpath => $function_name) {
+                    $this->files_for_function_name_list[$function_name][$function_doc_fullpath] = $function_doc_fullpath;
                 }
             }
         }
@@ -113,6 +121,7 @@ class IncompatibleSignatureDetector {
         $detector = new IncompatibleSignatureDetector($argv[1]);
         $detector->selfTest();
 
+        $detector->addMissingFunctionLikeSignatures();
         $detector->updateFunctionSignatures();
     }
 
@@ -163,8 +172,46 @@ class IncompatibleSignatureDetector {
             return null;
         }
         // Not sure if there's a good way of using an external entity file in PHP.
-        $signature_file_contents = $this->normalizeEntityFile($signature_file_contents);
-        return $this->parseFunctionLikeSignatureForContents($function_name, $signature_file_contents);
+        $xml = $this->getSimpleXMLForFile($signature_file);
+        return $this->parseFunctionLikeSignatureForXML("{$class_name}::{$method_name}", $xml);
+    }
+
+    /**
+     * @return ?array<string,SimpleXMLElement>
+     */
+    public function getMethodsForClassName(string $class_name) : ?array {
+        $class_name_lc = strtolower($class_name);
+        $method_name_lc = strtolower($method_name);
+        $class_name_file_map = $this->getFoldersForClassNameList();
+        $class_name_files = $class_name_file_map[$class_name_lc] ?? null;
+        if ($class_name_files === null) {
+            self::debug("Could not find class directory for $class_name\n");
+            return null;
+        }
+        if (count($class_name_files) !== 1) {
+            self::debug("Expected only one class implementation for $class_name\n");
+            return null;
+        }
+        $class_folder = \reset($class_name_files);
+        $result = [];
+        foreach (self::scandirForXML($class_folder) as $method_xml_path => $method_name_lc) {
+            $xml = $this->getSimpleXMLForFile($method_xml_path);
+            if (!$xml) {
+                self::info("Failed to parse information for $class_name::$method_name_lc\n");
+                continue;
+            }
+            $case_sensitive_method_name = $this->getFunctionLikeNameFromXML($xml);
+            if (!$case_sensitive_method_name) {
+                self::info("Failed to parse xml for '$class_name::$method_name_lc'\n");
+                continue;
+            }
+            if (stripos($case_sensitive_method_name, '::') === false) {
+                self::info("Unexpected format of method name '$case_sensitive_method_name', expected something like '$class_name::$method_name_lc'\n");
+                continue;
+            }
+            $result[$case_sensitive_method_name] = $xml;
+        }
+        return $result;
     }
 
     /**
@@ -190,6 +237,21 @@ class IncompatibleSignatureDetector {
             // TODO: What about inherited methods?
             return null;
         }
+        $xml = $this->getSimpleXMLForFile($method_filename);
+        return $this->parseFunctionLikeSignatureForXML("{$class_name}::{$method_name}", $xml);
+    }
+
+    /** @var array<string,?SimpleXMLElement */
+    private $simple_xml_cache = [];
+
+    private function getSimpleXMLForFile(string $file_path) : ?SimpleXMLElement {
+        if (array_key_exists($file_path, $this->simple_xml_cache)) {
+            return $this->simple_xml_cache[$file_path];
+        }
+        return $this->simple_xml_cache[$file_path] = $this->getSimpleXMLForFileUncached($file_apth);
+    }
+
+    private function getSimpleXMLForFileUncached(string $file_path) : ?SimpleXMLElement {
         $signature_file_contents = file_get_contents($method_filename);
         if (!is_string($signature_file_contents)) {
             self::debug("Could not read '$signature_file'\n");
@@ -197,18 +259,29 @@ class IncompatibleSignatureDetector {
         }
         // Not sure if there's a good way of using an external entity file in PHP.
         $signature_file_contents = $this->normalizeEntityFile($signature_file_contents);
-        return $this->parseFunctionLikeSignatureForContents("{$class_name}::{$method_name}", $signature_file_contents);
-    }
-
-    private function parseFunctionLikeSignatureForContents(string $function_name, string $signature_file_contents) : ?array {
         // echo $signature_file_contents . "\n";
         try {
-            $contents = new SimpleXMLElement($signature_file_contents, LIBXML_ERR_NONE);
+            $result = new SimpleXMLElement($signature_file_contents, LIBXML_ERR_NONE);
         } catch (Exception $e) {
             self::info("Failed to parse signature for '$function_name' : " . $e->getMessage() . "\n");
             return null;
         }
-        $contents->registerXPathNamespace('a', 'http://docbook.org/ns/docbook');
+        $result->registerXPathNamespace('a', 'http://docbook.org/ns/docbook');
+        return $result;
+    }
+
+    private function getFunctionLikeNameFromXML(SimpleXMLElement $xml, string $description) : ?string {
+        $name = $xml->xpath('/a:refentry/refnamediv/refname');
+        if (count($name) !== 1) {
+            return null;
+        }
+        return (string)$name;
+    }
+
+    private function parseFunctionLikeSignatureForXML(string $function_name, ?SimpleXMLElement $xml) : ?array {
+        if (!$xml) {
+            return null;
+        }
         // echo $contents->asXML();
         // $function_description = $contents->xpath('/refentity/refsect1[role=description]/methodsynopsis');
         $function_description_list = $contents->xpath('/a:refentry/a:refsect1[@role="description"]/a:methodsynopsis');
@@ -289,6 +362,59 @@ class IncompatibleSignatureDetector {
             // echo "Could not find entity $entity_name in $matches[0]\n";
             return $matches[0];
         }, $contents);
+    }
+
+    /** @return void */
+    public function addMissingFunctionLikeSignatures() {
+        $original_signature_path = __DIR__ . '/../src/Phan/Language/Internal/FunctionSignatureMap.php';
+        $phan_signatures = require($original_signature_path);
+        $new_signatures = [];
+        $this->addMissingGlobalFunctionSignatures($phan_signatures);
+        $this->addMissingMethodSignatures($phan_signatures);
+        $new_signature_path = $original_signature_path . '.extra_signatures';
+        self::info("Saving function signatures with extra paths to $new_signature_path (updating param and return types)\n");
+        file_put_contents($new_signature_path, self::serializeSignatures($new_signatures));
+    }
+
+    protected static function getLowercaseSignatureMap(array $phan_signatures) : array
+    {
+        $phan_signatures_lc = [];
+        foreach ($phan_signatures as $key => $signature) {
+            $phan_signatures_lc[strtolower($key)] = $signature;
+        }
+        return $phan_signatures_lc;
+    }
+
+    protected function addMissingGlobalFunctionSignatures(array &$phan_signatures) : void
+    {
+        $phan_signatures_lc = self::getLowercaseSignatureMap($phan_signatures);
+        foreach ($this->getFilesForFunctionNameList() as $function_name => $files) {
+            if (isset($phan_signatures_lc[$function_name])) {
+                continue;
+            }
+            $xml = $this->getSimpleXMLForFile($function_name);
+            $signature_from_doc = $this->parseFunctionLikeSignatureForXML($function_name);
+            if ($signature === null) {
+                continue;
+            }
+            $phan_signatures[$function_name] = $signature_from_doc;
+        }
+    }
+
+    protected function addMissingMethodSignatures(array &$phan_signatures) : void {
+        $phan_signatures_lc = self::getLowercaseSignatureMap($phan_signatures);
+        foreach ($this->getFoldersForClassNameList() as $class_name => $folder) {
+            foreach ($this->getMethodsForClassName() as $method_name => $xml) {
+                if (isset($phan_signatures_lc[strtolower($method_name)])) {
+                    continue;
+                }
+                $signature_from_doc = $this->parseFunctionLikeSignatureForXML($function_name, $xml);
+                if ($signature === null) {
+                    continue;
+                }
+                $phan_signatures[$function_name] = $signature_from_doc;
+            }
+        }
     }
 
     /** @return void */
