@@ -1712,6 +1712,15 @@ class UnionTypeVisitor extends AnalysisVisitor
         return Type::fromObject($node->children['expr'])->asUnionType();
     }
 
+    /**
+     * `print($str)` always returns 1.
+     * See https://secure.php.net/manual/en/function.print.php#refsect1-function.print-returnvalues
+     */
+    public function visitPrint(Node $node) : UnionType
+    {
+        return IntType::instance(false)->asUnionType();
+    }
+
     /*
      * @param Node $node
      * A node holding a class
