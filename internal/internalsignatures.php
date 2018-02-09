@@ -69,9 +69,13 @@ class IncompatibleSignatureDetector {
         return $result;;
     }
 
+    // These aren't built in functions, but they're documented like them.
     const INVALID_FUNCTION_NAMES = [
+        // keywords.
         'array',
         'list',
+        // Deprecated method that has an effect if defined by PHP code.
+        '__autoload',
     ];
 
     private function populateFilesForFunctionNameList() {
