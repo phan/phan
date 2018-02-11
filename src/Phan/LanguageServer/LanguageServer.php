@@ -111,12 +111,19 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     protected $file_mapping;
 
+    private $is_accepting_new_requests = true;
+
     public function __construct(ProtocolReader $reader, ProtocolWriter $writer, CodeBase $code_base, Closure $file_path_lister)
     {
         parent::__construct($this, '/');
         $this->protocolReader = $reader;
         $this->file_mapping = new FileMapping();
         $reader->on('close', function () {
+            if (!$this->is_accepting_new_requests) {
+                // This is the forked process, which forced the ProtocolReader to close. Don't exit().
+                // Instead, carry on and analyze the input files.
+                return;
+            }
             $this->shutdown();
             $this->exit();
         });
@@ -271,7 +278,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             Logger::logInfo("Connected to $address to receive requests");
             Loop\run();
             Logger::logInfo("Finished connecting to $address to receive requests");
-            return $ls->most_recent_request;
+            $most_recent_request = $ls->most_recent_request;
+            $ls->most_recent_request = null;
+            return $most_recent_request;
         } elseif (!empty($options['tcp-server'])) {
             // Run a TCP Server
             $address = $options['tcp-server'];
@@ -307,7 +316,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                         Logger::logInfo("Worker started accepting requests on $address");
                         Loop\run();
                         Logger::logInfo("Worker finished accepting requests on $address");
-                        return $ls->most_recent_request;
+                        $most_recent_request = $ls->most_recent_request;
+                        $ls->most_recent_request = null;
+                        return $most_recent_request;;
                     }
                 } else {*/
                     // To avoid edge cases, we only accept one connection.
@@ -317,10 +328,13 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                         new ProtocolStreamReader($socket),
                         new ProtocolStreamWriter($socket)
                     );
-                    Logger::logInfo("Started listening on stdin");
+                    Logger::logInfo("Started listening on tcp");
                     Loop\run();
-                    Logger::logInfo("Finished listening on stdin");
-                    return $ls->most_recent_request;
+                    Logger::logInfo("Finished listening on tcp");
+                    $most_recent_request = $ls->most_recent_request;
+                    $ls->most_recent_request = null;
+                    return $most_recent_request;
+                ;
                 /* } */
             }
         } else {
@@ -334,7 +348,10 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             Logger::logInfo("Started listening on stdin");
             Loop\run();
             Logger::logInfo("Finished listening on stdin");
-            return $ls->most_recent_request;
+            $most_recent_request = $ls->most_recent_request;
+            $ls->most_recent_request = null;
+            return $most_recent_request;
+            ;
         }
     }
 
@@ -409,6 +426,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         // FIXME update the parsed file lists before and after (e.g. add to analyzeURI). See Daemon\Request::accept()
         //    TODO: refactor accept() to make it easier to work with.
         // TODO: add unit tests
+
+        $this->protocolReader->stopAcceptingNewRequests();
+        $this->is_accepting_new_requests = false;
         Loop\stop();  // abort the loop (without closing streams?)
     }
 

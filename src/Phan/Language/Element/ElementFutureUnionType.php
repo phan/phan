@@ -36,6 +36,18 @@ trait ElementFutureUnionType
     }
 
     /**
+     * @return bool
+     * Returns true if this element has an unresolved union type.
+     *
+     * @internal - Mostly useful for Phan internals
+     *             (e.g. a property with an unresolved future union type can't have a template type)
+     */
+    public function hasUnresolvedFutureUnionType() : bool
+    {
+        return $this->future_union_type !== null;
+    }
+
+    /**
      * @return UnionType|null
      * Get the UnionType from a future union type defined
      * on this object or null if there is no future
