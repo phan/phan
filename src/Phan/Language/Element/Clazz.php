@@ -1053,7 +1053,7 @@ class Clazz extends AddressableElement
         )) {
             return true;
         }
-        if (!$this->hydrateIndicatingFirstTime($code_base)) {
+        if (!$this->hydrateConstantsIndicatingFirstTime($code_base)) {
             return false;
         }
         return $code_base->hasClassConstantWithFQSEN(
@@ -2557,7 +2557,7 @@ class Clazz extends AddressableElement
 
     /**
      * This method must be called before analysis
-     * begins.
+     * begins. It hydrates constants, but not properties/methods.
      *
      * @return void
      */
@@ -2572,6 +2572,26 @@ class Clazz extends AddressableElement
         $this->are_constants_hydrated = true;
 
         $this->hydrateConstantsOnce($code_base);
+    }
+
+    /**
+     * This method must be called before analysis begins.
+     * This is identical to hydrateConstants(),
+     * but returns true only if this is the first time the element was hydrated.
+     * (i.e. true if there may be newly added constants)
+     */
+    public function hydrateConstantsIndicatingFirstTime(CodeBase $code_base) : bool
+    {
+        if (!$this->did_finish_parsing) {
+            return false;
+        }
+        if ($this->are_constants_hydrated) {  // Same as isFirstExecution(), inlined due to being called frequently.
+            return false;
+        }
+        $this->are_constants_hydrated = true;
+
+        $this->hydrateConstantsOnce($code_base);
+        return true;
     }
 
     /**
