@@ -11,7 +11,17 @@ function decode_json_array(string $data) {
         var_export($value2['key']);  // should warn
         var_export($value2[0]);
     }
+    $value2 = json_decode($data, 0);
+    if (is_array($value2)) {
+        var_export($value2['key']);  // should warn
+        var_export($value2[0]);
+    }
     $value3 = json_decode($data, true);
+    if (is_array($value3)) {
+        var_export($value3['key']);  // should not warn
+        var_export($value3[0]);
+    }
+    $value3 = json_decode($data, 1);
     if (is_array($value3)) {
         var_export($value3['key']);  // should not warn
         var_export($value3[0]);
@@ -26,6 +36,8 @@ function decode_json_array(string $data) {
 function decode_json_object(string $data) {
     // Probably unrealistic to decode the same thing twice, but not something Phan would detect
     $value = json_decode($data, true);
+    var_export($value->fieldName);  // should warn, this is never an object
+    $value = json_decode($data, 1);
     var_export($value->fieldName);  // should warn, this is never an object
     $value2 = json_decode($data, false, 512, JSON_OBJECT_AS_ARRAY);
     var_export($value2->fieldName);  // should warn, this is never an object

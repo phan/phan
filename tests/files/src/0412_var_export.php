@@ -11,3 +11,5 @@ expect_int412(print_r(['key'], false));
 expect_int412(print_r(['key'], true));
 expect_int412(print_r(['key'], rand() % 2 > 0));
 echo strlen(print_r(['key'], true));  // should not warn
+echo strlen(var_export(['key'], 1));  // should not warn
+echo strlen(var_export(['key'], 0));  // should warn
