@@ -55,22 +55,6 @@ class Variable extends UnaddressableTypedElement
     ];
 
     /**
-     * @param FileRef $file_ref
-     * The file and lines in which the unaddressable element lives
-     *
-     * @param string $name
-     * The name of the typed structural element
-     *
-     * @param UnionType $type
-     * A '|' delimited set of types satisfyped by this
-     * typed structural element.
-     *
-     * @param int $flags
-     * The flags property contains node specific flags. It is
-     * always defined, but for most nodes it is always zero.
-     * ast\kind_uses_flags() can be used to determine whether
-     * a certain kind has a meaningful flags value.
-     */
     public function __construct(
         FileRef $file_ref,
         string $name,
@@ -84,6 +68,7 @@ class Variable extends UnaddressableTypedElement
             $flags
         );
     }
+     */
 
     /**
      * @return bool

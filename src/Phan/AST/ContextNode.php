@@ -467,7 +467,7 @@ class ContextNode
      */
     public function getClassList(bool $ignore_missing_classes = false, int $expected_type_categories = self::CLASS_LIST_ACCEPT_ANY, string $custom_issue_type = null) : array
     {
-        [$union_type, $class_list] = $this->getClassListInner($ignore_missing_classes);
+        list($union_type, $class_list) = $this->getClassListInner($ignore_missing_classes);
         if ($union_type->isEmpty()) {
             return [];
         }
@@ -1859,7 +1859,7 @@ class ContextNode
      *
      * This does not create new object instances.
      *
-     * @return Node||string|float|int|bool|null - If this could be resolved and we're certain of the value, this gets an equivalent definition. Otherwise, this returns $node. If this would be an array, this returns $node.
+     * @return Node|string|float|int|bool|null - If this could be resolved and we're certain of the value, this gets an equivalent definition. Otherwise, this returns $node. If this would be an array, this returns $node.
      *
      * @throws InvalidArgumentException if the object could not be determined - Callers must catch this.
      */

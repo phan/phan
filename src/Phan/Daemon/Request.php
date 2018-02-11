@@ -218,7 +218,7 @@ class Request
             Daemon::debugf("Already sent response");
             return;
         }
-        fwrite($response_connection, json_encode($response) . "\n");
+        fwrite($response_connection, json_encode($response, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) . "\n");
         // disable further receptions and transmissions
         // Note: This is likely a giant hack,
         // and pcntl and sockets may break in the future if used together. (multiple processes owning a single resource).
@@ -232,7 +232,7 @@ class Request
         if (isset($this->response_connection)) {
             $this->sendJSONResponse([
                 'status' => self::STATUS_ERROR_UNKNOWN,
-                'message' => 'failed to send a response - Possibly encountered an exception. See daemon output.',
+                'message' => 'failed to send a response - Possibly encountered an exception. See daemon output.' . json_encode(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)),
             ]);
         }
     }
@@ -311,7 +311,7 @@ class Request
         $request = json_decode($request_bytes, true);
 
         if (!\is_array($request)) {
-            Daemon::debugf("Received invalid request, expected JSON: %s", json_encode($request_bytes));
+            Daemon::debugf("Received invalid request, expected JSON: %s", json_encode($request_bytes, JSON_UNESCAPED_SLASHES));
             self::sendJSONResponseOverSocket($response_connection, [
                 'status'  => self::STATUS_INVALID_REQUEST,
                 'message' => 'malformed JSON',

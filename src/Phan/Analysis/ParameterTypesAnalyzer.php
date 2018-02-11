@@ -82,6 +82,13 @@ class ParameterTypesAnalyzer
         }
 
         if ($method instanceof Method) {
+            if ($method->getName() === '__construct') {
+                $class = $method->getClass($code_base);
+                if ($class->isGeneric()) {
+                    $class->hydrate($code_base);
+                    self::analyzeGenericClassConstructor($code_base, $class, $method);
+                }
+            }
             self::analyzeOverrideSignature($code_base, $method);
         }
     }
@@ -165,6 +172,43 @@ class ParameterTypesAnalyzer
         );
     }
 
+    private static function analyzeGenericClassConstructor(CodeBase $code_base, Clazz $class, Method $method)
+    {
+        // Get the set of template type identifiers defined on
+        // the class
+        $template_type_identifiers = \array_keys(
+            $class->getTemplateTypeMap()
+        );
+
+        // Get the set of template type identifiers defined
+        // across all parameter types
+        $parameter_template_type_identifiers = [];
+        foreach ($method->getParameterList() as $parameter) {
+            foreach ($parameter->getUnionType()->getTypeSet() as $type) {
+                if ($type instanceof TemplateType) {
+                    $parameter_template_type_identifiers[] =
+                        $type->getName();
+                }
+            }
+        }
+
+        $missing_template_type_identifiers = \array_diff(
+            $template_type_identifiers,
+            $parameter_template_type_identifiers
+        );
+
+        if ($missing_template_type_identifiers) {
+            Issue::maybeEmit(
+                $code_base,
+                $method->getContext(),
+                Issue::GenericConstructorTypes,
+                $method->getFileRef()->getLineNumberStart(),
+                implode(',', $missing_template_type_identifiers),
+                (string)$class->getFQSEN()
+            );
+        }
+    }
+
     /**
      * Make sure signatures line up between methods and a method it overrides.
      *
@@ -182,12 +226,6 @@ class ParameterTypesAnalyzer
             self::warnOverridingFinalMethod($code_base, $method, $class, $o_method);
         }
 
-        // Don't bother warning about incompatible signatures for private methods.
-        // (But it is an error to override a private final method)
-        if ($o_method->isPrivate()) {
-            return;
-        }
-
         // Unless it is an abstract constructor,
         // don't worry about signatures lining up on
         // constructors. We just want to make sure that
@@ -195,7 +233,15 @@ class ParameterTypesAnalyzer
         // a runtime error. We usually know what we're
         // constructing at instantiation time, so there
         // is less of a risk.
-        if ($method->getName() == '__construct' && !$o_method->isAbstract()) {
+        if ($method->getName() === '__construct') {
+            if (!$o_method->isAbstract()) {
+                return;
+            }
+        }
+
+        // Don't bother warning about incompatible signatures for private methods.
+        // (But it is an error to override a private final method)
+        if ($o_method->isPrivate()) {
             return;
         }
 

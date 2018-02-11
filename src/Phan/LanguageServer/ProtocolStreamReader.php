@@ -20,6 +20,12 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
 
     /** @var resource */
     private $input;
+    /**
+     * This is checked by ProtocolStreamReader so that it will stop reading from streams in the forked process.
+     * There could be buffered bytes in stdin/over TCP, those would be processed by TCP if it were not for this check.
+     * @var bool
+     */
+    private $is_accepting_new_requests = true;
     /** @var int */
     private $parsingMode = self::PARSE_HEADERS;
     /** @var string */
@@ -47,6 +53,11 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
                 $this->emit('close');
                 return;
             }
+            if (!$this->is_accepting_new_requests) {
+                // If we fork, don't read any bytes in the input buffer from the worker process.
+                $this->emit('close');
+                return;
+            }
             $c = '';
             while (($c = fgetc($this->input)) !== false && $c !== '') {
                 $this->buffer .= $c;
@@ -64,6 +75,11 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
                         break;
                     case self::PARSE_BODY:
                         if (strlen($this->buffer) === $this->contentLength) {
+                            if (!$this->is_accepting_new_requests) {
+                                // If we fork, don't read any bytes in the input buffer from the worker process.
+                                $this->emit('close');
+                                return;
+                            }
                             Logger::logRequest($this->headers, $this->buffer);
                             // MessageBody::parse can throw an Error, maybe log an error?
                             try {
@@ -73,6 +89,11 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
                             }
                             if ($msg) {
                                 $this->emit('message', [$msg]);
+                                if (!$this->is_accepting_new_requests) {
+                                    // If we fork, don't read any bytes in the input buffer from the worker process.
+                                    $this->emit('close');
+                                    return;
+                                }
                             }
                             $this->parsingMode = self::PARSE_HEADERS;
                             $this->headers = [];
@@ -82,5 +103,13 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
                 }
             }
         });
+    }
+
+    /**
+     * @return void
+     */
+    public function stopAcceptingNewRequests()
+    {
+        $this->is_accepting_new_requests = false;
     }
 }

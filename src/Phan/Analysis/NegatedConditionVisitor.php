@@ -448,10 +448,90 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                 false
             );
         };
+        // The implementation of Traversable may change in the future (e.g. to support generics).
+        // So use fromFullyQualifiedString()
+        $traversable_type = Type::fromFullyQualifiedString('\Traversable');
+        $remove_array_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) use ($traversable_type) : Context {
+            return $cv->updateVariableWithConditionalFilter(
+                $var_node,
+                $context,
+                // if (!is_callable($x)) removes non-callable/closure types from $x.
+                // TODO: Could check for __invoke()
+                function (UnionType $union_type) : bool {
+                    return $union_type->hasIterable();
+                },
+                function (UnionType $union_type) use ($traversable_type) : UnionType {
+                    $new_type_builder = new UnionTypeBuilder();
+                    $has_null = false;
+                    $has_other_nullable_types = false;
+                    // Add types which are not callable
+                    foreach ($union_type->getTypeSet() as $type) {
+                        if ($type instanceof ArrayType) {
+                            $has_null = $has_null || $type->getIsNullable();
+                            continue;
+                        }
+
+                        assert($type instanceof Type);
+                        $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
+
+                        if (\get_class($type) === IterableType::class) {
+                            // An iterable that is not an object must be an array
+                            $new_type_builder->addType($traversable_type->withIsNullable($type->getIsNullable()));
+                            continue;
+                        }
+                        $new_type_builder->addType($type);
+                    }
+                    // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
+                    if ($has_null && !$has_other_nullable_types) {
+                        $new_type_builder->addType(NullType::instance(false));
+                    }
+                    return $new_type_builder->getUnionType();
+                },
+                false
+            );
+        };
+        $remove_object_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) use ($traversable_type) : Context {
+            return $cv->updateVariableWithConditionalFilter(
+                $var_node,
+                $context,
+                // if (!is_callable($x)) removes non-callable/closure types from $x.
+                // TODO: Could check for __invoke()
+                function (UnionType $union_type) : bool {
+                    return $union_type->hasPossiblyObjectTypes();
+                },
+                function (UnionType $union_type) use ($traversable_type) : UnionType {
+                    $new_type_builder = new UnionTypeBuilder();
+                    $has_null = false;
+                    $has_other_nullable_types = false;
+                    // Add types which are not callable
+                    foreach ($union_type->getTypeSet() as $type) {
+                        if ($type->isObject()) {
+                            $has_null = $has_null || $type->getIsNullable();
+                            continue;
+                        }
+                        assert($type instanceof Type);
+                        $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
+
+                        if (\get_class($type) === IterableType::class) {
+                            // An iterable that is not an array must be a Traversable
+                            $new_type_builder->addType(ArrayType::instance($type->getIsNullable()));
+                            continue;
+                        }
+                        $new_type_builder->addType($type);
+                    }
+                    // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
+                    if ($has_null && !$has_other_nullable_types) {
+                        $new_type_builder->addType(NullType::instance(false));
+                    }
+                    return $new_type_builder->getUnionType();
+                },
+                false
+            );
+        };
 
         return [
             'is_null' => $remove_null_cb,
-            'is_array' => $make_basic_negated_assertion_callback(ArrayType::class),
+            'is_array' => $remove_array_callback,
             // 'is_bool' => $make_basic_assertion_callback(BoolType::class),
             'is_callable' => $remove_callable_callback,
             'is_double' => $remove_float_callback,
@@ -461,7 +541,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
             'is_iterable' => $make_basic_negated_assertion_callback(IterableType::class),  // TODO: Could keep basic array types and classes extending iterable
             'is_long' => $remove_int_callback,
             // 'is_numeric' => $make_basic_assertion_callback('string|int|float'),
-            // TODO 'is_object' => $remove_object_callback,
+            'is_object' => $remove_object_callback,
             'is_real' => $remove_float_callback,
             'is_resource' => $make_basic_negated_assertion_callback(ResourceType::class),
             'is_scalar' => $remove_scalar_callback,

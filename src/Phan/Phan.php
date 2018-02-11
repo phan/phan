@@ -199,6 +199,7 @@ class Phan implements IgnoredFilesFilterInterface
                 $analyze_file_path_list = $request->filterFilesToAnalyze($code_base->getParsedFilePathList());
                 if (count($analyze_file_path_list) === 0) {
                     $request->respondWithNoFilesToAnalyze();  // respond and exit.
+                    exit(0);
                 }
                 // Do this before we stop tracking undo operations.
                 $temporary_file_mapping = $request->getTemporaryFileMapping();
@@ -211,7 +212,7 @@ class Phan implements IgnoredFilesFilterInterface
                     error_log("Finished serving requests, exiting");
                     exit(2);
                 }
-                LanguageServerLogger::logInfo(sprintf("language server accepted connection %d", getmypid()));
+                LanguageServerLogger::logInfo(sprintf("language server (pid=%d) accepted connection", getmypid()));
 
                 self::$printer = $request->getPrinter();
 
@@ -232,150 +233,164 @@ class Phan implements IgnoredFilesFilterInterface
             $code_base->disableUndoTracking();
         }
 
-        // With parsing complete, we need to tell the code base to
-        // start hydrating any requested elements on their way out.
-        // Hydration expands class types, imports parent methods,
-        // properties, etc., and does stuff like that.
-        //
-        // This is an optimization that saves us a significant
-        // amount of time on very large code bases. Instead of
-        // hydrating all classes, we only hydrate the things we
-        // actually need. When running as multiple processes this
-        // lets us only need to do hydrate a subset of classes.
-        $code_base->setShouldHydrateRequestedElements(true);
+        try {
+            // With parsing complete, we need to tell the code base to
+            // start hydrating any requested elements on their way out.
+            // Hydration expands class types, imports parent methods,
+            // properties, etc., and does stuff like that.
+            //
+            // This is an optimization that saves us a significant
+            // amount of time on very large code bases. Instead of
+            // hydrating all classes, we only hydrate the things we
+            // actually need. When running as multiple processes this
+            // lets us only need to do hydrate a subset of classes.
+            $code_base->setShouldHydrateRequestedElements(true);
 
-        // TODO: consider filtering if Config::getValue('include_analysis_file_list') is set
-        // most of what needs considering is that Analysis::analyzeClasses() and Analysis:analyzeFunctions() have side effects
-        // these side effects don't matter in daemon mode, but they do matter with this other form of incremental analysis
-        // other parts of these analysis steps could be skipped, which would reduce the overall execution time
-        $path_filter = isset($request) ? array_flip($analyze_file_path_list) : null;
+            // TODO: consider filtering if Config::getValue('include_analysis_file_list') is set
+            // most of what needs considering is that Analysis::analyzeClasses() and Analysis:analyzeFunctions() have side effects
+            // these side effects don't matter in daemon mode, but they do matter with this other form of incremental analysis
+            // other parts of these analysis steps could be skipped, which would reduce the overall execution time
+            $path_filter = isset($request) ? array_flip($analyze_file_path_list) : null;
 
-        // Tie class aliases together with the source class
-        if (Config::getValue('enable_class_alias_support')) {
-            $code_base->resolveClassAliases();
-        }
-
-        // Take a pass over all functions verifying
-        // various states now that we have the whole
-        // state in memory
-        Analysis::analyzeClasses($code_base, $path_filter);
-
-        // Take a pass over all functions verifying
-        // various states now that we have the whole
-        // state in memory
-        Analysis::analyzeFunctions($code_base, $path_filter);
-
-        Analysis::loadMethodPlugins($code_base);
-
-        // Filter out any files that are to be excluded from
-        // analysis
-        $analyze_file_path_list = array_filter(
-            $analyze_file_path_list,
-            function ($file_path) {
-                return !self::isExcludedAnalysisFile($file_path);
+            // Tie class aliases together with the source class
+            if (Config::getValue('enable_class_alias_support')) {
+                $code_base->resolveClassAliases();
             }
-        );
-        if ($request instanceof Request && count($analyze_file_path_list) === 0) {
-            $request->respondWithNoFilesToAnalyze();
-            exit(0);
-        }
 
-        // Get the count of all files we're going to analyze
-        $file_count = count($analyze_file_path_list);
+            // Take a pass over all functions verifying
+            // various states now that we have the whole
+            // state in memory
+            Analysis::analyzeClasses($code_base, $path_filter);
 
-        // Prevent an ugly failure if we have no files to
-        // analyze.
-        if (0 == $file_count) {
-            return false;
-        }
+            // Take a pass over all functions verifying
+            // various states now that we have the whole
+            // state in memory
+            Analysis::analyzeFunctions($code_base, $path_filter);
 
-        // Get a map from process_id to the set of files that
-        // the given process should analyze in a stable order
-        $process_file_list_map =
-            (new Ordering($code_base))->orderForProcessCount(
-                Config::getValue('processes'),
-                $analyze_file_path_list
-            );
+            Analysis::loadMethodPlugins($code_base);
 
-        /**
-         * This worker takes a file and analyzes it
-         * @return void
-         */
-        $analysis_worker = function ($i, $file_path) use ($file_count, $code_base, $temporary_file_mapping) {
-            CLI::progress('analyze', ($i + 1) / $file_count);
-            Analysis::analyzeFile($code_base, $file_path, $temporary_file_mapping[$file_path] ?? null);
-        };
-
-        // Determine how many processes we're running on. This may be
-        // less than the provided number if the files are bunched up
-        // excessively.
-        $process_count = count($process_file_list_map);
-
-        \assert(
-            $process_count > 0 && $process_count <= Config::getValue('processes'),
-            "The process count must be between 1 and the given number of processes. After mapping files to cores, $process_count process were set to be used."
-        );
-
-        $did_fork_pool_have_error = false;
-
-        CLI::progress('analyze', 0.0);
-        // Check to see if we're running as multiple processes
-        // or not
-        if ($process_count > 1) {
-            // Run analysis one file at a time, splitting the set of
-            // files up among a given number of child processes.
-            $pool = new ForkPool(
-                $process_file_list_map,
-                /** @return void */
-                function () {
-                    // Remove any issues that were collected prior to forking
-                    // to prevent duplicate issues in the output.
-                    self::getIssueCollector()->reset();
-                },
-                $analysis_worker,
-                function () use ($code_base) : array {
-                    // This closure is run once, after running analysis_worker on each input.
-                    // If there are any plugins defining finalizeProcess(), run those.
-                    ConfigPluginSet::instance()->finalizeProcess($code_base);
-
-                    // Return the collected issues to be serialized.
-                    return self::getIssueCollector()->getCollectedIssues();
+            // Filter out any files that are to be excluded from
+            // analysis
+            $analyze_file_path_list = array_filter(
+                $analyze_file_path_list,
+                function ($file_path) {
+                    return !self::isExcludedAnalysisFile($file_path);
                 }
             );
-
-            // Wait for all tasks to complete and collect the results.
-            self::collectSerializedResults($pool->wait());
-            $did_fork_pool_have_error = $pool->didHaveError();
-        } else {
-            // Get the task data from the 0th processor
-            $analyze_file_path_list = array_values($process_file_list_map)[0];
-
-            // If we're not running as multiple processes, just iterate
-            // over the file list and analyze them
-            foreach ($analyze_file_path_list as $i => $file_path) {
-                $analysis_worker($i, $file_path);
+            if ($request instanceof Request && count($analyze_file_path_list) === 0) {
+                $request->respondWithNoFilesToAnalyze();
+                exit(0);
             }
 
-            // Scan through all globally accessible elements
-            // in the code base and emit errors for dead
-            // code.
-            Analysis::analyzeDeadCode($code_base);
+            // Get the count of all files we're going to analyze
+            $file_count = count($analyze_file_path_list);
 
-            // If there are any plugins defining finalizeProcess(), run those.
-            ConfigPluginSet::instance()->finalizeProcess($code_base);
+            // Prevent an ugly failure if we have no files to
+            // analyze.
+            if (0 == $file_count) {
+                return false;
+            }
+
+            // Get a map from process_id to the set of files that
+            // the given process should analyze in a stable order
+            $process_file_list_map =
+                (new Ordering($code_base))->orderForProcessCount(
+                    Config::getValue('processes'),
+                    $analyze_file_path_list
+                );
+
+            /**
+             * This worker takes a file and analyzes it
+             * @return void
+             */
+            $analysis_worker = function ($i, $file_path) use ($file_count, $code_base, $temporary_file_mapping) {
+                CLI::progress('analyze', ($i + 1) / $file_count);
+                Analysis::analyzeFile($code_base, $file_path, $temporary_file_mapping[$file_path] ?? null);
+            };
+
+            // Determine how many processes we're running on. This may be
+            // less than the provided number if the files are bunched up
+            // excessively.
+            $process_count = count($process_file_list_map);
+
+            \assert(
+                $process_count > 0 && $process_count <= Config::getValue('processes'),
+                "The process count must be between 1 and the given number of processes. After mapping files to cores, $process_count process were set to be used."
+            );
+
+            $did_fork_pool_have_error = false;
+
+            CLI::progress('analyze', 0.0);
+            // Check to see if we're running as multiple processes
+            // or not
+            if ($process_count > 1) {
+                // Run analysis one file at a time, splitting the set of
+                // files up among a given number of child processes.
+                $pool = new ForkPool(
+                    $process_file_list_map,
+                    /** @return void */
+                    function () {
+                        // Remove any issues that were collected prior to forking
+                        // to prevent duplicate issues in the output.
+                        self::getIssueCollector()->reset();
+                    },
+                    $analysis_worker,
+                    function () use ($code_base) : array {
+                        // This closure is run once, after running analysis_worker on each input.
+                        // If there are any plugins defining finalizeProcess(), run those.
+                        ConfigPluginSet::instance()->finalizeProcess($code_base);
+
+                        // Return the collected issues to be serialized.
+                        return self::getIssueCollector()->getCollectedIssues();
+                    }
+                );
+
+                // Wait for all tasks to complete and collect the results.
+                self::collectSerializedResults($pool->wait());
+                $did_fork_pool_have_error = $pool->didHaveError();
+            } else {
+                // Get the task data from the 0th processor
+                $analyze_file_path_list = array_values($process_file_list_map)[0];
+
+                // If we're not running as multiple processes, just iterate
+                // over the file list and analyze them
+                foreach ($analyze_file_path_list as $i => $file_path) {
+                    $analysis_worker($i, $file_path);
+                }
+
+                // Scan through all globally accessible elements
+                // in the code base and emit errors for dead
+                // code.
+                Analysis::analyzeDeadCode($code_base);
+
+                // If there are any plugins defining finalizeProcess(), run those.
+                ConfigPluginSet::instance()->finalizeProcess($code_base);
+            }
+
+            // Get a count of the number of issues that were found
+            $issue_count = count((self::$issueCollector)->getCollectedIssues());
+            $is_issue_found =
+                0 !== $issue_count;
+
+            // Collect all issues, blocking
+            self::display();
+
+            if (Config::get()->print_memory_usage_summary) {
+                self::printMemoryUsageSummary();
+            }
+        } catch (\Exception $e) {
+            if ($request instanceof Request) {
+                // Give people using the language server client/daemon a somewhat useful response.
+                $request->sendJSONResponse([
+                    "status" => Request::STATUS_ERROR_UNKNOWN,
+                    "issue_count" => 1,
+                    "issues" => 'Failed to analyze files: Uncaught exception: ' . (string)$e,
+                ]);
+                exit(EXIT_SUCCESS);
+            }
+            throw $e;
         }
 
-        // Get a count of the number of issues that were found
-        $issue_count = count((self::$issueCollector)->getCollectedIssues());
-        $is_issue_found =
-            0 !== $issue_count;
-
-        // Collect all issues, blocking
-        self::display();
-
-        if (Config::get()->print_memory_usage_summary) {
-            self::printMemoryUsageSummary();
-        }
 
         if ($request instanceof Request) {
             $request->respondWithIssues($issue_count);

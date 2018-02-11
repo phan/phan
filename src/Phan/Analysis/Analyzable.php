@@ -5,6 +5,7 @@ use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
+use Phan\Language\Element\FunctionInterface;
 use ast\Node;
 
 /**
@@ -59,7 +60,7 @@ trait Analyzable
      * @return Node
      * The AST node associated with this object
      */
-    public function getNode() : Node
+    public function getNode()
     {
         return $this->node;
     }

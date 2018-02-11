@@ -201,7 +201,7 @@ class Config
         'array_casts_as_null' => false,
 
         // Allow null to be cast as any type and for any
-        // type to be cast to null. Setting this to false
+        // type to be cast to null. Setting this to true
         // will cut down on false positives.
         'null_casts_as_any_type' => false,
 
