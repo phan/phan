@@ -577,6 +577,9 @@ class Method extends ClassElement implements FunctionInterface
                     // Skip it, this method **is** the one which defined this.
                     continue;
                 }
+                // We initialize the overridden method's scope to ensure that
+                // analyzers are aware of the full param/return types of the overridden method.
+                $method->ensureScopeInitialized($code_base);
                 if ($method->isAbstract()) {
                     // TODO: check for trait conflicts, etc.
                     $abstract_method_list[] = $method;

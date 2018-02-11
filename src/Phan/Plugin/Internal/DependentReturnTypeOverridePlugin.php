@@ -12,6 +12,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
+use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
@@ -63,6 +64,9 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
                     return $type_if_false;
                 }
                 $result = (new ContextNode($code_base, $context, $args[$expected_bool_pos]))->getEquivalentPHPScalarValue();
+                if (\is_int($result)) {
+                    $result = (bool)$result;
+                }
                 if ($result === true) {
                     return $type_if_true;
                 } elseif ($result === false) {
@@ -99,6 +103,10 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
                 return $json_decode_object_types;
             }
             $result = (new ContextNode($code_base, $context, $args[1]))->getEquivalentPHPScalarValue();
+            if (\is_int($result)) {
+                // We are already warning about the param type. E.g. var_export($arg, 1) returns a string
+                $result = (bool)$result;
+            }
             if ($result === true) {
                 return $json_decode_array_types;
             }

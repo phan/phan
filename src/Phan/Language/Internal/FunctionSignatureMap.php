@@ -7572,7 +7572,7 @@ return [
 'RecursiveIteratorIterator::next' => ['void'],
 'RecursiveIteratorIterator::nextElement' => ['void'],
 'RecursiveIteratorIterator::rewind' => ['void'],
-'RecursiveIteratorIterator::setMaxDepth' => ['void', 'max_depth='=>'string'],
+'RecursiveIteratorIterator::setMaxDepth' => ['void', 'max_depth='=>'int'],
 'RecursiveIteratorIterator::valid' => ['bool'],
 'RecursiveRegexIterator::__construct' => ['void', 'it'=>'recursiveiterator', 'regex='=>'string', 'mode='=>'int', 'flags='=>'int', 'preg_flags='=>'int'],
 'RecursiveRegexIterator::getChildren' => ['RecursiveRegexIterator'],

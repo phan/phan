@@ -1,0 +1,1 @@
+%s:8 PhanParamSignatureMismatch Declaration of function method(\Traversable|array $arg = null) : \stdClass should be compatible with function method(\Traversable|array $arg = null) : void defined in %s:18
