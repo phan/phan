@@ -57,6 +57,7 @@ New Features(Analysis)
 + More precise analysis of the return types of `var_export()`, `print_r()`, and `json_decode()` (#1326, #1327)
 + Improve type narrowing from `iterable` to `\Traversable`/`array` (#1427)
   This change affects `is_array()`/`is_object()` checks and their negations.
++ Fix more edge cases which may cause Phan to fail to infer that properties, constants, or methods are inherited. (#311, #1426, #454)
 
 Plugins
 + Fix bugs in NonBoolBranchPlugin and NonBoolInLogicalArithPlugin (#1413, #1410)
@@ -74,6 +75,7 @@ Bug fixes
 + Warn when attempting to call an instance method on an expression with type string (#1314).
 + Fix a bug in `tool/make_stubs` when generating stubs of global functions.
 + Fix some bugs that occurred when Phan resolved inherited class constants in class elements such as properties. (#537 and #454)
++ Emit an issue when a function/method's parameter defaults refer to an undeclared class constant/global constant.
 
 20 Jan 2018, Phan 0.10.3
 ------------------------

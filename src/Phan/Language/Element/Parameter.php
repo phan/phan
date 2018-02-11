@@ -7,14 +7,17 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\FileRef;
+use Phan\Language\FutureUnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
+use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
+use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
 use ast\Node;
 
@@ -31,6 +34,17 @@ class Parameter extends Variable
      * The type of the default value if any
      */
     private $default_value_type = null;
+
+    /**
+     * @var FutureUnionType|null
+     * The type of the default value if any
+     */
+    private $default_value_future_type = null;
+
+    /**
+     * @var Context|null used to resolve default_value_future_type
+     */
+    private $default_value_context = null;
 
     /**
      * @var mixed
@@ -60,7 +74,7 @@ class Parameter extends Variable
      */
     public function hasDefaultValue() : bool
     {
-        return !empty($this->default_value_type);
+        return $this->default_value_type !== null;
     }
 
     /**
@@ -75,12 +89,41 @@ class Parameter extends Variable
     }
 
     /**
+     * @param FutureUnionType $type
+     * The future type of the default value for this parameter
+     *
+     * @return void
+     */
+    public function setDefaultValueFutureType(FutureUnionType $type)
+    {
+        $this->default_value_future_type = $type;
+    }
+
+    /**
      * @return UnionType
      * The type of the default value for this parameter
      * if it exists
+     * @suppress PhanAccessMethodInternal
      */
     public function getDefaultValueType() : UnionType
     {
+        $future_type = $this->default_value_future_type;
+        if ($future_type !== null) {
+            // Only attempt to resolve the future type once.
+            try {
+                $this->default_value_type = $future_type->get();
+            } catch (IssueException $exception) {
+                // Ignore exceptions
+                Issue::maybeEmitInstance(
+                    $future_type->getCodebase(),
+                    $future_type->getContext(),
+                    $exception->getIssueInstance()
+                );
+            } finally {
+                // Only try to resolve the FutureType once.
+                $this->default_value_future_type = null;
+            }
+        }
         return $this->default_value_type;
     }
 
@@ -99,7 +142,6 @@ class Parameter extends Variable
      * If the value's default is null, or a constant evaluating to null,
      * then the parameter type should be converted to nullable
      * (E.g. `int $x = null` and `?int $x = null` are equivalent.
-     *  We pretend `int $x = SOME_NULL_CONST` is equivalent as well.)
      */
     public function handleDefaultValueOfNull()
     {
@@ -195,6 +237,31 @@ class Parameter extends Variable
     }
 
     /**
+     * @param Node|string|float|int $node
+     * @return ?UnionType - Returns if we know the exact type of $node and can easily resolve it
+     */
+    private static function maybeGetKnownDefaultValueForNode($node)
+    {
+        if (!($node instanceof Node)) {
+            return Type::fromObject($node)->asUnionType();
+        }
+        if ($node->kind === \ast\AST_CONST) {
+            $name = $node->children['name']->children['name'] ?? null;
+            if (\is_string($name)) {
+                switch (\strtolower($name)) {
+                    case 'false':
+                        return FalseType::instance(false)->asUnionType();
+                    case 'true':
+                        return TrueType::instance(false)->asUnionType();
+                    case 'null':
+                        return NullType::instance(false)->asUnionType();
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * @return Parameter
      * A parameter built from a node
      */
@@ -220,58 +287,43 @@ class Parameter extends Variable
 
         // If there is a default value, store it and its type
         if (($default_node = $node->children['default']) !== null) {
+            // Set the actual value of the default
+            $parameter->setDefaultValue($default_node);
+
             // We can't figure out default values during the
             // parsing phase, unfortunately
-            if (!($default_node instanceof Node)) {
-                // Get the type of the default
-                $union_type = UnionType::fromNode(
-                    $context,
-                    $code_base,
-                    $default_node
-                );
-
+            $default_value_union_type = self::maybeGetKnownDefaultValueForNode($default_node);
+            if ($default_value_union_type !== null) {
                 // Set the default value
-                $parameter->setDefaultValueType(
-                    $union_type
-                );
-
-                // Set the actual value of the default
-                $parameter->setDefaultValue($default_node);
+                $parameter->setDefaultValueType($default_value_union_type);
             } else {
-                try {
-                    // Get the type of the default
-                    $union_type = UnionType::fromNode(
-                        $context,
-                        $code_base,
-                        $default_node,
-                        false
-                    );
-                } catch (IssueException $exception) {
-                    if ($default_node instanceof Node
-                        && $default_node->kind === \ast\AST_ARRAY
-                    ) {
-                        $union_type = ArrayType::instance(false)->asUnionType();
-                    } else {
-                        // If we're in the parsing phase and we
-                        // depend on a constant that isn't yet
-                        // defined, give up and set it to
-                        // bool|float|int|string to avoid having
-                        // to handle a future type.
-                        // TODO: This can also be Null or an Array
-                        $union_type = new UnionType([
+                \assert($default_node instanceof Node);
+
+                if ($default_node->kind === \ast\AST_ARRAY) {
+                    // We know the parameter default is some sort of array, but we don't know any more (e.g. key types, value types).
+                    // When the future type is resolved, we'll know something more specific.
+                    $default_value_union_type = ArrayType::instance(false)->asUnionType();
+                } else {
+                    static $possible_parameter_default_union_type = null;
+                    if ($possible_parameter_default_union_type === null) {
+                        // These can be constants or literals (or null/true/false)
+                        $possible_parameter_default_union_type = new UnionType([
+                            ArrayType::instance(false),
                             BoolType::instance(false),
                             FloatType::instance(false),
                             IntType::instance(false),
                             StringType::instance(false),
+                            NullType::instance(false),
                         ]);
                     }
+                    $default_value_union_type = $possible_parameter_default_union_type;
                 }
-
-                // Set the default value
-                $parameter->setDefaultValueType($union_type);
-
-                // Set the actual value of the default
-                $parameter->setDefaultValue($default_node);
+                $parameter->setDefaultValueType($default_value_union_type);
+                $parameter->setDefaultValueFutureType(new FutureUnionType(
+                    $code_base,
+                    clone($context)->withLineNumberStart($default_node->lineno ?? 0),
+                    $default_node
+                ));
             }
             $parameter->handleDefaultValueOfNull();
         }

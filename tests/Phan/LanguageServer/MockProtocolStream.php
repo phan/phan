@@ -35,7 +35,8 @@ class MockProtocolStream extends Emitter implements ProtocolReader, ProtocolWrit
     /**
      * @return void
      */
-    public function stopAcceptingNewRequests() {
+    public function stopAcceptingNewRequests()
+    {
         $this->did_stop_accepting_new_requests = true;
     }
 }
