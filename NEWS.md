@@ -1,22 +1,22 @@
 Phan NEWS
 
-?? ??? 2018, Phan 0.11.2 (dev)
+11 Feb 2018, Phan 0.11.2
 ------------------------
 
-### Ported from Phan 0.10.4 (dev)
+### Ported from Phan 0.10.4
 
 New Features(Analysis)
 
 + Support array key types of `int`, `string`, and `mixed` (i.e. `int|string`) in union types such as `array<int,T>` (#824)
 
-  Check that the array key types match when assigning Expected param types, return types, property types, etc.
-  They don't match when casting a union type of `int` to `string`, or vice versa.
+  Check that the array key types match when assigning expected param types, return types, property types, etc.
+  By default, an array with a key type of `int` can't cast to an array key type of `string`, or vice versa.
   Mixed union types in keys can cast to/from any key type.
 
   - To allow casting `array<int,T>` to `array<string,T>`, enable `scalar_array_key_cast` in your `.phan/config.php`.
 
-  Warn when fetching with the wrong type of array keys (E.g. string key for `array<int,T>`) (Issue #1390)
-+ Infer array key types of `int`, `string`, or `int|string` in foreach over arrays. (#1300)
++ Warn when using the wrong type of array keys offsets to fetch from an array (E.g. `string` key for `array<int,T>`) (Issue #1390)
++ Infer array key types of `int`, `string`, or `int|string` in `foreach` over arrays. (#1300)
   (Phan's type system doesn't support inferring key types for `iterable` or `Traversable` right now)
 + Support **parsing** PHPDoc array shapes
   (E.g. a function expecting `['field' => 'a string']` can document this as `@param array{field:string}` $options)
@@ -40,33 +40,35 @@ New Features(Analysis)
   In practical terms, this means that `[1,2,'a']` is seen as `array<int,int|string>`,
   which Phan represents as `array<int,int>|array<int,string>`.
 
-  In the previous phan release, that would be represented as `int[]|string[]`,
+  In the previous Phan release, the union type of `[1,2,'a']` would be represented as `int[]|string[]`,
   which is equivalent to `array<mixed,int>|array<mixed,string>`
 
   Another example: `[$strKey => new MyClass(), $strKey2 => $unknown]` will be represented as
   `array<string,MyClass>|array<string,mixed>`.
-  (If phan can't infer a type of a key or value, `mixed` gets added to that key or value.)
+  (If Phan can't infer a type of a key or value, `mixed` gets added to that key or value.)
 + Improve analysis of try/catch/finally blocks (#1408)
-  Analyze catch blocks with the inferences about the try block.
-  Analyze a finally block with the inferences from the try and catch blocks.
+  Analyze `catch` blocks with the inferences about the `try` block.
+  Analyze a `finally` block with the combined inferences from the `try` and `catch` blocks.
 + Account for side effects of `&&` and `||` operators in expressions, outside of `if`/`assert` statements. (#1415)
   E.g. `$isValid = ($x instanceof MyClass && $x->isValid())` will now consistently check that isValid() exists on MyClass.
-+ Improve analysis of cases such as `if (!($x instanceof MyClass) || $x->method())`
++ Improve analysis of expressions within conditionals, such as `if (!($x instanceof MyClass) || $x->method())`
   or `if (!(cond($x) && othercond($x)))`
+
+  (Phan is now aware of the types of the right hand side of `||` and `&&` in more cases)
 + Add a large number of param and return type signatures for internal functions and methods,
   for params and return types that were previously untyped.
   (Imported from docs.php.net's SVN repo)
 + More precise analysis of the return types of `var_export()`, `print_r()`, and `json_decode()` (#1326, #1327)
 + Improve type narrowing from `iterable` to `\Traversable`/`array` (#1427)
   This change affects `is_array()`/`is_object()` checks and their negations.
-+ Fix more edge cases which may cause Phan to fail to infer that properties, constants, or methods are inherited. (#311, #1426, #454)
++ Fix more edge cases which would cause Phan to fail to infer that properties, constants, or methods are inherited. (PR #1440 for issues #311, #1426, #454)
 
 Plugins
-+ Fix bugs in NonBoolBranchPlugin and NonBoolInLogicalArithPlugin (#1413, #1410)
++ Fix bugs in `NonBoolBranchPlugin` and `NonBoolInLogicalArithPlugin` (#1413, #1410)
 + **Make UnionType instances immutable.**
   This will affect plugins that used addType/addUnionType/removeType. withType/withUnionType/withoutType should be used instead.
   To modify the type of elements(properties, method return types, parameters, variables, etc),
-  `Element->setUnionType(plugin_modifier_function(Element->getUnionType()))` should be used.
+  plugin authors should use `Element->setUnionType(plugin_modifier_function(Element->getUnionType()))`.
 
 Language server:
 + Add a CLI option `--language-server-analyze-only-on-save` to prevent the client from sending change notifications. (#1325)
@@ -122,8 +124,8 @@ New Features(Analysis)
 + Support less ambiguous `?(T[])` and `(?T)[]` in phpdoc (#1213)
   Note that `(S|T)[]` is **not** supported yet.
 + Support alternate syntax `array<T>` and `array<Key, T>` in phpdoc (PR #1213)
-  Note that Phan ignores the provided value of `Key` completely right now (i.e. same as `T[]`); Key types may be supported later.
-+ Speed up phan analysis on small projects, reduce memory usage (Around 0.15 seconds and 15MB)
+  Note that Phan ignores the provided value of `Key` completely right now (i.e. same as `T[]`); Key types will be supported in Phan 0.10.3.
++ Speed up Phan analysis on small projects, reduce memory usage (Around 0.15 seconds and 15MB)
   This was done by deferring loading the information about internal classes and functions until that information was needed for analysis.
 + Analyze existence and usage of callables passed to (internal and user-defined) function&methods expecting callable. (#1194)
   Analysis will now warn if the referenced function/method of a callable array/string
@@ -136,7 +138,7 @@ New Features(Analysis)
 + Split errors for class constants out of `PhanUnreferencedConst`:
   Add `PhanUnreferencedPublicClassConst`, `PhanUnreferencedProtectedClassConst`, and `PhanUnreferencedPrivateClassConst`.
   `PhanUnreferencedConst` is now exclusively used for global constants.
-+ Analyze compact() for undefined variables (#1089)
++ Analyze uses of `compact()` for undefined variables (#1089)
 + Add `PhanParamSuspiciousOrder` to warn about mixing up variable and constant/literal arguments in calls to built in string/regex functions
   (`explode`, `strpos`, `mb_strpos`, `preg_match`, etc.)
 + Preserve the closure's function signature in the inferred return value of `Closure::bind()`. (#869)
@@ -162,7 +164,7 @@ New Features (CLI, Configs)
 + Improve default update rate of `--progress-bar` (Update it every 0.10 seconds)
 
 Bug Fixes
-+ Fixes bugs in PrintfCheckerPlugin: Alignment goes before width, and objects with __toString() can cast to %s. (#1225)
++ Fixes bugs in `PrintfCheckerPlugin`: Alignment goes before width, and objects with __toString() can cast to %s. (#1225)
 + Reduce false positives in analysis of gotos, blocks containing gotos anywhere may do something other than return or throw. (#1222)
 + Fix a crash when a magic method with a return type has the same name as a real method.
 + Allow methods to have weaker PHPdoc types than the overridden method in `PhanParamSignatureMismatch`. (#1253)
@@ -195,8 +197,8 @@ Maintenance
 New Features(Analysis)
 + Support `@return $this` in phpdoc for methods and magic methods.
   (but not elsewhere. E.g. `@param $this $varName` is not supported, use `@param static $varName`) (#634)
-+ Check if functions/methods passed to array_map and array_filter are compatible with their arguments.
-  Recursively analyze the functions/methods passed to array_map/array_filter if no types were provided. (unless quick mode is being used)
++ Check if functions/methods passed to `array_map` and `array_filter` are compatible with their arguments.
+  Recursively analyze the functions/methods passed to `array_map`/`array_filter` if no types were provided. (unless quick mode is being used)
 
 New Features (CLI, Configs)
 
@@ -213,8 +215,8 @@ New Features (CLI, Configs)
   (e.g. `['xdebug' => 'vendor/phan/phan/.phan/internal_stubs/xdebug.phan_php']`)
   If you wish to use xdebug to debug Phan's analysis itself, set and export the environment variable `PHAN_ALLOW_XDEBUG=1`.
 + Improve analysis of return types of `array_pop`, `array_shift`, `current`, `end`, `next`, `prev`, `reset`, `array_map`, `array_filter`, etc.
-  See ArrayReturnTypeOverridePlugin.php.
-  Phan can analyze callables (for `array_map`/`array_filter`) of Closure form, as well as strings/2-part arrays that are inlined.
+  See `ArrayReturnTypeOverridePlugin.php.`
+  Phan can analyze callables (for `array_map`/`array_filter`) of `Closure` form, as well as strings/2-part arrays that are inlined.
 + Add `--memory-limit` CLI option (e.g. `--memory-limit 500M`). If this option isn't provided, there is no memory limit. (#1148)
 
 Maintenance
@@ -225,7 +227,7 @@ Plugins
   (e.g. based on one or more of the argument types or values) (related to #612, #1181)
 + Add a new plugin capability `AnalyzeFunctionCallCapability` which can add logic to analyze calls to a small subset of functions.
   (e.g. based on one or more of the argument types or values) (#1181)
-+ Make line numbers more accurate in DuplicateArrayKeyPlugin.
++ Make line numbers more accurate in `DuplicateArrayKeyPlugin`.
 + Add `PregRegexCheckerPlugin` to check for invalid regexes. (uses `AnalyzeFunctionCallCapability`).
   This plugin is able to resolve literals, global constants, and class constants as regexes.
   See [the corresponding section of .phan/plugins/README.md](.phan/plugins/README.md#pregregexcheckerpluginphp)
