@@ -144,13 +144,17 @@ return [
     // A list of plugin files to execute.
     // See https://github.com/phan/phan/tree/master/.phan/plugins for even more.
     // (Pass these in as relative paths.
-    // The upcoming 0.10.2 release will allow passing 'AlwaysReturnPlugin' if referring to a plugin that is bundled with Phan)
+    // The 0.10.2 release will allow passing 'AlwaysReturnPlugin' if referring to a plugin that is bundled with Phan)
     'plugins' => [
         // checks if a function, closure or method unconditionally returns.
-        'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php',
+        'AlwaysReturnPlugin',  // can also be written as 'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php'
         // Checks for syntactically unreachable statements in
         // the global scope or function bodies.
-        'vendor/phan/phan/.phan/plugins/UnreachableCodePlugin.php',
+        'UnreachableCodePlugin',
+        'DollarDollarPlugin',
+        'DuplicateArrayKeyPlugin',
+        'PregRegexCheckerPlugin',
+        'PrintfCheckerPlugin',
     ],
 ];
 ```
@@ -386,7 +390,9 @@ the bug. And once you have done that, fix it. Then turn your code snippet into a
 [tests](tests) then `./test` and send a PR with your fix and test. Alternatively, you can open an Issue with
 details.
 
-To run Phan's tests, just run `./test`.
+To run Phan's unit tests, just run `./test`.
+
+To run all of Phan's unit tests and integration tests, run `./tests/run_all_tests.sh`
 
 # Code of Conduct
 
