@@ -50,7 +50,7 @@ Phan is able to perform the following kinds of analysis.
   Phan also checks for final classes/methods being overridden, and that the implemented interface is really a interface (and so on).
 * Supports namespaces, traits and variadics.
 * Supports [Union Types](https://github.com/phan/phan/wiki/About-Union-Types)
-* Supports generic arrays such as `int[]`, `UserObject[]`, etc..
+* Supports generic arrays such as `int[]`, `UserObject[]`, `array<int,UserObject>`, etc..
 * Supports phpdoc [type annotations](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code)
 * Supports inheriting phpdoc type annotations
 * Supports checking that phpdoc type annotations are a narrowed form (E.g. subclasses/subtypes) of the real type signatures
@@ -282,6 +282,10 @@ Usage: ./phan [options] [files...]
  --language-server-tcp-connect <addr>
   Start the language server and connect to the client listening on <addr> (e.g. 127.0.0.1:<port>)
 
+ --language-server-analyze-only-on-save
+  Prevent the client from sending change notifications (Only notify the language server when the user saves a document)
+  This significantly reduces CPU usage, but clients won't get notifications about issues immediately.
+
  -v, --version
   Print phan's version number
 
@@ -296,7 +300,7 @@ Usage: ./phan [options] [files...]
 
 Phan reads and understands most [PHPDoc](http://www.phpdoc.org/docs/latest/guides/types.html)
 type annotations including [Union Types](https://github.com/phan/phan/wiki/About-Union-Types)
-(like `int|MyClass|string|null`) and generic array types (like `int[]` or `string[]|MyClass[]`).
+(like `int|MyClass|string|null`) and generic array types (like `int[]` or `string[]|MyClass[]` or `array<int,MyClass>`).
 
 Take a look at [Annotating Your Source Code](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code)
 and [About Union Types](https://github.com/phan/phan/wiki/About-Union-Types) for some help
