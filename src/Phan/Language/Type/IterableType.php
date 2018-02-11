@@ -13,6 +13,11 @@ class IterableType extends NativeType
         return true;
     }
 
+    public function isPossiblyObject() : bool
+    {
+        return true;  // can be Traversable, which is an object
+    }
+
     /**
      * @return bool
      * True if this type is array-like (is of type array, is

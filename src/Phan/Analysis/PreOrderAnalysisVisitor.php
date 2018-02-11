@@ -117,16 +117,18 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     public function visitMethod(Node $node) : Context
     {
         $method_name = (string)$node->children['name'];
+        $code_base = $this->code_base;
+        $context = $this->context;
 
         \assert(
-            $this->context->isInClassScope(),
+            $context->isInClassScope(),
             "Must be in class context to see a method"
         );
 
         $clazz = $this->getContextClass();
 
         if (!$clazz->hasMethodWithName(
-            $this->code_base,
+            $code_base,
             $method_name
         )) {
             throw new CodeBaseException(
@@ -136,19 +138,14 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         }
 
         $method = $clazz->getMethodByName(
-            $this->code_base,
+            $code_base,
             $method_name
         );
+        $method->ensureScopeInitialized($code_base);
 
         // Parse the comment above the method to get
         // extra meta information about the method.
-        $comment = Comment::fromStringInContext(
-            $node->children['docComment'] ?? '',
-            $this->code_base,
-            $this->context,
-            $node->lineno ?? 0,
-            Comment::ON_METHOD
-        );
+        $comment = $method->getComment();
 
         $context = $this->context->withScope(
             $method->getInternalScope()
@@ -156,10 +153,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         // For any @var references in the method declaration,
         // add them as variables to the method's scope
-        foreach ($comment->getVariableList() as $parameter) {
-            $context->addScopeVariable(
-                $parameter->asVariable($this->context)
-            );
+        if ($comment !== null) {
+            foreach ($comment->getVariableList() as $parameter) {
+                $context->addScopeVariable(
+                    $parameter->asVariable($this->context)
+                );
+            }
         }
 
         // Add $this to the scope of non-static methods
@@ -188,6 +187,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
 
+        // TODO: Why is the check for yield in PreOrderAnalysisVisitor?
         if ($method->getHasYield()) {
             $this->setReturnTypeOfGenerator($method, $node);
         }
@@ -208,11 +208,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     public function visitFuncDecl(Node $node) : Context
     {
         $function_name = (string)$node->children['name'];
+        $code_base = $this->code_base;
+        $original_context = $this->context;
 
         try {
             $canonical_function = (new ContextNode(
-                $this->code_base,
-                $this->context,
+                $code_base,
+                $original_context,
                 $node
             ))->getFunction($function_name, true);
         } catch (CodeBaseException $exception) {
@@ -225,9 +227,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // Hunt for the alternate associated with the file we're
         // looking at currently in this context.
         $function = null;
-        foreach ($canonical_function->alternateGenerator($this->code_base) as $alternate_function) {
+        foreach ($canonical_function->alternateGenerator($code_base) as $alternate_function) {
             if ($alternate_function->getFileRef()->getProjectRelativePath()
-                === $this->context->getProjectRelativePath()
+                === $original_context->getProjectRelativePath()
             ) {
                 $function = $alternate_function;
                 break;
@@ -243,28 +245,25 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         }
 
         \assert($function instanceof Func);
+        $function->ensureScopeInitialized($code_base);
 
-        $context = $this->context->withScope(
+        $context = $original_context->withScope(
             $function->getInternalScope()
         );
 
         // Parse the comment above the function to get
         // extra meta information about the method.
         // TODO: Investigate caching information from Comment::fromStringInContext?
-        $comment = Comment::fromStringInContext(
-            $node->children['docComment'] ?? '',
-            $this->code_base,
-            $this->context,
-            $node->lineno ?? 0,
-            Comment::ON_FUNCTION
-        );
+        $comment = $function->getComment();
 
         // For any @var references in the method declaration,
         // add them as variables to the method's scope
-        foreach ($comment->getVariableList() as $parameter) {
-            $context->addScopeVariable(
-                $parameter->asVariable($this->context)
-            );
+        if ($comment !== null) {
+            foreach ($comment->getVariableList() as $parameter) {
+                $context->addScopeVariable(
+                    $parameter->asVariable($this->context)
+                );
+            }
         }
 
         if ($function->getRecursionDepth() === 0) {
@@ -363,20 +362,21 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitClosure(Node $node) : Context
     {
+        $code_base = $this->code_base;
+        $context = $this->context;
         $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
-            $this->context->withLineNumberStart($node->lineno ?? 0),
+            $context->withLineNumberStart($node->lineno ?? 0),
             $node
         );
-        $func = $this->code_base->getFunctionByFQSEN($closure_fqsen);
-
-        $context = $this->context;
+        $func = $code_base->getFunctionByFQSEN($closure_fqsen);
+        $func->ensureScopeInitialized($code_base);
 
         // If we have a 'this' variable in our current scope,
         // pass it down into the closure
-        self::addThisVariableToInternalScope($this->code_base, $context, $func);
+        self::addThisVariableToInternalScope($code_base, $context, $func);
 
         // Make the closure reachable by FQSEN from anywhere
-        $this->code_base->addFunction($func);
+        $code_base->addFunction($func);
 
         if (!empty($node->children['uses'])
             && $node->children['uses']->kind == \ast\AST_CLOSURE_USES
@@ -392,7 +392,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 }
 
                 $variable_name = (new ContextNode(
-                    $this->code_base,
+                    $code_base,
                     $context,
                     $use->children['name']
                 ))->getVariableName();
@@ -410,10 +410,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     // If this is not pass-by-reference variable we
                     // have a problem
                     if (!($use->flags & \ast\flags\PARAM_REF)) {
-                        $this->emitIssue(
+                        Issue::maybeEmitWithParameters(
+                            $this->code_base,
+                            clone($context)->withLineNumberStart($use->lineno),
                             Issue::UndeclaredVariable,
                             $node->lineno ?? 0,
-                            $variable_name
+                            [$variable_name]
                         );
                         continue;
                     } else {

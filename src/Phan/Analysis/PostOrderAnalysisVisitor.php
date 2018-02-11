@@ -2129,7 +2129,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function updateParameterTypeByArgument(
         FunctionInterface $method,
-        Variable $parameter,
+        Parameter $parameter,
         $argument,
         UnionType $argument_type,
         array &$parameter_list,

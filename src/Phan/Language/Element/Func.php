@@ -177,7 +177,6 @@ class Func extends AddressableElement implements FunctionInterface
             }
         }
 
-
         // @var array<int,Parameter>
         // The list of parameters specified on the
         // function
@@ -194,7 +193,7 @@ class Func extends AddressableElement implements FunctionInterface
             );
         }
 
-        if (!$context->isPHPInternal()) {
+        if (!$func->isPHPInternal()) {
             // If the function is Analyzable, set the node so that
             // we can come back to it whenever we like and
             // rescan it
@@ -260,8 +259,9 @@ class Func extends AddressableElement implements FunctionInterface
             $func->setPHPDocReturnType($union_type);
         }
 
-        // Add params to local scope for user functions
-        FunctionTrait::addParamsToScopeOfFunctionOrMethod($context, $code_base, $node, $func, $comment);
+        // Defer adding params to the local scope for user functions. (FunctionTrait::addParamsToScopeOfFunctionOrMethod)
+        // See PreOrderAnalysisVisitor->visitFuncDecl and visitClosure
+        $func->setComment($comment);
 
         return $func;
     }

@@ -18,6 +18,11 @@ class ArrayType extends IterableType
         // There's no EmptyArrayType, so return $this
         return $this;
     }
+
+    public function isPossiblyObject() : bool
+    {
+        return false;  // Overrides IterableType returning true
+    }
 }
 // Trigger the autoloader for GenericArrayType so that it won't be called
 // before ArrayType.

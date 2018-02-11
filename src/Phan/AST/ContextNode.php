@@ -1859,7 +1859,7 @@ class ContextNode
      *
      * This does not create new object instances.
      *
-     * @return Node||string|float|int|bool|null - If this could be resolved and we're certain of the value, this gets an equivalent definition. Otherwise, this returns $node. If this would be an array, this returns $node.
+     * @return Node|string|float|int|bool|null - If this could be resolved and we're certain of the value, this gets an equivalent definition. Otherwise, this returns $node. If this would be an array, this returns $node.
      *
      * @throws InvalidArgumentException if the object could not be determined - Callers must catch this.
      */

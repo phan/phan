@@ -57,4 +57,20 @@ class FutureUnionType
             false
         );
     }
+
+    /**
+     * @internal (May rethink exposing the codebase in the future)
+     */
+    public function getCodebase() : CodeBase
+    {
+        return $this->code_base;
+    }
+
+    /**
+     * @internal (May rethink exposing the codebase in the future)
+     */
+    public function getContext() : Context
+    {
+        return $this->context;
+    }
 }

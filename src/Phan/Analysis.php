@@ -241,6 +241,8 @@ class Analysis
             if ($function_or_method->isPHPInternal()) {
                 return;
             }
+            // Phan always has to call this, to add default values to types of parameters.
+            $function_or_method->ensureScopeInitialized($code_base);
 
             // If there is an array limiting the set of files, skip this file if it's not in the list,
             if (\is_array($file_filter) && !isset($file_filter[$function_or_method->getContext()->getFile()])) {
