@@ -307,4 +307,26 @@ interface FunctionInterface extends AddressableElementInterface
      * @return void
      */
     public function setFunctionCallAnalyzer(\Closure $closure);
+
+    /**
+     * Initialize the inner scope of this method with variables created from the parameters.
+     *
+     * Deferred until the parse phase because getting the UnionType of parameter defaults requires having all class constants be known.
+     *
+     * @return void
+     */
+    public function ensureScopeInitialized(CodeBase $code_base);
+
+    /** @return Node */
+    public function getNode();
+
+    /**
+     * @return ?Comment - Not set for internal functions/methods
+     */
+    public function getComment();
+
+    /**
+     * @param Comment $comment
+     */
+    public function setComment(Comment $comment);
 }

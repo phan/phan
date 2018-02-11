@@ -395,7 +395,7 @@ class Method extends ClassElement implements FunctionInterface
             );
         }
 
-        if (!$context->isPHPInternal()) {
+        if (!$method->isPHPInternal()) {
             // If the method is Analyzable, set the node so that
             // we can come back to it whenever we like and
             // rescan it
@@ -478,8 +478,9 @@ class Method extends ClassElement implements FunctionInterface
             $method->setPHPDocReturnType($comment_return_union_type);
         }
 
-        // Add params to local scope for user functions
-        FunctionTrait::addParamsToScopeOfFunctionOrMethod($context, $code_base, $node, $method, $comment);
+        // Defer adding params to the local scope for user functions. (FunctionTrait::addParamsToScopeOfFunctionOrMethod)
+        // See PostOrderAnalysisVisitor->analyzeCallToMethod
+        $method->setComment($comment);
 
         return $method;
     }

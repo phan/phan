@@ -333,7 +333,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                     Logger::logInfo("Finished listening on tcp");
                     $most_recent_request = $ls->most_recent_request;
                     $ls->most_recent_request = null;
-                    return $most_recent_request;;
+                    return $most_recent_request;
+                ;
                 /* } */
             }
         } else {
@@ -349,7 +350,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             Logger::logInfo("Finished listening on stdin");
             $most_recent_request = $ls->most_recent_request;
             $ls->most_recent_request = null;
-            return $most_recent_request;;
+            return $most_recent_request;
+            ;
         }
     }
 

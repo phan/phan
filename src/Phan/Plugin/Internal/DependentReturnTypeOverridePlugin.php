@@ -87,7 +87,11 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             Context $context,
             Func $function,
             array $args
-        ) use ($json_decode_array_types, $json_decode_object_types, $json_decode_array_or_object_types) {
+        ) use (
+            $json_decode_array_types,
+            $json_decode_object_types,
+            $json_decode_array_or_object_types
+) {
             //  mixed json_decode ( string $json [, bool $assoc = FALSE [, int $depth = 512 [, int $options = 0 ]]] )
             //  $options can include JSON_OBJECT_AS_ARRAY in a bitmask
             // TODO: reject `...` operator? (Low priority)

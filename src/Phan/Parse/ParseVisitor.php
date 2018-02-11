@@ -342,40 +342,6 @@ class ParseVisitor extends ScopeVisitor
 
         if ('__construct' === $method_name) {
             $class->setIsParentConstructorCalled(false);
-
-            if ($class->isGeneric()) {
-                // Get the set of template type identifiers defined on
-                // the class
-                $template_type_identifiers = \array_keys(
-                    $class->getTemplateTypeMap()
-                );
-
-                // Get the set of template type identifiers defined
-                // across all parameter types
-                $parameter_template_type_identifiers = [];
-                foreach ($method->getParameterList() as $parameter) {
-                    foreach ($parameter->getUnionType()->getTypeSet() as $type) {
-                        if ($type instanceof TemplateType) {
-                            $parameter_template_type_identifiers[] =
-                                $type->getName();
-                        }
-                    }
-                }
-
-                $missing_template_type_identifiers = \array_diff(
-                    $template_type_identifiers,
-                    $parameter_template_type_identifiers
-                );
-
-                if ($missing_template_type_identifiers) {
-                    $this->emitIssue(
-                        Issue::GenericConstructorTypes,
-                        $node->lineno ?? 0,
-                        implode(',', $missing_template_type_identifiers),
-                        (string)$class->getFQSEN()
-                    );
-                }
-            }
         } elseif ('__invoke' === $method_name) {
             $class->setUnionType($class->getUnionType()->withType(
                 CallableType::instance(false)
@@ -437,29 +403,25 @@ class ParseVisitor extends ScopeVisitor
             // type and try to figure it out later
             $future_union_type = null;
 
-            try {
+            $default_node = $child_node->children['default'];
+
+            $context_for_property = clone($this->context)->withLineNumberStart($child_node->lineno ?? 0);
+
+            if (!($default_node instanceof Node)) {
                 // Get the type of the default
-                $union_type = UnionType::fromNode(
-                    $this->context,
-                    $this->code_base,
-                    $child_node->children['default'],
-                    false
-                );
-            } catch (IssueException $exception) {
-                // TODO: (enhancement/bugfix) In daemon mode, make any user-defined types or
-                // types from constants/other files a FutureUnionType, 100% of the time?
-                // This will make analysis slower.
+                if ($default_node !== null) {
+                    $union_type = Type::fromObject($default_node)->asUnionType();
+                } else {
+                    // This is a declaration such as `public $x;` with no $default_node
+                    // (we don't assume the property is always null, to reduce false positives)
+                    $union_type = UnionType::empty();
+                }
+            } else {
                 $future_union_type = new FutureUnionType(
                     $this->code_base,
-                    $this->context,
-                    $child_node->children['default']
+                    $context_for_property,
+                    $default_node
                 );
-                $union_type = UnionType::empty();
-            }
-
-            // Don't set 'null' as the type if that's the default
-            // given that its the default default.
-            if ($union_type->isType(NullType::instance(false))) {
                 $union_type = UnionType::empty();
             }
 
@@ -471,12 +433,8 @@ class ParseVisitor extends ScopeVisitor
                 . 'Got '
                 . print_r($property_name, true)
                 . ' at '
-                . $this->context
+                . $context_for_property
             );
-
-            $property_name = \is_string($child_node->children['name'])
-                ? $child_node->children['name']
-                : '_error_';
 
             $property_fqsen = FullyQualifiedPropertyName::make(
                 $class->getFQSEN(),
@@ -484,8 +442,7 @@ class ParseVisitor extends ScopeVisitor
             );
 
             $property = new Property(
-                clone($this->context
-                    ->withLineNumberStart($child_node->lineno ?? 0)),
+                $context_for_property,
                 $property_name,
                 $union_type,
                 $node->flags ?? 0,
@@ -501,7 +458,26 @@ class ParseVisitor extends ScopeVisitor
 
             // Look for any @var declarations
             if ($variable = $comment->getVariableList()[$i] ?? null) {
-                if ((string)$union_type != 'null'
+                // We try to avoid resolving $future_union_type except when necessary,
+                // to avoid issues such as https://github.com/phan/phan/issues/311 and many more.
+                if ($future_union_type !== null) {
+                    try {
+                        $union_type = $future_union_type->get();
+                        // We successfully resolved the union type. We no longer need $future_union_type
+                        $future_union_type = null;
+                    } catch (IssueException $e) {
+                        // Do nothing
+                    }
+                    if ($future_union_type === null) {
+                        if ($union_type->isType(NullType::instance(false))) {
+                            $union_type = UnionType::empty();
+                        }
+                        // Replace the empty union type with the resolved union type.
+                        $property->setUnionType($union_type);
+                    }
+                }
+
+                if (!$union_type->isType(NullType::instance(false))
                     && !$union_type->canCastToUnionType($variable->getUnionType())
                     && !$property->hasSuppressIssue(Issue::TypeMismatchProperty)
                 ) {
@@ -519,6 +495,12 @@ class ParseVisitor extends ScopeVisitor
                 $property->setUnionType($property->getUnionType()->withUnionType(
                     $variable->getUnionType()
                 ));
+            }
+
+            // Don't set 'null' as the type if that's the default
+            // given that its the default default.
+            if ($union_type->isType(NullType::instance(false))) {
+                $union_type = UnionType::empty();
             }
 
             $property->setIsDeprecated($comment->isDeprecated());
@@ -586,13 +568,17 @@ class ParseVisitor extends ScopeVisitor
             $constant->setSuppressIssueList($comment->getSuppressIssueList());
 
             $value_node = $child_node->children['value'];
-            $constant->setFutureUnionType(
-                new FutureUnionType(
-                    $this->code_base,
-                    $this->context,
-                    $value_node
-                )
-            );
+            if ($value_node instanceof Node) {
+                $constant->setFutureUnionType(
+                    new FutureUnionType(
+                        $this->code_base,
+                        $this->context,
+                        $value_node
+                    )
+                );
+            } else {
+                $constant->setUnionType(Type::fromObject($value_node)->asUnionType());
+            }
             $constant->setNodeForValue($value_node);
 
             $class->addConstant(
@@ -1147,13 +1133,17 @@ class ParseVisitor extends ScopeVisitor
             Comment::ON_CONST
         );
 
-        $constant->setFutureUnionType(
-            new FutureUnionType(
-                $this->code_base,
-                $this->context,
-                $value
-            )
-        );
+        if ($value instanceof Node) {
+            $constant->setFutureUnionType(
+                new FutureUnionType(
+                    $this->code_base,
+                    $this->context,
+                    $value
+                )
+            );
+        } else {
+            $constant->setUnionType(Type::fromObject($value)->asUnionType());
+        }
 
         $constant->setNodeForValue($value);
 
