@@ -276,20 +276,6 @@ Usage: ./phan [options] [files...]
   (e.g. 'default', which is an alias for port 4846.)
   `phan_client` can be used to communicate with the Phan Daemon.
 
- --language-server-on-stdin
-  Start the language server (For the Language Server protocol).
-  This is a different protocol from --daemonize, clients for various IDEs already exist.
-
- --language-server-tcp-server <addr>
-  Start the language server listening for TCP connections on <addr> (e.g. 127.0.0.1:<port>)
-
- --language-server-tcp-connect <addr>
-  Start the language server and connect to the client listening on <addr> (e.g. 127.0.0.1:<port>)
-
- --language-server-analyze-only-on-save
-  Prevent the client from sending change notifications (Only notify the language server when the user saves a document)
-  This significantly reduces CPU usage, but clients won't get notifications about issues immediately.
-
  -v, --version
   Print phan's version number
 
@@ -298,6 +284,7 @@ Usage: ./phan [options] [files...]
 
  --extended-help
   This help information, plus less commonly used flags
+  (E.g. for daemon mode)
 ```
 
 ## Annotating Your Source Code
