@@ -1,4 +1,20 @@
 Phan NEWS
+?? ??? 2018, Phan 0.10.5 (dev)
+------------------------
+
+New Features(CLI, Configs)
++ Add `--allow-polyfill-parser` and `--force-polyfill-parser` options.
+  These allow Phan to be run without installing `php-ast`.
+
+  Using the native php-ast extension is still recommended.
+  The polyfill is slower and has several known bugs.
+
+  Additionally, the way doc comments are parsed by the polyfill is different.
+  Doc comments for closures (or other elements with doc comments) would need to be immediately before the closures.
+
+Bug fixes
++ Fix a bug in `tool/make_stubs` when generating stubs of namespaced global functions.
+
 
 11 Feb 2018, Phan 0.10.4
 ------------------------

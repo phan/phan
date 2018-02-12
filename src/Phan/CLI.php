@@ -21,7 +21,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '0.10.4';
+    const PHAN_VERSION = '0.10.5-dev';
 
     /**
      * @var OutputInterface
@@ -98,6 +98,8 @@ class CLI
                 'markdown-issue-messages',
                 'disable-plugins',
                 'use-fallback-parser',
+                'allow-polyfill-parser',
+                'force-polyfill-parser',
                 'require-config-exists',
                 'daemonize-socket:',
                 'daemonize-tcp-port:',
@@ -334,6 +336,21 @@ class CLI
                 case 'dead-code-detection':
                     Config::setValue('dead_code_detection', true);
                     break;
+                case 'allow-polyfill-parser':
+                    // Just check if it's installed and of a new enough version.
+                    // Assume that if there is an installation, it works, and warn later in ensureASTParserExists()
+                    if (!extension_loaded('ast')) {
+                        Config::setValue('use_polyfill_parser', true);
+                        break;
+                    }
+                    if (version_compare((new \ReflectionExtension('ast'))->getVersion(), '0.1.5') < 0) {
+                        Config::setValue('use_polyfill_parser', true);
+                        break;
+                    }
+                    break;
+                case 'force-polyfill-parser':
+                    Config::setValue('use_polyfill_parser', true);
+                    break;
                 case 'memory-limit':
                     if (preg_match('@^([1-9][0-9]*)([KMG])?$@', $value, $match)) {
                         ini_set('memory_limit', $value);
@@ -355,6 +372,8 @@ class CLI
                     break;
             }
         }
+
+        $this->ensureASTParserExists();
 
         $printer = $factory->getPrinter($printer_type, $this->output);
         $filter  = new ChainedIssueFilter([
@@ -582,6 +601,15 @@ Usage: {$argv[0]} [options] [files...]
   (And phan will then analyze what could be parsed).
   This flag is experimental and may result in unexpected exceptions or errors.
   This flag does not affect excluded files and directories.
+
+ --allow-polyfill-parser
+  If the `php-ast` extension isn't available or is an outdated version,
+  then use a slower parser (based on tolerant-php-parser) instead.
+  Note that https://github.com/Microsoft/tolerant-php-parser has some known bugs which may result in false positive parse errors.
+
+ --force-polyfill-parser
+  Use a slower parser (based on tolerant-php-parser) instead of the native parser, even if the native parser is available.
+  Useful only for debugging.
 
  -s, --daemonize-socket </path/to/file.sock>
   Unix socket for Phan to listen for requests on, in daemon mode.
@@ -846,6 +874,56 @@ EOB;
         // Write each value to the config
         foreach ($config as $key => $value) {
             Config::setValue($key, $value);
+        }
+    }
+
+    /**
+     * This will assert that ast\parse_code or a polyfill can be called.
+     * @return void
+     */
+    private function ensureASTParserExists()
+    {
+        if (Config::getValue('use_polyfill_parser')) {
+            return;
+        }
+        assert(
+            extension_loaded('ast'),
+            'The php-ast extension must be loaded in order for Phan to work. See https://github.com/phan/phan#getting-it-running for more details. Alternately, invoke Phan with the CLI option --allow-polyfill-parser (which is noticeably slower)'
+        );
+
+        try {
+            // Split up the opening PHP tag to fix highlighting in vim.
+            $node = \ast\parse_code(
+                '<' . '?php 42;',
+                Config::AST_VERSION
+            );
+        } catch (\LogicException $throwable) {
+            assert(
+                false,
+                'Unknown AST version ('
+                . Config::AST_VERSION
+                . ') in configuration. '
+                . 'You may need to rebuild the latest '
+                . 'version of the php-ast extension.'
+            );
+        }
+
+        // Workaround for https://github.com/nikic/php-ast/issues/79
+        try {
+            \ast\parse_code(
+                '<'.'?php syntaxerror',
+                Config::AST_VERSION
+            );
+            assert(
+                false,
+                'Expected ast\\parse_code to throw ParseError on invalid inputs. Configured AST version: '
+                . Config::AST_VERSION
+                . '. '
+                . 'You may need to rebuild the latest '
+                . 'version of the php-ast extension.'
+            );
+        } catch (\ParseError $throwable) {
+            // error message may validate with locale and version, don't validate that.
         }
     }
 }
