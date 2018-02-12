@@ -20,22 +20,6 @@ use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Phan\Phan;
 
-try {
-    $node = \ast\parse_code(
-        '<'.'?php 42;',
-        Config::AST_VERSION
-    );
-} catch (LogicException $throwable) {
-    assert(
-        false,
-        'Unknown AST version ('
-        . Config::AST_VERSION
-        . ') in configuration. '
-        . 'You may need to rebuild the latest '
-        . 'version of the php-ast extension.'
-    );
-}
-
 // chdir to the code path in order to support the .phan/config.php file
 $old_cwd = getcwd();
 

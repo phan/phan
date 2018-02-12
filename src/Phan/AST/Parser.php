@@ -2,6 +2,7 @@
 
 namespace Phan\AST;
 
+use Microsoft\PhpParser\DiagnosticKind;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\CodeBase;
 use Phan\Config;
@@ -10,6 +11,7 @@ use Phan\Language\Context;
 use Phan\Phan;
 
 use ast\Node;
+use ParseError;
 
 class Parser
 {
@@ -22,17 +24,20 @@ class Parser
      * @param string $file_contents file contents to pass to parser. May be overridden to ignore what is currently on disk.
      * @param bool $suppress_parse_errors (If true, don't emit SyntaxError)
      * @return ?Node
-     * @throws \ParseError
+     * @throws ParseError
      */
     public static function parseCode(CodeBase $code_base, Context $context, string $file_path, string $file_contents, bool $suppress_parse_errors)
     {
         try {
+            if (Config::getValue('use_polyfill_parser')) {
+                return self::parseCodePolyfill($file_path, $file_contents, $suppress_parse_errors);
+            }
             return \ast\parse_code(
                 $file_contents,
                 Config::AST_VERSION,
                 $file_path
             );
-        } catch (\ParseError $native_parse_error) {
+        } catch (ParseError $native_parse_error) {
             if (!$suppress_parse_errors) {
                 Issue::maybeEmit(
                     $code_base,
@@ -58,11 +63,13 @@ class Parser
 
             $converter = new TolerantASTConverter();
             $converter->setShouldAddPlaceholders(false);
+            $errors = [];
             try {
                 $node = $converter->parseCodeAsPHPAST($file_contents, Config::AST_VERSION, $errors);
             } catch (\PhpParser\Error $fallback_parser_error) {
                 // Shouldn't happen, we're using the error collecting parser
-                throw new \ParseError('Fallback parser error: ' . $fallback_parser_error->getMessage(), $fallback_parser_error->getCode(), $fallback_parser_error);
+                // We use PhpParser instead of tolerant-php-parser for parsing complex string literals into real strings.
+                throw new ParseError('Fallback parser error: ' . $fallback_parser_error->getMessage(), $fallback_parser_error->getCode(), $fallback_parser_error);
             } catch (\Exception $e) {
                 // Generic fallback. TODO: log.
                 throw $native_parse_error;
@@ -70,5 +77,36 @@ class Parser
             // TODO: loop over $errors?
             return $node;
         }
+    }
+
+    /**
+     * Parses the code. If $suppress_parse_errors is false, this also emits SyntaxError.
+     *
+     * @param string $file_path file path for error reporting
+     * @param string $file_contents file contents to pass to parser. May be overridden to ignore what is currently on disk.
+     * @param bool $suppress_parse_errors (If true, don't emit SyntaxError)
+     * @return ?Node
+     * @throws ParseError
+     */
+    public static function parseCodePolyfill(string $file_path, string $file_contents, bool $suppress_parse_errors)
+    {
+        $converter = new TolerantASTConverter();
+        $converter->setShouldAddPlaceholders(false);
+        $errors = [];
+        try {
+            $node = $converter->parseCodeAsPHPAST($file_contents, Config::AST_VERSION, $errors);
+        } catch (\PhpParser\Error $fallback_parser_error) {
+            // Shouldn't happen, we're using the error collecting parser
+            throw new ParseError('Fallback parser error: ' . $fallback_parser_error->getMessage(), $fallback_parser_error->getCode(), $fallback_parser_error);
+        } catch (\Exception $e) {
+            // Generic fallback. TODO: log.
+            throw new ParseError('Unexpected Exception of type ' . \get_class($e) . ': ' . $e->getMessage());
+        }
+        foreach ($errors as $diagnostic) {
+            if ($diagnostic->kind === 0) {
+                throw new ParseError('Fallback parser diagnostic error: ' . $diagnostic->message);
+            }
+        }
+        return $node;
     }
 }

@@ -4,6 +4,7 @@ namespace Phan\AST\TolerantASTConverter;
 
 use ast;
 use Microsoft\PhpParser;
+use Microsoft\PhpParser\Diagnostic;
 use Microsoft\PhpParser\DiagnosticsProvider;
 use Microsoft\PhpParser\InvalidToken;
 use Microsoft\PhpParser\MissingToken;
@@ -15,7 +16,7 @@ use Microsoft\PhpParser\TokenKind;
 // class, constant, and function definitions.
 // TODO: Node->getText() provide optional file contents, Token->getText provide mandatory file contents
 if (!class_exists('\ast\Node')) {
-    require_once __DIR__ . '/../../../ast_shim.php';
+    require_once __DIR__ . '/ast_shim.php';
 }
 
 
@@ -119,7 +120,11 @@ final class TolerantASTConverter
         $this->instance_should_add_placeholders = $value;
     }
 
-    public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = null)
+    /**
+     * @param Diagnostic[] $errors @phan-output-reference
+     * @return \ast\Node
+     */
+    public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = [])
     {
         if (!\in_array($version, self::SUPPORTED_AST_VERSIONS)) {
             throw new \InvalidArgumentException(sprintf("Unexpected version: want %s, got %d", \implode(', ', self::SUPPORTED_AST_VERSIONS), $version));
