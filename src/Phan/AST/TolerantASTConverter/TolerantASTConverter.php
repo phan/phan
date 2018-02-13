@@ -551,7 +551,7 @@ final class TolerantASTConverter
                     $return_type,
                     $start_line,
                     self::getEndLine($n),
-                    $n->getDocCommentText()
+                    self::resolveDocCommentForClosure($n)
                 );
                 // FIXME: add a test of ClassQualifiedName to php-ast
             },
@@ -1701,6 +1701,28 @@ Node\SourceFileNode
             $ast_uses[] = new ast\Node(ast\AST_CLOSURE_VAR, $use->byRef ? 1 : 0, ['name' => self::tokenToString($use->variableName)], self::getStartLine($use));
         }
         return new ast\Node(ast\AST_CLOSURE_USES, 0, $ast_uses, $ast_uses[0]->lineno ?? $line);
+    }
+
+    /**
+     * @return ?string
+     */
+    private static function resolveDocCommentForClosure(PhpParser\Node\Expression\AnonymousFunctionCreationExpression $node)
+    {
+        $doc_comment = $node->getDocCommentText();
+        if ($doc_comment) {
+            return $doc_comment;
+        }
+        while ($node = $node->parent) {
+            if ($node instanceof PhpParser\Node\Expression\AssignmentExpression || $node instanceof PhpParser\Node\ArrayElement) {
+                $doc_comment = $node->getDocCommentText();
+                if ($doc_comment) {
+                    return $doc_comment;
+                }
+                continue;
+            }
+            break;
+        }
+        return null;
     }
 
     /**

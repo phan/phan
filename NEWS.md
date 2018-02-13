@@ -10,7 +10,7 @@ New Features(CLI, Configs)
   The polyfill is slower and has several known bugs.
 
   Additionally, the way doc comments are parsed by the polyfill is different.
-  Doc comments for closures (or other elements with doc comments) would need to be immediately before the closures.
+  Doc comments for elements such as closures may be parsed differently from `php-ast`
 
 Bug fixes
 + Fix a bug in `tool/make_stubs` when generating stubs of namespaced global functions.
