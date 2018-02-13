@@ -771,7 +771,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // Step into each catch node and get an
             // updated context for the node
             $catch_context = $this->analyzeAndGetUpdatedContext($catch_context, $node, $catch_node);
-            // NOTE: We let ContextMergeVisitor->visitTry decide if the block exit status is valid.
+            // NOTE: We let ContextMergeVisitor->mergeCatchContext decide if the block exit status is valid.
             $catch_context_list[] = $catch_context;
         }
 

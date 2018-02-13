@@ -893,7 +893,7 @@ EOB;
 
         try {
             // Split up the opening PHP tag to fix highlighting in vim.
-            $node = \ast\parse_code(
+            \ast\parse_code(
                 '<' . '?php 42;',
                 Config::AST_VERSION
             );
