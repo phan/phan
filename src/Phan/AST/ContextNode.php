@@ -1346,7 +1346,7 @@ class ContextNode
     public function getClassConst() : ClassConstant
     {
         \assert(
-            $this->node instanceof ast\Node,
+            $this->node instanceof Node,
             '$this->node must be a node'
         );
 
