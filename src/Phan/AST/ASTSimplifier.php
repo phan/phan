@@ -146,7 +146,6 @@ class ASTSimplifier
                 continue;
             }
             $children = $stmt->children;
-            $N = \count($children);
             // Run normalizeIfStatement again.
             \array_pop($new_statements);
             \array_push($new_statements, ...$this->normalizeIfStatement($stmt));

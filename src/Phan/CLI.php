@@ -21,7 +21,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '0.8.12';
+    const PHAN_VERSION = '0.8.13';
 
     /**
      * @var OutputInterface
@@ -98,6 +98,8 @@ class CLI
                 'markdown-issue-messages',
                 'disable-plugins',
                 'use-fallback-parser',
+                'allow-polyfill-parser',
+                'force-polyfill-parser',
                 'require-config-exists',
                 'daemonize-socket:',
                 'daemonize-tcp-port:',
@@ -334,6 +336,21 @@ class CLI
                 case 'dead-code-detection':
                     Config::setValue('dead_code_detection', true);
                     break;
+                case 'allow-polyfill-parser':
+                    // Just check if it's installed and of a new enough version.
+                    // Assume that if there is an installation, it works, and warn later in ensureASTParserExists()
+                    if (!extension_loaded('ast')) {
+                        Config::setValue('use_polyfill_parser', true);
+                        break;
+                    }
+                    if (version_compare((new \ReflectionExtension('ast'))->getVersion(), '0.1.5') < 0) {
+                        Config::setValue('use_polyfill_parser', true);
+                        break;
+                    }
+                    break;
+                case 'force-polyfill-parser':
+                    Config::setValue('use_polyfill_parser', true);
+                    break;
                 case 'memory-limit':
                     if (preg_match('@^([1-9][0-9]*)([KMG])?$@', $value, $match)) {
                         ini_set('memory_limit', $value);
@@ -355,6 +372,8 @@ class CLI
                     break;
             }
         }
+
+        $this->ensureASTParserExists();
 
         $printer = $factory->getPrinter($printer_type, $this->output);
         $filter  = new ChainedIssueFilter([
@@ -583,6 +602,15 @@ Usage: {$argv[0]} [options] [files...]
   This flag is experimental and may result in unexpected exceptions or errors.
   This flag does not affect excluded files and directories.
 
+ --allow-polyfill-parser
+  If the `php-ast` extension isn't available or is an outdated version,
+  then use a slower parser (based on tolerant-php-parser) instead.
+  Note that https://github.com/Microsoft/tolerant-php-parser has some known bugs which may result in false positive parse errors.
+
+ --force-polyfill-parser
+  Use a slower parser (based on tolerant-php-parser) instead of the native parser, even if the native parser is available.
+  Useful only for debugging.
+
  -s, --daemonize-socket </path/to/file.sock>
   Unix socket for Phan to listen for requests on, in daemon mode.
 
@@ -590,20 +618,6 @@ Usage: {$argv[0]} [options] [files...]
   TCP port for Phan to listen for JSON requests on, in daemon mode.
   (e.g. 'default', which is an alias for port 4846.)
   `phan_client` can be used to communicate with the Phan Daemon.
-
- --language-server-on-stdin
-  Start the language server (For the Language Server protocol).
-  This is a different protocol from --daemonize, clients for various IDEs already exist.
-
- --language-server-tcp-server <addr>
-  Start the language server listening for TCP connections on <addr> (e.g. 127.0.0.1:<port>)
-
- --language-server-tcp-connect <addr>
-  Start the language server and connect to the client listening on <addr> (e.g. 127.0.0.1:<port>)
-
- --language-server-analyze-only-on-save
-  Prevent the client from sending change notifications (Only notify the language server when the user saves a document)
-  This significantly reduces CPU usage, but clients won't get notifications about issues immediately.
 
  -v, --version
   Print phan's version number
@@ -613,6 +627,7 @@ Usage: {$argv[0]} [options] [files...]
 
  --extended-help
   This help information, plus less commonly used flags
+  (E.g. for daemon mode)
 
 EOB;
         if ($print_extended_help) {
@@ -642,6 +657,20 @@ Extended help:
 
  --markdown-issue-messages
   Emit issue messages with markdown formatting.
+
+ --language-server-on-stdin
+  Start the language server (For the Language Server protocol).
+  This is a different protocol from --daemonize, clients for various IDEs already exist.
+
+ --language-server-tcp-server <addr>
+  Start the language server listening for TCP connections on <addr> (e.g. 127.0.0.1:<port>)
+
+ --language-server-tcp-connect <addr>
+  Start the language server and connect to the client listening on <addr> (e.g. 127.0.0.1:<port>)
+
+ --language-server-analyze-only-on-save
+  Prevent the client from sending change notifications (Only notify the language server when the user saves a document)
+  This significantly reduces CPU usage, but clients won't get notifications about issues immediately.
 
  --language-server-verbose
   Emit verbose logging messages related to the language server implementation to stderr.
@@ -845,6 +874,56 @@ EOB;
         // Write each value to the config
         foreach ($config as $key => $value) {
             Config::setValue($key, $value);
+        }
+    }
+
+    /**
+     * This will assert that ast\parse_code or a polyfill can be called.
+     * @return void
+     */
+    private function ensureASTParserExists()
+    {
+        if (Config::getValue('use_polyfill_parser')) {
+            return;
+        }
+        assert(
+            extension_loaded('ast'),
+            'The php-ast extension must be loaded in order for Phan to work. See https://github.com/phan/phan#getting-it-running for more details. Alternately, invoke Phan with the CLI option --allow-polyfill-parser (which is noticeably slower)'
+        );
+
+        try {
+            // Split up the opening PHP tag to fix highlighting in vim.
+            \ast\parse_code(
+                '<' . '?php 42;',
+                Config::AST_VERSION
+            );
+        } catch (\LogicException $throwable) {
+            assert(
+                false,
+                'Unknown AST version ('
+                . Config::AST_VERSION
+                . ') in configuration. '
+                . 'You may need to rebuild the latest '
+                . 'version of the php-ast extension.'
+            );
+        }
+
+        // Workaround for https://github.com/nikic/php-ast/issues/79
+        try {
+            \ast\parse_code(
+                '<'.'?php syntaxerror',
+                Config::AST_VERSION
+            );
+            assert(
+                false,
+                'Expected ast\\parse_code to throw ParseError on invalid inputs. Configured AST version: '
+                . Config::AST_VERSION
+                . '. '
+                . 'You may need to rebuild the latest '
+                . 'version of the php-ast extension.'
+            );
+        } catch (\ParseError $throwable) {
+            // error message may validate with locale and version, don't validate that.
         }
     }
 }

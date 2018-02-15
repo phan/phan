@@ -739,12 +739,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             && $children[0] instanceof Node
             && $children[0]->kind == \ast\AST_ARRAY_ELEM
         ) {
-            /** @var array<int,UnionType> */
-            $element_types = [];
-
-            $unique_string_type = null;
             $value_types_builder = new UnionTypeBuilder();
-            $is_mixed = false;
 
             foreach ($children as $child) {
                 $value = $child->children['value'];
@@ -2337,7 +2332,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return [];
             }
             $i = 0;
-            foreach ($node as $key => $value) {
+            foreach ($node as $key => $_) {
                 if ($key !== $i) {
                     $this->emitIssue(
                         Issue::TypeInvalidCallableArrayKey,

@@ -23,7 +23,7 @@
         "ext-ast": "^0.1.5",
         "felixfbecker/advanced-json-rpc": "^3.0",
         "nikic/PHP-Parser": "~3.1.1",
-        "microsoft/tolerant-php-parser": "0.0.8",
+        "microsoft/tolerant-php-parser": "0.0.9",
         "sabre/event": "^5.0",
         "symfony/console": "^2.3|^3.0|~4.0"
     },

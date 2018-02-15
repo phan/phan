@@ -2,8 +2,9 @@
 namespace Phan;
 
 use Phan\AST\ASTSimplifier;
-use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Parser;
+use Phan\AST\TolerantASTConverter\ParseException;
+use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\Analysis\DuplicateFunctionAnalyzer;
 use Phan\Analysis\ParameterTypesAnalyzer;
@@ -22,7 +23,9 @@ use Phan\Language\UnionType;
 use Phan\Library\FileCache;
 use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
+
 use ast\Node;
+use ParseError;
 
 /**
  * This class is the entry point into the static analyzer.
@@ -93,7 +96,9 @@ class Analysis
         }
         try {
             $node = Parser::parseCode($code_base, $context, $file_path, $file_contents, $suppress_parse_errors);
-        } catch (\ParseError $e) {
+        } catch (ParseError $e) {
+            return $context;
+        } catch (ParseException $e) {
             return $context;
         }
 
@@ -456,7 +461,16 @@ class Analysis
                 return $context;
             }
             $node = Parser::parseCode($code_base, $context, $file_path, $file_contents, false);
-        } catch (\ParseError $parse_error) {
+        } catch (ParseException $parse_error) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::SyntaxError,
+                $parse_error->getLineNumberStart(),
+                $parse_error->getMessage()
+            );
+            return $context;
+        } catch (ParseError $parse_error) {
             Issue::maybeEmit(
                 $code_base,
                 $context,

@@ -186,7 +186,9 @@ EOT
      */
     private function writeTmpIni(array $iniFiles)
     {
-        if (!$this->tmpIni = tempnam(sys_get_temp_dir(), '')) {
+        // Rearranged due to https://github.com/Microsoft/tolerant-php-parser/issues/114
+        $this->tmpIni = tempnam(sys_get_temp_dir(), '');
+        if (!$this->tmpIni) {
             return false;
         }
 
