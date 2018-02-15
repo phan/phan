@@ -4,6 +4,7 @@ namespace Phan\AST;
 
 use Microsoft\PhpParser\DiagnosticKind;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
+use Phan\AST\TolerantASTConverter\ParseException;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
@@ -25,12 +26,15 @@ class Parser
      * @param bool $suppress_parse_errors (If true, don't emit SyntaxError)
      * @return ?Node
      * @throws ParseError
+     * @throws ParseException
      */
     public static function parseCode(CodeBase $code_base, Context $context, string $file_path, string $file_contents, bool $suppress_parse_errors)
     {
         try {
             if (Config::getValue('use_polyfill_parser')) {
-                return self::parseCodePolyfill($file_path, $file_contents, $suppress_parse_errors);
+                // This helper method has its own exception handling.
+                // It may throw a ParseException, which is unintentionally not caught here.
+                return self::parseCodePolyfill($code_base, $context, $file_path, $file_contents, $suppress_parse_errors);
             }
             return \ast\parse_code(
                 $file_contents,
@@ -69,7 +73,7 @@ class Parser
             } catch (\PhpParser\Error $fallback_parser_error) {
                 // Shouldn't happen, we're using the error collecting parser
                 // We use PhpParser instead of tolerant-php-parser for parsing complex string literals into real strings.
-                throw new ParseError('Fallback parser error: ' . $fallback_parser_error->getMessage(), $fallback_parser_error->getCode(), $fallback_parser_error);
+                throw new ParseException('Fallback parser error: ' . $fallback_parser_error->getMessage(), 0, $fallback_parser_error);
             } catch (\Exception $e) {
                 // Generic fallback. TODO: log.
                 throw $native_parse_error;
@@ -82,13 +86,15 @@ class Parser
     /**
      * Parses the code. If $suppress_parse_errors is false, this also emits SyntaxError.
      *
+     * @param CodeBase $code_base
+     * @param Context $context
      * @param string $file_path file path for error reporting
      * @param string $file_contents file contents to pass to parser. May be overridden to ignore what is currently on disk.
      * @param bool $suppress_parse_errors (If true, don't emit SyntaxError)
      * @return ?Node
-     * @throws ParseError
+     * @throws ParseException
      */
-    public static function parseCodePolyfill(string $file_path, string $file_contents, bool $suppress_parse_errors)
+    public static function parseCodePolyfill(CodeBase $code_base, Context $context, string $file_path, string $file_contents, bool $suppress_parse_errors)
     {
         $converter = new TolerantASTConverter();
         $converter->setShouldAddPlaceholders(false);
@@ -97,14 +103,36 @@ class Parser
             $node = $converter->parseCodeAsPHPAST($file_contents, Config::AST_VERSION, $errors);
         } catch (\PhpParser\Error $fallback_parser_error) {
             // Shouldn't happen, we're using the error collecting parser
-            throw new ParseError('Fallback parser error: ' . $fallback_parser_error->getMessage(), $fallback_parser_error->getCode(), $fallback_parser_error);
+            throw new ParseException('Fallback parser error: ' . $fallback_parser_error->getMessage(), 0, $fallback_parser_error);
         } catch (\Exception $e) {
             // Generic fallback. TODO: log.
-            throw new ParseError('Unexpected Exception of type ' . \get_class($e) . ': ' . $e->getMessage());
+            throw new ParseException('Unexpected Exception of type ' . \get_class($e) . ': ' . $e->getMessage(), 0);
         }
         foreach ($errors as $diagnostic) {
             if ($diagnostic->kind === 0) {
-                throw new ParseError('Fallback parser diagnostic error: ' . $diagnostic->message);
+                $diagnostic_error_start_line = 1 + \substr_count($file_contents, "\n", 0, $diagnostic->start);
+                $diagnostic_error_message = 'Fallback parser diagnostic error: ' . $diagnostic->message;
+                if (!$suppress_parse_errors) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::SyntaxError,
+                        $diagnostic_error_start_line,
+                        $diagnostic_error_message
+                    );
+                }
+                if (!Config::getValue('use_fallback_parser')) {
+                    // By default, don't try to re-parse files with syntax errors.
+                    throw new ParseException($diagnostic_error_message, $diagnostic_error_start_line);
+                }
+
+                // If there's a parse error in a file that's excluded from analysis, give up on parsing it.
+                // Users might not see the parse error, and ignoring it (e.g. acting as though a file in vendor/ or ext/
+                // that can't be parsed has class and function definitions)
+                // may lead to users not noticing bugs.
+                if (Phan::isExcludedAnalysisFile($file_path)) {
+                    throw new ParseException($diagnostic_error_message, $diagnostic_error_start_line);
+                }
             }
         }
         return $node;

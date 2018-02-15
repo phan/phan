@@ -12,9 +12,12 @@ New Features(CLI, Configs)
   Additionally, the way doc comments are parsed by the polyfill is different.
   Doc comments for elements such as closures may be parsed differently from `php-ast`
 
+Maintenance:
++ Fix bugs in the `--use-fallback-parser` mode.
+  Upgrade the `tolerant-php-parser` dependency (contains bug fixes and performance improvements)
+
 Bug fixes
 + Fix a bug in `tool/make_stubs` when generating stubs of namespaced global functions.
-
 
 11 Feb 2018, Phan 0.10.4
 ------------------------
