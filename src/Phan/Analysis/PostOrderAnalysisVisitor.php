@@ -326,35 +326,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitForeach(Node $node) : Context
-    {
-        $expression_type = UnionType::fromNode(
-            $this->context,
-            $this->code_base,
-            $node->children['expr']
-        );
-
-        // Check the expression type to make sure its
-        // something we can iterate over
-        if ($expression_type->isScalar()) {
-            $this->emitIssue(
-                Issue::TypeMismatchForeach,
-                $node->lineno ?? 0,
-                (string)$expression_type
-            );
-        }
-
-        return $this->context;
-    }
-
-    /**
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
     public function visitStatic(Node $node) : Context
     {
         $variable = Variable::fromNodeInContext(
