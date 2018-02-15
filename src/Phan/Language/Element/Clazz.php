@@ -449,6 +449,34 @@ class Clazz extends AddressableElement
         );
     }
 
+    /**
+     * @return Clazz
+     * The parent class of this class if defined
+     *
+     * @throws \Exception
+     * An exception is thrown if this class has no parent
+     */
+    private function getParentClassWithoutHydrating(CodeBase $code_base) : Clazz
+    {
+        $parent_type_option = $this->getParentTypeOption();
+
+        if (!$parent_type_option->isDefined()) {
+            throw new \Exception("Class $this has no parent");
+        }
+
+        $parent_fqsen = $parent_type_option->get()->asFQSEN();
+        \assert($parent_fqsen instanceof FullyQualifiedClassName);
+
+        // invoking hasClassWithFQSEN also has the side effect of lazily loading the parent class definition.
+        if (!$code_base->hasClassWithFQSEN($parent_fqsen)) {
+            throw new \Exception("Failed to load parent Class $parent_fqsen of Class $this");
+        }
+
+        return $code_base->getClassByFQSENWithoutHydrating(
+            $parent_fqsen
+        );
+    }
+
     public function isSubclassOf(CodeBase $code_base, Clazz $other) : bool
     {
         if (!$this->hasParentType()) {
@@ -1824,7 +1852,7 @@ class Clazz extends AddressableElement
                 continue;
             }
 
-            $ancestor = $code_base->getClassByFQSEN($fqsen);
+            $ancestor = $code_base->getClassByFQSENWithoutHydrating($fqsen);
             $this->importConstantsFromAncestorClass(
                 $code_base,
                 $ancestor
@@ -1836,7 +1864,7 @@ class Clazz extends AddressableElement
                 continue;
             }
 
-            $ancestor = $code_base->getClassByFQSEN($fqsen);
+            $ancestor = $code_base->getClassByFQSENWithoutHydrating($fqsen);
             $this->importConstantsFromAncestorClass(
                 $code_base,
                 $ancestor
@@ -1935,7 +1963,7 @@ class Clazz extends AddressableElement
         }
 
         // Get the parent class
-        $parent = $this->getParentClass($code_base);
+        $parent = $this->getParentClassWithoutHydrating($code_base);
 
         // import constants from that class
         $this->importConstantsFromAncestorClass($code_base, $parent);
@@ -2086,7 +2114,7 @@ class Clazz extends AddressableElement
         $class->addReference($this->getContext());
 
         // Make sure that the class imports its parents' constants first
-        // (And **only** the constants and
+        // (And **only** the constants)
         $class->hydrateConstants($code_base);
 
         // Copy constants
@@ -2411,7 +2439,7 @@ class Clazz extends AddressableElement
     {
         foreach ($this->getAncestorFQSENList() as $fqsen) {
             if ($code_base->hasClassWithFQSEN($fqsen)) {
-                $code_base->getClassByFQSEN(
+                $code_base->getClassByFQSENWithoutHydrating(
                     $fqsen
                 )->hydrateConstants($code_base);
             }
@@ -2445,7 +2473,7 @@ class Clazz extends AddressableElement
         $original_declared_class_constants = $this->getConstantMap($code_base);
 
         // Load parent methods, properties, constants
-        $this->importAncestorClasses($code_base);
+        $this->importConstantsFromAncestorClasses($code_base);
 
         self::analyzeClassConstantOverrides($code_base, $original_declared_class_constants);
     }
@@ -2463,11 +2491,13 @@ class Clazz extends AddressableElement
 
         foreach ($this->getAncestorFQSENList() as $fqsen) {
             if ($code_base->hasClassWithFQSEN($fqsen)) {
-                $code_base->getClassByFQSEN(
+                $code_base->getClassByFQSENWithoutHydrating(
                     $fqsen
                 )->hydrate($code_base);
             }
         }
+
+        $this->importAncestorClasses($code_base);
 
         // Make sure there are no abstract methods on non-abstract classes
         AbstractMethodAnalyzer::analyzeAbstractMethodsAreImplemented(

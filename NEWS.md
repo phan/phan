@@ -18,6 +18,7 @@ Maintenance:
 
 Bug fixes
 + Fix a bug in `tool/make_stubs` when generating stubs of namespaced global functions.
++ Fix a refactoring bug that caused methods and properties to fail to be inherited (#1456)
 
 11 Feb 2018, Phan 0.10.4
 ------------------------
