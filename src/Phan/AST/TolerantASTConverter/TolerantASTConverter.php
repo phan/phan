@@ -6,6 +6,7 @@ use ast;
 use Microsoft\PhpParser;
 use Microsoft\PhpParser\Diagnostic;
 use Microsoft\PhpParser\DiagnosticsProvider;
+use Microsoft\PhpParser\FilePositionMap;
 use Microsoft\PhpParser\InvalidToken;
 use Microsoft\PhpParser\MissingToken;
 use Microsoft\PhpParser\Parser;
@@ -174,7 +175,7 @@ final class TolerantASTConverter
         self::$ast_version = $ast_version;
         self::$decl_id = 0;
         self::$should_add_placeholders = $this->instance_should_add_placeholders;
-        self::$file_position_map = new FilePositionMap($file_contents, $parser_node);
+        self::$file_position_map = new FilePositionMap($file_contents);
         // $file_contents required for looking up line numbers.
         // TODO: Other data structures?
         self::$file_contents = $file_contents;
