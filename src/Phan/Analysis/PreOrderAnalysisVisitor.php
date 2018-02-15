@@ -502,11 +502,21 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitForeach(Node $node) : Context
     {
-        $expression_union_type = UnionType::fromNode(
-            $this->context,
+        $expression_union_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['expr']
         );
+
+        // Check the expression type to make sure its
+        // something we can iterate over
+        if ($expression_union_type->isScalar()) {
+            $this->emitIssue(
+                Issue::TypeMismatchForeach,
+                $node->lineno ?? 0,
+                (string)$expression_union_type
+            );
+        }
 
         // Filter out the non-generic types of the
         // expression
