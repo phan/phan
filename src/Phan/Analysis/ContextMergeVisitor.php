@@ -139,7 +139,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         $catch_scope_list = [];
         $catch_nodes = $node->children['catches']->children;
         foreach ($catch_nodes as $i => $catch_node) {
-            if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node)) {
+            if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node->children['stmts'])) {
                 $catch_scope_list[] = $scope_list[$i + 1];
             }
         }
@@ -156,6 +156,14 @@ class ContextMergeVisitor extends KindVisitorImplementation
             // If we don't have to worry about analyzing the finally statement, then assume that the entire try statement succeeded or the a catch statement succeeded.
             $try_scope = \reset($this->child_context_list)->getScope();
         // }
+
+        if (\count($catch_scope_list) === 0) {
+            // All of the catch statements will unconditionally rethrow or return.
+            // So, after the try and catch blocks (finally is analyzed separately),
+            // the context is the same as if the try block finished successfully.
+            return $this->context->withScope($try_scope);
+        }
+
         foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
             $variable_name = (string)$variable_name;  // e.g. ${42}
             foreach ($catch_scope_list as $catch_scope) {

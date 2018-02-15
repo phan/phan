@@ -646,6 +646,7 @@ class CodeBase
         $this->fqsen_class_map_internal[$fqsen] = $class;
         unset($this->fqsen_class_map_reflection[$fqsen]);
     }
+
     /**
      * @param FullyQualifiedClassName $fqsen
      * The FQSEN of a class to get
@@ -672,6 +673,19 @@ class CodeBase
         }
 
         return $clazz;
+    }
+
+    /**
+     * @param FullyQualifiedClassName $fqsen
+     * The FQSEN of a class to get
+     *
+     * @return Clazz
+     * A class with the given FQSEN
+     */
+    public function getClassByFQSENWithoutHydrating(
+        FullyQualifiedClassName $fqsen
+    ) : Clazz {
+        return $this->fqsen_class_map[$fqsen];
     }
 
     /**

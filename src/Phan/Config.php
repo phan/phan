@@ -622,9 +622,15 @@ class Config
         // If a file to be analyzed can't be parsed,
         // then use a slower PHP substitute for php-ast to try to parse the files.
         // This setting is ignored if a file is excluded from analysis.
-        // NOTE: it is strongly recommended to enable this via the --use-fallback-parser CLI flag instead,
+        // NOTE: it is strongly recommended to enable this via the --allow-polyfill-parser CLI flag instead,
         // since this may result in strange error messages for invalid files (e.g. if parsed but not analyzed).
         'use_fallback_parser' => false,
+
+        // Use the polyfill parser based on tolerant-php-parser instead of the possibly missing native implementation
+        // NOTE: This makes parsing several times slower than the native implementation.
+        // NOTE: it is strongly recommended to enable this via the --use-polyfill-parser or --force-polyfill-parser
+        // since this may result in strange error messages for invalid files (e.g. if parsed but not analyzed).
+        'use_polyfill_parser' => false,
 
         // Path to a unix socket for a daemon to listen to files to analyze. Use command line option instead.
         'daemonize_socket' => false,

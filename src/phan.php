@@ -20,43 +20,8 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Phan;
 
-try {
-    $node = \ast\parse_code(
-        '<?php 42;',
-        Config::AST_VERSION
-    );
-} catch (LogicException $throwable) {
-    assert(
-        false,
-        'Unknown AST version ('
-        . Config::AST_VERSION
-        . ') in configuration. '
-        . 'You may need to rebuild the latest '
-        . 'version of the php-ast extension.'
-    );
-}
-
-// Workaround for https://github.com/nikic/php-ast/issues/79
-try {
-    \ast\parse_code(
-        '<?php syntaxerror',
-        Config::AST_VERSION
-    );
-    assert(
-        false,
-        'Expected ast\\parse_code to throw ParseError on invalid inputs. Configured AST version: '
-        . Config::AST_VERSION
-        . '. '
-        . 'You may need to rebuild the latest '
-        . 'version of the php-ast extension.'
-    );
-} catch (\ParseError $throwable) {
-    // error message may validate with locale and version, don't validate that.
-}
-
 if (extension_loaded('ast')) {
     // Warn if the php-ast version is too low.
-    // (It's remotely possible \ast\parse_code could a pure PHP substitute for php-ast in the future)
     $ast_version = (new ReflectionExtension('ast'))->getVersion();
     if (version_compare($ast_version, '0.1.5') < 0) {
         fprintf(STDERR, "Phan supports php-ast version 0.1.5 or newer, but the installed php-ast version is $ast_version. You may see bugs in some edge cases\n");
