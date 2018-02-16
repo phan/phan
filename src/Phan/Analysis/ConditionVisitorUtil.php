@@ -311,9 +311,7 @@ trait ConditionVisitorUtil
             if (Variable::isHardcodedVariableInScopeWithName($var_name, $context->isInGlobalScope())) {
                 return null;
             }
-            if (!Config::getValue('ignore_undeclared_variables_in_global_scope')
-                || !$context->isInGlobalScope()
-            ) {
+            if (!($context->isInGlobalScope() && Config::getValue('ignore_undeclared_variables_in_global_scope'))) {
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredVariable)(
                         $context->getFile(),
@@ -322,7 +320,14 @@ trait ConditionVisitorUtil
                     )
                 );
             }
-            return null;
+            $variable = new Variable(
+                $context,
+                $var_name,
+                UnionType::empty(),
+                $var_node->flags
+            );
+            $context->addScopeVariable($variable);
+            return $variable;
         }
         return $context->getScope()->getVariableByName(
             $var_name
