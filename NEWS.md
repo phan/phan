@@ -19,6 +19,8 @@ Maintenance:
 Bug fixes
 + Fix a bug in `tool/make_stubs` when generating stubs of namespaced global functions.
 + Fix a refactoring bug that caused methods and properties to fail to be inherited (#1456)
++ If `ignore_undeclared_variables_in_global_scope` is true, then analyze `assert()`
+  and conditionals in the global scope as if the variable was defined after the check.
 
 11 Feb 2018, Phan 0.10.4
 ------------------------

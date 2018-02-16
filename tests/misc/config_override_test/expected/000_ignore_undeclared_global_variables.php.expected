@@ -1,0 +1,3 @@
+src/000_ignore_undeclared_global_variables.php:16: [W999] PhanPluginNonBoolBranch: Non bool value of type string evaluated in if clause
+src/000_ignore_undeclared_global_variables.php:19: [W10004] PhanTypeMismatchArgumentInternal: Argument 1 (numerator) is string but \intdiv() takes int
+src/000_ignore_undeclared_global_variables.php:21: [W999] PhanPluginNonBoolBranch: Non bool value of type string evaluated in if clause

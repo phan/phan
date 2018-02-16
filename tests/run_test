@@ -34,6 +34,11 @@ case "$TEST_SUITE" in
 		./test.sh
 		exit $?
 		;;
+	__FakeConfigOverrideTest)
+		cd tests/misc/config_override_test
+		./test.sh
+		exit $?
+		;;
 	__*)
 		echo "Unknown test '$TEST_SUITE' (Tests beginning with __ are not phpunit tests)" 1>&2
 		exit 1
