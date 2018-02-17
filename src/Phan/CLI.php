@@ -40,6 +40,12 @@ class CLI
      * @var array<int,string>
      * The set of file names to analyze
      */
+    private $file_list_in_config = [];
+
+    /**
+     * @var array<int,string>
+     * The set of file names to analyze
+     */
     private $file_list = [];
 
     /**
@@ -165,7 +171,7 @@ class CLI
                     $this->file_list_only = true;
 
                     // Empty out the file list
-                    $this->file_list = [];
+                    $this->file_list_in_config = [];
 
                     // Intentionally fall through to load the
                     // file list
@@ -176,8 +182,8 @@ class CLI
                         $file_path = Config::projectPath($file_name);
                         if (is_file($file_path) && is_readable($file_path)) {
                             /** @var array<int,string> */
-                            $this->file_list = array_merge(
-                                $this->file_list,
+                            $this->file_list_in_config = array_merge(
+                                $this->file_list_in_config,
                                 file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)
                             );
                         } else {
@@ -190,7 +196,7 @@ class CLI
                     if (!$this->file_list_only) {
                         $directory_list = \is_array($value) ? $value : [$value];
                         foreach ($directory_list as $directory_name) {
-                            $this->file_list = array_merge(
+                            $this->file_list_in_config = array_merge(
                                 $this->file_list,
                                 $this->directoryNameToFileList(
                                     $directory_name
@@ -409,14 +415,36 @@ class CLI
                 $this->usage("Unknown option '{$arg}'", EXIT_FAILURE);
             }
         }
-
         if (!$this->file_list_only) {
             // Merge in any remaining args on the CLI
-            $this->file_list = array_merge(
-                $this->file_list,
+            $this->file_list_in_config = array_merge(
+                $this->file_list_in_config,
                 array_slice($argv, 1)
             );
+        }
 
+        $this->recomputeFileList();
+
+        // We can't run dead code detection on multiple cores because
+        // we need to update reference lists in a globally accessible
+        // way during analysis. With our parallelization mechanism, there
+        // is no shared state between processes, making it impossible to
+        // have a complete set of reference lists.
+        \assert(
+            Config::getValue('processes') === 1
+            || !Config::getValue('dead_code_detection'),
+            "We cannot run dead code detection on more than one core."
+        );
+    }
+
+    /**
+     * @return void
+     */
+    public function recomputeFileList()
+    {
+        $this->file_list = $this->file_list_in_config;
+
+        if (!$this->file_list_only) {
             // Merge in any files given in the config
             /** @var array<int,string> */
             $this->file_list = array_merge(
@@ -451,17 +479,6 @@ class CLI
                 }
             );
         }
-
-        // We can't run dead code detection on multiple cores because
-        // we need to update reference lists in a globally accessible
-        // way during analysis. With our parallelization mechanism, there
-        // is no shared state between processes, making it impossible to
-        // have a complete set of reference lists.
-        \assert(
-            Config::getValue('processes') === 1
-            || !Config::getValue('dead_code_detection'),
-            "We cannot run dead code detection on more than one core."
-        );
     }
 
     /** @return void - exits on usage error */

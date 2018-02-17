@@ -1,4 +1,24 @@
 Phan NEWS
+
+?? ??? 2018, Phan 0.10.6 (dev)
+------------------------
+
+Language Server
++ Make Phan Language Server analyze new files added to a project (Issue #920)
++ Analyze all of the PHP files that are currently opened in the IDE
+  according to the language server client,
+  instead of just the most recently edited file (Issue #1147)
+  (E.g. analyze other files open in tabs or split windows)
++ When closing or deleting a file, clear the issues that were emitted
+  for that file.
++ If analysis requests (opening files, editing files, etc)
+  are arriving faster than Phan can analyze and generate responses,
+  then buffer the file changes (until end of input)
+  and then begin to generate analysis results.
+
+  Hopefully, this should reduce the necessity for limiting Phan to
+  analyzing only on save.
+
 14 Feb 2018, Phan 0.10.5
 ------------------------
 

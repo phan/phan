@@ -111,7 +111,17 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     protected $file_mapping;
 
+    /**
+     * @var bool
+     */
     private $is_accepting_new_requests = true;
+
+    /**
+     * @var array<string,string> maps Paths to URIs, for URIs which have pending analysis requests.
+     * Requests are buffered because the language server may otherwise send requests faster than Phan can respond to them.
+     * (`$reader->on('readMessageGroup')` notifies Phan that a group of 1 or more messages was read)
+     */
+    protected $analyze_request_set = [];
 
     public function __construct(ProtocolReader $reader, ProtocolWriter $writer, CodeBase $code_base, Closure $file_path_lister)
     {
@@ -167,6 +177,11 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                 }
             })->otherwise('\\Phan\\LanguageServer\\Utils::crash');
         });
+
+        $reader->on('readMessageGroup', function () {
+            $this->finalizeAnalyzingURIs();
+        });
+
         $this->protocolWriter = $writer;
         // We create a client to send diagnostics, etc. to the IDE
         $this->client = new LanguageClient($reader, $writer);
@@ -351,24 +366,68 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $most_recent_request = $ls->most_recent_request;
             $ls->most_recent_request = null;
             return $most_recent_request;
-            ;
         }
+    }
+
+    /**
+     * Asynchronously analyze the given URI.
+     * @return void
+     */
+    public function analyzeURIAsync(string $uri)
+    {
+        Logger::logInfo("Called analyzeURIAsync, uri=$uri");
+        $path_to_analyze = Utils::uriToPath($uri);
+        $relative_path_to_analyze = FileRef::getProjectRelativePathForPath($path_to_analyze);
+        Logger::logInfo("Maybe going to analyze this file: $path_to_analyze");
+        $this->analyze_request_set[$path_to_analyze] = $uri;
+        // Don't call file_path_lister immediately -
+        // That has to walk the directories in .phan/config.php to see if the requested path is included and not excluded.
+    }
+
+    /**
+     * Gets URIs (and corresponding paths) which the language server client needs Phan to re-analyze.
+     * This excludes any files that aren't in files and directories of .phan/config.php
+     *
+     * @return array<string,string> maps relative path to the file URI.
+     */
+    private function getFilteredURIsToAnalyze() : array {
+        $uris_to_analyze = $this->analyze_request_set;
+        if (\count($uris_to_analyze) === 0) {
+            return [];
+        }
+        $this->analyze_request_set = [];
+
+        // Always recompute the file list from the directory list : see src/phan.php
+        $file_path_list = ($this->file_path_lister)(true);
+        $filtered_uris_to_analyze = [];
+        foreach ($uris_to_analyze as $path_to_analyze => $uri) {
+            $relative_path_to_analyze = FileRef::getProjectRelativePathForPath($path_to_analyze);
+            if (!\in_array($uri, $file_path_list) && !\in_array($relative_path_to_analyze, $file_path_list)) {
+                Logger::logInfo("Path '$relative_path_to_analyze' (URI '$uri') not in parse list, skipping");
+                continue;
+            }
+            $filtered_uris_to_analyze[$relative_path_to_analyze] = $uri;
+        }
+        return $filtered_uris_to_analyze;
     }
 
     /**
      * @return void
      */
-    public function analyzeURI(string $uri)
-    {
-        Logger::logInfo("Called analyzeURI, uri=$uri");
-        $path_to_analyze = Utils::uriToPath($uri);
-        $relative_path_to_analyze = FileRef::getProjectRelativePathForPath($path_to_analyze);
-        $file_path_list = ($this->file_path_lister)();
-        if (!\in_array($uri, $file_path_list) && !\in_array($relative_path_to_analyze, $file_path_list)) {
-            Logger::logInfo("URI '$uri' not in parse list, skipping");
+    private function finalizeAnalyzingURIs() {
+        $uris_to_analyze = $this->getFilteredURIsToAnalyze();
+        if (\count($uris_to_analyze) === 0) {
             return;
         }
-        Logger::logInfo("Going to analyze this file list: $path_to_analyze");
+
+        // Add anything that's open in the IDE to the uris to analyze.
+        // In the future, this behavior may be configurable.
+        foreach ($this->file_mapping->getOverrides() as $path => $_) {
+            if (!isset($uris_to_analyze[$path])) {
+                $uris_to_analyze[$path] = $this->file_mapping->getURIForPath($path);
+            }
+        }
+
         // TODO: check if $path_to_analyze can be analyzed first.
         $sockets = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
         if (!$sockets) {
@@ -407,8 +466,11 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $diagnostics = [];
             // Normalize the uri so that it will be the same as URIs phan would send for diagnostics.
             // E.g. "file:///path/path%.php" will be normalized to "file:///path/path%25.php"
-            $normalized_requested_uri = Utils::pathToUri(Utils::uriToPath($uri));
-            $diagnostics[$normalized_requested_uri] = [];  // send an empty diagnostic list on failure.
+            foreach ($uris_to_analyze as $uri) {
+                $normalized_requested_uri = Utils::pathToUri(Utils::uriToPath($uri));
+                $diagnostics[$normalized_requested_uri] = [];  // send an empty diagnostic list on failure.
+            }
+
             foreach ($json_contents['issues'] ?? [] as $issue) {
                 list($issue_uri, $diagnostic) = self::generateDiagnostic($issue);
                 if ($diagnostic instanceof Diagnostic) {
@@ -422,7 +484,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         }
 
         $child_stream = self::streamForChild($sockets);
-        $this->most_recent_request = Request::makeLanguageServerAnalysisRequest($child_stream, [$path_to_analyze], $this->code_base, $this->file_path_lister, $this->file_mapping);
+        $paths_to_analyze = array_keys($uris_to_analyze);
+        $this->most_recent_request = Request::makeLanguageServerAnalysisRequest($child_stream, $paths_to_analyze, $this->code_base, $this->file_path_lister, $this->file_mapping);
         // FIXME update the parsed file lists before and after (e.g. add to analyzeURI). See Daemon\Request::accept()
         //    TODO: refactor accept() to make it easier to work with.
         // TODO: add unit tests
@@ -536,7 +599,6 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                     $this->file_mapping
                 );
             }
-
 
             $serverCapabilities = new ServerCapabilities();
 
