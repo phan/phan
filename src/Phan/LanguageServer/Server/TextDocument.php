@@ -13,6 +13,7 @@ use Phan\LanguageServer\Protocol\TextDocumentContentChangeEvent;
 use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
 use Phan\LanguageServer\Protocol\TextDocumentItem;
 use Phan\LanguageServer\Protocol\VersionedTextDocumentIdentifier;
+use Phan\LanguageServer\Utils;
 use Sabre\Event\Promise;
 use Sabre\Uri;
 use function Sabre\Event\coroutine;
@@ -91,17 +92,13 @@ class TextDocument
     {
         $this->file_mapping->addOverrideURI($textDocument->uri, $textDocument->text);
         Logger::logInfo("Called didOpen, uri={$textDocument->uri}");
-        $this->server->analyzeURI($textDocument->uri);
+        $this->server->analyzeURIAsync($textDocument->uri);
 
         //$document = $this->documentLoader->open($textDocument->uri, $textDocument->text);
         // TODO: make this trigger re-analysis
         // TODO: Check based on parse and analyze directories and Phan supported file extensions if this file affects Phan's analysis.
         // TODO:   Add functions to quickly check if a relative/absolute path is within the parse or analysis list of a project
         // TODO:   Maybe allow reloading .phan/config, at least the files and directories to parse/analyze
-
-        // if (!isVendored($document, $this->composerJson)) {
-        //     $this->client->textDocument->publishDiagnostics($textDocument->uri, $document->getDiagnostics());
-        // }
     }
 
     /**
@@ -118,7 +115,7 @@ class TextDocument
     {
         $this->file_mapping->addOverrideURI($textDocument->uri, $text);
         Logger::logInfo("Called didSave, uri={$textDocument->uri} len(text)=" . strlen($text ?? ''));
-        $this->server->analyzeURI($textDocument->uri);
+        $this->server->analyzeURIAsync($textDocument->uri);
     }
 
     /**
@@ -134,17 +131,9 @@ class TextDocument
             $this->file_mapping->addOverrideURI($textDocument->uri, $change->text);
         }
         Logger::logInfo("Called didChange, uri={$textDocument->uri} version={$textDocument->version}");
-        // TODO: Check based on parse and analyze directories and Phan supported file extensions if this file affects Phan's analysis.
-        $this->server->analyzeURI($textDocument->uri);
+        $this->server->analyzeURIAsync($textDocument->uri);
 
-        // TODO:   Add functions to quickly check if a relative/absolute path is within the parse or analysis list of a project
         // TODO:   Maybe allow reloading .phan/config, at least the files and directories to parse/analyze
-        // TODO: make this trigger re-analysis
-        //$document = $this->documentLoader->get($textDocument->uri);
-        //$document->updateContent($contentChanges[0]->text);
-
-        // XXX hook into getDiagnostics for Phan event publishing
-        //$this->client->textDocument->publishDiagnostics($textDocument->uri, $document->getDiagnostics());
     }
 
     /**
@@ -158,6 +147,7 @@ class TextDocument
     public function didClose(TextDocumentIdentifier $textDocument)
     {
         $this->file_mapping->removeOverrideURI($textDocument->uri);
+        $this->client->textDocument->publishDiagnostics(Utils::pathToUri(Utils::uriToPath($textDocument->uri)), []);
         Logger::logInfo("Called didClose, uri={$textDocument->uri}");
     }
 

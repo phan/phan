@@ -35,7 +35,10 @@ $cli = new CLI();
 $is_issue_found =
     Phan::analyzeFileList(
         $code_base,
-        function () use ($cli) {
+        function (bool $recomputeFileList = false) use ($cli) {
+            if ($recomputeFileList) {
+                $cli->recomputeFileList();
+            }
             return $cli->getFileList();
         }  // Daemon mode will reload the file list.
     );
