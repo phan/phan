@@ -32,11 +32,11 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
     }
 
     /**
+     * @param string $fqsen_string
+     * An FQSEN string like '\Namespace\Class'
+     *
      * @param Context $context
      * The context in which the FQSEN string was found
-     *
-     * @param $fqsen_string
-     * An FQSEN string like '\Namespace\Class'
      */
     public static function fromStringInContext(
         string $fqsen_string,

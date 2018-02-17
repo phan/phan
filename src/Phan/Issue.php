@@ -245,6 +245,7 @@ class Issue
     const CommentParamOnEmptyParamList     = 'PhanCommentParamOnEmptyParamList';
     const CommentOverrideOnNonOverrideMethod = 'PhanCommentOverrideOnNonOverrideMethod';
     const CommentOverrideOnNonOverrideConstant = 'PhanCommentOverrideOnNonOverrideConstant';
+    const CommentParamOutOfOrder           = 'PhanCommentParamOutOfOrder';
 
 
     const CATEGORY_ACCESS            = 1 << 1;
@@ -2083,6 +2084,14 @@ class Issue
                 "Saw an @override annotation for class constant {CONST}, but could not find an overridden constant",
                 self::REMEDIATION_B,
                 16007
+            ),
+            new Issue(
+                self::CommentParamOutOfOrder,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Expected @param annotation for {VARIABLE} to be before the @param annotation for {VARIABLE}",
+                self::REMEDIATION_A,
+                16008
             ),
         ];
 

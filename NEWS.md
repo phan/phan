@@ -5,6 +5,8 @@ Phan NEWS
 
 New Features(Analysis)
 + Add `PhanNoopBinaryOperator` and `PhanNoopUnaryOperator` checks (#1404)
++ Add `PhanCommentParamOutOfOrder` code style check. (#1401)
+  This checks that `@param` annotations appear in the same order as the real parameters.
 
 Language Server
 + Make Phan Language Server analyze new files added to a project (Issue #920)
