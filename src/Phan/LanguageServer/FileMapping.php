@@ -69,7 +69,8 @@ class FileMapping
         $this->removeOverride($path);
     }
 
-    public function getURIForPath(string $path) : string {
+    public function getURIForPath(string $path) : string
+    {
         return $this->uri_for_path[$path] ?? Utils::pathToUri($path);
     }
 

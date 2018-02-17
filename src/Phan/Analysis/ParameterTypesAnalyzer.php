@@ -100,7 +100,8 @@ class ParameterTypesAnalyzer
     /**
      * @return void
      */
-    private static function checkCommentParametersAreInOrder(CodeBase $code_base, FunctionInterface $method) {
+    private static function checkCommentParametersAreInOrder(CodeBase $code_base, FunctionInterface $method)
+    {
         $comment = $method->getComment();
         if ($comment === null) {
             return;

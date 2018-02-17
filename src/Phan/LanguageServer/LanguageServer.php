@@ -390,7 +390,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      *
      * @return array<string,string> maps relative path to the file URI.
      */
-    private function getFilteredURIsToAnalyze() : array {
+    private function getFilteredURIsToAnalyze() : array
+    {
         $uris_to_analyze = $this->analyze_request_set;
         if (\count($uris_to_analyze) === 0) {
             return [];
@@ -414,7 +415,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     /**
      * @return void
      */
-    private function finalizeAnalyzingURIs() {
+    private function finalizeAnalyzingURIs()
+    {
         $uris_to_analyze = $this->getFilteredURIsToAnalyze();
         if (\count($uris_to_analyze) === 0) {
             return;
