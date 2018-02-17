@@ -827,7 +827,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      */
     public function visitBinaryOp(Node $node) : Context
     {
-        $flags = ($node->flags ?? 0);
+        $flags = $node->flags;
         if ($flags === \ast\flags\BINARY_BOOL_AND) {
             return $this->visitAnd($node);
         } elseif ($flags === \ast\flags\BINARY_BOOL_OR) {

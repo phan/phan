@@ -249,7 +249,7 @@ interface FlagVisitor
     public function visitBinaryBoolOr(Node $node);
 
     /**
-     * Visit a node with flag `\ast\flags\AST_COALESCE`
+     * Visit a node with flag `\ast\flags\BINARY_COALESCE`
      */
     public function visitBinaryCoalesce(Node $node);
     /**

@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 2018, Phan 0.10.6 (dev)
 ------------------------
 
+New Features(Analysis)
++ Add `PhanNoopBinaryOperator` and `PhanNoopUnaryOperator` checks (#1404)
+
 Language Server
 + Make Phan Language Server analyze new files added to a project (Issue #920)
 + Analyze all of the PHP files that are currently opened in the IDE

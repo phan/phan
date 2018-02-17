@@ -462,6 +462,43 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
+    public function visitBinaryOp(Node $node) : Context
+    {
+        if (($this->parent_node->kind ?? null) === \ast\AST_STMT_LIST) {
+            if (!\in_array($node->flags, [\ast\flags\BINARY_BOOL_AND, \ast\flags\BINARY_BOOL_OR, \ast\flags\BINARY_COALESCE])) {
+                $this->emitIssue(
+                    Issue::NoopBinaryOperator,
+                    $node->lineno
+                );
+            }
+        }
+        return $this->context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitUnaryOp(Node $node) : Context
+    {
+        if ($node->flags !== \ast\flags\UNARY_SILENCE) {
+            $this->analyzeNoOp($node, Issue::NoopUnaryOperator);
+        }
+        return $this->context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitConst(Node $node) : Context
     {
         $context = $this->context;
@@ -2202,12 +2239,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function analyzeNoOp(Node $node, string $issue_type)
     {
-        if ($this->parent_node instanceof Node &&
-            $this->parent_node->kind == \ast\AST_STMT_LIST
-        ) {
+        if (($this->parent_node->kind ?? null) === \ast\AST_STMT_LIST) {
             $this->emitIssue(
                 $issue_type,
-                $node->lineno ?? 0
+                $node->lineno
             );
         }
     }

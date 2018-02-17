@@ -170,6 +170,8 @@ class Issue
     const NoopConstant              = 'PhanNoopConstant';
     const NoopProperty              = 'PhanNoopProperty';
     const NoopVariable              = 'PhanNoopVariable';
+    const NoopUnaryOperator         = 'PhanNoopUnaryOperator';
+    const NoopBinaryOperator        = 'PhanNoopBinaryOperator';
     const UnreferencedClass         = 'PhanUnreferencedClass';
     const UnreferencedFunction      = 'PhanUnreferencedFunction';
     const UnreferencedPublicMethod  = 'PhanUnreferencedPublicMethod';
@@ -1557,6 +1559,22 @@ class Issue
                 "Unused variable",
                 self::REMEDIATION_B,
                 6004
+            ),
+            new Issue(
+                self::NoopUnaryOperator,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused result of a unary operator",
+                self::REMEDIATION_B,
+                6020
+            ),
+            new Issue(
+                self::NoopBinaryOperator,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused result of a binary operator",
+                self::REMEDIATION_B,
+                6021
             ),
             new Issue(
                 self::UnreferencedClass,
