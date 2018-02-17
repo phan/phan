@@ -3,6 +3,10 @@ Phan NEWS
 ?? ??? 2018, Phan 0.10.6 (dev)
 ------------------------
 
+New Features(CLI, Configs)
++ Add `--init` CLI flag and CLI options to affect the generated config. (#145)
+  (Options: `--init-level=1..5`, `--init-analyze-dir=path/to/src`, `--init-analyze-file=path/to/file.php`, `--init-no-composer`, `--init-overwrite`)
+
 New Features(Analysis)
 + Add `PhanNoopBinaryOperator` and `PhanNoopUnaryOperator` checks (#1404)
 + Add `PhanCommentParamOutOfOrder` code style check. (#1401)

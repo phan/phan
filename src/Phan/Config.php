@@ -176,25 +176,25 @@ class Config
         // sloppy mature code base.
         'minimum_severity' => Issue::SEVERITY_LOW,
 
-        // If true, missing properties will be created when
+        // If enabled, missing properties will be created when
         // they are first seen. If false, we'll report an
         // error message if there is an attempt to write
         // to a class property that wasn't explicitly
         // defined.
         'allow_missing_properties' => false,
 
-        // Allow null to be cast as any array-like type
+        // If enabled, allow null to be cast as any array-like type.
         // This is an incremental step in migrating away from null_casts_as_any_type.
         // If null_casts_as_any_type is true, this has no effect.
         'null_casts_as_array' => false,
 
-        // Allow any array-like type to be cast to null.
+        // If enabled, allow any array-like type to be cast to null.
         // This is an incremental step in migrating away from null_casts_as_any_type.
         // If null_casts_as_any_type is true, this has no effect.
         'array_casts_as_null' => false,
 
-        // Allow null to be cast as any type and for any
-        // type to be cast to null. Setting this to true
+        // If enabled, null can be cast as any type and any
+        // type can be cast to null. Setting this to true
         // will cut down on false positives.
         'null_casts_as_any_type' => false,
 

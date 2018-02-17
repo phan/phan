@@ -74,54 +74,61 @@ class CLI
         $opts = getopt(
             "f:m:o:c:k:aeqbr:pid:3:y:l:xj:zhvs:",
             [
+                'allow-polyfill-parser',
                 'backward-compatibility-checks',
                 'color',
+                'config-file:',
+                'daemonize-socket:',
+                'daemonize-tcp-port:',
                 'dead-code-detection',
                 'directory:',
+                'disable-plugins',
                 'dump-ast',
                 'dump-parsed-file-list',
                 'dump-signatures-file:',
                 'exclude-directory-list:',
                 'exclude-file:',
-                'include-analysis-file-list:',
-                'file-list-only:',
+                'extended-help',
                 'file-list:',
+                'file-list-only:',
+                'force-polyfill-parser',
                 'help',
                 'ignore-undeclared',
+                'include-analysis-file-list:',
+                'init',
+                'init-level:',
+                'init-analyze-dir:',
+                'init-analyze-file:',
+                'init-no-composer',
+                'init-overwrite',
+                'language-server-analyze-only-on-save',
+                'language-server-on-stdin',
+                'language-server-tcp-connect:',
+                'language-server-tcp-server:',
+                'language-server-verbose',
+                'markdown-issue-messages',
+                'memory-limit:',
                 'minimum-severity:',
-                'output-mode:',
                 'output:',
+                'output-mode:',
                 'parent-constructor-required:',
+                'print-memory-usage-summary',
+                'processes:',
                 'progress-bar',
                 'project-root-directory:',
                 'quick',
-                'version',
-                'processes:',
-                'config-file:',
-                'signature-compatibility',
-                'memory-limit:',
-                'print-memory-usage-summary',
-                'markdown-issue-messages',
-                'disable-plugins',
-                'use-fallback-parser',
-                'allow-polyfill-parser',
-                'force-polyfill-parser',
                 'require-config-exists',
-                'daemonize-socket:',
-                'daemonize-tcp-port:',
-                'language-server-on-stdin',
-                'language-server-tcp-server:',
-                'language-server-tcp-connect:',
-                'language-server-analyze-only-on-save',
-                'language-server-verbose',
-                'extended-help',
+                'signature-compatibility',
+                'use-fallback-parser',
+                'version',
             ]
         );
+        $opts = $opts ?? [];
 
-        if (\array_key_exists('extended-help', $opts ?? [])) {
+        if (\array_key_exists('extended-help', $opts)) {
             $this->usage('', EXIT_SUCCESS, true);  // --help prints help and calls exit(0)
         }
-        if (\array_key_exists('h', $opts ?? []) || \array_key_exists('help', $opts ?? [])) {
+        if (\array_key_exists('h', $opts) || \array_key_exists('help', $opts)) {
             $this->usage();  // --help prints help and calls exit(0)
         }
         if (\array_key_exists('v', $opts ?? []) || \array_key_exists('version', $opts ?? [])) {
@@ -144,6 +151,16 @@ class CLI
             \getcwd()
         );
 
+        if (\array_key_exists('init', $opts)) {
+            $exit_code = ConfigInitializer::initPhanConfig($this, $opts);
+            if ($exit_code === 0) {
+                exit($exit_code);
+            }
+            echo "\n";
+            // --init is currently in --extended-help
+            $this->usage('', $exit_code, true);
+        }
+
         // Before reading the config, check for an override on
         // the location of the config file path.
         if (isset($opts['k'])) {
@@ -162,7 +179,7 @@ class CLI
         $minimum_severity = Config::getValue('minimum_severity');
         $mask = -1;
 
-        foreach ($opts ?? [] as $key => $value) {
+        foreach ($opts as $key => $value) {
             switch ($key) {
                 case 'r':
                 case 'file-list-only':
@@ -393,7 +410,7 @@ class CLI
         Phan::setIssueCollector($collector);
 
         $pruneargv = [];
-        foreach ($opts ?? [] as $opt => $value) {
+        foreach ($opts as $opt => $value) {
             foreach ($argv as $key => $chunk) {
                 $regex = '/^'. (isset($opt[1]) ? '--' : '-') . $opt . '/';
 
@@ -571,6 +588,21 @@ Usage: {$argv[0]} [options] [files...]
  -o, --output <filename>
   Output filename
 
+ --init [--init-level=3] [--init-analyze-dir=path/to/src] [--init-analyze-file=path/to/file.php] [--init-no-composer]
+
+  Generates a `.phan/config.php` in the current directory based on the project's composer.json.
+  The logic used to generate the config file is currently very simple.
+  Some third party classes (e.g. in vendor/) will need to be manually added to 'directory_list' or excluded,
+  and you may end up with a large number of issues to be manually suppressed.
+  Also see https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base
+
+  [--init-level] affects the generated settings in `.phan/config.php` (e.g. null_casts_as_array). `--init-level` can be set to 1 (strictest) to 5 (least strict)
+  [--init-analyze-dir] can be used as a relative path alongside directories Phan infers from composer.json's "autoload" settings
+  [--init-analyze-file] can be used as a relative path alongside files Phan infers from composer.json's "bin" settings
+  [--init-no-composer] can be used to tell Phan that the project is not a composer project.
+    Phan will not check for composer.json or vendor/, or include those paths in the generated config.
+  [--init-overwrite] will allow 'phan --init' to overwrite .phan/config.php.
+
  --color
   Add colors to the outputted issues. Tested in Unix.
   This is recommended for only the default --output-mode ('text')
@@ -695,7 +727,6 @@ Extended help:
 
  --require-config-exists
   Exit immediately with an error code if .phan/config.php does not exist.
-
 EOB;
         }
         exit($exit_code);
