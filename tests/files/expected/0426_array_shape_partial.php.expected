@@ -1,0 +1,4 @@
+%s:10 PhanTypeMismatchArgument Argument 1 (params) is array{firstProp:string} but \test426() takes array{firstProp:string,secondProp:?int} defined at %s:7
+%s:11 PhanTypeMismatchArgument Argument 1 (params) is array{secondProp:int} but \test426() takes array{firstProp:string,secondProp:?int} defined at %s:7
+%s:12 PhanTypeMismatchArgument Argument 1 (params) is array{secondProp:false} but \test426() takes array{firstProp:string,secondProp:?int} defined at %s:7
+%s:15 PhanTypeMismatchArgument Argument 1 (params) is array{firstProp:string,secondProp:false} but \test426() takes array{firstProp:string,secondProp:?int} defined at %s:7
