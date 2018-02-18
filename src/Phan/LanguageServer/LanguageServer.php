@@ -17,7 +17,6 @@ use Phan\LanguageServer\Protocol\Position;
 use Phan\LanguageServer\Protocol\Range;
 use Phan\LanguageServer\Protocol\SaveOptions;
 use Phan\LanguageServer\Protocol\ServerCapabilities;
-use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
 use Phan\LanguageServer\Protocol\TextDocumentSyncKind;
 use Phan\LanguageServer\Protocol\TextDocumentSyncOptions;
 use Phan\LanguageServer\Server\TextDocument;
@@ -27,6 +26,7 @@ use Phan\LanguageServer\ProtocolStreamReader;
 use Phan\LanguageServer\ProtocolStreamWriter;
 use Sabre\Event\Loop;
 use Sabre\Event\Promise;
+
 use function Sabre\Event\coroutine;
 use Throwable;
 
@@ -155,7 +155,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                     Logger::logInfo('Saw error: ' . $e->getMessage());
                     // If a ResponseError is thrown, send it back in the Response
                     $error = $e;
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     Logger::logInfo('Saw throwable: ' . get_class($e) . ': ' . $e->getMessage() . "\n" . $e->getTraceAsString());
                     // If an unexpected error occurred, send back an INTERNAL_ERROR error response
                     $error = new AdvancedJsonRpc\Error(

@@ -35,8 +35,6 @@
 
 namespace Phan\Library\Composer;
 
-use Symfony\Component\Console\Output\OutputInterface;
-
 /**
  * @author John Stevenson <john-stevenson@blueyonder.co.uk>
  */

@@ -1,9 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\PluginV2;
 
-use Phan\AST\Visitor\Element;
-use Phan\CodeBase;
-use Phan\Language\Context;
 use Phan\Issue;
 use ast\Node;
 

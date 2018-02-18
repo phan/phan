@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Scope;
 
-use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
 // TODO: Wrap this with a ClosureLikeScope

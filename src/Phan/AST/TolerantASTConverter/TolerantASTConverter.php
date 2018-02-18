@@ -7,7 +7,6 @@ use Microsoft\PhpParser;
 use Microsoft\PhpParser\Diagnostic;
 use Microsoft\PhpParser\DiagnosticsProvider;
 use Microsoft\PhpParser\FilePositionMap;
-use Microsoft\PhpParser\InvalidToken;
 use Microsoft\PhpParser\MissingToken;
 use Microsoft\PhpParser\Parser;
 use Microsoft\PhpParser\Token;

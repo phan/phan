@@ -1,0 +1,6 @@
+%s:2 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace ns1 (\A\ns1)
+%s:2 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace ns2 (\A\ns2)
+%s:3 PhanUnreferencedUseFunction Possibly zero references to use statement for function fn1 (\B\fn1)
+%s:3 PhanUnreferencedUseFunction Possibly zero references to use statement for function fn2 (\B\fn2)
+%s:4 PhanUnreferencedUseConstant Possibly zero references to use statement for constant D (\C\D)
+%s:4 PhanUnreferencedUseConstant Possibly zero references to use statement for constant E (\C\E)

@@ -16,8 +16,6 @@ $code_base = require_once(__DIR__ . '/codebase.php');
 require_once(__DIR__ . '/Phan/Bootstrap.php');
 
 use Phan\CLI;
-use Phan\CodeBase;
-use Phan\Config;
 use Phan\Phan;
 
 if (extension_loaded('ast')) {

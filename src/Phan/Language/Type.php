@@ -22,7 +22,6 @@ use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
-use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
@@ -30,8 +29,6 @@ use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;
 use Phan\Library\Tuple5;
-
-use ast\Node;
 
 class Type
 {
@@ -881,6 +878,7 @@ class Type
                 GenericArrayType::KEY_MIXED
             );
         }
+        // TODO: Will \MyClass[] accidentally check the namespace map for use OtherNS\MyClass?
         if ($context->hasNamespaceMapFor(
             \ast\flags\USE_NORMAL,
             $non_generic_partially_qualified_array_type_name

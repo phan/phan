@@ -3,13 +3,13 @@ namespace Phan\Language;
 
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
+use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
-use Phan\Language\FQSEN\FullyQualifiedFunctionLikeName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
@@ -30,12 +30,27 @@ class Context extends FileRef
     private $namespace = '';
 
     /**
-     * @var array
-     * Maps [int kind => [string name/namespace => fqsen]]
+     * @var int
+     * The id of the namespace
+     */
+    private $namespace_id = 0;
+
+    /**
+     * @var array<int,array<string,NamespaceMapEntry>>
+     * Maps [int flags => [string name/namespace => NamespaceMapEntry(fqsen, is_used)]]
      * Note that for \ast\USE_CONST (global constants), this is case sensitive,
      * but the remaining types are case insensitive (stored with lowercase name).
      */
     private $namespace_map = [];
+
+    /**
+     * @var array<int,array<string,NamespaceMapEntry>>
+     * Maps [int flags => [string name/namespace => NamespaceMapEntry(fqsen, is_used)]]
+     *
+     * (This is used in the analysis phase after the parse phase)
+     * @see $this->namespace_map
+     */
+    private $parse_namespace_map = [];
 
     /**
      * @var int
@@ -74,6 +89,8 @@ class Context extends FileRef
     {
         $context = clone($this);
         $context->namespace = $namespace;
+        $context->namespace_id += 1;  // Assumes namespaces are walked in order
+        $context->namespace_map = [];
         return $context;
     }
 
@@ -87,6 +104,16 @@ class Context extends FileRef
     }
 
     /**
+     * @return int
+     * The namespace id within the file (incrementing starting from 0)
+     * Used because a file can have duplicate identical namespace declarations.
+     */
+    public function getNamespaceId() : int
+    {
+        return $this->namespace_id;
+    }
+
+    /**
      * @return bool
      * True if we have a mapped NS for the given named element
      */
@@ -94,22 +121,21 @@ class Context extends FileRef
     {
         // Look for the mapping on the part before a
         // slash
-        $name_parts = explode('\\', $name, 2);
-        if (count($name_parts) > 1) {
+        $name_parts = \explode('\\', $name, 2);
+        if (\count($name_parts) > 1) {
             // We're looking for a namespace if there's more than one part
             // Namespaces are case insensitive.
             $namespace_map_key = \strtolower($name_parts[0]);
             $flags = \ast\flags\USE_NORMAL;
         } else {
             if ($flags !== \ast\flags\USE_CONST) {
-                $namespace_map_key = \strtolower($name_parts[0]);
+                $namespace_map_key = \strtolower($name);
             } else {
                 // Constants are case sensitive, and stored in a case sensitive manner.
                 $namespace_map_key = $name;
             }
         }
-
-        return !empty($this->namespace_map[$flags][$namespace_map_key]);
+        return isset($this->namespace_map[$flags][$namespace_map_key]);
     }
 
     /**
@@ -124,7 +150,7 @@ class Context extends FileRef
         // Look for the mapping on the part before a
         // slash
         $name_parts = \explode('\\', $name, 2);
-        if (count($name_parts) > 1) {
+        if (\count($name_parts) > 1) {
             $name = \strtolower($name_parts[0]);
             $suffix = $name_parts[1];
             // In php, namespaces, functions, and classes are case insensitive.
@@ -143,16 +169,18 @@ class Context extends FileRef
             }
         }
 
-        $fqsen = $this->namespace_map[$map_flags][$name] ?? null;
+        $namespace_map_entry = $this->namespace_map[$map_flags][$name] ?? null;
 
         \assert(
-            !empty($fqsen),
+            !empty($namespace_map_entry),
             "No namespace defined for name"
         );
+        $fqsen = $namespace_map_entry->fqsen;
+        $namespace_map_entry->is_used = true;
 
         \assert(
-            $fqsen instanceof FQSEN,
-            "Namespace map was not an FQSEN"
+            $fqsen instanceof FullyQualifiedGlobalStructuralElement,
+            "Namespace map was not a FullyQualifiedGlobalStructuralElement"
         );
 
         if (!$suffix) {
@@ -185,8 +213,10 @@ class Context extends FileRef
     public function withNamespaceMap(
         int $flags,
         string $alias,
-        FullyQualifiedGlobalStructuralElement $target
+        FullyQualifiedGlobalStructuralElement $target,
+        int $lineno
     ) : Context {
+        $original_alias = $alias;
         if ($flags !== \ast\flags\USE_CONST) {
             $alias = \strtolower($alias);
         } else {
@@ -196,7 +226,16 @@ class Context extends FileRef
                 $alias = \strtolower(\substr($alias, 0, $last_part_index + 1)) . substr($alias, $last_part_index + 1);
             }
         }
-        $this->namespace_map[$flags][$alias] = $target;
+        // we may have imported this namespace map from the parse phase, making the target already exist
+        // TODO: Warn if namespace_map already exists? Then again, `php -l` already does.
+        $parse_entry = $this->parse_namespace_map[$flags][$alias] ?? null;
+        if ($parse_entry !== null) {
+            // We add entries to namespace_map only after encounting them
+            // This is because statements can appear before 'use Foo\Bar;' (and those don't use the 'use' statement.)
+            $this->namespace_map[$flags][$alias] = $parse_entry;
+            return $this;
+        }
+        $this->namespace_map[$flags][$alias] = new NamespaceMapEntry($target, $original_alias, $lineno);
         return $this;
     }
 
@@ -635,5 +674,69 @@ class Context extends FileRef
     public function clearCachedUnionTypes()
     {
         $this->cache = [];
+    }
+
+    /**
+     * Gets Phan's internal representation of all of the 'use elem;' statements in a namespace.
+     * Use hasNamespaceMapFor and getNamespaceMapFor instead.
+     *
+     * @internal
+     *
+     * @return array<int,array<string,NamespaceMapEntry>>
+     */
+    public function getNamespaceMap() : array
+    {
+        return $this->namespace_map;
+    }
+
+    /**
+     * Warn about any unused \ast\AST_USE or \ast\AST_GROUP_USE nodes (`use Foo\Bar;`)
+     * This should be called after analyzing the end of a namespace (And before analyzing the next namespace)
+     *
+     * @param CodeBase $code_base
+     * The code base within which we're operating
+     *
+     * @internal
+     *
+     * @return void
+     */
+    public function warnAboutUnusedUseElements(CodeBase $code_base)
+    {
+        foreach ($this->namespace_map as $flags => $entries_for_flag) {
+            foreach ($entries_for_flag as $namespace_map_entry) {
+                if ($namespace_map_entry->is_used) {
+                    continue;
+                }
+                switch ($flags) {
+                    case \ast\flags\USE_NORMAL:
+                    default:
+                        $issue_type = Issue::UnreferencedUseNormal;
+                        break;
+                    case \ast\flags\USE_FUNCTION:
+                        $issue_type = Issue::UnreferencedUseFunction;
+                        break;
+                    case \ast\flags\USE_CONST:
+                        $issue_type = Issue::UnreferencedUseConstant;
+                        break;
+                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $this,
+                    $issue_type,
+                    $namespace_map_entry->lineno,
+                    $namespace_map_entry->original_name,
+                    (string)$namespace_map_entry->fqsen
+                );
+            }
+        }
+    }
+
+    /**
+     * @internal
+     * @suppress PhanAccessMethodInternal
+     */
+    public function importNamespaceMapFromParsePhase(CodeBase $code_base)
+    {
+        $this->parse_namespace_map = $code_base->getNamespaceMapFromParsePhase($this->getFile(), $this->namespace, $this->namespace_id);
     }
 }

@@ -2,7 +2,6 @@
 namespace Phan\Language\FQSEN;
 
 use Phan\Language\Context;
-use Phan\Language\FQSEN;
 use Phan\Language\Type;
 
 /**

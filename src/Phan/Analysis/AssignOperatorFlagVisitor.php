@@ -1,14 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
-use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\AST\Visitor\FlagVisitorImplementation;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
 use Phan\Language\Type\ArrayType;
-use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\StringType;

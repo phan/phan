@@ -3,7 +3,6 @@ namespace Phan\Language\Element;
 
 use Phan\CodeBase;
 use Phan\Language\Context;
-use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\Type;
 use Phan\Language\UnionType;

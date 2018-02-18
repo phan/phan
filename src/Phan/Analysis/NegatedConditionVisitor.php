@@ -1,24 +1,18 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
-use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
-use Phan\Config;
-use Phan\Exception\IssueException;
-use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
-use Phan\Language\Type\CallableType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;

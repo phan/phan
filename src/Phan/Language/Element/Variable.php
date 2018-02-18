@@ -5,7 +5,6 @@ use Phan\AST\ContextNode;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
-use Phan\Language\FileRef;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use ast\Node;

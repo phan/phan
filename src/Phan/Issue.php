@@ -185,6 +185,9 @@ class Issue
     const UnreferencedProtectedClassConstant = 'PhanUnreferencedProtectedClassConstant';
     const UnreferencedPrivateClassConstant = 'PhanUnreferencedPrivateClassConstant';
     const UnreferencedClosure       = 'PhanUnreferencedClosure';
+    const UnreferencedUseNormal = 'PhanUnreferencedUseNormal';
+    const UnreferencedUseFunction = 'PhanUnreferencedUseFunction';
+    const UnreferencedUseConstant = 'PhanUnreferencedUseConstant';
 
     // Issue::CATEGORY_REDEFINE
     const RedefineClass             = 'PhanRedefineClass';
@@ -1680,6 +1683,30 @@ class Issue
                 "Possibly zero references to public class constant {CONST}",
                 self::REMEDIATION_B,
                 6019
+            ),
+            new Issue(
+                self::UnreferencedUseNormal,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to use statement for classlike/namespace {CLASSLIKE} ({CLASSLIKE})",
+                self::REMEDIATION_B,
+                6022
+            ),
+            new Issue(
+                self::UnreferencedUseFunction,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to use statement for function {FUNCTION} ({FUNCTION})",
+                self::REMEDIATION_B,
+                6023
+            ),
+            new Issue(
+                self::UnreferencedUseConstant,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to use statement for constant {CONST} ({CONST})",
+                self::REMEDIATION_B,
+                6024
             ),
 
             // Issue::CATEGORY_REDEFINE

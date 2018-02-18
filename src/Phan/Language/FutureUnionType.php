@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
-use Phan\Exception\IssueException;
 use ast\Node;
 
 /**
@@ -50,9 +50,9 @@ class FutureUnionType
      */
     public function get() : UnionType
     {
-        return UnionType::fromNode(
-            $this->context,
+        return UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $this->node,
             false
         );

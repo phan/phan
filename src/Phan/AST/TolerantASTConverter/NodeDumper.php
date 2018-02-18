@@ -2,10 +2,8 @@
 
 namespace Phan\AST\TolerantASTConverter;
 
-use Microsoft\PhpParser\DiagnosticsProvider;
 use Microsoft\PhpParser\Node;
 use Microsoft\PhpParser\Token;
-use Microsoft\PhpParser\Parser;
 
 /**
  * Source: https://github.com/TysonAndre/tolerant-php-parser-to-php-ast
