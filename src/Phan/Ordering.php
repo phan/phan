@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use Phan\Library\Hasher;
 use Phan\Library\Hasher\Consistent;
 use Phan\Library\Hasher\Sequential;
 

@@ -214,8 +214,6 @@ const ARRAY_SYNTAX_SHORT = 3;
 
 namespace ast;
 
-use ASTConverter\ASTConverter;
-
 if (!class_exists('\ast\Node')) {
 /**
  * This class describes a single node in a PHP AST.

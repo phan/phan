@@ -4,22 +4,17 @@ namespace Phan;
 use Phan\AST\ASTSimplifier;
 use Phan\AST\Parser;
 use Phan\AST\TolerantASTConverter\ParseException;
-use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\Analysis\DuplicateFunctionAnalyzer;
 use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\Analysis\ReturnTypesAnalyzer;
 use Phan\Analysis\ReferenceCountsAnalyzer;
 use Phan\Language\Context;
-use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
-use Phan\Language\FQSEN\FullyQualifiedClassName;
-use Phan\Language\Type\NullType;
-use Phan\Language\UnionType;
 use Phan\Library\FileCache;
 use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
@@ -56,6 +51,8 @@ class Analysis
      * See autoload_internal_extension_signatures.
      *
      * @return Context
+     *
+     * @suppress PhanAccessMethodInternal
      */
     public static function parseFile(CodeBase $code_base, string $file_path, bool $suppress_parse_errors = false, string $override_contents = null, bool $is_php_internal_stub = false) : Context
     {
@@ -139,11 +136,13 @@ class Analysis
         }
 
 
-        return self::parseNodeInContext(
+        $context = self::parseNodeInContext(
             $code_base,
             $context,
             $node
         );
+        $code_base->addParsedNamespaceMap($context->getFile(), $context->getNamespace(), $context->getNamespaceId(), $context->getNamespaceMap());
+        return $context;
     }
 
     /**
@@ -219,6 +218,10 @@ class Analysis
             \ast\AST_CLOSURE,
         ], true)) {
             return $outer_context;
+        }
+        if ($kind === \ast\AST_STMT_LIST) {
+            // Workaround that ensures that the context from namespace blocks gets passed to the caller.
+            return $child_context;
         }
 
         // Pass the context back up to our parent
@@ -427,6 +430,7 @@ class Analysis
      * were $override_contents
      *
      * @return Context
+     * @suppress PhanAccessMethodInternal
      */
     public static function analyzeFile(
         CodeBase $code_base,
@@ -435,6 +439,7 @@ class Analysis
     ) : Context {
         // Set the file on the context
         $context = (new Context)->withFile($file_path);
+        $context->importNamespaceMapFromParsePhase($code_base);
 
         // Convert the file to an Abstract Syntax Tree
         // before passing it on to the recursive version
@@ -508,6 +513,8 @@ class Analysis
             }
         }
 
-        return (new BlockAnalysisVisitor($code_base, $context))($node);
+        $context = (new BlockAnalysisVisitor($code_base, $context))($node);
+        $context->warnAboutUnusedUseElements($code_base);
+        return $context;
     }
 }

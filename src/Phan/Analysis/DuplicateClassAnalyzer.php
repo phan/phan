@@ -4,7 +4,6 @@ namespace Phan\Analysis;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
-use Phan\Language\FQSEN;
 
 class DuplicateClassAnalyzer
 {

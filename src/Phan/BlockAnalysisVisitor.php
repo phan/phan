@@ -113,6 +113,57 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         return $this->context;
     }
 
+    /**
+     * @suppress PhanAccessMethodInternal
+     */
+    public function visitNamespace(Node $node) : Context
+    {
+        $context = $this->context->withLineNumberStart(
+            $node->lineno ?? 0
+        );
+
+        // If there are multiple namespaces in the file, have to warn about unused entries in the current namespace first.
+        // If this is the first namespace, then there wouldn't be any use statements yet.
+        $context->warnAboutUnusedUseElements($this->code_base);
+
+        // Visit the given node populating the code base
+        // with anything we learn and get a new context
+        // indicating the state of the world within the
+        // given node
+        $context = (new PreOrderAnalysisVisitor(
+            $this->code_base,
+            $context
+        ))->visitNamespace($node);
+
+        \assert(!empty($context), 'Context cannot be null');
+
+        // We already imported namespace constants earlier; use those.
+        $context->importNamespaceMapFromParsePhase($this->code_base);
+
+        // Let any configured plugins do a pre-order
+        // analysis of the node.
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+
+        // The namespace may either have a list of statements (`namespace Foo {}`)
+        // or be null (`namespace Foo;`)
+        foreach ($node->children['stmts']->children ?? [] as $child_node) {
+            // Skip any non Node children.
+            if (!($child_node instanceof Node)) {
+                continue;
+            }
+
+            // Step into each child node and get an
+            // updated context for the node
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
+        }
+
+        return $this->postOrderAnalyze($context, $node);
+    }
+
     public function visitName(Node $node) : Context
     {
         // Could invoke plugins, but not right now
@@ -209,9 +260,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context = $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
         }
 
-        $context = $this->postOrderAnalyze($context, $node);
-
-        return $context;
+        return $this->postOrderAnalyze($context, $node);
     }
 
     /**

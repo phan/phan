@@ -7,7 +7,6 @@ use Phan\LanguageServer\Protocol\Message;
 use Phan\LanguageServer\Logger;
 use Sabre\Event\Loop;
 use Sabre\Event\Promise;
-use RuntimeException;
 
 /**
  * Source: https://github.com/felixfbecker/php-language-server/tree/master/src/ProtocolStreamWriter.php

@@ -1,8 +1,6 @@
 <?php declare(strict_types=1);
-# .phan/plugins/NumericalComparisonPlugin.php
+// .phan/plugins/NumericalComparisonPlugin.php
 
-use Phan\AST\AnalysisVisitor;
-use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
 use Phan\PluginV2;

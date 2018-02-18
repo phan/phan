@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
-use Phan\Language\UnionType;
 use Phan\Language\Type;
 
 final class BoolType extends ScalarType

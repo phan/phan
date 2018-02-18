@@ -3,20 +3,14 @@
 namespace Phan\LanguageServer\Server;
 
 use Phan\LanguageServer\FileMapping;
-use Phan\LanguageServer\Index\ReadableIndex;
 use Phan\LanguageServer\LanguageClient;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Logger;
-use Phan\LanguageServer\Protocol\Position;
-use Phan\LanguageServer\Protocol\Range;
 use Phan\LanguageServer\Protocol\TextDocumentContentChangeEvent;
 use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
 use Phan\LanguageServer\Protocol\TextDocumentItem;
 use Phan\LanguageServer\Protocol\VersionedTextDocumentIdentifier;
 use Phan\LanguageServer\Utils;
-use Sabre\Event\Promise;
-use Sabre\Uri;
-use function Sabre\Event\coroutine;
 
 /**
  * Provides method handlers for all textDocument/* methods
@@ -150,29 +144,4 @@ class TextDocument
         $this->client->textDocument->publishDiagnostics(Utils::pathToUri(Utils::uriToPath($textDocument->uri)), []);
         Logger::logInfo("Called didClose, uri={$textDocument->uri}");
     }
-
-    /**
-     * The Completion request is sent from the client to the server to compute completion items at a given cursor
-     * position. Completion items are presented in the IntelliSense user interface. If computing full completion items
-     * is expensive, servers can additionally provide a handler for the completion item resolve request
-     * ('completionItem/resolve'). This request is sent when a completion item is selected in the user interface. A
-     * typically use case is for example: the 'textDocument/completion' request doesn't fill in the documentation
-     * property for returned completion items since it is expensive to compute. When the item is selected in the user
-     * interface then a 'completionItem/resolve' request is sent with the selected completion item as a param. The
-     * returned completion item should have the documentation property filled in.
-     *
-     * @param TextDocumentIdentifier The text document
-     * @param Position $position The position
-     * @return Promise <CompletionItem[]|CompletionList>
-     * TODO: reintroduce this after support gets added to Phan
-     */
-    /*
-        public function completion(TextDocumentIdentifier $textDocument, Position $position): Promise
-        {
-            return coroutine(function () use ($textDocument, $position) {
-                $document = yield $this->documentLoader->getOrLoad($textDocument->uri);
-                return $this->completionProvider->provideCompletion($document, $position);
-            });
-        }
-     */
 }

@@ -8,7 +8,6 @@ use Phan\Config;
 use Phan\Daemon;
 use Phan\Exception\IssueException;
 use Phan\Issue;
-use Phan\Util;
 use Phan\Language\Context;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
@@ -29,7 +28,6 @@ use Phan\Language\Type;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
-use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 use Phan\Library\None;
 use ast\Node;
@@ -1204,6 +1202,25 @@ class ParseVisitor extends ScopeVisitor
         // Add the class alias during parse phase.
         // Figure out if any of the aliases are wrong after analysis phase.
         $this->code_base->addClassAlias($original_fqsen, $alias_fqsen, $context, $node->lineno ?? 0);
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_NAMESPACE`
+     * Store the maps for use statements in the CodeBase to use later during analysis.
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new context resulting from parsing the node
+     *
+     * @suppress PhanAccessMethodInternal
+     */
+    public function visitNamespace(Node $node) : Context
+    {
+        $context = $this->context;
+        $this->code_base->addParsedNamespaceMap($context->getFile(), $context->getNamespace(), $context->getNamespaceId(), $context->getNamespaceMap());
+        return parent::visitNamespace($node);
     }
 
     // common no-ops

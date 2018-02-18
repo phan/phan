@@ -11,6 +11,10 @@ New Features(Analysis)
 + Add `PhanNoopBinaryOperator` and `PhanNoopUnaryOperator` checks (#1404)
 + Add `PhanCommentParamOutOfOrder` code style check. (#1401)
   This checks that `@param` annotations appear in the same order as the real parameters.
++ Detect unused imports (Does not parse inline doc comments) (#1095)
+  Added `PhanUnreferencedUseNormal`, `PhanUnreferencedUseFunction`, `PhanUnreferencedUseConstant`.
+
+  (Note that Phan does not parse inline doc comments, which may cause false positives for `PhanUnreferencedUseNormal`)
 
 Language Server
 + Make Phan Language Server analyze new files added to a project (Issue #920)
@@ -27,6 +31,10 @@ Language Server
 
   Hopefully, this should reduce the necessity for limiting Phan to
   analyzing only on save.
+
+Bug fixes
++ In files with multiple namespaces, don't use `use` statements from earlier namespaces. (#1096)
++ Fix bugs analyzing code using functions/constants provided by group use statements, in addition to `use function` and `use const` statements.
 
 14 Feb 2018, Phan 0.10.5
 ------------------------

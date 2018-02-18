@@ -13,7 +13,6 @@ use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Property;
-use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassElement;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -21,11 +20,11 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\NamespaceMapEntry;
 use Phan\Language\UnionType;
 use Phan\Library\Map;
 use Phan\Library\Set;
 
-use Generator;
 use ReflectionClass;
 
 /**
@@ -132,6 +131,12 @@ class CodeBase
      * Methods
      */
     private $name_method_map = [];
+
+    /**
+     * @var array<string,array<string,array<int,array<string,NamespaceMapEntry>>>>
+     * Maps the file and namespace identifier to the use statements found in that namespace
+     */
+    private $parsed_namespace_maps;
 
     /**
      * @var bool
@@ -492,6 +497,48 @@ class CodeBase
                 unset($inner->class_fqsen_class_map_map[$fqsen]);
             });
         }
+    }
+
+    /**
+     * This should be called in the parse phase
+     *
+     * @param array<int,array<string,NamespaceMapEntry>> $namespace_map
+     *
+     * @return void
+     * @internal
+     */
+    public function addParsedNamespaceMap(string $file, string $namespace, int $id, array $namespace_map)
+    {
+        $key = "$namespace@$id";
+        // print("Adding $file $key count=" .count($namespace_map) . "\n");
+        // debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        $this->parsed_namespace_maps[$file][$key] = $namespace_map;
+        if ($this->undo_tracker) {
+            $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($file, $key) {
+                Daemon::debugf("Undoing addParsedNamespaceMap file = %s namespace = %s\n", $file, $key);
+                unset($this->parsed_namespace_maps[$file][$key]);
+            });
+        }
+    }
+
+    /**
+     * This should be called in the analysis phase.
+     * It retrieves the NamespaceMapEntry built in the parse pharse
+     * (This is implemented this way to allow Phan to know if 'use Foo\Bar' was ever used and warn if it wasn't.)
+     *
+     * @param string $file the value of $context->getFile()
+     * @param string $namespace the namespace value. Probably redundant.
+     * @param int $id (An incrementing counter for namespaces. 0 or 1 in single namespace/absent namespace files)
+     * @return array<int,array<string,NamespaceMapEntry>> $namespace_map
+     * @internal
+     */
+    public function getNamespaceMapFromParsePhase(string $file, string $namespace, int $id)
+    {
+        $key = "$namespace@$id";
+
+        // I'd hope that this is always defined when this is called.
+        // However, it may not be if files rapidly change and add/remove namespaces?
+        return $this->parsed_namespace_maps[$file][$key] ?? [];
     }
 
     /**

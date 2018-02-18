@@ -43,7 +43,6 @@ use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
-use Phan\Library\ArraySet;
 use ast\Node;
 
 /**

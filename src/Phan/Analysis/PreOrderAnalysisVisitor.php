@@ -9,19 +9,13 @@ use Phan\Exception\NodeException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
-use Phan\Language\Element\Comment;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
-use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Variable;
-use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use Phan\Language\Scope\ClassScope;
 use Phan\Language\Scope\ClosureScope;
 use Phan\Language\Type;
-use Phan\Language\Type\GenericArrayType;
-use Phan\Language\UnionType;
 use ast\Node;
 
 class PreOrderAnalysisVisitor extends ScopeVisitor

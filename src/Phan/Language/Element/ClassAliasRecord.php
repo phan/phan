@@ -2,7 +2,6 @@
 
 namespace Phan\Language\Element;
 
-use ast\Node;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 

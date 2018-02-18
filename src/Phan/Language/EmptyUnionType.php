@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
-use ast\Node;
 use Phan\CodeBase;
 use Phan\Language\Type\ArrayType;
 

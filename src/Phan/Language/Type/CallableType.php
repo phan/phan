@@ -1,9 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
-use Phan\Language\FQSEN;
-use Phan\Language\Type;
-
 final class CallableType extends NativeType
 {
     /** @phan-override */
