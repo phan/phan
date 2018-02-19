@@ -1133,6 +1133,14 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // If we have generics, we're all set
         if (!$generic_types->isEmpty()) {
+            if ($this->isSuspiciousNullable($union_type)) {
+                $this->emitIssue(
+                    Issue::TypeArraySuspiciousNullable,
+                    $node->lineno ?? 0,
+                    (string)$union_type
+                );
+            }
+
             if (!$dim_type->isEmpty()) {
                 if (!$union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
                     if (Config::getValue('scalar_array_key_cast')) {
@@ -1225,6 +1233,16 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         return $element_types;
+    }
+
+    private function isSuspiciousNullable(UnionType $union_type) : bool
+    {
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type->getIsNullable() && ($type instanceof ArrayType || $type instanceof StringType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

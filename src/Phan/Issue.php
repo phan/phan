@@ -52,6 +52,7 @@ class Issue
     const NonClassMethodCall        = 'PhanNonClassMethodCall';
     const TypeArrayOperator         = 'PhanTypeArrayOperator';
     const TypeArraySuspicious       = 'PhanTypeArraySuspicious';
+    const TypeArraySuspiciousNullable = 'PhanTypeArraySuspiciousNullable';
     const TypeSuspiciousIndirectVariable = 'PhanTypeSuspiciousIndirectVariable';
     const TypeComparisonFromArray   = 'PhanTypeComparisonFromArray';
     const TypeComparisonToArray     = 'PhanTypeComparisonToArray';
@@ -1080,6 +1081,14 @@ class Issue
                 'Attempting an array destructing assignment with a key of type {TYPE} but the only key types of the right hand side are of type {TYPE}',
                 self::REMEDIATION_B,
                 10043
+            ),
+            new Issue(
+                self::TypeArraySuspiciousNullable,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Suspicious array access to nullable {TYPE}",
+                self::REMEDIATION_B,
+                10045
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
