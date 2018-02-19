@@ -3,6 +3,8 @@ Phan NEWS
 ?? ??? 2018, Phan 0.11.4 (dev)
 ------------------------
 
+### Ported from Phan 0.10.6 (dev)
+
 New Features(CLI, Configs)
 + Add `--init` CLI flag and CLI options to affect the generated config. (#145)
   (Options: `--init-level=1..5`, `--init-analyze-dir=path/to/src`, `--init-analyze-file=path/to/file.php`, `--init-no-composer`, `--init-overwrite`)
