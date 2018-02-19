@@ -68,7 +68,7 @@ class Context extends FileRef
      * @var array<mixed,mixed>
      * caches union types for a given node
      */
-    private $cache  = [];
+    private $cache = [];
 
     /**
      * Create a new context
@@ -578,6 +578,9 @@ class Context extends FileRef
         CodeBase $code_base,
         string $issue_name
     ) : bool {
+        if ($code_base->hasFileLevelSuppression($this->getFile(), $issue_name)) {
+            return true;
+        }
         if (!$this->isInElementScope()) {
             return false;
         }

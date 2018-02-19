@@ -406,6 +406,17 @@ class Comment
                     } elseif ($type === 'phan-override') {
                         $check_compatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i, $line);
                         $comment_flags |= Flags::IS_OVERRIDE_INTENDED;
+                    } elseif ($type === 'phan-var') {
+                        $check_compatible('@phan-var', Comment::HAS_VAR_ANNOTATION, $i, $line);
+                        $comment_var = self::parameterFromCommentLine($code_base, $context, $line, true, $lineno, $i, $comment_lines_count);
+                        if ($comment_var->getName() !== '' || !\in_array($comment_type, self::FUNCTION_LIKE)) {
+                            $variable_list[] = $comment_var;
+                        }
+                    } elseif ($type === 'phan-file-suppress') {
+                        $suppress_issue_type = self::fileSuppressIssueFromCommentLine($line);
+                        if ($suppress_issue_type) {
+                            $code_base->addFileLevelSuppression($context->getFile(), $suppress_issue_type);
+                        }
                     } else {
                         Issue::maybeEmit(
                             $code_base,
@@ -419,13 +430,13 @@ class Comment
                 }
             }
 
-            if (\stripos($line, '@deprecated') !== false) {
+            if (\strpos($line, '@deprecated') !== false) {
                 if (\preg_match('/@deprecated\b/', $line, $match)) {
                     $comment_flags |= Flags::IS_DEPRECATED;
                 }
             }
 
-            if (\stripos($line, '@internal') !== false) {
+            if (\strpos($line, '@internal') !== false) {
                 if (\preg_match('/@internal\b/', $line, $match)) {
                     $comment_flags |= Flags::IS_NS_INTERNAL;
                 }
@@ -678,6 +689,19 @@ class Comment
         string $line
     ) : string {
         if (preg_match('/@suppress\s+' . self::WORD_REGEX . '/', $line, $match)) {
+            return $match[1];
+        }
+
+        return '';
+    }
+
+    const PHAN_FILE_SUPPRESS_REGEX =
+        '/@phan-file-suppress\s+' . self::WORD_REGEX . '/';
+
+    private static function fileSuppressIssueFromCommentLine(
+        string $line
+    ) : string {
+        if (preg_match(self::PHAN_FILE_SUPPRESS_REGEX, $line, $match)) {
             return $match[1];
         }
 
