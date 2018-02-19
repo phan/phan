@@ -1770,10 +1770,7 @@ class UnionType implements \Serializable
             $builder->addType($mixed_type);
             $builder->addType($null_type);
         } elseif (\in_array($mixed_type, $type_set, true)
-            || (
-                Config::get_null_casts_as_any_type()
-                && \in_array($array_type_nullable, $type_set, true)
-            )
+            || \in_array($array_type_nullable, $type_set, true)
         ) {
             // Same for mixed
             $builder->addType($mixed_type);

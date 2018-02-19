@@ -45,6 +45,10 @@ New Features(CLI, Configs)
   class Example { }
   ```
 
++ Add `PhanTypeMismatchDimFetchNullable`, which is emitted if the non-null
+  version of the dimension type would be a valid index. (#1472)
++ Emit `PhanTypeArraySuspiciousNullable` when accessing fields of a nullable array (now including `?(T[])`, etc.). (#1472)
+  (Stop emitting PhanTypeArraySuspicious for `?array`)
 
 New Features(Analysis)
 + Add `PhanNoopBinaryOperator` and `PhanNoopUnaryOperator` checks (#1404)
