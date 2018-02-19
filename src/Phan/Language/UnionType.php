@@ -1873,7 +1873,7 @@ class UnionType implements \Serializable
         int $recursion_depth = 0
     ) : UnionType {
         \assert(
-            $recursion_depth < 10,
+            $recursion_depth < 12,
             "Recursion has gotten out of hand"
         );
 

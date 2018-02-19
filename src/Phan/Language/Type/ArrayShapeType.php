@@ -250,7 +250,10 @@ final class ArrayShapeType extends ArrayType
         $key_type = GenericArrayType::getKeyTypeForArrayLiteral($this->field_types);
         $result_fields = [];
         foreach ($this->field_types as $key => $union_type) {
-            $result_fields[$key] = $union_type->asExpandedTypes($code_base, $recursion_depth + 1);
+            // UnionType already increments recursion_depth before calling asExpandedTypes on a subclass of Type,
+            // and has a depth limit of 10.
+            // Don't increase recursion_depth here, it's too easy to reach.
+            $result_fields[$key] = $union_type->asExpandedTypes($code_base, $recursion_depth);
         }
         return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asUnionType();
     }
