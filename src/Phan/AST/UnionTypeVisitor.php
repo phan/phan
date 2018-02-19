@@ -1144,11 +1144,28 @@ class UnionTypeVisitor extends AnalysisVisitor
                         );
                     }
                     if (!$dim_type->canCastToUnionType($expected_key_type)) {
+                        $issue_type = Issue::TypeMismatchDimFetch;
+
+                        if ($dim_type->containsNullable()) {
+                            if ($dim_type->nonNullableClone()->canCastToUnionType($expected_key_type)) {
+                                $issue_type = Issue::TypeMismatchDimFetchNullable;
+                            }
+                        }
+                        if ($this->should_catch_issue_exception) {
+                            $this->emitIssue(
+                                $issue_type,
+                                $node->lineno ?? 0,
+                                (string)$union_type,
+                                (string)$dim_type,
+                                (string)$expected_key_type
+                            );
+                            return $generic_types;
+                        }
                         throw new IssueException(
-                            Issue::fromType(Issue::TypeMismatchDimFetch)(
+                            Issue::fromType($issue_type)(
                                 $this->context->getFile(),
                                 $node->lineno ?? 0,
-                                [$union_type, (string)$dim_type, $expected_key_type]
+                                [(string)$union_type, (string)$dim_type, (string)$expected_key_type]
                             )
                         );
                     }

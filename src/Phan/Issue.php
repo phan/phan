@@ -69,6 +69,7 @@ class Issue
     const TypeMismatchDimAssignment = 'PhanTypeMismatchDimAssignment';
     const TypeMismatchDimEmpty      = 'PhanTypeMismatchDimEmpty';
     const TypeMismatchDimFetch      = 'PhanTypeMismatchDimFetch';
+    const TypeMismatchDimFetchNullable = 'PhanTypeMismatchDimFetchNullable';
     const TypeMismatchUnpackKey     = 'PhanTypeMismatchUnpackKey';
     const TypeMismatchUnpackValue   = 'PhanTypeMismatchUnpackValue';
     const TypeMismatchArrayDestructuringKey = 'PhanTypeMismatchArrayDestructuringKey';
@@ -983,6 +984,14 @@ class Issue
                 'When fetching an array index from a value of type {TYPE}, found an array index of type {TYPE}, but expected the index to be of type {TYPE}',
                 self::REMEDIATION_B,
                 10032
+            ),
+            new Issue(
+                self::TypeMismatchDimFetchNullable,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'When fetching an array index from a value of type {TYPE}, found an array index of type {TYPE}, but expected the index to be of the non-nullable type {TYPE}',
+                self::REMEDIATION_B,
+                10044
             ),
             new Issue(
                 self::TypeInvalidCallableArraySize,
