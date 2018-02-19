@@ -2,23 +2,14 @@
 namespace Phan\Plugin\Internal;
 
 use Phan\CodeBase;
-use Phan\Analysis\ArgumentType;
-use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Config;
-use Phan\Issue;
 use Phan\Language\Context;
-use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
-use Phan\Language\Element\Method;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type;
-use Phan\Language\UnionType;
-use Phan\Library\ArraySet;
-use Phan\PluginV2\ReturnTypeOverrideCapability;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
 use Phan\PluginV2;
-use ast\Node;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.

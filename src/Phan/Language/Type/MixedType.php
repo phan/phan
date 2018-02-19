@@ -34,4 +34,9 @@ final class MixedType extends NativeType
         // But we don't want `@param mixed $x` to take precedence over `int $x` in the signature.
         return $union_type->hasType($this);
     }
+
+    public function asGenericArrayType(int $key_type) : Type
+    {
+        return ArrayType::instance(false);
+    }
 }

@@ -139,11 +139,11 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
     }
 
     /**
+     * @param string $fqsen_string
+     * An FQSEN string like '\Namespace\Class::methodName'
+     *
      * @param Context $context
      * The context in which the FQSEN string was found
-     *
-     * @param $fqsen_string
-     * An FQSEN string like '\Namespace\Class::methodName'
      *
      * @return static
      */

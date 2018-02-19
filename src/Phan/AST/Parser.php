@@ -2,7 +2,6 @@
 
 namespace Phan\AST;
 
-use Microsoft\PhpParser\DiagnosticKind;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\AST\TolerantASTConverter\ParseException;
 use Phan\CodeBase;

@@ -7,7 +7,6 @@ use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Issue;
-use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -21,7 +20,6 @@ use Phan\Language\Type\GenericMultiArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
@@ -268,11 +266,6 @@ class UnionType implements \Serializable
     {
         foreach ($types as $i => $type) {
             if ($type instanceof GenericMultiArrayType) {
-                foreach ($type->asGenericArrayTypeInstances() as $new_type) {
-                    $types[] = $new_type;
-                }
-                unset($types[$i]);
-            } elseif ($type instanceof ArrayShapeType) {
                 foreach ($type->asGenericArrayTypeInstances() as $new_type) {
                     $types[] = $new_type;
                 }
@@ -1741,6 +1734,7 @@ class UnionType implements \Serializable
 
     /**
      * Takes "a|b[]|c|d[]|e" and returns "b|d"
+     * Takes "array{field:int,other:string}" and returns "int|string"
      *
      * @return UnionType
      * The subset of types in this
@@ -1752,9 +1746,14 @@ class UnionType implements \Serializable
         $type_set = $this->type_set;
         foreach ($type_set as $type) {
             if ($type->isGenericArray()) {
-                $builder->addType($type->genericArrayElementType());
+                if ($type instanceof ArrayShapeType) {
+                    $builder->addUnionType($type->genericArrayElementUnionType());
+                } else {
+                    $builder->addType($type->genericArrayElementType());
+                }
             }
         }
+
         static $array_type_nonnull = null;
         static $array_type_nullable = null;
         static $mixed_type = null;
@@ -1874,7 +1873,7 @@ class UnionType implements \Serializable
         int $recursion_depth = 0
     ) : UnionType {
         \assert(
-            $recursion_depth < 10,
+            $recursion_depth < 12,
             "Recursion has gotten out of hand"
         );
 
@@ -2118,6 +2117,61 @@ class UnionType implements \Serializable
     public static function createBuilderFromTypeList(array $type_list) : UnionTypeBuilder
     {
         return new UnionTypeBuilder(\count($type_list) <= 1 ? $type_list : self::getUniqueTypes($type_list));
+    }
+
+    /**
+     * Generates a variable length string identifier that uniquely identifies the Type instances in this UnionType.
+     * int|string will generate the same id as string|int.
+     */
+    public function generateUniqueId() : string
+    {
+        /** @var array<int,int> $ids */
+        $ids = [];
+        foreach ($this->type_set as $type) {
+            $ids[] = \spl_object_id($type);
+        }
+        // Sort the unique identifiers of Type instances so that int|string generates the same id as string|int
+        \sort($ids);
+        return \implode(',', $ids);
+    }
+
+    public function hasTopLevelArrayShapeTypeInstances() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type instanceof ArrayShapeType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function hasArrayShapeTypeInstances() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type->hasArrayShapeTypeInstances()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function withFlattenedArrayShapeTypeInstances() : UnionType
+    {
+        if (!$this->hasArrayShapeTypeInstances()) {
+            return $this;
+        }
+
+        $result = new UnionTypeBuilder();
+        foreach ($this->type_set as $type) {
+            if ($type->hasArrayShapeTypeInstances()) {
+                foreach ($type->withFlattenedArrayShapeTypeInstances() as $type_part) {
+                    $result->addType($type_part);
+                }
+            } else {
+                $result->addType($type);
+            }
+        }
+        return $result->getUnionType();
     }
 }
 

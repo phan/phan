@@ -2,20 +2,11 @@
 namespace Phan\Plugin\Internal;
 
 use Phan\CodeBase;
-use Phan\Analysis\ArgumentType;
-use Phan\Analysis\PostOrderAnalysisVisitor;
-use Phan\AST\UnionTypeVisitor;
-use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
-use Phan\Language\Element\FunctionInterface;
-use Phan\Language\Element\Method;
-use Phan\Language\Type\ClosureType;
-use Phan\Language\UnionType;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
-use Phan\PluginV2\ReturnTypeOverrideCapability;
 use ast;
 use ast\Node;
 

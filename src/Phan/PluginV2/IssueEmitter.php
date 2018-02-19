@@ -3,11 +3,8 @@ namespace Phan\PluginV2;
 
 use Phan\Language\Context;
 use Phan\CodeBase;
-use Phan\Config;
 use Phan\Issue;
 use Phan\IssueInstance;
-
-use ast\Node;
 
 /**
  * A trait which allows plugins to emit issues with custom error messages

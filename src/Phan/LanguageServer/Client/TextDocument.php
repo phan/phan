@@ -5,7 +5,6 @@ namespace Phan\LanguageServer\Client;
 
 use Phan\LanguageServer\ClientHandler;
 use Phan\LanguageServer\Protocol\Diagnostic;
-use Phan\LanguageServer\Protocol\Message;
 use Phan\LanguageServer\Protocol\TextDocumentItem;
 use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
 use Sabre\Event\Promise;

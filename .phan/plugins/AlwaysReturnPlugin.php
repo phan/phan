@@ -1,18 +1,16 @@
 <?php declare(strict_types=1);
 
-use Phan\AST\AnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Analysis\BlockExitStatusChecker;
-use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\VoidType;
-use Phan\Language\UnionType;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCapability;
 use Phan\PluginV2\AnalyzeMethodCapability;
+
 use ast\Node;
 
 /**
@@ -127,7 +125,7 @@ final class AlwaysReturnPlugin extends PluginV2 implements
 
     /**
      * @param Func|Method $func
-     * @return ?\ast\Node - returns null if there's no statement list to analyze
+     * @return ?Node - returns null if there's no statement list to analyze
      */
     private function getStatementListToAnalyze($func)
     {

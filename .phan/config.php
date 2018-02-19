@@ -69,7 +69,7 @@ return [
     // hope of fixing.
     'ignore_undeclared_variables_in_global_scope' => false,
 
-    // Backwards Compatibility Checking
+    // Backwards Compatibility Checking (This is very slow)
     'backward_compatibility_checks' => false,
 
     // If true, check to make sure the return type declared
@@ -185,7 +185,6 @@ return [
     // Add any issue types (such as 'PhanUndeclaredMethod')
     // here to inhibit them from being reported
     'suppress_issue_types' => [
-        'PhanPluginMixedKeyNoKey',  // FunctionSignatureMap.php has many of these, intentionally.
         'PhanUnreferencedClosure',  // False positives seen with closures in arrays, TODO: move closure checks closer to what is done by unused variable plugin
         // 'PhanUndeclaredMethod',
     ],
@@ -367,7 +366,7 @@ return [
     // directories/files, unanalyzable files, or files that
     // can't be removed for whatever reason.
     // (e.g. '@Test\.php$@', or '@vendor/.*/(tests|Tests)/@')
-    'exclude_file_regex' => '@^vendor/.*/(tests|Tests)/@',
+    'exclude_file_regex' => '@^vendor/.*/(tests?|Tests?)/@',
 
     // A file list that defines files that will be excluded
     // from parsing and analysis and will not be read at all.

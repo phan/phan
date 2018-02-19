@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
-use ast\Node;
 use Phan\CodeBase;
 use Phan\Language\Type\ArrayType;
 
@@ -874,6 +873,23 @@ final class EmptyUnionType extends UnionType
      *    then remove "true" and "false"
      */
     public function asNormalizedTypes() : UnionType
+    {
+        return $this;
+    }
+
+    public function hasTopLevelArrayShapeTypeInstances() : bool
+    {
+        return false;
+    }
+
+    /** @override */
+    public function hasArrayShapeTypeInstances() : bool
+    {
+        return false;
+    }
+
+    /** @override */
+    public function withFlattenedArrayShapeTypeInstances() : UnionType
     {
         return $this;
     }

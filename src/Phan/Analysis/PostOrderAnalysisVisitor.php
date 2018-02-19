@@ -12,21 +12,19 @@ use Phan\Exception\NodeException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\Language\Context;
-use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\PassByReferenceVariable;
 use Phan\Language\Element\Variable;
-use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
-use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use ast\Node;
+use ast\flags;
 
 class PostOrderAnalysisVisitor extends AnalysisVisitor
 {
@@ -451,6 +449,87 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitArray(Node $node) : Context
     {
         $this->analyzeNoOp($node, Issue::NoopArray);
+        return $this->context;
+    }
+
+    /** @internal */
+    const NAME_FOR_BINARY_OP = [
+        flags\BINARY_BOOL_AND            => '&&',
+        flags\BINARY_BOOL_OR             => '||',
+        flags\BINARY_BOOL_XOR            => 'xor',
+        flags\BINARY_BITWISE_OR          => '|',
+        flags\BINARY_BITWISE_AND         => '&',
+        flags\BINARY_BITWISE_XOR         => '^',
+        flags\BINARY_CONCAT              => '.',
+        flags\BINARY_ADD                 => '+',
+        flags\BINARY_SUB                 => '-',
+        flags\BINARY_MUL                 => '*',
+        flags\BINARY_DIV                 => '/',
+        flags\BINARY_MOD                 => '%',
+        flags\BINARY_POW                 => '**',
+        flags\BINARY_SHIFT_LEFT          => '<<',
+        flags\BINARY_SHIFT_RIGHT         => '>>',
+        flags\BINARY_IS_IDENTICAL        => '===',
+        flags\BINARY_IS_NOT_IDENTICAL    => '!==',
+        flags\BINARY_IS_EQUAL            => '==',
+        flags\BINARY_IS_NOT_EQUAL        => '!=',
+        flags\BINARY_IS_SMALLER          => '<',
+        flags\BINARY_IS_SMALLER_OR_EQUAL => '<=',
+        flags\BINARY_IS_GREATER          => '>',
+        flags\BINARY_IS_GREATER_OR_EQUAL => '>=',
+        flags\BINARY_SPACESHIP           => '<=>',
+        flags\BINARY_COALESCE            => '??',
+    ];
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitBinaryOp(Node $node) : Context
+    {
+        if (($this->parent_node->kind ?? null) === \ast\AST_STMT_LIST) {
+            if (!\in_array($node->flags, [flags\BINARY_BOOL_AND, flags\BINARY_BOOL_OR, flags\BINARY_COALESCE])) {
+                $this->emitIssue(
+                    Issue::NoopBinaryOperator,
+                    $node->lineno,
+                    self::NAME_FOR_BINARY_OP[$node->flags] ?? ''
+                );
+            }
+        }
+        return $this->context;
+    }
+
+    const NAME_FOR_UNARY_OP = [
+        flags\UNARY_BOOL_NOT => '!',
+        flags\UNARY_BITWISE_NOT => '~',
+        flags\UNARY_SILENCE => '@',
+        flags\UNARY_PLUS => '+',
+        flags\UNARY_MINUS => '-',
+    ];
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitUnaryOp(Node $node) : Context
+    {
+        if ($node->flags !== flags\UNARY_SILENCE) {
+            if (($this->parent_node->kind ?? null) === \ast\AST_STMT_LIST) {
+                $this->emitIssue(
+                    Issue::NoopUnaryOperator,
+                    $node->lineno,
+                    self::NAME_FOR_UNARY_OP[$node->flags] ?? ''
+                );
+            }
+        }
         return $this->context;
     }
 
@@ -2202,12 +2281,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function analyzeNoOp(Node $node, string $issue_type)
     {
-        if ($this->parent_node instanceof Node &&
-            $this->parent_node->kind == \ast\AST_STMT_LIST
-        ) {
+        if (($this->parent_node->kind ?? null) === \ast\AST_STMT_LIST) {
             $this->emitIssue(
                 $issue_type,
-                $node->lineno ?? 0
+                $node->lineno
             );
         }
     }

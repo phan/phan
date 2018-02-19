@@ -1,11 +1,8 @@
 <?php declare(strict_types=1);
-# .phan/plugins/NonBoolBranchPlugin.php
+// .phan/plugins/NonBoolBranchPlugin.php
 
-use Phan\AST\AnalysisVisitor;
 use Phan\AST\UnionTypeVisitor;
-use Phan\CodeBase;
 use Phan\Language\Context;
-use Phan\Language\UnionType;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwareAnalysisVisitor;

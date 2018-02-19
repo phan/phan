@@ -11,12 +11,12 @@ final class NullType extends ScalarType
     const NAME = 'null';
 
     /**
-     * @param string $name
-     * The name of the type such as 'int' or 'MyClass'
-     *
      * @param string $namespace
      * The (optional) namespace of the type such as '\'
      * or '\Phan\Language'.
+     *
+     * @param string $name
+     * The name of the type such as 'int' or 'MyClass'
      *
      * @param array<int,UnionType> $template_parameter_type_list
      * A (possibly empty) list of template parameter types

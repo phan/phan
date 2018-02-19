@@ -1,1 +1,1 @@
-%s:2 PhanTypeMismatchArgumentInternal Argument 2 (start) is array<int,int> but \substr() takes int
+%s:2 PhanTypeMismatchArgumentInternal Argument 2 (start) is array{0:int,1:int,2:int} but \substr() takes int

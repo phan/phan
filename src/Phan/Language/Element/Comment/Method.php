@@ -2,8 +2,6 @@
 declare(strict_types=1);
 namespace Phan\Language\Element\Comment;
 
-use Phan\Language\Context;
-use Phan\Language\Element\Variable;
 use Phan\Language\UnionType;
 
 class Method

@@ -1,2 +1,2 @@
 %s:18 PhanTypeMismatchReturn Returning type array<int,string> but keys2() is declared to return array<string,string>
-%s:25 PhanTypeMismatchArgument Argument 1 (x) is array<int,float> but \MyNS\TemplateArray379::keys() takes array<int,string> defined at %s:9
+%s:25 PhanTypeMismatchArgument Argument 1 (x) is array{0:float} but \MyNS\TemplateArray379::keys() takes array<int,string> defined at %s:9
