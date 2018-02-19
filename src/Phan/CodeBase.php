@@ -136,7 +136,14 @@ class CodeBase
      * @var array<string,array<string,array<int,array<string,NamespaceMapEntry>>>>
      * Maps the file and namespace identifier to the use statements found in that namespace
      */
-    private $parsed_namespace_maps;
+    private $parsed_namespace_maps = [];
+
+    /**
+     * @var array<string,array<string,int>>
+     * Maps file paths to a set of file-level suppressions (E.g. 'PhanUnreferencedUseNormal', etc.)
+     * The corresponding value is the number of times the issue was suppressed
+     */
+    private $file_level_suppression_set = [];
 
     /**
      * @var bool
@@ -517,6 +524,8 @@ class CodeBase
             $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($file, $key) {
                 Daemon::debugf("Undoing addParsedNamespaceMap file = %s namespace = %s\n", $file, $key);
                 unset($this->parsed_namespace_maps[$file][$key]);
+                // Hack: addParsedNamespaceMap is called at least once per each file, so unset file-level suppressions at the same time in daemon mode
+                unset($this->file_level_suppression_set[$file]);
             });
         }
     }
@@ -1347,5 +1356,32 @@ class CodeBase
             )));
         }
         return $constant_name_list;
+    }
+
+    /**
+     * @param string $file path to a file
+     * @param string $issue_type (e.g. 'PhanUnreferencedUseNormal')
+     * @return void
+     */
+    public function addFileLevelSuppression(string $file, string $issue_type)
+    {
+        // TODO: Modify the implementation so that it can be checked by UnusedSuppressionPlugin.
+        if (!isset($this->file_level_suppression_set[$file][$issue_type])) {
+            $this->file_level_suppression_set[$file][$issue_type] = 0;
+        }
+    }
+
+    /**
+     * @param string $file path to a file
+     * @param string $issue_type (e.g. 'PhanUnreferencedUseNormal')
+     */
+    public function hasFileLevelSuppression(string $file, string $issue_type) : bool
+    {
+        // TODO: Modify the implementation so that it can be checked by UnusedSuppressionPlugin.
+        if (isset($this->file_level_suppression_set[$file][$issue_type])) {
+            ++$this->file_level_suppression_set[$file][$issue_type];
+            return true;
+        }
+        return false;
     }
 }

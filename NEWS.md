@@ -6,6 +6,45 @@ Phan NEWS
 New Features(CLI, Configs)
 + Add `--init` CLI flag and CLI options to affect the generated config. (#145)
   (Options: `--init-level=1..5`, `--init-analyze-dir=path/to/src`, `--init-analyze-file=path/to/file.php`, `--init-no-composer`, `--init-overwrite`)
++ Add a non-standard way to explicitly set var types inline.  (#890)
+  `; '@phan-var T $varName'; expression_using($varName);` and
+  `; '@phan-var-force T $varName'; expression_using($varName);`
+
+  If Phan sees a string literal containing `@phan-var` in the top level of a statement list, it will immediately set the type of `$varName` to `T` without any type checks.
+  (`@phan-var-force T $x` will do the same thing, and will create the variable if it didn't already exist).
+
+  Note: Due to limitations of the `php-ast` parser, Phan isn't able to use inline doc comments, so this is the solution that was used instead.
+
+  Example Usage:
+
+  ```php
+  $values = mixed_expression();
+
+  // Note: This annotation must go **after** setting the variable.
+  // This has to be a string literal; phan cannot parse inline doc comments.
+  '@phan-var array<int,MyClass> $values';
+
+  foreach ($x as $instance) {
+	  function_expecting_myclass($x);
+  }
+  ```
++ Add a way to suppress issues for the entire file (including within methods, etc.) (#1190)
+  The `@phan-file-suppress` annotation can also be added to phpdoc for classes, etc.
+  This feature is recommended for use at the top of the file or on the first class in the file.
+  It may or may not affect statements above the suppression.
+  This feature may fail to catch certain issues emitted during the parse phase.
+
+  ```php
+  <?php
+  // Add a suppression for remaining statements in this file.
+  '@phan-file-suppress PhanUnreferencedUseNormal (description)';
+  use MyNS\MyClass;
+  // ...
+
+  /** @SomeUnreadableAnnotation {MyClass} */
+  class Example { }
+  ```
+
 
 New Features(Analysis)
 + Add `PhanNoopBinaryOperator` and `PhanNoopUnaryOperator` checks (#1404)
