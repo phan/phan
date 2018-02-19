@@ -2,18 +2,11 @@
 namespace Phan\Language\Element;
 
 use Phan\CodeBase;
-use Phan\Config;
 use Phan\Exception\CodeBaseException;
-use Phan\Issue;
 use Phan\Language\Context;
-use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\FunctionLikeScope;
-use Phan\Language\Type;
-use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\GenericArrayType;
-use Phan\Language\Type\MixedType;
-use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use ast\Node;
 

@@ -3,7 +3,6 @@ namespace Phan\PluginV2;
 
 use Phan\CodeBase;
 use Phan\Language\Context;
-use Phan\Language\Element\Clazz;
 
 use ast\Node;
 

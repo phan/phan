@@ -1,12 +1,9 @@
 <?php declare(strict_types=1);
 
-use Phan\AST\AnalysisVisitor;
 use Phan\AST\ContextNode;
-use Phan\CodeBase;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
 use Phan\Issue;
-use Phan\Language\Context;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwareAnalysisVisitor;

@@ -3,19 +3,14 @@
 namespace Phan\LanguageServer\Server;
 
 use Phan\LanguageServer\FileMapping;
-use Phan\LanguageServer\Index\ReadableIndex;
 use Phan\LanguageServer\LanguageClient;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Logger;
-use Phan\LanguageServer\Protocol\Position;
-use Phan\LanguageServer\Protocol\Range;
 use Phan\LanguageServer\Protocol\TextDocumentContentChangeEvent;
 use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
 use Phan\LanguageServer\Protocol\TextDocumentItem;
 use Phan\LanguageServer\Protocol\VersionedTextDocumentIdentifier;
-use Sabre\Event\Promise;
-use Sabre\Uri;
-use function Sabre\Event\coroutine;
+use Phan\LanguageServer\Utils;
 
 /**
  * Provides method handlers for all textDocument/* methods
@@ -91,17 +86,13 @@ class TextDocument
     {
         $this->file_mapping->addOverrideURI($textDocument->uri, $textDocument->text);
         Logger::logInfo("Called didOpen, uri={$textDocument->uri}");
-        $this->server->analyzeURI($textDocument->uri);
+        $this->server->analyzeURIAsync($textDocument->uri);
 
         //$document = $this->documentLoader->open($textDocument->uri, $textDocument->text);
         // TODO: make this trigger re-analysis
         // TODO: Check based on parse and analyze directories and Phan supported file extensions if this file affects Phan's analysis.
         // TODO:   Add functions to quickly check if a relative/absolute path is within the parse or analysis list of a project
         // TODO:   Maybe allow reloading .phan/config, at least the files and directories to parse/analyze
-
-        // if (!isVendored($document, $this->composerJson)) {
-        //     $this->client->textDocument->publishDiagnostics($textDocument->uri, $document->getDiagnostics());
-        // }
     }
 
     /**
@@ -118,7 +109,7 @@ class TextDocument
     {
         $this->file_mapping->addOverrideURI($textDocument->uri, $text);
         Logger::logInfo("Called didSave, uri={$textDocument->uri} len(text)=" . strlen($text ?? ''));
-        $this->server->analyzeURI($textDocument->uri);
+        $this->server->analyzeURIAsync($textDocument->uri);
     }
 
     /**
@@ -134,17 +125,9 @@ class TextDocument
             $this->file_mapping->addOverrideURI($textDocument->uri, $change->text);
         }
         Logger::logInfo("Called didChange, uri={$textDocument->uri} version={$textDocument->version}");
-        // TODO: Check based on parse and analyze directories and Phan supported file extensions if this file affects Phan's analysis.
-        $this->server->analyzeURI($textDocument->uri);
+        $this->server->analyzeURIAsync($textDocument->uri);
 
-        // TODO:   Add functions to quickly check if a relative/absolute path is within the parse or analysis list of a project
         // TODO:   Maybe allow reloading .phan/config, at least the files and directories to parse/analyze
-        // TODO: make this trigger re-analysis
-        //$document = $this->documentLoader->get($textDocument->uri);
-        //$document->updateContent($contentChanges[0]->text);
-
-        // XXX hook into getDiagnostics for Phan event publishing
-        //$this->client->textDocument->publishDiagnostics($textDocument->uri, $document->getDiagnostics());
     }
 
     /**
@@ -158,31 +141,7 @@ class TextDocument
     public function didClose(TextDocumentIdentifier $textDocument)
     {
         $this->file_mapping->removeOverrideURI($textDocument->uri);
+        $this->client->textDocument->publishDiagnostics(Utils::pathToUri(Utils::uriToPath($textDocument->uri)), []);
         Logger::logInfo("Called didClose, uri={$textDocument->uri}");
     }
-
-    /**
-     * The Completion request is sent from the client to the server to compute completion items at a given cursor
-     * position. Completion items are presented in the IntelliSense user interface. If computing full completion items
-     * is expensive, servers can additionally provide a handler for the completion item resolve request
-     * ('completionItem/resolve'). This request is sent when a completion item is selected in the user interface. A
-     * typically use case is for example: the 'textDocument/completion' request doesn't fill in the documentation
-     * property for returned completion items since it is expensive to compute. When the item is selected in the user
-     * interface then a 'completionItem/resolve' request is sent with the selected completion item as a param. The
-     * returned completion item should have the documentation property filled in.
-     *
-     * @param TextDocumentIdentifier The text document
-     * @param Position $position The position
-     * @return Promise <CompletionItem[]|CompletionList>
-     * TODO: reintroduce this after support gets added to Phan
-     */
-    /*
-        public function completion(TextDocumentIdentifier $textDocument, Position $position): Promise
-        {
-            return coroutine(function () use ($textDocument, $position) {
-                $document = yield $this->documentLoader->getOrLoad($textDocument->uri);
-                return $this->completionProvider->provideCompletion($document, $position);
-            });
-        }
-     */
 }

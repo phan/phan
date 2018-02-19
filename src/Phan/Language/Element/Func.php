@@ -6,15 +6,10 @@ use Phan\Issue;
 use Phan\Language\Scope\ClosureScope;
 use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Context;
-use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type;
-use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
-use Phan\Library\None;
-use Phan\Library\Option;
 use ast\Node;
 
 class Func extends AddressableElement implements FunctionInterface

@@ -1,8 +1,5 @@
 <?php declare(strict_types=1);
 
-use Phan\AST\AnalysisVisitor;
-use Phan\CodeBase;
-use Phan\Language\Context;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwareAnalysisVisitor;

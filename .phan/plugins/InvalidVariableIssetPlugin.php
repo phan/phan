@@ -1,8 +1,6 @@
 <?php declare(strict_types=1);
-# .phan/plugins/InvalidVariableIssetPlugin.php
+// .phan/plugins/InvalidVariableIssetPlugin.php
 
-use Phan\AST\AnalysisVisitor;
-use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
 use Phan\PluginV2;

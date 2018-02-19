@@ -416,7 +416,7 @@ class Request
     {
         $old_count = $code_base->getParsedFilePathCount();
 
-        $file_list = $file_path_lister();
+        $file_list = $file_path_lister(true);
 
         if (Config::getValue('consistent_hashing_file_order')) {
             // Parse the files in lexicographic order.

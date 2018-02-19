@@ -3,9 +3,7 @@ namespace Phan\PluginV2;
 
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\Visitor\Element;
-use Phan\CodeBase;
 use Phan\Issue;
-use Phan\Language\Context;
 use ast\Node;
 
 /**

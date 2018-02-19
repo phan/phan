@@ -1,12 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\PluginV2;
 
-use Phan\AST\Visitor\Element;
-use Phan\CodeBase;
-use Phan\Issue;
-use Phan\Language\Context;
-use ast\Node;
-
 /**
  * For plugins which define their own pre-order analysis behaviors in the analysis phase.
  * Called on a node before PluginAwareAnalysisVisitor implementations.

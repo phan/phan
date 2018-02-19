@@ -1,1 +1,1 @@
-%s:11 PhanTypeMismatchArgument Argument 1 (options) is array<string,int> but \test_options() takes array<string,string> defined at %s:6
+%s:11 PhanTypeMismatchArgument Argument 1 (options) is array{field:int} but \test_options() takes array{field:string} defined at %s:6

@@ -8,6 +8,7 @@ use Phan\LanguageServer\LanguageClient;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Protocol\FileChangeType;
 use Phan\LanguageServer\Protocol\FileEvent;
+use Phan\LanguageServer\Utils;
 
 /**
  * Provides method handlers for all workspace/* methods
@@ -61,14 +62,14 @@ class Workspace
         // Trigger diagnostics. TODO: Is that necessary?
         foreach ($changes as $change) {
             if ($change->type === FileChangeType::DELETED) {
-                $this->client->textDocument->publishDiagnostics($change->uri, []);
+                $this->client->textDocument->publishDiagnostics(Utils::pathToUri(Utils::uriToPath($change->uri)), []);
             }
         }
         // TODO: more than one file
         foreach ($changes as $change) {
             if ($change->type === FileChangeType::CHANGED) {
                 $uri = $change->uri;
-                $this->server->analyzeURI($uri);
+                $this->server->analyzeURIAsync($uri);
             }
         }
     }

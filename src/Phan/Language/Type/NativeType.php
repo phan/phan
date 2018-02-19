@@ -192,3 +192,6 @@ abstract class NativeType extends Type
     }
 }
 \class_exists(ArrayType::class);
+\class_exists(ArrayShapeType::class);
+\class_exists(GenericArrayType::class);
+\class_exists(ScalarType::class);

@@ -15,13 +15,10 @@ use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
-use Phan\Language\Type\NativeType;
-use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
-use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
@@ -282,7 +279,7 @@ class TypeTest extends BaseTest
         $expected_flattened_type = UnionType::fromStringInContext($normalized_union_type_string, new Context(), Type::FROM_PHPDOC);
         $this->assertInstanceOf(ArrayShapeType::class, $actual_type, "Failed to create expected class for $type_string");
         assert($actual_type instanceof ArrayShapeType);
-        $actual_flattened_type = UnionType::of($actual_type->asGenericArrayTypeInstances());
+        $actual_flattened_type = UnionType::of($actual_type->withFlattenedArrayShapeTypeInstances());
         $this->assertTrue($expected_flattened_type->isEqualTo($actual_flattened_type), "expected $actual_flattened_type to equal $expected_flattened_type");
     }
 
@@ -310,7 +307,7 @@ class TypeTest extends BaseTest
                 'array{string:int}'
             ],
             [
-                'array<string,T<int>>',
+                'array<string,\T<int>>',
                 'array{field:T<int>}'
             ],
             [
@@ -322,11 +319,11 @@ class TypeTest extends BaseTest
                 'array{field:int[],field2:?int}'
             ],
             [
-                'array<string,array>',
+                'array<string,array{}>',
                 'array{field:array{}}'
             ],
             [
-                'array<string,array<string,int>>',
+                'array<string,array{innerField:int}>',
                 'array{field:array{innerField:int}}'
             ],
         ];

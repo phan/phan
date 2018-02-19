@@ -2,7 +2,6 @@
 namespace Phan\Analysis;
 
 use Phan\AST\AnalysisVisitor;
-use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
@@ -77,8 +76,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
      * A node to parse
      *
      * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
+     * A new context resulting from parsing the node
      */
     public function visitNamespace(Node $node) : Context
     {
@@ -115,7 +113,8 @@ abstract class ScopeVisitor extends AnalysisVisitor
             $context = $context->withNamespaceMap(
                 $flags,
                 $alias,
-                $target
+                $target,
+                $node->lineno
             );
         }
 
@@ -142,7 +141,8 @@ abstract class ScopeVisitor extends AnalysisVisitor
             $context = $context->withNamespaceMap(
                 $node->flags ?: $flags,
                 $alias,
-                $target
+                $target,
+                $node->lineno
             );
         }
 
@@ -189,9 +189,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
 
             // The 'use' type can be defined on the `AST_GROUP_USE` node, the
             // `AST_USE_ELEM` or on the child element.
-            $use_flag = $flags ?: ($node->flags !== 0)
-                ? $node->flags
-                : $child_node->flags;
+            $use_flag = $flags ?: $node->flags ?: $child_node->flags;
 
             if ($use_flag === \ast\flags\USE_FUNCTION) {
                 $parts = \explode('\\', $target);

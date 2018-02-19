@@ -4,7 +4,6 @@ namespace Phan\Analysis;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\CodeBase;
 use Phan\Language\Context;
-use Phan\Language\Element\Variable;
 use Phan\Language\Scope;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;

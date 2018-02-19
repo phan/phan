@@ -2,12 +2,8 @@
 namespace Phan\Analysis;
 
 use Phan\CodeBase;
-use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
-use Phan\Language\Element\Parameter;
-use Phan\Language\FQSEN;
-use Phan\Language\UnionType;
 
 /**
  * This verifies that the inherited abstract methods are all implemented on non-abstract clases.

@@ -3,7 +3,6 @@ namespace Phan\Language\Type;
 
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
-use Phan\Language\UnionType;
 
 final class ClosureType extends Type
 {

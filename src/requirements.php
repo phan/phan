@@ -18,3 +18,7 @@ if (extension_loaded('xdebug')) {
     // Restart if xdebug is loading, unless the environment variable PHAN_ALLOW_XDEBUG is set.
     (new \Phan\Library\Composer\XdebugHandler())->check();
 }
+
+// Fix turkish locales(tr_TR) - strtolower('I') is not 'i', so phan lookup might fail.
+// (But continue formatting times, etc. in the user's locale)
+setlocale(LC_CTYPE, 'C');

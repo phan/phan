@@ -34,7 +34,6 @@ use Phan\PluginV2\LegacyPreAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwareAnalysisVisitor;
 use Phan\PluginV2\PluginAwarePreAnalysisVisitor;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
-use Phan\PluginV2\FunctionHookCapability;
 use ast\Node;
 
 /**
