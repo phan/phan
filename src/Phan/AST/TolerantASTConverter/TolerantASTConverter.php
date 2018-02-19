@@ -46,7 +46,7 @@ if (!class_exists('\ast\Node')) {
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Tyson Andre
+ * Copyright (c) 2017-2018 Tyson Andre
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -896,7 +896,7 @@ final class TolerantASTConverter
                             }
                             $raw_string = self::tokenToRawString($part);
                             // Pass in '"\\n"' and get "\n" (somewhat inefficient)
-                            $represented_string =\PhpParser\Node\Scalar\String_::parse($start_quote_text . $raw_string . $end_quote_text);
+                            $represented_string = String_::parse($start_quote_text . $raw_string . $end_quote_text);
                             $inner_node_parts[] = $represented_string;
                         }
                     }
@@ -2447,7 +2447,7 @@ Node\SourceFileNode
             return $float;
         }
 
-        return \PhpParser\Node\Scalar\String_::parse($str);
+        return String_::parse($str);
     }
 
     /**
@@ -2457,12 +2457,12 @@ Node\SourceFileNode
     {
         $start = $n->getStart();
         $text = \substr(self::$file_contents, $start, $n->getEndPosition() - $start);
-        return \PhpParser\Node\Scalar\String_::parse($text);
+        return String_::parse($text);
     }
 
     private static function variableTokenToString(Token $n) : string
     {
-        return ltrim(trim($n->getText(self::$file_contents)), '$');
+        return \ltrim(\trim($n->getText(self::$file_contents)), '$');
     }
 
     private static function tokenToRawString(Token $n) : string
