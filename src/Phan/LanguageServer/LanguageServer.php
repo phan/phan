@@ -3,9 +3,13 @@ namespace Phan\LanguageServer;
 
 use AdvancedJsonRpc;
 use Closure;
+use Phan\Phan;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Daemon\ExitException;
 use Phan\Daemon\Request;
+use Phan\Daemon\Transport\CapturerResponder;
+use Phan\Daemon\Transport\StreamResponder;
 use Phan\Issue;
 use Phan\Language\FileRef;
 use Phan\LanguageServer\Protocol\ClientCapabilities;
@@ -430,17 +434,22 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             }
         }
 
+        if (Config::getValue('language_server_use_pcntl_fallback')) {
+            $this->finishAnalyzingURIsWithoutPcntl($uris_to_analyze);
+            return;
+        }
+
         // TODO: check if $path_to_analyze can be analyzed first.
         $sockets = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
         if (!$sockets) {
             error_log("unable to create stream socket pair");
             exit(EXIT_FAILURE);
         }
-        $pid = 0;
 
         $this->most_recent_request = null;
 
-        if (($pid = pcntl_fork()) < 0) {
+        $pid = pcntl_fork();
+        if ($pid < 0) {
             error_log(posix_strerror(posix_get_last_error()));
             exit(EXIT_FAILURE);
         }
@@ -461,33 +470,20 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                 Logger::logInfo("Fetched non-json: " . $concatenated);
                 return;
             }
-            if (!\array_key_exists('issues', $json_contents)) {
-                Logger::logInfo("Failed to fetch 'issues' from JSON:" . $concatenated);
-                return;
-            }
-            $diagnostics = [];
-            // Normalize the uri so that it will be the same as URIs phan would send for diagnostics.
-            // E.g. "file:///path/path%.php" will be normalized to "file:///path/path%25.php"
-            foreach ($uris_to_analyze as $uri) {
-                $normalized_requested_uri = Utils::pathToUri(Utils::uriToPath($uri));
-                $diagnostics[$normalized_requested_uri] = [];  // send an empty diagnostic list on failure.
-            }
-
-            foreach ($json_contents['issues'] ?? [] as $issue) {
-                list($issue_uri, $diagnostic) = self::generateDiagnostic($issue);
-                if ($diagnostic instanceof Diagnostic) {
-                    $diagnostics[$issue_uri][] = $diagnostic;
-                }
-            }
-            foreach ($diagnostics as $diagnostics_uri => $diagnostics_list) {
-                $this->client->textDocument->publishDiagnostics($diagnostics_uri, $diagnostics_list);
-            }
+            $this->handleJSONResponseFromWorker($uris_to_analyze, $json_contents);
             return;
         }
 
         $child_stream = self::streamForChild($sockets);
         $paths_to_analyze = array_keys($uris_to_analyze);
-        $this->most_recent_request = Request::makeLanguageServerAnalysisRequest($child_stream, $paths_to_analyze, $this->code_base, $this->file_path_lister, $this->file_mapping);
+        $this->most_recent_request = Request::makeLanguageServerAnalysisRequest(
+            new StreamResponder($child_stream, false),
+            $paths_to_analyze,
+            $this->code_base,
+            $this->file_path_lister,
+            $this->file_mapping,
+            true  // We are the fork. Call exit() instead of throwing ExitException
+        );
         // FIXME update the parsed file lists before and after (e.g. add to analyzeURI). See Daemon\Request::accept()
         //    TODO: refactor accept() to make it easier to work with.
         // TODO: add unit tests
@@ -495,6 +491,101 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $this->protocolReader->stopAcceptingNewRequests();
         $this->is_accepting_new_requests = false;
         Loop\stop();  // abort the loop (without closing streams?)
+    }
+
+    /**
+     * @param array<string,string> $uris_to_analyze
+     * @return void
+     *
+     * @suppress PhanAccessMethodInternal
+     */
+    private function finishAnalyzingURIsWithoutPcntl(array $uris_to_analyze)
+    {
+        $paths_to_analyze = array_keys($uris_to_analyze);
+        // When there is no pcntl:
+        // Create a fake request object.
+        // Instead of stopping the loop, keep going with the loop and keep accepting the requests
+        $responder = new CapturerResponder([]);
+        $code_base = $this->code_base;
+
+        $analysis_request = Request::makeLanguageServerAnalysisRequest(
+            $responder,
+            $paths_to_analyze,
+            $code_base,
+            $this->file_path_lister,
+            $this->file_mapping,
+            false  // We aren't forking. Throw ExitException instead of calling exit()
+        );
+
+        $analyze_file_path_list = $analysis_request->filterFilesToAnalyze($this->code_base->getParsedFilePathList());
+        if (count($analyze_file_path_list) === 0) {
+            // Nothing to do, don't start analysis
+            return;
+        }
+
+        // Do this before we stop tracking undo operations.
+        $temporary_file_mapping = $analysis_request->getTemporaryFileMapping();
+
+        $restore_point = $code_base->createRestorePoint();
+
+        // Stop tracking undo operations, now that the parse phase is done.
+        // This is re-enabled in restoreFromRestorePoint
+        $code_base->disableUndoTracking();
+
+        Phan::setPrinter($analysis_request->getPrinter());
+
+        try {
+            Phan::finishAnalyzingRemainingStatements($this->code_base, $analysis_request, $analyze_file_path_list, $temporary_file_mapping);
+        } catch (ExitException $e) {
+            // This is normal, do nothing
+        }
+
+        $response_data = $responder->getResponseData();
+        if (!$response_data) {
+            // Something is probably broken if we don't get response data
+            // But just in case we can recover, restore this.
+            $code_base->restoreFromRestorePoint($restore_point);
+            throw new \RuntimeException("Failed to get a response from a worker");
+        }
+
+        // Send a response with diagnostics to the language server client.
+        // It should be slightly faster to send a response
+        // if the language server sends data before restoring the state of the codebase.
+        // (Transforming the JSON response does not depend on the $code_base object)
+        $this->handleJSONResponseFromWorker($uris_to_analyze, $response_data);
+
+        $code_base->restoreFromRestorePoint($restore_point);
+
+        Logger::logInfo("Response from non-pcntl server: " . json_encode($response_data, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
+    }
+
+    /**
+     * @param array<string,string> $uris_to_analyze
+     * @param array{issues:array} $response_data
+     * @return void
+     */
+    private function handleJSONResponseFromWorker(array $uris_to_analyze, array $response_data) {
+        if (!\array_key_exists('issues', $response_data)) {
+            Logger::logInfo("Failed to fetch 'issues' from JSON:" . json_encode($response_data));
+            return;
+        }
+        $diagnostics = [];
+        // Normalize the uri so that it will be the same as URIs phan would send for diagnostics.
+        // E.g. "file:///path/path%.php" will be normalized to "file:///path/path%25.php"
+        foreach ($uris_to_analyze as $uri) {
+            $normalized_requested_uri = Utils::pathToUri(Utils::uriToPath($uri));
+            $diagnostics[$normalized_requested_uri] = [];  // send an empty diagnostic list on failure.
+        }
+
+        foreach ($response_data['issues'] ?? [] as $issue) {
+            list($issue_uri, $diagnostic) = self::generateDiagnostic($issue);
+            if ($diagnostic instanceof Diagnostic) {
+                $diagnostics[$issue_uri][] = $diagnostic;
+            }
+        }
+        foreach ($diagnostics as $diagnostics_uri => $diagnostics_list) {
+            $this->client->textDocument->publishDiagnostics($diagnostics_uri, $diagnostics_list);
+        }
     }
 
     /**

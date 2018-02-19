@@ -11,6 +11,7 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use ast\Node;
+use Closure;
 
 trait FunctionTrait
 {
@@ -894,5 +895,41 @@ trait FunctionTrait
             \assert($this instanceof FunctionInterface);
             FunctionTrait::addParamsToScopeOfFunctionOrMethod($this->getContext(), $code_base, $this, $comment);
         }
+    }
+
+    public abstract function memoizeFlushAll();
+
+    public abstract function getUnionType() : UnionType;
+
+    /** @return void */
+    public abstract function setUnionType(UnionType $type);
+
+    /**
+     * @internal - Used by daemon mode to restore an element to the state it had before parsing.
+     * @return Closure
+     */
+    public function createRestoreCallback()
+    {
+        // NOTE: Properties, Methods, and closures are restored separately.
+        $original_union_type = $this->getUnionType();
+
+        $parameter_list_hash = $this->parameter_list_hash;
+        $parameter_list = [];
+        foreach ($this->parameter_list as $parameter) {
+            $parameter_list[] = clone($parameter);
+        }
+        $union_type = $this->getUnionType();
+        $return_type_callback = $this->return_type_callback;
+        $function_call_analyzer_callback = $this->function_call_analyzer_callback;
+
+        return function() use($parameter_list, $parameter_list_hash, $union_type, $return_type_callback, $function_call_analyzer_callback) {
+            $this->memoizeFlushAll();
+            $this->parameter_list_hash = $parameter_list_hash;
+            $this->parameter_list = $parameter_list;
+            $this->setUnionType($union_type);
+            $this->checked_parameter_list_hashes = [];
+            $this->return_type_callback = $return_type_callback;
+            $this->function_call_analyzer_callback = $function_call_analyzer_callback;
+        };
     }
 }

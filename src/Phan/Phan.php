@@ -178,7 +178,7 @@ class Phan implements IgnoredFilesFilterInterface
         if ($is_undoable_request) {
             \assert($code_base->isUndoTrackingEnabled());
             if ($is_daemon_request) {
-                \assert(!is_array($language_server_config), 'not supported yet');
+                \assert(!is_array($language_server_config), 'cannot use language server config for daemon mode');
                 // Garbage collecting cycles doesn't help or hurt much here. Thought it would change something..
                 // TODO: check for conflicts with other config options -
                 //    incompatible with dump_ast, dump_signatures_file, output-file, etc.
@@ -192,17 +192,6 @@ class Phan implements IgnoredFilesFilterInterface
                     error_log("Finished serving requests, exiting");
                     exit(2);
                 }
-                self::$printer = $request->getPrinter();
-
-                // This is the list of all of the parsed files
-                // (Also includes files which don't declare classes/functions/constants)
-                $analyze_file_path_list = $request->filterFilesToAnalyze($code_base->getParsedFilePathList());
-                if (count($analyze_file_path_list) === 0) {
-                    $request->respondWithNoFilesToAnalyze();  // respond and exit.
-                    exit(0);
-                }
-                // Do this before we stop tracking undo operations.
-                $temporary_file_mapping = $request->getTemporaryFileMapping();
             } else {
                 assert(is_array($language_server_config));
                 LanguageServerLogger::logInfo(sprintf("Starting accepting connections on the language server (pid=%d)", getmypid()));
@@ -214,25 +203,45 @@ class Phan implements IgnoredFilesFilterInterface
                 }
                 LanguageServerLogger::logInfo(sprintf("language server (pid=%d) accepted connection", getmypid()));
 
-                self::$printer = $request->getPrinter();
-
-                // This is the list of all of the parsed files
-                // (Also includes files which don't declare classes/functions/constants)
-                $analyze_file_path_list = $request->filterFilesToAnalyze($code_base->getParsedFilePathList());
-                if (count($analyze_file_path_list) === 0) {
-                    $request->respondWithNoFilesToAnalyze();  // respond and exit.
-                }
-                // Do this before we stop tracking undo operations.
-                $temporary_file_mapping = $request->getTemporaryFileMapping();
-
                 // FIXME use sabre or some other async code
                 // FIXME implement
             }
+            self::setPrinter($request->getPrinter());
+
+            // This is the list of all of the parsed files
+            // (Also includes files which don't declare classes/functions/constants)
+            $analyze_file_path_list = $request->filterFilesToAnalyze($code_base->getParsedFilePathList());
+            if (count($analyze_file_path_list) === 0) {
+                $request->respondWithNoFilesToAnalyze();  // respond and exit.
+                exit(2);
+            }
+
+            // Do this before we stop tracking undo operations.
+            $temporary_file_mapping = $request->getTemporaryFileMapping();
 
             // Stop tracking undo operations, now that the parse phase is done.
             $code_base->disableUndoTracking();
         }
 
+        return self::finishAnalyzingRemainingStatements($code_base, $request, $analyze_file_path_list, $temporary_file_mapping);
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * A code base needs to be passed in because we require
+     * it to be initialized before any classes or files are
+     * loaded.
+     *
+     * @param ?Request $request
+     * @param array<int,string> $analyze_file_path_list
+     * @param array<string,string> $temporary_file_mapping
+     */
+    public static function finishAnalyzingRemainingStatements(
+        CodeBase $code_base,
+        $request,
+        array $analyze_file_path_list,
+        array $temporary_file_mapping
+    ) : bool {
         try {
             // With parsing complete, we need to tell the code base to
             // start hydrating any requested elements on their way out.
@@ -386,7 +395,7 @@ class Phan implements IgnoredFilesFilterInterface
                     "issue_count" => 1,
                     "issues" => 'Failed to analyze files: Uncaught exception: ' . (string)$e,
                 ]);
-                exit(EXIT_SUCCESS);
+                $request->exit(EXIT_SUCCESS);
             }
             throw $e;
         }
@@ -394,7 +403,7 @@ class Phan implements IgnoredFilesFilterInterface
 
         if ($request instanceof Request) {
             $request->respondWithIssues($issue_count);
-            exit(EXIT_SUCCESS);
+            $request->exit(EXIT_SUCCESS);
         }
 
         if (Config::getValue('print_memory_usage_summary')) {

@@ -64,6 +64,19 @@ class Map extends \SplObjectStorage
     }
 
     /**
+     * @return Map
+     * A new map with each value cloned (keys remain uncloned)
+     */
+    public function deepCopyValues() : Map
+    {
+        $map = new Map;
+        foreach ($this as $key => $value) {
+            $map[$key] = clone($value);
+        }
+        return $map;
+    }
+
+    /**
      * @return Set
      * A new set with the unique values from this map.
      * Precondition: values of this map are objects.

@@ -404,7 +404,7 @@ class CodeBase
     public function __clone()
     {
         $this->fqsen_class_map =
-            $this->fqsen_class_map->deepCopy();
+            $this->fqsen_class_map->deepCopyValues();
 
         $this->fqsen_class_map_user_defined =
             new Map;
@@ -424,25 +424,119 @@ class CodeBase
             clone($this->fqsen_class_map_reflection);
 
         $this->fqsen_alias_map =
-            $this->fqsen_alias_map->deepCopy();
+            $this->fqsen_alias_map->deepCopyValues();
 
         $this->fqsen_global_constant_map =
-            $this->fqsen_global_constant_map->deepCopy();
+            $this->fqsen_global_constant_map->deepCopyValues();
 
         $this->fqsen_func_map =
-            $this->fqsen_func_map->deepCopy();
+            $this->fqsen_func_map->deepCopyValues();
 
-        $this->method_set =
-            $this->method_set->deepCopy();
+        // NOTE: If this were to become a deep copy, this would also have to update class_map.
+        // (That also has references to Method, which should be shared in the resulting clone)
+        $this->method_set = clone($this->method_set);
 
         $this->class_fqsen_class_map_map =
-            $this->class_fqsen_class_map_map->deepCopy();
+            $this->class_fqsen_class_map_map->deepCopyValues();
+
+        $this->internal_function_fqsen_set =
+            clone($this->internal_function_fqsen_set);
 
         $name_method_map = $this->name_method_map;
         $this->name_method_map = [];
         foreach ($name_method_map as $name => $method_map) {
             $this->name_method_map[$name] = $method_map->deepCopy();
         }
+    }
+
+    private static function deepCopyMapMapValues(Map $map_map) : Map
+    {
+        $clone_of_clones = new Map();
+        foreach ($map_map as $key => $map) {
+            $clone_of_clones[$key] = $map->deepCopyValues();
+        }
+        return $clone_of_clones;
+    }
+
+    /**
+     * @param array{clone:CodeBase,callbacks:?Closure[]}
+     * @return void
+     */
+    public function restoreFromRestorePoint(array $restore_point)
+    {
+        $clone = $restore_point['clone'];
+        $this->undo_tracker             = $clone->undo_tracker;
+        $this->has_enabled_undo_tracker = $clone->has_enabled_undo_tracker;
+
+        // TODO: Restore the inner state of Clazz objects as well
+        // (e.g. memoizations, types added in method/analysis phases, plugin changes, etc.
+        // NOTE: Type::clearAllMemoizations is called elsewhere already.
+        $this->fqsen_class_map              = $clone->fqsen_class_map;
+        $this->fqsen_class_map_user_defined = $clone->fqsen_class_map_user_defined;
+        $this->fqsen_class_map_internal     = $clone->fqsen_class_map_internal;
+        $this->fqsen_class_map_reflection   = $clone->fqsen_class_map_reflection;
+        $this->fqsen_alias_map              = $clone->fqsen_alias_map;
+        $this->fqsen_global_constant_map    = $clone->fqsen_global_constant_map;
+        $this->fqsen_func_map               = $clone->fqsen_func_map;
+        $this->internal_function_fqsen_set  = $clone->internal_function_fqsen_set;
+        $this->method_set                   = $clone->method_set;
+        $this->class_fqsen_class_map_map    = $clone->class_fqsen_class_map_map;
+        $this->name_method_map              = $clone->name_method_map;
+
+        $this->parsed_namespace_maps        = $clone->parsed_namespace_maps;
+        foreach ($restore_point['callbacks'] as $callback) {
+            if ($callback) {
+                $callback();
+            }
+        }
+    }
+
+    /**
+     * For use by daemon mode when running without pcntl
+     * Returns a serialized representation of everything in this CodeBase.
+     * @internal
+     * @return array{clone:CodeBase,callbacks:?Closure[]}
+     */
+    public function createRestorePoint() : array
+    {
+        // Create a deep copy of this CodeBase
+        $clone = clone($this);
+        // make a deep copy of the NamespaceMapEntry objects within parsed_namespace_maps
+        $clone->parsed_namespace_maps = unserialize(serialize($clone->parsed_namespace_maps));
+        // @var array<int,?Closure>
+        $callbacks = [];
+        // Create callbacks to restore classes
+        foreach ($this->fqsen_class_map as $class) {
+            $callbacks[] = $class->createRestoreCallback();
+        }
+        // Create callbacks to restore methods and global functions
+        foreach ($this->fqsen_func_map as $func) {
+            $callbacks[] = $func->createRestoreCallback();
+        }
+        // Create callbacks to back up global constants
+        // (They may refer to constants from other files.
+        // The other files may change.)
+        foreach ($this->fqsen_global_constant_map as $const) {
+            $callbacks[] = $const->createRestoreCallback();
+        }
+        // Create callbacks to back up global constants
+        // (They may refer to constants from other files.
+        // The other files may change.)
+        foreach ($this->class_fqsen_class_map_map as $class_map) {
+            // Create callbacks to back up class constants and properties.
+            // Methods were already backed up.
+            foreach ($class_map->getClassConstantMap() as $const) {
+                $callbacks[] = $const->createRestoreCallback();;
+            }
+            foreach ($class_map->getPropertyMap() as $property) {
+                $callbacks[] = $property->createRestoreCallback();;
+            }
+        }
+
+        return [
+            'clone' => $clone,
+            'callbacks' => $callbacks,
+        ];
     }
 
     /**
@@ -498,10 +592,10 @@ class CodeBase
         if ($this->undo_tracker) {
             $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($fqsen) {
                 Daemon::debugf("Undoing addClass %s\n", $fqsen);
-                unset($inner->fqsen_class_map[$fqsen]);
-                unset($inner->fqsen_class_map_user_defined[$fqsen]);
+                $inner->fqsen_class_map->offsetUnset($fqsen);
+                $inner->fqsen_class_map_user_defined->offsetUnset($fqsen);
                 // unset($inner->fqsen_class_map_reflection[$fqsen]);  // should not be necessary
-                unset($inner->class_fqsen_class_map_map[$fqsen]);
+                $inner->class_fqsen_class_map_map->offsetUnset($fqsen);
             });
         }
     }
@@ -1021,7 +1115,7 @@ class CodeBase
      */
     public function addClassConstant(ClassConstant $class_constant)
     {
-        return $this->getClassMapByFullyQualifiedClassName(
+        $this->getClassMapByFullyQualifiedClassName(
             $class_constant->getClassFQSEN()
         )->addClassConstant($class_constant);
     }

@@ -813,7 +813,8 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param array<int,Node> $children
      * @param array<int|string,true> $key_set
      */
-    private function createArrayShapeType(array $children, array $key_set) : ArrayShapeType {
+    private function createArrayShapeType(array $children, array $key_set) : ArrayShapeType
+    {
         \reset($key_set);
         $field_types = [];
 
