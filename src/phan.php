@@ -16,8 +16,6 @@ $code_base = require_once(__DIR__ . '/codebase.php');
 require_once(__DIR__ . '/Phan/Bootstrap.php');
 
 use Phan\CLI;
-use Phan\CodeBase;
-use Phan\Config;
 use Phan\Phan;
 
 if (extension_loaded('ast')) {
@@ -35,7 +33,10 @@ $cli = new CLI();
 $is_issue_found =
     Phan::analyzeFileList(
         $code_base,
-        function () use ($cli) {
+        function (bool $recomputeFileList = false) use ($cli) {
+            if ($recomputeFileList) {
+                $cli->recomputeFileList();
+            }
             return $cli->getFileList();
         }  // Daemon mode will reload the file list.
     );

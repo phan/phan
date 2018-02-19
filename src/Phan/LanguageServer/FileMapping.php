@@ -11,10 +11,16 @@ namespace Phan\LanguageServer;
 class FileMapping
 {
     /**
-     * @var string[] maps the absolute paths on disks to the currently edited versions of those files.
+     * @var array<string,string> maps the absolute paths on disks to the currently edited versions of those files.
      * TODO: Won't work with more than one client.
      */
     private $overrides = [];
+
+    /**
+     * @var array<string,string> maps the absolute path on disk to the URI sent by the language server.
+     * This may or may not help avoid creating duplicate requests for a given path.
+     */
+    private $uri_for_path = [];
 
     public function __construct()
     {
@@ -32,7 +38,12 @@ class FileMapping
      */
     public function addOverrideURI(string $uri, $new_contents)
     {
-        $this->addOverride(Utils::uriToPath($uri), $new_contents);
+        $path = Utils::uriToPath($uri);
+        if ($new_contents === null) {
+            $this->removeOverride($path);
+        }
+        $this->uri_for_path[$path] = $uri;
+        $this->addOverride($path, $new_contents);
     }
 
     /**
@@ -58,11 +69,17 @@ class FileMapping
         $this->removeOverride($path);
     }
 
+    public function getURIForPath(string $path) : string
+    {
+        return $this->uri_for_path[$path] ?? Utils::pathToUri($path);
+    }
+
     /**
      * @return void
      */
     public function removeOverride(string $path)
     {
+        unset($this->uri_for_path[$path]);
         unset($this->overrides[$path]);
     }
 }

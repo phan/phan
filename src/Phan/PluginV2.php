@@ -1,9 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use Phan\Language\Context;
 use Phan\PluginV2\IssueEmitter;
-use ast\Node;
 
 /**
  * Plugins can be defined in the config and will have

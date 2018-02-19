@@ -1,6 +1,10 @@
 <?php // @codingStandardsIgnoreFile (phpcs runs out of memory)
 namespace Phan\Language\Internal;
 
+<<<PHAN
+@phan-file-suppress PhanPluginMixedKeyNoKey (read by Phan when analyzing this file)
+PHAN;
+
 /**
  * Format
  *

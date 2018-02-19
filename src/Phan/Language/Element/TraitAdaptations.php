@@ -2,7 +2,6 @@
 namespace Phan\Language\Element;
 
 use Phan\Language\FQSEN;
-use Phan\Language\FQSEN\FullyQualifiedClassName;
 
 /**
  * This contains info for a single sub-node of a node of type \ast\AST_USE_TRAIT

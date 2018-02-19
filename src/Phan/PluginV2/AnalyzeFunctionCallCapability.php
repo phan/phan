@@ -2,7 +2,6 @@
 namespace Phan\PluginV2;
 
 use Phan\CodeBase;
-use Phan\Language\Element\Clazz;
 
 /**
  * AnalyzeFunctionCallCapability is used when you want to analyze the parameters passed to a function or method, whether or not the return value is used.

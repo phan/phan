@@ -33,9 +33,13 @@ class ParameterTypesAnalyzer
             self::analyzeParameterTypesDocblockSignaturesMatch($code_base, $method);
         }
 
+        self::checkCommentParametersAreInOrder($code_base, $method);
+
         // Look at each parameter to make sure their types
         // are valid
         foreach ($method->getParameterList() as $parameter) {
+            $comment_parameter_index = $parameter->getName();
+
             $union_type = $parameter->getUnionType();
 
             // Look at each type in the parameter's Union Type
@@ -90,6 +94,45 @@ class ParameterTypesAnalyzer
                 }
             }
             self::analyzeOverrideSignature($code_base, $method);
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private static function checkCommentParametersAreInOrder(CodeBase $code_base, FunctionInterface $method)
+    {
+        $comment = $method->getComment();
+        if ($comment === null) {
+            return;
+        }
+        $parameter_map = $comment->getParameterMap();
+        if (\count($parameter_map) < 2) {
+            // There have to be at least two comment parameters for the parameters to be out of order
+            return;
+        }
+        $prev_index = -1;
+        $prev_name = -1;
+        $expected_parameter_order = \array_flip(\array_keys($comment->getParameterMap()));
+        foreach ($method->getParameterList() as $parameter) {
+            $parameter_name = $parameter->getName();
+            $parameter_index_in_comment = $expected_parameter_order[$parameter_name] ?? null;
+            if ($parameter_index_in_comment === null) {
+                continue;
+            }
+            if ($parameter_index_in_comment < $prev_index) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
+                    Issue::CommentParamOutOfOrder,
+                    $method->getFileRef()->getLineNumberStart(),
+                    $prev_name,
+                    $parameter_name
+                );
+                return;
+            }
+            $prev_name = $parameter_name;
+            $prev_index = $parameter_index_in_comment;
         }
     }
 

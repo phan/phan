@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\AST;
 
-use Phan\Analysis\BlockExitStatusChecker;
 use ast\Node;
 
 /**

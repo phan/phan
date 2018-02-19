@@ -21,7 +21,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '0.11.3';
+    const PHAN_VERSION = '0.11.4-dev';
 
     /**
      * @var OutputInterface
@@ -35,6 +35,12 @@ class CLI
     {
         return $this->output;
     }
+
+    /**
+     * @var array<int,string>
+     * The set of file names to analyze
+     */
+    private $file_list_in_config = [];
 
     /**
      * @var array<int,string>
@@ -68,54 +74,61 @@ class CLI
         $opts = getopt(
             "f:m:o:c:k:aeqbr:pid:3:y:l:xj:zhvs:",
             [
+                'allow-polyfill-parser',
                 'backward-compatibility-checks',
                 'color',
+                'config-file:',
+                'daemonize-socket:',
+                'daemonize-tcp-port:',
                 'dead-code-detection',
                 'directory:',
+                'disable-plugins',
                 'dump-ast',
                 'dump-parsed-file-list',
                 'dump-signatures-file:',
                 'exclude-directory-list:',
                 'exclude-file:',
-                'include-analysis-file-list:',
-                'file-list-only:',
+                'extended-help',
                 'file-list:',
+                'file-list-only:',
+                'force-polyfill-parser',
                 'help',
                 'ignore-undeclared',
+                'include-analysis-file-list:',
+                'init',
+                'init-level:',
+                'init-analyze-dir:',
+                'init-analyze-file:',
+                'init-no-composer',
+                'init-overwrite',
+                'language-server-analyze-only-on-save',
+                'language-server-on-stdin',
+                'language-server-tcp-connect:',
+                'language-server-tcp-server:',
+                'language-server-verbose',
+                'markdown-issue-messages',
+                'memory-limit:',
                 'minimum-severity:',
-                'output-mode:',
                 'output:',
+                'output-mode:',
                 'parent-constructor-required:',
+                'print-memory-usage-summary',
+                'processes:',
                 'progress-bar',
                 'project-root-directory:',
                 'quick',
-                'version',
-                'processes:',
-                'config-file:',
-                'signature-compatibility',
-                'memory-limit:',
-                'print-memory-usage-summary',
-                'markdown-issue-messages',
-                'disable-plugins',
-                'use-fallback-parser',
-                'allow-polyfill-parser',
-                'force-polyfill-parser',
                 'require-config-exists',
-                'daemonize-socket:',
-                'daemonize-tcp-port:',
-                'language-server-on-stdin',
-                'language-server-tcp-server:',
-                'language-server-tcp-connect:',
-                'language-server-analyze-only-on-save',
-                'language-server-verbose',
-                'extended-help',
+                'signature-compatibility',
+                'use-fallback-parser',
+                'version',
             ]
         );
+        $opts = $opts ?? [];
 
-        if (\array_key_exists('extended-help', $opts ?? [])) {
+        if (\array_key_exists('extended-help', $opts)) {
             $this->usage('', EXIT_SUCCESS, true);  // --help prints help and calls exit(0)
         }
-        if (\array_key_exists('h', $opts ?? []) || \array_key_exists('help', $opts ?? [])) {
+        if (\array_key_exists('h', $opts) || \array_key_exists('help', $opts)) {
             $this->usage();  // --help prints help and calls exit(0)
         }
         if (\array_key_exists('v', $opts ?? []) || \array_key_exists('version', $opts ?? [])) {
@@ -138,6 +151,16 @@ class CLI
             \getcwd()
         );
 
+        if (\array_key_exists('init', $opts)) {
+            $exit_code = ConfigInitializer::initPhanConfig($this, $opts);
+            if ($exit_code === 0) {
+                exit($exit_code);
+            }
+            echo "\n";
+            // --init is currently in --extended-help
+            $this->usage('', $exit_code, true);
+        }
+
         // Before reading the config, check for an override on
         // the location of the config file path.
         if (isset($opts['k'])) {
@@ -156,7 +179,7 @@ class CLI
         $minimum_severity = Config::getValue('minimum_severity');
         $mask = -1;
 
-        foreach ($opts ?? [] as $key => $value) {
+        foreach ($opts as $key => $value) {
             switch ($key) {
                 case 'r':
                 case 'file-list-only':
@@ -165,7 +188,7 @@ class CLI
                     $this->file_list_only = true;
 
                     // Empty out the file list
-                    $this->file_list = [];
+                    $this->file_list_in_config = [];
 
                     // Intentionally fall through to load the
                     // file list
@@ -176,8 +199,8 @@ class CLI
                         $file_path = Config::projectPath($file_name);
                         if (is_file($file_path) && is_readable($file_path)) {
                             /** @var array<int,string> */
-                            $this->file_list = array_merge(
-                                $this->file_list,
+                            $this->file_list_in_config = array_merge(
+                                $this->file_list_in_config,
                                 file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)
                             );
                         } else {
@@ -190,7 +213,7 @@ class CLI
                     if (!$this->file_list_only) {
                         $directory_list = \is_array($value) ? $value : [$value];
                         foreach ($directory_list as $directory_name) {
-                            $this->file_list = array_merge(
+                            $this->file_list_in_config = array_merge(
                                 $this->file_list,
                                 $this->directoryNameToFileList(
                                     $directory_name
@@ -387,7 +410,7 @@ class CLI
         Phan::setIssueCollector($collector);
 
         $pruneargv = [];
-        foreach ($opts ?? [] as $opt => $value) {
+        foreach ($opts as $opt => $value) {
             foreach ($argv as $key => $chunk) {
                 $regex = '/^'. (isset($opt[1]) ? '--' : '-') . $opt . '/';
 
@@ -409,14 +432,36 @@ class CLI
                 $this->usage("Unknown option '{$arg}'", EXIT_FAILURE);
             }
         }
-
         if (!$this->file_list_only) {
             // Merge in any remaining args on the CLI
-            $this->file_list = array_merge(
-                $this->file_list,
+            $this->file_list_in_config = array_merge(
+                $this->file_list_in_config,
                 array_slice($argv, 1)
             );
+        }
 
+        $this->recomputeFileList();
+
+        // We can't run dead code detection on multiple cores because
+        // we need to update reference lists in a globally accessible
+        // way during analysis. With our parallelization mechanism, there
+        // is no shared state between processes, making it impossible to
+        // have a complete set of reference lists.
+        \assert(
+            Config::getValue('processes') === 1
+            || !Config::getValue('dead_code_detection'),
+            "We cannot run dead code detection on more than one core."
+        );
+    }
+
+    /**
+     * @return void
+     */
+    public function recomputeFileList()
+    {
+        $this->file_list = $this->file_list_in_config;
+
+        if (!$this->file_list_only) {
             // Merge in any files given in the config
             /** @var array<int,string> */
             $this->file_list = array_merge(
@@ -451,17 +496,6 @@ class CLI
                 }
             );
         }
-
-        // We can't run dead code detection on multiple cores because
-        // we need to update reference lists in a globally accessible
-        // way during analysis. With our parallelization mechanism, there
-        // is no shared state between processes, making it impossible to
-        // have a complete set of reference lists.
-        \assert(
-            Config::getValue('processes') === 1
-            || !Config::getValue('dead_code_detection'),
-            "We cannot run dead code detection on more than one core."
-        );
     }
 
     /** @return void - exits on usage error */
@@ -553,6 +587,21 @@ Usage: {$argv[0]} [options] [files...]
 
  -o, --output <filename>
   Output filename
+
+ --init [--init-level=3] [--init-analyze-dir=path/to/src] [--init-analyze-file=path/to/file.php] [--init-no-composer]
+
+  Generates a `.phan/config.php` in the current directory based on the project's composer.json.
+  The logic used to generate the config file is currently very simple.
+  Some third party classes (e.g. in vendor/) will need to be manually added to 'directory_list' or excluded,
+  and you may end up with a large number of issues to be manually suppressed.
+  Also see https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base
+
+  [--init-level] affects the generated settings in `.phan/config.php` (e.g. null_casts_as_array). `--init-level` can be set to 1 (strictest) to 5 (least strict)
+  [--init-analyze-dir] can be used as a relative path alongside directories Phan infers from composer.json's "autoload" settings
+  [--init-analyze-file] can be used as a relative path alongside files Phan infers from composer.json's "bin" settings
+  [--init-no-composer] can be used to tell Phan that the project is not a composer project.
+    Phan will not check for composer.json or vendor/, or include those paths in the generated config.
+  [--init-overwrite] will allow 'phan --init' to overwrite .phan/config.php.
 
  --color
   Add colors to the outputted issues. Tested in Unix.
@@ -678,7 +727,6 @@ Extended help:
 
  --require-config-exists
   Exit immediately with an error code if .phan/config.php does not exist.
-
 EOB;
         }
         exit($exit_code);

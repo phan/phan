@@ -4,7 +4,6 @@ namespace Phan\Language\Type;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
-use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\CodeBase;
 
 /**

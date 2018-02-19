@@ -77,6 +77,7 @@ class Colorizing
         'LINE'          => 'light_gray',
         'METHOD'        => 'light_yellow',
         'NAMESPACE'     => 'green',
+        'OPERATOR'      => 'red',
         'PARAMETER'     => 'cyan',
         'PROPERTY'      => 'cyan',
         'STRING_LITERAL' => 'light_magenta',

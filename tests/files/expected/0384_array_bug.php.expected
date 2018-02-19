@@ -1,1 +1,1 @@
-%s:5 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array but \intdiv() takes int
+%s:5 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array{0:mixed} but \intdiv() takes int

@@ -10,7 +10,11 @@ use Phan\Analysis\ContextMergeVisitor;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\PreOrderAnalysisVisitor;
 use Phan\Language\Context;
+use Phan\Language\Element\Comment;
+use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\Type;
+use Phan\Language\UnionType;
 use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Scope\PropertyScope;
@@ -113,6 +117,57 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         return $this->context;
     }
 
+    /**
+     * @suppress PhanAccessMethodInternal
+     */
+    public function visitNamespace(Node $node) : Context
+    {
+        $context = $this->context->withLineNumberStart(
+            $node->lineno ?? 0
+        );
+
+        // If there are multiple namespaces in the file, have to warn about unused entries in the current namespace first.
+        // If this is the first namespace, then there wouldn't be any use statements yet.
+        $context->warnAboutUnusedUseElements($this->code_base);
+
+        // Visit the given node populating the code base
+        // with anything we learn and get a new context
+        // indicating the state of the world within the
+        // given node
+        $context = (new PreOrderAnalysisVisitor(
+            $this->code_base,
+            $context
+        ))->visitNamespace($node);
+
+        \assert(!empty($context), 'Context cannot be null');
+
+        // We already imported namespace constants earlier; use those.
+        $context->importNamespaceMapFromParsePhase($this->code_base);
+
+        // Let any configured plugins do a pre-order
+        // analysis of the node.
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+
+        // The namespace may either have a list of statements (`namespace Foo {}`)
+        // or be null (`namespace Foo;`)
+        foreach ($node->children['stmts']->children ?? [] as $child_node) {
+            // Skip any non Node children.
+            if (!($child_node instanceof Node)) {
+                continue;
+            }
+
+            // Step into each child node and get an
+            // updated context for the node
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
+        }
+
+        return $this->postOrderAnalyze($context, $node);
+    }
+
     public function visitName(Node $node) : Context
     {
         // Could invoke plugins, but not right now
@@ -131,6 +186,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         foreach ($node->children as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
+                if (\is_string($child_node) && \strpos($child_node, '@phan-') !== false) {
+                    // Add @phan-var and @phan-suppress annotations in string literals to the local scope
+                    $this->analyzeSubstituteVarAssert($this->code_base, $context, $child_node);
+                }
                 continue;
             }
             $context->clearCachedUnionTypes();
@@ -147,7 +206,88 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         );
         return $context;
     }
-    // end No-ops
+
+    const PHAN_VAR_REGEX =
+        '/@(phan-var(?:-force)?)\b\s*(' . UnionType::union_type_regex . ')\s*&?\\$' . Comment::WORD_REGEX . '/';
+
+    const PHAN_SUPPRESS_REGEX =
+        '/@phan-file-suppress\s+' . Comment::WORD_REGEX . '/';
+
+    /**
+     * Parses annotations such as "(at)phan-var int $myVar" and "(at)phan-var-force ?MyClass $varName" annotations from inline string literals.
+     * (php-ast isn't able to parse inline doc comments, so string literals are used for rare edge cases where assert/if statements don't work)
+     *
+     * Modifies the type of the variable (in the scope of $context) to be identical to the annotated union type.
+     * @return void
+     */
+    private function analyzeSubstituteVarAssert(CodeBase $code_base, Context $context, string $text)
+    {
+        $has_known_annotations = false;
+        if (\preg_match_all(self::PHAN_VAR_REGEX, $text, $matches, PREG_SET_ORDER) > 0) {
+            $has_known_annotations = true;
+            foreach ($matches as $group) {
+                $annotation_name = $group[1];
+                $type_string = $group[2];
+                $var_name = $group[18];
+                $type = UnionType::fromStringInContext($type_string, $context, Type::FROM_PHPDOC);
+                $this->createVarForInlineComment($code_base, $context, $var_name, $type, $annotation_name === 'phan-var-force');
+            }
+        }
+
+        if (\preg_match_all(self::PHAN_SUPPRESS_REGEX, $text, $matches, PREG_SET_ORDER) > 0) {
+            $has_known_annotations = true;
+            foreach ($matches as $group) {
+                $issue_name = $group[1];
+                $code_base->addFileLevelSuppression($context->getFile(), $issue_name);
+            }
+        }
+
+        if (!$has_known_annotations && preg_match('/@phan-.*/', $text, $match) > 0) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::UnextractableAnnotation,
+                $context->getLineNumberStart(),
+                rtrim($match[0])
+            );
+        }
+        return;
+    }
+
+    /**
+     * @return void
+     * @see ConditionVarUtil::getVariableFromScope
+     */
+    private function createVarForInlineComment(CodeBase $code_base, Context $context, string $var_name, UnionType $type, bool $create_variable)
+    {
+        if (!$context->getScope()->hasVariableWithName($var_name)) {
+            if (Variable::isHardcodedVariableInScopeWithName($var_name, $context->isInGlobalScope())) {
+                return;
+            }
+            if (!$create_variable && !($context->isInGlobalScope() && Config::getValue('ignore_undeclared_variables_in_global_scope'))) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::UndeclaredVariable,
+                    $context->getLineNumberStart(),
+                    $var_name
+                );
+                return;
+            }
+            $variable = new Variable(
+                $context,
+                $var_name,
+                $type,
+                0
+            );
+            $context->addScopeVariable($variable);
+            return;
+        }
+        $variable = $context->getScope()->getVariableByName(
+            $var_name
+        );
+        $variable->setUnionType($type);
+    }
 
     /**
      * For non-special nodes, we propagate the context and scope
@@ -209,9 +349,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context = $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
         }
 
-        $context = $this->postOrderAnalyze($context, $node);
-
-        return $context;
+        return $this->postOrderAnalyze($context, $node);
     }
 
     /**
@@ -827,7 +965,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      */
     public function visitBinaryOp(Node $node) : Context
     {
-        $flags = ($node->flags ?? 0);
+        $flags = $node->flags;
         if ($flags === \ast\flags\BINARY_BOOL_AND) {
             return $this->visitAnd($node);
         } elseif ($flags === \ast\flags\BINARY_BOOL_OR) {

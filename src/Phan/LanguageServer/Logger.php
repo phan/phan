@@ -4,10 +4,6 @@ declare(strict_types = 1);
 namespace Phan\LanguageServer;
 
 use Phan\Config;
-use Phan\LanguageServer\Protocol\Message;
-use AdvancedJsonRpc\Message as MessageBody;
-use Sabre\Event\Emitter;
-use Sabre\Event\Loop;
 
 /**
  * A logger used by Phan for developing or debugging the language server.

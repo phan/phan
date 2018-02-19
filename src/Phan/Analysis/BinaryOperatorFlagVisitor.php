@@ -377,10 +377,22 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $node->children['right']
         );
 
+        static $int_type = null;
+        static $float_type = null;
+        static $array_type = null;
+        static $int_or_float_union_type = null;
+        if ($int_type === null) {
+            $int_type = IntType::instance(false);
+            $float_type = FloatType::instance(false);
+            $array_type = ArrayType::instance(false);
+            $int_or_float_union_type = new UnionType([
+                $int_type,
+                $float_type
+            ]);
+        }
+
         // fast-track common cases
-        if ($left->isType(IntType::instance(false))
-            && $right->isType(IntType::instance(false))
-        ) {
+        if ($left->isType($int_type) && $right->isType($int_type)) {
             return IntType::instance(false)->asUnionType();
         }
 
@@ -390,60 +402,63 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             if ($left->isEqualTo($right)) {
                 return $left;
             }
-
-            return ArrayType::instance(false)->asUnionType();
+            return ArrayType::combineArrayTypesOverriding($left, $right);
         }
 
-        if (($left->isType(IntType::instance(false))
-            || $left->isType(FloatType::instance(false)))
-            && ($right->isType(IntType::instance(false))
-            || $right->isType(FloatType::instance(false)))
+        if (($left->isType($int_type)
+            || $left->isType($float_type))
+            && ($right->isType($int_type)
+            || $right->isType($float_type))
         ) {
-            return FloatType::instance(false)->asUnionType();
+            return $float_type->asUnionType();
         }
 
         $left_is_array = (
             !$left->genericArrayElementTypes()->isEmpty()
             && $left->nonArrayTypes()->isEmpty()
-        ) || $left->isType(ArrayType::instance(false));
+        ) || $left->isType($array_type);
 
         $right_is_array = (
             !$right->genericArrayElementTypes()->isEmpty()
             && $right->nonArrayTypes()->isEmpty()
-        ) || $right->isType(ArrayType::instance(false));
+        ) || $right->isType($array_type);
 
-        if ($left_is_array
-            && !$right->canCastToUnionType(
-                ArrayType::instance(false)->asUnionType()
-            )
-        ) {
-            Issue::maybeEmit(
-                $this->code_base,
-                $this->context,
-                Issue::TypeInvalidRightOperand,
-                $node->lineno ?? 0
-            );
-            return UnionType::empty();
-        } elseif ($right_is_array
-            && !$left->canCastToUnionType(ArrayType::instance(false)->asUnionType())
-        ) {
-            Issue::maybeEmit(
-                $this->code_base,
-                $this->context,
-                Issue::TypeInvalidLeftOperand,
-                $node->lineno ?? 0
-            );
-            return UnionType::empty();
-        } elseif ($left_is_array || $right_is_array) {
-            // If it is a '+' and we know one side is an array
-            // and the other is unknown, assume array
-            return ArrayType::instance(false)->asUnionType();
+        if ($left_is_array || $right_is_array) {
+            if ($left_is_array && $right_is_array) {
+                // TODO: Make the right types for array offsets completely override the left types?
+                return ArrayType::combineArrayTypesOverriding($left, $right);
+            }
+
+            if ($left_is_array
+                && !$right->canCastToUnionType(
+                    ArrayType::instance(false)->asUnionType()
+                )
+            ) {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    Issue::TypeInvalidRightOperand,
+                    $node->lineno ?? 0
+                );
+                return UnionType::empty();
+            } elseif ($right_is_array
+                && !$left->canCastToUnionType($array_type->asUnionType())
+            ) {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    Issue::TypeInvalidLeftOperand,
+                    $node->lineno ?? 0
+                );
+                return UnionType::empty();
+            } elseif ($left_is_array || $right_is_array) {
+                // If it is a '+' and we know one side is an array
+                // and the other is unknown, assume array
+                return $array_type->asUnionType();
+            }
         }
 
-        return new UnionType([
-            IntType::instance(false),
-            FloatType::instance(false)
-        ]);
+        return $int_or_float_union_type;
     }
 
     /**

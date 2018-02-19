@@ -13,13 +13,10 @@ use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
-use Phan\Language\Type\NativeType;
-use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
-use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 
@@ -109,8 +106,8 @@ class UnionTypeTest extends BaseTest
     public function testArrayUniform()
     {
         $this->assertUnionTypeStringEqual(
-            '[1, 2, 3]',
-            'array<int,int>'
+            '[false => "string"]',
+            'array{0:string}'
         );
     }
 
@@ -118,7 +115,7 @@ class UnionTypeTest extends BaseTest
     {
         $this->assertUnionTypeStringEqual(
             '[1, "string"]',
-            'array<int,int>|array<int,string>'
+            'array{0:int,1:string}'
         );
     }
 

@@ -1,24 +1,13 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
-use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
-use Phan\AST\Visitor\KindVisitorImplementation;
-use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\IssueException;
 use Phan\Issue;
-use Phan\Language\Type;
 use Phan\Language\Context;
-use Phan\Language\Type\ArrayType;
-use Phan\Language\Type\CallableType;
-use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
-use Phan\Language\Type\IterableType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\ObjectType;
-use Phan\Language\Type\ResourceType;
-use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Element\Variable;
 use Phan\Language\UnionType;
@@ -311,9 +300,7 @@ trait ConditionVisitorUtil
             if (Variable::isHardcodedVariableInScopeWithName($var_name, $context->isInGlobalScope())) {
                 return null;
             }
-            if (!Config::getValue('ignore_undeclared_variables_in_global_scope')
-                || !$context->isInGlobalScope()
-            ) {
+            if (!($context->isInGlobalScope() && Config::getValue('ignore_undeclared_variables_in_global_scope'))) {
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredVariable)(
                         $context->getFile(),
@@ -322,7 +309,14 @@ trait ConditionVisitorUtil
                     )
                 );
             }
-            return null;
+            $variable = new Variable(
+                $context,
+                $var_name,
+                UnionType::empty(),
+                $var_node->flags
+            );
+            $context->addScopeVariable($variable);
+            return $variable;
         }
         return $context->getScope()->getVariableByName(
             $var_name

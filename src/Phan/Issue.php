@@ -71,6 +71,7 @@ class Issue
     const TypeMismatchDimFetch      = 'PhanTypeMismatchDimFetch';
     const TypeMismatchUnpackKey     = 'PhanTypeMismatchUnpackKey';
     const TypeMismatchUnpackValue   = 'PhanTypeMismatchUnpackValue';
+    const TypeMismatchArrayDestructuringKey = 'PhanTypeMismatchArrayDestructuringKey';
     const TypeMismatchVariadicComment = 'PhanMismatchVariadicComment';
     const TypeMismatchVariadicParam = 'PhanMismatchVariadicParam';
     const TypeMismatchForeach       = 'PhanTypeMismatchForeach';
@@ -170,6 +171,8 @@ class Issue
     const NoopConstant              = 'PhanNoopConstant';
     const NoopProperty              = 'PhanNoopProperty';
     const NoopVariable              = 'PhanNoopVariable';
+    const NoopUnaryOperator         = 'PhanNoopUnaryOperator';
+    const NoopBinaryOperator        = 'PhanNoopBinaryOperator';
     const UnreferencedClass         = 'PhanUnreferencedClass';
     const UnreferencedFunction      = 'PhanUnreferencedFunction';
     const UnreferencedPublicMethod  = 'PhanUnreferencedPublicMethod';
@@ -183,6 +186,9 @@ class Issue
     const UnreferencedProtectedClassConstant = 'PhanUnreferencedProtectedClassConstant';
     const UnreferencedPrivateClassConstant = 'PhanUnreferencedPrivateClassConstant';
     const UnreferencedClosure       = 'PhanUnreferencedClosure';
+    const UnreferencedUseNormal = 'PhanUnreferencedUseNormal';
+    const UnreferencedUseFunction = 'PhanUnreferencedUseFunction';
+    const UnreferencedUseConstant = 'PhanUnreferencedUseConstant';
 
     // Issue::CATEGORY_REDEFINE
     const RedefineClass             = 'PhanRedefineClass';
@@ -243,6 +249,7 @@ class Issue
     const CommentParamOnEmptyParamList     = 'PhanCommentParamOnEmptyParamList';
     const CommentOverrideOnNonOverrideMethod = 'PhanCommentOverrideOnNonOverrideMethod';
     const CommentOverrideOnNonOverrideConstant = 'PhanCommentOverrideOnNonOverrideConstant';
+    const CommentParamOutOfOrder           = 'PhanCommentParamOutOfOrder';
 
 
     const CATEGORY_ACCESS            = 1 << 1;
@@ -316,6 +323,7 @@ class Issue
         'LINE'          => '%d',
         'METHOD'        => '%s',
         'NAMESPACE'     => '%s',
+        'OPERATOR'      => '%s',
         'PARAMETER'     => '%s',
         'PROPERTY'      => '%s',
         'STRING_LITERAL' => '%s',  // A string literal from the code
@@ -1056,6 +1064,14 @@ class Issue
                 self::REMEDIATION_B,
                 10042
             ),
+            new Issue(
+                self::TypeMismatchArrayDestructuringKey,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Attempting an array destructing assignment with a key of type {TYPE} but the only key types of the right hand side are of type {TYPE}',
+                self::REMEDIATION_B,
+                10043
+            ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
                 self::VariableUseClause,
@@ -1559,6 +1575,22 @@ class Issue
                 6004
             ),
             new Issue(
+                self::NoopUnaryOperator,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused result of a unary '{OPERATOR}' operator",
+                self::REMEDIATION_B,
+                6020
+            ),
+            new Issue(
+                self::NoopBinaryOperator,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused result of a binary '{OPERATOR}' operator",
+                self::REMEDIATION_B,
+                6021
+            ),
+            new Issue(
                 self::UnreferencedClass,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -1661,6 +1693,30 @@ class Issue
                 "Possibly zero references to public class constant {CONST}",
                 self::REMEDIATION_B,
                 6019
+            ),
+            new Issue(
+                self::UnreferencedUseNormal,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to use statement for classlike/namespace {CLASSLIKE} ({CLASSLIKE})",
+                self::REMEDIATION_B,
+                6022
+            ),
+            new Issue(
+                self::UnreferencedUseFunction,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to use statement for function {FUNCTION} ({FUNCTION})",
+                self::REMEDIATION_B,
+                6023
+            ),
+            new Issue(
+                self::UnreferencedUseConstant,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to use statement for constant {CONST} ({CONST})",
+                self::REMEDIATION_B,
+                6024
             ),
 
             // Issue::CATEGORY_REDEFINE
@@ -2065,6 +2121,14 @@ class Issue
                 "Saw an @override annotation for class constant {CONST}, but could not find an overridden constant",
                 self::REMEDIATION_B,
                 16007
+            ),
+            new Issue(
+                self::CommentParamOutOfOrder,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Expected @param annotation for {VARIABLE} to be before the @param annotation for {VARIABLE}",
+                self::REMEDIATION_A,
+                16008
             ),
         ];
 

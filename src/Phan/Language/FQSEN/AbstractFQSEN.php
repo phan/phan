@@ -37,12 +37,12 @@ abstract class AbstractFQSEN implements FQSEN
     );
 
     /**
-     * @param Context $context
-     * The context in which the FQSEN string was found
-     *
      * @param string $fqsen_string
      * An FQSEN string like '\Namespace\Class::method' or
      * 'Class' or 'Class::method'.
+     *
+     * @param Context $context
+     * The context in which the FQSEN string was found
      *
      * @return FQSEN
      */

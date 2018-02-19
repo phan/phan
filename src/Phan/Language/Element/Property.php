@@ -2,7 +2,6 @@
 namespace Phan\Language\Element;
 
 use Phan\Language\Context;
-use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\PropertyScope;
 use Phan\Language\UnionType;

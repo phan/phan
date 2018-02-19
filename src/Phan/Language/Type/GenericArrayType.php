@@ -121,7 +121,6 @@ final class GenericArrayType extends ArrayType
         );
     }
 
-
     /**
      * @return bool
      * True if this Type can be cast to the given Type
@@ -140,6 +139,13 @@ final class GenericArrayType extends ArrayType
                 return Config::getValue('scalar_array_key_cast');
             }
             return true;
+        } elseif ($type instanceof ArrayShapeType) {
+            if ((($this->key_type ?: self::KEY_MIXED) & $type->getKeyType()) === 0 && !Config::getValue('scalar_array_key_cast')) {
+                // Attempting to cast an int key to a string key (or vice versa) is normally invalid.
+                // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
+                return false;
+            }
+            return $this->genericArrayElementType()->asUnionType()->canCastToUnionType($type->genericArrayElementUnionType());
         }
 
         if ($type->isArrayLike()) {
@@ -324,6 +330,9 @@ final class GenericArrayType extends ArrayType
                 $key_types |= $type->key_type;
                 continue;
                 // TODO: support array shape as well?
+            } elseif ($type instanceof ArrayShapeType) {
+                $key_types |= $type->getKeyType();
+                continue;
             }
         }
         // int|string corresponds to KEY_MIXED (KEY_INT|KEY_STRING)
@@ -415,7 +424,7 @@ final class GenericArrayType extends ArrayType
                 } elseif ($key_node !== null) {
                     if (\is_string($key_node)) {
                         $key_type_enum |= GenericArrayType::KEY_STRING;
-                    } elseif (\is_int($key_node) || \is_float($key_node)) {
+                    } elseif (\is_scalar($key_node)) {
                         $key_type_enum |= GenericArrayType::KEY_INT;
                     }
                 } else {
@@ -429,5 +438,30 @@ final class GenericArrayType extends ArrayType
             return $key_type_enum ?: GenericArrayType::KEY_MIXED;
         }
         return GenericArrayType::KEY_MIXED;
+    }
+
+    public function hasArrayShapeTypeInstances() : bool
+    {
+        return $this->element_type->hasArrayShapeTypeInstances();
+    }
+
+    /** @return array<int,Type> */
+    public function withFlattenedArrayShapeTypeInstances() : array
+    {
+        // TODO: Any point in caching this?
+        $type_instances = $this->element_type->withFlattenedArrayShapeTypeInstances();
+        if (\count($type_instances) === 0 && $type_instances[0] === $this->element_type) {
+            return [$this];
+        }
+        $results = [];
+        foreach ($type_instances as $type) {
+            $results[] = GenericArrayType::fromElementType($type, $this->is_nullable, $this->key_type);
+        }
+        return $results;
+    }
+
+    public function asGenericArrayType(int $key_type) : Type
+    {
+        return GenericArrayType::fromElementType($this, false, $key_type);
     }
 }

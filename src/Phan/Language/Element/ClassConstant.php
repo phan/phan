@@ -2,7 +2,6 @@
 namespace Phan\Language\Element;
 
 use Phan\Language\Context;
-use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\UnionType;
 
