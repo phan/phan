@@ -323,6 +323,7 @@ class Issue
         'LINE'          => '%d',
         'METHOD'        => '%s',
         'NAMESPACE'     => '%s',
+        'OPERATOR'      => '%s',
         'PARAMETER'     => '%s',
         'PROPERTY'      => '%s',
         'STRING_LITERAL' => '%s',  // A string literal from the code
@@ -1577,7 +1578,7 @@ class Issue
                 self::NoopUnaryOperator,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
-                "Unused result of a unary operator",
+                "Unused result of a unary '{OPERATOR}' operator",
                 self::REMEDIATION_B,
                 6020
             ),
@@ -1585,7 +1586,7 @@ class Issue
                 self::NoopBinaryOperator,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
-                "Unused result of a binary operator",
+                "Unused result of a binary '{OPERATOR}' operator",
                 self::REMEDIATION_B,
                 6021
             ),

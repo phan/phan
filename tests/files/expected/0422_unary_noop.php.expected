@@ -1,4 +1,4 @@
-%s:3 PhanNoopUnaryOperator Unused result of a unary operator
-%s:4 PhanNoopUnaryOperator Unused result of a unary operator
-%s:5 PhanNoopUnaryOperator Unused result of a unary operator
-%s:6 PhanNoopUnaryOperator Unused result of a unary operator
+%s:3 PhanNoopUnaryOperator Unused result of a unary '+' operator
+%s:4 PhanNoopUnaryOperator Unused result of a unary '-' operator
+%s:5 PhanNoopUnaryOperator Unused result of a unary '!' operator
+%s:6 PhanNoopUnaryOperator Unused result of a unary '~' operator
