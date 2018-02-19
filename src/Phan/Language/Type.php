@@ -1000,13 +1000,13 @@ class Type
      * @param array<string|int,string> $shape_components Maps field keys (integers or strings) to the corresponding type representations
      * @param Context $context
      * @param int $source
-     * @return array<string|int,Type> The types for the representations of types, in the given $context
+     * @return array<string|int,UnionType> The types for the representations of types, in the given $context
      */
     private static function shapeComponentStringsToTypes(array $shape_components, Context $context, int $source) : array
     {
         return array_map(
-            function (string $component_string) use ($context, $source) : Type {
-                return Type::fromStringInContext($component_string, $context, $source);
+            function (string $component_string) use ($context, $source) : UnionType {
+                return UnionType::fromStringInContext($component_string, $context, $source);
             },
             $shape_components
         );
@@ -1330,7 +1330,7 @@ class Type
      */
     public function isGenericArray() : bool
     {
-        return false;  // Overridden in GenericArrayType
+        return false;  // Overridden in GenericArrayType and ArrayShapeType
     }
 
     /**
@@ -1374,27 +1374,7 @@ class Type
      */
     public function genericArrayElementType() : Type
     {
-        \assert(
-            $this->isGenericArray(),
-            "Cannot call genericArrayElementType on non-generic array"
-        );
-
-        if (($pos = \strrpos($this->getName(), '[]')) !== false) {
-            \assert(
-                $this->getName() !== '[]' && $this->getName() !== 'array',
-                "Non-generic type requested to be non-generic"
-            );
-
-            return Type::make(
-                $this->getNamespace(),
-                \substr($this->getName(), 0, $pos),
-                $this->template_parameter_type_list,
-                $this->getIsNullable(),
-                self::FROM_TYPE
-            );
-        }
-
-        return $this;
+        throw new \Error("genericArrayElementType should not be called on Type base class");
     }
 
     /**
@@ -1406,18 +1386,11 @@ class Type
      * this type. For instance, 'int' will produce 'int[]'.
      *
      * As a special case to reduce false positives, 'array' (with no known types) will produce 'array'
+     *
+     * Overridden in subclasses
      */
     public function asGenericArrayType(int $key_type) : Type
     {
-        if (!($this instanceof GenericArrayType)
-            && (
-                $this->name === 'array'
-                || $this->name === 'mixed'
-            )
-        ) {
-            return ArrayType::instance(false);
-        }
-
         return GenericArrayType::fromElementType($this, false, $key_type);
     }
 
@@ -1969,5 +1942,18 @@ class Type
     public function getNormalizationFlags() : int
     {
         return $this->is_nullable ? self::_bit_nullable : 0;
+    }
+
+    public function hasArrayShapeTypeInstances() : bool
+    {
+        return false;
+    }
+
+    /**
+     * @return Type[]
+     */
+    public function withFlattenedArrayShapeTypeInstances() : array
+    {
+        return [$this];
     }
 }

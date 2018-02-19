@@ -1,1 +1,1 @@
-%s:6 PhanTypeMismatchArgument Argument 1 (arg) is array<int,int> but \test() takes int defined at %s:5
+%s:6 PhanTypeMismatchArgument Argument 1 (arg) is array{0:int,1:int,2:int} but \test() takes int defined at %s:5

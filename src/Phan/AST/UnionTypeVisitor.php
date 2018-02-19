@@ -27,6 +27,7 @@ use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClosureType;
@@ -740,6 +741,11 @@ class UnionTypeVisitor extends AnalysisVisitor
         ) {
             $value_types_builder = new UnionTypeBuilder();
 
+            $key_set = $this->getEquivalentArraySet($children);
+            if (\is_array($key_set) && \count($key_set) === \count($children)) {
+                return $this->createArrayShapeType($children, $key_set)->asUnionType();
+            }
+
             foreach ($children as $child) {
                 $value = $child->children['value'];
                 if ($value instanceof Node) {
@@ -764,7 +770,71 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         // TODO: Also return types such as array<int, mixed>?
+        // TODO: Fix or suppress false positives PhanTypeArraySuspicious caused by loops...
+        // return ArrayShapeType::empty(false)->asUnionType();
         return ArrayType::instance(false)->asUnionType();
+    }
+
+
+    /**
+     * @return ?array<int|string,true>
+     * Caller should check if the result size is too small and handle it (for duplicate keys)
+     * Returns null if one or more keys could not be resolved
+     *
+     * @see ContextNode->getEquivalentPHPArrayElements
+     */
+    private function getEquivalentArraySet(array $children)
+    {
+        $elements = [];
+        $context_node = null;
+        foreach ($children as $child_node) {
+            $key_node = $child_node->children['key'];
+            // NOTE: this has some overlap with DuplicateKeyPlugin
+            if ($key_node === null) {
+                $elements[] = true;
+            } elseif (\is_scalar($key_node)) {
+                $elements[$key_node] = true;  // Check for float?
+            } else {
+                if ($context_node === null) {
+                    $context_node = new ContextNode($this->code_base, $this->context, null);
+                }
+                $key = $context_node->getEquivalentPHPValueForNode($key_node, ContextNode::RESOLVE_CONSTANTS);
+                if (\is_scalar($key)) {
+                    $elements[$key] = true;
+                } else {
+                    return null;
+                }
+            }
+        }
+        return $elements;
+    }
+
+    /**
+     * @param array<int,Node> $children
+     * @param array<int|string,true> $key_set
+     */
+    private function createArrayShapeType(array $children, array $key_set) : ArrayShapeType {
+        \reset($key_set);
+        $field_types = [];
+
+        foreach ($children as $i => $child) {
+            $value = $child->children['value'];
+            $key = \key($key_set);
+            \next($key_set);
+
+            if ($value instanceof Node) {
+                $element_value_type = UnionTypeVisitor::unionTypeFromNode(
+                    $this->code_base,
+                    $this->context,
+                    $value,
+                    $this->should_catch_issue_exception
+                );
+                $field_types[$key] = $element_value_type->isEmpty() ? MixedType::instance(false)->asUnionType() : $element_value_type;
+            } else {
+                $field_types[$key] = Type::fromObject($value)->asUnionType();
+            }
+        }
+        return ArrayShapeType::fromFieldTypes($field_types, false);
     }
 
     /**
@@ -1042,6 +1112,13 @@ class UnionTypeVisitor extends AnalysisVisitor
             $int_union_type = IntType::instance(false)->asUnionType();
             $int_or_string_union_type = new UnionType([IntType::instance(false), StringType::instance(false)], true);
         }
+        if ($union_type->hasTopLevelArrayShapeTypeInstances()) {
+            $element_type = $this->resolveArrayShapeElementTypes($node, $union_type);
+            if ($element_type !== null) {
+                return $element_type;
+            }
+            // TODO: Warn if index could not be found.
+        }
         $dim_type = self::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -1131,6 +1208,42 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         return $element_types;
+    }
+
+    /**
+     * @return ?UnionType
+     */
+    private function resolveArrayShapeElementTypes(Node $node, UnionType $union_type)
+    {
+        $dim_node = $node->children['dim'];
+        $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $this->context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
+        // TODO: detect and warn about null
+        if (!\is_scalar($dim_value)) {
+            return null;
+        }
+
+        $has_non_array_shape_type = false;
+        $resulting_element_type = UnionType::empty();
+        foreach ($union_type->getTypeSet() as $type) {
+            if (!($type instanceof ArrayShapeType)) {
+                $has_non_array_shape_type = true;
+                if ($type instanceof StringType) {
+                    if (\is_int($dim_node)) {
+                        // in php, indices of strings can be negative
+                        $resulting_element_type = $resulting_element_type->withType(StringType::instance(false));
+                    } // TODO: Warn about string indices? But nega
+                }
+                continue;
+            }
+            $element_type = $type->arrayShapeFieldTypes()[$dim_value] ?? null;
+            if ($element_type !== null) {
+                $resulting_element_type = $resulting_element_type->withUnionType($element_type);
+            }
+        }
+        if ($resulting_element_type->isEmpty()) {
+            return null;
+        }
+        return $resulting_element_type;
     }
 
     /**
