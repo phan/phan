@@ -644,6 +644,9 @@ class Config
         // Valid values: null, 'info'. Used when developing or debugging a language server client of Phan.
         'language_server_debug_level' => null,
 
+        // Use the command line option instead
+        'language_server_use_pcntl_fallback' => false,
+
         // Can be set to false to disable the plugins Phan uses to infer more accurate return types of array_map, array_filter, etc.
         // Phan is slightly faster when these are disabled.
         'enable_internal_return_type_plugins' => true,

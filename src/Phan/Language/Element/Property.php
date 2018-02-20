@@ -6,6 +6,8 @@ use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\PropertyScope;
 use Phan\Language\UnionType;
 
+use Closure;
+
 class Property extends ClassElement
 {
     use ElementFutureUnionType;
@@ -131,5 +133,25 @@ class Property extends ClassElement
         $string .= ';';
 
         return $string;
+    }
+
+    /**
+     * @internal - Used by daemon mode to restore an element to the state it had before parsing.
+     * @return ?Closure
+     */
+    public function createRestoreCallback()
+    {
+        $future_union_type = $this->future_union_type;
+        if ($future_union_type === null) {
+            // We already inferred the type for this class constant/global constant.
+            // Nothing to do.
+            return null;
+        }
+        // If this refers to a class constant in another file,
+        // the resolved union type might change if that file changes.
+        return function() use ($future_union_type) {
+            $this->future_union_type = $future_union_type;
+            // Probably don't need to call setUnionType(mixed) again...
+        };
     }
 }

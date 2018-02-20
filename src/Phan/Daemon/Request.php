@@ -6,6 +6,7 @@ use Phan\Analysis;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Daemon;
+use Phan\Daemon\Transport\Responder;
 use Phan\Language\FileRef;
 use Phan\Language\Type;
 use Phan\LanguageServer\FileMapping;
@@ -37,8 +38,8 @@ class Request
     const STATUS_INVALID_METHOD = 'invalid_method';  // expected 'method' to be analyze_files or
     const STATUS_INVALID_REQUEST = 'invalid_request';  // expected a valid string for 'files'/'file'
 
-    /** @var resource|null - Null after the response is sent. */
-    private $response_connection;
+    /** @var Responder|null - Null after the response is sent. */
+    private $responder;
 
     /** @var array */
     private $config;
@@ -56,34 +57,45 @@ class Request
 
     private static $exited_pid_status = [];
 
-    /**
-     * @param resource $response_connection
-     * @param array $config
-     */
-    private function __construct($response_connection, array $config)
+    /** @var bool */
+    private $should_exit;
+
+    private function __construct(Responder $responder, array $config, bool $should_exit)
     {
-        $this->response_connection = $response_connection;
+        $this->responder = $responder;
         $this->config = $config;
         $this->buffered_output = new BufferedOutput();
         $this->method = $config[self::PARAM_METHOD];
         if ($this->method === self::METHOD_ANALYZE_FILES) {
             $this->files = $config[self::PARAM_FILES];
         }
+        $this->should_exit = $should_exit;
+    }
+
+    public function exit(int $exit_code)
+    {
+        if ($this->should_exit) {
+            Daemon::debugf("Exiting");
+            exit($exit_code);
+        }
+        throw new ExitException("done", $exit_code);
     }
 
     /**
-     * @param resource $response_connection a socket to write a response on
+     * @param Responder $responder (e.g. a socket to write a response on)
      * @param array<int,string> $filenames absolute path of file(s) to analyze
      * @param CodeBase $code_base (for refreshing parse state)
      * @param Closure $file_path_lister (for refreshing parse state)
      * @param FileMapping $file_mapping object tracking the overrides made by a client.
+     * @param bool $should_exit - If this is true, calling $this->exit() will terminate the program. If false, ExitException will be thrown.
      */
     public static function makeLanguageServerAnalysisRequest(
-        $response_connection,
+        Responder $responder,
         array $filenames,
         CodeBase $code_base,
         Closure $file_path_lister,
-        FileMapping $file_mapping
+        FileMapping $file_mapping,
+        bool $should_exit
     ) : Request {
         FileCache::clear();
         $file_mapping_contents = self::normalizeFileMappingContents($file_mapping->getOverrides(), $error_message);
@@ -93,13 +105,14 @@ class Request
             Daemon::debugf($error_message);
         };
         $result = new self(
-            $response_connection,
+            $responder,
             [
                 self::PARAM_FORMAT => 'json',
                 self::PARAM_METHOD => self::METHOD_ANALYZE_FILES,
                 self::PARAM_FILES => $filenames,
                 self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS => $file_mapping_contents,
-            ]
+            ],
+            $should_exit
         );
         return $result;
     }
@@ -203,37 +216,24 @@ class Request
      */
     public function sendJSONResponse(array $response)
     {
-        self::sendJSONResponseOverSocket($this->response_connection, $response);
-        $this->response_connection = null;
-    }
-
-    /**
-     * @param resource $response_connection
-     * @param array $response
-     * @return void
-     */
-    public static function sendJSONResponseOverSocket($response_connection, array $response)
-    {
-        if (!$response_connection) {
+        $responder = $this->responder;
+        if (!$responder) {
             Daemon::debugf("Already sent response");
             return;
         }
-        fwrite($response_connection, json_encode($response, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) . "\n");
-        // disable further receptions and transmissions
-        // Note: This is likely a giant hack,
-        // and pcntl and sockets may break in the future if used together. (multiple processes owning a single resource).
-        // Not sure how to do that safely.
-        stream_socket_shutdown($response_connection, STREAM_SHUT_RDWR);
-        fclose($response_connection);
+        $responder->sendResponseAndClose($response);
+        $this->responder = null;
     }
 
     public function __destruct()
     {
-        if (isset($this->response_connection)) {
-            $this->sendJSONResponse([
+        $responder = $this->responder;
+        if ($responder) {
+            $responder->sendResponseAndClose([
                 'status' => self::STATUS_ERROR_UNKNOWN,
                 'message' => 'failed to send a response - Possibly encountered an exception. See daemon output.' . json_encode(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)),
             ]);
+            $this->responder = null;
         }
     }
 
@@ -295,24 +295,17 @@ class Request
     /**
      * @param CodeBase $code_base
      * @param \Closure $file_path_lister
-     * @param resource $response_connection
+     * @param Responder $responder
      * @return ?Request - non-null if this is a worker process with work to do. null if request failed or this is the master.
      */
-    public static function accept(CodeBase $code_base, \Closure $file_path_lister, $response_connection)
+    public static function accept(CodeBase $code_base, \Closure $file_path_lister, Responder $responder, bool $fork)
     {
         FileCache::clear();
-        Daemon::debugf("Got a connection");  // debugging code
-        // Efficient for large strings, e.g. long file lists.
-        $data = [];
-        while (!feof($response_connection)) {
-            $data[] = fgets($response_connection);
-        }
-        $request_bytes = implode('', $data);
-        $request = json_decode($request_bytes, true);
+
+        $request = $responder->getRequestData();
 
         if (!\is_array($request)) {
-            Daemon::debugf("Received invalid request, expected JSON: %s", json_encode($request_bytes, JSON_UNESCAPED_SLASHES));
-            self::sendJSONResponseOverSocket($response_connection, [
+            $responder->sendResponseAndClose([
                 'status'  => self::STATUS_INVALID_REQUEST,
                 'message' => 'malformed JSON',
             ]);
@@ -355,25 +348,38 @@ class Request
                 }
                 if ($error_message !== null) {
                     Daemon::debugf($error_message);
-                    self::sendJSONResponseOverSocket($response_connection, [
-                    'status'  => self::STATUS_INVALID_FILES,
-                    'message' => $error_message,
+                    $responder->sendResponseAndClose([
+                        'status'  => self::STATUS_INVALID_FILES,
+                        'message' => $error_message,
                     ]);
                     return null;
                 }
                 break;
-        // TODO(optional): add APIs to resolve types of variables/properties/etc (e.g. accept byte offset or line/column offset)
+                // TODO(optional): add APIs to resolve types of variables/properties/etc (e.g. accept byte offset or line/column offset)
             default:
                 $message = sprintf("expected method to be analyze_all or analyze_files, got %s", json_encode($method));
                 Daemon::debugf($message);
-                self::sendJSONResponseOverSocket($response_connection, [
-                'status'  => self::STATUS_INVALID_METHOD,
-                'message' => $message,
+                $responder->sendResponseAndClose([
+                    'status'  => self::STATUS_INVALID_METHOD,
+                    'message' => $message,
                 ]);
                 return null;
         }
 
         self::reloadFilePathListForDaemon($code_base, $file_path_lister, $new_file_mapping_contents);
+        if (!$fork) {
+            Daemon::debugf("This is the main process pretending to be the fork");
+            self::$child_pids = [];
+            // TODO: Re-parse the file list.
+
+            // This is running on the only thread, so configure $request_obj to throw ExitException instead of calling exit()
+            $request_obj = new self($responder, $request, false);
+            $temporary_file_mapping = $request_obj->getTemporaryFileMapping();
+            if (count($temporary_file_mapping) > 0) {
+                self::applyTemporaryFileMappingForParsePhase($code_base, $temporary_file_mapping);
+            }
+            return $request_obj;
+        }
 
         $fork_result = pcntl_fork();
         if ($fork_result < 0) {
@@ -382,7 +388,7 @@ class Request
             Daemon::debugf("This is the fork");
             self::$child_pids = [];
             // TODO: Re-parse the file list.
-            $request_obj = new self($response_connection, $request);
+            $request_obj = new self($responder, $request, true);
             $temporary_file_mapping = $request_obj->getTemporaryFileMapping();
             if (count($temporary_file_mapping) > 0) {
                 self::applyTemporaryFileMappingForParsePhase($code_base, $temporary_file_mapping);

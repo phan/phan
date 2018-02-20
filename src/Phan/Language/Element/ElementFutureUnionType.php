@@ -16,7 +16,7 @@ trait ElementFutureUnionType
      * constant who's type is not yet known during
      * parsing.
      */
-    private $future_union_type = null;
+    protected $future_union_type = null;
 
     /**
      * @param UnionType $type

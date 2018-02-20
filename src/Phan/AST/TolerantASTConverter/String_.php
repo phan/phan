@@ -69,7 +69,8 @@ final class String_
      *
      * @return string The parsed string
      */
-    public static function parse(string $str, bool $parseUnicodeEscape = true) : string {
+    public static function parse(string $str, bool $parseUnicodeEscape = true) : string
+    {
         $bLength = 0;
         if ('b' === $str[0] || 'B' === $str[0]) {
             $bLength = 1;
@@ -83,7 +84,9 @@ final class String_
             );
         } else {
             return self::parseEscapeSequences(
-                substr($str, $bLength + 1, -1), '"', $parseUnicodeEscape
+                substr($str, $bLength + 1, -1),
+                '"',
+                $parseUnicodeEscape
             );
         }
     }
@@ -99,7 +102,8 @@ final class String_
      *
      * @return string String with escape sequences parsed
      */
-    public static function parseEscapeSequences(string $str, $quote, bool $parseUnicodeEscape = true) : string {
+    public static function parseEscapeSequences(string $str, $quote, bool $parseUnicodeEscape = true) : string
+    {
         if (null !== $quote) {
             $str = \str_replace('\\' . $quote, $quote, $str);
         }
@@ -111,7 +115,7 @@ final class String_
 
         return \preg_replace_callback(
             '~\\\\([\\\\$nrtfve]|[xX][0-9a-fA-F]{1,2}|[0-7]{1,3}' . $extra . ')~',
-            function($matches) {
+            function ($matches) {
                 $str = $matches[1];
 
                 if (isset(self::REPLACEMENTS[$str])) {
@@ -135,7 +139,8 @@ final class String_
      *
      * @return string UTF-8 representation of code point
      */
-    private static function codePointToUtf8(int $num) : string {
+    private static function codePointToUtf8(int $num) : string
+    {
         if ($num <= 0x7F) {
             return chr($num);
         }
@@ -151,5 +156,4 @@ final class String_
         }
         throw new Error('Invalid UTF-8 codepoint escape sequence: Codepoint too large');
     }
-
 }

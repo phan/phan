@@ -61,6 +61,14 @@ New Features(Analysis)
 + Add `PhanTypeMismatchArrayDestructuringKey` checks for invalid array key types in list assignments (E.g. `list($x) = ['key' => 'value']` (#1383)
 
 Language Server
++ Support running Language Server and daemon mode on Windows (#819)
+  (the `pcntl` dependency is no longer mandatory for running Phan as a server)
+  The `--language-server-allow-missing-pcntl` option must be set by the client.
+
+  When this fallback is used, Phan **manually** saves and restores the
+  data structures that store information about the project being analyzed.
+
+  This fallback is new and experimental.
 + Make Phan Language Server analyze new files added to a project (Issue #920)
 + Analyze all of the PHP files that are currently opened in the IDE
   according to the language server client,
