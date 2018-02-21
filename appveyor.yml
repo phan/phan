@@ -35,7 +35,7 @@ build_script:
 
     SET PHP_ZIP_BASENAME=php-%PHP_VERSION%-nts-Win32-VC%VC_VERSION%-x86.zip
 
-    appveyor DownloadFile http://windows.php.net/downloads/releases/archives/%PHP_ZIP_BASENAME% || appveyor DownloadFile http://windows.php.net/downloads/releases/%PHP_ZIP_BASENAME%
+    curl -fsS http://windows.php.net/downloads/releases/archives/%PHP_ZIP_BASENAME% -o %PHP_ZIP_BASENAME% || curl -fsS http://windows.php.net/downloads/releases/%PHP_ZIP_BASENAME% -o %PHP_ZIP_BASENAME%
 
     7z x -y %PHP_ZIP_BASENAME%
 
@@ -45,7 +45,7 @@ build_script:
 
     SET AST_ZIP_BASENAME=php_ast-0.1.6-%PHP_EXT_VERSION%-nts-vc%VC_VERSION%-x86.zip
 
-    appveyor DownloadFile http://windows.php.net/downloads/pecl/releases/ast/0.1.6/%AST_ZIP_BASENAME%
+    curl -fsS http://windows.php.net/downloads/pecl/releases/ast/0.1.6/%AST_ZIP_BASENAME% -o %AST_ZIP_BASENAME%
 
     7z x %AST_ZIP_BASENAME% php_ast.dll -y >nul
 
@@ -75,9 +75,7 @@ build_script:
 
     php -m
 
-    cd C:\projects\phan
-
-    appveyor DownloadFile https://getcomposer.org/composer.phar
+    curl -fsS https://getcomposer.org/composer.phar -o C:\projects\phan\composer.phar
 
 test_script:
 - cmd: cd C:\projects\phan
