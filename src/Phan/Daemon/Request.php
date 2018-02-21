@@ -159,7 +159,6 @@ class Request
     public function respondWithNoFilesToAnalyze()
     {
         // The mentioned file wasn't in .phan/config.php's list of files to analyze.
-        // TODO: Send the client that list of files.
         $this->sendJSONResponse([
             "status" => self::STATUS_NO_FILES,
         ]);
@@ -187,7 +186,7 @@ class Request
                 $filteredFiles[] = $file;
             } else {
                 // TODO: Reload file list once before processing request?
-                // TODO: Make this override blacklists of folders in src/Phan/Phan
+                // TODO: Change this to also support analyzing files that would normally be parsed but not analyzed?
                 Daemon::debugf("Failed to find requested file '%s' in parsed file list", $file, json_encode($analyze_file_path_list));
             }
         }
@@ -366,12 +365,14 @@ class Request
                 return null;
         }
 
+        // Re-parse the file list
         self::reloadFilePathListForDaemon($code_base, $file_path_lister, $new_file_mapping_contents);
+
+        // Analyze the files that are open in the IDE (If pcntl is available, the analysis is done in a forked process)
+
         if (!$fork) {
             Daemon::debugf("This is the main process pretending to be the fork");
             self::$child_pids = [];
-            // TODO: Re-parse the file list.
-
             // This is running on the only thread, so configure $request_obj to throw ExitException instead of calling exit()
             $request_obj = new self($responder, $request, false);
             $temporary_file_mapping = $request_obj->getTemporaryFileMapping();
@@ -387,7 +388,6 @@ class Request
         } elseif ($fork_result == 0) {
             Daemon::debugf("This is the fork");
             self::$child_pids = [];
-            // TODO: Re-parse the file list.
             $request_obj = new self($responder, $request, true);
             $temporary_file_mapping = $request_obj->getTemporaryFileMapping();
             if (count($temporary_file_mapping) > 0) {
@@ -405,7 +405,6 @@ class Request
                 self::$child_pids[$pid] = true;
             }
 
-            // TODO: Parse the new file list **before forking**, not after forking.
             // TODO: Use http://php.net/manual/en/book.inotify.php if available, watch all directories if available.
             // Daemon continues to execute.
             self::$child_pids[] = $fork_result;
@@ -447,7 +446,7 @@ class Request
             $code_base->flushDependenciesForFile($file_path);
 
             // If the file is gone, no need to continue
-            $real = realpath($file_path);  // TODO: Improve nested analysis of expressions such as if (($real = expr()) === false || !cond($real)
+            $real = realpath($file_path);
             if ($real === false || !file_exists($real)) {
                 Daemon::debugf("file $file_path does not exist");
                 continue;

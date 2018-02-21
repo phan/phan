@@ -6,7 +6,8 @@ namespace Phan\LanguageServer;
  * A class to keep track of overrides by language server clients with open files.
  * Created for Phan.
  *
- * TODO: remove all overrides when a language server disconnects.
+ * TODO: remove all overrides when a language client disconnects.
+ * (Right now, we only have a single client, and shut down when the client disconnects)
  */
 class FileMapping
 {

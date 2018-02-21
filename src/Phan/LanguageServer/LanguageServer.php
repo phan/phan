@@ -55,13 +55,7 @@ use Throwable;
  * 7. Phan notifies the client of the new issues ("diagnostic" in the open Language Server Protocol)
  *    See https://github.com/Microsoft/language-server-protocol#language-server-protocol
  *
- * TODO: support a memory limit
- * TODO: Make waiting for analysis async, but continue rate limiting
- *
  * TODO: support textDocument rename
- *
- * TODO: Does it make sense for everything (data structures without code) in the Protocol folder to be a composer project? Check.
- *       (NOTE: The way we represent the project state and the parse state varies between projects. The callbacks used also vary.)
  */
 class LanguageServer extends AdvancedJsonRpc\Dispatcher
 {
@@ -763,7 +757,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     public function exit()
     {
-        // TODO: Properly exit when a tcp server forked the process that is receiving *this* message?
+        // This is handled by the main process. No forks are aftive.
         Logger::logInfo("Called exit on language server");
         exit(0);
     }

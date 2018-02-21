@@ -7,9 +7,10 @@ use Phan\Daemon\ExitException;
 use Closure;
 
 /**
- * an analyzing daemon, to be used by IDEs.
+ * A simple analyzing daemon that can be used by IDEs. (see `phan_client`)
  * Accepts requests (Currently only JSON blobs) over a unix socket or TCP sockets.
- * TODO: HTTP support, or open language protocol support
+ *
+ * @see \Phan\LanguageServer\LanguageServer for an implementation of the Language Server Protocol
  */
 class Daemon
 {
