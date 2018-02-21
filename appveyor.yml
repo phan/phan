@@ -81,10 +81,10 @@ build_script:
 
 test_script:
 - cmd: cd C:\projects\phan
-- cmd: php composer.phar install --prefer-dist
+- cmd: php composer.phar install --classmap-authoritative --prefer-dist
 - cmd: php phan
 - cmd: .\vendor\bin\phpunit --verbose
 # Verify that a phar can be built and executed under windows
 - cmd: mkdir build
-- cmd: php -d phar.readonly=0 package.php
+- cmd: php -d phar.readonly=0 internal/package.php
 - cmd: php build/phan.phar --quick
