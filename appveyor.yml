@@ -1,4 +1,3 @@
-# Based on igbinary and php-ast's appveyor config.
 # This tests against the latest stable minor version of PHP 7 (Currently 7.1)
 # The project name is the same as the build id used, e.g. https://www.appveyor.com/docs/environment-variables/
 
@@ -16,6 +15,15 @@ environment:
     - PHP_EXT_VERSION: '7.2'
       PHP_VERSION: '7.2.2'
       VC_VERSION: 15
+
+init:
+    - SET PATH=c:\projects\php;C:\projects\composer;%PATH%
+
+# There are more than one version of php and php-ast that could be installed (for php 7.1 and 7.2),
+# so I'm not sure how to cache those.
+cache:
+    - '%LOCALAPPDATA%\Composer\files -> composer.lock'
+    - 'C:\projects\composer\composer.phar'
 
 branches:
   only:
@@ -35,7 +43,7 @@ build_script:
 
     SET PHP_ZIP_BASENAME=php-%PHP_VERSION%-nts-Win32-VC%VC_VERSION%-x86.zip
 
-    appveyor DownloadFile http://windows.php.net/downloads/releases/archives/%PHP_ZIP_BASENAME% || appveyor DownloadFile http://windows.php.net/downloads/releases/%PHP_ZIP_BASENAME%
+    curl -fsS http://windows.php.net/downloads/releases/archives/%PHP_ZIP_BASENAME% -o %PHP_ZIP_BASENAME% || curl -fsS http://windows.php.net/downloads/releases/%PHP_ZIP_BASENAME% -o %PHP_ZIP_BASENAME%
 
     7z x -y %PHP_ZIP_BASENAME%
 
@@ -45,7 +53,7 @@ build_script:
 
     SET AST_ZIP_BASENAME=php_ast-0.1.6-%PHP_EXT_VERSION%-nts-vc%VC_VERSION%-x86.zip
 
-    appveyor DownloadFile http://windows.php.net/downloads/pecl/releases/ast/0.1.6/%AST_ZIP_BASENAME%
+    curl -fsS http://windows.php.net/downloads/pecl/releases/ast/0.1.6/%AST_ZIP_BASENAME% -o %AST_ZIP_BASENAME%
 
     7z x %AST_ZIP_BASENAME% php_ast.dll -y >nul
 
@@ -67,24 +75,21 @@ build_script:
 
     echo extension=php_soap.dll >> php.ini
 
-    SET PATH=c:\projects\php;%PATH%
-
     echo %PATH%
 
     php -v
 
     php -m
 
-    cd C:\projects\phan
+    IF NOT exist "C:\projects\composer\composer.phar" ( curl --create-dirs -fsS https://getcomposer.org/composer.phar -o "C:\projects\composer\composer.phar" )
 
-    appveyor DownloadFile https://getcomposer.org/composer.phar
 
 test_script:
 - cmd: cd C:\projects\phan
-- cmd: php composer.phar install --prefer-dist
+- cmd: php C:\projects\composer\composer.phar install --classmap-authoritative --prefer-dist
 - cmd: php phan
 - cmd: .\vendor\bin\phpunit --verbose
 # Verify that a phar can be built and executed under windows
 - cmd: mkdir build
-- cmd: php -d phar.readonly=0 package.php
+- cmd: php -d phar.readonly=0 internal/package.php
 - cmd: php build/phan.phar --quick
