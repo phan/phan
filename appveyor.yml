@@ -1,4 +1,3 @@
-# Based on igbinary and php-ast's appveyor config.
 # This tests against the latest stable minor version of PHP 7 (Currently 7.1)
 # The project name is the same as the build id used, e.g. https://www.appveyor.com/docs/environment-variables/
 
@@ -16,6 +15,15 @@ environment:
     - PHP_EXT_VERSION: '7.2'
       PHP_VERSION: '7.2.2'
       VC_VERSION: 15
+
+init:
+    - SET PATH=c:\projects\php;C:\projects\composer;%PATH%
+
+# There are more than one version of php and php-ast that could be installed (for php 7.1 and 7.2),
+# so I'm not sure how to cache those.
+cache:
+    - '%LOCALAPPDATA%\Composer\files -> composer.lock'
+    - 'C:\projects\composer\composer.phar'
 
 branches:
   only:
@@ -67,19 +75,18 @@ build_script:
 
     echo extension=php_soap.dll >> php.ini
 
-    SET PATH=c:\projects\php;%PATH%
-
     echo %PATH%
 
     php -v
 
     php -m
 
-    curl -fsS https://getcomposer.org/composer.phar -o C:\projects\phan\composer.phar
+    IF NOT exist "C:\projects\composer\composer.phar" ( curl --create-dirs -fsS https://getcomposer.org/composer.phar -o "C:\projects\composer\composer.phar" )
+
 
 test_script:
 - cmd: cd C:\projects\phan
-- cmd: php composer.phar install --classmap-authoritative --prefer-dist
+- cmd: php C:\projects\composer\composer.phar install --classmap-authoritative --prefer-dist
 - cmd: php phan
 - cmd: .\vendor\bin\phpunit --verbose
 # Verify that a phar can be built and executed under windows
