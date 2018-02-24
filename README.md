@@ -248,6 +248,11 @@ Usage: ./phan [options] [files...]
  -b, --backward-compatibility-checks
   Check for potential PHP 5 -> PHP 7 BC issues
 
+ --target-php-version {7.0,7.1,7.2,native}
+  The PHP version that the codebase will be checked for compatibility against.
+  For best results, the PHP binary used to run Phan should have the same PHP version.
+  (Phan relies on Reflection for some param counts and checks for undefined classes/methods/functions)
+
  -i, --ignore-undeclared
   Ignore undeclared functions and classes
 

@@ -851,6 +851,9 @@ class Config
                     $value = sprintf("%.1f", $value);
                 }
                 $value = (string) ($value ?: PHP_VERSION);
+                if (strtolower($value) === 'native') {
+                    $value = PHP_VERSION;
+                }
 
                 if (version_compare($value, '7.1') < 0) {
                     self::$closest_target_php_version_id = 70000;

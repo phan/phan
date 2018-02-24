@@ -5,11 +5,13 @@ Phan NEWS
 
 The Phan 0.12.0 release supports analysis of php 7.0-7.2.
 
-### Ported from Phan 0.10.6 (dev)
-
 New Features(CLI, Configs)
++ Add a `target_php_version` config setting, which can be set to `'7.0'`, `'7.1'`, `'7.2'`, or `null`/`'native'`. (#1174)
+  This can be overriden via the CLI option `--target-php-version {7.0,7.1,7.2,native}`
 + Add `--init` CLI flag and CLI options to affect the generated config. (#145)
   (Options: `--init-level=1..5`, `--init-analyze-dir=path/to/src`, `--init-analyze-file=path/to/file.php`, `--init-no-composer`, `--init-overwrite`)
+
+New Features(Analysis)
 + Add a non-standard way to explicitly set var types inline.  (#890)
   `; '@phan-var T $varName'; expression_using($varName);` and
   `; '@phan-var-force T $varName'; expression_using($varName);`
@@ -49,12 +51,15 @@ New Features(CLI, Configs)
   class Example { }
   ```
 
++ Add `CompatibleNullableTypePHP70`, `CompatibleShortArrayAssignPHP70`, `CompatibleKeyedArrayAssignPHP70`,
+  `CompatibleKeyedArrayAssignPHP70`, and `CompatibleIterableTypePHP70`, (#1174, #624, #449)
+  which are emitted when the `target_php_version` is less than '7.1'.
++ Add `CompatibleObjectTypePHP71`, which is emitted for the `object` typehint when the `target_php_version`
+  is less than 7.2. (#1174, #827)
 + Add `PhanTypeMismatchDimFetchNullable`, which is emitted if the non-null
   version of the dimension type would be a valid index. (#1472)
 + Emit `PhanTypeArraySuspiciousNullable` when accessing fields of a nullable array (now including `?(T[])`, etc.). (#1472)
   (Stop emitting PhanTypeArraySuspicious for `?array`)
-
-New Features(Analysis)
 + Add `PhanNoopBinaryOperator` and `PhanNoopUnaryOperator` checks (#1404)
 + Add `PhanCommentParamOutOfOrder` code style check. (#1401)
   This checks that `@param` annotations appear in the same order as the real parameters.
