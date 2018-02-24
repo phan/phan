@@ -111,18 +111,30 @@ class ParameterTypesAnalyzer
 
         foreach ($method->getRealParameterList() as $real_parameter) {
             foreach ($real_parameter->getUnionType()->getTypeSet() as $type) {
-                if ($php70_checks && $type->getIsNullable()) {
-                    if ($real_parameter->getIsUsingNullableSyntax()) {
+                $type_class = \get_class($type);
+                if ($php70_checks) {
+                    if ($type->getIsNullable()) {
+                        if ($real_parameter->getIsUsingNullableSyntax()) {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $method->getContext(),
+                                Issue::CompatibleNullableTypePHP70,
+                                $real_parameter->getFileRef()->getLineNumberStart(),
+                                (string)$type
+                            );
+                        }
+                    }
+                    if ($type_class === IterableType::class) {
                         Issue::maybeEmit(
                             $code_base,
                             $method->getContext(),
-                            Issue::CompatibleNullableTypePHP70,
+                            Issue::CompatibleIterableTypePHP70,
                             $real_parameter->getFileRef()->getLineNumberStart(),
                             (string)$type
                         );
                     }
                 }
-                if ($type instanceof ObjectType) {
+                if ($type_class === ObjectType::class) {
                     Issue::maybeEmit(
                         $code_base,
                         $method->getContext(),
@@ -134,6 +146,7 @@ class ParameterTypesAnalyzer
             }
         }
         foreach ($method->getRealReturnType()->getTypeSet() as $type) {
+            $type_class = \get_class($type);
             if ($php70_checks) {
                 if ($type->getIsNullable()) {
                     Issue::maybeEmit(
@@ -145,7 +158,7 @@ class ParameterTypesAnalyzer
                     );
                 }
                 // Could check for use statements, but `php7.1 -l path/to/file.php` would do that already.
-                if ($type instanceof VoidType) {
+                if ($type_class === VoidType::class) {
                     Issue::maybeEmit(
                         $code_base,
                         $method->getContext(),
@@ -153,9 +166,17 @@ class ParameterTypesAnalyzer
                         $method->getFileRef()->getLineNumberStart(),
                         (string)$type
                     );
+                } elseif ($type_class === IterableType::class) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::CompatibleIterableTypePHP70,
+                        $method->getFileRef()->getLineNumberStart(),
+                        (string)$type
+                    );
                 }
             }
-            if ($type instanceof ObjectType) {
+            if ($type_class === ObjectType::class) {
                 Issue::maybeEmit(
                     $code_base,
                     $method->getContext(),

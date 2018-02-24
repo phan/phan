@@ -229,23 +229,24 @@ class Issue
     const AccessExtendsFinalClassInternal        = 'PhanAccessExtendsFinalClassInternal';
     const AccessOverridesFinalMethod             = 'PhanAccessOverridesFinalMethod';
     const AccessOverridesFinalMethodInternal     = 'PhanAccessOverridesFinalMethodInternal';
-    const AccessOverridesFinalMethodPHPDoc     = 'PhanAccessOverridesFinalMethodPHPDoc';
+    const AccessOverridesFinalMethodPHPDoc       = 'PhanAccessOverridesFinalMethodPHPDoc';
 
     // Issue::CATEGORY_COMPATIBLE
-    const CompatibleExpressionPHP7  = 'PhanCompatibleExpressionPHP7';
-    const CompatiblePHP7            = 'PhanCompatiblePHP7';
-    const CompatibleNullableTypePHP70 = 'PhanCompatibleNullableTypePHP70';
-    const CompatibleShortArrayAssignPHP70 = 'PhanCompatibleShortArrayAssignPHP70';
-    const CompatibleKeyedArrayAssignPHP70 = 'PhanCompatibleKeyedArrayAssignPHP70';
-    const CompatibleVoidTypePHP70 = 'PhanCompatibleVoidTypePHP70';
-    const CompatibleObjectTypePHP71 = 'PhanCompatibleNullableTypePHP71';
+    const CompatibleExpressionPHP7          = 'PhanCompatibleExpressionPHP7';
+    const CompatiblePHP7                    = 'PhanCompatiblePHP7';
+    const CompatibleNullableTypePHP70       = 'PhanCompatibleNullableTypePHP70';
+    const CompatibleShortArrayAssignPHP70   = 'PhanCompatibleShortArrayAssignPHP70';
+    const CompatibleKeyedArrayAssignPHP70   = 'PhanCompatibleKeyedArrayAssignPHP70';
+    const CompatibleVoidTypePHP70           = 'PhanCompatibleVoidTypePHP70';
+    const CompatibleIterableTypePHP70       = 'PhanCompatibleIterableTypePHP70';
+    const CompatibleObjectTypePHP71         = 'PhanCompatibleNullableTypePHP71';
 
     // Issue::CATEGORY_GENERIC
-    const TemplateTypeConstant      = 'PhanTemplateTypeConstant';
-    const TemplateTypeStaticMethod  = 'PhanTemplateTypeStaticMethod';
+    const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
+    const TemplateTypeStaticMethod   = 'PhanTemplateTypeStaticMethod';
     const TemplateTypeStaticProperty = 'PhanTemplateTypeStaticProperty';
-    const GenericGlobalVariable     = 'PhanGenericGlobalVariable';
-    const GenericConstructorTypes   = 'PhanGenericConstructorTypes';
+    const GenericGlobalVariable      = 'PhanGenericGlobalVariable';
+    const GenericConstructorTypes    = 'PhanGenericConstructorTypes';
 
     // Issue::CATEGORY_COMMENT
     const InvalidCommentForDeclarationType = 'PhanInvalidCommentForDeclarationType';
@@ -2028,12 +2029,20 @@ class Issue
                 3005
             ),
             new Issue(
+                self::CompatibleIterableTypePHP70,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Return type '{TYPE}' means a Traversable/array value starting in PHP 7.1. In PHP 7.0, iterable refers to a class/interface with the name 'iterable'",
+                self::REMEDIATION_B,
+                3006
+            ),
+            new Issue(
                 self::CompatibleObjectTypePHP71,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
                 "Type '{TYPE}' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'",
                 self::REMEDIATION_B,
-                3006
+                3007
             ),
 
             // Issue::CATEGORY_GENERIC
