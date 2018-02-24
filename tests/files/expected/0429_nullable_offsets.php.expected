@@ -1,0 +1,8 @@
+%s:10 PhanTypeArraySuspiciousNullable Suspicious array access to nullable ?string[]
+%s:11 PhanTypeArraySuspiciousNullable Suspicious array access to nullable ?string[]
+%s:11 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:12 PhanTypeMismatchDimFetch When fetching an array index from a value of type array<int,string>, found an array index of type string, but expected the index to be of type int
+%s:14 PhanTypeMismatchDimFetch When fetching an array index from a value of type array<int,string>, found an array index of type string, but expected the index to be of type int
+%s:16 PhanTypeMismatchDimFetchNullable When fetching an array index from a value of type array<int,string>, found an array index of type ?int, but expected the index to be of the non-nullable type int
+%s:17 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:17 PhanTypeMismatchDimFetchNullable When fetching an array index from a value of type array<int,string>, found an array index of type ?int, but expected the index to be of the non-nullable type int

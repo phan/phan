@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -xeu
 
-composer.phar install --prefer-dist --no-dev
+composer.phar install --classmap-authoritative --prefer-dist --no-dev
 rm -rf build
 mkdir build
-php -d phar.readonly=0 package.php
+php -d phar.readonly=0 internal/package.php
 php build/phan.phar --version

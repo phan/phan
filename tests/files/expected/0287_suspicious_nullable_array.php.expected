@@ -1,1 +1,1 @@
-%s:3 PhanTypeArraySuspicious Suspicious array access to ?array
+%s:3 PhanTypeArraySuspiciousNullable Suspicious array access to nullable ?array

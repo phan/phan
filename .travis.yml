@@ -22,8 +22,10 @@ before_install:
   - ./tests/setup.sh
   - composer validate
 
+# --classmap-authoritative shouldn't affect phan's behavior, but is faster.
+# Use it for travis and published phars.
 install:
-  - composer --ignore-platform-reqs --prefer-dist install
+  - composer --prefer-dist --classmap-authoritative --ignore-platform-reqs install
 
 # TEST_SUITES contains 1 or more space-separated value for TEST_SUITE
 # We have a fake TEST_SUITE which runs phan, and check if the exit code is non-zero and the standard output is non-empty.
@@ -31,4 +33,4 @@ install:
 # This was moved into a separate script to stop cluttering up .travis.yml
 script:
   - for TEST_SUITE in $TEST_SUITES; do echo "Running $TEST_SUITE"; tests/run_test "$TEST_SUITE" || exit $?; done
-  - php package.php
+  - php internal/package.php

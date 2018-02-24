@@ -813,7 +813,8 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param array<int,Node> $children
      * @param array<int|string,true> $key_set
      */
-    private function createArrayShapeType(array $children, array $key_set) : ArrayShapeType {
+    private function createArrayShapeType(array $children, array $key_set) : ArrayShapeType
+    {
         \reset($key_set);
         $field_types = [];
 
@@ -1133,6 +1134,14 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // If we have generics, we're all set
         if (!$generic_types->isEmpty()) {
+            if ($this->isSuspiciousNullable($union_type)) {
+                $this->emitIssue(
+                    Issue::TypeArraySuspiciousNullable,
+                    $node->lineno ?? 0,
+                    (string)$union_type
+                );
+            }
+
             if (!$dim_type->isEmpty()) {
                 if (!$union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
                     if (Config::getValue('scalar_array_key_cast')) {
@@ -1144,11 +1153,28 @@ class UnionTypeVisitor extends AnalysisVisitor
                         );
                     }
                     if (!$dim_type->canCastToUnionType($expected_key_type)) {
+                        $issue_type = Issue::TypeMismatchDimFetch;
+
+                        if ($dim_type->containsNullable()) {
+                            if ($dim_type->nonNullableClone()->canCastToUnionType($expected_key_type)) {
+                                $issue_type = Issue::TypeMismatchDimFetchNullable;
+                            }
+                        }
+                        if ($this->should_catch_issue_exception) {
+                            $this->emitIssue(
+                                $issue_type,
+                                $node->lineno ?? 0,
+                                (string)$union_type,
+                                (string)$dim_type,
+                                (string)$expected_key_type
+                            );
+                            return $generic_types;
+                        }
                         throw new IssueException(
-                            Issue::fromType(Issue::TypeMismatchDimFetch)(
+                            Issue::fromType($issue_type)(
                                 $this->context->getFile(),
                                 $node->lineno ?? 0,
-                                [$union_type, (string)$dim_type, $expected_key_type]
+                                [(string)$union_type, (string)$dim_type, (string)$expected_key_type]
                             )
                         );
                     }
@@ -1208,6 +1234,16 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         return $element_types;
+    }
+
+    private function isSuspiciousNullable(UnionType $union_type) : bool
+    {
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type->getIsNullable() && ($type instanceof ArrayType || $type instanceof StringType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

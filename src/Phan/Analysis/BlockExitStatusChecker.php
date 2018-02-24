@@ -22,10 +22,8 @@ use Phan\AST\Visitor\KindVisitorImplementation;
  *   are node types which are known to not have flags in AST version 40.
  * - In the future, add a new property such as $node->children['__exitStatus'] if used for a node type with flags, or use the higher bits.
  *
- * TODO: Move to AST/ folder?
  * TODO: Change to AnalysisVisitor if this ever emits issues.
  * TODO: Analyze switch (if there is a default) in another PR (And handle fallthrough)
- * TODO: Refactor this class to be able to express return values such as "This will return or break, but it won't throw".
  */
 final class BlockExitStatusChecker extends KindVisitorImplementation
 {
@@ -68,7 +66,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if (!$node) {
             return self::STATUS_PROCEED;
         }
-        $result = $this($node);
+        $result = $this->__invoke($node);
         \assert(\is_int($result), 'Expected int');
         \assert($result > 0, 'Expected positive int');
         return $result;
@@ -370,7 +368,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if (!($expr instanceof Node)) {
             return self::STATUS_PROCEED;
         }
-        return $this($expr);
+        return $this->__invoke($expr);
     }
 
     // A trigger_error statement may or may not exit, depending on the constant and user configuration.

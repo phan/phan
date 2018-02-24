@@ -30,6 +30,8 @@ use Phan\Library\Option;
 use Phan\Library\Some;
 use Phan\Plugin\ConfigPluginSet;
 
+use Closure;
+
 class Clazz extends AddressableElement
 {
     use \Phan\Memoize;
@@ -2660,5 +2662,24 @@ class Clazz extends AddressableElement
 
         $this->hydrateOnce($code_base);
         return true;
+    }
+
+    /**
+     * @internal - Used by daemon mode to restore an element to the state it had before parsing.
+     * @return Closure
+     */
+    public function createRestoreCallback()
+    {
+        // NOTE: Properties, Methods, and closures are restored separately.
+        $are_constants_hydrated = $this->are_constants_hydrated;
+        $is_hydrated = $this->is_hydrated;
+        $original_union_type = $this->getUnionType();
+
+        return function() use($original_union_type, $is_hydrated, $are_constants_hydrated) {
+            $this->memoizeFlushAll();
+            $this->are_constants_hydrated = $are_constants_hydrated;
+            $this->is_hydrated = $is_hydrated;
+            $this->setUnionType($original_union_type);
+        };
     }
 }
