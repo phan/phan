@@ -14,6 +14,7 @@ use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
+use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 
@@ -34,6 +35,10 @@ class ParameterTypesAnalyzer
         }
 
         self::checkCommentParametersAreInOrder($code_base, $method);
+        $target_php_version = Config::get_closest_target_php_version_id();
+        if ($target_php_version < 70200) {
+            self::analyzeRealSignatureCompatibility($code_base, $method, $target_php_version);
+        }
 
         // Look at each parameter to make sure their types
         // are valid
@@ -94,6 +99,33 @@ class ParameterTypesAnalyzer
                 }
             }
             self::analyzeOverrideSignature($code_base, $method);
+        }
+    }
+
+    private static function analyzeRealSignatureCompatibility(CodeBase $code_base, FunctionInterface $method, int $target_php_version) {
+        $php70_checks = $target_php_version < 70100;
+
+        foreach ($method->getRealParameterList() as $real_parameter) {
+            foreach ($real_parameter->getUnionType()->getTypeSet() as $type) {
+                if ($php70_checks && $type->getIsNullable()) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::CompatibleNullableTypePHP70,
+                        $real_parameter->getFileRef()->getLineNumberStart(),
+                        (string)$type
+                    );
+                }
+                if ($type instanceof ObjectType) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::CompatibleObjectTypePHP71,
+                        $real_parameter->getFileRef()->getLineNumberStart(),
+                        (string)$type
+                    );
+                }
+            }
         }
     }
 

@@ -234,6 +234,8 @@ class Issue
     // Issue::CATEGORY_COMPATIBLE
     const CompatibleExpressionPHP7  = 'PhanCompatibleExpressionPHP7';
     const CompatiblePHP7            = 'PhanCompatiblePHP7';
+    const CompatibleNullableTypePHP70 = 'PhanCompatibleNullableTypePHP70';
+    const CompatibleObjectTypePHP71 = 'PhanCompatibleNullableTypePHP71';
 
     // Issue::CATEGORY_GENERIC
     const TemplateTypeConstant      = 'PhanTemplateTypeConstant';
@@ -1989,6 +1991,22 @@ class Issue
                 "{CLASS} expression may not be PHP 7 compatible",
                 self::REMEDIATION_B,
                 3001
+            ),
+            new Issue(
+                self::CompatibleNullableTypePHP70,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "Nullable type '{TYPE}' is not compatible with PHP 7.0",
+                self::REMEDIATION_B,
+                3002
+            ),
+            new Issue(
+                self::CompatibleObjectTypePHP71,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "Type '{TYPE}' is treated differently in starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class with the name 'object'.",
+                self::REMEDIATION_B,
+                3003
             ),
 
             // Issue::CATEGORY_GENERIC
