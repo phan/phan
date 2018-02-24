@@ -229,18 +229,24 @@ class Issue
     const AccessExtendsFinalClassInternal        = 'PhanAccessExtendsFinalClassInternal';
     const AccessOverridesFinalMethod             = 'PhanAccessOverridesFinalMethod';
     const AccessOverridesFinalMethodInternal     = 'PhanAccessOverridesFinalMethodInternal';
-    const AccessOverridesFinalMethodPHPDoc     = 'PhanAccessOverridesFinalMethodPHPDoc';
+    const AccessOverridesFinalMethodPHPDoc       = 'PhanAccessOverridesFinalMethodPHPDoc';
 
     // Issue::CATEGORY_COMPATIBLE
-    const CompatibleExpressionPHP7  = 'PhanCompatibleExpressionPHP7';
-    const CompatiblePHP7            = 'PhanCompatiblePHP7';
+    const CompatibleExpressionPHP7          = 'PhanCompatibleExpressionPHP7';
+    const CompatiblePHP7                    = 'PhanCompatiblePHP7';
+    const CompatibleNullableTypePHP70       = 'PhanCompatibleNullableTypePHP70';
+    const CompatibleShortArrayAssignPHP70   = 'PhanCompatibleShortArrayAssignPHP70';
+    const CompatibleKeyedArrayAssignPHP70   = 'PhanCompatibleKeyedArrayAssignPHP70';
+    const CompatibleVoidTypePHP70           = 'PhanCompatibleVoidTypePHP70';
+    const CompatibleIterableTypePHP70       = 'PhanCompatibleIterableTypePHP70';
+    const CompatibleObjectTypePHP71         = 'PhanCompatibleNullableTypePHP71';
 
     // Issue::CATEGORY_GENERIC
-    const TemplateTypeConstant      = 'PhanTemplateTypeConstant';
-    const TemplateTypeStaticMethod  = 'PhanTemplateTypeStaticMethod';
+    const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
+    const TemplateTypeStaticMethod   = 'PhanTemplateTypeStaticMethod';
     const TemplateTypeStaticProperty = 'PhanTemplateTypeStaticProperty';
-    const GenericGlobalVariable     = 'PhanGenericGlobalVariable';
-    const GenericConstructorTypes   = 'PhanGenericConstructorTypes';
+    const GenericGlobalVariable      = 'PhanGenericGlobalVariable';
+    const GenericConstructorTypes    = 'PhanGenericConstructorTypes';
 
     // Issue::CATEGORY_COMMENT
     const InvalidCommentForDeclarationType = 'PhanInvalidCommentForDeclarationType';
@@ -1989,6 +1995,54 @@ class Issue
                 "{CLASS} expression may not be PHP 7 compatible",
                 self::REMEDIATION_B,
                 3001
+            ),
+            new Issue(
+                self::CompatibleNullableTypePHP70,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Nullable type '{TYPE}' is not compatible with PHP 7.0",
+                self::REMEDIATION_B,
+                3002
+            ),
+            new Issue(
+                self::CompatibleShortArrayAssignPHP70,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Square bracket syntax for an array destructuring assignment is not compatible with PHP 7.0",
+                self::REMEDIATION_A,
+                3003
+            ),
+            new Issue(
+                self::CompatibleKeyedArrayAssignPHP70,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Using array keys in an array destructuring assignment is not compatible with PHP 7.0",
+                self::REMEDIATION_B,
+                3004
+            ),
+            new Issue(
+                self::CompatibleVoidTypePHP70,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Return type '{TYPE}' means the absense of a return value starting in PHP 7.1. In PHP 7.0, void refers to a class/interface with the name 'void'",
+                self::REMEDIATION_B,
+                3005
+            ),
+            new Issue(
+                self::CompatibleIterableTypePHP70,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Return type '{TYPE}' means a Traversable/array value starting in PHP 7.1. In PHP 7.0, iterable refers to a class/interface with the name 'iterable'",
+                self::REMEDIATION_B,
+                3006
+            ),
+            new Issue(
+                self::CompatibleObjectTypePHP71,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Type '{TYPE}' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'",
+                self::REMEDIATION_B,
+                3007
             ),
 
             // Issue::CATEGORY_GENERIC

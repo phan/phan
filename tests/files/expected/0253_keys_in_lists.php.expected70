@@ -1,0 +1,2 @@
+%s:14 PhanTypeMismatchArgument Argument 1 (p1) is int|string but \f253_1() takes bool defined at %s:2
+%s:15 PhanTypeMismatchArgument Argument 1 (p1) is int|string but \f253_1() takes bool defined at %s:2

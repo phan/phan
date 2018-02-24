@@ -14,6 +14,7 @@ use \Phan\Issue;
  * in addition to testing backwards compatibility checks and dead code detection.
  */
 return [
+    "target_php_version" => '7.1',
 
     // If true, missing properties will be created when
     // they are first seen. If false, we'll report an

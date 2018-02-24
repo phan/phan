@@ -62,7 +62,15 @@ class Config
     private static $quick_mode = false;
     // End of the 4 most commonly accessed configs.
 
+    private static $closest_target_php_version_id = null;
+
     const DEFAULT_CONFIGURATION = [
+        // Supported values: '7.0', '7.1', '7.2', null.
+        // If this is set to null,
+        // then Phan assumes the PHP version which is closest to the minor version
+        // of the php executable used to execute phan.
+        "target_php_version" => null,
+
         // A list of individual files to include in analysis
         // with a path relative to the root directory of the
         // project
@@ -162,6 +170,13 @@ class Config
         // can add quite a bit of time to the analysis.
         // This will also check if final methods are overridden, etc.
         'analyze_signature_compatibility' => true,
+
+        // Set this to true to allow contravariance in real parameter types of method overrides
+        // (Users may enable this if analyzing projects that support only php 7.2+)
+        // See https://secure.php.net/manual/en/migration72.new-features.php#migration72.new-features.param-type-widening
+        // This is false by default. (Will warn if real parameter types are omitted in an override)
+        // If this is null, this will be inferred from target_php_version.
+        'allow_method_param_type_widening' => false,
 
         // If enabled, inherit any missing phpdoc for types from
         // the parent method if none is provided.
@@ -761,6 +776,11 @@ class Config
     {
         return self::$quick_mode;
     }
+
+    public static function get_closest_target_php_version_id() : int
+    {
+        return self::$closest_target_php_version_id;
+    }
     // @codingStandardsIgnoreEnd
 
     /**
@@ -818,6 +838,33 @@ class Config
                 break;
             case 'quick_mode':
                 self::$quick_mode = $value;
+                break;
+            case 'allow_method_param_type_widening':
+                self::$configuration['allow_method_param_type_widening_original'] = $value;
+                if ($value === null) {
+                    // If this setting is set to null, infer it based on the closest php version id.
+                    self::$configuration[$name] = self::$closest_target_php_version_id >= 70200;
+                }
+                break;
+            case 'target_php_version':
+                if (is_float($value)) {
+                    $value = sprintf("%.1f", $value);
+                }
+                $value = (string) ($value ?: PHP_VERSION);
+                if (strtolower($value) === 'native') {
+                    $value = PHP_VERSION;
+                }
+
+                if (version_compare($value, '7.1') < 0) {
+                    self::$closest_target_php_version_id = 70000;
+                } elseif (version_compare($value, '7.2') < 0) {
+                    self::$closest_target_php_version_id = 70100;
+                } else {
+                    self::$closest_target_php_version_id = 70200;
+                }
+                if ((self::$configuration['allow_method_param_type_widening_original'] ?? null) === null) {
+                    self::$configuration['allow_method_param_type_widening'] = self::$closest_target_php_version_id >= 70200;
+                }
                 break;
         }
     }

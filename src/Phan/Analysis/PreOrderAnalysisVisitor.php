@@ -4,6 +4,7 @@ namespace Phan\Analysis;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\NodeException;
 use Phan\Issue;
@@ -491,6 +492,24 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * A node to parse
      *
      * @return Context
+     * An unchanged context resulting from parsing the node
+     */
+    public function visitAssign(Node $node) : Context
+    {
+        // In php 7.0, a **valid** parsed AST would be an \ast\AST_LIST.
+        // However, --force-polyfill-parser will emit \ast\AST_ARRAY.
+        $var_node = $node->children['var'];
+        if (Config::get_closest_target_php_version_id() < 70100 && $node->children['var']->kind === \ast\AST_ARRAY) {
+            $this->analyzeArrayAssignBackwardsCompatibility($var_node);
+        }
+        return $this->context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
@@ -517,19 +536,23 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $non_generic_expression_union_type =
             $expression_union_type->genericArrayElementTypes();
 
-        if ($node->children['value']->kind == \ast\AST_ARRAY) {
-            foreach ($node->children['value']->children as $child_node) {
+        $value_node = $node->children['value'];
+        if ($value_node->kind == \ast\AST_ARRAY) {
+            if (Config::get_closest_target_php_version_id() < 70100) {
+                $this->analyzeArrayAssignBackwardsCompatibility($value_node);
+            }
+            foreach ($value_node->children as $child_node) {
                 // $key_node = $child_node->children['key'] ?? null;
-                $value_node = $child_node->children['value'] ?? null;
+                $value_elem_node = $child_node->children['value'] ?? null;
 
                 // for syntax like: foreach ([] as list(, $a));
-                if ($value_node === null) {
+                if ($value_elem_node === null) {
                     continue;
                 }
-                \assert($value_node instanceof Node);
+                \assert($value_elem_node instanceof Node);
 
                 $variable = Variable::fromNodeInContext(
-                    $value_node,
+                    $value_elem_node,
                     $this->context,
                     $this->code_base,
                     false
@@ -557,7 +580,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         } else {
             // Create a variable for the value
             $variable = Variable::fromNodeInContext(
-                $node->children['value'],
+                $value_node,
                 $this->context,
                 $this->code_base,
                 false
@@ -576,10 +599,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         }
 
         // If there's a key, make a variable out of that too
-        if (!empty($node->children['key'])) {
-            if (($node->children['key'] instanceof \ast\Node)
-                && ($node->children['key']->kind == \ast\AST_LIST)
-            ) {
+        $key_node = $node->children['key'];
+        if ($key_node instanceof \ast\Node) {
+            if ($key_node->kind == \ast\AST_LIST) {
                 throw new NodeException(
                     $node,
                     "Can't use list() as a key element - aborting"
@@ -587,7 +609,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
 
             $variable = Variable::fromNodeInContext(
-                $node->children['key'],
+                $key_node,
                 $this->context,
                 $this->code_base,
                 false
@@ -608,6 +630,25 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // adding variables to the existing scope
         return $this->context;
     }
+
+    private function analyzeArrayAssignBackwardsCompatibility(Node $node) {
+        if ($node->flags !== \ast\flags\ARRAY_SYNTAX_LIST) {
+            $this->emitIssue(
+                Issue::CompatibleShortArrayAssignPHP70,
+                $node->lineno ?? 0
+            );
+        }
+        foreach ($node->children as $array_elem) {
+            if (isset($array_elem->children['key'])) {
+                $this->emitIssue(
+                    Issue::CompatibleKeyedArrayAssignPHP70,
+                    $array_elem->lineno ?? 0
+                );
+                break;
+            }
+        }
+    }
+
 
     /**
      * @param Node $node

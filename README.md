@@ -20,10 +20,10 @@ composer require --dev phan/phan
 With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/phan/phan/wiki/Getting-Started#creating-a-config-file) in
 your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
 
-This version (branch) of Phan depends on PHP 7.1.x with the [php-ast](https://github.com/nikic/php-ast) extension (0.1.5 or newer, uses AST version 50) and supports PHP version 7.1+ syntax.
+This version (branch) of Phan depends on PHP 7.x with the [php-ast](https://github.com/nikic/php-ast) extension (0.1.5 or newer, uses AST version 50) and supports PHP version 7.0-7.2 syntax.
+This branch will be the basis for the upcoming 0.12.x releases.
 Installation instructions for php-ast can be found [here](https://github.com/nikic/php-ast#installation).
-For PHP 7.0.x use the [0.8 branch](https://github.com/phan/phan/tree/0.8).
-Having PHP's `pcntl` extension installed is strongly recommended (not available on Windows), in order to support using parallel processes for analysis (or to support daemon mode).
+Having PHP's `pcntl` extension installed is strongly recommended (not available on Windows), in order to support using parallel processes for analysis (pcntl is also recommended for daemon mode).
 
 * **Alternative Installation Methods**<br />
   See [Getting Started](https://github.com/phan/phan/wiki/Getting-Started) for alternative methods of using
@@ -248,6 +248,11 @@ Usage: ./phan [options] [files...]
  -b, --backward-compatibility-checks
   Check for potential PHP 5 -> PHP 7 BC issues
 
+ --target-php-version {7.0,7.1,7.2,native}
+  The PHP version that the codebase will be checked for compatibility against.
+  For best results, the PHP binary used to run Phan should have the same PHP version.
+  (Phan relies on Reflection for some param counts and checks for undefined classes/methods/functions)
+
  -i, --ignore-undeclared
   Ignore undeclared functions and classes
 
@@ -321,8 +326,9 @@ Take a look at [Annotating Your Source Code](https://github.com/phan/phan/wiki/A
 and [About Union Types](https://github.com/phan/phan/wiki/About-Union-Types) for some help
 getting started with defining types in your code.
 
-One important note is that Phan doesn't support `(int|string)[]` style annotations. Instead, use
-`int[]|string[]`. When you have arrays of mixed types, just use `array`.
+Phan supports `(int|string)[]` style annotations, and represents them internally as `int[]|string[]`
+(Both annotations are treated like array which may have integers and/or strings).
+When you have arrays of mixed types, just use `array`.
 
 The following code shows off the various annotations that are supported.
 
@@ -363,7 +369,7 @@ class C {
 Just like in PHP, any type can be nulled in the function declaration which also
 means a null is allowed to be passed in for that parameter.
 
-In the next release (0.10.4+ and other minor version releases on the same date):
+As of Phan 0.8.12+/0.10.4+/0.11.2+,
 Phan checks the type of every single element of arrays (Including keys and values).
 In practical terms, this means that `[1,2,'a']` is seen as `array<int,int|string>`,
 which Phan represents as `array<int,int>|array<int,string>`.

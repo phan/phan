@@ -563,7 +563,7 @@ final class EmptyUnionType extends UnionType
         Context $context
     ) {
         if (false) {
-            yield;
+            yield null;
         }
     }
 
@@ -593,7 +593,7 @@ final class EmptyUnionType extends UnionType
         Context $context
     ) {
         if (false) {
-            yield;  // This is a generator yielding 0 results.
+            yield null;  // This is a generator yielding 0 results. This works around a bug in tolerant-php-parser 0.0.9
         }
     }
 

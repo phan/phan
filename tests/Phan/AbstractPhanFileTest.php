@@ -27,6 +27,14 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     abstract public function getTestFiles();
 
     /**
+     * @return ?string - Can be overwritten by subclasses to get a reason to skip this directory.
+     */
+    public function getSkipReason()
+    {
+        return null;
+    }
+
+    /**
      * Setup our state before running each test
      *
      * @return void
@@ -64,25 +72,34 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      * @param string $sourceDir
      * @return string[][]
      */
-    protected function scanSourceFilesDir($sourceDir, $expectedDir)
+    protected function scanSourceFilesDir(string $sourceDir, string $expectedDir)
     {
         $files = array_filter(
             array_filter(
                 scandir($sourceDir),
                 function ($filename) {
                     // Ignore directories and hidden files.
-                    return !in_array($filename, ['.', '..'], true) && substr($filename, 0, 1) !== '.';
+                    return !in_array($filename, ['.', '..'], true) && substr($filename, 0, 1) !== '.' && preg_match('@\.php$@', $filename);
                 }
             )
         );
 
+        // NOTE: To avoid ParseError in php-ast
+        if (PHP_VERSION_ID < 70100) {
+            $suffix = '70';
+        } elseif (PHP_VERSION_ID < 70200) {
+            $suffix = '71';
+        } else {
+            $suffix = '72';
+        }
+
         return array_combine(
             $files,
             array_map(
-                function ($filename) use ($sourceDir, $expectedDir) {
+                function ($filename) use ($sourceDir, $expectedDir, $suffix) {
                     return [
-                        [$sourceDir . DIRECTORY_SEPARATOR . $filename],
-                        $expectedDir . DIRECTORY_SEPARATOR . $filename . self::EXPECTED_SUFFIX
+                        [self::getFileForPHPVersion($sourceDir . DIRECTORY_SEPARATOR . $filename, $suffix)],
+                        self::getFileForPHPVersion($expectedDir . DIRECTORY_SEPARATOR . $filename . self::EXPECTED_SUFFIX, $suffix),
                     ];
                 },
                 $files
@@ -90,11 +107,19 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         );
     }
 
+    protected function getFileForPHPVersion(string $path, string $suffix) : string
+    {
+        $suffix_path = $path . $suffix;
+        if (file_exists($suffix_path)) {
+            return $suffix_path;
+        }
+        return $path;
+    }
+
     /**
-     * This reads all files in `tests/files/src`, runs
+     * This reads all files in a test directory (e.g. `tests/files/src`), runs
      * the analyzer on each and compares the output
-     * to the files's counterpart in
-     * `tests/files/expected`
+     * to the files's counterpart in `tests/files/expected`
      *
      * @param string[] $test_file_list
      * @param string $expected_file_path

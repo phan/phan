@@ -1,0 +1,29 @@
+<?php
+/** @param ?object $y */
+function object_test(object $x, $y) : object {
+    if ($y) {
+        return $y;
+    } else if ($x->prop) {
+        return $x;
+    } else {
+        return null;  // should warn
+    }
+}
+object_test(new stdClass(), new SimpleXMLElement('<a>b</a>'));
+object_test(null, null);  // should warn about the first
+object_test([], []);  // should warn about the first
+
+/** 
+ * @param ?object $y 
+ * @return ?object
+ */
+function nullableobject_test($y) {
+    if ($y->prop ?? false) {
+        return $y;
+    } else if (rand() % 2) {
+        return $y;
+    }
+    return 'invalid';
+}
+
+$c = new object();  // wrong

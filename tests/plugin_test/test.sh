@@ -13,16 +13,29 @@ if [[ $? != 0 ]]; then
 fi
 echo "Running phan in '$PWD' ..."
 rm $ACTUAL_PATH -f || exit 1
-../../phan --memory-limit 1G | tee $ACTUAL_PATH
+
+# We use the polyfill parser because it behaves consistently in all php versions.
+../../phan --force-polyfill-parser --memory-limit 1G | tee $ACTUAL_PATH
+
 sed -i 's,\<closure_[0-9a-f]\{12\}\>,closure_%s,g' $ACTUAL_PATH
 sed -i 's,\<closure_[0-9a-f]\{12\}\>,closure_%s,g' $EXPECTED_PATH
 # diff returns a non-zero exit code if files differ or are missing
 # This outputs the difference between actual and expected output.
 echo
 echo "Comparing the output:"
+
+if [[ "$(php -r 'echo PHP_VERSION_ID;')" < 70100 ]]; then
+    echo "Skipping test cases that rely on Closure::fromCallable(), the current php version is php 7.0";
+    # Ignore results of a subset of tests in php 7.0
+    # TODO: If we imitate the reflection of php 7.1 in php 7.0, we can restore this.
+    sed -i '/^\S*dead_code_fromCallable\.php/d' $ACTUAL_PATH
+    sed -i '/^\S*dead_code_fromCallable\.php/d' $EXPECTED_PATH
+fi
+
 diff $EXPECTED_PATH $ACTUAL_PATH
 EXIT_CODE=$?
 if [ "$EXIT_CODE" == 0 ]; then
 	echo "Files $EXPECTED_PATH and output $ACTUAL_PATH are identical"
+    rm $ACTUAL_PATH
 fi
 exit $EXIT_CODE

@@ -21,5 +21,6 @@ diff $EXPECTED_PATH $ACTUAL_PATH
 EXIT_CODE=$?
 if [ "$EXIT_CODE" == 0 ]; then
 	echo "Files $EXPECTED_PATH and output $ACTUAL_PATH are identical"
+    rm $ACTUAL_PATH
 fi
 exit $EXIT_CODE

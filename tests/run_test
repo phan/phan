@@ -11,7 +11,17 @@ if [ "x$TEST_SUITE" == "x" ]; then
 fi
 case "$TEST_SUITE" in
 	__FakeSelfTest)
-		./phan
+		./phan --memory-limit 1G
+		exit $?
+		;;
+	__FakeSelfFallbackTest)
+		./phan --use-fallback-parser --memory-limit 1G
+		exit $?
+		;;
+	__FakePHP70Test)
+		# TODO: Can this use phpunit?
+		cd tests/php70_test
+		./test.sh
 		exit $?
 		;;
 	__FakeRewritingTest)

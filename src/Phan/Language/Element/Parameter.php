@@ -269,10 +269,11 @@ class Parameter extends Variable
         Node $node
     ) : Parameter {
         // Get the type of the parameter
+        $type_node = $node->children['type'];
         $union_type = UnionType::fromNode(
             $context,
             $code_base,
-            $node->children['type']
+            $type_node
         );
 
         // Create the skeleton parameter from what we know so far
@@ -282,6 +283,9 @@ class Parameter extends Variable
             $union_type,
             $node->flags ?? 0
         );
+        if (($type_node->kind ?? null) === \ast\AST_NULLABLE_TYPE) {
+            $parameter->setIsUsingNullableSyntax();
+        }
 
         // If there is a default value, store it and its type
         if (($default_node = $node->children['default']) !== null) {
@@ -459,6 +463,28 @@ class Parameter extends Variable
                 Flags::IS_WRITE_REFERENCE,
                 true
             )
+        );
+    }
+
+    /**
+     * @return void
+     */
+    private function setIsUsingNullableSyntax()
+    {
+        $this->setPhanFlags(
+            Flags::bitVectorWithState(
+                $this->getPhanFlags(),
+                Flags::IS_PARAM_USING_NULLABLE_SYNTAX,
+                true
+            )
+        );
+    }
+
+    public function getIsUsingNullableSyntax() : bool
+    {
+        return Flags::bitVectorHasState(
+            $this->getPhanFlags(),
+            Flags::IS_PARAM_USING_NULLABLE_SYNTAX
         );
     }
 

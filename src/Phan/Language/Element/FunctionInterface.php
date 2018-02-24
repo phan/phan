@@ -329,4 +329,12 @@ interface FunctionInterface extends AddressableElementInterface
      * @param Comment $comment
      */
     public function setComment(Comment $comment);
+
+    /**
+     * @return bool
+     * True if this is a magic phpdoc method (declared via (at)method on class declaration phpdoc)
+     * Always false for global functions(Func).
+     */
+    public function isFromPHPDoc() : bool;
+
 }

@@ -18,7 +18,6 @@ class CommentTest extends BaseTest
     /** @var CodeBase|null */
     protected $code_base = null;
 
-    /** @var bool */
     const overrides = [
         'read_type_annotations' => true,
         'read_magic_property_annotations' => true,

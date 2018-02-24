@@ -1,0 +1,16 @@
+%s:9 PhanTypeMismatchArgument Argument 1 (var) is array but \emitType() takes resource defined at %s:3
+%s:11 PhanTypeMismatchArgument Argument 1 (var) is bool but \emitType() takes resource defined at %s:3
+%s:13 PhanTypeMismatchArgument Argument 1 (var) is callable but \emitType() takes resource defined at %s:3
+%s:15 PhanTypeMismatchArgument Argument 1 (var) is float but \emitType() takes resource defined at %s:3
+%s:17 PhanTypeMismatchArgument Argument 1 (var) is float but \emitType() takes resource defined at %s:3
+%s:19 PhanTypeMismatchArgument Argument 1 (var) is int but \emitType() takes resource defined at %s:3
+%s:21 PhanTypeMismatchArgument Argument 1 (var) is int but \emitType() takes resource defined at %s:3
+%s:23 PhanTypeMismatchArgument Argument 1 (var) is bool but \emitType() takes resource defined at %s:3
+%s:25 PhanTypeMismatchArgument Argument 1 (var) is int but \emitType() takes resource defined at %s:3
+%s:27 PhanTypeMismatchArgument Argument 1 (var) is null but \emitType() takes resource defined at %s:3
+%s:29 PhanTypeMismatchArgument Argument 1 (var) is float|int|string but \emitType() takes resource defined at %s:3
+%s:31 PhanTypeMismatchArgument Argument 1 (var) is object but \emitType() takes resource defined at %s:3
+%s:33 PhanTypeMismatchArgument Argument 1 (var) is float but \emitType() takes resource defined at %s:3
+%s:35 PhanTypeMismatchArgument Argument 1 (var) is resource but \emitResourceType() takes string defined at %s:5
+%s:37 PhanTypeMismatchArgument Argument 1 (var) is bool|float|int|string but \emitType() takes resource defined at %s:3
+%s:39 PhanTypeMismatchArgument Argument 1 (var) is string but \emitType() takes resource defined at %s:3

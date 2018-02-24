@@ -1,4 +1,4 @@
-# This tests against the latest stable minor version of PHP 7 (Currently 7.1)
+# This tests against the supported versions of Phan 0.12.x (PHP 7.0, 7.1, 7.2)
 # The project name is the same as the build id used, e.g. https://www.appveyor.com/docs/environment-variables/
 
 version: '{branch}.{build}'
@@ -9,6 +9,9 @@ clone_depth: 1
 platform: x86
 environment:
   matrix:
+    - PHP_EXT_VERSION: '7.0'
+      PHP_VERSION: '7.0.27'
+      VC_VERSION: 14
     - PHP_EXT_VERSION: '7.1'
       PHP_VERSION: '7.1.14'
       VC_VERSION: 14

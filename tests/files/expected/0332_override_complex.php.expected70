@@ -1,0 +1,5 @@
+%s:14 PhanCommentOverrideOnNonOverrideMethod Saw an @override annotation for method \A332::abstractMethodA2, but could not find an overridden method and it is not a magic method
+%s:24 PhanCommentOverrideOnNonOverrideMethod Saw an @override annotation for method \I332::abstractMethodI2, but could not find an overridden method and it is not a magic method
+%s:30 PhanInvalidCommentForDeclarationType The phpdoc comment for @override cannot occur on a class
+%s:40 PhanCommentOverrideOnNonOverrideMethod Saw an @override annotation for method \T332::method2, but could not find an overridden method and it is not a magic method
+%s:78 PhanCommentOverrideOnNonOverrideMethod Saw an @override annotation for method \Override332::notReallyAnOverride, but could not find an overridden method and it is not a magic method

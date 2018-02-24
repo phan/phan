@@ -1,0 +1,9 @@
+<?php
+try {
+} catch (Throwable $exception) {
+    print "{$exception->getMessage()}\n";
+}
+try {
+} catch (Undef $exception) {
+    print "{$exception->getMessage()}\n";
+}

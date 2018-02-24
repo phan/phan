@@ -317,6 +317,14 @@ class Func extends AddressableElement implements FunctionInterface
         );
     }
 
+    /**
+     * @return bool Always false for global functions.
+     */
+    public function isFromPHPDoc() : bool
+    {
+        return false;
+    }
+
     public function toStub() : string
     {
         list($namespace, $string) = $this->toStubInfo();

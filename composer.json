@@ -19,7 +19,7 @@
         "sort-packages": true
     },
     "require": {
-        "php": "~7.1.0 || ~7.2.0",
+        "php": "^7.0.0",
         "ext-ast": "^0.1.5",
         "felixfbecker/advanced-json-rpc": "^3.0",
         "microsoft/tolerant-php-parser": "0.0.9",

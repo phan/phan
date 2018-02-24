@@ -25,6 +25,11 @@ use \Phan\Issue;
  * '-d' flag.
  */
 return [
+    // Supported values: '7.0', '7.1', '7.2', null.
+    // If this is set to null,
+    // then Phan assumes the PHP version which is closest to the minor version
+    // of the php executable used to execute phan.
+    "target_php_version" => null,
 
     // If true, missing properties will be created when
     // they are first seen. If false, we'll report an
@@ -106,6 +111,12 @@ return [
     // can add quite a bit of time to the analysis.
     // This will also check if final methods are overridden, etc.
     'analyze_signature_compatibility' => true,
+
+    // Set this to true to allow contravariance in real parameter types of method overrides (Introduced in php 7.2)
+    // See https://secure.php.net/manual/en/migration72.new-features.php#migration72.new-features.param-type-widening
+    // (Users may enable this if analyzing projects that support only php 7.2+)
+    // This is false by default. (Will warn if real parameter types are omitted in an override)
+    'allow_method_param_type_widening' => false,
 
     // This setting maps case insensitive strings to union types.
     // This is useful if a project uses phpdoc that differs from the phpdoc2 standard.

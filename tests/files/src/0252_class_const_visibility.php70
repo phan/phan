@@ -1,0 +1,10 @@
+<?php
+class C252_1 {
+    const A = 1;
+    public function f1() {
+        return [
+            C252_1::A
+        ];
+    }
+}
+(new C252_1)->f1();

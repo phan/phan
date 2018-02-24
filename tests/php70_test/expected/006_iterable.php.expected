@@ -1,0 +1,2 @@
+src/006_iterable.php:3 PhanCompatibleIterableTypePHP70 Return type 'iterable' means a Traversable/array value starting in PHP 7.1. In PHP 7.0, iterable refers to a class/interface with the name 'iterable'
+src/006_iterable.php:6 PhanCompatibleIterableTypePHP70 Return type 'iterable' means a Traversable/array value starting in PHP 7.1. In PHP 7.0, iterable refers to a class/interface with the name 'iterable'

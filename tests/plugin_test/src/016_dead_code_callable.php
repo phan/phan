@@ -11,7 +11,7 @@ function myfunc16unused() {
 function double16($x) { return $x * 2; }
 function double16unused($x) { return $x * 2; }
 
-function callable16() { return 16; }
+
 
 class MyClass16 {
     public static function static_func_1() {
@@ -38,7 +38,7 @@ function main16() {
     $m = new MyClass16();
     user_defined_caller([$m, 'instanceFunc']);
     var_export(array_map('double16', [3]));
-    return Closure::fromCallable('callable16');
+
 }
 main16();
 

@@ -29,6 +29,8 @@ class Flags
     // This will be compared against IS_OVERRIDE
     const IS_OVERRIDE_INTENDED         = (1 << 16);
 
+    const IS_PARAM_USING_NULLABLE_SYNTAX = (1 << 17);
+
     /**
      * Either enable or disable the given flag on
      * the given bit vector.

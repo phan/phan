@@ -5,11 +5,28 @@ if [ "$#" != 0 ]; then
 	exit 1
 fi
 
-TEST_SUITES="PhanTest"
-TEST_SUITES+=" UtilTest RasmusTest LanguageTest"
-TEST_SUITES+=" __FakeSelfTest __FakeRewritingTest __FakePluginTest __FakeFallbackTest __FakeToolTest __FakeConfigOverrideTest"
+# NOTE: We run these in a single phpunit run. The output is easier to read
+#TEST_SUITES="PhanTest"
+#TEST_SUITES+=" UtilTest"
+#TEST_SUITES+=" SoapTest"
+#TEST_SUITES+=" PHP72Test"
+#TEST_SUITES+=" RasmusTest"
+#TEST_SUITES+=" LanguageTest"
+
+TEST_SUITES="__FakeSelfTest"
+TEST_SUITES+=" __FakeSelfFallbackTest"
+TEST_SUITES+=" __FakePHP70Test"
+TEST_SUITES+=" __FakeRewritingTest"
+TEST_SUITES+=" __FakePluginTest"
+TEST_SUITES+=" __FakeFallbackTest"
+TEST_SUITES+=" __FakeToolTest"
+TEST_SUITES+=" __FakeConfigOverrideTest"
 
 FAILURES=""
+if ! ./vendor/bin/phpunit --colors; then
+	FAILURES="$FAILURES PHPUnit"
+fi
+
 for TEST_SUITE in $TEST_SUITES; do
 	echo "Running test suite: $TEST_SUITE"
 	if ! tests/run_test "$TEST_SUITE"; then

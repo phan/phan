@@ -416,7 +416,7 @@ class UnionType implements \Serializable
     public static function internalFunctionSignatureMapForFQSEN(
         $function_fqsen
     ) : array {
-        $map = self::internalFunctionSignatureMap();
+        $map = self::internalFunctionSignatureMap(Config::get_closest_target_php_version_id());
 
         if ($function_fqsen instanceof FullyQualifiedMethodName) {
             $class_fqsen =
@@ -458,18 +458,18 @@ class UnionType implements \Serializable
         while (isset($map[$function_name])) {
             // Get some static data about the function
             $type_name_struct = $map[$function_name];
-            if (empty($type_name_struct)) {
-                continue;
-            }
 
             // Figure out the return type
-            $return_type_name = \array_shift($type_name_struct);
+            $return_type_name = $type_name_struct[0];
             $return_type = $get_for_global_context($return_type_name);
 
-            $name_type_name_map = $type_name_struct;
             $parameter_name_type_map = [];
 
-            foreach ($name_type_name_map as $name => $type_name) {
+            foreach ($type_name_struct as $name => $type_name) {
+                if (\is_int($name)) {
+                    // Integer key names are reserved for metadata in the future.
+                    continue;
+                }
                 $parameter_name_type_map[$name] = $get_for_global_context($type_name) ?? self::$empty_instance;
             }
 
@@ -1951,23 +1951,83 @@ class UnionType implements \Serializable
     }
 
     /**
-     * @return array
+     * @return array<string,array<int|string,string>>
      * A map from builtin function name to type information
      *
      * @see \Phan\Language\Internal\FunctionSignatureMap
      */
-    public static function internalFunctionSignatureMap()
+    public static function internalFunctionSignatureMap(int $target_php_version) : array
     {
-        static $map = [];
+        static $php72_map = [];
 
-        if (!$map) {
-            $map_raw = require(__DIR__.'/Internal/FunctionSignatureMap.php');
-            foreach ($map_raw as $key => $value) {
-                $map[\strtolower($key)] = $value;
-            }
+        if (!$php72_map) {
+            $php72_map = self::computeLatestFunctionSignatureMap();
+        }
+        if ($target_php_version >= 70200) {
+            return $php72_map;
+        }
+        static $php71_map = [];
+        if (!$php71_map) {
+            $php71_map = self::computePHP71FunctionSignatureMap($php72_map);
+        }
+        if ($target_php_version >= 70100) {
+            return $php71_map;
+        }
+        static $php70_map = [];
+        if (!$php70_map) {
+            $php70_map = self::computePHP70FunctionSignatureMap($php71_map);
+        }
+        return $php70_map;
+    }
+
+    private static function computeLatestFunctionSignatureMap() : array
+    {
+        $map = [];
+        $map_raw = require(__DIR__.'/Internal/FunctionSignatureMap.php');
+        foreach ($map_raw as $key => $value) {
+            $map[\strtolower($key)] = $value;
+        }
+        return $map;
+    }
+
+    /**
+     * @param array<string,array<int|string,string>> $php72_map
+     * @return array<string,array<int|string,string>>
+     */
+    private static function computePHP71FunctionSignatureMap(array $php72_map) : array
+    {
+        $delta_raw = require(__DIR__.'/Internal/FunctionSignatureMap_php72_delta.php');
+        return self::applyDeltaToGetOlderSignatures($php72_map, $delta_raw);
+    }
+
+    /**
+     * @param array<string,array<int|string,string>> $php71_map
+     * @return array<string,array<int|string,string>>
+     */
+    private static function computePHP70FunctionSignatureMap(array $php71_map) : array
+    {
+        $delta_raw = require(__DIR__.'/Internal/FunctionSignatureMap_php71_delta.php');
+        return self::applyDeltaToGetOlderSignatures($php71_map, $delta_raw);
+    }
+
+    /**
+     * @param array<string,array<int|string,string>> $newer_map
+     * @param array{removed:array<string,array<int|string,string>>,added:array<string,array<int|string,string>>} $delta
+     * @return array<string,array<int|string,string>>
+     */
+    private static function applyDeltaToGetOlderSignatures(array $newer_map, array $delta) : array
+    {
+        foreach ($delta['new'] as $key => $unused_signature) {
+            // Would also unset alternates, but that step isn't necessary yet.
+            unset($newer_map[\strtolower($key)]);
+        }
+        foreach ($delta['old'] as $key => $signature) {
+            // Would also unset alternates, but that step isn't necessary yet.
+            $newer_map[\strtolower($key)] = $signature;
         }
 
-        return $map;
+        // Return the newer map after modifying it to become the older map.
+        return $newer_map;
     }
 
     /**

@@ -1,11 +1,17 @@
 Phan NEWS
 
-?? ??? 2018, Phan 0.10.6 (dev)
+?? ??? 2018, Phan 0.12.0 (dev)
 ------------------------
 
+The Phan 0.12.0 release supports analysis of php 7.0-7.2.
+
 New Features(CLI, Configs)
++ Add a `target_php_version` config setting, which can be set to `'7.0'`, `'7.1'`, `'7.2'`, or `null`/`'native'`. (#1174)
+  This can be overriden via the CLI option `--target-php-version {7.0,7.1,7.2,native}`
 + Add `--init` CLI flag and CLI options to affect the generated config. (#145)
   (Options: `--init-level=1..5`, `--init-analyze-dir=path/to/src`, `--init-analyze-file=path/to/file.php`, `--init-no-composer`, `--init-overwrite`)
+
+New Features(Analysis)
 + Add a non-standard way to explicitly set var types inline.  (#890)
   `; '@phan-var T $varName'; expression_using($varName);` and
   `; '@phan-var-force T $varName'; expression_using($varName);`
@@ -45,12 +51,15 @@ New Features(CLI, Configs)
   class Example { }
   ```
 
++ Add `CompatibleNullableTypePHP70`, `CompatibleShortArrayAssignPHP70`, `CompatibleKeyedArrayAssignPHP70`,
+  `CompatibleKeyedArrayAssignPHP70`, and `CompatibleIterableTypePHP70`, (#1174, #624, #449)
+  which are emitted when the `target_php_version` is less than '7.1'.
++ Add `CompatibleObjectTypePHP71`, which is emitted for the `object` typehint when the `target_php_version`
+  is less than 7.2. (#1174, #827)
 + Add `PhanTypeMismatchDimFetchNullable`, which is emitted if the non-null
   version of the dimension type would be a valid index. (#1472)
 + Emit `PhanTypeArraySuspiciousNullable` when accessing fields of a nullable array (now including `?(T[])`, etc.). (#1472)
   (Stop emitting PhanTypeArraySuspicious for `?array`)
-
-New Features(Analysis)
 + Add `PhanNoopBinaryOperator` and `PhanNoopUnaryOperator` checks (#1404)
 + Add `PhanCommentParamOutOfOrder` code style check. (#1401)
   This checks that `@param` annotations appear in the same order as the real parameters.
@@ -88,8 +97,10 @@ Bug fixes
 + In files with multiple namespaces, don't use `use` statements from earlier namespaces. (#1096)
 + Fix bugs analyzing code using functions/constants provided by group use statements, in addition to `use function` and `use const` statements.
 
-14 Feb 2018, Phan 0.10.5
+14 Feb 2018, Phan 0.11.3
 ------------------------
+
+### Ported from Phan 0.10.5
 
 New Features(CLI, Configs)
 + Add `--allow-polyfill-parser` and `--force-polyfill-parser` options.
@@ -111,8 +122,10 @@ Bug fixes
 + If `ignore_undeclared_variables_in_global_scope` is true, then analyze `assert()`
   and conditionals in the global scope as if the variable was defined after the check.
 
-11 Feb 2018, Phan 0.10.4
+11 Feb 2018, Phan 0.11.2
 ------------------------
+
+### Ported from Phan 0.10.4
 
 New Features(Analysis)
 
@@ -190,8 +203,10 @@ Bug fixes
 + Fix some bugs that occurred when Phan resolved inherited class constants in class elements such as properties. (#537 and #454)
 + Emit an issue when a function/method's parameter defaults refer to an undeclared class constant/global constant.
 
-20 Jan 2018, Phan 0.10.3
+20 Jan 2018, Phan 0.11.1
 ------------------------
+
+### Ported from Phan 0.10.3
 
 New Features(CLI, Configs)
 
@@ -213,8 +228,17 @@ Bug Fixes
   This is useful for expressions used for property assignments, return statements, function calls, etc.
 + Fix a few of Phan's signatures for internal functions and methods.
 
-17 Nov 2017, Phan 0.10.2
+17 Nov 2017, Phan 0.11.0
 ------------------------
+
+New Features (Analysis of PHP 7.2)
++ Support analyzing the `object` type hint in real function/method signatures. (#995)
++ Allow widening an overriding method's param types in php 7.2 branch (#1256)
+  Phan continues warning about `ParamSignatureRealMismatchHasNoParamType` by default, in case a project needs to work with older php releases.
+  Add `'allow_method_param_type_widening' => true` if you wish for Phan to stop emitting that issue category.
++ Miscellaneous function signature changes for analysis of PHP 7.2 codebases (#828)
+
+### Ported from Phan 0.10.2
 
 New Features(Analysis)
 + Enable `simplify_ast` by default.

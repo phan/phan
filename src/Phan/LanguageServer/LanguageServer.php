@@ -675,7 +675,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         return coroutine(function () : \Generator {
             // Eventually, this might block on something. Leave it as a generator.
             if (false) {
-                yield;
+                yield null;
             }
 
             // There would be an asynchronous indexing step, but the startup already did the indexing.
