@@ -38,17 +38,17 @@ use Phan\PluginV2\IssueEmitter;
  *     Analyze (and modify) a property definition, after parsing and before analyzing.
  *     (implement \Phan\PluginV2\AnalyzePropertyCapability)
  *
- *  6. public function finalize(CodeBase $code_base)
- *     Analyze (and modify) a property definition, after parsing and before analyzing.
- *     (implement \Phan\PluginV2\AnalyzePropertyCapability)
+ *  7. public function finalize(CodeBase $code_base)
+ *     Called after the analysis phase is complete.
+ *     (implement \Phan\PluginV2\FinalizeProcessCapability)
  *
- *  7. public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : \Closure[]
+ *  8. public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : \Closure[]
  *     Maps FQSEN of function or method to a closure used to analyze the function in question.
  *     'MyClass::myMethod' can be used as the FQSEN of a static or instance method.
  *     See .phan/plugins/PregRegexCheckerPlugin.php as an example.
  *
  *      Closure Type: function(CodeBase $code_base, Context $context, Func|Method $function, array $args) : void {...}
- *  8. public function getReturnTypeOverrides(CodeBase $code_base) : array
+ *  9. public function getReturnTypeOverrides(CodeBase $code_base) : array
  *     Maps FQSEN of function or method to a closure used to override the returned UnionType.
  *     See \Phan\Plugin\Internal\ArrayReturnTypeOverridePlugin as an example (That is automatically loaded by phan)
  *
@@ -65,6 +65,10 @@ use Phan\PluginV2\IssueEmitter;
  *     Pre-analyzes $node
  *     (implement \Phan\PluginV2\LegacyPreAnalyzeNodeCapability)
  *     (Deprecated in favor of \Phan\PluginV2\PreAnalyzeNodeCapability, which is faster)
+ *
+ * TODO: Implement a way to notify plugins that a parsed file is no longer valid,
+ * if the replacement for pcntl is being used.
+ * (Most of the plugins bundled with Phan don't need this)
  */
 abstract class PluginV2
 {

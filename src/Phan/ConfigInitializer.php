@@ -98,7 +98,6 @@ class ConfigInitializer
         if (is_null($comment_source)) {
             $comment_source = self::computeCommentNameDocumentationMap();
         }
-        // TODO: Read from src/Phan/Config.php
         $lines = $comment_source[$setting_name] ?? null;
         if (empty($lines)) {
             return '';

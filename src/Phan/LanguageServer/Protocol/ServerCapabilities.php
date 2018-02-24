@@ -107,7 +107,8 @@ class ServerCapabilities
     //public $xdefinitionProvider;
 
     /**
-     * TODO: The server provides workspace dependencies support.
+     * TODO: implement this?
+     * The server provides workspace dependencies support.
      *
      * @var bool|null
      */

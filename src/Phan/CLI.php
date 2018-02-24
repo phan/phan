@@ -106,6 +106,8 @@ class CLI
                 'language-server-tcp-connect:',
                 'language-server-tcp-server:',
                 'language-server-verbose',
+                'language-server-allow-missing-pcntl',
+                'language-server-force-missing-pcntl',
                 'markdown-issue-messages',
                 'memory-limit:',
                 'minimum-severity:',
@@ -167,6 +169,14 @@ class CLI
             $this->config_file = $opts['k'];
         } elseif (isset($opts['config-file'])) {
             $this->config_file = $opts['config-file'];
+        }
+
+        if (isset($opts['language-server-force-missing-pcntl'])) {
+            Config::setValue('language_server_use_pcntl_fallback', true);
+        } elseif (isset($opts['language-server-allow-missing-pcntl'])) {
+            if (!extension_loaded('pcntl')) {
+                Config::setValue('language_server_use_pcntl_fallback', true);
+            }
         }
 
         // Now that we have a root directory, attempt to read a
@@ -307,6 +317,9 @@ class CLI
                     break;
                 case 'require-config-exists':
                     break;  // handled earlier.
+                case 'language-server-allow-missing-pcntl':
+                case 'language-server-force-missing-pcntl':
+                    break;  // handled earlier
                 case 'disable-plugins':
                     // Slightly faster, e.g. for daemon mode with lowest latency (along with --quick).
                     Config::setValue('plugins', []);
@@ -505,7 +518,7 @@ class CLI
         if (!in_array($protocol, stream_get_transports())) {
             $this->usage("The $protocol:///path/to/file schema is not supported on this system, cannot create a daemon with $opt", 1);
         }
-        if (!function_exists('pcntl_fork')) {
+        if (!Config::getValue('language_server_use_pcntl_fallback') && !function_exists('pcntl_fork')) {
             $this->usage("The pcntl extension is not available to fork a new process, so $opt will not be able to create workers to respond to requests.", 1);
         }
         if (Config::getValue('daemonize_socket') || Config::getValue('daemonize_tcp_port')) {
@@ -724,6 +737,13 @@ Extended help:
  --language-server-verbose
   Emit verbose logging messages related to the language server implementation to stderr.
   This is useful when developing or debugging language server clients.
+
+ --language-server-allow-missing-pcntl
+  Allow the fallback that doesn't use pcntl (New and experimental) to be used if the pcntl extension is not installed.
+  This is useful for running the language server on Windows.
+
+ --language-server-force-missing-pcntl
+  Force Phan to use the fallback for when pcntl is absent (New and experimental). Useful for debugging that fallback.
 
  --require-config-exists
   Exit immediately with an error code if .phan/config.php does not exist.

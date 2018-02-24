@@ -66,20 +66,26 @@ class Debug
     }
 
     /**
+     * @param Node|string|null $node
      * @return string
      * The name of the node
      */
     public static function nodeName($node) : string
     {
         if (\is_string($node)) {
-            return 'string';
+            return "string";
         }
 
         if (!$node) {
             return 'null';
         }
 
-        return \ast\get_kind_name($node->kind);
+        $kind = $node->kind;
+        if (\is_string($kind)) {
+            // For placeholders created by tolerant-php-parser-to-php-ast
+            return "string ($kind)";
+        }
+        return \ast\get_kind_name($kind);
     }
 
     /**
@@ -114,11 +120,12 @@ class Debug
         if (!\is_object($node)) {
             return $string . $node . "\n";
         }
+        $kind = $node->kind;
 
-        $string .= \ast\get_kind_name($node->kind);
+        $string .= self::nodeName($node);
 
         $string .= ' ['
-            . self::astFlagDescription($node->flags ?? 0, $node->kind)
+            . (is_int($kind) ? self::astFlagDescription($node->flags ?? 0, $kind) : 'unknown')
             . ']';
 
         if (isset($node->lineno)) {

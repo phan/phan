@@ -7,11 +7,13 @@ use Sabre\Event\Loop;
 use Throwable;
 
 /**
+ * Utils that are useful for implementing a language server.
+ *
  * Taken from code by Felix Frederick Becker
  *
  * Source: https://github.com/felixfbecker/php-language-server
  *
- * Mostly from src/utils.php
+ * - Mostly from that project's src/utils.php
  */
 class Utils
 {

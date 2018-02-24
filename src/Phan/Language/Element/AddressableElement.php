@@ -8,6 +8,7 @@ use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FileRef;
 use Phan\Language\UnionType;
+use Closure;
 
 abstract class AddressableElement extends TypedElement implements AddressableElementInterface
 {
@@ -277,4 +278,10 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         // Figure out which namespace this element is within
         return $element_fqsen->getNamespace();
     }
+
+    /**
+     * @internal - Used by daemon mode to restore an element to the state it had before parsing.
+     * @return ?Closure
+     */
+    abstract public function createRestoreCallback();
 }

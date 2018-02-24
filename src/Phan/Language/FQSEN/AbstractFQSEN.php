@@ -3,11 +3,14 @@ namespace Phan\Language\FQSEN;
 
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
+use Serializable;
 
 /**
  * A Fully-Qualified Name
+ *
+ * Serialization and cloning are forbidden.
  */
-abstract class AbstractFQSEN implements FQSEN
+abstract class AbstractFQSEN implements FQSEN, Serializable
 {
 
     /**
@@ -88,4 +91,19 @@ abstract class AbstractFQSEN implements FQSEN
      * structural element name.
      */
     abstract public function __toString() : string;
+
+    public function __clone() {
+        // We compare and look up FQSENs by their identity
+        throw new \Error("cloning an FQSEN (" . (string)$this . ") is forbidden\n");
+    }
+
+    public function serialize() {
+        // We compare and look up FQSENs by their identity
+        throw new \Error("serializing an FQSEN (" . (string)$this . ") is forbidden\n");
+    }
+
+    public function unserialize($serialized) {
+        // We compare and look up FQSENs by their identity
+        throw new \Error("unserializing an FQSEN (" . (string)$this . ") is forbidden\n");
+    }
 }

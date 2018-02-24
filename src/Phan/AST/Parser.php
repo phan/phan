@@ -69,10 +69,6 @@ class Parser
             $errors = [];
             try {
                 $node = $converter->parseCodeAsPHPAST($file_contents, Config::AST_VERSION, $errors);
-            } catch (\PhpParser\Error $fallback_parser_error) {
-                // Shouldn't happen, we're using the error collecting parser
-                // We use PhpParser instead of tolerant-php-parser for parsing complex string literals into real strings.
-                throw new ParseException('Fallback parser error: ' . $fallback_parser_error->getMessage(), 0, $fallback_parser_error);
             } catch (\Exception $e) {
                 // Generic fallback. TODO: log.
                 throw $native_parse_error;
@@ -100,9 +96,6 @@ class Parser
         $errors = [];
         try {
             $node = $converter->parseCodeAsPHPAST($file_contents, Config::AST_VERSION, $errors);
-        } catch (\PhpParser\Error $fallback_parser_error) {
-            // Shouldn't happen, we're using the error collecting parser
-            throw new ParseException('Fallback parser error: ' . $fallback_parser_error->getMessage(), 0, $fallback_parser_error);
         } catch (\Exception $e) {
             // Generic fallback. TODO: log.
             throw new ParseException('Unexpected Exception of type ' . \get_class($e) . ': ' . $e->getMessage(), 0);

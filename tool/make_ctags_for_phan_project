@@ -11,7 +11,7 @@
 #
 # - classes that aren't direct dependencies of your codebase
 # - `examples/` folders and test folders in `vendor/` and other third party code
-# 
+#
 # The resulting tags file may be combined with tags for JS, CSS, etc.
 function usage() {
 	echo "Usage: $0 [options for phpctags]" 1>&2
@@ -32,5 +32,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 echo "Generating file list with Phan and running phpctags"
 
-# Run phpctags on the files that Phan would parse or analyze
-$DIR/../phan --dump-parsed-file-list | xargs phpctags --verbose "$@"
+# Run phpctags on the files that Phan would parse or analyze.
+# This can be a long list. Choose a default larger than 128KB (2MB) -- (run getconf ARG_MAX for the actual limit)
+# Unfortunately, phpctags doesn't have an option to read file arguments from a list or stdin
+$DIR/../phan --dump-parsed-file-list | xargs --exit -s 2000000 phpctags --verbose "$@"

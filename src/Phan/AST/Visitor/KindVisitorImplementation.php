@@ -26,7 +26,7 @@ abstract class KindVisitorImplementation implements KindVisitor
 
     public function handleMissingNodeKind(Node $node)
     {
-        Debug::printNode($node);
+        fprintf(STDERR, "Unexpected Node kind. Node:\n%s\n", Debug::nodeToString($node));
         assert(false, 'All node kinds must match');
     }
 
