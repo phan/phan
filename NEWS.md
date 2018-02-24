@@ -1,7 +1,9 @@
 Phan NEWS
 
-?? ??? 2018, Phan 0.11.4 (dev)
+?? ??? 2018, Phan 0.12.0 (dev)
 ------------------------
+
+The Phan 0.12.0 release supports analysis of php 7.0-7.2.
 
 ### Ported from Phan 0.10.6 (dev)
 

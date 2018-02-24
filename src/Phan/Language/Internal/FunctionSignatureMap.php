@@ -43,6 +43,8 @@ PHAN;
  * Code using these signatures should remove those prefixes from messages rendered to the user.
  * 1. '&rw_name' indicates that a parameter with a value is expected to be passed in, and may be modified.
  * 2. '&w_name' indicates that a parameter is expected to be passed in, and the value will be ignored, and may be overwritten.
+ *
+ * This file contains the signatures for the most recent minor release of PHP supported by phan (php 7.2)
  */
 
 return [

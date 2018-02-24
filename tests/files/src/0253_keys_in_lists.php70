@@ -1,0 +1,16 @@
+<?php
+function f253_1(bool $p1) : void {}
+
+// Unfortunately, we only see $v1 as a mixed array
+// and as such, can't map individual keys to the
+// types at those offsets. The types for `$v2`,
+// `$v3`, `$v4`, `$v5`, `$v6`, `$v7`, `$v8`,
+// and `$v9` will be unknown.
+$v1 = [
+    [1, 'string'],
+    [2, 'string2'],
+];
+foreach ($v1 as list($a, $b)) {
+    f253_1($a);
+    f253_1($b);
+}

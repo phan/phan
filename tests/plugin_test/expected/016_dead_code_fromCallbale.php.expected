@@ -1,0 +1,1 @@
+src/016_dead_code_fromCallable.php:4 PhanUnreferencedFunction Possibly zero references to function \callable16bUnused

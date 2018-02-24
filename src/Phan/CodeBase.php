@@ -1344,7 +1344,7 @@ class CodeBase
         // method out of it as it's requested
 
         $function_signature_map =
-            UnionType::internalFunctionSignatureMap();
+            UnionType::internalFunctionSignatureMap(Config::get_closest_target_php_version_id());
 
         // Don't need to track this any more
         unset($this->internal_function_fqsen_set[$canonical_fqsen]);

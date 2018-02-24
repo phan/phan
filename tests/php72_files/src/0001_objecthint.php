@@ -13,6 +13,10 @@ object_test(new stdClass(), new SimpleXMLElement('<a>b</a>'));
 object_test(null, null);  // should warn about the first
 object_test([], []);  // should warn about the first
 
+
+
+
+
 function nullableobject_test(?object $y) : ?object {
     if ($y->prop ?? false) {
         return $y;

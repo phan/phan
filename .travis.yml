@@ -1,15 +1,16 @@
 language: php
 
-# It isn't recommended to run the 0.11 releases with 7.0/7.1, but still possible
+# The 0.12 releases can be used with any PHP version from 7.0 to 7.2.
 php:
+  - 7.0
   - 7.1
   - 7.2
 
-# PhanTest (tests/files) is the slowest test (~20 seconds).
+# PhanTest (tests/files) is the slowest test (~10 seconds).
 # Group the remaining tests into groups.
 env:
   - TEST_SUITES="PhanTest UtilTest PHP72Test RasmusTest LanguageTest"
-  - TEST_SUITES="__FakeSelfTest __FakeRewritingTest __FakePluginTest __FakeFallbackTest __FakeToolTest __FakeConfigOverrideTest"
+  - TEST_SUITES="__FakeSelfTest __FakeSelfFallbackTest __FakeRewritingTest __FakePluginTest __FakeFallbackTest __FakeToolTest __FakeConfigOverrideTest"
 
 sudo: false
 dist: trusty
@@ -25,7 +26,7 @@ before_install:
 # --classmap-authoritative shouldn't affect phan's behavior, but is faster.
 # Use it for travis and published phars.
 install:
-  - composer --prefer-dist --classmap-authoritative --ignore-platform-reqs install
+  - composer --prefer-dist --classmap-authoritative install
 
 # TEST_SUITES contains 1 or more space-separated value for TEST_SUITE
 # We have a fake TEST_SUITE which runs phan, and check if the exit code is non-zero and the standard output is non-empty.

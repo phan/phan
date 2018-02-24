@@ -1,0 +1,9 @@
+<?php
+function f248_1(bool $p1, bool $p2) {}
+
+$v0 = ['alpha', 'beta'];
+list($v1, $v2) = $v0;
+f248_1($v1, $v2);
+
+$v3 = [['s1', 's2'], ['s3', 's4']];
+foreach ($v3 as list($v4, $v5)) { f248_1($v4, $v5); }

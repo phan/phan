@@ -72,30 +72,48 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      * @param string $sourceDir
      * @return string[][]
      */
-    protected function scanSourceFilesDir($sourceDir, $expectedDir)
+    protected function scanSourceFilesDir(string $sourceDir, string $expectedDir)
     {
         $files = array_filter(
             array_filter(
                 scandir($sourceDir),
                 function ($filename) {
                     // Ignore directories and hidden files.
-                    return !in_array($filename, ['.', '..'], true) && substr($filename, 0, 1) !== '.';
+                    return !in_array($filename, ['.', '..'], true) && substr($filename, 0, 1) !== '.' && preg_match('@\.php$@', $filename);
                 }
             )
         );
 
+        $closest_target_php_version_id = Config::get_closest_target_php_version_id();
+        if ($closest_target_php_version_id < 70100) {
+            $suffix = '70';
+        } elseif ($closest_target_php_version_id < 70200) {
+            $suffix = '71';
+        } else {
+            $suffix = '72';
+        }
+
         return array_combine(
             $files,
             array_map(
-                function ($filename) use ($sourceDir, $expectedDir) {
+                function ($filename) use ($sourceDir, $expectedDir, $suffix) {
                     return [
-                        [$sourceDir . DIRECTORY_SEPARATOR . $filename],
-                        $expectedDir . DIRECTORY_SEPARATOR . $filename . self::EXPECTED_SUFFIX,
+                        [self::getFileForPHPVersion($sourceDir . DIRECTORY_SEPARATOR . $filename, $suffix)],
+                        self::getFileForPHPVersion($expectedDir . DIRECTORY_SEPARATOR . $filename . self::EXPECTED_SUFFIX, $suffix),
                     ];
                 },
                 $files
             )
         );
+    }
+
+    protected function getFileForPHPVersion(string $path, string $suffix) : string
+    {
+        $suffix_path = $path . $suffix;
+        if (file_exists($suffix_path)) {
+            return $suffix_path;
+        }
+        return $path;
     }
 
     /**

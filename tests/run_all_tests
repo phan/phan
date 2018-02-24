@@ -6,8 +6,17 @@ if [ "$#" != 0 ]; then
 fi
 
 TEST_SUITES="PhanTest"
-TEST_SUITES+=" UtilTest PHP72Test RasmusTest LanguageTest"
-TEST_SUITES+=" __FakeSelfTest __FakeRewritingTest __FakePluginTest __FakeFallbackTest __FakeToolTest __FakeConfigOverrideTest"
+TEST_SUITES+=" UtilTest"
+TEST_SUITES+=" PHP72Test"
+TEST_SUITES+=" RasmusTest"
+TEST_SUITES+=" LanguageTest"
+TEST_SUITES+=" __FakeSelfTest"
+TEST_SUITES+=" __FakeSelfFallbackTest"
+TEST_SUITES+=" __FakeRewritingTest"
+TEST_SUITES+=" __FakePluginTest"
+TEST_SUITES+=" __FakeFallbackTest"
+TEST_SUITES+=" __FakeToolTest"
+TEST_SUITES+=" __FakeConfigOverrideTest"
 
 FAILURES=""
 for TEST_SUITE in $TEST_SUITES; do

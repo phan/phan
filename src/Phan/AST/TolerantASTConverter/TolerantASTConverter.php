@@ -92,6 +92,8 @@ final class TolerantASTConverter
      */
     private static $ast_version = self::AST_VERSION;
 
+    private static $php_version_id_parsing = PHP_VERSION_ID;
+
     /**
      * @var int - Internal counter for declarations, to generate __declId in `\ast\Node`s for declarations.
      */
@@ -109,6 +111,12 @@ final class TolerantASTConverter
     /** @var bool Sets equivalent static option in self::_start_parsing() */
     private $instance_should_add_placeholders = false;
 
+    /**
+     * @var int can be used to tweak behavior for compatibility.
+     * Set to a newer version to support comments on class constants, etc.
+     */
+    private $instance_php_version_id_parsing = PHP_VERSION_ID;
+
     // No-op.
     public function __construct()
     {
@@ -118,6 +126,12 @@ final class TolerantASTConverter
     public function setShouldAddPlaceholders(bool $value)
     {
         $this->instance_should_add_placeholders = $value;
+    }
+
+    /** @return void */
+    public function setPHPVersionId(int $value)
+    {
+        $this->instance_php_version_id_parsing = $value;
     }
 
     /**
@@ -171,6 +185,7 @@ final class TolerantASTConverter
         self::$ast_version = $ast_version;
         self::$decl_id = 0;
         self::$should_add_placeholders = $this->instance_should_add_placeholders;
+        self::$php_version_id_parsing = $this->instance_php_version_id_parsing;
         self::$file_position_map = new FilePositionMap($file_contents);
         // $file_contents required for looking up line numbers.
         // TODO: Other data structures?
@@ -886,11 +901,10 @@ final class TolerantASTConverter
                                 continue;
                             }
                             // ($part->kind === TokenKind::EncapsedAndWhitespace)
-                            if (!isset($end_quote_text)) {
-                                $start_quote_text = self::tokenToString($n->startQuote);
-                                $end_quote_text = self::tokenToString($n->endQuote);
-                            }
+                            $start_quote_text = self::tokenToString($n->startQuote);
+                            $end_quote_text = self::tokenToString($n->endQuote);
                             $raw_string = self::tokenToRawString($part);
+
                             // Pass in '"\\n"' and get "\n" (somewhat inefficient)
                             $represented_string = String_::parse($start_quote_text . $raw_string . $end_quote_text);
                             $inner_node_parts[] = $represented_string;
@@ -1698,13 +1712,72 @@ Node\SourceFileNode
         if ($doc_comment) {
             return $doc_comment;
         }
-        while ($node = $node->parent) {
-            if ($node instanceof PhpParser\Node\Expression\AssignmentExpression || $node instanceof PhpParser\Node\ArrayElement) {
+        for ($prev_node = $node; $node = $node->parent; $prev_node = $node) {
+            if ($node instanceof PhpParser\Node\Expression\AssignmentExpression ||
+                $node instanceof PhpParser\Node\Expression\ParenthesizedExpression ||
+                $node instanceof PhpParser\Node\ArrayElement ||
+                $node instanceof PhpParser\Node\Statement\ReturnStatement) {
+
                 $doc_comment = $node->getDocCommentText();
                 if ($doc_comment) {
                     return $doc_comment;
                 }
                 continue;
+            }
+            if ($node instanceof PhpParser\Node\Expression\ArgumentExpression) {
+                // Skip ArgumentExpression and the PhpParser\Node\DelimitedList\ArgumentExpressionList
+                // to get to the CallExpression
+                $node = $node->parent->parent;
+                // fall through
+            }
+            if ($node instanceof PhpParser\Node\Expression\MemberAccessExpression) {
+                // E.g. ((Closure)->bindTo())
+                if ($prev_node !== $node->dereferencableExpression) {
+                    return null;
+                }
+                $doc_comment = $node->getDocCommentText();
+                if ($doc_comment) {
+                    return $doc_comment;
+                }
+                continue;
+            }
+            if ($node instanceof PhpParser\Node\Expression\CallExpression) {
+                if ($prev_node === $node->callableExpression) {
+                    $doc_comment = $node->getDocCommentText();
+                    if ($doc_comment) {
+                        return $doc_comment;
+                    }
+                    continue;
+                }
+                if ($node->callableExpression instanceof PhpParser\Node\Expression\AnonymousFunctionCreationExpression) {
+                    return null;
+                }
+                $found = false;
+                foreach ($node->argumentExpressionList->children ?? [] as $argument_expression) {
+                    if (!($argument_expression instanceof PhpParser\Node\Expression\ArgumentExpression)) {
+                        continue;
+                    }
+                    $expression = $argument_expression->expression;
+                    if ($expression === $prev_node) {
+                        $found = true;
+                        $doc_comment = $node->getDocCommentText();
+                        if ($doc_comment) {
+                            return $doc_comment;
+                        }
+                        break;
+                    }
+                    if (!($expression instanceof PhpParser\Node)) {
+                        continue;
+                    }
+                    if ($expression instanceof PhpParser\Node\ConstElement || $expression instanceof PhpParser\Node\NumericLiteral || $expression instanceof PhpParser\Node\StringLiteral) {
+                        continue;
+                    }
+                    return null;
+                }
+
+                if ($found) {
+                    continue;
+                }
             }
             break;
         }
@@ -2147,7 +2220,7 @@ Node\SourceFileNode
 
         $start_line = self::getStartLine($n);
 
-        return self::newAstNode(ast\AST_CONST_ELEM, 0, $children, $start_line, self::extractPhpdocComment($n) ?? $doc_comment);
+        return self::newAstNode(ast\AST_CONST_ELEM, 0, $children, $start_line, self::extractPhpdocComment($n) ?: $doc_comment);
     }
 
     /**
@@ -2245,11 +2318,11 @@ Node\SourceFileNode
         ];
         $doc_comment = self::extractPhpdocComment($declare) ?? $first_doc_comment;
         // $first_doc_comment = null;
-        if (self::$ast_version >= 50 && PHP_VERSION_ID >= 70100) {
+        if (self::$ast_version >= 50 && self::$php_version_id_parsing >= 70100) {
             $children['docComment'] = $doc_comment;
         }
         $node = new ast\Node(ast\AST_CONST_ELEM, 0, $children, self::getStartLine($declare));
-        if (self::$ast_version < 50 && is_string($doc_comment) && PHP_VERSION_ID >= 70100) {
+        if (self::$ast_version < 50 && is_string($doc_comment) && self::$php_version_id_parsing >= 70100) {
             $node->docComment = $doc_comment;
         }
         $ast_declare_elements[] = $node;
@@ -2350,7 +2423,7 @@ Node\SourceFileNode
                 'key' => $item->elementKey !== null ? self::phpParserNodeToAstNode($item->elementKey) : null,
             ], self::getStartLine($item));
         }
-        if (PHP_VERSION_ID < 70100 && \count($ast_items) === 0) {
+        if (self::$php_version_id_parsing < 70100 && \count($ast_items) === 0) {
             $ast_items[] = null;
         }
         return new ast\Node(ast\AST_ARRAY, ast\flags\ARRAY_SYNTAX_LIST, $ast_items, $start_line);
@@ -2381,7 +2454,7 @@ Node\SourceFileNode
                 'key' => $item->elementKey !== null ? self::phpParserNodeToAstNode($item->elementKey) : null,
             ], self::getStartLine($item));
         }
-        if (PHP_VERSION_ID < 70100) {
+        if (self::$php_version_id_parsing < 70100) {
             $flags = 0;
         } else {
             $kind = $n->openParenOrBracket->kind;
@@ -2531,9 +2604,7 @@ Node\SourceFileNode
     {
         if (self::$ast_version >= 50) {
             if (is_string($doc_comment) || array_key_exists($kind, self::_NODES_WITH_NULL_DOC_COMMENT)) {
-                if ($kind !== ast\AST_CONST_ELEM || PHP_VERSION_ID >= 70100) {
-                    $children['docComment'] = $doc_comment;
-                }
+                $children['docComment'] = $doc_comment;
             }
             return new ast\Node($kind, $flags, $children, $lineno);
         }

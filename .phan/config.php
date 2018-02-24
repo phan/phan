@@ -25,6 +25,11 @@ use \Phan\Issue;
  * '-d' flag.
  */
 return [
+    // Supported values: '7.0', '7.1', '7.2', null.
+    // If this is set to null,
+    // then Phan assumes the PHP version which is closest to the minor version
+    // of the php executable used to execute phan.
+    "target_php_version" => null,
 
     // If true, missing properties will be created when
     // they are first seen. If false, we'll report an
