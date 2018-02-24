@@ -25,6 +25,12 @@ use Phan\Issue;
  * '-d' flag.
  */
 return [
+    // Supported values: '7.0', '7.1', '7.2', null.
+    // If this is set to null,
+    // then Phan assumes the PHP version which is closest to the minor version
+    // of the php executable used to execute phan.
+    // TODO: This might not get picked up?
+    'target_php_version' => '7.1',
 
     // If true, check to make sure the return type declared
     // in the doc-block (if any) matches the return type

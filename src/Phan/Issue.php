@@ -237,6 +237,7 @@ class Issue
     const CompatibleNullableTypePHP70 = 'PhanCompatibleNullableTypePHP70';
     const CompatibleShortArrayAssignPHP70 = 'PhanCompatibleShortArrayAssignPHP70';
     const CompatibleKeyedArrayAssignPHP70 = 'PhanCompatibleKeyedArrayAssignPHP70';
+    const CompatibleVoidTypePHP70 = 'PhanCompatibleVoidTypePHP70';
     const CompatibleObjectTypePHP71 = 'PhanCompatibleNullableTypePHP71';
 
     // Issue::CATEGORY_GENERIC
@@ -2019,12 +2020,20 @@ class Issue
                 3004
             ),
             new Issue(
+                self::CompatibleVoidTypePHP70,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Return type '{TYPE}' means the absense of a return value starting in PHP 7.1. In PHP 7.0, void refers to a class/interface with the name 'void'",
+                self::REMEDIATION_B,
+                3005
+            ),
+            new Issue(
                 self::CompatibleObjectTypePHP71,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
-                "Type '{TYPE}' is treated differently in starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class with the name 'object'.",
+                "Type '{TYPE}' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'",
                 self::REMEDIATION_B,
-                3005
+                3006
             ),
 
             // Issue::CATEGORY_GENERIC

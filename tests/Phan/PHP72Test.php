@@ -8,6 +8,7 @@ class PHP72Test extends AbstractPhanFileTest
 {
     const overrides = [
         'allow_method_param_type_widening' => true,
+        'target_php_version' => '7.2',
     ];
 
     protected $old_values = [];

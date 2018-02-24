@@ -84,10 +84,10 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             )
         );
 
-        $closest_target_php_version_id = Config::get_closest_target_php_version_id();
-        if ($closest_target_php_version_id < 70100) {
+        // NOTE: To avoid ParseError in php-ast
+        if (PHP_VERSION_ID < 70100) {
             $suffix = '70';
-        } elseif ($closest_target_php_version_id < 70200) {
+        } elseif (PHP_VERSION_ID < 70200) {
             $suffix = '71';
         } else {
             $suffix = '72';

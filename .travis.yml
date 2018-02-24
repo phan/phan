@@ -6,11 +6,9 @@ php:
   - 7.1
   - 7.2
 
-# PhanTest (tests/files) is the slowest test (~10 seconds).
-# Group the remaining tests into groups.
-env:
-  - TEST_SUITES="PhanTest UtilTest PHP72Test RasmusTest LanguageTest"
-  - TEST_SUITES="__FakeSelfTest __FakeSelfFallbackTest __FakeRewritingTest __FakePluginTest __FakeFallbackTest __FakeToolTest __FakeConfigOverrideTest"
+# NOTE: Travis starts up 5 tests at a time. So, it's easier to run all of the tests at once.
+#env:
+#  - TEST_SUITES="PhanTest UtilTest PHP72Test RasmusTest LanguageTest __FakePHP70Test __FakeSelfTest __FakeSelfFallbackTest __FakeRewritingTest __FakePluginTest __FakeFallbackTest __FakeToolTest __FakeConfigOverrideTest"
 
 sudo: false
 dist: trusty
@@ -33,5 +31,6 @@ install:
 # This is used instead of a unit test because Phan currently caches too much state for this to be run with other unit tests, and the configuration might end up different within a unit test.
 # This was moved into a separate script to stop cluttering up .travis.yml
 script:
-  - for TEST_SUITE in $TEST_SUITES; do echo "Running $TEST_SUITE"; tests/run_test "$TEST_SUITE" || exit $?; done
+  # Previously - for TEST_SUITE in $TEST_SUITES; do echo "Running $TEST_SUITE"; tests/run_test "$TEST_SUITE" || exit $?; done
+  - tests/run_all_tests
   - php internal/package.php

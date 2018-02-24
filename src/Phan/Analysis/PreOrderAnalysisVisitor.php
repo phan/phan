@@ -632,7 +632,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     }
 
     private function analyzeArrayAssignBackwardsCompatibility(Node $node) {
-        if ($node->flags === 0) {
+        if ($node->flags !== \ast\flags\ARRAY_SYNTAX_LIST) {
             $this->emitIssue(
                 Issue::CompatibleShortArrayAssignPHP70,
                 $node->lineno ?? 0

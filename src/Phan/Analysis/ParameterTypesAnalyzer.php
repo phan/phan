@@ -16,6 +16,7 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\TemplateType;
+use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 
 class ParameterTypesAnalyzer
@@ -36,7 +37,7 @@ class ParameterTypesAnalyzer
 
         self::checkCommentParametersAreInOrder($code_base, $method);
         $target_php_version = Config::get_closest_target_php_version_id();
-        if ($target_php_version < 70200) {
+        if ($target_php_version < 70200 && !$method->isFromPHPDoc()) {
             self::analyzeRealSignatureCompatibility($code_base, $method, $target_php_version);
         }
 
@@ -102,19 +103,24 @@ class ParameterTypesAnalyzer
         }
     }
 
+    /**
+     * Precondition: $target_php_version < 70200
+     */
     private static function analyzeRealSignatureCompatibility(CodeBase $code_base, FunctionInterface $method, int $target_php_version) {
         $php70_checks = $target_php_version < 70100;
 
         foreach ($method->getRealParameterList() as $real_parameter) {
             foreach ($real_parameter->getUnionType()->getTypeSet() as $type) {
                 if ($php70_checks && $type->getIsNullable()) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $method->getContext(),
-                        Issue::CompatibleNullableTypePHP70,
-                        $real_parameter->getFileRef()->getLineNumberStart(),
-                        (string)$type
-                    );
+                    if ($real_parameter->getIsUsingNullableSyntax()) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $method->getContext(),
+                            Issue::CompatibleNullableTypePHP70,
+                            $real_parameter->getFileRef()->getLineNumberStart(),
+                            (string)$type
+                        );
+                    }
                 }
                 if ($type instanceof ObjectType) {
                     Issue::maybeEmit(
@@ -125,6 +131,38 @@ class ParameterTypesAnalyzer
                         (string)$type
                     );
                 }
+            }
+        }
+        foreach ($method->getRealReturnType()->getTypeSet() as $type) {
+            if ($php70_checks) {
+                if ($type->getIsNullable()) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::CompatibleNullableTypePHP70,
+                        $real_parameter->getFileRef()->getLineNumberStart(),
+                        (string)$type
+                    );
+                }
+                // Could check for use statements, but `php7.1 -l path/to/file.php` would do that already.
+                if ($type instanceof VoidType) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::CompatibleVoidTypePHP70,
+                        $method->getFileRef()->getLineNumberStart(),
+                        (string)$type
+                    );
+                }
+            }
+            if ($type instanceof ObjectType) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
+                    Issue::CompatibleObjectTypePHP71,
+                    $real_parameter->getFileRef()->getLineNumberStart(),
+                    (string)$type
+                );
             }
         }
     }
