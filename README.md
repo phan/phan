@@ -414,4 +414,4 @@ To run all of Phan's unit tests and integration tests, run `./tests/run_all_test
 # Code of Conduct
 
 We are committed to fostering a welcoming community. Any participant and
-contributor is required to adhere to our [Code of Conduct](http://etsy.github.io/codeofconduct.html).
+contributor is required to adhere to our [Code of Conduct](./CODE_OF_CONDUCT.md).

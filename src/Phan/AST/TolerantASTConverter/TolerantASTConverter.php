@@ -2564,7 +2564,7 @@ Node\SourceFileNode
 
 
     /**
-     * @suppress PhanTypeMismatchProperty https://github.com/etsy/phan/issues/609
+     * @suppress PhanTypeMismatchProperty https://github.com/phan/phan/issues/609
      * @suppress PhanUndeclaredProperty - docComment really exists.
      * NOTE: this may be removed in the future.
      *
@@ -2616,7 +2616,7 @@ Node\SourceFileNode
     }
 
     /**
-     * @suppress PhanTypeMismatchProperty https://github.com/etsy/phan/issues/609
+     * @suppress PhanTypeMismatchProperty https://github.com/phan/phan/issues/609
      * @suppress PhanUndeclaredProperty - docComment really exists.
      * NOTE: this may be removed in the future.
      *
