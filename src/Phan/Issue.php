@@ -235,6 +235,8 @@ class Issue
     const CompatibleExpressionPHP7  = 'PhanCompatibleExpressionPHP7';
     const CompatiblePHP7            = 'PhanCompatiblePHP7';
     const CompatibleNullableTypePHP70 = 'PhanCompatibleNullableTypePHP70';
+    const CompatibleShortArrayAssignPHP70 = 'PhanCompatibleShortArrayAssignPHP70';
+    const CompatibleKeyedArrayAssignPHP70 = 'PhanCompatibleKeyedArrayAssignPHP70';
     const CompatibleObjectTypePHP71 = 'PhanCompatibleNullableTypePHP71';
 
     // Issue::CATEGORY_GENERIC
@@ -1995,18 +1997,34 @@ class Issue
             new Issue(
                 self::CompatibleNullableTypePHP70,
                 self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Nullable type '{TYPE}' is not compatible with PHP 7.0",
                 self::REMEDIATION_B,
                 3002
             ),
             new Issue(
+                self::CompatibleShortArrayAssignPHP70,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Square bracket syntax for an array destructuring assignment is not compatible with PHP 7.0",
+                self::REMEDIATION_A,
+                3003
+            ),
+            new Issue(
+                self::CompatibleKeyedArrayAssignPHP70,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Using array keys in an array destructuring assignment is not compatible with PHP 7.0",
+                self::REMEDIATION_B,
+                3004
+            ),
+            new Issue(
                 self::CompatibleObjectTypePHP71,
                 self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Type '{TYPE}' is treated differently in starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class with the name 'object'.",
                 self::REMEDIATION_B,
-                3003
+                3005
             ),
 
             // Issue::CATEGORY_GENERIC
