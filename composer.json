@@ -16,7 +16,10 @@
         }
     ],
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "platform": {
+            "php": "7.0.24"
+        }
     },
     "require": {
         "php": "^7.0.0",

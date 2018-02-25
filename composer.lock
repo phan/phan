@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "d1513e9d5a53f7d4674eb271db673aed",
+    "content-hash": "9e53bfb464fee73eefdc13b1f36c9ba6",
     "packages": [
         {
             "name": "felixfbecker/advanced-json-rpc",
@@ -1890,5 +1890,8 @@
         "php": "^7.0.0",
         "ext-ast": "^0.1.5"
     },
-    "platform-dev": []
+    "platform-dev": [],
+    "platform-overrides": {
+        "php": "7.0.24"
+    }
 }
