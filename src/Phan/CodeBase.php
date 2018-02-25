@@ -517,10 +517,10 @@ class CodeBase
             // Create callbacks to back up class constants and properties.
             // Methods were already backed up.
             foreach ($class_map->getClassConstantMap() as $const) {
-                $callbacks[] = $const->createRestoreCallback();;
+                $callbacks[] = $const->createRestoreCallback();
             }
             foreach ($class_map->getPropertyMap() as $property) {
-                $callbacks[] = $property->createRestoreCallback();;
+                $callbacks[] = $property->createRestoreCallback();
             }
         }
 

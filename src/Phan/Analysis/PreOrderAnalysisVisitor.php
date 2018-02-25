@@ -631,7 +631,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         return $this->context;
     }
 
-    private function analyzeArrayAssignBackwardsCompatibility(Node $node) {
+    private function analyzeArrayAssignBackwardsCompatibility(Node $node)
+    {
         if ($node->flags !== \ast\flags\ARRAY_SYNTAX_LIST) {
             $this->emitIssue(
                 Issue::CompatibleShortArrayAssignPHP70,

@@ -558,7 +558,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * @param array{issues:array} $response_data
      * @return void
      */
-    private function handleJSONResponseFromWorker(array $uris_to_analyze, array $response_data) {
+    private function handleJSONResponseFromWorker(array $uris_to_analyze, array $response_data)
+    {
         if (!\array_key_exists('issues', $response_data)) {
             Logger::logInfo("Failed to fetch 'issues' from JSON:" . json_encode($response_data));
             return;
