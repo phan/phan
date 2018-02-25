@@ -14,7 +14,6 @@ use Microsoft\PhpParser\TokenKind;
 
 // If php-ast isn't loaded already, then load this file to generate equivalent
 // class, constant, and function definitions.
-// TODO: Node->getText() provide optional file contents, Token->getText provide mandatory file contents
 if (!class_exists('\ast\Node')) {
     require_once __DIR__ . '/ast_shim.php';
 }
@@ -25,7 +24,9 @@ if (!class_exists('\ast\Node')) {
  *
  * Uses Microsoft/tolerant-php-parser to create an instance of ast\Node.
  * Useful if the php-ast extension isn't actually installed.
+ *
  * @author Tyson Andre
+ *
  * TODO: Don't need to pass in $start_line for many of these functions
  *
  * This is implemented as a collection of static methods for performance,
@@ -70,7 +71,6 @@ final class TolerantASTConverter
 {
     // The latest stable version of php-ast.
     // For something > 50, update the library's release.
-    // For something < 40, there are no releases.
     const AST_VERSION = 50;
 
     // The versions that this supports
@@ -283,7 +283,6 @@ final class TolerantASTConverter
                 $children[] = $child_node;
             }
         }
-        // TODO: Faster way?
         foreach ($expressions_children as $parser_node) {
             $child_node_line = self::getEndLine($parser_node);
             if ($child_node_line > 0) {
@@ -302,7 +301,6 @@ final class TolerantASTConverter
     /**
      * @param PhpParser\Node|Token $n - The node from PHP-Parser
      * @return ast\Node|ast\Node[]|string|int|float|bool|null - whatever ast\parse_code would return as the equivalent.
-     * @suppress PhanUndeclaredProperty
      */
     final private static function phpParserNonValueNodeToAstNode($n)
     {
@@ -326,7 +324,6 @@ final class TolerantASTConverter
     /**
      * @param PhpParser\Node|Token $n - The node from PHP-Parser
      * @return ast\Node|ast\Node[]|string|int|float|bool - whatever ast\parse_code would return as the equivalent.
-     * @suppress PhanUndeclaredProperty
      * @throws InvalidNodeException when self::$should_add_placeholders is false, like many of these methods.
      */
     final private static function phpParserNodeToAstNodeOrPlaceholderExpr($n)
@@ -344,7 +341,6 @@ final class TolerantASTConverter
     /**
      * @param PhpParser\Node|Token $n - The node from PHP-Parser
      * @return ast\Node|ast\Node[]|string|int|float|bool|null - whatever ast\parse_code would return as the equivalent.
-     * @suppress PhanUndeclaredProperty
      */
     final private static function phpParserNodeToAstNode($n)
     {
@@ -388,23 +384,20 @@ final class TolerantASTConverter
         if (!\is_object($n)) {
             throw new \InvalidArgumentException("Invalid type passed to getEndLine: " . self::debugDumpNodeOrToken($n));
         }
-        // TODO: binary search in an array mapping line number to character offset?
-        // Currently returns character offset.
         return self::$file_position_map->getEndLine($n);
     }
 
+    /** @param ?PhpParser\Node|?Token $n */
     private static function getEndLineForNodeOrToken($n) : int
     {
         if (!$n) {
             return 0;
         }
-        // TODO: binary search in an array mapping line number to character offset?
-        // Currently returns character offset.
         return self::$file_position_map->getEndLine($n);
     }
 
     /**
-     * This returns an array of values mapping class names to the closures which converts them to a scalar or ast\Node or ast\Node\Decl
+     * This returns an array of values mapping class names to the closures which converts them to a scalar or ast\Node
      *
      * Why not a switch? Switches are slow until php 7.2, and there are dozens of class names to handle.
      *
@@ -547,7 +540,6 @@ final class TolerantASTConverter
                 if ($n->questionToken !== null) {
                     $return_type = new ast\Node(ast\AST_NULLABLE_TYPE, 0, ['type' => $ast_return_type], $return_type_line);
                 }
-                // TODO: is there a corresponding flag for $n->static? $n->byRef?
                 return self::astDeclClosure(
                     $n->byRefToken !== null,
                     $n->staticModifier !== null,
@@ -872,13 +864,11 @@ final class TolerantASTConverter
                 return (float)$text;
             },
             /**
-             * @suppress PhanUndeclaredVariable
-             * @suppress PhanAccessMethodInternal
              * @return ast\Node|string
              */
             'Microsoft\PhpParser\Node\StringLiteral' => function (PhpParser\Node\StringLiteral $n, int $_) {
                 $children = $n->children;
-                if ($children instanceof Token) {  // TODO: remove if unnecessary
+                if ($children instanceof Token) {
                     $inner_node = self::parseQuotedString($n);
                 } elseif (\count($children) === 0) {
                     $inner_node = '';
@@ -963,20 +953,8 @@ final class TolerantASTConverter
                     $start_line
                 );
             },
-            /*
-Node\SourceFileNode
-    statementList: Node\Statement\InterfaceDeclaration
-        interfaceKeyword: Token: InterfaceKeyword(143): "interface"
-        name: Token: Name(2): " X"
-        interfaceMembers: Node\InterfaceMembers
-            openBrace: Token: OpenBraceToken(205): "{"
-            closeBrace: Token: CloseBraceToken(206): "}"
-    endOfFileToken: Token: EndOfFileToken(1): ""
-             */
-
             'Microsoft\PhpParser\Node\Statement\InterfaceDeclaration' => function (PhpParser\Node\Statement\InterfaceDeclaration $n, int $start_line) : ast\Node {
                 $end_line = self::getEndLine($n) ?: $start_line;
-                // FIXME: interface extending other interface
                 return self::astStmtClass(
                     ast\flags\CLASS_INTERFACE,
                     self::tokenToString($n->name),
@@ -1284,7 +1262,6 @@ Node\SourceFileNode
                 );
             },
 
-            /** @suppress PhanTypeMismatchArgument */
             'Microsoft\PhpParser\Node\TraitSelectOrAliasClause' => function (PhpParser\Node\TraitSelectOrAliasClause $n, int $start_line) : ast\Node {
                 // FIXME targetName phpdoc is wrong.
                 $name = $n->name;
@@ -1582,7 +1559,7 @@ Node\SourceFileNode
         );
     }
 
-    private static function astNodeNullableType(ast\Node $type, int $line)
+    private static function astNodeNullableType(ast\Node $type, int $line) : ast\Node
     {
         return new ast\Node(
             ast\AST_NULLABLE_TYPE,
@@ -1641,7 +1618,7 @@ Node\SourceFileNode
     }
 
     /**
-     * @suppress PhanTypeMismatchProperty - Deliberately wrong type of kind
+     * @suppress PhanTypeMismatchProperty - Deliberately setting $node->kind to a string instead of an integer.
      */
     private static function astStub($parser_node) : ast\Node
     {
@@ -1872,7 +1849,6 @@ Node\SourceFileNode
      * @param int $line
      * @param int $end_line
      * @param ?string $doc_comment
-     * @suppress PhanTypeMismatchProperty (?string to string|null is incorrectly reported)
      */
     private static function astStmtClass(
         int $flags,
@@ -2047,7 +2023,7 @@ Node\SourceFileNode
         return new ast\Node(ast\AST_IF_ELEM, 0, ['cond' => $cond, 'stmts' => $stmts], $line);
     }
 
-    private static function phpParserSwitchListToAstSwitch(PhpParser\Node\Statement\SwitchStatementNode $node, int $start_line)
+    private static function phpParserSwitchListToAstSwitch(PhpParser\Node\Statement\SwitchStatementNode $node, int $start_line) : ast\Node
     {
         $stmts = [];
         $node_line = self::getEndLine($node) ?? $start_line;
@@ -2182,7 +2158,8 @@ Node\SourceFileNode
 
         $start_line = self::getStartLine($n);
 
-        return self::newAstNode(ast\AST_PROP_ELEM, 0, $children, $start_line, self::extractPhpdocComment($n) ?? $doc_comment);
+        $children['docComment'] = self::extractPhpdocComment($n) ?? $doc_comment;
+        return new ast\Node(ast\AST_PROP_ELEM, 0, $children, $start_line);
     }
 
     /**
@@ -2190,11 +2167,6 @@ Node\SourceFileNode
      */
     private static function phpParserConstelemToAstConstelem(PhpParser\Node\ConstElement $n, $doc_comment) : ast\Node
     {
-        $children = [
-            'name' => self::variableTokenToString($n->name),
-            'value' => self::phpParserNodeToAstNode($n->assignment),
-        ];
-
         $start_line = self::getStartLine($n);
         if (self::$php_version_id_parsing >= 70100) {
             $doc_comment = self::extractPhpdocComment($n) ?: $doc_comment;
@@ -2202,7 +2174,15 @@ Node\SourceFileNode
             $doc_comment = null;
         }
 
-        return self::newAstNode(ast\AST_CONST_ELEM, 0, $children, $start_line, $doc_comment);
+        $children = [
+            'name' => self::variableTokenToString($n->name),
+            'value' => self::phpParserNodeToAstNode($n->assignment),
+        ];
+
+        if (self::$php_version_id_parsing >= 70100) {
+            $children['docComment'] = self::extractPhpdocComment($n) ?? $doc_comment;
+        }
+        return new ast\Node(ast\AST_CONST_ELEM, 0, $children, $start_line);
     }
 
     /**
@@ -2289,7 +2269,6 @@ Node\SourceFileNode
 
     /**
      * @param ?string $first_doc_comment
-     * @suppress PhanUndeclaredProperty
      */
     private static function phpParserDeclareListToAstDeclares(PhpParser\Node\DeclareDirective $declare, int $start_line, $first_doc_comment) : ast\Node
     {
@@ -2379,7 +2358,7 @@ Node\SourceFileNode
     }
 
     /**
-     * @suppress PhanPluginUnusedVariable
+     * @suppress PhanPluginUnusedVariable $prev_was_element
      */
     private static function phpParserListToAstList(PhpParser\Node\Expression\ListIntrinsicExpression $n, int $start_line) : ast\Node
     {
@@ -2409,7 +2388,7 @@ Node\SourceFileNode
     }
 
     /**
-     * @suppress PhanPluginUnusedVariable
+     * @suppress PhanPluginUnusedVariable $prev_was_element
      */
     private static function phpParserArrayToAstArray(PhpParser\Node\Expression\ArrayCreationExpression $n, int $start_line) : ast\Node
     {
@@ -2468,7 +2447,6 @@ Node\SourceFileNode
     }
 
     /**
-     * @suppress PhanAccessMethodInternal
      * @return int|string|float|bool|null
      */
     private static function tokenToScalar(Token $n)
@@ -2486,9 +2464,6 @@ Node\SourceFileNode
         return String_::parse($str);
     }
 
-    /**
-     * @suppress PhanAccessMethodInternal
-     */
     private static function parseQuotedString(PhpParser\Node\StringLiteral $n) : string
     {
         $start = $n->getStart();
@@ -2543,14 +2518,6 @@ Node\SourceFileNode
 
 
     /**
-     * @suppress PhanTypeMismatchProperty https://github.com/phan/phan/issues/609
-     * @suppress PhanUndeclaredProperty - docComment really exists.
-     * NOTE: this may be removed in the future.
-     *
-     * Phan was used while developing this. The asserts can be cleaned up in the future.
-     *
-     * NOTE: in AST version <= 40, may creates docComment as a property, but in version >= 45, adds it to $children
-     *
      * @return string
      */
     private static function phpParserNameToString(PhpParser\Node\QualifiedName $name) : string
@@ -2565,41 +2532,9 @@ Node\SourceFileNode
     }
 
     /**
-     * @suppress PhanUndeclaredProperty - docComment really exists.
      * NOTE: this may be removed in the future.
-     *
-     * Phan was used while developing this. The asserts can be cleaned up in the future.
-     *
-     * NOTE: in AST version <= 40, may creates docComment as a property, but in version >= 45, adds it to $children
      *
      * @return ast\Node
-     */
-    private static function newAstNode(int $kind, int $flags, array $children, int $lineno, string $doc_comment = null) : ast\Node
-    {
-        if (is_string($doc_comment) ||
-            ($kind === ast\AST_PROP_ELEM && $flags !== \ast\flags\MODIFIER_STATIC) ||
-            ($kind === ast\AST_CONST_ELEM && self::$php_version_id_parsing >= 70100)) {
-            $children['docComment'] = $doc_comment;
-            return new ast\Node($kind, $flags, $children, $lineno);
-        }
-        $node = new ast\Node($kind, $flags, $children, $lineno);
-        if (is_string($doc_comment)) {
-            $node->docComment = $doc_comment;
-        }
-        return $node;
-    }
-
-    /**
-     * @suppress PhanTypeMismatchProperty https://github.com/phan/phan/issues/609
-     * @suppress PhanUndeclaredProperty - docComment really exists.
-     * NOTE: this may be removed in the future.
-     *
-     * Phan was used while developing this. The asserts can be cleaned up in the future.
-     *
-     * NOTE: in AST version >= 45, this returns Node, but in version <=40, this returns Decl
-     *
-     * @return ast\Node|ast\Node\Decl
-     * @suppress PhanUndeclaredProperty
      */
     private static function newAstDecl(int $kind, int $flags, array $children, int $lineno, string $doc_comment = null, string $name = null, int $end_lineno = 0, int $decl_id = -1) : ast\Node
     {
