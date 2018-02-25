@@ -199,6 +199,12 @@ abstract class Scope
      */
     public function addVariable(Variable $variable)
     {
+        // uncomment to debug issues with variadics
+        /*
+        if ($variable->isVariadic() && !$variable->isCloneOfVariadic()) {
+            throw new \Error("Bad variable {$variable->getName()}\n");
+        }
+         */
         $this->variable_map[$variable->getName()] = $variable;
     }
 

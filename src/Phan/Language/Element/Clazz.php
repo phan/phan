@@ -754,18 +754,18 @@ class Clazz extends AddressableElement
                 $class_fqsen,
                 $method_name
             );
+            $real_parameter_list = \array_map(function (\Phan\Language\Element\Comment\Parameter $parameter) use ($context) : Parameter {
+                return $parameter->asRealParameter($context);
+            }, $comment_method->getParameterList());
             $method = new Method(
                 $context,
                 $method_name,
                 $comment_method->getUnionType(),
                 $flags,
-                $method_fqsen
+                $method_fqsen,
+                $real_parameter_list
             );
-            $real_parameter_list = \array_map(function (\Phan\Language\Element\Comment\Parameter $parameter) use ($context) : Parameter {
-                return $parameter->asRealParameter($context);
-            }, $comment_method->getParameterList());
 
-            $method->setParameterList($real_parameter_list);
             $method->setRealParameterList($real_parameter_list);
             $method->setNumberOfRequiredParameters($comment_method->getNumberOfRequiredParameters());
             $method->setNumberOfOptionalParameters($comment_method->getNumberOfOptionalParameters());
@@ -1263,17 +1263,7 @@ class Clazz extends AddressableElement
             $method->setIsOverride($is_override);
 
             // Clone the parameter list, so that modifying the parameters on the first call won't modify the others.
-            // TODO: Make the parameter list immutable and have immutable types (e.g. getPhpdocParameterList(), setPhpdocParameterList()
-            // and use a clone of all of the parameters for analysis (quick_mode=false has different values).
-            // TODO: If they're immutable, they can be shared without cloning with less worry.
-            $method->setParameterList(
-                \array_map(
-                    function (Parameter $parameter) : Parameter {
-                        return clone($parameter);
-                    },
-                    $method->getParameterList()
-                )
-            );
+            $method->cloneParameterList();
 
             // If we have a parent type defined, map the method's
             // return type and parameter types through it

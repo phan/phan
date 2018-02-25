@@ -2,6 +2,7 @@ vendor
 .phan/data
 composer.phar
 /build
+/report
 samples
 all_output.*
 *.swo

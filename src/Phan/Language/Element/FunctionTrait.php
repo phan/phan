@@ -372,6 +372,7 @@ trait FunctionTrait
      * override parameter types, etc.)
      *
      * @return void
+     * @internal
      */
     public function setParameterList(array $parameter_list)
     {
@@ -413,10 +414,10 @@ trait FunctionTrait
         if (Config::get_quick_mode()) {
             return 0;
         }
-        $param_repr = implode(',', array_map(function (Variable $param) {
-            return (string)($param->getNonVariadicUnionType());
+        $param_repr = \implode(',', \array_map(function (Variable $param) {
+            return (string)($param->getUnionType());
         }, $parameter_list));
-        $raw_bytes = md5($param_repr, true);
+        $raw_bytes = \md5($param_repr, true);
         return unpack(PHP_INT_SIZE === 8 ? 'q' : 'l', $raw_bytes)[1];
     }
 
@@ -489,6 +490,7 @@ trait FunctionTrait
      * A parameter to append to the parameter list
      *
      * @return void
+     * @internal
      */
     public function appendParameter(Parameter $parameter)
     {
@@ -499,6 +501,7 @@ trait FunctionTrait
      * @return void
      *
      * Call this before calling appendParameter, if parameters were already added.
+     * @internal
      */
     public function clearParameterList()
     {
@@ -618,6 +621,7 @@ trait FunctionTrait
                     );
                 }
 
+                // if ($parameter->isCloneOfVariadic()) { throw new \Error("Impossible\n"); }
                 $parameter->addUnionType($comment_param_type);
             }
         }
@@ -672,6 +676,7 @@ trait FunctionTrait
                     // Don't add both `int` and `?int` to the same set.
                     foreach ($default_type->getTypeSet() as $default_type_part) {
                         if (!$parameter->getNonvariadicUnionType()->hasType($default_type_part->withIsNullable(true))) {
+                            // if ($parameter->isCloneOfVariadic()) { throw new \Error("Impossible\n"); }
                             $parameter->addType($default_type_part);
                         }
                     }
@@ -931,5 +936,23 @@ trait FunctionTrait
             $this->return_type_callback = $return_type_callback;
             $this->function_call_analyzer_callback = $function_call_analyzer_callback;
         };
+    }
+
+    /**
+     * Clone the parameter list, so that modifying the parameters on the first call won't modify the others.
+     * TODO: If they're immutable, they can be shared without cloning with less worry.
+     * @internal
+     * @return void
+     */
+    public function cloneParameterList()
+    {
+        $this->setParameterList(
+            \array_map(
+                function (Parameter $parameter) : Parameter {
+                    return clone($parameter);
+                },
+                $this->getParameterList()
+            )
+        );
     }
 }

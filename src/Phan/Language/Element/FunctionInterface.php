@@ -147,14 +147,6 @@ interface FunctionInterface extends AddressableElementInterface
     public function getParameterForCaller(int $i);
 
     /**
-     * @param array<int,Parameter> $parameter_list
-     * A list of parameters to set on this method
-     *
-     * @return void
-     */
-    public function setParameterList(array $parameter_list);
-
-    /**
      * @param Parameter $parameter
      * A parameter to append to the parameter list
      *
@@ -336,4 +328,12 @@ interface FunctionInterface extends AddressableElementInterface
      * Always false for global functions(Func).
      */
     public function isFromPHPDoc() : bool;
+
+    /**
+     * Clone the parameter list, so that modifying the parameters on the first call won't modify the others.
+     * TODO: If they're immutable, they can be shared without cloning with less worry.
+     * @internal
+     * @return void
+     */
+    public function cloneParameterList();
 }

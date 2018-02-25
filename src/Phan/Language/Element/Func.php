@@ -35,13 +35,17 @@ class Func extends AddressableElement implements FunctionInterface
      * always defined, but for most nodes it is always zero.
      * ast\kind_uses_flags() can be used to determine whether
      * a certain kind has a meaningful flags value.
+     *
+     * @param ?array<int,Parameter> $parameter_list
+     * A list of parameters to set on this method
      */
     public function __construct(
         Context $context,
         string $name,
         UnionType $type,
         int $flags,
-        FullyQualifiedFunctionName $fqsen
+        FullyQualifiedFunctionName $fqsen,
+        $parameter_list
     ) {
         parent::__construct(
             $context,
@@ -61,6 +65,9 @@ class Func extends AddressableElement implements FunctionInterface
                 $context->getScope(),
                 $fqsen
             ));
+        }
+        if ($parameter_list !== null) {
+            $this->setParameterList($parameter_list);
         }
     }
 
@@ -137,6 +144,14 @@ class Func extends AddressableElement implements FunctionInterface
         Node $node,
         FullyQualifiedFunctionName $fqsen
     ) : Func {
+        // @var array<int,Parameter>
+        // The list of parameters specified on the
+        // function
+        $parameter_list = Parameter::listFromNode(
+            $context,
+            $code_base,
+            $node->children['params']
+        );
 
         // Create the skeleton function object from what
         // we know so far
@@ -145,7 +160,8 @@ class Func extends AddressableElement implements FunctionInterface
             (string)$node->children['name'],
             UnionType::empty(),
             $node->flags ?? 0,
-            $fqsen
+            $fqsen,
+            $parameter_list
         );
 
         // Parse the comment above the function to get
@@ -172,19 +188,12 @@ class Func extends AddressableElement implements FunctionInterface
             }
         }
 
-        // @var array<int,Parameter>
-        // The list of parameters specified on the
-        // function
-        $parameter_list = Parameter::listFromNode(
-            $context,
-            $code_base,
-            $node->children['params']
-        );
-
         // Add each parameter to the scope of the function
+        // NOTE: it's important to clone this,
+        // because we don't want anything to modify the original Parameter
         foreach ($parameter_list as $parameter) {
             $func->getInternalScope()->addVariable(
-                $parameter
+                $parameter->cloneAsNonVariadic()
             );
         }
 
@@ -195,8 +204,6 @@ class Func extends AddressableElement implements FunctionInterface
             $func->setNode($node);
         }
 
-        // Set the parameter list on the function
-        $func->setParameterList($parameter_list);
         // Keep an copy of the original parameter list, to check for fatal errors later on.
         $func->setRealParameterList($parameter_list);
 
