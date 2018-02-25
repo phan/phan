@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @property-read Missing359E|Missing359F[][] $missing4
+ * @phan-property-read Missing359E|Missing359F[][] $missing4
  * @method Missing359G myInstanceMethod(Missing359H[] $param1)
  */
 class A359 {

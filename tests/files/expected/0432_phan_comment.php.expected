@@ -1,0 +1,5 @@
+%s:5 PhanInvalidCommentForDeclarationType The phpdoc comment for @phan-param cannot occur on a class
+%s:6 PhanInvalidCommentForDeclarationType The phpdoc comment for @phan-return cannot occur on a class
+%s:7 PhanInvalidCommentForDeclarationType The phpdoc comment for @phan-var cannot occur on a class
+%s:27 PhanTypeMismatchReturn Returning type array{key:string} but test() is declared to return array{key:string[]}
+%s:36 PhanTypeMismatchReturn Returning type array{key:int,other:string} but testVarAnnotation() is declared to return array{key:string}

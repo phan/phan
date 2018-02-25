@@ -10,7 +10,7 @@
  * @method static static_foo()
  * @method static int static_foo_with_return_type()
  * @method static static static_foo_with_return_type_of_static()
- * @method int myMethodWithParams(int $x)
+ * @phan-method int myMethodWithParams(int $x)
  * @method int myMethodWithUntypedParams($x)
  * @method int myMethodWithPHPDocParams(double $x, object $y)
  * @method int|string myMethodWithVariadicParams(int $a, int|string   ... $x )

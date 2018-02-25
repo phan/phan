@@ -182,6 +182,7 @@ class Comment
         array $suppress_issue_list,
         array $magic_property_list,
         array $magic_method_list,
+        array $phan_overrides,
         Option $closure_scope
     ) {
         $this->comment_flags = $comment_flags;
@@ -221,7 +222,74 @@ class Comment
                 $this->magic_method_map[$name] = $method;
             }
         }
+        foreach ($phan_overrides as $key => $override_value) {
+            $this->applyOverride($key, $override_value);
+        }
     }
+
+    /**
+     * @param mixed $value
+     * @return void
+     */
+    private function applyOverride(string $key, $value) {
+        switch ($key) {
+            case 'param':
+                foreach ($value as $parameter) {
+                    $name = $parameter->getName();
+                    if (!empty($name)) {
+                        // Add it to the named map
+                        // TODO: could check that @phan-param is compatible with the original @param
+                        $this->parameter_map[$name] = $parameter;
+                    }
+                }
+                return;
+            case 'return':
+                // TODO: could check that @phan-return is compatible with the original @return
+                $this->return_union_type = $value;
+                return;
+            case 'var':
+                // TODO: Remove pre-existing entries.
+                $this->mergeVariableList($value);
+                return;
+            case 'property':
+                foreach ($value as $property) {
+                    $name = $property->getName();
+                    if (!empty($name)) {
+                        // Override or add the entry in the named map
+                        $this->magic_property_map[$name] = $property;
+                    }
+                }
+                return;
+            case 'method':
+                foreach ($value as $method) {
+                    $name = $method->getName();
+                    if (!empty($name)) {
+                        // Override or add the entry in the named map
+                        $this->magic_method_map[$name] = $method;
+                    }
+                }
+                return;
+        }
+    }
+
+    /**
+     * @var array<int,CommentParameter>
+     * A list of CommentParameters from var declarations
+     */
+    private function mergeVariableList(array $override_comment_vars)
+    {
+        $known_names = [];
+        foreach ($override_comment_vars as $override_var) {
+            $known_names[$override_var->getName()] = true;
+        }
+        foreach ($this->variable_list as $i => $var) {
+            if (isset($known_names[$var->getName()])) {
+                unset($this->variable_list[$i]);
+            }
+        }
+        $this->variable_list = array_merge($this->variable_list, $override_comment_vars);
+    }
+
 
     private static function guessActualLineLocation(Context $context, int $declaration_lineno, int $i, int $comment_lines_count, string $line)
     {
@@ -283,6 +351,7 @@ class Comment
                 [],
                 [],
                 [],
+                [],
                 new None
             );
         }
@@ -297,6 +366,7 @@ class Comment
         $magic_method_list = [];
         $closure_scope = new None;
         $comment_flags = 0;
+        $phan_overrides = [];
 
         $lines = \explode("\n", $comment);
         $comment_lines_count = \count($lines);
@@ -355,8 +425,10 @@ class Comment
                     }
                 } elseif ($type === 'return') {
                     $check_compatible('@return', Comment::FUNCTION_LIKE, $i, $line);
-                    $return_union_type =
-                        self::returnTypeFromCommentLine($context, $line);
+                    $type = self::returnTypeFromCommentLine($context, $line)->withUnionType($return_union_type);
+                    if (!$type->isEmpty()) {
+                        $return_union_type = $type;
+                    }
                 } elseif ($type === 'returns') {
                     Issue::maybeEmit(
                         $code_base,
@@ -403,6 +475,13 @@ class Comment
                     } elseif ($type === 'phan-closure-scope') {
                         $check_compatible('@phan-closure-scope', Comment::FUNCTION_LIKE, $i, $line);
                         $closure_scope = self::getPhanClosureScopeFromCommentLine($context, $line);
+                    } elseif ($type === 'phan-param') {
+                        $check_compatible('@phan-param', Comment::FUNCTION_LIKE, $i, $line);
+                        $phan_overrides['param'][] =
+                            self::parameterFromCommentLine($code_base, $context, $line, false, $lineno, $i, $comment_lines_count);
+                    } elseif ($type === 'phan-return') {
+                        $check_compatible('@phan-return', Comment::FUNCTION_LIKE, $i, $line);
+                        $phan_overrides['return'] = self::returnTypeFromCommentLine($context, $line);
                     } elseif ($type === 'phan-override') {
                         $check_compatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i, $line);
                         $comment_flags |= Flags::IS_OVERRIDE_INTENDED;
@@ -410,12 +489,35 @@ class Comment
                         $check_compatible('@phan-var', Comment::HAS_VAR_ANNOTATION, $i, $line);
                         $comment_var = self::parameterFromCommentLine($code_base, $context, $line, true, $lineno, $i, $comment_lines_count);
                         if ($comment_var->getName() !== '' || !\in_array($comment_type, self::FUNCTION_LIKE)) {
-                            $variable_list[] = $comment_var;
+                            $phan_overrides['var'][] = $comment_var;
                         }
                     } elseif ($type === 'phan-file-suppress') {
                         $suppress_issue_type = self::fileSuppressIssueFromCommentLine($line);
                         if ($suppress_issue_type) {
                             $code_base->addFileLevelSuppression($context->getFile(), $suppress_issue_type);
+                        }
+                    } elseif ($type === 'phan-suppress') {
+                        $suppress_issue_type = self::suppressIssueFromCommentLine($line);
+                        if ($suppress_issue_type !== '') {
+                            $suppress_issue_list[] = $suppress_issue_type;
+                        }
+                    } elseif ($type === 'phan-property' || $type === 'phan-property-read' || $type === 'phan-property-write') {
+                        $check_compatible('@phan-property', [Comment::ON_CLASS], $i, $line);
+                        // Make sure support for magic properties is enabled.
+                        if (Config::getValue('read_magic_property_annotations')) {
+                            $magic_property = self::magicPropertyFromCommentLine($code_base, $context, $line, $lineno);
+                            if ($magic_property !== null) {
+                                $phan_overrides['property'][] = $magic_property;
+                            }
+                        }
+                    } elseif ($type === 'phan-method') {
+                        // Make sure support for magic methods is enabled.
+                        if (Config::getValue('read_magic_method_annotations')) {
+                            $check_compatible('@phan-method', [Comment::ON_CLASS], $i, $line);
+                            $magic_method = self::magicMethodFromCommentLine($code_base, $context, $line, $lineno, $i, $comment_lines_count);
+                            if ($magic_method !== null) {
+                                $phan_overrides['method'][] = $magic_method;
+                            }
                         }
                     } else {
                         Issue::maybeEmit(
@@ -461,6 +563,7 @@ class Comment
             $suppress_issue_list,
             $magic_property_list,
             $magic_method_list,
+            $phan_overrides,
             $closure_scope
         );
     }
@@ -486,7 +589,7 @@ class Comment
     }
 
     // TODO: Is `@return &array` valid phpdoc2?
-    const return_comment_regex = '/@return\s+(&\s*)?(' . UnionType::union_type_regex_or_this . '+)/';
+    const return_comment_regex = '/@(?:phan-)?return\s+(&\s*)?(' . UnionType::union_type_regex_or_this . '+)/';
 
     /**
      * @param Context $context
@@ -531,7 +634,7 @@ class Comment
     }
 
     const param_comment_regex =
-        '/@(param|var)\b\s*(' . UnionType::union_type_regex . ')?(?:\s*(\.\.\.)?\s*&?(?:\\$' . self::WORD_REGEX . '))?/';
+        '/@(?:phan-)?(param|var)\b\s*(' . UnionType::union_type_regex . ')?(?:\s*(\.\.\.)?\s*&?(?:\\$' . self::WORD_REGEX . '))?/';
 
     /**
      * @param CodeBase $code_base
@@ -688,7 +791,7 @@ class Comment
     private static function suppressIssueFromCommentLine(
         string $line
     ) : string {
-        if (preg_match('/@suppress\s+' . self::WORD_REGEX . '/', $line, $match)) {
+        if (preg_match('/@(?:phan-)?suppress\s+' . self::WORD_REGEX . '/', $line, $match)) {
             return $match[1];
         }
 
@@ -779,7 +882,7 @@ class Comment
         //    Assumes the parameters end at the first ")" after "("
         //    As an exception, allows one level of matching brackets
         //    to support old style arrays such as $x = array(), $x = array(2) (Default values are ignored)
-        if (preg_match('/@method(?:\s+(static))?(?:(?:\s+(' . UnionType::union_type_regex_or_this . '))?)\s+' . self::WORD_REGEX . '\s*\(((?:[^()]|\([()]*\))*)\)\s*(.*)/', $line, $match)) {
+        if (preg_match('/@(?:phan-)?method(?:\s+(static))?(?:(?:\s+(' . UnionType::union_type_regex_or_this . '))?)\s+' . self::WORD_REGEX . '\s*\(((?:[^()]|\([()]*\))*)\)\s*(.*)/', $line, $match)) {
             $is_static = $match[1] === 'static';
             $return_union_type_string = $match[2];
             if ($return_union_type_string !== '') {
@@ -859,7 +962,7 @@ class Comment
         // Note that the type of a property can be left out (@property $myVar) - This is equivalent to @property mixed $myVar
         // TODO: properly handle duplicates...
         // TODO: support read-only/write-only checks elsewhere in the codebase?
-        if (\preg_match('/@(property|property-read|property-write)(?:\s+(' . UnionType::union_type_regex . '))?(?:\s+(?:\\$' . self::WORD_REGEX . '))/', $line, $match)) {
+        if (\preg_match('/@(?:phan-)?(property|property-read|property-write)(?:\s+(' . UnionType::union_type_regex . '))?(?:\s+(?:\\$' . self::WORD_REGEX . '))/', $line, $match)) {
             $type = $match[2] ?? '';
 
             $property_name = $match[18] ?? '';
