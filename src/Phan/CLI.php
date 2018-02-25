@@ -756,6 +756,7 @@ Extended help:
 
  --require-config-exists
   Exit immediately with an error code if .phan/config.php does not exist.
+
 EOB;
         }
         exit($exit_code);
