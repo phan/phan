@@ -560,6 +560,12 @@ class Phan implements IgnoredFilesFilterInterface
      */
     private static function checkForSlowPHPOptions()
     {
+        static $did_check = false;
+        if ($did_check) {
+            // Only perform this check once (e.g. in unit tests
+            return;
+        }
+        $did_check = true;
         if (Config::getValue('skip_slow_php_options_warning')) {
             return;
         }

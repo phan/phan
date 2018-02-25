@@ -154,15 +154,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         // The namespace may either have a list of statements (`namespace Foo {}`)
         // or be null (`namespace Foo;`)
-        foreach ($node->children['stmts']->children ?? [] as $child_node) {
-            // Skip any non Node children.
-            if (!($child_node instanceof Node)) {
-                continue;
-            }
-
-            // Step into each child node and get an
-            // updated context for the node
-            $context = $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
+        $stmts_node = $node->children['stmts'];
+        if ($stmts_node instanceof Node) {
+            assert($stmts_node->kind === \ast\AST_STMT_LIST);
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $stmts_node);
         }
 
         return $this->postOrderAnalyze($context, $node);
@@ -382,89 +377,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $this->parent_node = $old_parent_node;
             $this->depth = $old_depth;
         }
-    }
-
-    /**
-     * For nodes that are the root of mutually exclusive child
-     * nodes (if, try), we analyze each child in the parent context
-     * and then merge them together to try to guess what happens
-     * after the branching finishes.
-     *
-     *           │
-     *           ▼
-     *        ┌──●──┐
-     *        │  │  │
-     *        ●  ●  ●
-     *        │  │  │
-     *        └──●──┘
-     *           │
-     *           ▼
-     *
-     * @param Node $node
-     * An AST node we'd like to analyze the statements for
-     *
-     * @return Context
-     * The updated context after visiting the node
-     */
-    public function visitBranchedContext(Node $node) : Context
-    {
-        $context = $this->context->withLineNumberStart(
-            $node->lineno ?? 0
-        );
-
-        $context = $this->preOrderAnalyze($context, $node);
-
-        \assert(!empty($context), 'Context cannot be null');
-
-        // We collect all child context so that the
-        // PostOrderAnalysisVisitor can optionally operate on
-        // them
-        $child_context_list = [];
-
-        // With a context that is inside of the node passed
-        // to this method, we analyze all children of the
-        // node.
-        foreach ($node->children as $child_node) {
-            // Skip any non Node children.
-            if (!($child_node instanceof Node)) {
-                continue;
-            }
-
-            // The conditions need to communicate to the outter
-            // scope for things like assigning veriables.
-            $child_context = $context->withScope(
-                new BranchScope($context->getScope())
-            );
-
-            $child_context->withLineNumberStart(
-                $child_node->lineno ?? 0
-            );
-
-            // Step into each child node and get an
-            // updated context for the node
-            $child_context = $this->analyzeAndGetUpdatedContext($child_context, $node, $child_node);
-            if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($child_node)) {
-                $child_context_list[] = $child_context;
-            }
-        }
-
-        if (count($child_context_list) > 0) {
-            // For switch/try statements, we need to merge the contexts
-            // of all child context into a single scope based
-            // on any possible branching structure
-            $context = (new ContextMergeVisitor(
-                $this->code_base,
-                $context,
-                $child_context_list
-            ))($node);
-        }
-
-        $context = $this->postOrderAnalyze($context, $node);
-
-        // When coming out of a scoped element, we pop the
-        // context to be the incoming context. Otherwise,
-        // we pass our new context up to our parent
-        return $context;
     }
 
     /**
@@ -825,18 +737,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node $node
-     * An AST node we'd like to analyze the statements for
+     * TODO: Diagram similar to visit() for this and other visitors handling branches?
      *
-     * @return Context
-     * The updated context after visiting the node
-     */
-    public function visitCatchList(Node $node) : Context
-    {
-        return $this->visitBranchedContext($node);
-    }
-
-    /**
      * @param Node $node
      * An AST node we'd like to analyze the statements for
      *

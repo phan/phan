@@ -74,7 +74,7 @@ final class TolerantASTConverter
     const AST_VERSION = 50;
 
     // The versions that this supports
-    const SUPPORTED_AST_VERSIONS = [40, 45, 50];
+    const SUPPORTED_AST_VERSIONS = [self::AST_VERSION];
 
     const _IGNORED_STRING_TOKEN_KIND_SET = [
         TokenKind::OpenBraceDollarToken => true,
@@ -86,11 +86,6 @@ final class TolerantASTConverter
     // If this environment variable is set, this will throw.
     // (For debugging, may be removed in the future)
     const ENV_AST_THROW_INVALID = 'AST_THROW_INVALID';
-
-    /**
-     * @var int - A version in SUPPORTED_AST_VERSIONS
-     */
-    private static $ast_version = self::AST_VERSION;
 
     private static $php_version_id_parsing = PHP_VERSION_ID;
 
@@ -173,16 +168,15 @@ final class TolerantASTConverter
         if (!\in_array($ast_version, self::SUPPORTED_AST_VERSIONS)) {
             throw new \InvalidArgumentException(sprintf("Unexpected version: want %s, got %d", implode(', ', self::SUPPORTED_AST_VERSIONS), $ast_version));
         }
-        $this->startParsing($ast_version, $file_contents, $parser_node);
+        $this->startParsing($file_contents, $parser_node);
         $stmts = self::phpParserNodeToAstNode($parser_node);
         // return self::normalizeNamespaces($stmts);
         return $stmts;
     }
 
     /** @return void */
-    private function startParsing(int $ast_version, string $file_contents, PhpParser\Node $parser_node)
+    private function startParsing(string $file_contents, PhpParser\Node $parser_node)
     {
-        self::$ast_version = $ast_version;
         self::$decl_id = 0;
         self::$should_add_placeholders = $this->instance_should_add_placeholders;
         self::$php_version_id_parsing = $this->instance_php_version_id_parsing;
@@ -1531,19 +1525,8 @@ Node\SourceFileNode
                     $flags = ast\flags\TYPE_ARRAY;
                     break;
                 case 'object':
-                    if (self::$ast_version >= 45) {
-                        $flags = ast\flags\TYPE_OBJECT;
-                        break;
-                    } else {
-                        return new ast\Node(
-                            ast\AST_NAME,
-                            substr($type, 0, 1) === '\\' ? ast\flags\NAME_FQ : ast\flags\NAME_NOT_FQ,  // FIXME wrong.
-                            [
-                            'name' => $type,
-                            ],
-                            $line
-                        );
-                    }
+                    $flags = ast\flags\TYPE_OBJECT;
+                    break;
                 case 'callable':
                     $flags = ast\flags\TYPE_CALLABLE;
                     break;
@@ -2219,8 +2202,13 @@ Node\SourceFileNode
         ];
 
         $start_line = self::getStartLine($n);
+        if (self::$php_version_id_parsing >= 70100) {
+            $doc_comment = self::extractPhpdocComment($n) ?: $doc_comment;
+        } else {
+            $doc_comment = null;
+        }
 
-        return self::newAstNode(ast\AST_CONST_ELEM, 0, $children, $start_line, self::extractPhpdocComment($n) ?: $doc_comment);
+        return self::newAstNode(ast\AST_CONST_ELEM, 0, $children, $start_line, $doc_comment);
     }
 
     /**
@@ -2318,13 +2306,10 @@ Node\SourceFileNode
         ];
         $doc_comment = self::extractPhpdocComment($declare) ?? $first_doc_comment;
         // $first_doc_comment = null;
-        if (self::$ast_version >= 50 && self::$php_version_id_parsing >= 70100) {
+        if (self::$php_version_id_parsing >= 70100) {
             $children['docComment'] = $doc_comment;
         }
         $node = new ast\Node(ast\AST_CONST_ELEM, 0, $children, self::getStartLine($declare));
-        if (self::$ast_version < 50 && is_string($doc_comment) && self::$php_version_id_parsing >= 70100) {
-            $node->docComment = $doc_comment;
-        }
         $ast_declare_elements[] = $node;
         return new ast\Node(ast\AST_CONST_DECL, 0, $ast_declare_elements, $start_line);
     }
@@ -2585,11 +2570,6 @@ Node\SourceFileNode
         return $result;
     }
 
-    const _NODES_WITH_NULL_DOC_COMMENT = [
-        ast\AST_CONST_ELEM => true,
-        ast\AST_PROP_ELEM => true,
-    ];
-
     /**
      * @suppress PhanUndeclaredProperty - docComment really exists.
      * NOTE: this may be removed in the future.
@@ -2602,10 +2582,11 @@ Node\SourceFileNode
      */
     private static function newAstNode(int $kind, int $flags, array $children, int $lineno, string $doc_comment = null) : ast\Node
     {
-        if (self::$ast_version >= 50) {
-            if (is_string($doc_comment) || array_key_exists($kind, self::_NODES_WITH_NULL_DOC_COMMENT)) {
-                $children['docComment'] = $doc_comment;
-            }
+        if (is_string($doc_comment) ||
+            ($kind === ast\AST_PROP_ELEM && $flags !== \ast\flags\MODIFIER_STATIC) ||
+            ($kind === ast\AST_CONST_ELEM && self::$php_version_id_parsing >= 70100)) {
+
+            $children['docComment'] = $doc_comment;
             return new ast\Node($kind, $flags, $children, $lineno);
         }
         $node = new ast\Node($kind, $flags, $children, $lineno);
@@ -2629,27 +2610,18 @@ Node\SourceFileNode
      */
     private static function newAstDecl(int $kind, int $flags, array $children, int $lineno, string $doc_comment = null, string $name = null, int $end_lineno = 0, int $decl_id = -1) : ast\Node
     {
-        if (self::$ast_version >= 50) {
-            $children50 = [];
-            $children50['name'] = $name;
-            $children50['docComment'] = $doc_comment;
-            $children50 += $children;
-            if ($decl_id >= 0) {
-                $children50['__declId'] = $decl_id;
-            }
-            $node = new ast\Node($kind, $flags, $children50, $lineno);
-            if (is_int($end_lineno)) {
-                $node->endLineno = $end_lineno;
-            }
-            return $node;
+        $children50 = [];
+        $children50['name'] = $name;
+        $children50['docComment'] = $doc_comment;
+        $children50 += $children;
+        if ($decl_id >= 0) {
+            $children50['__declId'] = $decl_id;
         }
-        $decl = new ast\Node\Decl($kind, $flags, $children, $lineno);
-        if (\is_string($doc_comment)) {
-            $decl->docComment = $doc_comment;
+        $node = new ast\Node($kind, $flags, $children50, $lineno);
+        if (is_int($end_lineno)) {
+            $node->endLineno = $end_lineno;
         }
-        $decl->name = $name;
-        $decl->endLineno = $end_lineno;
-        return $decl;
+        return $node;
     }
 
     private static function nextDeclId() : int

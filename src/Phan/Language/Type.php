@@ -599,6 +599,9 @@ class Type
                 return StaticType::instance($is_nullable);
         }
 
+        if (\substr($type_name, 0, 1) === '?') {
+            return self::fromInternalTypeName(\substr($type_name, 1), true, $source);
+        }
         throw new \AssertionError("No internal type with name $type_name");
     }
 

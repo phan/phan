@@ -1,0 +1,1 @@
+<?php interface I1 {}
