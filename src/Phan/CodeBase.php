@@ -449,15 +449,6 @@ class CodeBase
         }
     }
 
-    private static function deepCopyMapMapValues(Map $map_map) : Map
-    {
-        $clone_of_clones = new Map();
-        foreach ($map_map as $key => $map) {
-            $clone_of_clones[$key] = $map->deepCopyValues();
-        }
-        return $clone_of_clones;
-    }
-
     /**
      * @param array{clone:CodeBase,callbacks:?Closure[]}
      * @return void

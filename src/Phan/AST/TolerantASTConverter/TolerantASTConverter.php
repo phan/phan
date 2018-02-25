@@ -1622,11 +1622,6 @@ Node\SourceFileNode
         return new ast\Node(ast\AST_NAME, $ast_kind, ['name' => $imploded_parts], $line);
     }
 
-    private static function astMagicConst(int $flags, int $line)
-    {
-        return new ast\Node(ast\AST_MAGIC_CONST, $flags, [], $line);
-    }
-
     /** @param ?PhpParser\Node\DelimitedList\ParameterDeclarationList $parser_params */
     private static function phpParserParamsToAstParams($parser_params, int $line) : ast\Node
     {

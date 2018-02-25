@@ -260,20 +260,6 @@ abstract class UnaddressableTypedElement
     }
 
     /**
-     * @return void
-     */
-    private function setIsPHPInternal(bool $is_internal)
-    {
-        $this->setPhanFlags(
-            Flags::bitVectorWithState(
-                $this->getPhanFlags(),
-                Flags::IS_PHP_INTERNAL,
-                $is_internal
-            )
-        );
-    }
-
-    /**
      * This method must be called before analysis
      * begins.
      *

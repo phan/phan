@@ -113,22 +113,6 @@ class ASTSimplifier
     }
 
     /**
-     * Get a modifiable Node that is a clone of the statement or statement list.
-     * The resulting Node has kind AST_STMT_LIST
-     */
-    private static function cloneStatementList(Node $stmt_list = null) : Node
-    {
-        if (\is_null($stmt_list)) {
-            return self::buildStatementList(0);
-        }
-        if ($stmt_list->kind === \ast\AST_STMT_LIST) {
-            return clone($stmt_list);
-        }
-        // $parent->children['stmts'] is a statement, not a statement list.
-        return self::buildStatementList($stmt_list->lineno ?? 0, $stmt_list);
-    }
-
-    /**
      * @param \ast\Node[] $statements
      * @return \ast\Node[][]|bool[] - [New/old list, bool $modified] An equivalent list after simplifying (or the original list)
      */

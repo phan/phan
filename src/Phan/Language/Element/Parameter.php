@@ -40,11 +40,6 @@ class Parameter extends Variable
     private $default_value_future_type = null;
 
     /**
-     * @var Context|null used to resolve default_value_future_type
-     */
-    private $default_value_context = null;
-
-    /**
      * @var mixed
      * The value of the default, if one is set
      */
