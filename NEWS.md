@@ -12,6 +12,9 @@ New Features(CLI, Configs)
   (Options: `--init-level=1..5`, `--init-analyze-dir=path/to/src`, `--init-analyze-file=path/to/file.php`, `--init-no-composer`, `--init-overwrite`)
 
 New Features(Analysis)
++ In doc comments, support `@phan-var`, `@phan-param`, `@phan-return`, `@phan-property`, and `@phan-method`. (#1470)
+  These annotations will take precedence over `@var`, `@param`, `@return`, `@property`, and `@method`.
++ Support `@phan-suppress` as an alias of `@suppress`.
 + Add a non-standard way to explicitly set var types inline.  (#890)
   `; '@phan-var T $varName'; expression_using($varName);` and
   `; '@phan-var-force T $varName'; expression_using($varName);`
