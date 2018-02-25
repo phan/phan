@@ -28,7 +28,7 @@ class Debug
     }
 
     /**
-     * @param string|Node|null $node
+     * @param string|int|float|Node|null $node
      * An AST node
      *
      * Print an AST node
@@ -89,8 +89,11 @@ class Debug
     }
 
     /**
-     * @param string|Node|null $node
+     * @param string|int|float|Node|null $node
      * An AST node
+     *
+     * @param string|null $name
+     * The name of the node (if this node has a parent)
      *
      * @param int $indent
      * The indentation level for the string

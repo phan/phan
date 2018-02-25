@@ -94,6 +94,7 @@ class Parser
     {
         $converter = new TolerantASTConverter();
         $converter->setShouldAddPlaceholders(false);
+        $converter->setPHPVersionId(Config::get_closest_target_php_version_id());
         $errors = [];
         try {
             $node = $converter->parseCodeAsPHPAST($file_contents, Config::AST_VERSION, $errors);

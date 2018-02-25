@@ -59,10 +59,13 @@
         </testsuite>
         <testsuite name="UtilTest">
             <file>tests/Phan/AnalyzerTest.php</file>
-            <directory>tests/Phan/Output/Printer</directory>
-            <file>tests/Phan/Library/TupleTest.php</file>
-            <file>tests/Phan/Exception/IssueExceptionTest.php</file>
-            <file>tests/Phan/Analysis/BlockExitStatusCheckerTest.php</file>
+            <file>tests/Phan/DebugTest.php</file>
+            <directory>tests/Phan/Analysis</directory>
+            <directory>tests/Phan/AST</directory>
+            <directory>tests/Phan/Exception</directory>
+            <directory>tests/Phan/LanguageServer</directory>
+            <directory>tests/Phan/Library</directory>
+            <directory>tests/Phan/Output</directory>
         </testsuite>
         <testsuite name="PHP72Test">
             <file>tests/Phan/PHP72Test.php</file>
@@ -70,7 +73,12 @@
     </testsuites>
     <filter>
         <whitelist>
-            <directory>src/</directory>
+            <directory>src/Phan</directory>
+            <exclude>
+                <directory>src/Phan/Language/Internal</directory>
+            </exclude>
         </whitelist>
     </filter>
+    <!-- Just in case a bug is introduced causing infinite recursion, add a memory limit. -->
+    <ini name="memory_limit" value="1G" />
 </phpunit>

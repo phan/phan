@@ -1,0 +1,4 @@
+<?php
+
+static function() {
+};

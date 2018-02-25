@@ -132,3 +132,4 @@ class ArrayType extends IterableType
 // before ArrayType.
 // This won't pass if GenericArrayType is in the process of being instantiated.
 \class_exists(GenericArrayType::class);
+\class_exists(ArrayShapeType::class);
