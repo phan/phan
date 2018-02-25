@@ -584,12 +584,4 @@ final class ConfigPluginSet extends PluginV2 implements
         }
         return $result;
     }
-
-    /**
-     * @return array<int,Plugin>
-     */
-    private function getPlugins() : array
-    {
-        return $this->pluginSet;
-    }
 }

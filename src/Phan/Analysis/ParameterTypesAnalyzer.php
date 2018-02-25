@@ -106,7 +106,8 @@ class ParameterTypesAnalyzer
     /**
      * Precondition: $target_php_version < 70200
      */
-    private static function analyzeRealSignatureCompatibility(CodeBase $code_base, FunctionInterface $method, int $target_php_version) {
+    private static function analyzeRealSignatureCompatibility(CodeBase $code_base, FunctionInterface $method, int $target_php_version)
+    {
         $php70_checks = $target_php_version < 70100;
 
         foreach ($method->getRealParameterList() as $real_parameter) {

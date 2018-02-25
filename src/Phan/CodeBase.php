@@ -449,15 +449,6 @@ class CodeBase
         }
     }
 
-    private static function deepCopyMapMapValues(Map $map_map) : Map
-    {
-        $clone_of_clones = new Map();
-        foreach ($map_map as $key => $map) {
-            $clone_of_clones[$key] = $map->deepCopyValues();
-        }
-        return $clone_of_clones;
-    }
-
     /**
      * @param array{clone:CodeBase,callbacks:?Closure[]}
      * @return void
@@ -526,10 +517,10 @@ class CodeBase
             // Create callbacks to back up class constants and properties.
             // Methods were already backed up.
             foreach ($class_map->getClassConstantMap() as $const) {
-                $callbacks[] = $const->createRestoreCallback();;
+                $callbacks[] = $const->createRestoreCallback();
             }
             foreach ($class_map->getPropertyMap() as $property) {
-                $callbacks[] = $property->createRestoreCallback();;
+                $callbacks[] = $property->createRestoreCallback();
             }
         }
 

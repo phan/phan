@@ -1622,11 +1622,6 @@ Node\SourceFileNode
         return new ast\Node(ast\AST_NAME, $ast_kind, ['name' => $imploded_parts], $line);
     }
 
-    private static function astMagicConst(int $flags, int $line)
-    {
-        return new ast\Node(ast\AST_MAGIC_CONST, $flags, [], $line);
-    }
-
     /** @param ?PhpParser\Node\DelimitedList\ParameterDeclarationList $parser_params */
     private static function phpParserParamsToAstParams($parser_params, int $line) : ast\Node
     {
@@ -1700,7 +1695,6 @@ Node\SourceFileNode
                 $node instanceof PhpParser\Node\Expression\ParenthesizedExpression ||
                 $node instanceof PhpParser\Node\ArrayElement ||
                 $node instanceof PhpParser\Node\Statement\ReturnStatement) {
-
                 $doc_comment = $node->getDocCommentText();
                 if ($doc_comment) {
                     return $doc_comment;
@@ -2585,7 +2579,6 @@ Node\SourceFileNode
         if (is_string($doc_comment) ||
             ($kind === ast\AST_PROP_ELEM && $flags !== \ast\flags\MODIFIER_STATIC) ||
             ($kind === ast\AST_CONST_ELEM && self::$php_version_id_parsing >= 70100)) {
-
             $children['docComment'] = $doc_comment;
             return new ast\Node($kind, $flags, $children, $lineno);
         }

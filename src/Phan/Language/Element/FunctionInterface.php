@@ -336,5 +336,4 @@ interface FunctionInterface extends AddressableElementInterface
      * Always false for global functions(Func).
      */
     public function isFromPHPDoc() : bool;
-
 }

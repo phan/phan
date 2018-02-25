@@ -149,7 +149,7 @@ class Property extends ClassElement
         }
         // If this refers to a class constant in another file,
         // the resolved union type might change if that file changes.
-        return function() use ($future_union_type) {
+        return function () use ($future_union_type) {
             $this->future_union_type = $future_union_type;
             // Probably don't need to call setUnionType(mixed) again...
         };

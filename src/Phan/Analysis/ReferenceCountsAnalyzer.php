@@ -285,6 +285,11 @@ class ReferenceCountsAnalyzer
                         // then also treat it as a reference to the duplicate.
                         return;
                     }
+                    if ($element_alt->isPHPInternal()) {
+                        // For efficiency, Phan doesn't track references to internal classes.
+                        // Phan already emitted a warning about duplicating an internal class.
+                        return;
+                    }
                 }
                 // Make issue types granular so that these can be fixed in smaller steps.
                 // E.g. composer libraries may have unreferenced but used public methods, properties, and class constants.

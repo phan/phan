@@ -7,7 +7,9 @@
  * @author Nikita Popov <nikic@php.net>
  *
  * With modifications to be a functional replacement for the data
- * structures and global constants of ext-ast. (for class ast\Node and ast\Node\Decl)
+ * structures and global constants of ext-ast. (for class ast\Node)
+ *
+ * This supports AST version 50
  *
  * However, this file does not define any global functions such as
  * ast\parse_code() and ast\parse_file(). (to avoid confusion)
@@ -248,25 +250,5 @@ if (!class_exists('\ast\Node')) {
             $this->children = $children;
             $this->lineno = $lineno;
         }
-    }
-}
-
-namespace ast\Node;
-
-if (!class_exists('\ast\Node\Decl')) {
-    /**
-     * AST Node type for function and class declarations.
-     * @suppress PhanRedefineClassInternal
-     */
-    class Decl extends \ast\Node
-    {
-        /** @var int End line number of the declaration */
-        public $endLineno;
-
-        /** @var string Name of the function or class (not including the namespace prefix) */
-        public $name;
-
-        /** @var string|null Doc comment preceeding the declaration. null if no doc comment was used. */
-        public $docComment;
     }
 }

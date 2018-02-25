@@ -21,25 +21,6 @@ use ast\Node;
 final class StringFunctionPlugin extends PluginV2 implements
     AnalyzeFunctionCallCapability
 {
-
-    /**
-     * @param Node|int|string $arg_array_node
-     * @return ?array
-     */
-    private static function extractArrayArgs($arg_array_node)
-    {
-        if (($arg_array_node instanceof Node) && $arg_array_node->kind === \ast\AST_ARRAY) {
-            $arguments = [];
-            // TODO: Sanity check keys.
-            foreach ($arg_array_node->children as $child) {
-                $arguments[] = $child->children['value'];
-            }
-            return $arguments;
-        } else {
-            return null;
-        }
-    }
-
     /**
      * @param Node|string|float|int|null $arg
      * @return bool true if the expression is simple to look up.

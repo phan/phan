@@ -41,7 +41,8 @@ class NamespaceMapEntry implements \Serializable
     /**
      * @return string
      */
-    public function serialize() {
+    public function serialize()
+    {
         return serialize([
             get_class($this->fqsen),
             (string)$this->fqsen,
@@ -54,7 +55,8 @@ class NamespaceMapEntry implements \Serializable
     /**
      * @param string $representation
      */
-    public function unserialize($representation) {
+    public function unserialize($representation)
+    {
         list($fqsen_class, $fqsen, $this->original_name, $this->lineno, $this->is_used) = unserialize($representation);
         if (!is_string($fqsen_class) || !is_subclass_of($fqsen_class, FullyQualifiedGlobalStructuralElement::class)) {
             // Should not happen

@@ -922,7 +922,7 @@ trait FunctionTrait
         $return_type_callback = $this->return_type_callback;
         $function_call_analyzer_callback = $this->function_call_analyzer_callback;
 
-        return function() use($parameter_list, $parameter_list_hash, $union_type, $return_type_callback, $function_call_analyzer_callback) {
+        return function () use ($parameter_list, $parameter_list_hash, $union_type, $return_type_callback, $function_call_analyzer_callback) {
             $this->memoizeFlushAll();
             $this->parameter_list_hash = $parameter_list_hash;
             $this->parameter_list = $parameter_list;
