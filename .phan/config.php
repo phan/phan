@@ -400,6 +400,7 @@ return [
     'directory_list' => [
         'src',
         'tests/Phan',
+        'vendor/composer/semver/src',
         'vendor/felixfbecker/advanced-json-rpc/lib',
         'vendor/microsoft/tolerant-php-parser/src',
         'vendor/netresearch/jsonmapper/src',

@@ -1,16 +1,22 @@
 <?php declare(strict_types=1);
 
-namespace Phan;
+namespace Phan\Config;
 
 use Phan\AST\Parser;
+use Phan\CLI;
+use Phan\CodeBase;
+use Phan\Config;
+use Phan\Issue;
 use Phan\Language\Context;
 
 use ast\Node;
+use Composer\Semver\VersionParser;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * This class is used by 'phan --init' to generate a phan config for a composer project.
  */
-class ConfigInitializer
+class Initializer
 {
     public static function initPhanConfig(CLI $cli, array $opts) : int
     {
@@ -45,9 +51,8 @@ class ConfigInitializer
                 return 1;
             }
         }
-        $init_level = 3;
-        $phan_settings = self::createPhanSettingsForComposerSettings($composer_settings, $vendor_path, $opts, $init_level);
-        if (!is_array($phan_settings)) {
+        $phan_settings = self::createPhanSettingsForComposerSettings($composer_settings, $vendor_path, $opts);
+        if (!($phan_settings instanceof InitializedSettings)) {
             echo "phan --init failed to generate settings\n";
             return 1;
         }
@@ -59,8 +64,9 @@ class ConfigInitializer
                 return 1;
             }
         }
-        $settings_file_contents = self::generatePhanConfigFileContents($phan_settings, $init_level);
+        $settings_file_contents = self::generatePhanConfigFileContents($phan_settings);
         file_put_contents($config_path, $settings_file_contents);
+        echo "Successfully initialized '$config_path' with the following contents\n\n";
         echo $settings_file_contents;
         return 0;
     }
@@ -71,12 +77,12 @@ class ConfigInitializer
     private static function computeCommentNameDocumentationMap() : array
     {
         // Hackish way of extracting comment lines from Config::DEFAULT_CONFIGURATION
-        $config_file_lines = explode("\n", file_get_contents(__DIR__ . '/Config.php'));
+        $config_file_lines = explode("\n", file_get_contents(dirname(__DIR__) . '/Config.php'));
         $prev_lines = [];
         $result = [];
         foreach ($config_file_lines as $line) {
-            if (preg_match("/^        '([a-z0-9A-Z_]+)'\s*=>/", $line, $matches)) {
-                $config_name = $matches[1];
+            if (preg_match("/^        (['\"])([a-z0-9A-Z_]+)\\1\s*=>/", $line, $matches)) {
+                $config_name = $matches[2];
                 if (count($prev_lines) > 0) {
                     $result[$config_name] = $prev_lines;
                 }
@@ -107,9 +113,15 @@ class ConfigInitializer
         }, $lines));
     }
 
-    public static function generateEntrySnippetForSetting(string $setting_name, $setting_value) : string
+    /**
+     * @param array<int,string> $additional_comment_lines
+     */
+    public static function generateEntrySnippetForSetting(string $setting_name, $setting_value, array $additional_comment_lines) : string
     {
         $source = self::generateCommentForSetting($setting_name);
+        foreach ($additional_comment_lines as $line) {
+            $source .= "    // $line\n";
+        }
         $source .= '    ';
         $source .= var_export($setting_name, true) . ' => ';
         if (is_array($setting_value)) {
@@ -144,8 +156,12 @@ class ConfigInitializer
         return $source;
     }
 
-    public static function generatePhanConfigFileContents(array $phan_settings, int $init_level) : string
+    public static function generatePhanConfigFileContents(InitializedSettings $settings_object) : string
     {
+        $phan_settings = $settings_object->settings;
+        $init_level = $settings_object->init_level;
+        $comment_lines = $settings_object->comment_lines;
+
         $source = <<<EOT
 <?php
 
@@ -187,7 +203,7 @@ return [
 EOT;
         foreach ($phan_settings as $setting_name => $setting_value) {
             $source .= "\n";
-            $source .= self::generateEntrySnippetForSetting($setting_name, $setting_value);
+            $source .= self::generateEntrySnippetForSetting($setting_name, $setting_value, $comment_lines[$setting_name] ?? []);
         }
         $source .= "];\n";
         return $source;
@@ -206,9 +222,9 @@ EOT;
      * @param array $composer_settings (can be empty for --init-no-composer)
      * @param ?string $vendor_path (can be null for --init-no-composer)
      * @param array $opts parsed from getopt
-     * @return ?array
+     * @return ?InitializedSettings
      */
-    private static function createPhanSettingsForComposerSettings(array $composer_settings, $vendor_path, array $opts, int &$level = 3)
+    private static function createPhanSettingsForComposerSettings(array $composer_settings, $vendor_path, array $opts)
     {
         $level = $opts['init-level'] ?? 3;
         $level = self::LEVEL_MAP[strtolower((string)$level)] ?? $level;
@@ -248,7 +264,11 @@ EOT;
             ];
         }
 
+        $comments = [];
+        list($target_php_version, $comments['target_php_version']) = self::determineTargetPHPVersion($composer_settings);
+
         $phan_settings = [
+            'target_php_version'       => $target_php_version,
             'allow_missing_properties' => $is_weak_level,
             'null_casts_as_any_type'   => $is_weak_level,
             'null_casts_as_array'      => $is_average_level,
@@ -349,7 +369,38 @@ EOT;
 
         $phan_settings['directory_list'] = array_unique($phan_directory_list);
         $phan_settings['file_list'] = array_unique($phan_file_list);
-        return $phan_settings;
+        return new InitializedSettings($phan_settings, $comments, $level);
+    }
+
+    /**
+     * @return array{0:?string,1:array<int,string>}
+     */
+    public static function determineTargetPHPVersion(array $composer_settings) : array
+    {
+        $php_version_constraint = $composer_settings['require']['php'] ?? null;
+        if (!$php_version_constraint || !is_string($php_version_constraint)) {
+            return [null, ['TODO: Choose a target_php_version for this project, or leave as null and remove this comment']];
+        }
+        try {
+            $version_constraint = self::parseConstraintsForRange($php_version_constraint);
+        } catch (\UnexpectedValueException $e) {
+            return [null, ['TODO: Choose a target_php_version for this project, or leave as null and remove this comment']];
+        }
+        if ($version_constraint->matches(self::parseConstraintsForRange('<7.1-dev'))) {
+            $version_guess = '7.0';
+        } elseif ($version_constraint->matches(self::parseConstraintsForRange('<7.2-dev'))) {
+            $version_guess = '7.1';
+        } elseif ($version_constraint->matches(self::parseConstraintsForRange('>= 7.2-dev'))) {
+            $version_guess = '7.2';
+        } else {
+            return [null, ['TODO: Choose a target_php_version for this project, or leave as null and remove this comment']];
+        }
+        return [$version_guess, ['Automatically inferred from composer.json requirement for "php" of ' . json_encode($php_version_constraint)]];
+    }
+
+    private static function parseConstraintsForRange(string $constraints) : ConstraintInterface
+    {
+        return (new VersionParser())->parseConstraints($constraints);
     }
 
     /**
@@ -386,7 +437,6 @@ EOT;
                     $directory_list[] = trim($composer_lib_relative_path, '/');
                 } elseif (is_file($composer_lib_relative_path)) {
                     $file_list[] = trim($composer_lib_relative_path, '/');
-                    ;
                 }
             }
         }

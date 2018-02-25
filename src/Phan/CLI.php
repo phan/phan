@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use Phan\Config\Initializer;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\Filter\CategoryIssueFilter;
 use Phan\Output\Filter\ChainedIssueFilter;
@@ -155,7 +156,7 @@ class CLI
         );
 
         if (\array_key_exists('init', $opts)) {
-            $exit_code = ConfigInitializer::initPhanConfig($this, $opts);
+            $exit_code = Initializer::initPhanConfig($this, $opts);
             if ($exit_code === 0) {
                 exit($exit_code);
             }

@@ -69,7 +69,7 @@ class Config
         // If this is set to null,
         // then Phan assumes the PHP version which is closest to the minor version
         // of the php executable used to execute phan.
-        "target_php_version" => null,
+        'target_php_version' => null,
 
         // A list of individual files to include in analysis
         // with a path relative to the root directory of the
