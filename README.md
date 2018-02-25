@@ -87,7 +87,7 @@ Phan is imperfect and shouldn't be used to prove that your PHP-based rocket guid
 
 Additional analysis features have been provided by [plugins](https://github.com/phan/phan/tree/master/.phan/plugins#plugins).
 
-- [Unused variable detection](https://github.com/mattriverm/PhanUnusedVariable) (external, see [#345](https://github.com/phan/phan/issues/345))
+- [Unused variable detection](https://github.com/phan/PhanUnusedVariable) (external, see [#345](https://github.com/phan/phan/issues/345))
 - [Checking for syntactically unreachable statements](https://github.com/phan/phan/tree/master/.phan/plugins#unreachablecodepluginphp) (E.g. `{ throw new Exception("Message"); return $value; }`)
 - [Checking `*printf()` format strings against the provided arguments](https://github.com/phan/phan/tree/master/.phan/plugins#printfcheckerplugin) (as well as checking for common errors)
 - [Checking that PCRE regexes passed to `preg_*()` are valid](https://github.com/phan/phan/tree/master/.phan/plugins#pregregexcheckerplugin)
