@@ -347,7 +347,6 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                     $most_recent_request = $ls->most_recent_request;
                     $ls->most_recent_request = null;
                     return $most_recent_request;
-                ;
                 /* } */
             }
         } else {

@@ -561,16 +561,15 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             $maybe_status |= $status;
         }
         return self::STATUS_PROCEED | $maybe_status;
-        ;
     }
 
     public static function willUnconditionallySkipRemainingStatements(Node $node) : bool
     {
-        return ((new self())($node) & self::STATUS_MAYBE_PROCEED) === 0;
+        return ((new self())->__invoke($node) & self::STATUS_MAYBE_PROCEED) === 0;
     }
 
     public static function willUnconditionallyThrowOrReturn(Node $node) : bool
     {
-        return ((new self())($node) & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0;
+        return ((new self())->__invoke($node) & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0;
     }
 }
