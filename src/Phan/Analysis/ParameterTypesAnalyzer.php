@@ -348,6 +348,11 @@ class ParameterTypesAnalyzer
      * Make sure signatures line up between methods and a method it overrides.
      *
      * @see https://en.wikipedia.org/wiki/Liskov_substitution_principle
+     *
+     * @param CodeBase $code_base
+     * @param Method $method the overriding method
+     * @param Clazz  $class the subclass where the overrides take place
+     * @param Method $o_method the overridden method method
      */
     private static function analyzeOverrideSignatureForOverriddenMethod(
         CodeBase $code_base,
@@ -522,6 +527,7 @@ class ParameterTypesAnalyzer
         // Note: PHP requires return types to be identical
         // The return type should be stricter than or identical to the overridden union type.
         // E.g. there is no issue if the overridden return type is empty.
+        // See https://github.com/phan/phan/issues/1397
         if (!$o_return_union_type->isEmpty()) {
             if (!$method->getUnionType()->asExpandedTypes($code_base)->canCastToUnionType(
                 $o_return_union_type
@@ -858,7 +864,7 @@ class ParameterTypesAnalyzer
     }
 
     /**
-     * Emit an
+     * Emit an $issue_type instance corresponding to a potential runtime inheritance warning/error
      *
      * @param CodeBase $code_base
      * @param Method $method
