@@ -21,7 +21,7 @@ With Phan installed, you'll want to [create a `.phan/config.php` file](https://g
 your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
 
 This version (branch) of Phan depends on PHP 7.x with the [php-ast](https://github.com/nikic/php-ast) extension (0.1.5 or newer, uses AST version 50) and supports PHP version 7.0-7.2 syntax.
-This branch will be the basis for the upcoming 0.12.x releases.
+The master branch is the basis for the 0.12.x releases.
 Installation instructions for php-ast can be found [here](https://github.com/nikic/php-ast#installation).
 Having PHP's `pcntl` extension installed is strongly recommended (not available on Windows), in order to support using parallel processes for analysis (pcntl is also recommended for daemon mode).
 
@@ -369,7 +369,7 @@ class C {
 Just like in PHP, any type can be nulled in the function declaration which also
 means a null is allowed to be passed in for that parameter.
 
-As of Phan 0.8.12+/0.10.4+/0.11.2+,
+As of Phan 0.8.12+/0.10.4+/0.11.2+/0.12.0:
 Phan checks the type of every single element of arrays (Including keys and values).
 In practical terms, this means that `[1,2,'a']` is seen as `array<int,int|string>`,
 which Phan represents as `array<int,int>|array<int,string>`.
