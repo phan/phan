@@ -1,13 +1,24 @@
 Phan NEWS
 
-?? ??? 2018, Phan 0.12.0 (dev)
+25 Feb 2018, Phan 0.12.0
 ------------------------
 
-The Phan 0.12.0 release supports analysis of php 7.0-7.2.
+The Phan 0.12.0 release supports analysis of php 7.0-7.2, and can be executed with php 7.0+.
+This release replaces the previous releases (The 0.11 releases for php 7.2, the 0.10 releases for php 7.1, and the 0.8 releases for php 7.0)
+Because Phan uses Reflection, it's recommended to use the same PHP minor version for analyzing the code as would be used to run the code.
+(For the small number of function/method signatures, etc., that were added or changed in each minor release of PHP.)
+
+After upgrading Phan, projects using phan should add a `target_php_version` setting to their `.phan/config.php`.
 
 New Features(CLI, Configs)
 + Add a `target_php_version` config setting, which can be set to `'7.0'`, `'7.1'`, `'7.2'`, or `null`/`'native'`. (#1174)
-  This can be overriden via the CLI option `--target-php-version {7.0,7.1,7.2,native}`
+  This defaults to the same PHP minor version as the PHP binary used to run Phan.
+  `target_php_version` can be overriden via the CLI option `--target-php-version {7.0,7.1,7.2,native}`
+
+  NOTE: This setting does not let a PHP 7.0 installation parse PHP 7.1 nullable syntax or PHP 7.1 array destructuring syntax.
+
+  If you are unable to upgrade the PHP version used for analysis to php 7.1, the polyfill parser settings may help 
+  (See `--force-polyfill-parser` or `--use-fallback-parser`. Those have a few known bugs in edge cases.)
 + Add `--init` CLI flag and CLI options to affect the generated config. (#145)
   (Options: `--init-level=1..5`, `--init-analyze-dir=path/to/src`, `--init-analyze-file=path/to/file.php`, `--init-no-composer`, `--init-overwrite`)
 
