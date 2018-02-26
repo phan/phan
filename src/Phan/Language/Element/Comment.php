@@ -231,7 +231,8 @@ class Comment
      * @param mixed $value
      * @return void
      */
-    private function applyOverride(string $key, $value) {
+    private function applyOverride(string $key, $value)
+    {
         switch ($key) {
             case 'param':
                 foreach ($value as $parameter) {
