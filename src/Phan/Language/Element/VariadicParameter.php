@@ -108,6 +108,7 @@ class VariadicParameter extends Parameter
      */
     public function getNonVariadicUnionType() : UnionType
     {
+        // if ($this->isCloneOfVariadic()) { throw new \Error("Calling getNonVariadicUnionType on clone?\n"); }
         return parent::getUnionType();
     }
 

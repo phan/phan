@@ -501,7 +501,7 @@ class ArgumentType
             // See if the argument can be cast to the
             // parameter
             if ($argument_type_expanded->canCastToUnionType(
-                $alternate_parameter->getUnionType()
+                $alternate_parameter->getNonVariadicUnionType()
             )) {
                 return;
             }
@@ -515,7 +515,7 @@ class ArgumentType
             return;
         }
 
-        $parameter_type = $alternate_parameter->getUnionType();
+        $parameter_type = $alternate_parameter->getNonVariadicUnionType();
 
         if ($parameter_type->hasTemplateType()) {
             // Don't worry about template types

@@ -43,13 +43,17 @@ class Method extends ClassElement implements FunctionInterface
      *
      * @param FullyQualifiedMethodName $fqsen
      * A fully qualified name for the element
+     *
+     * @param ?array<int,Parameter> $parameter_list
+     * A list of parameters to set on this method
      */
     public function __construct(
         Context $context,
         string $name,
         UnionType $type,
         int $flags,
-        FullyQualifiedMethodName $fqsen
+        FullyQualifiedMethodName $fqsen,
+        $parameter_list
     ) {
         parent::__construct(
             $context,
@@ -70,6 +74,10 @@ class Method extends ClassElement implements FunctionInterface
             $context->getScope(),
             $fqsen
         ));
+
+        if ($parameter_list !== null) {
+            $this->setParameterList($parameter_list);
+        }
     }
 
     /**
@@ -253,11 +261,11 @@ class Method extends ClassElement implements FunctionInterface
             '__construct',
             $clazz->getUnionType(),
             0,
-            $method_fqsen
+            $method_fqsen,
+            $old_style_constructor ? $old_style_constructor->getParameterList() : null
         );
 
         if ($old_style_constructor) {
-            $method->setParameterList($old_style_constructor->getParameterList());
             $method->setRealParameterList($old_style_constructor->getRealParameterList());
             $method->setNumberOfRequiredParameters($old_style_constructor->getNumberOfRequiredParameters());
             $method->setNumberOfOptionalParameters($old_style_constructor->getNumberOfOptionalParameters());
@@ -295,7 +303,8 @@ class Method extends ClassElement implements FunctionInterface
             $alias_method_name,
             $this->getUnionType(),
             $this->getFlags(),
-            $method_fqsen
+            $method_fqsen,
+            $this->getParameterList()
         );
         switch ($new_visibility_flags) {
             case \ast\flags\MODIFIER_PUBLIC:
@@ -322,7 +331,6 @@ class Method extends ClassElement implements FunctionInterface
         }
         $method->real_defining_fqsen = $defining_fqsen;
 
-        $method->setParameterList($this->getParameterList());
         $method->setRealParameterList($this->getRealParameterList());
         $method->setRealReturnType($this->getRealReturnType());
         $method->setNumberOfRequiredParameters($this->getNumberOfRequiredParameters());
@@ -351,6 +359,16 @@ class Method extends ClassElement implements FunctionInterface
         FullyQualifiedMethodName $fqsen
     ) : Method {
 
+        // @var array<int,Parameter>
+        // The list of parameters specified on the
+        // method
+        $parameter_list =
+            Parameter::listFromNode(
+                $context,
+                $code_base,
+                $node->children['params']
+            );
+
         // Create the skeleton method object from what
         // we know so far
         $method = new Method(
@@ -358,7 +376,8 @@ class Method extends ClassElement implements FunctionInterface
             (string)$node->children['name'],
             UnionType::empty(),
             $node->flags ?? 0,
-            $fqsen
+            $fqsen,
+            $parameter_list
         );
 
         // Parse the comment above the method to get
@@ -371,20 +390,12 @@ class Method extends ClassElement implements FunctionInterface
             Comment::ON_METHOD
         );
 
-        // @var array<int,Parameter>
-        // The list of parameters specified on the
-        // method
-        $parameter_list =
-            Parameter::listFromNode(
-                $context,
-                $code_base,
-                $node->children['params']
-            );
-
         // Add each parameter to the scope of the function
+        // NOTE: it's important to clone this,
+        // because we don't want any assignments to modify the original Parameter
         foreach ($parameter_list as $parameter) {
             $method->getInternalScope()->addVariable(
-                $parameter
+                $parameter->cloneAsNonVariadic()
             );
         }
 
@@ -395,8 +406,6 @@ class Method extends ClassElement implements FunctionInterface
             $method->setNode($node);
         }
 
-        // Set the parameter list on the method
-        $method->setParameterList($parameter_list);
         // Keep an copy of the original parameter list, to check for fatal errors later on.
         $method->setRealParameterList($parameter_list);
 

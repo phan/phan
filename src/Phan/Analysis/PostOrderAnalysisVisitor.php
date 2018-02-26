@@ -1976,66 +1976,65 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $method->setInternalScope(clone($original_method_scope));
         // Even though we don't modify the parameter list, we still need to know the types
         // -- as an optimization, we don't run quick mode again if the types didn't change?
-        $parameter_list = \array_map(function (Variable $parameter) : Variable {
-            return clone($parameter);
-        }, $original_parameter_list);
+        try {
+            $parameter_list = \array_map(function (Variable $parameter) : Variable {
+                return clone($parameter);
+            }, $original_parameter_list);
 
-        foreach ($parameter_list as $i => $parameter_clone) {
-            assert($parameter_clone instanceof Parameter);
-            // Add the parameter to the scope
-            $method->getInternalScope()->addVariable(
-                $parameter_clone
-            );
+            foreach ($parameter_list as $i => $parameter_clone) {
+                assert($parameter_clone instanceof Parameter);
+                // Add the parameter to the scope
+                $method->getInternalScope()->addVariable(
+                    $parameter_clone->asNonVariadic()
+                );
 
-            if (!isset($argument_types[$i]) && $parameter_clone->hasDefaultValue()) {
-                $parameter_type = $parameter_clone->getDefaultValueType();
-                if ($parameter_type->isType(NullType::instance(false))) {
-                    // Treat a parameter default of null the same way as passing null to that parameter
-                    // (Add null to the list of possibilities)
-                    $parameter_clone->addUnionType($parameter_type);
-                } else {
-                    // For other types (E.g. string), just replace the union type.
-                    $parameter_clone->setUnionType($parameter_type);
+                if (!isset($argument_types[$i]) && $parameter_clone->hasDefaultValue()) {
+                    $parameter_type = $parameter_clone->getDefaultValueType();
+                    if ($parameter_type->isType(NullType::instance(false))) {
+                        // Treat a parameter default of null the same way as passing null to that parameter
+                        // (Add null to the list of possibilities)
+                        $parameter_clone->addUnionType($parameter_type);
+                    } else {
+                        // For other types (E.g. string), just replace the union type.
+                        $parameter_clone->setUnionType($parameter_type);
+                    }
+                }
+
+                // If there's no parameter at that offset, we may be in
+                // a ParamTooMany situation. That is caught elsewhere.
+                if (!isset($argument_types[$i])
+                    || !$parameter_clone->getNonVariadicUnionType()->isEmpty()
+                ) {
+                    continue;
+                }
+
+                $this->updateParameterTypeByArgument(
+                    $method,
+                    $parameter_clone,
+                    null,  // TODO: Can array_map/array_filter accept closures with references? Consider warning?
+                    $argument_types[$i],
+                    $parameter_list,
+                    $i
+                );
+            }
+            foreach ($parameter_list as $parameter_clone) {
+                if ($parameter_clone->isVariadic()) {
+                    // We're using this parameter clone to analyze the **inside** of the method, it's never seen on the outside.
+                    // Convert it immediately.
+                    // TODO: Add tests of variadic references, fix those if necessary.
+                    $method->getInternalScope()->addVariable(
+                        $parameter_clone->cloneAsNonVariadic()
+                    );
                 }
             }
 
-            // If there's no parameter at that offset, we may be in
-            // a ParamTooMany situation. That is caught elsewhere.
-            if (!isset($argument_types[$i])
-                || !$parameter_clone->getNonVariadicUnionType()->isEmpty()
-            ) {
-                continue;
-            }
-
-            $this->updateParameterTypeByArgument(
-                $method,
-                $parameter_clone,
-                null,  // TODO: Can array_map/array_filter accept closures with references? Consider warning?
-                $argument_types[$i],
-                $parameter_list,
-                $i
-            );
+            // Now that we know something about the parameters used
+            // to call the method, we can reanalyze the method with
+            // the types of the parameter
+            $method->analyzeWithNewParams($method->getContext(), $this->code_base, $parameter_list);
+        } finally {
+            $method->setInternalScope($original_method_scope);
         }
-        foreach ($parameter_list as $parameter_clone) {
-            if ($parameter_clone->isVariadic()) {
-                // We're using this parameter clone to analyze the **inside** of the method, it's never seen on the outside.
-                // Convert it immediately.
-                // TODO: Add tests of variadic references, fix those if necessary.
-                $method->getInternalScope()->addVariable(
-                    $parameter_clone->cloneAsNonVariadic()
-                );
-            }
-        }
-
-        // Now that we know something about the parameters used
-        // to call the method, we can reanalyze the method with
-        // the types of the parameter
-        $method->analyzeWithNewParams($method->getContext(), $this->code_base, $parameter_list);
-
-        // Reset to the original parameter scope after
-        // having tested the parameters with the types passed in
-        $method->setParameterList($original_parameter_list);
-        $method->setInternalScope($original_method_scope);
     }
 
     /**
@@ -2049,6 +2048,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * The method or function being called
      *
      * @return void
+     *
+     * TODO: deduplicate code.
      */
     private function analyzeMethodWithArgumentTypes(
         Node $argument_list_node,
@@ -2073,88 +2074,87 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         $original_method_scope = $method->getInternalScope();
-        $method->setInternalScope(clone($original_method_scope));
-        // Even though we don't modify the parameter list, we still need to know the types
-        // -- as an optimization, we don't run quick mode again if the types didn't change?
-        $parameter_list = \array_map(function (Variable $parameter) : Variable {
-            return clone($parameter);
-        }, $original_parameter_list);
+        try {
+            $method->setInternalScope(clone($original_method_scope));
+            // Even though we don't modify the parameter list, we still need to know the types
+            // -- as an optimization, we don't run quick mode again if the types didn't change?
+            $parameter_list = \array_map(function (Variable $parameter) : Variable {
+                return $parameter->cloneAsNonVariadic();
+            }, $original_parameter_list);
 
-        // always resolve all arguments outside of quick mode to detect undefined variables, other problems in call arguments.
-        // Fixes https://github.com/phan/phan/issues/583
-        $argument_types = [];
-        foreach ($argument_list_node->children as $i => $argument) {
-            if (!$argument) {
-                continue;
+            // always resolve all arguments outside of quick mode to detect undefined variables, other problems in call arguments.
+            // Fixes https://github.com/phan/phan/issues/583
+            $argument_types = [];
+            foreach ($argument_list_node->children as $i => $argument) {
+                if (!$argument) {
+                    continue;
+                }
+                // Determine the type of the argument at position $i
+                $argument_types[$i] = UnionTypeVisitor::unionTypeFromNode(
+                    $this->code_base,
+                    $this->context,
+                    $argument,
+                    true
+                );
             }
-            // Determine the type of the argument at position $i
-            $argument_types[$i] = UnionTypeVisitor::unionTypeFromNode(
-                $this->code_base,
-                $this->context,
-                $argument,
-                true
-            );
-        }
 
-        foreach ($parameter_list as $i => $parameter_clone) {
-            assert($parameter_clone instanceof Parameter);
-            // Add the parameter to the scope
-            $method->getInternalScope()->addVariable(
-                $parameter_clone
-            );
-            $argument = $argument_list_node->children[$i] ?? null;
+            foreach ($parameter_list as $i => $parameter_clone) {
+                assert($parameter_clone instanceof Parameter);
+                // Add the parameter to the scope
+                $method->getInternalScope()->addVariable(
+                    $parameter_clone
+                );
+                $argument = $argument_list_node->children[$i] ?? null;
 
-            if (!$argument
-                && $parameter_clone->hasDefaultValue()
-            ) {
-                $parameter_type = $parameter_clone->getDefaultValueType();
-                if ($parameter_type->isType(NullType::instance(false))) {
-                    // Treat a parameter default of null the same way as passing null to that parameter
-                    // (Add null to the list of possibilities)
-                    $parameter_clone->addUnionType($parameter_type);
-                } else {
-                    // For other types (E.g. string), just replace the union type.
-                    $parameter_clone->setUnionType($parameter_type);
+                if (!$argument
+                    && $parameter_clone->hasDefaultValue()
+                ) {
+                    $parameter_type = $parameter_clone->getDefaultValueType();
+                    if ($parameter_type->isType(NullType::instance(false))) {
+                        // Treat a parameter default of null the same way as passing null to that parameter
+                        // (Add null to the list of possibilities)
+                        $parameter_clone->addUnionType($parameter_type);
+                    } else {
+                        // For other types (E.g. string), just replace the union type.
+                        $parameter_clone->setUnionType($parameter_type);
+                    }
+                }
+
+                // If there's no parameter at that offset, we may be in
+                // a ParamTooMany situation. That is caught elsewhere.
+                if (!$argument
+                    || !$parameter_clone->getUnionType()->isEmpty()
+                ) {
+                    continue;
+                }
+
+                $this->updateParameterTypeByArgument(
+                    $method,
+                    $parameter_clone,
+                    $argument,
+                    $argument_types[$i],
+                    $parameter_list,
+                    $i
+                );
+            }
+            foreach ($parameter_list as $parameter_clone) {
+                if ($parameter_clone->isVariadic()) {
+                    // We're using this parameter clone to analyze the **inside** of the method, it's never seen on the outside.
+                    // Convert it immediately.
+                    // TODO: Add tests of variadic references, fix those if necessary.
+                    $method->getInternalScope()->addVariable(
+                        $parameter_clone->cloneAsNonVariadic()
+                    );
                 }
             }
 
-            // If there's no parameter at that offset, we may be in
-            // a ParamTooMany situation. That is caught elsewhere.
-            if (!$argument
-                || !$parameter_clone->getNonVariadicUnionType()->isEmpty()
-            ) {
-                continue;
-            }
-
-            $this->updateParameterTypeByArgument(
-                $method,
-                $parameter_clone,
-                $argument,
-                $argument_types[$i],
-                $parameter_list,
-                $i
-            );
+            // Now that we know something about the parameters used
+            // to call the method, we can reanalyze the method with
+            // the types of the parameter
+            $method->analyzeWithNewParams($method->getContext(), $this->code_base, $parameter_list);
+        } finally {
+            $method->setInternalScope($original_method_scope);
         }
-        foreach ($parameter_list as $parameter_clone) {
-            if ($parameter_clone->isVariadic()) {
-                // We're using this parameter clone to analyze the **inside** of the method, it's never seen on the outside.
-                // Convert it immediately.
-                // TODO: Add tests of variadic references, fix those if necessary.
-                $method->getInternalScope()->addVariable(
-                    $parameter_clone->cloneAsNonVariadic()
-                );
-            }
-        }
-
-        // Now that we know something about the parameters used
-        // to call the method, we can reanalyze the method with
-        // the types of the parameter
-        $method->analyzeWithNewParams($method->getContext(), $this->code_base, $parameter_list);
-
-        // Reset to the original parameter scope after
-        // having tested the parameters with the types passed in
-        $method->setParameterList($original_parameter_list);
-        $method->setInternalScope($original_method_scope);
     }
 
     /**
@@ -2190,9 +2190,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // retest the method with the passed in types
         // TODO: if $argument_type is non-empty and !isType(NullType), instead use setUnionType?
         if (!$parameter->isCloneOfVariadic()) {
-            $parameter->setUnionType($parameter->getUnionType()->withUnionType(
+            $parameter->addUnionType(
                 $argument_type
-            ));
+            );
+        } else {
+            $parameter->addUnionType(
+                $argument_type->asGenericArrayTypes(GenericArrayType::KEY_INT)
+            );
         }
 
         // If we're passing by reference, get the variable

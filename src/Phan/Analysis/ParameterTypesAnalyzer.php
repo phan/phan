@@ -996,6 +996,7 @@ class ParameterTypesAnalyzer
             if ($normalized_phpdoc_param_union_type) {
                 $param_to_modify = $method->getParameterList()[$i] ?? null;
                 if ($param_to_modify) {
+                    // TODO: Maybe have two different sets of methods for setUnionType and setCallerUnionType, this is easy to mix up for variadics.
                     $param_to_modify->setUnionType($normalized_phpdoc_param_union_type);
                 }
             } else {

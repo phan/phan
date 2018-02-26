@@ -47,7 +47,8 @@ class FunctionFactory
             $fqsen->getNamespacedName(),
             UnionType::empty(),
             0,
-            $fqsen
+            $fqsen,
+            null
         );
 
         $function->setNumberOfRequiredParameters(
@@ -89,7 +90,8 @@ class FunctionFactory
             $fqsen->getNamespacedName(),
             $return_type,
             0,
-            $fqsen
+            $fqsen,
+            []  // will be filled in by functionListFromFunction
         );
 
         return self::functionListFromFunction($func, $code_base);
@@ -120,7 +122,8 @@ class FunctionFactory
             $reflection_method->name,
             UnionType::empty(),
             $reflection_method->getModifiers(),
-            $method_fqsen
+            $method_fqsen,
+            null
         );
 
         $method->setNumberOfRequiredParameters(
