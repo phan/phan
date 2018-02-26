@@ -51,6 +51,7 @@ Phan is able to perform the following kinds of analysis.
 * Supports namespaces, traits and variadics.
 * Supports [Union Types](https://github.com/phan/phan/wiki/About-Union-Types)
 * Supports generic arrays such as `int[]`, `UserObject[]`, `array<int,UserObject>`, etc..
+* Supports array shapes such as `array{key:string,otherKey:?stdClass}`, etc. (internally and in PHPDoc tags) as of Phan >= 0.12.0.
 * Supports phpdoc [type annotations](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code)
 * Supports inheriting phpdoc type annotations
 * Supports checking that phpdoc type annotations are a narrowed form (E.g. subclasses/subtypes) of the real type signatures
