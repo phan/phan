@@ -1,5 +1,10 @@
 Phan NEWS
 
+?? ??? 2018, Phan 0.12.1(dev)
+
+New Features(Analysis)
++ Emit `PhanTypeInvalidDimOffset` when an unknown offset is fetched from an array shape type. (#1478)
+
 25 Feb 2018, Phan 0.12.0
 ------------------------
 

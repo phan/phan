@@ -1539,28 +1539,31 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitDim(Node $node) : Context
     {
-        // Check the array type to trigger TypeArraySuspicious
-        try {
-            /* $array_type = */
+        $parent_node = $this->parent_node;
+        if (!\in_array($parent_node->kind, [\ast\AST_ASSIGN, \ast\AST_ASSIGN_REF], true) || $parent_node->children['var'] !== $node) {
+            // Check the array type to trigger TypeArraySuspicious
+            try {
+                /* $array_type = */
+                UnionTypeVisitor::unionTypeFromNode(
+                    $this->code_base,
+                    $this->context,
+                    $node,
+                    false
+                );
+                // TODO: check if array_type has array but not ArrayAccess.
+                // If that is true, then assert that $dim_type can cast to `int|string`
+            } catch (IssueException $exception) {
+                // Detect this elsewhere, e.g. want to detect PhanUndeclaredVariableDim but not PhanUndeclaredVariable
+            }
+            // Check the dimension type to trigger PhanUndeclaredVariable, etc.
+            /* $dim_type = */
             UnionTypeVisitor::unionTypeFromNode(
                 $this->code_base,
                 $this->context,
-                $node,
-                false
+                $node->children['dim'],
+                true
             );
-            // TODO: check if array_type has array but not ArrayAccess.
-            // If that is true, then assert that $dim_type can cast to `int|string`
-        } catch (IssueException $exception) {
-            // Detect this elsewhere, e.g. want to detect PhanUndeclaredVariableDim but not PhanUndeclaredVariable
         }
-        // Check the dimension type to trigger PhanUndeclaredVariable, etc.
-        /* $dim_type = */
-        UnionTypeVisitor::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $node->children['dim'],
-            true
-        );
         return $this->context;
     }
 

@@ -26,6 +26,23 @@ class A354 {
         $b = $arr['offset'];
         $c = $arr[[]];  // wrong
         $c = $arr[null];  // wrong
-        $c = $arr[0];  // Phan can tell that this is wrong, by tracking that the keys are strings.
+        $c = $arr[0];
+        $c = $arr[0x1f];
+        $c = $arr['otherOffset'];
+        $c = $arr[A354::OFFSET];
+        $c = $arr[A354::OTHER_OFFSET];
+        $c = $arr[self::OFFSET];
+        $c = $arr[self::OTHER_OFFSET];
     }
+
+    public function testFetchInt() {
+        $x = [1, 2, 3 => 'x'];
+        echo strlen($x[1]);
+        echo strlen($x[2]);
+        echo strlen($x[3]);
+        echo intdiv($x[3], 2);
+    }
+
+    const OFFSET = 'offset';
+    const OTHER_OFFSET = 'offset2';
 }

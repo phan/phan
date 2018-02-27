@@ -1118,7 +1118,6 @@ class UnionTypeVisitor extends AnalysisVisitor
             if ($element_type !== null) {
                 return $element_type;
             }
-            // TODO: Warn if index could not be found.
         }
         $dim_type = self::unionTypeFromNode(
             $this->code_base,
@@ -1277,6 +1276,14 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
         }
         if ($resulting_element_type->isEmpty()) {
+            if (!$has_non_array_shape_type) {
+                $this->emitIssue(
+                    Issue::TypeInvalidDimOffset,
+                    $dim_node->lineno ?? $node->lineno ?? 0,
+                    json_encode($dim_value),
+                    (string)$union_type
+                );
+            }
             return null;
         }
         return $resulting_element_type;

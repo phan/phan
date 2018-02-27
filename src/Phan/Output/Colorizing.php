@@ -80,6 +80,7 @@ class Colorizing
         'OPERATOR'      => 'red',
         'PARAMETER'     => 'cyan',
         'PROPERTY'      => 'cyan',
+        'SCALAR'        => 'light_magenta',
         'STRING_LITERAL' => 'light_magenta',
         'TYPE'          => 'light_gray',
         'TRAIT'         => 'green',

@@ -63,6 +63,7 @@ class Issue
     const TypeInvalidLeftOperand    = 'PhanTypeInvalidLeftOperand';
     const TypeInvalidRightOperand   = 'PhanTypeInvalidRightOperand';
     const TypeInvalidInstanceof     = 'PhanTypeInvalidInstanceof';
+    const TypeInvalidDimOffset      = 'PhanTypeInvalidDimOffset';
     const TypeMagicVoidWithReturn   = 'PhanTypeMagicVoidWithReturn';
     const TypeMismatchArgument      = 'PhanTypeMismatchArgument';
     const TypeMismatchArgumentInternal = 'PhanTypeMismatchArgumentInternal';
@@ -334,6 +335,7 @@ class Issue
         'OPERATOR'      => '%s',
         'PARAMETER'     => '%s',
         'PROPERTY'      => '%s',
+        'SCALAR'        => '%s',  // A scalar from the code
         'STRING_LITERAL' => '%s',  // A string literal from the code
         'TYPE'          => '%s',
         'TRAIT'         => '%s',
@@ -1095,6 +1097,14 @@ class Issue
                 "Suspicious array access to nullable {TYPE}",
                 self::REMEDIATION_B,
                 10045
+            ),
+            new Issue(
+                self::TypeInvalidDimOffset,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Invalid offset {SCALAR} of array type {TYPE}",
+                self::REMEDIATION_B,
+                10046
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
