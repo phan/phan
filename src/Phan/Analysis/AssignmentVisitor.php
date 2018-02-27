@@ -19,6 +19,8 @@ use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayShapeType;
+use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
@@ -283,7 +285,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     $node,
                     $element_type,
                     false
-                ))($value_node);
+                ))->__invoke($value_node);
             }
         }
 
@@ -323,7 +325,8 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     public function visitDim(Node $node) : Context
     {
-        if ($node->children['expr']->kind == \ast\AST_VAR) {
+        $expr_node = $node->children['expr'];
+        if ($expr_node->kind == \ast\AST_VAR) {
             $variable_name = (new ContextNode(
                 $this->code_base,
                 $this->context,
@@ -339,30 +342,38 @@ class AssignmentVisitor extends AnalysisVisitor
         // For most types, it should be int|string, but SplObjectStorage and a few user-defined types will be exceptions.
         // Infer it from offsetSet?
         $dim_node = $node->children['dim'];
+        $dim_value = null;
         if ($dim_node instanceof Node) {
+            // TODO: Use ContextNode to infer dim_value
             $dim_type = UnionTypeVisitor::unionTypeFromNode(
                 $this->code_base,
                 $this->context,
-                $node->children['dim']
+                $dim_node
             );
         } elseif (\is_scalar($dim_node) && $dim_node !== null) {
+            $dim_value = $dim_node;
             $dim_type = Type::fromObject($dim_node)->asUnionType();
         } else {
+            // TODO: If the array shape has only one set of keys, then appending should add to that shape? Possibly not a common use case.
             $dim_type = null;
         }
 
-        if ($dim_type !== null) {
-            $key_type_enum = GenericArrayType::keyTypeFromUnionTypeValues($dim_type);
-        } elseif ($dim_node !== null) {
-            $key_type_enum = GenericArrayType::KEY_MIXED;
+        if ($dim_value !== null) {
+            $right_type = ArrayShapeType::fromFieldTypes([
+                $dim_value => $this->right_type,
+            ], false)->asUnionType();
         } else {
-            $key_type_enum = GenericArrayType::KEY_INT;
+            // Make the right type a generic (i.e. int -> int[])
+            if ($dim_type !== null) {
+                $key_type_enum = GenericArrayType::keyTypeFromUnionTypeValues($dim_type);
+            } elseif ($dim_node !== null) {
+                $key_type_enum = GenericArrayType::KEY_MIXED;
+            } else {
+                $key_type_enum = GenericArrayType::KEY_INT;
+            }
+            $right_type =
+                $this->right_type->asGenericArrayTypes($key_type_enum);
         }
-
-        // Make the right type a generic (i.e. int -> int[])
-        $right_type =
-            $this->right_type->asGenericArrayTypes($key_type_enum);
-
 
         // Recurse into whatever we're []'ing
         $context = (new AssignmentVisitor(
@@ -372,7 +383,7 @@ class AssignmentVisitor extends AnalysisVisitor
             $right_type,
             true,
             $dim_type
-        ))($node->children['expr']);
+        ))->__invoke($expr_node);
 
         return $context;
     }
@@ -752,10 +763,18 @@ class AssignmentVisitor extends AnalysisVisitor
             // outside of the scope of this assignment, so we add to
             // its union type rather than replace it.
             if ($this->is_dim_assignment) {
-                $right_type = $this->typeCheckDimAssignment($variable->getUnionType(), $node);
-                $variable->setUnionType($variable->getUnionType()->withUnionType(
-                    $right_type
-                ));
+                $old_variable_union_type = $variable->getUnionType();
+                $right_type = $this->typeCheckDimAssignment($old_variable_union_type, $node);
+                if ($old_variable_union_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances()) {
+                    $variable->setUnionType($old_variable_union_type->withUnionType(
+                        $right_type
+                    ));
+                } else {
+                    $variable->setUnionType(ArrayType::combineArrayTypesOverriding(
+                        $right_type,
+                        $old_variable_union_type
+                    ));
+                }
             } else {
                 // If the variable isn't a pass-by-reference parameter
                 // we clone it so as to not disturb its previous types
@@ -836,31 +855,38 @@ class AssignmentVisitor extends AnalysisVisitor
             }
             return $right_type;
         }
-        if ($assign_type->hasType(StringType::instance(false)) && !$assign_type->asExpandedTypes($this->code_base)->hasArrayLike()) {
-            // Are we assigning to a variable/property of type 'string' (with no ArrayAccess or array types)?
-            if (\is_null($dim_type)) {
-                $this->emitIssue(
-                    Issue::TypeMismatchDimEmpty,
-                    $node->lineno ?? 0,
-                    (string)$assign_type,
-                    (string)$int_type
-                );
-            } elseif (!$dim_type->isEmpty() && !$dim_type->hasType($int_type)) {
-                $this->emitIssue(
-                    Issue::TypeMismatchDimAssignment,
-                    $node->lineno ?? 0,
-                    (string)$assign_type,
-                    (string)$dim_type,
-                    (string)$int_type
-                );
-            } else {
-                if ($right_type->canCastToUnionType($string_array_type)) {
-                    // e.g. $a = 'aaa'; $a[0] = 'x';
-                    // (Currently special casing this, not handling deeper dimensions)
-                    return StringType::instance(false)->asUnionType();
+        if (!$assign_type->asExpandedTypes($this->code_base)->hasArrayLike()) {
+            if ($assign_type->hasType(StringType::instance(false))) {
+                // Are we assigning to a variable/property of type 'string' (with no ArrayAccess or array types)?
+                if (\is_null($dim_type)) {
+                    $this->emitIssue(
+                        Issue::TypeMismatchDimEmpty,
+                        $node->lineno ?? 0,
+                        (string)$assign_type,
+                        (string)$int_type
+                    );
+                } elseif (!$dim_type->isEmpty() && !$dim_type->hasType($int_type)) {
+                    $this->emitIssue(
+                        Issue::TypeMismatchDimAssignment,
+                        $node->lineno,
+                        (string)$assign_type,
+                        (string)$dim_type,
+                        (string)$int_type
+                    );
+                } else {
+                    if ($right_type->canCastToUnionType($string_array_type)) {
+                        // e.g. $a = 'aaa'; $a[0] = 'x';
+                        // (Currently special casing this, not handling deeper dimensions)
+                        return StringType::instance(false)->asUnionType();
+                    }
                 }
+            } else {
+                $this->emitIssue(
+                    Issue::TypeArraySuspicious,
+                    $node->lineno,
+                    (string)$assign_type
+                );
             }
-            return $right_type;
         }
         return $right_type;
     }

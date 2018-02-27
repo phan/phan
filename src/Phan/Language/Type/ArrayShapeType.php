@@ -288,7 +288,9 @@ final class ArrayShapeType extends ArrayType
      */
     public static function union(array $array_shape_types) : ArrayShapeType
     {
-        \assert(\count($array_shape_types) > 0);
+        if (\count($array_shape_types) === 0) {
+            throw new \AssertionError('Unexpected union of 0 array shape types');
+        }
         if (\count($array_shape_types) === 1) {
             return $array_shape_types[0];
         }
