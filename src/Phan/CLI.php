@@ -606,19 +606,31 @@ Usage: {$argv[0]} [options] [files...]
  -o, --output <filename>
   Output filename
 
- --init [--init-level=3] [--init-analyze-dir=path/to/src] [--init-analyze-file=path/to/file.php] [--init-no-composer]
+ --init
+   [--init-level=3]
+   [--init-analyze-dir=path/to/src]
+   [--init-analyze-file=path/to/file.php]
+   [--init-no-composer]
 
-  Generates a `.phan/config.php` in the current directory based on the project's composer.json.
+  Generates a `.phan/config.php` in the current directory
+  based on the project's composer.json.
   The logic used to generate the config file is currently very simple.
-  Some third party classes (e.g. in vendor/) will need to be manually added to 'directory_list' or excluded,
+  Some third party classes (e.g. in vendor/)
+  will need to be manually added to 'directory_list' or excluded,
   and you may end up with a large number of issues to be manually suppressed.
-  Also see https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base
+  See https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base
 
-  [--init-level] affects the generated settings in `.phan/config.php` (e.g. null_casts_as_array). `--init-level` can be set to 1 (strictest) to 5 (least strict)
-  [--init-analyze-dir] can be used as a relative path alongside directories Phan infers from composer.json's "autoload" settings
-  [--init-analyze-file] can be used as a relative path alongside files Phan infers from composer.json's "bin" settings
-  [--init-no-composer] can be used to tell Phan that the project is not a composer project.
-    Phan will not check for composer.json or vendor/, or include those paths in the generated config.
+  [--init-level] affects the generated settings in `.phan/config.php`
+    (e.g. null_casts_as_array).
+    `--init-level` can be set to 1 (strictest) to 5 (least strict)
+  [--init-analyze-dir] can be used as a relative path alongside directories
+    that Phan infers from composer.json's "autoload" settings
+  [--init-analyze-file] can be used as a relative path alongside files
+    that Phan infers from composer.json's "bin" settings
+  [--init-no-composer] can be used to tell Phan that the project
+    is not a composer project.
+    Phan will not check for composer.json or vendor/,
+    and will not include those paths in the generated config.
   [--init-overwrite] will allow 'phan --init' to overwrite .phan/config.php.
 
  --color
@@ -637,7 +649,8 @@ Usage: {$argv[0]} [options] [files...]
  --target-php-version {7.0,7.1,7.2,native}
   The PHP version that the codebase will be checked for compatibility against.
   For best results, the PHP binary used to run Phan should have the same PHP version.
-  (Phan relies on Reflection for some param counts and checks for undefined classes/methods/functions)
+  (Phan relies on Reflection for some param counts
+   and checks for undefined classes/methods/functions)
 
  -i, --ignore-undeclared
   Ignore undeclared functions and classes
@@ -677,11 +690,13 @@ Usage: {$argv[0]} [options] [files...]
  --allow-polyfill-parser
   If the `php-ast` extension isn't available or is an outdated version,
   then use a slower parser (based on tolerant-php-parser) instead.
-  Note that https://github.com/Microsoft/tolerant-php-parser has some known bugs which may result in false positive parse errors.
+  Note that https://github.com/Microsoft/tolerant-php-parser
+  has some known bugs which may result in false positive parse errors.
 
  --force-polyfill-parser
-  Use a slower parser (based on tolerant-php-parser) instead of the native parser, even if the native parser is available.
-  Useful only for debugging.
+  Use a slower parser (based on tolerant-php-parser) instead of the native parser,
+  even if the native parser is available.
+  Useful mainly for debugging.
 
  -s, --daemonize-socket </path/to/file.sock>
   Unix socket for Phan to listen for requests on, in daemon mode.
