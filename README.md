@@ -40,20 +40,22 @@ Phan is able to perform the following kinds of analysis.
 * Check that all methods, functions, classes, traits, interfaces, constants, properties and variables are defined and accessible.
 * Check for type safety and arity issues on method/function/closure calls.
 * Check for PHP7/PHP5 backward compatibility.
+* Check for features that weren't supported in older PHP 7.x minor releases (E.g. `object`, `void`, `iterable`, `?T`, `[$x] = ...;`, etc.)
 * Check for sanity with array accesses.
 * Check for type safety on binary operations.
 * Check for valid and type safe return values on methods, functions, and closures.
-* Check for No-Ops on arrays, closures, constants, properties, variables.
+* Check for No-Ops on arrays, closures, constants, properties, variables, unary operators, and binary operators.
 * Check for unused/dead/[unreachable](https://github.com/phan/phan/tree/master/.phan/plugins#unreachablecodepluginphp) code. (Pass in `--dead-code-detection`)
++ Check for unused `use` statements.
 * Check for classes, functions and methods being redefined.
 * Check for sanity with class inheritance (e.g. checks method signature compatibility).
-  Phan also checks for final classes/methods being overridden, and that the implemented interface is really a interface (and so on).
+  Phan also checks for final classes/methods being overridden, that abstract methods are implemented, and that the implemented interface is really a interface (and so on).
 * Supports namespaces, traits and variadics.
-* Supports [Union Types](https://github.com/phan/phan/wiki/About-Union-Types)
+* Supports [Union Types](https://github.com/phan/phan/wiki/About-Union-Types).
 * Supports generic arrays such as `int[]`, `UserObject[]`, `array<int,UserObject>`, etc..
 * Supports array shapes such as `array{key:string,otherKey:?stdClass}`, etc. (internally and in PHPDoc tags) as of Phan >= 0.12.0.
-* Supports phpdoc [type annotations](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code)
-* Supports inheriting phpdoc type annotations
+* Supports phpdoc [type annotations](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code).
+* Supports inheriting phpdoc type annotations.
 * Supports checking that phpdoc type annotations are a narrowed form (E.g. subclasses/subtypes) of the real type signatures
 * Supports inferring types from [assert() statements](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code) and conditionals in if elements/loops.
 * Supports [`@deprecated` annotation](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code#deprecated) for deprecating classes, methods and functions
@@ -67,11 +69,12 @@ Phan is able to perform the following kinds of analysis.
 * Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
 * Can be run on many cores. (requires `pcntl`)
 * [Can run in the background (daemon mode)](https://github.com/phan/phan/wiki/Using-Phan-Daemon-Mode), to then quickly respond to requests to analyze the latest version of a file.
-  This can also act as a linter in the [Language Server Protocol](https://github.com/Microsoft/language-server-protocol). Parts of the code are based on https://github.com/felixfbecker/php-language-server
-  This allows Phan to be used from [various editors](https://github.com/phan/phan/wiki/Editor-Support)
+  This can also act as a linter in the [Language Server Protocol](https://github.com/Microsoft/language-server-protocol).
+  Parts of the language server implementation are based on [felixfbecker/php-language-server](https://github.com/felixfbecker/php-language-server).
+  While running in the background, Phan can be used from [various editors](https://github.com/phan/phan/wiki/Editor-Support).
 * Output is emitted in text, checkstyle, json, pylint, csv, or codeclimate formats.
-* Can run [user plugins on source for checks specific to your code.](https://github.com/phan/phan/wiki/Writing-Plugins-for-Phan)
-  [Phan includes various plugins you may wish to enable for your project](https://github.com/phan/phan/tree/master/.phan/plugins#2-general-use-plugins)
+* Can run [user plugins on source for checks specific to your code](https://github.com/phan/phan/wiki/Writing-Plugins-for-Phan).
+  [Phan includes various plugins you may wish to enable for your project](https://github.com/phan/phan/tree/master/.phan/plugins#2-general-use-plugins).
 
 See [Phan Issue Types](https://github.com/phan/phan/wiki/Issue-Types-Caught-by-Phan) for descriptions
 and examples of all issues that can be detected by Phan. Take a look at the
@@ -97,7 +100,7 @@ Additional analysis features have been provided by [plugins](https://github.com/
 - [Checking coding style conventions](https://github.com/phan/phan/tree/master/.phan/plugins#3-plugins-specific-to-code-styles)
 - [Others](https://github.com/phan/phan/tree/master/.phan/plugins#plugins)
 
-Example: [Phan's plugins for self-analysis.](https://github.com/phan/phan/blob/0.10.1/.phan/config.php#L433-L447)
+Example: [Phan's plugins for self-analysis.](https://github.com/phan/phan/blob/0.12.0/.phan/config.php#L461-L474)
 
 # Usage
 
