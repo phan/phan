@@ -115,6 +115,12 @@ A simple `.phan/config.php` file might look something like the following.
  */
 return [
 
+    // Supported values: '7.0', '7.1', '7.2', null.
+    // If this is set to null,
+    // then Phan assumes the PHP version which is closest to the minor version
+    // of the php executable used to execute phan.
+    "target_php_version" => null,
+
     // A list of directories that should be parsed for class and
     // method information. After excluding the directories
     // defined in exclude_analysis_directory_list, the remaining
