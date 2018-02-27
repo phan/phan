@@ -450,7 +450,7 @@ final class GenericArrayType extends ArrayType
     {
         // TODO: Any point in caching this?
         $type_instances = $this->element_type->withFlattenedArrayShapeTypeInstances();
-        if (\count($type_instances) === 0 && $type_instances[0] === $this->element_type) {
+        if (\count($type_instances) === 1 && $type_instances[0] === $this->element_type) {
             return [$this];
         }
         $results = [];
