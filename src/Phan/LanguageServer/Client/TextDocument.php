@@ -5,8 +5,6 @@ namespace Phan\LanguageServer\Client;
 
 use Phan\LanguageServer\ClientHandler;
 use Phan\LanguageServer\Protocol\Diagnostic;
-use Phan\LanguageServer\Protocol\TextDocumentItem;
-use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
 use Sabre\Event\Promise;
 use JsonMapper;
 
@@ -47,22 +45,5 @@ class TextDocument
             'uri' => $uri,
             'diagnostics' => $diagnostics
         ]);
-    }
-
-    /**
-     * The content request is sent from a server to a client
-     * to request the current content of a text document identified by the URI
-     *
-     * @param TextDocumentIdentifier $textDocument The document to get the content for
-     * @return Promise <TextDocumentItem> The document's current content
-     */
-    public function xcontent(TextDocumentIdentifier $textDocument): Promise
-    {
-        return $this->handler->request(
-            'textDocument/xcontent',
-            ['textDocument' => $textDocument]
-        )->then(function ($result) {
-            return $this->mapper->map($result, new TextDocumentItem);
-        });
     }
 }
