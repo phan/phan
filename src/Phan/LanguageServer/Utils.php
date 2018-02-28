@@ -51,7 +51,7 @@ class Utils
     }
 
     /**
-     * Transforms URI into file path
+     * Transforms URI into an absolute file path
      *
      * @param string $uri
      * @return string

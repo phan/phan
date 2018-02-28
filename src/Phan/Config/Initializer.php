@@ -471,7 +471,14 @@ EOT;
         try {
             // PHP binaries can have many forms, may begin with #/usr/bin/env php.
             // We assume that if it's parseable and contains at least one PHP executable line, it's valid.
-            $ast = Parser::parseCode(new CodeBase([], [], [], [], []), new Context(), $relative_path, $contents, true);
+            $ast = Parser::parseCode(
+                new CodeBase([], [], [], [], []),
+                new Context(),
+                null,
+                $relative_path,
+                $contents,
+                true
+            );
             if (!($ast instanceof Node)) {
                 return false;
             }

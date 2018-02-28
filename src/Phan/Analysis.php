@@ -11,6 +11,7 @@ use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\Analysis\ReturnTypesAnalyzer;
 use Phan\Analysis\ReferenceCountsAnalyzer;
 use Phan\Analysis\ThrowsTypesAnalyzer;
+use Phan\Daemon\Request;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
@@ -94,7 +95,7 @@ class Analysis
             return $context;
         }
         try {
-            $node = Parser::parseCode($code_base, $context, $file_path, $file_contents, $suppress_parse_errors);
+            $node = Parser::parseCode($code_base, $context, null, $file_path, $file_contents, $suppress_parse_errors);
         } catch (ParseError $e) {
             return $context;
         } catch (ParseException $e) {
@@ -431,6 +432,9 @@ class Analysis
      * @param CodeBase $code_base
      * The global code base holding all state
      *
+     * @param ?Request $request
+     * A daemon mode request if in daemon mode. May affect the parser used for $file_path
+     *
      * @param ?string $override_contents
      * If this is not null, this function will act as if $file_path's contents
      * were $override_contents
@@ -441,6 +445,7 @@ class Analysis
     public static function analyzeFile(
         CodeBase $code_base,
         string $file_path,
+        $request,
         string $override_contents = null
     ) : Context {
         // Set the file on the context
@@ -473,7 +478,7 @@ class Analysis
 
                 return $context;
             }
-            $node = Parser::parseCode($code_base, $context, $file_path, $file_contents, false);
+            $node = Parser::parseCode($code_base, $context, $request, $file_path, $file_contents, false);
         } catch (ParseException $parse_error) {
             Issue::maybeEmit(
                 $code_base,

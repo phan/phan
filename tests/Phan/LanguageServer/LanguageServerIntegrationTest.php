@@ -6,6 +6,8 @@ use Phan\Tests\BaseTest;
 use Phan\Issue;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Protocol\ClientCapabilities;
+use Phan\LanguageServer\Protocol\Position;
+use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
 use Phan\LanguageServer\ProtocolStreamReader;
 use Phan\LanguageServer\Utils;
 use InvalidArgumentException;
@@ -32,7 +34,8 @@ class LanguageServerIntegrationTest extends BaseTest
     /**
      * @return array{0:resource,1:resource,2:resource} [$proc, $proc_in, $proc_out]
      */
-    private function createPhanDaemon(bool $pcntlEnabled) {
+    private function createPhanDaemon(bool $pcntlEnabled)
+    {
         if (getenv('PHAN_RUN_INTEGRATION_TEST') != '1') {
             $this->markTestSkipped('skipping integration tests - set PHAN_RUN_INTEGRATION_TEST=1 to allow');
         }
@@ -44,7 +47,7 @@ class LanguageServerIntegrationTest extends BaseTest
             $this->markTestSkipped('requires pcntl extension');
         }
         $command = sprintf(
-            '%s -d %s --quick --language-server-on-stdin %s',
+            '%s -d %s --quick --language-server-on-stdin --language-server-enable-go-to-definition %s',
             escapeshellarg(__DIR__ . '/../../../phan'),
             escapeshellarg(__DIR__ . '/integration'),
             ($pcntlEnabled ? '' : '--language-server-force-missing-pcntl')
@@ -123,12 +126,7 @@ function example(int $x) : int {
 }
 EOT;
             $this->writeDidChangeNotificationToDefaultFile($proc_in, $good_file_contents);
-            $diagnostics_response = $this->awaitResponse($proc_out);
-            $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method']);
-            $uri = $diagnostics_response['params']['uri'];
-            $this->assertSame($uri, $this->getDefaultFileURI());
-            $diagnostics = $diagnostics_response['params']['diagnostics'];
-            $this->assertSame([], $diagnostics);
+            $this->assertHasEmptyPublishDiagnosticsResponse($proc_out);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
@@ -142,7 +140,69 @@ EOT;
         }
     }
 
-    public function pcntlEnabledProvider() : array {
+    public function testDefinition()
+    {
+        // TODO: Move this into an OOP abstraction, add time limits, etc.
+        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon(true);
+        try {
+            $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
+            $this->writeInitializedNotification($proc_in);
+            $new_file_contents = <<<'EOT'
+<?php  // line 0
+class MyExample {
+    const MyConst = 2;
+}
+echo MyExample::MyConst;  // line 4
+EOT;
+            $this->writeDidChangeNotificationToDefaultFile($proc_in, $new_file_contents);
+            $this->assertHasEmptyPublishDiagnosticsResponse($proc_out);
+
+            // Request the definition of the class "MyExample" with the cursor in the middle of that word
+            // NOTE: Line numbers are 0-based for Position
+            $definition_response = $this->writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, new Position(4, 6));
+
+            $this->assertSame([
+                'result' => [
+                    [
+                        'uri' => $this->getDefaultFileURI(),
+                        'range' => [
+                            'start' => ['line' => 1, 'character' => 0],
+                            'end'   => ['line' => 2, 'character' => 0],
+                        ],
+                    ],
+                ],
+                'id' => 2,
+                'jsonrpc' => '2.0',
+            ], $definition_response);
+
+            $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
+            $this->writeExitNotification($proc_in);
+        } finally {
+            fclose($proc_in);
+            // TODO: Make these pipes async if they aren't already
+            $unread_contents = fread($proc_out, 10000);
+            $this->assertSame('', $unread_contents);
+            fclose($proc_out);
+            proc_close($proc);
+        }
+    }
+
+    /**
+     * @param resource $proc_out
+     * @return void
+     */
+    private function assertHasEmptyPublishDiagnosticsResponse($proc_out)
+    {
+        $diagnostics_response = $this->awaitResponse($proc_out);
+        $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method']);
+        $uri = $diagnostics_response['params']['uri'];
+        $this->assertSame($uri, $this->getDefaultFileURI());
+        $diagnostics = $diagnostics_response['params']['diagnostics'];
+        $this->assertSame([], $diagnostics);
+    }
+
+    public function pcntlEnabledProvider() : array
+    {
         return [
             [false],
             [true],
@@ -189,7 +249,8 @@ EOT;
      * @return void
      * @throws InvalidArgumentException
      */
-    private function writeInitializeRequestAndAwaitResponse($proc_in, $proc_out) {
+    private function writeInitializeRequestAndAwaitResponse($proc_in, $proc_out)
+    {
         $params = [
             'capabilities' => new ClientCapabilities(),
             'rootPath' => '/ignored',
@@ -207,6 +268,7 @@ EOT;
                         'willSaveWaitUntil' => null,
                         'save' => ['includeText' => true],
                     ],
+                    'definitionProvider' => true,
                 ]
             ],
             'id' => 1,
@@ -218,10 +280,35 @@ EOT;
     /**
      * @param resource $proc_in
      * @param resource $proc_out
+     * @return array the response
+     * @throws InvalidArgumentException
+     */
+    private function writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, Position $position)
+    {
+        // Implementation detail: We simultaneously emit a notification with new diagnostics
+        // and the response for the definition request at the same time, even if files didn't change.
+
+        // NOTE: That could probably be refactored, but there's not much benefit to doing that.
+        $params = [
+            'textDocument' => new TextDocumentIdentifier($this->getDefaultFileURI()),
+            'position' => $position,
+        ];
+        $this->writeMessage($proc_in, 'textDocument/definition', $params);
+        $this->assertHasEmptyPublishDiagnosticsResponse($proc_out);
+
+        $response = $this->awaitResponse($proc_out);
+
+        return $response;
+    }
+
+    /**
+     * @param resource $proc_in
+     * @param resource $proc_out
      * @return void
      * @throws InvalidArgumentException
      */
-    private function writeShutdownRequestAndAwaitResponse($proc_in, $proc_out) {
+    private function writeShutdownRequestAndAwaitResponse($proc_in, $proc_out)
+    {
         $params = new stdClass();
         $this->writeMessage($proc_in, 'shutdown', $params);
         $response = $this->awaitResponse($proc_out);
@@ -238,7 +325,8 @@ EOT;
      * @return void
      * @throws InvalidArgumentException
      */
-    private function writeInitializedNotification($proc_in) {
+    private function writeInitializedNotification($proc_in)
+    {
         $params = [
             'capabilities' => new stdClass(),
             'rootPath' => '/ignored',
@@ -252,7 +340,8 @@ EOT;
      * @return void
      * @throws InvalidArgumentException
      */
-    private function writeExitNotification($proc_in) {
+    private function writeExitNotification($proc_in)
+    {
         $this->writeNotification($proc_in, 'exit', null);
     }
 
@@ -261,7 +350,8 @@ EOT;
      * @return void
      * @throws InvalidArgumentException
      */
-    private function writeDidChangeNotificationToDefaultFile($proc_in, string $new_contents) {
+    private function writeDidChangeNotificationToDefaultFile($proc_in, string $new_contents)
+    {
         $params = [
             'textDocument' => ['uri' => $this->getDefaultFileURI()],
             'contentChanges' => [
@@ -273,7 +363,8 @@ EOT;
         $this->writeNotification($proc_in, 'textDocument/didChange', $params);
     }
 
-    private function getDefaultFileURI() {
+    private function getDefaultFileURI()
+    {
         return Utils::pathToUri(self::DEFAULT_PATH);
     }
 
@@ -282,8 +373,10 @@ EOT;
      * Based on ProtocolStreamReader::readMessages()
      * TODO: Add timeout logic, etc.
      * @suppress PhanPluginUnusedVariable $parsing_mode
+     * @return array
      */
-    private function awaitResponse($proc_out) {
+    private function awaitResponse($proc_out)
+    {
         $buffer = '';
         $content_length = 0;
         $headers = [];
@@ -310,7 +403,11 @@ EOT;
                 case ProtocolStreamReader::PARSE_BODY:
                     if (strlen($buffer) === $content_length) {
                         // If we fork, don't read any bytes in the input buffer from the worker process.
-                        return json_decode($buffer, true);
+                        $result = json_decode($buffer, true);
+                        if (!is_array($result)) {
+                            throw new InvalidArgumentException("Invalid decoded buffer: value=$buffer");
+                        }
+                        return $result;
                     }
                     break;
             }
@@ -324,7 +421,8 @@ EOT;
      * @param string $method
      * @param array|stdClass $params
      */
-    private function writeMessage($proc_in, string $method, $params) {
+    private function writeMessage($proc_in, string $method, $params)
+    {
         $body = [
             'jsonrpc' => '2.0',
             'id' => ++$this->messageId,
@@ -341,7 +439,8 @@ EOT;
      * @param string $method
      * @param ?array|?\stdClass $params
      */
-    private function writeNotification($proc_in, string $method, $params) {
+    private function writeNotification($proc_in, string $method, $params)
+    {
         $body = [
             'method' => $method,
             'params' => $params,
@@ -350,7 +449,8 @@ EOT;
         $this->debugLog("Wrote a $method notification\n");
     }
 
-    private function debugLog(string $message) {
+    private function debugLog(string $message)
+    {
         if (self::DEBUG_ENABLED) {
             echo $message;
             flush();
@@ -364,7 +464,8 @@ EOT;
      * @param array<string,mixed> $body
      * @return void
      */
-    private function writeEncodedBody($proc_in, array $body) {
+    private function writeEncodedBody($proc_in, array $body)
+    {
         $body_raw = json_encode($body, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) . "\r\n";
         $raw = sprintf(
             "Content-Length: %d\r\nContent-Type: application/vscode-jsonrpc; charset=utf-8\r\n\r\n%s",

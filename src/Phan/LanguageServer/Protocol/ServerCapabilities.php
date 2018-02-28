@@ -24,6 +24,13 @@ class ServerCapabilities
     // public $completionProvider;
 
     /**
+     * The server provides goto definition support.
+     *
+     * @var bool|null
+     */
+    public $definitionProvider;
+
+    /**
      * The server provides find references support.
      *
      * @var bool|null
@@ -105,7 +112,7 @@ class ServerCapabilities
      *
      * @var bool|null
      */
-    //public $xdefinitionProvider;
+    // public $xdefinitionProvider;
 
     /**
      * TODO: implement this?
