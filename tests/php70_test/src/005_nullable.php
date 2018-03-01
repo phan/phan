@@ -13,3 +13,8 @@ nullableArg(null, 5);
 nullableOptionalArg(2);
 nullableArg2(2);
 echo nullableReturn(2);
+
+function nullableReturn2() : ?int {
+    return 2;
+}
+nullableReturn2();

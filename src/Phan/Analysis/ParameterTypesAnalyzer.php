@@ -154,7 +154,7 @@ class ParameterTypesAnalyzer
                         $code_base,
                         $method->getContext(),
                         Issue::CompatibleNullableTypePHP70,
-                        $real_parameter->getFileRef()->getLineNumberStart(),
+                        $method->getFileRef()->getLineNumberStart(),
                         (string)$type
                     );
                 }
@@ -182,7 +182,7 @@ class ParameterTypesAnalyzer
                     $code_base,
                     $method->getContext(),
                     Issue::CompatibleObjectTypePHP71,
-                    $real_parameter->getFileRef()->getLineNumberStart(),
+                    $method->getFileRef()->getLineNumberStart(),
                     (string)$type
                 );
             }

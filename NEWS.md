@@ -1,9 +1,13 @@
 Phan NEWS
 
-?? ??? 2018, Phan 0.12.1(dev)
+?? ??? 2018, Phan 0.12.1 (dev)
+------------------------
 
 New Features(Analysis)
 + Emit `PhanTypeInvalidDimOffset` when an unknown offset is fetched from an array shape type. (#1478)
+
+Bug Fixes
++ Fix an "Undefined variable" error when checking for php 7.1/7.0 incompatibilities in return types. (#1511)
 
 25 Feb 2018, Phan 0.12.0
 ------------------------
@@ -22,7 +26,7 @@ New Features(CLI, Configs)
 
   NOTE: This setting does not let a PHP 7.0 installation parse PHP 7.1 nullable syntax or PHP 7.1 array destructuring syntax.
 
-  If you are unable to upgrade the PHP version used for analysis to php 7.1, the polyfill parser settings may help 
+  If you are unable to upgrade the PHP version used for analysis to php 7.1, the polyfill parser settings may help
   (See `--force-polyfill-parser` or `--use-fallback-parser`. Those have a few known bugs in edge cases.)
 + Add `--init` CLI flag and CLI options to affect the generated config. (#145)
   (Options: `--init-level=1..5`, `--init-analyze-dir=path/to/src`, `--init-analyze-file=path/to/file.php`, `--init-no-composer`, `--init-overwrite`)
