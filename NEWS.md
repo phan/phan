@@ -1,5 +1,11 @@
 Phan NEWS
 
+?? Mar 2018, Phan 0.12.2 (dev)
+------------------------
+
+Bug Fixes
++ Reduce false positives in `PhanTypeInvalidDimOffset`
+
 28 Feb 2018, Phan 0.12.1
 ------------------------
 
