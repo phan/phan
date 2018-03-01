@@ -770,7 +770,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $old_variable_union_type = $variable->getUnionType();
                 $right_type = $this->typeCheckDimAssignment($old_variable_union_type, $node);
                 // TODO: Make the behavior more precise for $x['a']['b'] = ...; when $x is an array shape.
-                if ($this->dim_depth > 1 || ($old_variable_union_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances())) {
+                if ($this->dim_depth > 1 || ($old_variable_union_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $old_variable_union_type->isEmpty() || $right_type->isEmpty())) {
                     $variable->setUnionType($old_variable_union_type->withUnionType(
                         $right_type
                     ));
@@ -838,11 +838,14 @@ class AssignmentVisitor extends AnalysisVisitor
     {
         static $int_or_string_type = null;
         static $int_type = null;
+        static $string_type = null;
+        static $mixed_type = null;
         static $string_array_type = null;
         if ($int_or_string_type === null) {
-            // clone these if they're returned by the function, they may be modified by callers.
             $int_or_string_type = UnionType::fromFullyQualifiedString('int|string');
             $int_type = IntType::instance(false);
+            $string_type = StringType::instance(false);
+            $mixed_type = MixedType::instance(false);
             $string_array_type = UnionType::fromFullyQualifiedString('string[]');
         }
         $dim_type = $this->dim_type;
@@ -861,7 +864,7 @@ class AssignmentVisitor extends AnalysisVisitor
             return $right_type;
         }
         if (!$assign_type->asExpandedTypes($this->code_base)->hasArrayLike()) {
-            if ($assign_type->hasType(StringType::instance(false))) {
+            if ($assign_type->hasType($string_type)) {
                 // Are we assigning to a variable/property of type 'string' (with no ArrayAccess or array types)?
                 if (\is_null($dim_type)) {
                     $this->emitIssue(
@@ -885,7 +888,8 @@ class AssignmentVisitor extends AnalysisVisitor
                         return StringType::instance(false)->asUnionType();
                     }
                 }
-            } else {
+            } else if (!$assign_type->hasType($mixed_type)) {
+                // Imitate the check in UnionTypeVisitor, don't warn for mixed, etc.
                 $this->emitIssue(
                     Issue::TypeArraySuspicious,
                     $node->lineno,

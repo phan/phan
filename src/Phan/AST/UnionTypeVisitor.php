@@ -1225,11 +1225,13 @@ class UnionTypeVisitor extends AnalysisVisitor
             } catch (CodeBaseException $exception) {
             }
 
-            $this->emitIssue(
-                Issue::TypeArraySuspicious,
-                $node->lineno ?? 0,
-                (string)$union_type
-            );
+            if (!$union_type->hasArrayLike()) {
+                $this->emitIssue(
+                    Issue::TypeArraySuspicious,
+                    $node->lineno ?? 0,
+                    (string)$union_type
+                );
+            }
         }
 
         return $element_types;
