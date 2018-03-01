@@ -8,6 +8,7 @@ New Features(Analysis)
 
 Bug Fixes
 + Fix an "Undefined variable" error when checking for php 7.1/7.0 incompatibilities in return types. (#1511)
+  Fix other crashes.
 
 25 Feb 2018, Phan 0.12.0
 ------------------------

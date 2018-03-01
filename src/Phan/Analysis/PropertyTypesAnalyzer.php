@@ -34,6 +34,7 @@ class PropertyTypesAnalyzer
             // Look at each type in the parameter's Union Type
             foreach ($union_type->getTypeSet() as $outer_type) {
                 $type = $outer_type;
+                // TODO: Expand this to ArrayShapeType
                 while ($type instanceof GenericArrayType) {
                     $type = $type->genericArrayElementType();
                 }

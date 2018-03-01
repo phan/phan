@@ -1381,6 +1381,16 @@ class Type
     }
 
     /**
+     * @return UnionType
+     * A variation of this type that is not generic.
+     * i.e. 'int[]' becomes 'int'.
+     */
+    public function genericArrayElementUnionType() : UnionType
+    {
+        throw new \Error("genericArrayElementUnionType should not be called on Type base class");
+    }
+
+    /**
      * @param int $key_type
      * Corresponds to the type of the array keys. Set this to a GenericArrayType::KEY_* constant.
      *

@@ -148,6 +148,10 @@ class UnionTypeTest extends BaseTest
             $type->genericArrayElementType()->__toString(),
             "int[]"
         );
+        $this->assertEquals(
+            $type->genericArrayElementUnionType()->__toString(),
+            "int[]"
+        );
     }
 
     public function testGenericArrayTypeFromString()

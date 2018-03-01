@@ -100,6 +100,12 @@ final class ArrayShapeType extends ArrayType
         return $this->generic_array_element_union_type ?? ($this->generic_array_element_union_type = UnionType::merge($this->field_types));
     }
 
+    public function genericArrayElementType() : Type
+    {
+        // FIXME Deprecate genericArrayElementType
+        return MixedType::instance(false);
+    }
+
     /**
      * @return bool
      * True if this Type can be cast to the given Type
@@ -114,7 +120,7 @@ final class ArrayShapeType extends ArrayType
                     // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
                     return false;
                 }
-                return $this->genericArrayElementUnionType()->canCastToUnionType($type->genericArrayElementType()->asUnionType());
+                return $this->genericArrayElementUnionType()->canCastToUnionType($type->genericArrayElementUnionType());
             } elseif ($type instanceof ArrayShapeType) {
                 foreach ($type->field_types as $key => $field_type) {
                     $this_field_type = $this->field_types[$key] ?? null;

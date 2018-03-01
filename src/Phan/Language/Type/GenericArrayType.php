@@ -145,7 +145,7 @@ final class GenericArrayType extends ArrayType
                 // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
                 return false;
             }
-            return $this->genericArrayElementType()->asUnionType()->canCastToUnionType($type->genericArrayElementUnionType());
+            return $this->genericArrayElementUnionType()->canCastToUnionType($type->genericArrayElementUnionType());
         }
 
         if ($type->isArrayLike()) {
@@ -219,6 +219,16 @@ final class GenericArrayType extends ArrayType
     public function genericArrayElementType() : Type
     {
         return $this->element_type;
+    }
+
+    /**
+     * @return UnionType
+     * A variation of this type that is not generic.
+     * i.e. 'int[]' becomes 'int'.
+     */
+    public function genericArrayElementUnionType() : UnionType
+    {
+        return $this->element_type->asUnionType();
     }
 
     public function __toString() : string
