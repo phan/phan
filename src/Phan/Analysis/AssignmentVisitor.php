@@ -41,13 +41,14 @@ class AssignmentVisitor extends AnalysisVisitor
     private $right_type;
 
     /**
-     * @var bool
-     * True if this assignment is to an array parameter such as
-     * in `$foo[3] = 42`. We need to know this in order to decide
-     * if we're replacing the union type or if we're adding a
-     * type to the union type.
+     * @var int
+     * Depth of array parameters in this assignment, e.g. this is 1 for
+     * for `$foo[3] = 42`, 0 for `$x = 2;`, etc.
+     * We need to know this in order to decide
+     * if we're replacing the union type
+     * or if we're adding a type to the union type.
      */
-    private $is_dim_assignment;
+    private $dim_depth;
 
     /**
      * @var ?UnionType
@@ -56,7 +57,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * to type check the assignment (e.g. array keys are int|string, string offsets are int)
      * type to the union type.
      *
-     * Null for `$foo[] = 42` or when is_dim_assignment is false.
+     * Null for `$foo[] = 42` or when dim_depth is 0
      */
     private $dim_type;
 
@@ -74,26 +75,29 @@ class AssignmentVisitor extends AnalysisVisitor
      * @param UnionType $right_type
      * The type of the element on the right side of the assignment
      *
-     * @param bool $is_dim_assignment
-     * True if this assignment is to an array parameter such as
+     * @param int $dim_depth
+     * Positive if this assignment is to an array parameter such as
      * in `$foo[3] = 42`. We need to know this in order to decide
      * if we're replacing the union type or if we're adding a
      * type to the union type.
+     *
+     * @param ?UnionType $dim_type
+     * The type of the dimension.
      */
     public function __construct(
         CodeBase $code_base,
         Context $context,
         Node $assignment_node,
         UnionType $right_type,
-        bool $is_dim_assignment = false,
+        int $dim_depth = 0,
         UnionType $dim_type = null
     ) {
         parent::__construct($code_base, $context);
 
         $this->assignment_node = $assignment_node;
         $this->right_type = $right_type;
-        $this->is_dim_assignment = $is_dim_assignment;
-        $this->dim_type = $dim_type;  // null for `$x[] =` or when is_dim_assignment is false.
+        $this->dim_depth = $dim_depth;
+        $this->dim_type = $dim_type;  // null for `$x[] =` or when dim_depth is 0.
     }
 
     /**
@@ -284,7 +288,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     $this->context,
                     $node,
                     $element_type,
-                    false
+                    0
                 ))->__invoke($value_node);
             }
         }
@@ -381,7 +385,7 @@ class AssignmentVisitor extends AnalysisVisitor
             $this->context,
             $node,
             $right_type,
-            true,
+            $this->dim_depth + 1,
             $dim_type
         ))->__invoke($expr_node);
 
@@ -490,7 +494,7 @@ class AssignmentVisitor extends AnalysisVisitor
             // outside of the scope of this assignment, so we add to
             // its union type rather than replace it.
             $property_union_type = $property->getUnionType();
-            if ($this->is_dim_assignment) {
+            if ($this->dim_depth > 0) {
                 if ($this->right_type->canCastToExpandedUnionType(
                     $property_union_type,
                     $this->code_base
@@ -592,7 +596,7 @@ class AssignmentVisitor extends AnalysisVisitor
             $property->setUnionType($this->right_type);
             return;
         }
-        if ($this->is_dim_assignment) {
+        if ($this->dim_depth > 0) {
             $new_types = $this->typeCheckDimAssignment($property_types, $node);
         } else {
             $new_types = $this->right_type;
@@ -688,7 +692,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 // know what the constitutation of the parameter is
                 // outside of the scope of this assignment, so we add to
                 // its union type rather than replace it.
-                if ($this->is_dim_assignment) {
+                if ($this->dim_depth > 0) {
                     $right_type = $this->typeCheckDimAssignment($property->getUnionType(), $node);
                     $property->setUnionType($property->getUnionType()->withUnionType(
                         $right_type
@@ -762,10 +766,11 @@ class AssignmentVisitor extends AnalysisVisitor
             // know what the constitutation of the parameter is
             // outside of the scope of this assignment, so we add to
             // its union type rather than replace it.
-            if ($this->is_dim_assignment) {
+            if ($this->dim_depth > 0) {
                 $old_variable_union_type = $variable->getUnionType();
                 $right_type = $this->typeCheckDimAssignment($old_variable_union_type, $node);
-                if ($old_variable_union_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances()) {
+                // TODO: Make the behavior more precise for $x['a']['b'] = ...; when $x is an array shape.
+                if ($this->dim_depth > 1 || ($old_variable_union_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $old_variable_union_type->isEmpty() || $right_type->isEmpty())) {
                     $variable->setUnionType($old_variable_union_type->withUnionType(
                         $right_type
                     ));
@@ -797,7 +802,7 @@ class AssignmentVisitor extends AnalysisVisitor
             return $this->context;
         } else {
             // no such variable exists, check for invalid array Dim access
-            if ($this->is_dim_assignment) {
+            if ($this->dim_depth > 0) {
                 $this->emitIssue(
                     Issue::UndeclaredVariableDim,
                     $node->lineno ?? 0,
@@ -833,11 +838,14 @@ class AssignmentVisitor extends AnalysisVisitor
     {
         static $int_or_string_type = null;
         static $int_type = null;
+        static $string_type = null;
+        static $mixed_type = null;
         static $string_array_type = null;
         if ($int_or_string_type === null) {
-            // clone these if they're returned by the function, they may be modified by callers.
             $int_or_string_type = UnionType::fromFullyQualifiedString('int|string');
             $int_type = IntType::instance(false);
+            $string_type = StringType::instance(false);
+            $mixed_type = MixedType::instance(false);
             $string_array_type = UnionType::fromFullyQualifiedString('string[]');
         }
         $dim_type = $this->dim_type;
@@ -856,7 +864,7 @@ class AssignmentVisitor extends AnalysisVisitor
             return $right_type;
         }
         if (!$assign_type->asExpandedTypes($this->code_base)->hasArrayLike()) {
-            if ($assign_type->hasType(StringType::instance(false))) {
+            if ($assign_type->hasType($string_type)) {
                 // Are we assigning to a variable/property of type 'string' (with no ArrayAccess or array types)?
                 if (\is_null($dim_type)) {
                     $this->emitIssue(
@@ -880,7 +888,8 @@ class AssignmentVisitor extends AnalysisVisitor
                         return StringType::instance(false)->asUnionType();
                     }
                 }
-            } else {
+            } else if (!$assign_type->hasType($mixed_type)) {
+                // Imitate the check in UnionTypeVisitor, don't warn for mixed, etc.
                 $this->emitIssue(
                     Issue::TypeArraySuspicious,
                     $node->lineno,
