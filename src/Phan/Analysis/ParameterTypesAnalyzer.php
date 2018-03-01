@@ -52,6 +52,7 @@ class ParameterTypesAnalyzer
             foreach ($union_type->getTypeSet() as $outer_type) {
                 $type = $outer_type;
 
+                // TODO: Add unit test of `array{key:MissingClazz}`
                 while ($type instanceof GenericArrayType) {
                     $type = $type->genericArrayElementType();
                 }

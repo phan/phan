@@ -110,6 +110,8 @@ final class GenericMultiArrayType extends ArrayType
             return false;
         }
 
+        // TODO: More precise about checking if can cast to ArrayShapeType
+
         if ($type->isArrayLike()) {
             return true;
         }

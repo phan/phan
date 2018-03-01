@@ -1775,11 +1775,12 @@ class UnionTypeVisitor extends AnalysisVisitor
                         $static_type = $union_type->findTypeMatchingCallback(function (Type $type) : bool {
                             return (
                                 $type->isGenericArray()
-                                && $type->genericArrayElementType()->isStaticType()
+                                && $type->genericArrayElementUnionType()->hasStaticType()
                             );
                         });
 
                         // Remove it from the list
+                        // TODO: Limit this to fields of ArrayShapeType that actually have static type
                         $union_type = $union_type->withoutType($static_type);
                     }
 
