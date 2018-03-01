@@ -769,8 +769,11 @@ class AssignmentVisitor extends AnalysisVisitor
             if ($this->dim_depth > 0) {
                 $old_variable_union_type = $variable->getUnionType();
                 $right_type = $this->typeCheckDimAssignment($old_variable_union_type, $node);
+                if ($old_variable_union_type->isEmpty()) {
+                    $old_variable_union_type = ArrayType::instance(false)->asUnionType();
+                }
                 // TODO: Make the behavior more precise for $x['a']['b'] = ...; when $x is an array shape.
-                if ($this->dim_depth > 1 || ($old_variable_union_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $old_variable_union_type->isEmpty() || $right_type->isEmpty())) {
+                if ($this->dim_depth > 1 || ($old_variable_union_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->isEmpty())) {
                     $variable->setUnionType($old_variable_union_type->withUnionType(
                         $right_type
                     ));
