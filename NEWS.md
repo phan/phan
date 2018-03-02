@@ -1,6 +1,6 @@
 Phan NEWS
 
-?? Mar 2018, Phan 0.12.2 (dev)
+02 Mar 2018, Phan 0.12.2
 ------------------------
 
 Plugins
