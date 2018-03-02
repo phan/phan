@@ -543,7 +543,12 @@ class AssignmentVisitor extends AnalysisVisitor
                 // Add any type if this is a subclass with array access.
                 $this->addTypesToProperty($property, $node);
             } else {
-                $new_types = $this->typeCheckDimAssignment($property_union_type, $node);
+                // Convert array shape types to generic arrays to reduce false positive PhanTypeMismatchProperty instances.
+
+                // TODO: If the codebase explicitly sets a phpdoc array shape type on a property assignment,
+                // then preserve the array shape type.
+                $new_types = $this->typeCheckDimAssignment($property_union_type, $node)->withFlattenedArrayShapeTypeInstances();
+
                 if (!$new_types->canCastToExpandedUnionType(
                     $property_union_type,
                     $this->code_base

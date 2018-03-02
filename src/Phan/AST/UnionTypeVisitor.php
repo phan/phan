@@ -1260,24 +1260,34 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         $has_non_array_shape_type = false;
-        $resulting_element_type = UnionType::empty();
+        $resulting_element_type = null;
         foreach ($union_type->getTypeSet() as $type) {
             if (!($type instanceof ArrayShapeType)) {
                 $has_non_array_shape_type = true;
                 if ($type instanceof StringType) {
                     if (\is_int($dim_node)) {
                         // in php, indices of strings can be negative
-                        $resulting_element_type = $resulting_element_type->withType(StringType::instance(false));
+                        if ($resulting_element_type !== null) {
+                            $resulting_element_type = $resulting_element_type->withType(StringType::instance(false));
+                        } else {
+                            $resulting_element_type = StringType::instance(false)->asUnionType();
+                        }
                     } // TODO: Warn about string indices? But nega
                 }
                 continue;
             }
             $element_type = $type->arrayShapeFieldTypes()[$dim_value] ?? null;
             if ($element_type !== null) {
-                $resulting_element_type = $resulting_element_type->withUnionType($element_type);
+                // $element_type may be non-null but $element_type->isEmpty() may be true.
+                // So, we use null to indicate failure below
+                if ($resulting_element_type !== null) {
+                    $resulting_element_type = $resulting_element_type->withUnionType($element_type);
+                } else {
+                    $resulting_element_type = $element_type;
+                }
             }
         }
-        if ($resulting_element_type->isEmpty()) {
+        if ($resulting_element_type === null) {
             if (!$has_non_array_shape_type) {
                 $this->emitIssue(
                     Issue::TypeInvalidDimOffset,
