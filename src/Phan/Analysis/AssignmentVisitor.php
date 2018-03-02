@@ -795,11 +795,16 @@ class AssignmentVisitor extends AnalysisVisitor
             $this->code_base,
             false
         );
-
-        // Set that type on the variable
-        $variable->setUnionType($variable->getUnionType()->withUnionType(
-            $this->right_type
-        ));
+        if ($this->dim_depth > 0) {
+            // Reduce false positives: If $variable did not already exist, assume it may already have other array fields
+            // (e.g. in a loop, or in the global scope)
+            $variable->setUnionType($this->right_type->withType(ArrayType::instance(false)));
+        } else {
+            // Set that type on the variable
+            $variable->setUnionType(
+                $this->right_type
+            );
+        }
 
         // Note that we're not creating a new scope, just
         // adding variables to the existing scope
