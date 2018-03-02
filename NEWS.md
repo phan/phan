@@ -17,6 +17,7 @@ Bug Fixes
 + Don't warn when adding new keys to an array when assigning multiple dimensions at once (#1518)
 + Reduce false positives when a property's type gets inferred as an array shape(#1520)
 + Reduce false positives when adding fields to an array in the global scope.
++ Reduce false positives by converting array shapes to generic arrays before recursively analyzing method/function invocations (#1525)
 
 28 Feb 2018, Phan 0.12.1
 ------------------------

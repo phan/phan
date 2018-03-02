@@ -2233,13 +2233,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // on the argument's type. We'll use this to
         // retest the method with the passed in types
         // TODO: if $argument_type is non-empty and !isType(NullType), instead use setUnionType?
+
+        // For https://github.com/phan/phan/issues/1525 : Collapse array shapes into generic arrays before recursively analyzing a method.
         if (!$parameter->isCloneOfVariadic()) {
             $parameter->addUnionType(
-                $argument_type
+                $argument_type->withFlattenedArrayShapeTypeInstances()
             );
         } else {
             $parameter->addUnionType(
-                $argument_type->asGenericArrayTypes(GenericArrayType::KEY_INT)
+                $argument_type->withFlattenedArrayShapeTypeInstances()->asGenericArrayTypes(GenericArrayType::KEY_INT)
             );
         }
 
