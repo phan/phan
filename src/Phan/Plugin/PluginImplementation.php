@@ -120,7 +120,8 @@ class PluginImplementation extends Plugin
     // Internal methods, for use by ConfigPluginSet
 
     /**
-     * @return bool true if $method_name is defined by the subclass of PluginAwareAnalysisVisitor, and not by PluginAwareAnalysisVisitor or one of it's parents.
+     * @return bool true if $method_name is defined by the subclass of PluginAwareAnalysisVisitor or PluginAwarePostAnalysisVisitor,
+     * and not by PluginAware*AnalysisVisitor or one of its parents.
      */
     final public static function isDefinedInSubclass(string $method_name) : bool
     {

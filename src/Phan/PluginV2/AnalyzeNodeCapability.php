@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\PluginV2;
 
+/**
+ * @deprecated - Use PostAnalyzeNodeCapability instead
+ */
 interface AnalyzeNodeCapability
 {
     /**

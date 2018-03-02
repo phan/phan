@@ -5,8 +5,8 @@ use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
 use Phan\Issue;
 use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeNodeCapability;
-use Phan\PluginV2\PluginAwareAnalysisVisitor;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use ast\Node;
 
 /**
@@ -14,13 +14,13 @@ use ast\Node;
  *
  * @see DollarDollarPlugin for generic plugin documentation.
  */
-class DuplicateArrayKeyPlugin extends PluginV2 implements AnalyzeNodeCapability
+class DuplicateArrayKeyPlugin extends PluginV2 implements PostAnalyzeNodeCapability
 {
     /**
-     * @return string - name of PluginAwareAnalysisVisitor subclass
+     * @return string - name of PluginAwarePostAnalysisVisitor subclass
      * @override
      */
-    public static function getAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName() : string
     {
         return DuplicateArrayKeyVisitor::class;
     }
@@ -35,7 +35,7 @@ class DuplicateArrayKeyPlugin extends PluginV2 implements AnalyzeNodeCapability
  * Visitors such as this are useful for defining lots of different
  * checks on a node based on its kind.
  */
-class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor
+class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
 {
     // Do not define the visit() method unless a plugin has code and needs to visit most/all node types.
 

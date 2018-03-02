@@ -2,8 +2,8 @@
 
 use Phan\Analysis\BlockExitStatusChecker;
 use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeNodeCapability;
-use Phan\PluginV2\PluginAwareAnalysisVisitor;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use ast\Node;
 
 /**
@@ -12,7 +12,7 @@ use ast\Node;
  *
  * It hooks into one event:
  *
- * - getAnalyzeNodeVisitorClassName
+ * - getPostAnalyzeNodeVisitorClassName
  *   This method returns a class that is called on every AST node from every
  *   file being analyzed
  *
@@ -28,13 +28,13 @@ use ast\Node;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-final class UnreachableCodePlugin extends PluginV2 implements AnalyzeNodeCapability
+final class UnreachableCodePlugin extends PluginV2 implements PostAnalyzeNodeCapability
 {
 
     /**
      * @return string - The name of the visitor that will be called (formerly analyzeNode)
      */
-    public static function getAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName() : string
     {
         return UnreachableCodeVisitor::class;
     }
@@ -47,7 +47,7 @@ final class UnreachableCodePlugin extends PluginV2 implements AnalyzeNodeCapabil
  * Visitors such as this are useful for defining lots of different
  * checks on a node based on its kind.
  */
-final class UnreachableCodeVisitor extends PluginAwareAnalysisVisitor
+final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
 {
     // A plugin's visitors should NOT implement visit(), unless they need to.
 

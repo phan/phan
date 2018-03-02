@@ -26,9 +26,11 @@ use Phan\PluginV2\IssueEmitter;
  *     Analyze (and modify) a method definition, after parsing and before analyzing.
  *     (implement \Phan\PluginV2\AnalyzeMethodCapability)
  *
- *  4. public static function getAnalyzeNodeVisitorClassName() : string
- *     Returns the name of a class extending PluginAwareAnalysisVisitor, which will be used to analyze nodes in the analysis phase.
- *     (implement \Phan\PluginV2\AnalyzeNodeCapability)
+ *  4. public static function getPostAnalyzeNodeVisitorClassName() : string
+ *     Returns the name of a class extending PluginAwarePostAnalysisVisitor, which will be used to analyze nodes in the analysis phase.
+ *     If the PluginAwarePostAnalysisVisitor subclass has an instance property called parent_node_list,
+ *     Phan will automatically set that property to the list of parent nodes (The nodes deepest in the AST are at the end of the list)
+ *     (implement \Phan\PluginV2\PostAnalyzeNodeCapability)
  *
  *  5. public static function getPreAnalyzeNodeVisitorClassName() : string
  *     Returns the name of a class extending PluginAwarePreAnalysisVisitor, which will be used to pre-analyze nodes in the analysis phase.
@@ -59,12 +61,24 @@ use Phan\PluginV2\IssueEmitter;
  *  1. public static function analyzeNode(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null)
  *     Analyzes $node
  *     (implement \Phan\PluginV2\LegacyAnalyzeNodeCapability)
- *     (Deprecated in favor of \Phan\PluginV2\AnalyzeNodeCapability, which is faster)
+ *     (Deprecated in favor of postAnalyzeNode and \Phan\PluginV2\AnalyzeNodeCapability, which are faster)
  *
  *  2. public static function preAnalyzeNode(CodeBase $code_base, Context $context, Node $node)
  *     Pre-analyzes $node
  *     (implement \Phan\PluginV2\LegacyPreAnalyzeNodeCapability)
  *     (Deprecated in favor of \Phan\PluginV2\PreAnalyzeNodeCapability, which is faster)
+ *
+ *  3. public static function postAnalyzeNode(CodeBase $code_base, Context $context, Node $node, array<int,Node> $parent_node_list = [])
+ *     Analyzes $node
+ *     (implement \Phan\PluginV2\LegacyPostAnalyzeNodeCapability)
+ *     (Deprecated in favor of \Phan\PluginV2\PostAnalyzeNodeCapability, which is much faster)
+ *
+ *  4. public static function getAnalyzeNodeVisitorClassName() : string
+ *     Returns the name of a class extending PluginAwareAnalysisVisitor, which will be used to analyze nodes in the analysis phase.
+ *     Phan will automatically add the instance property parent_node to instances of that PluginAwareAnalysisVisitor,
+ *     even if no such instance property was declared.
+ *     (implement \Phan\PluginV2\AnalyzeNodeCapability)
+ *     (Deprecated in favor of \Phan\PluginV2\PostAnalyzeNodeCapability, which is much faster)
  *
  * TODO: Implement a way to notify plugins that a parsed file is no longer valid,
  * if the replacement for pcntl is being used.

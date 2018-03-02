@@ -35,17 +35,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 {
 
     /**
-     * @var ?Node
+     * @var Node[]
      * The parent of the current node
      */
-    private $parent_node;
-
-    /**
-     * @var int
-     * The depth of the node being analyzed in the
-     * AST
-     */
-    private $depth;
+    private $parent_node_list = [];
 
     /**
      * @param CodeBase $code_base
@@ -57,19 +50,16 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @param ?Node $parent_node
      * The parent of the node being analyzed
-     *
-     * @param int $depth
-     * The depth of the node being analyzed in the AST
      */
     public function __construct(
         CodeBase $code_base,
         Context $context,
-        Node $parent_node = null,
-        int $depth = 0
+        Node $parent_node = null
     ) {
         parent::__construct($code_base, $context);
-        $this->parent_node = $parent_node;
-        $this->depth = $depth;
+        if ($parent_node) {
+            $this->parent_node_list[] = $parent_node;
+        }
     }
 
     // No-ops for frequent node types
@@ -193,11 +183,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // updated context for the node
             $context = $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
         }
-        $plugin_set->analyzeNode(
+        $plugin_set->postAnalyzeNode(
             $this->code_base,
             $context,
             $node,
-            $this->parent_node
+            $this->parent_node_list
         );
         return $context;
     }
@@ -350,7 +340,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     /**
      * This is an abstraction for getting a new, updated context for a child node.
      *
-     * Effectively the same as (new BlockAnalysisVisitor(..., $context, $node, ..., $depth + 1, ...)($child_node))
+     * Effectively the same as (new BlockAnalysisVisitor(..., $context, $node, ...)child_node))
      * but is much less repetitive and verbose, and slightly more efficient.
      *
      * @param Context $context - The original context for $node, before analyzing $child_node
@@ -366,16 +356,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // Modify the original object instead of creating a new BlockAnalysisVisitor.
         // this is slightly more efficient, especially if a large number of unchanged parameters would exist.
         $old_context = $this->context;
-        $old_parent_node = $this->parent_node;
-        $old_depth = $this->depth++;
         $this->context = $context;
-        $this->parent_node = $node;
+        $this->parent_node_list[] = $node;
         try {
-            return Element::acceptNodeAndKindVisitor($child_node, $this);
+            return $this->{Element::VISIT_LOOKUP_TABLE[$child_node->kind] ?? 'handleMissingNodeKind'}($child_node);
         } finally {
             $this->context = $old_context;
-            $this->parent_node = $old_parent_node;
-            $this->depth = $old_depth;
+            \array_pop($this->parent_node_list);
         }
     }
 
@@ -1184,15 +1171,15 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $context = (new PostOrderAnalysisVisitor(
             $this->code_base,
             $context->withLineNumberStart($node->lineno ?? 0),
-            $this->parent_node
+            $this->parent_node_list
         ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
         // let any configured plugins analyze the node
-        ConfigPluginSet::instance()->analyzeNode(
+        ConfigPluginSet::instance()->postAnalyzeNode(
             $this->code_base,
             $context,
             $node,
-            $this->parent_node
+            $this->parent_node_list
         );
         return $context;
     }
@@ -1252,7 +1239,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         $context = $this->context;
         $class = $context->getClassInScope($this->code_base);
-        $is_static = ($this->parent_node->flags & \ast\flags\MODIFIER_STATIC) !== 0;
+        $is_static = (\end($this->parent_node_list)->flags & \ast\flags\MODIFIER_STATIC) !== 0;
         $property = $class->getPropertyByNameInContext($this->code_base, $prop_name, $context, $is_static);
 
         $context = $this->context->withScope(new PropertyScope(

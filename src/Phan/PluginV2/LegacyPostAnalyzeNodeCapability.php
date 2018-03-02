@@ -9,7 +9,7 @@ use ast\Node;
 /**
  * @deprecated - New plugins should use PostAnalyzeNodeCapability
  */
-interface LegacyAnalyzeNodeCapability
+interface LegacyPostAnalyzeNodeCapability
 {
     /**
      * Analyze the given node in the given context after
@@ -26,17 +26,17 @@ interface LegacyAnalyzeNodeCapability
      * @param Node $node
      * The php-ast Node being analyzed.
      *
-     * @param ?Node $parent_node
+     * @param array<int,Node> $parent_node_list
      * The parent node of the given node (if any exist).
      *
      * @return void
      *
      * @deprecated
      */
-    public function analyzeNode(
+    public function postAnalyzeNode(
         CodeBase $code_base,
         Context $context,
         Node $node,
-        Node $parent_node = null
+        array $parent_node_list = []
     );
 }

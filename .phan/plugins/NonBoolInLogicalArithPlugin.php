@@ -4,25 +4,25 @@
 use Phan\Language\Context;
 use Phan\Language\UnionType;
 use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeNodeCapability;
-use Phan\PluginV2\PluginAwareAnalysisVisitor;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use ast\Node;
 
-class NonBoolInLogicalArithPlugin extends PluginV2 implements AnalyzeNodeCapability
+class NonBoolInLogicalArithPlugin extends PluginV2 implements PostAnalyzeNodeCapability
 {
 
     /**
-     * @return string - name of PluginAwareAnalysisVisitor subclass
+     * @return string - name of PluginAwarePostAnalysisVisitor subclass
      *
      * @override
      */
-    public static function getAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName() : string
     {
         return NonBoolInLogicalArithVisitor::class;
     }
 }
 
-class NonBoolInLogicalArithVisitor extends PluginAwareAnalysisVisitor
+class NonBoolInLogicalArithVisitor extends PluginAwarePostAnalysisVisitor
 {
 
     /** define boolean operator list */

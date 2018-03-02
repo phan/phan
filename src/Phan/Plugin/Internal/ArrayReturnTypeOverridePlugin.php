@@ -129,7 +129,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
                                 $passed_array_element_types = $passed_array_type->genericArrayElementTypes();
                                 ArgumentType::analyzeParameter($code_base, $context, $filter_function, $passed_array_element_types, $context->getLineNumberStart(), 0);
                                 if (!Config::get_quick_mode()) {
-                                    $analyzer = new PostOrderAnalysisVisitor($code_base, $context, null);
+                                    $analyzer = new PostOrderAnalysisVisitor($code_base, $context, []);
                                     $analyzer->analyzeCallableWithArgumentTypes([$passed_array_element_types], $filter_function);
                                 }
                             }
@@ -243,7 +243,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
                     $argument_types[] = $get_argument_type_for_array_map($node, $i);
                 }
                 foreach ($function_like_list as $map_function) {
-                    $analyzer = new PostOrderAnalysisVisitor($code_base, $context, null);
+                    $analyzer = new PostOrderAnalysisVisitor($code_base, $context, []);
                     $analyzer->analyzeCallableWithArgumentTypes($argument_types, $map_function);
                 }
             }

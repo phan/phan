@@ -4,24 +4,24 @@
 use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
 use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeNodeCapability;
-use Phan\PluginV2\PluginAwareAnalysisVisitor;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use ast\Node;
 
-class NonBoolBranchPlugin extends PluginV2 implements AnalyzeNodeCapability
+class NonBoolBranchPlugin extends PluginV2 implements PostAnalyzeNodeCapability
 {
     /**
-     * @return string - name of PluginAwareAnalysisVisitor subclass
+     * @return string - name of PluginAwarePostAnalysisVisitor subclass
      *
      * @override
      */
-    public static function getAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName() : string
     {
         return NonBoolBranchVisitor::class;
     }
 }
 
-class NonBoolBranchVisitor extends PluginAwareAnalysisVisitor
+class NonBoolBranchVisitor extends PluginAwarePostAnalysisVisitor
 {
     // A plugin's visitors should not override visit() unless they need to.
 

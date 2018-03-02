@@ -10,15 +10,15 @@ use Phan\PluginV2\AnalyzeClassCapability;
 use Phan\PluginV2\AnalyzeFunctionCapability;
 use Phan\PluginV2\AnalyzeMethodCapability;
 use Phan\PluginV2\AnalyzePropertyCapability;
-use Phan\PluginV2\AnalyzeNodeCapability;
-use Phan\PluginV2\PluginAwareAnalysisVisitor;
+use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 use ast\Node;
 
 /**
  * This file demonstrates plugins for Phan.
  * This Plugin hooks into five events;
  *
- * - getAnalyzeNodeVisitorClassName
+ * - getPostAnalyzeNodeVisitorClassName
  *   This method returns a class that is called on every AST node from every
  *   file being analyzed
  *
@@ -57,14 +57,15 @@ class DemoPlugin extends PluginV2 implements
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
-    AnalyzeNodeCapability,
+    PostAnalyzeNodeCapability,
     AnalyzePropertyCapability
 {
 
     /**
      * @return string - The name of the visitor that will be called (formerly analyzeNode)
+     * @override
      */
-    public static function getAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName() : string
     {
         return DemoNodeVisitor::class;
     }
@@ -192,8 +193,13 @@ class DemoPlugin extends PluginV2 implements
  * Visitors such as this are useful for defining lots of different
  * checks on a node based on its kind.
  */
-class DemoNodeVisitor extends PluginAwareAnalysisVisitor
+class DemoNodeVisitor extends PluginAwarePostAnalysisVisitor
 {
+    // Subclasses should declare protected $parent_node_list as an instance property if they need to know the list.
+
+    // @var array<int,Node> - Set after the constructor is called if an instance property with this name is declared
+    // protected $parent_node_list;
+
     // A plugin's visitors should NOT implement visit(), unless they need to.
 
     /**
