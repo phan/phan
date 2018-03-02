@@ -21,6 +21,7 @@ use ast\Node;
  * of themselves.
  *
  * @deprecated - Use PluginV2 instead
+ * This class will eventually be removed in favor of PluginV2.
  */
 abstract class Plugin extends PluginV2 implements
     AnalyzeClassCapability,

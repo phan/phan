@@ -4,25 +4,25 @@
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
 use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeNodeCapability;
-use Phan\PluginV2\PluginAwareAnalysisVisitor;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use ast\Node;
 
-class InvalidVariableIssetPlugin extends PluginV2 implements AnalyzeNodeCapability
+class InvalidVariableIssetPlugin extends PluginV2 implements PostAnalyzeNodeCapability
 {
 
     /**
-     * @return string - name of PluginAwareAnalysisVisitor subclass
+     * @return string - name of PluginAwarePostAnalysisVisitor subclass
      *
      * @override
      */
-    public static function getAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName() : string
     {
         return InvalidVariableIssetVisitor::class;
     }
 }
 
-class InvalidVariableIssetVisitor extends PluginAwareAnalysisVisitor
+class InvalidVariableIssetVisitor extends PluginAwarePostAnalysisVisitor
 {
 
     /** define classes to parse */
@@ -50,9 +50,9 @@ class InvalidVariableIssetVisitor extends PluginAwareAnalysisVisitor
 
         // get variable name from argument
         while (!isset($variable->children['name'])) {
-            if (in_array($variable->kind, self::EXPRESSIONS)) {
+            if (in_array($variable->kind, self::EXPRESSIONS, true)) {
                 $variable = $variable->children['expr'];
-            } elseif (in_array($variable->kind, self::CLASSES)) {
+            } elseif (in_array($variable->kind, self::CLASSES, true)) {
                 $variable = $variable->children['class'];
             }
         }

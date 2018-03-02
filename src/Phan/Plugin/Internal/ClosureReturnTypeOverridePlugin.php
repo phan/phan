@@ -296,7 +296,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
         foreach ($arguments as $i => $argument) {
             $argument_types[] = $get_argument_type($argument, $i);
         }
-        $analyzer = new PostOrderAnalysisVisitor($code_base, $context, null);
+        $analyzer = new PostOrderAnalysisVisitor($code_base, $context, []);
         foreach ($function_like_list as $function_like) {
             $analyzer->analyzeCallableWithArgumentTypes($argument_types, $function_like);
         }

@@ -3,7 +3,7 @@ namespace Phan\PluginV2;
 
 /**
  * For plugins which define their own pre-order analysis behaviors in the analysis phase.
- * Called on a node before PluginAwareAnalysisVisitor implementations.
+ * Called on a node before PluginAwarePreAnalysisVisitor implementations.
  *
  * Public APIs for use by plugins:
  *

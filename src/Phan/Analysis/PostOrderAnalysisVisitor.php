@@ -29,9 +29,9 @@ use ast\flags;
 class PostOrderAnalysisVisitor extends AnalysisVisitor
 {
     /**
-     * @var Node|null
+     * @var array<int,Node>
      */
-    private $parent_node;
+    private $parent_node_list;
 
     /**
      * @param CodeBase $code_base
@@ -43,16 +43,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * The context of the parser at the node for which we'd
      * like to determine a type
      *
-     * @param Node|null $parent_node
-     * The parent node of the node being analyzed
+     * @param array<int,Node> $parent_node_list
+     * The parent node list of the node being analyzed
      */
     public function __construct(
         CodeBase $code_base,
         Context $context,
-        Node $parent_node = null
+        array $parent_node_list
     ) {
         parent::__construct($code_base, $context);
-        $this->parent_node = $parent_node;
+        $this->parent_node_list = $parent_node_list;
     }
 
     /**
@@ -408,7 +408,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitVar(Node $node) : Context
     {
         $this->analyzeNoOp($node, Issue::NoopVariable);
-        $parent_node = $this->parent_node;
+        $parent_node = \end($this->parent_node_list);
         if ($parent_node instanceof Node) {
             $parent_kind = $parent_node->kind;
             /**
@@ -491,7 +491,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitBinaryOp(Node $node) : Context
     {
-        if (($this->parent_node->kind ?? null) === \ast\AST_STMT_LIST) {
+        if ((\end($this->parent_node_list)->kind ?? null) === \ast\AST_STMT_LIST) {
             if (!\in_array($node->flags, [flags\BINARY_BOOL_AND, flags\BINARY_BOOL_OR, flags\BINARY_COALESCE])) {
                 $this->emitIssue(
                     Issue::NoopBinaryOperator,
@@ -522,7 +522,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitUnaryOp(Node $node) : Context
     {
         if ($node->flags !== flags\UNARY_SILENCE) {
-            if (($this->parent_node->kind ?? null) === \ast\AST_STMT_LIST) {
+            if ((\end($this->parent_node_list)->kind ?? null) === \ast\AST_STMT_LIST) {
                 $this->emitIssue(
                     Issue::NoopUnaryOperator,
                     $node->lineno,
@@ -1539,32 +1539,73 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitDim(Node $node) : Context
     {
-        $parent_node = $this->parent_node;
-        if (!\in_array($parent_node->kind, [\ast\AST_ASSIGN, \ast\AST_ASSIGN_REF], true) || $parent_node->children['var'] !== $node) {
-            // Check the array type to trigger TypeArraySuspicious
-            try {
-                /* $array_type = */
-                UnionTypeVisitor::unionTypeFromNode(
-                    $this->code_base,
-                    $this->context,
-                    $node,
-                    false
-                );
-                // TODO: check if array_type has array but not ArrayAccess.
-                // If that is true, then assert that $dim_type can cast to `int|string`
-            } catch (IssueException $exception) {
-                // Detect this elsewhere, e.g. want to detect PhanUndeclaredVariableDim but not PhanUndeclaredVariable
+        $code_base = $this->code_base;
+        $context = $this->context;
+        // Check the dimension type to trigger PhanUndeclaredVariable, etc.
+        /* $dim_type = */
+        UnionTypeVisitor::unionTypeFromNode(
+            $code_base,
+            $context,
+            $node->children['dim'],
+            true
+        );
+
+        $parent_node = \end($this->parent_node_list);
+        $parent_kind = $parent_node->kind;
+        if ($parent_kind === \ast\AST_DIM) {
+            if ($parent_node->children['expr'] === $node && $this->shouldSkipNestedDim()) {
+                // will analyze $x['key']['nextKey'] = expr in AssignmentVisitor, but analyze $x[$other['key']] = expr here.
+                return $context;
             }
-            // Check the dimension type to trigger PhanUndeclaredVariable, etc.
-            /* $dim_type = */
-            UnionTypeVisitor::unionTypeFromNode(
-                $this->code_base,
-                $this->context,
-                $node->children['dim'],
-                true
-            );
+        } elseif ($parent_kind === \ast\AST_ASSIGN || $parent_kind === \ast\AST_ASSIGN_REF) {
+            if ($parent_node->children['var'] === $node) {
+                // will analyze $x['key'] = expr in AssignmentVisitor
+                return $context;
+            }
         }
-        return $this->context;
+        // Check the array type to trigger TypeArraySuspicious
+        try {
+            /* $array_type = */
+            UnionTypeVisitor::unionTypeFromNode(
+                $code_base,
+                $context,
+                $node,
+                false
+            );
+            // TODO: check if array_type has array but not ArrayAccess.
+            // If that is true, then assert that $dim_type can cast to `int|string`
+        } catch (IssueException $exception) {
+            // Detect this elsewhere, e.g. want to detect PhanUndeclaredVariableDim but not PhanUndeclaredVariable
+        }
+        return $context;
+    }
+
+    /**
+     * @return bool true if the union type should skip analysis here.
+     * We skip checks for $x['key'] being valid in expressions such as `$x['key']['key2']['key3'] = 'value';`
+     * because those expressions will create $x['key'] as a side effect.
+     *
+     * Precondition: $parent_node->kind === \ast\AST_DIM && $parent_node->children['expr'] is $node
+     */
+    private function shouldSkipNestedDim() : bool {
+        $parent_node_list = $this->parent_node_list;
+        $cur_parent_node = \end($parent_node_list);
+        for ( ; ; $cur_parent_node = $prev_parent_node) {
+            $prev_parent_node = \prev($parent_node_list);
+            $kind = $prev_parent_node->kind;
+            if ($kind === \ast\AST_DIM) {
+                if ($prev_parent_node->children['expr'] !== $cur_parent_node) {
+                    return false;
+                }
+                continue;
+            } elseif ($kind === \ast\AST_ASSIGN || $kind === \ast\AST_ASSIGN_REF) {
+                if ($prev_parent_node->children['var'] === $cur_parent_node) {
+                    return true;
+                }
+                return false;
+            }
+            return false;
+        }
     }
 
     public function visitStaticProp(Node $node) : Context
@@ -2288,7 +2329,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function analyzeNoOp(Node $node, string $issue_type)
     {
-        if (($this->parent_node->kind ?? null) === \ast\AST_STMT_LIST) {
+        if ((\end($this->parent_node_list)->kind ?? null) === \ast\AST_STMT_LIST) {
             $this->emitIssue(
                 $issue_type,
                 $node->lineno

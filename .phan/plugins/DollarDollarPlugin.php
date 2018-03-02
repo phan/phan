@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
 use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeNodeCapability;
-use Phan\PluginV2\PluginAwareAnalysisVisitor;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use ast\Node;
 
 /**
@@ -12,7 +12,7 @@ use ast\Node;
  * This file demonstrates plugins for Phan. Plugins hook into various events.
  * DollarDollarPlugin hooks into one event:
  *
- * - getAnalyzeNodeVisitorClassName
+ * - getPostAnalyzeNodeVisitorClassName
  *   This method returns a visitor that is called on every AST node from every
  *   file being analyzed
  *
@@ -28,13 +28,13 @@ use ast\Node;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-class DollarDollarPlugin extends PluginV2 implements AnalyzeNodeCapability
+class DollarDollarPlugin extends PluginV2 implements PostAnalyzeNodeCapability
 {
 
     /**
-     * @return string - name of PluginAwareAnalysisVisitor subclass
+     * @return string - name of PluginAwarePostAnalysisVisitor subclass
      */
-    public static function getAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName() : string
     {
         return DollarDollarVisitor::class;
     }
@@ -47,7 +47,7 @@ class DollarDollarPlugin extends PluginV2 implements AnalyzeNodeCapability
  * Visitors such as this are useful for defining lots of different
  * checks on a node based on its kind.
  */
-class DollarDollarVisitor extends PluginAwareAnalysisVisitor
+class DollarDollarVisitor extends PluginAwarePostAnalysisVisitor
 {
 
     // A plugin's visitors should not override visit() unless they need to.

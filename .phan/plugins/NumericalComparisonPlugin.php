@@ -4,25 +4,25 @@
 use Phan\Language\Context;
 use Phan\Language\UnionType;
 use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeNodeCapability;
-use Phan\PluginV2\PluginAwareAnalysisVisitor;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use ast\Node;
 
-class NumericalComparisonPlugin extends PluginV2 implements AnalyzeNodeCapability
+class NumericalComparisonPlugin extends PluginV2 implements PostAnalyzeNodeCapability
 {
 
     /**
-     * @return string - name of PluginAwareAnalysisVisitor subclass
+     * @return string - name of PluginAwarePostAnalysisVisitor subclass
      *
      * @override
      */
-    public static function getAnalyzeNodeVisitorClassName() : string
+    public static function getPostAnalyzeNodeVisitorClassName() : string
     {
         return NumericalComparisonVisitor::class;
     }
 }
 
-class NumericalComparisonVisitor extends PluginAwareAnalysisVisitor
+class NumericalComparisonVisitor extends PluginAwarePostAnalysisVisitor
 {
     /** define equal operator list */
     const BINARY_EQUAL_OPERATORS = [

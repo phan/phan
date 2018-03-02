@@ -88,7 +88,8 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @return bool true if $method_name is defined by the subclass of PluginAwareAnalysisVisitor, and not by PluginAwareAnalysisVisitor or one of it's parents.
+     * @return bool true if $method_name is defined by the subclass of PluginAwareBaseAnalysisVisitor,
+     * and not by PluginAwareBaseAnalysisVisitor or one of its parents.
      */
     private static function isDefinedInSubclass(string $method_name) : bool
     {

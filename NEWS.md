@@ -3,8 +3,19 @@ Phan NEWS
 ?? Mar 2018, Phan 0.12.2 (dev)
 ------------------------
 
+Plugins
++ Add a new plugin capability `PostAnalyzeNodeCapability` (preferred) and `LegacyPostAnalyzeNodeCapability`.
+  These capabilities give plugins for post-order analysis access to a list of parent nodes,
+  instead of just the last parent node.
+  Plugin authors should use these instead of `AnalyzeNodeCapability` and `LegacyAnalyzeNodeCapability`.
+
+  (`parent_node_list` is set as an instance property on the visitor returned by PostAnalyzeNodeCapability
+  if the instance property was declared)
+
 Bug Fixes
 + Reduce false positives in `PhanTypeInvalidDimOffset`
++ Don't warn when adding new keys to an array when assigning multiple dimensions at once (#1518)
++ Reduce false positives when a property's type gets inferred as an array shape(#1520)
 
 28 Feb 2018, Phan 0.12.1
 ------------------------
