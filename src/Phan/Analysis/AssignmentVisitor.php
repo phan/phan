@@ -13,6 +13,7 @@ use Phan\Exception\NodeException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\Element\Clazz;
 use Phan\Language\Element\PassByReferenceVariable;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Property;
@@ -487,71 +488,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 );
                 return $this->context;
             }
-            // TODO: Iterate over individual types, don't look at the whole type at once?
-
-            // If we're assigning to an array element then we don't
-            // know what the constitutation of the parameter is
-            // outside of the scope of this assignment, so we add to
-            // its union type rather than replace it.
-            $property_union_type = $property->getUnionType();
-            if ($this->dim_depth > 0) {
-                if ($this->right_type->canCastToExpandedUnionType(
-                    $property_union_type,
-                    $this->code_base
-                )
-                ) {
-                    $this->addTypesToProperty($property, $node);
-                } elseif ($property_union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
-                    // Add any type if this is a subclass with array access.
-                    $this->addTypesToProperty($property, $node);
-                } else {
-                    $new_types = $this->typeCheckDimAssignment($property_union_type, $node);
-                    if ($new_types === $this->right_type || !$new_types->canCastToExpandedUnionType(
-                        $property_union_type,
-                        $this->code_base
-                    )) {
-                        $this->emitIssue(
-                            Issue::TypeMismatchProperty,
-                            $node->lineno ?? 0,
-                            (string)$new_types,
-                            "{$clazz->getFQSEN()}::{$property->getName()}",
-                            (string)$property_union_type
-                        );
-                    } else {
-                        $this->right_type = $new_types;
-                        $this->addTypesToProperty($property, $node);
-                    }
-                }
-                return $this->context;
-            } elseif ($clazz->isPHPInternal() && $clazz->getFQSEN() !== FullyQualifiedClassName::getStdClassFQSEN()) {
-                // We don't want to modify the types of internal classes such as \ast\Node even if they are compatible
-                // This would result in unpredictable results, and types which are more specific than they really are.
-                // stdClass is an exception to this, for issues such as https://github.com/phan/phan/pull/700
-                return $this->context;
-            } else {
-                if (!$this->right_type->canCastToExpandedUnionType(
-                    $property_union_type,
-                    $this->code_base
-                )
-                    && !($this->right_type->hasTypeInBoolFamily() && $property_union_type->hasTypeInBoolFamily())
-                    && !$clazz->getHasDynamicProperties($this->code_base)
-                ) {
-                    // TODO: optionally, change the message from "::" to "->"?
-                    $this->emitIssue(
-                        Issue::TypeMismatchProperty,
-                        $node->lineno ?? 0,
-                        (string)$this->right_type,
-                        "{$clazz->getFQSEN()}::{$property->getName()}",
-                        (string)$property_union_type
-                    );
-                    return $this->context;
-                }
-            }
-
-            // After having checked it, add this type to it
-            $this->addTypesToProperty($property, $node);
-
-            return $this->context;
+            return $this->analyzePropAssignment($clazz, $property, $node);
         }
 
         // Check if it is a built in class with dynamic properties but (possibly) no __set, such as SimpleXMLElement or stdClass or V8Js
@@ -585,6 +522,78 @@ class AssignmentVisitor extends AnalysisVisitor
     }
 
     /**
+     * This analyzes an assignment to an instance or static property.
+     */
+    private function analyzePropAssignment(Clazz $clazz, Property $property, Node $node) : Context
+    {
+        // TODO: Iterate over individual types, don't look at the whole type at once?
+
+        // If we're assigning to an array element then we don't
+        // know what the constitutation of the parameter is
+        // outside of the scope of this assignment, so we add to
+        // its union type rather than replace it.
+        $property_union_type = $property->getUnionType();
+        if ($this->dim_depth > 0) {
+            if ($this->right_type->canCastToExpandedUnionType(
+                $property_union_type,
+                $this->code_base
+            )) {
+                $this->addTypesToProperty($property, $node);
+            } elseif ($property_union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
+                // Add any type if this is a subclass with array access.
+                $this->addTypesToProperty($property, $node);
+            } else {
+                $new_types = $this->typeCheckDimAssignment($property_union_type, $node);
+                if (!$new_types->canCastToExpandedUnionType(
+                    $property_union_type,
+                    $this->code_base
+                )) {
+                    // TODO: Don't emit if array shape type is compatible with the original value of $property_union_type
+                    $this->emitIssue(
+                        Issue::TypeMismatchProperty,
+                        $node->lineno ?? 0,
+                        (string)$new_types,
+                        "{$clazz->getFQSEN()}::{$property->getName()}",
+                        (string)$property_union_type
+                    );
+                } else {
+                    $this->right_type = $new_types;
+                    $this->addTypesToProperty($property, $node);
+                }
+            }
+            return $this->context;
+        } elseif ($clazz->isPHPInternal() && $clazz->getFQSEN() !== FullyQualifiedClassName::getStdClassFQSEN()) {
+            // We don't want to modify the types of internal classes such as \ast\Node even if they are compatible
+            // This would result in unpredictable results, and types which are more specific than they really are.
+            // stdClass is an exception to this, for issues such as https://github.com/phan/phan/pull/700
+            return $this->context;
+        } else {
+            if (!$this->right_type->canCastToExpandedUnionType(
+                $property_union_type,
+                $this->code_base
+            )
+                && !($this->right_type->hasTypeInBoolFamily() && $property_union_type->hasTypeInBoolFamily())
+                && !$clazz->getHasDynamicProperties($this->code_base)
+            ) {
+                // TODO: optionally, change the message from "::" to "->"?
+                $this->emitIssue(
+                    Issue::TypeMismatchProperty,
+                    $node->lineno ?? 0,
+                    (string)$this->right_type,
+                    "{$clazz->getFQSEN()}::{$property->getName()}",
+                    (string)$property_union_type
+                );
+                return $this->context;
+            }
+        }
+
+        // After having checked it, add this type to it
+        $this->addTypesToProperty($property, $node);
+
+        return $this->context;
+    }
+
+    /**
      * @param Property $property - The property which should have types added to it
      *
      * @return void
@@ -593,7 +602,8 @@ class AssignmentVisitor extends AnalysisVisitor
     {
         $property_types = $property->getUnionType();
         if ($property_types->isEmpty()) {
-            $property->setUnionType($this->right_type);
+            // TODO: Be more precise?
+            $property->setUnionType($this->right_type->withFlattenedArrayShapeTypeInstances());
             return;
         }
         if ($this->dim_depth > 0) {
@@ -671,42 +681,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 return $this->context;
             }
 
-            if (!$this->right_type->canCastToExpandedUnionType(
-                $property->getUnionType(),
-                $this->code_base
-            )
-                && !($this->right_type->hasTypeInBoolFamily() && $property->getUnionType()->hasTypeInBoolFamily())
-            ) {
-                // Currently, same warning type for static and non-static property type mismatches.
-                $this->emitIssue(
-                    Issue::TypeMismatchProperty,
-                    $node->lineno ?? 0,
-                    (string)$this->right_type,
-                    "{$clazz->getFQSEN()}::{$property->getName()}",
-                    (string)$property->getUnionType()
-                );
-
-                return $this->context;
-            } else {
-                // If we're assigning to an array element then we don't
-                // know what the constitutation of the parameter is
-                // outside of the scope of this assignment, so we add to
-                // its union type rather than replace it.
-                if ($this->dim_depth > 0) {
-                    $right_type = $this->typeCheckDimAssignment($property->getUnionType(), $node);
-                    $property->setUnionType($property->getUnionType()->withUnionType(
-                        $right_type
-                    ));
-                    return $this->context;
-                }
-            }
-
-            // After having checked it, add this type to it
-            $property->setUnionType($property->getUnionType()->withUnionType(
-                $this->right_type
-            ));
-
-            return $this->context;
+            return $this->analyzePropAssignment($clazz, $property, $node);
         }
 
         if (!empty($class_list)) {
