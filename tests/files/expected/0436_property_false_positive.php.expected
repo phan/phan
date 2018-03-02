@@ -1,1 +1,1 @@
-%s:19 PhanTypeMismatchArgumentInternal Argument 1 (var) is string but \count() takes \Countable|array
+%s:21 PhanTypeMismatchArgumentInternal Argument 1 (var) is string but \count() takes \Countable|array
