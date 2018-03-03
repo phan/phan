@@ -35,9 +35,9 @@ else
   echo "Using cached extension."
 fi
 
-php -r 'function_exists("ast\parse_code") || exit("Failed to enable php-ast");'
-
 echo "extension=$EXPECTED_AST_FILE" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+
+php -r 'function_exists("ast\parse_code") || (print("Failed to enable php-ast\n") && exit(1));'
 
 # Disable xdebug, since we aren't currently gathering code coverage data and
 # having xdebug slows down Composer a bit.
