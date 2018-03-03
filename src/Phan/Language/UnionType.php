@@ -663,12 +663,14 @@ class UnionType implements \Serializable
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
     ) : UnionType {
-
+        $has_template = false;
         $concrete_type_list = [];
         foreach ($this->type_set as $type) {
+            // TODO: This should check GenericArray and ArrayShape as well!
             if ($type instanceof TemplateType
                 && isset($template_parameter_type_map[$type->getName()])
             ) {
+                $has_template = true;
                 $union_type =
                     $template_parameter_type_map[$type->getName()];
 
@@ -680,7 +682,7 @@ class UnionType implements \Serializable
             }
         }
 
-        return new UnionType($concrete_type_list);
+        return $has_template ? new UnionType($concrete_type_list) : $this;
     }
 
     /**
@@ -1790,14 +1792,16 @@ class UnionType implements \Serializable
      */
     public function elementTypesToGenericArray(int $key_type) : UnionType
     {
-        return new UnionType(
-            \array_map(function (Type $type) use ($key_type) : Type {
-                if ($type instanceof MixedType) {
-                    return ArrayType::instance(false);
-                }
-                return GenericArrayType::fromElementType($type, false, $key_type);
-            }, $this->type_set)
-        );
+        $parts = \array_map(function (Type $type) use ($key_type) : Type {
+            if ($type instanceof MixedType) {
+                return ArrayType::instance(false);
+            }
+            return GenericArrayType::fromElementType($type, false, $key_type);
+        }, $this->type_set);
+        if (\count($parts) <= 1) {
+            return \count($parts) === 1 ? \reset($parts)->asUnionType() : self::$empty_instance;
+        }
+        return new UnionType($parts);
     }
 
     /**
@@ -1810,7 +1814,11 @@ class UnionType implements \Serializable
      */
     public function asMappedUnionType(\Closure $closure) : UnionType
     {
-        return new UnionType(\array_map($closure, $this->type_set));
+        $parts = \array_map($closure, $this->type_set);
+        if (\count($parts) <= 1) {
+            return \count($parts) === 1 ? \reset($parts)->asUnionType() : self::$empty_instance;
+        }
+        return new UnionType($parts);
     }
 
     /**

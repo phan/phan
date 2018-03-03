@@ -893,4 +893,24 @@ final class EmptyUnionType extends UnionType
     {
         return $this;
     }
+
+    public function hasPossiblyObjectTypes() : bool
+    {
+        return false;
+    }
+
+    public function isExclusivelyBoolTypes() : bool
+    {
+        return false;
+    }
+
+    public function generateUniqueId() : string {
+        return '';
+    }
+
+    public function hasTopLevelNonArrayShapeTypeInstances() : bool
+    {
+        return false;
+    }
+
 }
