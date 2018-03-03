@@ -17,8 +17,10 @@ cache:
   directories:
     - $HOME/.composer/cache
 
+# We invoke php multiple times via CLI in several tests, so enable the opcache file cache.
 before_install:
   - ./tests/setup.sh
+  - mkdir /tmp/opcache || true; echo -e 'opcache.enable_cli=1\nopcache.file_cache=/tmp/opcache' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
   - composer validate
 
 # --classmap-authoritative shouldn't affect phan's behavior, but is faster.
