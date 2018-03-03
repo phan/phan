@@ -5,6 +5,7 @@ use Phan\AST\AnalysisVisitor;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
+use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use ast\Node;
 
@@ -108,13 +109,12 @@ abstract class ScopeVisitor extends AnalysisVisitor
             $prefix,
             $node->flags ?? 0
         );
-        foreach ($alias_target_map as $alias => $map) {
-            list($flags, $target) = $map;
+        foreach ($alias_target_map as $alias => list($flags, $target, $lineno)) {
             $context = $context->withNamespaceMap(
                 $flags,
                 $alias,
                 $target,
-                $node->lineno
+                $lineno
             );
         }
 
@@ -136,13 +136,12 @@ abstract class ScopeVisitor extends AnalysisVisitor
     {
         $context = $this->context;
 
-        foreach ($this->aliasTargetMapFromUseNode($node) as $alias => $map) {
-            list($flags, $target) = $map;
+        foreach ($this->aliasTargetMapFromUseNode($node) as $alias => list($flags, $target, $lineno)) {
             $context = $context->withNamespaceMap(
                 $node->flags ?: $flags,
                 $alias,
                 $target,
-                $node->lineno
+                $lineno
             );
         }
 
@@ -157,7 +156,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
      * An optional node flag specifying the type
      * of the use clause.
      *
-     * @return array
+     * @return array<string,array{0:int,1:FullyQualifiedGlobalStructuralElement,2:int}>
      * A map from alias to target
      */
     private function aliasTargetMapFromUseNode(
@@ -219,7 +218,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
                 continue;
             }
 
-            $map[$alias] = [$use_flag, $target];
+            $map[$alias] = [$use_flag, $target, $child_node->lineno];
         }
 
         return $map;
