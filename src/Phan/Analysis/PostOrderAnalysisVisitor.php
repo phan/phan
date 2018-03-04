@@ -1587,10 +1587,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * Precondition: $parent_node->kind === \ast\AST_DIM && $parent_node->children['expr'] is $node
      */
-    private function shouldSkipNestedDim() : bool {
+    private function shouldSkipNestedDim() : bool
+    {
         $parent_node_list = $this->parent_node_list;
         $cur_parent_node = \end($parent_node_list);
-        for ( ; ; $cur_parent_node = $prev_parent_node) {
+        for (;; $cur_parent_node = $prev_parent_node) {
             $prev_parent_node = \prev($parent_node_list);
             $kind = $prev_parent_node->kind;
             if ($kind === \ast\AST_DIM) {
@@ -1976,6 +1977,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
 
+        if (!$method->needsRecursiveAnalysis()) {
+            return;
+        }
+
         // Re-analyze the method with the types of the arguments
         // being passed in.
         $this->analyzeMethodWithArgumentTypes(
@@ -2004,6 +2009,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         array $argument_types,
         FunctionInterface $method
     ) {
+        if (!$method->needsRecursiveAnalysis()) {
+            return;
+        }
+
         // Don't re-analyze recursive methods. That doesn't go well.
         if ($this->context->isInFunctionLikeScope()
             && $method->getFQSEN() === $this->context->getFunctionLikeFQSEN()
@@ -2011,27 +2020,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
 
-        $original_parameter_list = $method->getParameterList();
-        if (\count($original_parameter_list) === 0) {
-            return;  // No point in recursing if there's no changed parameters.
-        }
-
         $original_method_scope = $method->getInternalScope();
         $method->setInternalScope(clone($original_method_scope));
-        // Even though we don't modify the parameter list, we still need to know the types
-        // -- as an optimization, we don't run quick mode again if the types didn't change?
         try {
-            $parameter_list = \array_map(function (Variable $parameter) : Variable {
+            // Even though we don't modify the parameter list, we still need to know the types
+            // -- as an optimization, we don't run quick mode again if the types didn't change?
+            $parameter_list = \array_map(function (Parameter $parameter) {
                 return clone($parameter);
-            }, $original_parameter_list);
+            }, $method->getParameterList());
 
             foreach ($parameter_list as $i => $parameter_clone) {
-                assert($parameter_clone instanceof Parameter);
-                // Add the parameter to the scope
-                $method->getInternalScope()->addVariable(
-                    $parameter_clone->asNonVariadic()
-                );
-
                 if (!isset($argument_types[$i]) && $parameter_clone->hasDefaultValue()) {
                     $parameter_type = $parameter_clone->getDefaultValueType();
                     if ($parameter_type->isType(NullType::instance(false))) {
@@ -2043,6 +2041,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $parameter_clone->setUnionType($parameter_type);
                     }
                 }
+
+                // Add the parameter to the scope
+                $method->getInternalScope()->addVariable(
+                    $parameter_clone->asNonVariadic()
+                );
 
                 // If there's no parameter at that offset, we may be in
                 // a ParamTooMany situation. That is caught elsewhere.
@@ -2090,6 +2093,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * @param FunctionInterface $method
      * The method or function being called
+     * Precondition: $method->needsRecursiveAnalysis() === false
      *
      * @return void
      *
@@ -2107,24 +2111,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
 
-        // Create a copy of the method's original scope so that we can reset it
-        // after re-analyzing it.
-        // Don't modify the parameter list - We use that to know when to emit PhanTypeMismatchArgument,
-        // so issues would be incorrectly emitted if it was temporarily modified.
-        $original_parameter_list = $method->getParameterList();
-
-        if (\count($original_parameter_list) === 0) {
-            return;  // No point in recursing if there's no changed parameters.
-        }
 
         $original_method_scope = $method->getInternalScope();
+        $method->setInternalScope(clone($original_method_scope));
+
         try {
-            $method->setInternalScope(clone($original_method_scope));
             // Even though we don't modify the parameter list, we still need to know the types
             // -- as an optimization, we don't run quick mode again if the types didn't change?
-            $parameter_list = \array_map(function (Variable $parameter) : Variable {
+            $parameter_list = \array_map(function (Parameter $parameter) : Parameter {
                 return $parameter->cloneAsNonVariadic();
-            }, $original_parameter_list);
+            }, $method->getParameterList());
 
             // always resolve all arguments outside of quick mode to detect undefined variables, other problems in call arguments.
             // Fixes https://github.com/phan/phan/issues/583
@@ -2144,10 +2140,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             foreach ($parameter_list as $i => $parameter_clone) {
                 assert($parameter_clone instanceof Parameter);
-                // Add the parameter to the scope
-                $method->getInternalScope()->addVariable(
-                    $parameter_clone
-                );
                 $argument = $argument_list_node->children[$i] ?? null;
 
                 if (!$argument
@@ -2163,6 +2155,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $parameter_clone->setUnionType($parameter_type);
                     }
                 }
+
+                // Add the parameter to the scope
+                $method->getInternalScope()->addVariable(
+                    $parameter_clone
+                );
 
                 // If there's no parameter at that offset, we may be in
                 // a ParamTooMany situation. That is caught elsewhere.

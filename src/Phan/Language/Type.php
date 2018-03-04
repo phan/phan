@@ -1963,6 +1963,15 @@ class Type
     }
 
     /**
+     * @internal - Used to check for quick mode
+     */
+    public function shouldBeReplacedBySpecificTypes()
+    {
+        // Could check for final classes such as stdClass here, but not much of a reason to.
+        return true;
+    }
+
+    /**
      * @return Type[]
      */
     public function withFlattenedArrayShapeTypeInstances() : array

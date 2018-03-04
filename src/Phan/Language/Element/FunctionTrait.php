@@ -81,6 +81,11 @@ trait FunctionTrait
     private $number_of_optional_real_parameters = 0;
 
     /**
+     * @var bool
+     */
+    private $needs_recursive_analysis = null;
+
+    /**
      * @var array<int,Parameter>
      * The list of parameters for this method
      * This will change while the method is being analyzed when the config quick_mode is false.
@@ -340,6 +345,34 @@ trait FunctionTrait
     }
 
     /**
+     * @return bool - Does any parameter type possibly require recursive analysis if more specific types are provided?
+     *
+     * If this returns true, there is at least one parameter and at least one of those can be overridden with a more specific type.
+     */
+    public function needsRecursiveAnalysis() : bool
+    {
+        return $this->needs_recursive_analysis ?? ($this->needs_recursive_analysis = $this->computeNeedsRecursiveAnalysis());
+    }
+
+    private function computeNeedsRecursiveAnalysis() : bool
+    {
+        if (!$this->getNode()) {
+            // E.g. this can be the case for magic methods, internal methods, stubs, etc.
+            return false;
+        }
+
+        foreach ($this->parameter_list as $parameter) {
+            if ($parameter->getNonVariadicUnionType()->shouldBeReplacedBySpecificTypes()) {
+                return true;
+            }
+            if ($parameter->isPassByReference() && $parameter->getReferenceType() !== Flags::IS_WRITE_REFERENCE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Gets the $ith parameter for the **caller**.
      * In the case of variadic arguments, an infinite number of parameters exist.
      * (The callee would see variadic arguments(T ...$args) as a single variable of type T[],
@@ -402,21 +435,24 @@ trait FunctionTrait
     /**
      * Called to generate a hash of a given parameter list, to avoid calling this on the same parameter list twice.
      *
+     * @param array<int,Parameter> $parameter_list
+     *
      * @return int 32-bit or 64-bit hash. Not likely to collide unless there are around 2^16 possible union types on 32-bit, or around 2^32 on 64-bit.
      *    (Collisions aren't a concern; The memory/runtime would probably be a bigger issue than collisions in non-quick mode.)
      */
     private static function computeParameterListHash(array $parameter_list) : int
     {
         // Choosing a small value to fit inside of a packed array.
-        if (count($parameter_list) === 0) {
+        if (\count($parameter_list) === 0) {
             return 0;
         }
         if (Config::get_quick_mode()) {
             return 0;
         }
-        $param_repr = \implode(',', \array_map(function (Variable $param) {
-            return (string)($param->getUnionType());
-        }, $parameter_list));
+        $param_repr = '';
+        foreach ($parameter_list as $param) {
+            $param_repr .= $param->getUnionType()->__toString() . ',';
+        }
         $raw_bytes = \md5($param_repr, true);
         return unpack(PHP_INT_SIZE === 8 ? 'q' : 'l', $raw_bytes)[1];
     }
@@ -761,7 +797,7 @@ trait FunctionTrait
      * As an optimization, this refrains from re-analyzing the method/function it has already been analyzed for those param types
      * (With an equal or larger remaining recursion depth)
      *
-     * @param array<int,Variable> $parameter_list
+     * @param array<int,Parameter> $parameter_list
      */
     public function analyzeWithNewParams(Context $context, CodeBase $code_base, array $parameter_list) : Context
     {

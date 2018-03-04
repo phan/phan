@@ -336,4 +336,11 @@ interface FunctionInterface extends AddressableElementInterface
      * @return void
      */
     public function cloneParameterList();
+
+    /**
+     * @return bool - Does any parameter type possibly require recursive analysis if more specific types are provided?
+     *
+     * If this returns true, there is at least one parameter and at least one of those can be overridden with a more specific type.
+     */
+    public function needsRecursiveAnalysis() : bool;
 }

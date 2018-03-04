@@ -2248,6 +2248,16 @@ class UnionType implements \Serializable
         }
         return $result->getUnionType();
     }
+
+    public function shouldBeReplacedBySpecificTypes() : bool
+    {
+        if ($this->isEmpty()) {
+            return true;
+        }
+        return $this->hasTypeMatchingCallback(function (Type $type) : bool {
+            return $type->shouldBeReplacedBySpecificTypes();
+        });
+    }
 }
 
 UnionType::init();
