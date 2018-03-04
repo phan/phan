@@ -1,3 +1,7 @@
+%s:4 PhanTypeInvalidDimOffsetArrayDestructuring Invalid offset 0 of array type array{key:int} in an array destructuring assignment
 %s:4 PhanTypeMismatchArrayDestructuringKey Attempting an array destructing assignment with a key of type int but the only key types of the right hand side are of type string
+%s:5 PhanTypeInvalidDimOffsetArrayDestructuring Invalid offset "key" of array type array{0:int} in an array destructuring assignment
 %s:5 PhanTypeMismatchArrayDestructuringKey Attempting an array destructing assignment with a key of type string but the only key types of the right hand side are of type int
+%s:6 PhanTypeInvalidDimOffsetArrayDestructuring Invalid offset 0 of array type array{key:int} in an array destructuring assignment
 %s:6 PhanTypeMismatchArrayDestructuringKey Attempting an array destructing assignment with a key of type int but the only key types of the right hand side are of type string
+%s:7 PhanTypeInvalidDimOffsetArrayDestructuring Invalid offset 2 of array type array{0:int} in an array destructuring assignment

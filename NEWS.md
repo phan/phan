@@ -3,6 +3,11 @@ Phan NEWS
 02 Mar 2018, Phan 0.12.2
 ------------------------
 
+New Features(Analysis)
+
++ Emit `PhanTypeInvalidDimOffsetArrayDestructuring` when an unknown offset value is used in an array destructuring assignment (#1534)
+  (E.g. `foreach ($expr as ['key' => $value])`, `list($k) = [2]`, etc.)
+
 Plugins
 + Add a new plugin capability `PostAnalyzeNodeCapability` (preferred) and `LegacyPostAnalyzeNodeCapability`.
   These capabilities give plugins for post-order analysis access to a list of parent nodes,

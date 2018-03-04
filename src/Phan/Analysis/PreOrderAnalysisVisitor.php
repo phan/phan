@@ -17,6 +17,8 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Scope\ClosureScope;
 use Phan\Language\Type;
+use Phan\Language\Type\GenericArrayType;
+use Phan\Language\UnionType;
 use ast\Node;
 
 class PreOrderAnalysisVisitor extends ScopeVisitor
@@ -533,53 +535,20 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             );
         }
 
-        // Filter out the non-generic types of the
-        // expression
-        $non_generic_expression_union_type =
-            $expression_union_type->genericArrayElementTypes();
-
         $value_node = $node->children['value'];
         if ($value_node->kind == \ast\AST_ARRAY) {
             if (Config::get_closest_target_php_version_id() < 70100) {
                 $this->analyzeArrayAssignBackwardsCompatibility($value_node);
             }
-            foreach ($value_node->children as $child_node) {
-                // $key_node = $child_node->children['key'] ?? null;
-                $value_elem_node = $child_node->children['value'] ?? null;
-
-                // for syntax like: foreach ([] as list(, $a));
-                if ($value_elem_node === null) {
-                    continue;
-                }
-                \assert($value_elem_node instanceof Node);
-
-                $variable = Variable::fromNodeInContext(
-                    $value_elem_node,
-                    $this->context,
-                    $this->code_base,
-                    false
-                );
-
-                // If we were able to figure out the type and its
-                // a generic type, then set its element types as
-                // the type of the variable
-                if (!$non_generic_expression_union_type->isEmpty()) {
-                    $second_order_non_generic_expression_union_type =
-                        $non_generic_expression_union_type->genericArrayElementTypes();
-
-                    if (!$second_order_non_generic_expression_union_type->isEmpty()) {
-                        $variable->setUnionType(
-                            $second_order_non_generic_expression_union_type
-                        );
-                    }
-                }
-
-                $this->context->addScopeVariable($variable);
-            }
+            $this->inferTypesForForeachArrayDestructuring($expression_union_type->genericArrayElementTypes(), $value_node);
 
         // Otherwise, read the value as regular variable and
         // add it to the scope
         } else {
+            // Filter out the non-generic types of the
+            // expression
+            $non_generic_expression_union_type =
+                $expression_union_type->genericArrayElementTypes();
             // Create a variable for the value
             $variable = Variable::fromNodeInContext(
                 $value_node,
@@ -648,6 +617,223 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     $array_elem->lineno ?? 0
                 );
                 break;
+            }
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function inferTypesForForeachArrayDestructuring(
+        UnionType $element_union_type,
+        Node $value_node
+    ) {
+        if ($element_union_type->hasTopLevelArrayShapeTypeInstances()) {
+            $this->inferTypesForShapedForeachArrayDestructuring($element_union_type, $value_node);
+        } else {
+            $this->inferTypesForGenericForeachArrayDestructuring($element_union_type, $value_node);
+        }
+    }
+
+    /**
+     * @param UnionType $element_union_type (The T[]|S[] types from the expression of the foreach)
+     * @param Node $value_node a node of type ast\AST_ARRAY that is in the foreach's `as` value
+     * @return void
+     */
+    private function inferTypesForShapedForeachArrayDestructuring(
+        UnionType $element_union_type,
+        Node $value_node
+    ) {
+        $key_set = [];
+
+        $expect_int_keys_lineno = false;
+        $expect_string_keys_lineno = false;
+
+        $fallback_second_order_element_type = null;
+        $get_fallback_second_order_element_type = function() use (&$fallback_second_order_element_type, $element_union_type) : UnionType {
+            return $fallback_second_order_element_type ?? ($fallback_second_order_element_type = $element_union_type->genericArrayElementTypes());
+        };
+        foreach ($value_node->children as $child_node) {
+
+            // $key_node = $child_node->children['key'] ?? null;
+            $value_elem_node = $child_node->children['value'] ?? null;
+
+            // for syntax like: foreach ([] as list(, $a));
+            if ($value_elem_node === null) {
+                continue;
+            }
+            \assert($value_elem_node instanceof Node);
+
+            // Get the key and value nodes for each
+            // array element we're assigning to
+            // TODO: Check key types are valid?
+            $key_node = $child_node->children['key'];
+            $key_value = null;
+
+            if ($key_node === null) {
+                $key_set[] = true;
+                \end($key_set);
+                $key_value = \key($key_set);
+
+                $expect_int_keys_lineno = $child_node->lineno;  // list($x, $y) = ... is equivalent to list(0 => $x, 1 => $y) = ...
+            } else {
+                if ($key_node instanceof Node) {
+                    $key_value = (new ContextNode($this->code_base, $this->context, $key_node))->getEquivalentPHPScalarValue();
+                } else {
+                    $key_value = $key_node;
+                }
+                if (\is_scalar($key_value)) {
+                    $key_set[$key_value] = true;
+                    if (\is_int($key_value)) {
+                        $expect_int_keys_lineno = $child_node->lineno;
+                    } elseif (\is_string($key_value)) {
+                        $expect_string_keys_lineno = $child_node->lineno;
+                    }
+                } else {
+                    $key_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key_node);
+                    $key_type_enum = GenericArrayType::keyTypeFromUnionTypeValues($key_type);
+                    // TODO: Warn about types that can't cast to int|string
+                    if ($key_type_enum === GenericArrayType::KEY_INT) {
+                        $expect_int_keys_lineno = $child_node->lineno;
+                    } elseif ($key_type_enum === GenericArrayType::KEY_STRING) {
+                        $expect_string_keys_lineno = $child_node->lineno;
+                    }
+                }
+            }
+
+            $variable = Variable::fromNodeInContext(
+                $value_elem_node,
+                $this->context,
+                $this->code_base,
+                false
+            );
+
+            if (\is_scalar($key_value)) {
+                $second_order_non_generic_expression_union_type = UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($element_union_type, $key_value);
+                if ($second_order_non_generic_expression_union_type === null) {
+                    $second_order_non_generic_expression_union_type = $get_fallback_second_order_element_type();
+                } elseif ($second_order_non_generic_expression_union_type === false) {
+                    $this->emitIssue(
+                        Issue::TypeInvalidDimOffsetArrayDestructuring,
+                        $child_node->lineno,
+                        json_encode($key_value),
+                        (string)$element_union_type
+                    );
+                    $second_order_non_generic_expression_union_type = $get_fallback_second_order_element_type();
+                }
+            } else {
+                $second_order_non_generic_expression_union_type = $get_fallback_second_order_element_type();
+            }
+
+            // If we were able to figure out the type and its
+            // a generic type, then set its element types as
+            // the type of the variable
+            $variable->setUnionType(
+                $second_order_non_generic_expression_union_type
+            );
+
+            $this->context->addScopeVariable($variable);
+        }
+
+        $this->checkMismatchForeachArrayDestructuringKey($expect_int_keys_lineno, $expect_string_keys_lineno, $element_union_type);
+    }
+
+    /**
+     * @param UnionType $element_union_type (The T[]|S[] types from the expression of the foreach)
+     * @param Node $value_node a node of type ast\AST_ARRAY that is in the foreach's `as` value
+     * @return void
+     */
+    private function inferTypesForGenericForeachArrayDestructuring(
+        UnionType $element_union_type,
+        Node $value_node
+    ) {
+        $scalar_array_key_cast = Config::getValue('scalar_array_key_cast');
+        $expect_string_keys_lineno = false;
+        $expect_int_keys_lineno = false;
+
+        foreach ($value_node->children as $child_node) {
+
+            $value_elem_node = $child_node->children['value'] ?? null;
+
+            // for syntax like: foreach ([] as list(, $a));
+            if ($value_elem_node === null) {
+                continue;
+            }
+            \assert($value_elem_node instanceof Node);
+
+            $key_node = $child_node->children['key'];
+            if (!$scalar_array_key_cast) {
+                if ($key_node === null) {
+                    $expect_int_keys_lineno = $child_node->lineno;  // list($x, $y) = ... is equivalent to list(0 => $x, 1 => $y) = ...
+                } else {
+                    $key_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key_node);
+                    $key_type_enum = GenericArrayType::keyTypeFromUnionTypeValues($key_type);
+                    // TODO: Warn about types that can't cast to int|string
+                    if ($key_type_enum === GenericArrayType::KEY_INT) {
+                        $expect_int_keys_lineno = $child_node->lineno;
+                    } elseif ($key_type_enum === GenericArrayType::KEY_STRING) {
+                        $expect_string_keys_lineno = $child_node->lineno;
+                    }
+                }
+            }
+
+            $variable = Variable::fromNodeInContext(
+                $value_elem_node,
+                $this->context,
+                $this->code_base,
+                false
+            );
+
+            // If we were able to figure out the type and its
+            // a generic type, then set its element types as
+            // the type of the variable
+            if (!$element_union_type->isEmpty()) {
+                $second_order_non_generic_expression_union_type =
+                    $element_union_type->genericArrayElementTypes();
+
+                if (!$second_order_non_generic_expression_union_type->isEmpty()) {
+                    $variable->setUnionType(
+                        $second_order_non_generic_expression_union_type
+                    );
+                }
+            }
+
+            $this->context->addScopeVariable($variable);
+        }
+        // TODO: Issue::TypeMismatchArrayDestructuringKey,
+
+        $this->checkMismatchForeachArrayDestructuringKey($expect_int_keys_lineno, $expect_string_keys_lineno, $element_union_type);
+    }
+
+    /**
+     * TODO: Deduplicate these checks in a trait
+     * @param int|false $expect_int_keys_lineno
+     * @param int|false $expect_string_keys_lineno
+     * @param UnionType $element_union_type
+     * @return void
+     */
+    private function checkMismatchForeachArrayDestructuringKey($expect_int_keys_lineno, $expect_string_keys_lineno, UnionType $element_union_type)
+    {
+        if ($expect_int_keys_lineno !== false || $expect_string_keys_lineno !== false) {
+            $right_hand_key_type = GenericArrayType::keyTypeFromUnionTypeKeys($element_union_type);
+            if ($expect_int_keys_lineno !== false && ($right_hand_key_type & GenericArrayType::KEY_INT) === 0) {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    Issue::TypeMismatchArrayDestructuringKey,
+                    $expect_int_keys_lineno,
+                    'int',
+                    'string'
+                );
+            } elseif ($expect_string_keys_lineno !== false && ($right_hand_key_type & GenericArrayType::KEY_STRING) === 0) {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    Issue::TypeMismatchArrayDestructuringKey,
+                    $expect_string_keys_lineno,
+                    'string',
+                    'int'
+                );
             }
         }
     }

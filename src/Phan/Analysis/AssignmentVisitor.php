@@ -207,6 +207,162 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     public function visitArray(Node $node) : Context
     {
+        if ($this->right_type->hasTopLevelArrayShapeTypeInstances()) {
+            $this->analyzeShapedArrayAssignment($node);
+        } else {
+            // common case
+            $this->analyzeGenericArrayAssignment($node);
+        }
+        return $this->context;
+    }
+
+    /**
+     * Analyzes code such as list($a) = [1, 2, 3];
+     * @return void
+     * @see $this->visitArray
+     * @suppress PhanTypeMismatchDimAssignment deliberate for $key_set
+     */
+    private function analyzeShapedArrayAssignment(Node $node)
+    {
+        // Figure out the type of elements in the list
+        $fallback_element_type = null;
+        $get_fallback_element_type = function() use (&$fallback_element_type) : UnionType {
+            return $fallback_element_type ?? ($fallback_element_type = $this->right_type->genericArrayElementTypes());
+        };
+
+        $expect_string_keys_lineno = false;
+        $expect_int_keys_lineno = false;
+
+        $key_set = [];
+
+        foreach ($node->children ?? [] as $child_node) {
+            // Some times folks like to pass a null to
+            // a list to throw the element away. I'm not
+            // here to judge.
+            if (!($child_node instanceof Node)) {
+                // Track the element that was thrown away.
+                $key_set[] = true;
+                continue;
+            }
+
+            // Get the key and value nodes for each
+            // array element we're assigning to
+            // TODO: Check key types are valid?
+            $key_node = $child_node->children['key'];
+            $key_value = null;
+
+            if ($key_node === null) {
+                $key_set[] = true;
+                \end($key_set);
+                $key_value = \key($key_set);
+
+                $expect_int_keys_lineno = $child_node->lineno;  // list($x, $y) = ... is equivalent to list(0 => $x, 1 => $y) = ...
+            } else {
+                if ($key_node instanceof Node) {
+                    $key_value = (new ContextNode($this->code_base, $this->context, $key_node))->getEquivalentPHPScalarValue();
+                } else {
+                    $key_value = $key_node;
+                }
+                if (\is_scalar($key_value)) {
+                    $key_set[$key_value] = true;
+                    if (\is_int($key_value)) {
+                        $expect_int_keys_lineno = $child_node->lineno;
+                    } elseif (\is_string($key_value)) {
+                        $expect_string_keys_lineno = $child_node->lineno;
+                    }
+                } else {
+                    $key_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key_node);
+                    $key_type_enum = GenericArrayType::keyTypeFromUnionTypeValues($key_type);
+                    // TODO: Warn about types that can't cast to int|string
+                    if ($key_type_enum === GenericArrayType::KEY_INT) {
+                        $expect_int_keys_lineno = $child_node->lineno;
+                    } elseif ($key_type_enum === GenericArrayType::KEY_STRING) {
+                        $expect_string_keys_lineno = $child_node->lineno;
+                    }
+                }
+            }
+
+            if (\is_scalar($key_value)) {
+                $element_type = UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($this->right_type, $key_value);
+                if ($element_type === null) {
+                    $element_type = $get_fallback_element_type();
+                } elseif ($element_type === false) {
+                    $this->emitIssue(
+                        Issue::TypeInvalidDimOffsetArrayDestructuring,
+                        $child_node->lineno,
+                        json_encode($key_value),
+                        (string)$this->right_type
+                    );
+                    $element_type = $get_fallback_element_type();
+                }
+            } else {
+                $element_type = $get_fallback_element_type();
+            }
+
+
+            $value_node = $child_node->children['value'];
+
+            if ($value_node->kind == \ast\AST_VAR) {
+                $variable = Variable::fromNodeInContext(
+                    $value_node,
+                    $this->context,
+                    $this->code_base,
+                    false
+                );
+
+                // Set the element type on each element of
+                // the list
+                $variable->setUnionType($element_type);
+
+                // Note that we're not creating a new scope, just
+                // adding variables to the existing scope
+                $this->context->addScopeVariable($variable);
+            } elseif ($value_node->kind == \ast\AST_PROP) {
+                try {
+                    $property = (new ContextNode(
+                        $this->code_base,
+                        $this->context,
+                        $value_node
+                    ))->getProperty($value_node->children['prop'], false);
+
+                    // Set the element type on each element of
+                    // the list
+                    $property->setUnionType($element_type);
+                } catch (UnanalyzableException $exception) {
+                    // Ignore it. There's nothing we can do.
+                } catch (NodeException $exception) {
+                    // Ignore it. There's nothing we can do.
+                } catch (IssueException $exception) {
+                    Issue::maybeEmitInstance(
+                        $this->code_base,
+                        $this->context,
+                        $exception->getIssueInstance()
+                    );
+                    continue;
+                }
+            } else {
+                $this->context = (new AssignmentVisitor(
+                    $this->code_base,
+                    $this->context,
+                    $node,
+                    $element_type,
+                    0
+                ))->__invoke($value_node);
+            }
+        }
+
+        if (!Config::getValue('scalar_array_key_cast')) {
+            $this->checkMismatchArrayDestructuringKey($expect_int_keys_lineno, $expect_string_keys_lineno);
+        }
+    }
+
+    /**
+     * Analyzes code such as list($a) = function_returning_array();
+     * @return void
+     * @see $this->visitArray
+     */
+    private function analyzeGenericArrayAssignment(Node $node)
+    {
         // Figure out the type of elements in the list
         $element_type =
             $this->right_type->genericArrayElementTypes();
@@ -294,6 +450,16 @@ class AssignmentVisitor extends AnalysisVisitor
             }
         }
 
+        $this->checkMismatchArrayDestructuringKey($expect_int_keys_lineno, $expect_string_keys_lineno);
+    }
+
+    /**
+     * @param int|false $expect_int_keys_lineno
+     * @param int|false $expect_string_keys_lineno
+     * @return void
+     */
+    private function checkMismatchArrayDestructuringKey($expect_int_keys_lineno, $expect_string_keys_lineno)
+    {
         if ($expect_int_keys_lineno !== false || $expect_string_keys_lineno !== false) {
             $right_hand_key_type = GenericArrayType::keyTypeFromUnionTypeKeys($this->right_type);
             if ($expect_int_keys_lineno !== false && ($right_hand_key_type & GenericArrayType::KEY_INT) === 0) {
@@ -316,8 +482,6 @@ class AssignmentVisitor extends AnalysisVisitor
                 );
             }
         }
-
-        return $this->context;
     }
 
     /**

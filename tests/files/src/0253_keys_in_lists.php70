@@ -1,11 +1,12 @@
 <?php
-function f253_1(bool $p1) : void {}
+error_reporting(E_ALL);
+function f253_1(bool $p1) {}
 
-// Unfortunately, we only see $v1 as a mixed array
-// and as such, can't map individual keys to the
+// we see $v1 as a nested array shape,
+// so we can map individual keys to the
 // types at those offsets. The types for `$v2`,
 // `$v3`, `$v4`, `$v5`, `$v6`, `$v7`, `$v8`,
-// and `$v9` will be unknown.
+// and `$v9` will be known.
 $v1 = [
     [1, 'string'],
     [2, 'string2'],
@@ -13,4 +14,25 @@ $v1 = [
 foreach ($v1 as list($a, $b)) {
     f253_1($a);
     f253_1($b);
+}
+foreach ($v1 as list($a, $b, $c)) {
+    var_export($c);
+}
+
+$v2 = [
+    [42 => 1, 'k2' => 'string'],
+    [42 => 2, 'k2' => 'string2'],
+];
+
+foreach ($v2 as list($x)) {
+    var_export($x);
+}
+
+$v3 = [
+    ['x' => 'string'],
+    ['x' => 'string2'],
+];
+
+foreach ($v3 as list($x)) {
+    var_export($x);
 }
