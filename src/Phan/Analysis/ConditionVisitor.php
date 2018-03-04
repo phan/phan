@@ -492,6 +492,9 @@ class ConditionVisitor extends KindVisitorImplementation
             // If we already have possible scalar types, then keep those
             // (E.g. T|false becomes bool, T becomes int|float|bool|string|null)
             $newType = $variable->getUnionType()->scalarTypes();
+            if ($newType->containsNullable()) {
+                $newType = $newType->nonNullableClone();
+            }
             if ($newType->isEmpty()) {
                 // If there are no inferred types, or the only type we saw was 'null',
                 // assume there this can be any possible scalar.

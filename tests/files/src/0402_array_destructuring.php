@@ -4,3 +4,4 @@
 [$c] = ['key' => 42];  // should warn
 ['key' => $d] = [42];  // should warn
 [0 => $e] = ['key' => 42];  // should warn
+[,,$b] = [42];

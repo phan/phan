@@ -1259,20 +1259,45 @@ class UnionTypeVisitor extends AnalysisVisitor
             return null;
         }
 
+        $resulting_element_type = self::resolveArrayShapeElementTypesForOffset($union_type, $dim_value);
+
+        if ($resulting_element_type === null) {
+            return null;
+        }
+        if ($resulting_element_type === false) {
+            $this->emitIssue(
+                Issue::TypeInvalidDimOffset,
+                $dim_node->lineno ?? $node->lineno ?? 0,
+                json_encode($dim_value),
+                (string)$union_type
+            );
+            return null;
+        }
+        return $resulting_element_type;
+    }
+
+    /**
+     * @param UnionType $union_type
+     * @param int|string|float|bool $dim_value a scalar dimension. TODO: Warn about null?
+     * @return ?UnionType|?false
+     *  returns false if there the offset was invalid and there are no ways to get that offset
+     *  returns null if the dim_value offset could not be found, but there were other generic array types
+     */
+    public static function resolveArrayShapeElementTypesForOffset(UnionType $union_type, $dim_value) {
         $has_non_array_shape_type = false;
         $resulting_element_type = null;
         foreach ($union_type->getTypeSet() as $type) {
             if (!($type instanceof ArrayShapeType)) {
                 $has_non_array_shape_type = true;
                 if ($type instanceof StringType) {
-                    if (\is_int($dim_node)) {
+                    if (\is_int($dim_value)) {
                         // in php, indices of strings can be negative
                         if ($resulting_element_type !== null) {
                             $resulting_element_type = $resulting_element_type->withType(StringType::instance(false));
                         } else {
                             $resulting_element_type = StringType::instance(false)->asUnionType();
                         }
-                    } // TODO: Warn about string indices? But nega
+                    } // TODO: Warn about string indices?
                 }
                 continue;
             }
@@ -1289,12 +1314,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         if ($resulting_element_type === null) {
             if (!$has_non_array_shape_type) {
-                $this->emitIssue(
-                    Issue::TypeInvalidDimOffset,
-                    $dim_node->lineno ?? $node->lineno ?? 0,
-                    json_encode($dim_value),
-                    (string)$union_type
-                );
+                return false;
             }
             return null;
         }

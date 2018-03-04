@@ -64,6 +64,7 @@ class Issue
     const TypeInvalidRightOperand   = 'PhanTypeInvalidRightOperand';
     const TypeInvalidInstanceof     = 'PhanTypeInvalidInstanceof';
     const TypeInvalidDimOffset      = 'PhanTypeInvalidDimOffset';
+    const TypeInvalidDimOffsetArrayDestructuring = 'PhanTypeInvalidDimOffsetArrayDestructuring';
     const TypeMagicVoidWithReturn   = 'PhanTypeMagicVoidWithReturn';
     const TypeMismatchArgument      = 'PhanTypeMismatchArgument';
     const TypeMismatchArgumentInternal = 'PhanTypeMismatchArgumentInternal';
@@ -1105,6 +1106,14 @@ class Issue
                 "Invalid offset {SCALAR} of array type {TYPE}",
                 self::REMEDIATION_B,
                 10046
+            ),
+            new Issue(
+                self::TypeInvalidDimOffsetArrayDestructuring,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Invalid offset {SCALAR} of array type {TYPE} in an array destructuring assignment",
+                self::REMEDIATION_B,
+                10047
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

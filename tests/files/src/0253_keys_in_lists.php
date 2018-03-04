@@ -1,11 +1,11 @@
 <?php
 function f253_1(bool $p1) : void {}
 
-// Unfortunately, we only see $v1 as a mixed array
-// and as such, can't map individual keys to the
+// we see $v1 as a nested array shape,
+// so we can map individual keys to the
 // types at those offsets. The types for `$v2`,
 // `$v3`, `$v4`, `$v5`, `$v6`, `$v7`, `$v8`,
-// and `$v9` will be unknown.
+// and `$v9` will be known.
 $v1 = [
     ['k1' => 1, 'k2' => 'string'],
     ['k1' => 2, 'k2' => 'string'],
@@ -30,11 +30,19 @@ f253_1($v12);
 f253_1($v13);
 f253_1($v14);
 
-// Unfortunately, we only see $v15 as a mixed array
-// and as such, can't map individual keys to the
+// We see $v15 as an array shape
+// and can map individual keys to the
 // types at those offsets. The types for `$v16` and
-// `$v17` will be unknown.
+// `$v17` will be known.
 $v15 = ['k1' => 'string', 'k2' => false];
 ['k1' => $v16, 'k2' => $v17] = $v15;
-f253_1($v16);
+f253_1($v16);  // should warn
 f253_1($v17);
+
+foreach ($v1 as [1 => $v18]) {
+    var_export($v18);
+}
+
+foreach ($v1 as ['kMissing' => $v19]) {
+    var_export($v18);
+}
