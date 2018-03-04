@@ -474,4 +474,12 @@ final class GenericArrayType extends ArrayType
     {
         return GenericArrayType::fromElementType($this, false, $key_type);
     }
+
+    /**
+     * @override
+     */
+    public function shouldBeReplacedBySpecificTypes() : bool
+    {
+        return false;
+    }
 }

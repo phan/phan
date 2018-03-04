@@ -26,7 +26,8 @@ use TypeError;
 class EmptyUnionTypeTest extends BaseTest
 {
 
-    public function testMethods() {
+    public function testMethods()
+    {
         $this->assertTrue(class_exists(UnionType::class));  // Force the autoloader to load UnionType before attempting to load EmptyUnionType
         $failures = '';
         foreach ((new ReflectionClass(EmptyUnionType::class))->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
@@ -46,7 +47,8 @@ class EmptyUnionTypeTest extends BaseTest
         $this->assertSame('', $failures);
     }
 
-    public function checkHasSameImplementationForEmpty(ReflectionMethod $method) {
+    public function checkHasSameImplementationForEmpty(ReflectionMethod $method)
+    {
         $method_name = $method->getName();
         if (!method_exists(UnionType::class, $method_name)) {
             return '';
@@ -80,7 +82,8 @@ class EmptyUnionTypeTest extends BaseTest
      *
      * @return array<int,array>
      */
-    public function generateArgLists(ReflectionMethod $method) : array {
+    public function generateArgLists(ReflectionMethod $method) : array
+    {
         $list_of_arg_list = [[]];
 
         foreach ($method->getParameters() as $param) {
@@ -105,7 +108,8 @@ class EmptyUnionTypeTest extends BaseTest
         return $list_of_arg_list;
     }
 
-    public function getPossibleArgValues(ReflectionParameter $param) : array {
+    public function getPossibleArgValues(ReflectionParameter $param) : array
+    {
         $type = $param->getType();
         $type_name = (string)$type;
         switch ($type_name) {
@@ -142,11 +146,14 @@ class EmptyUnionTypeTest extends BaseTest
                 ];
             case Closure::class:
                 return [
-                    function(...$args) { return false; },
-                    function(...$args) { return true; },
+                    function (...$args) {
+                        return false;
+                    },
+                    function (...$args) {
+                        return true;
+                    },
                 ];
         }
         throw new TypeError("Unable to handle param {$type_name} \${$param->getName()}");
     }
-
 }

@@ -876,7 +876,7 @@ class AssignmentVisitor extends AnalysisVisitor
                         return StringType::instance(false)->asUnionType();
                     }
                 }
-            } else if (!$assign_type->hasType($mixed_type)) {
+            } elseif (!$assign_type->hasType($mixed_type)) {
                 // Imitate the check in UnionTypeVisitor, don't warn for mixed, etc.
                 $this->emitIssue(
                     Issue::TypeArraySuspicious,

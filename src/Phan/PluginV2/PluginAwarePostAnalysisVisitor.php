@@ -2,6 +2,7 @@
 namespace Phan\PluginV2;
 
 use Phan\Issue;
+
 // use ast\Node;
 
 /**

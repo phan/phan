@@ -904,7 +904,8 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
-    public function generateUniqueId() : string {
+    public function generateUniqueId() : string
+    {
         return '';
     }
 
@@ -913,4 +914,8 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
+    public function shouldBeReplacedBySpecificTypes() : bool
+    {
+        return true;
+    }
 }

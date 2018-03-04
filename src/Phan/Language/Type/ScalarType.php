@@ -108,5 +108,13 @@ abstract class ScalarType extends NativeType
         // Subclasses of ScalarType all have false values within their types.
         return $this;
     }
+
+    /**
+     * @override
+     */
+    public function shouldBeReplacedBySpecificTypes() : bool
+    {
+        return false;
+    }
 }
 \class_exists(IntType::class);

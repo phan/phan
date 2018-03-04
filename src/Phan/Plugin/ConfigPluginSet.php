@@ -545,7 +545,7 @@ final class ConfigPluginSet extends PluginV2 implements
                     }
                 }
                 $closure = (new \ReflectionMethod($plugin, 'analyzeNode'))->getClosure($plugin);
-                $closures_for_kind->recordForAllKinds(function(CodeBase $code_base, Context $context, Node $node, array $parent_node_list) use ($closure) {
+                $closures_for_kind->recordForAllKinds(function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list) use ($closure) {
                     $closure($code_base, $context, $node, \end($parent_node_list) ?: null);
                 });
             } elseif ($plugin instanceof LegacyPostAnalyzeNodeCapability) {

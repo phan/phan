@@ -330,4 +330,12 @@ final class ArrayShapeType extends ArrayType
     {
         return self::fromFieldTypes($left->field_types + $right->field_types, false);
     }
+
+    /**
+     * @override
+     */
+    public function shouldBeReplacedBySpecificTypes() : bool
+    {
+        return false;
+    }
 }

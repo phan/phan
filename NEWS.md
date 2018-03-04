@@ -12,6 +12,9 @@ Plugins
   (`parent_node_list` is set as an instance property on the visitor returned by PostAnalyzeNodeCapability
   if the instance property was declared)
 
+Maintenance:
++ Speed up analysis when quick mode isn't used.
+
 Bug Fixes
 + Reduce false positives in `PhanTypeInvalidDimOffset`
 + Don't warn when adding new keys to an array when assigning multiple dimensions at once (#1518)
