@@ -91,6 +91,9 @@ final class TolerantASTConverter
     // (For debugging, may be removed in the future)
     const ENV_AST_THROW_INVALID = 'AST_THROW_INVALID';
 
+    /**
+     * @var int - A version in SUPPORTED_AST_VERSIONS
+     */
     private static $php_version_id_parsing = PHP_VERSION_ID;
 
     /**
@@ -2548,7 +2551,6 @@ final class TolerantASTConverter
             'const' => $name,
         ], $start_line);
     }
-
 
     /**
      * @return string

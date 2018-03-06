@@ -903,10 +903,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 $class->addReference($this->context);
             }
         } catch (CodeBaseException $exception) {
-            $this->emitIssue(
+            Issue::maybeEmitWithParameters(
+                $this->code_base,
+                $this->context,
                 Issue::UndeclaredClassCatch,
                 $node->lineno ?? 0,
-                (string)$exception->getFQSEN()
+                [(string)$exception->getFQSEN()],
+                Issue::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception->getFQSEN())
             );
 
             $union_type = $union_type->withType(Type::fromFullyQualifiedString('\Throwable'));

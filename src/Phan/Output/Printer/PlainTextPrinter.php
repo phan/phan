@@ -25,6 +25,8 @@ final class PlainTextPrinter implements IssuePrinterInterface
         $issue   = $instance->getIssue();
         $type    = $issue->getType();
         $message = $instance->getMessage();
+        $suggestion = $instance->getSuggestion();
+
         if (Config::getValue('color_issue_messages')) {
             switch ($issue->getSeverity()) {
                 case Issue::SEVERITY_CRITICAL:
@@ -43,6 +45,9 @@ final class PlainTextPrinter implements IssuePrinterInterface
                 $type,
                 $message
             ]);
+            if ($suggestion) {
+                $issue .= Colorizing::colorizeTemplate(" ({SUGGESTION})", [$suggestion]);
+            }
         } else {
             $issue = sprintf(
                 '%s:%d %s %s',
@@ -51,6 +56,9 @@ final class PlainTextPrinter implements IssuePrinterInterface
                 $type,
                 $message
             );
+            if ($suggestion) {
+                $issue .= " ($suggestion)";
+            }
         }
 
         $this->output->writeln($issue);

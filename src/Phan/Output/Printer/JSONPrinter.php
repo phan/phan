@@ -19,7 +19,7 @@ final class JSONPrinter implements BufferedPrinterInterface
     public function print(IssueInstance $instance)
     {
         $issue = $instance->getIssue();
-        $this->messages[] = [
+        $message = [
             'type' => 'issue',
             'type_id' => $issue->getTypeId(),
             'check_name' => $issue->getType(),
@@ -36,6 +36,11 @@ final class JSONPrinter implements BufferedPrinterInterface
                 ],
             ],
         ];
+        $suggestion = $instance->getSuggestion();
+        if ($suggestion) {
+            $message['suggestion'] = $suggestion;
+        }
+        $this->messages[] = $message;
     }
 
     /** flush printer buffer */

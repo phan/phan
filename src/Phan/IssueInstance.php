@@ -17,24 +17,29 @@ class IssueInstance
     /** @var int */
     private $line;
 
-    /** @var string */
+    /** @var string the issue message */
     private $message;
+
+    /** @var ?string If this is non-null, this contains suggestions on how to resolve the error. */
+    private $suggestion;
 
     /**
      * @param Issue $issue
      * @param string $file
      * @param int $line
-     * @param array<int,string|int|FQSEN|Type|UnionType> $template_parameters
+     * @param array<int,string|int|float|FQSEN|Type|UnionType> $template_parameters
      */
     public function __construct(
         Issue $issue,
         string $file,
         int $line,
-        array $template_parameters
+        array $template_parameters,
+        string $suggestion = null
     ) {
         $this->issue = $issue;
         $this->file = $file;
         $this->line = $line;
+        $this->suggestion = $suggestion;
 
         // color_issue_message will interfere with some formatters, such as xml.
         if (Config::getValue('color_issue_messages')) {
@@ -69,15 +74,27 @@ class IssueInstance
     }
 
     /**
-     * @param array<int,string|int|FQSEN|Type|UnionType> $template_parameters
+     * @param array<int,string|int|float|FQSEN|Type|UnionType> $template_parameters
      */
     private static function generateColorizedMessage(
         Issue $issue,
-        array $template_parameters
+        array $template_parameters,
+        string $suggestion = null
     ) : string {
         $template = $issue->getTemplateRaw();
 
-        return Colorizing::colorizeTemplate($template, $template_parameters);
+        $result = Colorizing::colorizeTemplate($template, $template_parameters);
+        if ($suggestion) {
+            $result .= Colorizing::colorizeTemplate(" ({SUGGESTION})", [$suggestion]);
+        }
+        return $result;
+    }
+
+    /** @return ?string */
+    public function getSuggestion()
+    {
+        // TODO: Create Phan\Issue\Suggestion, which has a similiar template string syntax?
+        return $this->suggestion;
     }
 
     /**
@@ -107,7 +124,7 @@ class IssueInstance
     /**
      * @return string
      */
-    public function getMessage()
+    public function getMessage() : string
     {
         return $this->message;
     }

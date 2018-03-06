@@ -1139,13 +1139,14 @@ class Clazz extends AddressableElement
 
         if (!$code_base->hasClassConstantWithFQSEN($constant_fqsen)) {
             throw new IssueException(
-                Issue::fromType(Issue::UndeclaredClassConstant)(
+                Issue::fromType(Issue::UndeclaredConstant)(
                     $context->getFile(),
                     $context->getLineNumberStart(),
                     [
                         (string)$constant_fqsen,
                         (string)$this->getFQSEN()
-                    ]
+                    ],
+                    Issue::suggestSimilarClass($code_base, $context, $this->getFQSEN())
                 )
             );
         }

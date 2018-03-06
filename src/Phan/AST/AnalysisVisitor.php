@@ -66,4 +66,35 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
             $parameters
         );
     }
+
+    /**
+     * @param string $issue_type
+     * The type of issue to emit such as Issue::ParentlessClass
+     *
+     * @param int $lineno
+     * The line number where the issue was found
+     *
+     * @param array<int,int|string|FQSEN|UnionType|Type> $parameters
+     * Template parameters for the issue's error message
+     *
+     * @param ?string $suggestion
+     * A suggestion (may be null)
+     *
+     * @return void
+     */
+    protected function emitIssueWithSuggestion(
+        string $issue_type,
+        int $lineno,
+        array $parameters,
+        $suggestion
+    ) {
+        Issue::maybeEmitWithParameters(
+            $this->code_base,
+            $this->context,
+            $issue_type,
+            $lineno,
+            $parameters,
+            $suggestion
+        );
+    }
 }

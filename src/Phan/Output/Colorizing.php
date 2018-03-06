@@ -85,6 +85,7 @@ class Colorizing
         'PROPERTY'      => 'cyan',
         'SCALAR'        => 'light_magenta',
         'STRING_LITERAL' => 'light_magenta',
+        'SUGGESTION'    => 'light_gray',
         'TYPE'          => 'light_gray',
         'TRAIT'         => 'green',
         'VARIABLE'      => 'light_cyan',
@@ -97,7 +98,7 @@ class Colorizing
 
     /**
      * @param string $template
-     * @param array<int,int|string|FQSEN|Type|UnionType> $template_parameters
+     * @param array<int,int|string|float|FQSEN|Type|UnionType> $template_parameters
      */
     public static function colorizeTemplate(
         string $template,
@@ -123,7 +124,7 @@ class Colorizing
 
     /**
      * @param string $template_type (A key of _uncolored_format_string_for_template, e.g. "FILE")
-     * @param int|string|FQSEN|Type|UnionType $arg (Argument for format string, e.g. a type name, method fqsen, line number, etc.)
+     * @param int|string|float|FQSEN|Type|UnionType $arg (Argument for format string, e.g. a type name, method fqsen, line number, etc.)
      * @return string - Colorized for unix terminals.
      */
     public static function colorizeField(string $template_type, $arg) : string

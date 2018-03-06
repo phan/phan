@@ -136,7 +136,6 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $this->shutdown();
             $this->exit();
         });
-        /** @suppress PhanUndeclaredClassMethod https://github.com/fruux/sabre-event/pull/52 */
         $reader->on('message', function (Message $msg) {
             /** @suppress PhanUndeclaredProperty Request->body->id is a request with an id */
             coroutine(function () use ($msg) : \Generator {

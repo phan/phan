@@ -7,6 +7,9 @@ New features(Analysis)
 + Warn about properties that are read but not written to when dead code detection is enabled
   (Similar to existing warnings about properties that are written to but never read)
   New issue types: `PhanReadOnlyPrivateProperty`, `PhanReadOnlyProtectedProperty`, `PhanReadOnlyPublicProperty`
++ When warning about undeclared classes, mention any classes that have the same name (but a different namespace) as suggestions.
+
+  E.g. `test.php:26 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \MyNS\InvalidArgumentException (Did you mean class \InvalidArgumentException)`
 + Warn about string and numeric literals that are no-ops. (E.g. `<?php 'notEchoedStr'; "notEchoed $x"; ?>`)
   New issue types: `PhanNoopStringLiteral`, `PhanNoopEncapsulatedStringLiteral`, `PhanNoopNumericLiteral`.
 
