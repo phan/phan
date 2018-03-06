@@ -7818,7 +7818,6 @@ return [
 'ReflectionFunctionAbstract::isUserDefined' => ['bool'],
 'ReflectionFunctionAbstract::isVariadic' => ['bool'],
 'ReflectionFunctionAbstract::returnsReference' => ['bool'],
-'ReflectionFunctionAbstract:hasReturnType' => ['bool'],
 'ReflectionGenerator::__construct' => ['void', 'generator'=>'object'],
 'ReflectionGenerator::getExecutingFile' => ['string'],
 'ReflectionGenerator::getExecutingGenerator' => ['Generator'],
