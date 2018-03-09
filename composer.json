@@ -25,6 +25,7 @@
         "php": "^7.0.0",
         "ext-ast": "^0.1.5",
         "composer/semver": "^1.4",
+        "composer/xdebug-handler": "^1.0",
         "felixfbecker/advanced-json-rpc": "^3.0",
         "microsoft/tolerant-php-parser": "0.0.9",
         "sabre/event": "^5.0",

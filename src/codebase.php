@@ -14,7 +14,14 @@ if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
     require_once __DIR__ . '/../../../autoload.php';
 }
 
+use Composer\XdebugHandler\XdebugHandler;
 use Phan\CodeBase;
+
+// Automatically restart if xdebug is loaded
+if (extension_loaded('xdebug')) {
+    // Restart if xdebug is loading, unless the environment variable PHAN_ALLOW_XDEBUG is set.
+    (new XdebugHandler('phan'))->check();
+}
 
 return new CodeBase(
     $internal_class_name_list,

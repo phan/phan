@@ -10,15 +10,6 @@ assert(
     'Autoloader not found. Make sure you run `composer install` before running Phan. See https://github.com/phan/phan#getting-it-running for more details.'
 );
 
-// Automatically restart if xdebug is loaded
-if (extension_loaded('xdebug')) {
-    require_once __DIR__ . '/Phan/Library/Composer/XdebugHandler.php';
-    require_once __DIR__ . '/Phan/Library/Composer/IniHelper.php';
-    // This code is taken from composer's automatic restart without xdebug.
-    // Restart if xdebug is loading, unless the environment variable PHAN_ALLOW_XDEBUG is set.
-    (new \Phan\Library\Composer\XdebugHandler())->check();
-}
-
 // Fix turkish locales(tr_TR) - strtolower('I') is not 'i', so phan lookup might fail.
 // (But continue formatting times, etc. in the user's locale)
 setlocale(LC_CTYPE, 'C');
