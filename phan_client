@@ -272,6 +272,9 @@ class PhanPHPLinterOpts
     /** @var bool */
     public $use_fallback_parser;
 
+    /** @var bool */
+    private $print_usage_on_error = true;
+
     /**
      * @param string $msg - optional message
      * @param int $exit_code - process exit code.
@@ -279,15 +282,16 @@ class PhanPHPLinterOpts
      */
     public function usage($msg = '', $exit_code = 0)
     {
-        global $argv;
-        if (!empty($msg)) {
-            echo "$msg\n";
-        }
+        if (!$msg || $this->print_usage_on_error) {
+            global $argv;
+            if (!empty($msg)) {
+                echo "$msg\n";
+            }
 
-        // TODO: Add an option to autostart the daemon if user also has global configuration to allow it for a given project folder. ($HOME/.phanconfig)
-        // TODO: Allow changing (adding/removing) issue suppression types for the analysis phase (would not affect the parse phase)
+            // TODO: Add an option to autostart the daemon if user also has global configuration to allow it for a given project folder. ($HOME/.phanconfig)
+            // TODO: Allow changing (adding/removing) issue suppression types for the analysis phase (would not affect the parse phase)
 
-        echo <<<EOB
+            echo <<<EOB
 Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
  --daemonize-socket </path/to/file.sock>
   Unix socket which a Phan daemon is listening for requests on.
@@ -312,6 +316,10 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
   A simpler way to specify a file mapping when checking a single files.
   Pass this after the only occurrence of --syntax-check.
 
+ -d, --disable-usage-on-error
+  If this option is set, don't print full usage messages for missing/inaccessible files or inaccessible daemons.
+  (Continue printing usage messages for invalid combinations of options.)
+
  -v, --verbose
   Whether to emit debugging output of this client.
 
@@ -319,6 +327,7 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
   This help information
 
 EOB;
+        }
         exit($exit_code);
     }
 
@@ -332,11 +341,12 @@ EOB;
 
         // Parse command line args
         $optind = 0;
-        $shortopts = "s:p:l:t:f:v";
+        $shortopts = "s:p:l:t:f:vhd";
         $longopts = [
             'help',
             'daemonize-socket:',
             'daemonize-tcp-port:',
+            'disable-usage-on-error',
             'syntax-check:',
             'temporary-file-map:',
             'use-fallback-parser',
@@ -360,6 +370,7 @@ EOB;
             PhanPHPLinter::$verbose = true;
             $this->verbose = true;
         }
+        $print_usage_on_error = true;
 
         foreach ((\is_array($opts) ? $opts : []) as $key => $value) {
             switch ($key) {
@@ -425,6 +436,7 @@ EOB;
                 case 'syntax-check':
                     $path = $value;
                     if (!file_exists($path)) {
+                        $this->print_usage_on_error = $print_usage_on_error;
                         $this->usage(sprintf("Error: asked to analyze file %s which does not exist", json_encode($path)), 1);
                         exit(1);
                     }
@@ -433,6 +445,10 @@ EOB;
                 case 'h':
                 case 'help':
                     $this->usage();
+                    break;
+                case 'd':
+                case 'disable-usage-on-error':
+                    $print_usage_on_error = false;
                     break;
                 case 'v':
                 case 'verbose':
@@ -443,6 +459,7 @@ EOB;
             }
         }
         if (count($this->file_list) === 0) {
+            // Invalid invocation, always print this message
             $this->usage("This requires at least one file to analyze (with -l path/to/file", 1);
         }
         if (\is_array($this->temporary_file_map)) {
@@ -455,6 +472,9 @@ EOB;
         if ($this->url === null) {
             $this->url = 'tcp://127.0.0.1:4846';
         }
+		// In the majority of cases, apply this **after** checking sanity of CLI options
+		// (without actually starting the analysis).
+        $this->print_usage_on_error = $print_usage_on_error;
     }
 
     /**
