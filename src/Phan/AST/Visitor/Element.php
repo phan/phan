@@ -133,6 +133,8 @@ class Element
      *
      * NOTE: This was turned into a static method for performance
      * because it was called extremely frequently.
+     *
+     * @suppress PhanUnreferencedPublicMethod Phan's code inlines this, but may be useful for some plugins
      */
     public static function acceptNodeAndKindVisitor(Node $node, KindVisitor $visitor)
     {

@@ -95,12 +95,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         return $context;
     }
 
-    public function visitParam(Node $node) : Context
-    {
-        // Could invoke plugins, but not right now
-        return $this->context;
-    }
-
     public function visitUseElem(Node $node) : Context
     {
         // Could invoke plugins, but not right now

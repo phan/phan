@@ -1,8 +1,7 @@
 <?php declare(strict_types=1);
-// .phan/plugins/NonBoolInLogicalArithPlugin.php
 
+use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
-use Phan\Language\UnionType;
 use Phan\PluginV2;
 use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
@@ -55,8 +54,8 @@ class NonBoolInLogicalArithVisitor extends PluginAwarePostAnalysisVisitor
             }
 
             // get the type of two nodes
-            $left_type = UnionType::fromNode($this->context, $this->code_base, $left_node);
-            $right_type = UnionType::fromNode($this->context, $this->code_base, $right_node);
+            $left_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $left_node);
+            $right_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $right_node);
 
             // if left or right type is NOT boolean, emit issue
             if (!$left_type->isExclusivelyBoolTypes()) {

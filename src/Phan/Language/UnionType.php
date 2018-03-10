@@ -334,6 +334,8 @@ class UnionType implements \Serializable
      * @throws IssueException
      * If $should_catch_issue_exception is false an IssueException may
      * be thrown for optional issues.
+     *
+     * @deprecated - Use UnionTypeVisitor::unionTypeFromNode
      */
     public static function fromNode(
         Context $context,
@@ -790,10 +792,6 @@ class UnionType implements \Serializable
     {
         $type_set = $this->type_set;
         $other_type_set = $union_type->type_set;
-        /**
-        assert(ArraySet::is_array_set($type_set));
-        assert(ArraySet::is_array_set($other_type_set));
-         */
         if (\count($type_set) !== \count($other_type_set)) {
             return false;
         }

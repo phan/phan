@@ -298,13 +298,6 @@ final class ConfigPluginSet extends PluginV2 implements
         }
     }
 
-    // Micro-optimization in tight loops: check for plugins before calling config plugin set
-    public function hasPlugins() : bool
-    {
-        \assert(!\is_null($this->pluginSet));
-        return \count($this->pluginSet) > 0;
-    }
-
     /**
      * Returns true if analyzeFunction() will execute any plugins.
      */

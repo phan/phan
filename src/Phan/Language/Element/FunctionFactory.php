@@ -11,24 +11,6 @@ use Phan\Language\UnionType;
 
 class FunctionFactory
 {
-
-    /**
-     * @return array<int,Func>
-     * One or more (alternate) functions/methods begotten from
-     * reflection info and internal method data
-     */
-    public static function functionListFromName(
-        CodeBase $code_base,
-        string $function_name
-    ) : array {
-        $fqsen = FullyQualifiedFunctionName::makeFromExtractedNamespaceAndName($function_name);
-        return self::functionListFromReflectionFunction(
-            $code_base,
-            $fqsen,
-            new \ReflectionFunction($function_name)
-        );
-    }
-
     /**
      * @return array<int,Func>
      * One or more (alternate) functions begotten from
@@ -230,11 +212,7 @@ class FunctionFactory
                     $parameter_type,
                     $flags
                 );
-                $parameter->setPhanFlags(Flags::bitVectorWithState(
-                    $parameter->getPhanFlags(),
-                    $phan_flags,
-                    true
-                ));
+                $parameter->enablePhanFlagBits($phan_flags);
 
                 if ($is_optional) {
                     // TODO: could check isDefaultValueAvailable and getDefaultValue, for a better idea.

@@ -1,8 +1,7 @@
 <?php declare(strict_types=1);
-// .phan/plugins/NumericalComparisonPlugin.php
 
+use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
-use Phan\Language\UnionType;
 use Phan\PluginV2;
 use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
@@ -45,9 +44,9 @@ class NumericalComparisonVisitor extends PluginAwarePostAnalysisVisitor
     {
         // get the types of left and right values
         $left_node = $node->children['left'];
-        $left_type = UnionType::fromNode($this->context, $this->code_base, $left_node);
+        $left_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $left_node);
         $right_node = $node->children['right'];
-        $right_type = UnionType::fromNode($this->context, $this->code_base, $right_node);
+        $right_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $right_node);
 
         // non numerical values are not allowed in the operator equal(==, !=)
         if (in_array($node->flags, self::BINARY_EQUAL_OPERATORS)) {

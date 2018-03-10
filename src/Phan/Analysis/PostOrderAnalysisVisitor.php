@@ -336,9 +336,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // If the element has a default, set its type
         // on the variable
         if (isset($node->children['default'])) {
-            $default_type = UnionType::fromNode(
-                $this->context,
+            $default_type = UnionTypeVisitor::unionTypeFromNode(
                 $this->code_base,
+                $this->context,
                 $node->children['default']
             );
 

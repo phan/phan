@@ -27,10 +27,9 @@ trait FunctionTrait
      */
     protected $is_inner_scope_initialized  = false;
 
-    /**
-     * @return int
-     */
     abstract public function getPhanFlags() : int;
+
+    abstract public function getPhanFlagsHasState(int $bits) : bool;
 
     /**
      * @param int $phan_flags
@@ -252,10 +251,7 @@ trait FunctionTrait
      */
     public function isReturnTypeUndefined() : bool
     {
-        return Flags::bitVectorHasState(
-            $this->getPhanFlags(),
-            Flags::IS_RETURN_TYPE_UNDEFINED
-        );
+        return $this->getPhanFlagsHasState(Flags::IS_RETURN_TYPE_UNDEFINED);
     }
 
     /**
@@ -283,10 +279,7 @@ trait FunctionTrait
      */
     public function getHasReturn() : bool
     {
-        return Flags::bitVectorHasState(
-            $this->getPhanFlags(),
-            Flags::HAS_RETURN
-        );
+        return $this->getPhanFlagsHasState(Flags::HAS_RETURN);
     }
 
     /**
@@ -295,10 +288,7 @@ trait FunctionTrait
      */
     public function getHasYield() : bool
     {
-        return Flags::bitVectorHasState(
-            $this->getPhanFlags(),
-            Flags::HAS_YIELD
-        );
+        return $this->getPhanFlagsHasState(Flags::HAS_YIELD);
     }
 
     /**

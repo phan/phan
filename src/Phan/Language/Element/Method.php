@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Language\Context;
@@ -32,7 +33,7 @@ class Method extends ClassElement implements FunctionInterface
      * The name of the typed structural element
      *
      * @param UnionType $type
-     * A '|' delimited set of types satisfyped by this
+     * A '|' delimited set of types satisfied by this
      * typed structural element.
      *
      * @param int $flags
@@ -67,6 +68,7 @@ class Method extends ClassElement implements FunctionInterface
         // of this method, and let it be overwritten
         // if it isn't.
         $this->setDefiningFQSEN($fqsen);
+        $this->real_defining_fqsen = $fqsen;
 
         // Record the FQSEN of this method (With the current Clazz),
         // to prevent recursing from a method into itself in non-quick mode.
@@ -86,10 +88,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function isFromPHPDoc() : bool
     {
-        return Flags::bitVectorHasState(
-            $this->getPhanFlags(),
-            Flags::IS_FROM_PHPDOC
-        );
+        return $this->getPhanFlagsHasState(Flags::IS_FROM_PHPDOC);
     }
 
     /**
@@ -113,10 +112,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function isOverrideIntended() : bool
     {
-        return Flags::bitVectorHasState(
-            $this->getPhanFlags(),
-            Flags::IS_OVERRIDE_INTENDED
-        );
+        return $this->getPhanFlagsHasState(Flags::IS_OVERRIDE_INTENDED);
     }
 
     /**
@@ -141,10 +137,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function isAbstract() : bool
     {
-        return Flags::bitVectorHasState(
-            $this->getFlags(),
-            \ast\flags\MODIFIER_ABSTRACT
-        );
+        return $this->getFlagsHasState(\ast\flags\MODIFIER_ABSTRACT);
     }
 
     /**
@@ -153,10 +146,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function isFinal() : bool
     {
-        return Flags::bitVectorHasState(
-            $this->getFlags(),
-            \ast\flags\MODIFIER_FINAL
-        );
+        return $this->getFlagsHasState(\ast\flags\MODIFIER_FINAL);
     }
 
     /**
@@ -165,10 +155,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function returnsRef() : bool
     {
-        return Flags::bitVectorHasState(
-            $this->getFlags(),
-            \ast\flags\RETURNS_REF
-        );
+        return $this->getFlagsHasState(\ast\flags\RETURNS_REF);
     }
 
     /**
@@ -447,9 +434,9 @@ class Method extends ClassElement implements FunctionInterface
         // if it exists
         $return_union_type = UnionType::empty();
         if ($node->children['returnType'] !== null) {
-            $return_union_type = UnionType::fromNode(
-                $context,
+            $return_union_type = UnionTypeVisitor::unionTypeFromNode(
                 $code_base,
+                $context,
                 $node->children['returnType']
             );
             $method->setUnionType($method->getUnionType()->withUnionType($return_union_type));

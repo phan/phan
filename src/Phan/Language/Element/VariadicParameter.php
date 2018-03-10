@@ -17,11 +17,7 @@ class VariadicParameter extends Parameter
         $result = clone($this);
         if (!$result->isCloneOfVariadic()) {
             $result->convertToNonVariadic();
-            $result->setPhanFlags(Flags::bitVectorWithState(
-                $result->getPhanFlags(),
-                Flags::IS_CLONE_OF_VARIADIC,
-                true
-            ));
+            $result->enablePhanFlagBits(Flags::IS_CLONE_OF_VARIADIC);
         }
         return $result;
     }
@@ -34,7 +30,7 @@ class VariadicParameter extends Parameter
      */
     public function isCloneOfVariadic() : bool
     {
-        return Flags::bitVectorHasState($this->getPhanFlags(), Flags::IS_CLONE_OF_VARIADIC);
+        return $this->getPhanFlagsHasState(Flags::IS_CLONE_OF_VARIADIC);
     }
 
     /**

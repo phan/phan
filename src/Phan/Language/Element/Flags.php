@@ -31,6 +31,9 @@ class Flags
 
     const IS_PARAM_USING_NULLABLE_SYNTAX = (1 << 17);
 
+    // For dead code detection
+    const WAS_PROPERTY_READ = (1 << 17);
+
     /**
      * Either enable or disable the given flag on
      * the given bit vector.
@@ -54,11 +57,9 @@ class Flags
         int $flag,
         bool $value
     ) : int {
-        $bit_vector = $value
+        return $value
             ? ($bit_vector | $flag)
             : ($bit_vector & (~$flag));
-
-        return $bit_vector;
     }
 
     /**
@@ -69,13 +70,13 @@ class Flags
      * The flag we'd like to get the state for
      *
      * @return bool
-     * True if all bits in the flag are eanbled in the bit
+     * True if all bits in the flag are enabled in the bit
      * vector, else false.
      */
     public static function bitVectorHasState(
         int $bit_vector,
         int $flag
     ) : bool {
-        return (($bit_vector & $flag) == $flag);
+        return (($bit_vector & $flag) === $flag);
     }
 }

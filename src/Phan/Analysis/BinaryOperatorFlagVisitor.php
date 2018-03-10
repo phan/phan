@@ -61,15 +61,15 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visit(Node $node) : UnionType
     {
-        $left = UnionType::fromNode(
-            $this->context,
+        $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['left']
         );
 
-        $right = UnionType::fromNode(
-            $this->context,
+        $right = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['right']
         );
 
@@ -106,15 +106,15 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     // Code can bitwise xor strings byte by byte in PHP
     public function visitBinaryBitwiseXor(Node $node) : UnionType
     {
-        $left = UnionType::fromNode(
-            $this->context,
+        $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['left']
         );
 
-        $right = UnionType::fromNode(
-            $this->context,
+        $right = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['right']
         );
 
@@ -203,15 +203,15 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     private function visitBinaryOpCommon(Node $node)
     {
-        $left = UnionType::fromNode(
-            $this->context,
+        $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['left']
         );
 
-        $right = UnionType::fromNode(
-            $this->context,
+        $right = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['right']
         );
 
@@ -365,15 +365,15 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryAdd(Node $node) : UnionType
     {
-        $left = UnionType::fromNode(
-            $this->context,
+        $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['left']
         );
 
-        $right = UnionType::fromNode(
-            $this->context,
+        $right = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['right']
         );
 
@@ -473,15 +473,15 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     private function visitBinaryBool(Node $node) : UnionType
     {
         // TODO: Check for suspicious operations (E.g. always false, always true, always object)
-        $unused_left = UnionType::fromNode(
-            $this->context,
+        $unused_left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['left']
         );
 
-        $unused_right = UnionType::fromNode(
-            $this->context,
+        $unused_right = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['right']
         );
 

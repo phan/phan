@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Exception\IssueException;
 use Phan\Issue;
@@ -265,9 +266,9 @@ class Parameter extends Variable
     ) : Parameter {
         // Get the type of the parameter
         $type_node = $node->children['type'];
-        $union_type = UnionType::fromNode(
-            $context,
+        $union_type = UnionTypeVisitor::unionTypeFromNode(
             $code_base,
+            $context,
             $type_node
         );
 
@@ -426,10 +427,7 @@ class Parameter extends Variable
      */
     public function isPassByReference() : bool
     {
-        return Flags::bitVectorHasState(
-            $this->getFlags(),
-            \ast\flags\PARAM_REF
-        );
+        return $this->getFlagsHasState(\ast\flags\PARAM_REF);
     }
 
     public function getReferenceType() : int
@@ -448,17 +446,8 @@ class Parameter extends Variable
      */
     public function setIsOutputReference()
     {
-        $this->setPhanFlags(
-            Flags::bitVectorWithState(
-                Flags::bitVectorWithState(
-                    $this->getPhanFlags(),
-                    Flags::IS_READ_REFERENCE,
-                    false
-                ),
-                Flags::IS_WRITE_REFERENCE,
-                true
-            )
-        );
+        $this->enablePhanFlagBits(Flags::IS_WRITE_REFERENCE);
+        $this->disablePhanFlagBits(Flags::IS_READ_REFERENCE);
     }
 
     /**
@@ -466,21 +455,12 @@ class Parameter extends Variable
      */
     private function setIsUsingNullableSyntax()
     {
-        $this->setPhanFlags(
-            Flags::bitVectorWithState(
-                $this->getPhanFlags(),
-                Flags::IS_PARAM_USING_NULLABLE_SYNTAX,
-                true
-            )
-        );
+        $this->enablePhanFlagBits(Flags::IS_PARAM_USING_NULLABLE_SYNTAX);
     }
 
     public function getIsUsingNullableSyntax() : bool
     {
-        return Flags::bitVectorHasState(
-            $this->getPhanFlags(),
-            Flags::IS_PARAM_USING_NULLABLE_SYNTAX
-        );
+        return $this->getPhanFlagsHasState(Flags::IS_PARAM_USING_NULLABLE_SYNTAX);
     }
 
     public function __toString() : string

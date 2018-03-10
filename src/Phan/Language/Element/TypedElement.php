@@ -21,7 +21,7 @@ abstract class TypedElement implements TypedElementInterface
 
     /**
      * @var UnionType|null
-     * A set of types satisfyped by this typed structural
+     * A set of types satisfied by this typed structural
      * element.
      */
     private $type = null;
@@ -63,7 +63,7 @@ abstract class TypedElement implements TypedElementInterface
      * The name of the typed structural element
      *
      * @param UnionType $type
-     * A '|' delimited set of types satisfyped by this
+     * A '|' delimited set of types satisfied by this
      * typed structural element.
      *
      * @param int $flags
@@ -170,6 +170,20 @@ abstract class TypedElement implements TypedElementInterface
     }
 
     /**
+     * @param int $flag
+     * The flag we'd like to get the state for
+     *
+     * @return bool
+     * True if all bits in the flag are enabled in the bit
+     * vector, else false.
+     */
+    public function getFlagsHasState(int $flag) : bool
+    {
+        return ($this->flags & $flag) === $flag;
+    }
+
+
+    /**
      * @param int $flags
      *
      * @return void
@@ -188,6 +202,19 @@ abstract class TypedElement implements TypedElementInterface
     }
 
     /**
+     * @param int $flag
+     * The flag we'd like to get the state for
+     *
+     * @return bool
+     * True if all bits in the flag are enabled in the bit
+     * vector, else false.
+     */
+    public function getPhanFlagsHasState(int $flag) : bool
+    {
+        return ($this->phan_flags & $flag) === $flag;
+    }
+
+    /**
      * @param int $phan_flags
      *
      * @return void
@@ -195,6 +222,26 @@ abstract class TypedElement implements TypedElementInterface
     public function setPhanFlags(int $phan_flags)
     {
         $this->phan_flags = $phan_flags;
+    }
+
+    /**
+     * @param int $bits combination of flags from Flags::* constants to enable
+     *
+     * @return void
+     */
+    public function enablePhanFlagBits(int $bits)
+    {
+        $this->phan_flags |= $bits;
+    }
+
+    /**
+     * @param int $bits combination of flags from Flags::* constants to disable
+     *
+     * @return void
+     */
+    public function disablePhanFlagBits(int $bits)
+    {
+        $this->phan_flags &= (~$bits);
     }
 
     /**
@@ -223,10 +270,7 @@ abstract class TypedElement implements TypedElementInterface
      */
     public function isDeprecated() : bool
     {
-        return Flags::bitVectorHasState(
-            $this->phan_flags,
-            Flags::IS_DEPRECATED
-        );
+        return $this->getPhanFlagsHasState(Flags::IS_DEPRECATED);
     }
 
     /**
@@ -291,10 +335,7 @@ abstract class TypedElement implements TypedElementInterface
      */
     public function isPHPInternal() : bool
     {
-        return Flags::bitVectorHasState(
-            $this->getPhanFlags(),
-            Flags::IS_PHP_INTERNAL
-        );
+        return $this->getPhanFlagsHasState(Flags::IS_PHP_INTERNAL);
     }
 
     /**

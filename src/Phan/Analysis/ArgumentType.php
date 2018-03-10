@@ -729,15 +729,15 @@ class ArgumentType
                         }
                     );
                 } elseif ($argcount == 2) {
-                    $arg1_type = UnionType::fromNode(
-                        $context,
+                    $arg1_type = UnionTypeVisitor::unionTypeFromNode(
                         $code_base,
+                        $context,
                         $arglist->children[0]
                     );
 
-                    $arg2_type = UnionType::fromNode(
-                        $context,
+                    $arg2_type = UnionTypeVisitor::unionTypeFromNode(
                         $code_base,
+                        $context,
                         $arglist->children[1]
                     );
 

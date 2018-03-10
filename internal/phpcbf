@@ -6,5 +6,5 @@ if [[ "$#" != 0 ]]; then
 	phpcbf.phar --standard=ruleset.xml "$@"
 else
 	# Automatically fix PSR-2 syntax issues in Phan itself
-	phpcbf.phar --standard=ruleset.xml tests/Phan src .phan tool phan_client
+	phpcbf.phar --standard=ruleset.xml tests/Phan src .phan tool/make_stubs phan_client
 fi

@@ -9,6 +9,7 @@ Maintenance
 
 Bug Fixes
 + Remove leading `./` from Phan's relative paths for files (#1548, #1538)
++ Reduce false positives in dead code detection for constants/properties/methods.
 
 02 Mar 2018, Phan 0.12.2
 ------------------------

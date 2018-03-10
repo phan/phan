@@ -3,6 +3,7 @@ namespace Phan\Analysis;
 
 use Phan\AST\Visitor\Element;
 use Phan\AST\Visitor\FlagVisitorImplementation;
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
@@ -63,15 +64,15 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
     {
         // TODO: For some types (e.g. xor, bitwise or), set the type of the variable?
         // Or should that be done in PreOrderAnalysisVisitor?
-        $left = UnionType::fromNode(
-            $this->context,
+        $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['var']
         );
 
-        $right = UnionType::fromNode(
-            $this->context,
+        $right = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['expr']
         );
 
@@ -107,15 +108,15 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
 
     public function visitBinaryBitwiseAnd(Node $node)
     {
-        $left = UnionType::fromNode(
-            $this->context,
+        $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['var']
         );
 
-        $right = UnionType::fromNode(
-            $this->context,
+        $right = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['expr']
         );
         if ($left->hasType(IntType::instance(false))
@@ -132,15 +133,15 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
 
     public function visitBinaryBitwiseOr(Node $node)
     {
-        $left = UnionType::fromNode(
-            $this->context,
+        $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['var']
         );
 
-        $right = UnionType::fromNode(
-            $this->context,
+        $right = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['expr']
         );
         if ($left->hasType(IntType::instance(false))
@@ -158,15 +159,15 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
     // Code can bitwise xor strings byte by byte in PHP
     public function visitBinaryBitwiseXor(Node $node)
     {
-        $left = UnionType::fromNode(
-            $this->context,
+        $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['var']
         );
 
-        $right = UnionType::fromNode(
-            $this->context,
+        $right = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['expr']
         );
 
@@ -218,15 +219,15 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryAdd(Node $node) : UnionType
     {
-        $left = UnionType::fromNode(
-            $this->context,
+        $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['var']
         );
 
-        $right = UnionType::fromNode(
-            $this->context,
+        $right = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
+            $this->context,
             $node->children['expr']
         );
 

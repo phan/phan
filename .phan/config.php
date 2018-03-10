@@ -367,6 +367,7 @@ return [
     'file_list' => [
         'phan',
         'phan_client',
+        'tool/make_stubs',
         // 'vendor/phpunit/phpunit/src/Framework/TestCase.php',
     ],
 

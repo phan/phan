@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\Config;
+use Phan\Language\FileRef;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\PropertyScope;
@@ -14,6 +16,13 @@ class Property extends ClassElement
     use ClosedScopeElement;
 
     /**
+     * @var ?FullyQualifiedPropertyName If this was originally defined in a trait, this is the trait's defining fqsen.
+     * This is tracked separately from getDefiningFQSEN() in order to not break access checks on protected/private properties.
+     * Used for dead code detection.
+     */
+    private $real_defining_fqsen;
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -21,7 +30,7 @@ class Property extends ClassElement
      * The name of the typed structural element
      *
      * @param UnionType $type
-     * A '|' delimited set of types satisfyped by this
+     * A '|' delimited set of types satisfied by this
      * typed structural element.
      *
      * @param int $flags
@@ -49,6 +58,7 @@ class Property extends ClassElement
         // of this property, and let it be overwritten
         // if it isn't.
         $this->setDefiningFQSEN($fqsen);
+        $this->real_defining_fqsen = $fqsen;
 
         // Set an internal scope, so that issue suppressions can be placed on property doc comments.
         // (plugins acting on properties would then pick those up).
@@ -57,6 +67,15 @@ class Property extends ClassElement
             $context->getScope(),
             $fqsen
         ));
+    }
+
+    /**
+     * @return FullyQualifiedPropertyName the FQSEN with the original definition (Even if this is private/protected and inherited from a trait). Used for dead code detection.
+     *                                    Inheritance tests use getDefiningFQSEN() so that access checks won't break.
+     */
+    public function getRealDefiningFQSEN() : FullyQualifiedPropertyName
+    {
+        return $this->real_defining_fqsen ?? $this->getDefiningFQSEN();
     }
 
     public function __toString() : string
@@ -153,5 +172,31 @@ class Property extends ClassElement
             $this->future_union_type = $future_union_type;
             // Probably don't need to call setUnionType(mixed) again...
         };
+    }
+
+    /**
+     * @param FileRef $file_ref
+     * A reference to a location in which this typed structural
+     * element is referenced.
+     *
+     * @param bool $is_read_reference
+     * If false, track that this has been read.
+     *
+     * @return void
+     */
+    public function addReference(FileRef $file_ref, $is_read_reference = true)
+    {
+        if (Config::get_track_references()) {
+            // Currently, we don't need to track references to PHP-internal methods/functions/constants
+            // such as PHP_VERSION, strlen(), Closure::bind(), etc.
+            // This may change in the future.
+            if ($this->isPHPInternal()) {
+                return;
+            }
+            $this->reference_list[$file_ref->__toString()] = $file_ref;
+            if ($is_read_reference) {
+                $this->enablePhanFlagBits(Flags::WAS_PROPERTY_READ);
+            }
+        }
     }
 }

@@ -24,7 +24,7 @@ abstract class UnaddressableTypedElement
 
     /**
      * @var UnionType|null
-     * A set of types satisfyped by this typed structural
+     * A set of types satisfied by this typed structural
      * element.
      */
     private $type = null;
@@ -46,12 +46,6 @@ abstract class UnaddressableTypedElement
     private $phan_flags = 0;
 
     /**
-     * @var array<string,int>
-     * A set of issues types to be suppressed
-     */
-    private $suppress_issue_list = [];
-
-    /**
      * @param FileRef $file_ref
      * The Context or FileRef in which the structural element lives
      * (Will be converted to FileRef, to avoid creating a reference
@@ -61,7 +55,7 @@ abstract class UnaddressableTypedElement
      * The name of the typed structural element
      *
      * @param UnionType $type
-     * A '|' delimited set of types satisfyped by this
+     * A '|' delimited set of types satisfied by this
      * typed structural element.
      *
      * @param int $flags
@@ -152,6 +146,20 @@ abstract class UnaddressableTypedElement
     }
 
     /**
+     * @param int $flag
+     * The flag we'd like to get the state for
+     *
+     * @return bool
+     * True if all bits in the flag are enabled in the bit
+     * vector, else false.
+     */
+    public function getFlagsHasState(int $flag) : bool
+    {
+        return ($this->flags & $flag) === $flag;
+    }
+
+
+    /**
      * @param int $flags
      *
      * @return void
@@ -170,6 +178,19 @@ abstract class UnaddressableTypedElement
     }
 
     /**
+     * @param int $flag
+     * The flag we'd like to get the state for
+     *
+     * @return bool
+     * True if all bits in the flag are enabled in the bit
+     * vector, else false.
+     */
+    public function getPhanFlagsHasState(int $flag) : bool
+    {
+        return ($this->phan_flags & $flag) === $flag;
+    }
+
+    /**
      * @param int $phan_flags
      *
      * @return void
@@ -180,83 +201,28 @@ abstract class UnaddressableTypedElement
     }
 
     /**
+     * @return void
+     */
+    public function enablePhanFlagBits(int $new_bits)
+    {
+        $this->phan_flags |= $new_bits;
+    }
+
+    /**
+     * @return void
+     */
+    public function disablePhanFlagBits(int $new_bits)
+    {
+        $this->phan_flags &= (~$new_bits);
+    }
+
+    /**
      * @return FileRef
      * A reference to where this element was found
      */
     public function getFileRef() : FileRef
     {
         return $this->file_ref;
-    }
-
-    /**
-     * @return bool
-     * True if this element is marked as deprecated
-     */
-    public function isDeprecated() : bool
-    {
-        return Flags::bitVectorHasState(
-            $this->phan_flags,
-            Flags::IS_DEPRECATED
-        );
-    }
-
-    /**
-     * @param bool $is_deprecated
-     * Set this element as deprecated
-     *
-     * @return void
-     */
-    public function setIsDeprecated(bool $is_deprecated)
-    {
-        $this->setPhanFlags(Flags::bitVectorWithState(
-            $this->getPhanFlags(),
-            Flags::IS_DEPRECATED,
-            $is_deprecated
-        ));
-    }
-
-    /**
-     * @param string[] $suppress_issue_list
-     * Set the set of issue names to suppress
-     *
-     * @return void
-     */
-    public function setSuppressIssueList(array $suppress_issue_list)
-    {
-        $this->suppress_issue_list = [];
-        foreach ($suppress_issue_list as $issue_name) {
-            $this->suppress_issue_list[$issue_name] = 0;
-        }
-    }
-
-    /**
-     * @return array<string,int>
-     */
-    public function getSuppressIssueList() : array
-    {
-        return $this->suppress_issue_list ?: [];
-    }
-
-    /**
-     * return bool
-     * True if this element would like to suppress the given
-     * issue name
-     */
-    public function hasSuppressIssue(string $issue_name) : bool
-    {
-        return isset($this->suppress_issue_list[$issue_name]);
-    }
-
-    /**
-     * @return bool
-     * True if this was an internal PHP object
-     */
-    public function isPHPInternal() : bool
-    {
-        return Flags::bitVectorHasState(
-            $this->getPhanFlags(),
-            Flags::IS_PHP_INTERNAL
-        );
     }
 
     /**

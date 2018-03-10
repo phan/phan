@@ -17,7 +17,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
      * The name of the typed structural element
      *
      * @param UnionType $type
-     * A '|' delimited set of types satisfyped by this
+     * A '|' delimited set of types satisfied by this
      * typed structural element.
      *
      * @param int $flags
@@ -97,10 +97,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
      */
     public function isOverrideIntended() : bool
     {
-        return Flags::bitVectorHasState(
-            $this->getPhanFlags(),
-            Flags::IS_OVERRIDE_INTENDED
-        );
+        return $this->getPhanFlagsHasState(Flags::IS_OVERRIDE_INTENDED);
     }
 
     /**

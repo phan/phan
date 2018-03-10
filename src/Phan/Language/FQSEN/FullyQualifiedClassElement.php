@@ -209,21 +209,6 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
 
     /**
      * @return static
-     * A new object with the given fully qualified
-     * class name
-     */
-    public function withFullyQualifiedClassName(
-        FullyQualifiedClassName $fully_qualified_class_name
-    ) {
-        return static::make(
-            $fully_qualified_class_name,
-            $this->getName(),
-            $this->getAlternateId()
-        );
-    }
-
-    /**
-     * @return static
      * A FQSEN with the given alternate_id set
      */
     public function withAlternateId(
@@ -239,38 +224,6 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
             $this->getFullyQualifiedClassName(),
             $this->getName(),
             $alternate_id
-        );
-    }
-
-    /**
-     * @return int
-     * The alternate id for the class of the class element
-     * TODO: Is it necessary to have both of these?
-     */
-    public function getAlternateIdForClassName() : int
-    {
-        return $this->getFullyQualifiedClassName()->getAlternateId();
-    }
-
-    /**
-     * @return static
-     * A FQSEN with the given alternate_id set on the class name
-     * (E.g. MyClass,1::my_function for alternate_id 1)
-     * TODO: Is it necessary to have both of these?
-     */
-    public function withAlternateIdForClassName(
-        int $alternate_id
-    ) {
-
-        \assert(
-            $alternate_id < 1000,
-            "Your alternate IDs have run away"
-        );
-
-        return static::make(
-            $this->getFullyQualifiedClassName()->withAlternateId($alternate_id),
-            $this->getName(),
-            $this->getAlternateId()
         );
     }
 

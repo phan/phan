@@ -22,6 +22,12 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 
+/**
+ * This emits PhanUnreferenced* issues for classlikes, constants, properties, and functions/methods.
+ *
+ * TODO: Make references to methods of interfaces also count as references to traits which are used by classes to implement those methods.
+ * (Maybe track these in addMethod when checking for inheritance?)
+ */
 class ReferenceCountsAnalyzer
 {
     /**
@@ -192,20 +198,15 @@ class ReferenceCountsAnalyzer
                     continue;
                 }
             }
-            if ($element->getIsOverride()) {
-                continue;
-            }
-
             $fqsen = $element->getFQSEN();
-            if ($element instanceof Method) {
+            if ($element instanceof Method || $element instanceof Property) {
                 $defining_fqsen = $element->getRealDefiningFQSEN();
             } else {
                 $defining_fqsen = $element->getDefiningFQSEN();
             }
 
-            // Don't analyze elements defined in a parent
-            // class
-            if ($fqsen != $defining_fqsen) {
+            // copy references to methods, properties, and constants into the defining trait or class.
+            if ($fqsen !== $defining_fqsen) {
                 if ($element->getReferenceCount($code_base) > 0) {
                     $defining_element = null;
                     if ($defining_fqsen instanceof FullyQualifiedMethodName) {
@@ -227,6 +228,13 @@ class ReferenceCountsAnalyzer
                 }
                 continue;
             }
+
+            // Don't analyze elements defined in a parent class.
+            // We copy references to methods, properties, and constants into the defining trait or class before this.
+            if ($element->getIsOverride()) {
+                continue;
+            }
+
             $defining_class =
                 $element->getClass($code_base);
 

@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Scope\ClosureScope;
@@ -27,7 +28,7 @@ class Func extends AddressableElement implements FunctionInterface
      * The name of the typed structural element
      *
      * @param UnionType $type
-     * A '|' delimited set of types satisfyped by this
+     * A '|' delimited set of types satisfied by this
      * typed structural element.
      *
      * @param int $flags
@@ -238,9 +239,9 @@ class Func extends AddressableElement implements FunctionInterface
         // Take a look at function return types
         if ($node->children['returnType'] !== null) {
             // Get the type of the parameter
-            $union_type = UnionType::fromNode(
-                $context,
+            $union_type = UnionTypeVisitor::unionTypeFromNode(
                 $code_base,
+                $context,
                 $node->children['returnType']
             );
             $func->setRealReturnType($union_type);
@@ -318,10 +319,7 @@ class Func extends AddressableElement implements FunctionInterface
      */
     public function returnsRef() : bool
     {
-        return Flags::bitVectorHasState(
-            $this->getFlags(),
-            \ast\flags\RETURNS_REF
-        );
+        return $this->getFlagsHasState(\ast\flags\RETURNS_REF);
     }
 
     /**

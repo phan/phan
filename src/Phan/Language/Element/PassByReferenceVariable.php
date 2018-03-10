@@ -60,6 +60,11 @@ class PassByReferenceVariable extends Variable
         return $this->element->getFlags();
     }
 
+    public function getFlagsHasState(int $bits) : bool
+    {
+        return $this->element->getFlagsHasState($bits);
+    }
+
     public function setFlags(int $flags)
     {
         $this->element->setFlags($flags);
@@ -68,6 +73,11 @@ class PassByReferenceVariable extends Variable
     public function getPhanFlags() : int
     {
         return $this->element->getPhanFlags();
+    }
+
+    public function getPhanFlagsHasState(int $bits) : bool
+    {
+        return $this->element->getPhanFlagsHasState($bits);
     }
 
     public function setPhanFlags(int $phan_flags)
