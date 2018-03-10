@@ -10,13 +10,13 @@ platform: x86
 environment:
   matrix:
     - PHP_EXT_VERSION: '7.0'
-      PHP_VERSION: '7.0.27'
+      PHP_VERSION: '7.0.28'
       VC_VERSION: 14
     - PHP_EXT_VERSION: '7.1'
-      PHP_VERSION: '7.1.14'
+      PHP_VERSION: '7.1.15'
       VC_VERSION: 14
     - PHP_EXT_VERSION: '7.2'
-      PHP_VERSION: '7.2.2'
+      PHP_VERSION: '7.2.3'
       VC_VERSION: 15
 
 init:
@@ -46,7 +46,7 @@ build_script:
 
     SET PHP_ZIP_BASENAME=php-%PHP_VERSION%-nts-Win32-VC%VC_VERSION%-x86.zip
 
-    curl -fsS http://windows.php.net/downloads/releases/archives/%PHP_ZIP_BASENAME% -o %PHP_ZIP_BASENAME% || curl -fsS http://windows.php.net/downloads/releases/%PHP_ZIP_BASENAME% -o %PHP_ZIP_BASENAME%
+    curl -fsS https://windows.php.net/downloads/releases/archives/%PHP_ZIP_BASENAME% -o %PHP_ZIP_BASENAME% || curl -fsS https://windows.php.net/downloads/releases/%PHP_ZIP_BASENAME% -o %PHP_ZIP_BASENAME%
 
     7z x -y %PHP_ZIP_BASENAME%
 
@@ -56,7 +56,7 @@ build_script:
 
     SET AST_ZIP_BASENAME=php_ast-0.1.6-%PHP_EXT_VERSION%-nts-vc%VC_VERSION%-x86.zip
 
-    curl -fsS http://windows.php.net/downloads/pecl/releases/ast/0.1.6/%AST_ZIP_BASENAME% -o %AST_ZIP_BASENAME%
+    curl -fsS https://windows.php.net/downloads/pecl/releases/ast/0.1.6/%AST_ZIP_BASENAME% -o %AST_ZIP_BASENAME%
 
     7z x %AST_ZIP_BASENAME% php_ast.dll -y >nul
 
