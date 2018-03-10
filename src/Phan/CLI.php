@@ -782,7 +782,7 @@ EOB;
      * @param string $directory_name
      * The name of a directory to scan for files ending in `.php`.
      *
-     * @return array<int,string>
+     * @return array<string,string>
      * A list of PHP files in the given directory
      */
     private function directoryNameToFileList(
@@ -832,7 +832,14 @@ EOB;
         } catch (\Exception $exception) {
             error_log($exception->getMessage());
         }
-        usort($file_list, function (string $a, string $b) : int {
+
+        // Normalize leading './' in paths.
+        $normalized_file_list = [];
+        foreach ($file_list as $file_path) {
+            $file_path = preg_replace('@^(\.[/\\\\]+)+@', '', $file_path);
+            $normalized_file_list[$file_path] = $file_path;
+        }
+        usort($normalized_file_list, function (string $a, string $b) : int {
             // Sort lexicographically by paths **within the results for a directory**,
             // to work around some file systems not returning results lexicographically.
             // Keep directories together by replacing directory separators with the null byte
@@ -840,7 +847,7 @@ EOB;
             return \strcmp(\preg_replace("@[/\\\\]+@", "\0", $a), \preg_replace("@[/\\\\]+@", "\0", $b));
         });
 
-        return $file_list;
+        return $normalized_file_list;
     }
 
     public static function shouldShowProgress() : bool
