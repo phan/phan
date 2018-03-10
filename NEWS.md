@@ -1,5 +1,11 @@
 Phan NEWS
 
+?? ??? 2018, Phan 0.12.3 (dev)
+------------------------
+
+Bug Fixes
++ Remove leading `./` from Phan's relative paths for files (#1548, #1538)
+
 02 Mar 2018, Phan 0.12.2
 ------------------------
 
