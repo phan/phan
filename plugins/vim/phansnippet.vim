@@ -13,6 +13,7 @@ au! BufWritePost  *.php,*.html    call PHPsynCHK()
 
 function! PHPsynCHK()
   let winnum =winnr() " get current window number
+  " or 'silent make --disable-usage-on-error -l %' in Phan 0.12.3+
   silent make -l %
   cw " open the error window if it contains an error. Don't limit the number of lines.
   " return to the window with cursor set on the line of the first error (if any)

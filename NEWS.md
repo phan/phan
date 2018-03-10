@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 2018, Phan 0.12.3 (dev)
 ------------------------
 
+Maintenance
++ Add `--disable-usage-on-error` option to `phan_client` (#1540)
+
 Bug Fixes
 + Remove leading `./` from Phan's relative paths for files (#1548, #1538)
 
