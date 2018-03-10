@@ -226,7 +226,7 @@ class AssignmentVisitor extends AnalysisVisitor
     {
         // Figure out the type of elements in the list
         $fallback_element_type = null;
-        $get_fallback_element_type = function() use (&$fallback_element_type) : UnionType {
+        $get_fallback_element_type = function () use (&$fallback_element_type) : UnionType {
             return $fallback_element_type ?? ($fallback_element_type = $this->right_type->genericArrayElementTypes());
         };
 

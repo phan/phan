@@ -213,7 +213,7 @@ class Phan implements IgnoredFilesFilterInterface
             $analyze_file_path_list = $request->filterFilesToAnalyze($code_base->getParsedFilePathList());
             if (count($analyze_file_path_list) === 0) {
                 $request->respondWithNoFilesToAnalyze();  // respond and exit.
-                exit(2);
+                exit(0);  // This is normal (E.g. .txt files, files outside of analysis list, etc)
             }
 
             // Do this before we stop tracking undo operations.

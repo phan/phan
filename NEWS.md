@@ -5,6 +5,7 @@ Phan NEWS
 
 Maintenance
 + Add `--disable-usage-on-error` option to `phan_client` (#1540)
++ Print directory which phan daemon is going to await analysis requests for (#1544)
 
 Bug Fixes
 + Remove leading `./` from Phan's relative paths for files (#1548, #1538)

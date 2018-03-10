@@ -650,11 +650,10 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $expect_string_keys_lineno = false;
 
         $fallback_second_order_element_type = null;
-        $get_fallback_second_order_element_type = function() use (&$fallback_second_order_element_type, $element_union_type) : UnionType {
+        $get_fallback_second_order_element_type = function () use (&$fallback_second_order_element_type, $element_union_type) : UnionType {
             return $fallback_second_order_element_type ?? ($fallback_second_order_element_type = $element_union_type->genericArrayElementTypes());
         };
         foreach ($value_node->children as $child_node) {
-
             // $key_node = $child_node->children['key'] ?? null;
             $value_elem_node = $child_node->children['value'] ?? null;
 
@@ -752,7 +751,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $expect_int_keys_lineno = false;
 
         foreach ($value_node->children as $child_node) {
-
             $value_elem_node = $child_node->children['value'] ?? null;
 
             // for syntax like: foreach ([] as list(, $a));

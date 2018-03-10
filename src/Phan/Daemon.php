@@ -204,7 +204,11 @@ class Daemon
         } else {
             throw new \InvalidArgumentException("Should not happen, no port/socket for daemon to listen on.");
         }
-        echo "Listening for Phan analysis requests at $listen_url\n";
+        printf(
+            "Listening for Phan analysis requests at %s\nAwaiting analysis requests for directory %s\n",
+            $listen_url,
+            var_export(Config::getProjectRootDirectory(), true)
+        );
         $socket_server = stream_socket_server($listen_url, $errno, $errstr);
         if (!$socket_server) {
             error_log("Failed to create unix socket server $listen_url: $errstr ($errno)\n");

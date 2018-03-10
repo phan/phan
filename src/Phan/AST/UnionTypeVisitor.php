@@ -1283,7 +1283,8 @@ class UnionTypeVisitor extends AnalysisVisitor
      *  returns false if there the offset was invalid and there are no ways to get that offset
      *  returns null if the dim_value offset could not be found, but there were other generic array types
      */
-    public static function resolveArrayShapeElementTypesForOffset(UnionType $union_type, $dim_value) {
+    public static function resolveArrayShapeElementTypesForOffset(UnionType $union_type, $dim_value)
+    {
         $has_non_array_shape_type = false;
         $resulting_element_type = null;
         foreach ($union_type->getTypeSet() as $type) {
