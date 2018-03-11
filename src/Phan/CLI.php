@@ -31,6 +31,7 @@ class CLI
 
     /**
      * @return OutputInterface
+     * @suppress PhanUnreferencedPublicMethod not used yet.
      */
     public function getOutput() : OutputInterface
     {
@@ -115,6 +116,7 @@ class CLI
                 'output:',
                 'output-mode:',
                 'parent-constructor-required:',
+                'polyfill-parse-all-element-doc-comments',
                 'plugin:',
                 'print-memory-usage-summary',
                 'processes:',
@@ -314,6 +316,9 @@ class CLI
                     break;
                 case 'target-php-version':
                     Config::setValue('target_php_version', $value);
+                    break;
+                case 'polyfill-parse-all-element-doc-comments':
+                    Config::setValue('polyfill_parse_all_element_doc_comments', true);
                     break;
                 case 'd':
                 case 'project-root-directory':
@@ -755,6 +760,10 @@ Extended help:
 
  --markdown-issue-messages
   Emit issue messages with markdown formatting.
+
+ --polyfill-parse-all-element-doc-comments
+  Makes the polyfill aware of doc comments on class constants and declare statements
+  even when imitating parsing a PHP 7.0 codebase.
 
  --language-server-on-stdin
   Start the language server (For the Language Server protocol).

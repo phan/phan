@@ -62,7 +62,10 @@ class NodeDumper
         $this->include_token_kind = $include_token_kind;
     }
 
-    /** @return void */
+    /**
+     * @return void
+     * @suppress PhanUnreferencedPublicMethod
+     */
     public function setIndent(string $indent)
     {
         $this->indent = $indent;
@@ -130,6 +133,7 @@ class NodeDumper
      * @param Node|Token $ast_node
      * @param string $padding (to be echoed before the current node
      * @return void
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function dumpTree($ast_node, string $key = '', string $padding = '')
     {
