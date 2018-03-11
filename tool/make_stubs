@@ -98,7 +98,7 @@ EOT;
             $stub_collection->addFunc($code_base->getFunctionByFQSEN($function_fqsen));
         }
 
-        foreach ($reflection_extension->getConstants() as $constant_name => $constant_value) {
+        foreach ($reflection_extension->getConstants() as $constant_name => $_) {
             list($namespace, $name) = self::extractNamespaceAndName($constant_name);
             $const_fqsen = FullyQualifiedGlobalConstantName::make($namespace, $name);
             if (!$code_base->hasGlobalConstantWithFQSEN($const_fqsen)) {

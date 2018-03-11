@@ -159,7 +159,7 @@ class CLI
         );
 
         if (\array_key_exists('init', $opts)) {
-            $exit_code = Initializer::initPhanConfig($this, $opts);
+            $exit_code = Initializer::initPhanConfig($opts);
             if ($exit_code === 0) {
                 exit($exit_code);
             }

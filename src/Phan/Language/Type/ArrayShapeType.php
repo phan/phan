@@ -258,8 +258,6 @@ final class ArrayShapeType extends ArrayType
             "Recursion has gotten out of hand"
         );
         // TODO: Use UnionType::merge from a future change?
-        $result = new UnionTypeBuilder();
-        $key_type = GenericArrayType::getKeyTypeForArrayLiteral($this->field_types);
         $result_fields = [];
         foreach ($this->field_types as $key => $union_type) {
             // UnionType already increments recursion_depth before calling asExpandedTypes on a subclass of Type,

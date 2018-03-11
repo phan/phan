@@ -953,8 +953,6 @@ trait FunctionTrait
     public function createRestoreCallback()
     {
         // NOTE: Properties, Methods, and closures are restored separately.
-        $original_union_type = $this->getUnionType();
-
         $parameter_list_hash = $this->parameter_list_hash;
         $parameter_list = [];
         foreach ($this->parameter_list as $parameter) {

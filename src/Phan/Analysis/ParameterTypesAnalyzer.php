@@ -44,8 +44,6 @@ class ParameterTypesAnalyzer
         // Look at each parameter to make sure their types
         // are valid
         foreach ($method->getParameterList() as $parameter) {
-            $comment_parameter_index = $parameter->getName();
-
             $union_type = $parameter->getUnionType();
 
             // Look at each type in the parameter's Union Type

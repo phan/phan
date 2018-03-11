@@ -124,7 +124,6 @@ class ASTSimplifier
             if ($stmt->kind !== \ast\AST_IF) {
                 continue;
             }
-            $children = $stmt->children;
             // Run normalizeIfStatement again.
             \array_pop($new_statements);
             \array_push($new_statements, ...$this->normalizeIfStatement($stmt));

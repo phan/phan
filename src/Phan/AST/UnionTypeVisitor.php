@@ -818,7 +818,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         \reset($key_set);
         $field_types = [];
 
-        foreach ($children as $i => $child) {
+        foreach ($children as $child) {
             $value = $child->children['value'];
             $key = \key($key_set);
             \next($key_set);

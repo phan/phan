@@ -157,7 +157,6 @@ class ReferenceCountsAnalyzer
         int $total_count,
         int &$i
     ) {
-        $filtered_element_list = [];
         foreach ($element_list as $element) {
             CLI::progress('dead code', (++$i)/$total_count);
             // Don't worry about internal elements
@@ -182,7 +181,6 @@ class ReferenceCountsAnalyzer
         int $total_count,
         int &$i
     ) {
-        $filtered_element_list = [];
         foreach ($element_list as $element) {
             CLI::progress('dead code', (++$i)/$total_count);
             // Don't worry about internal elements

@@ -373,10 +373,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     public function analyzeURIAsync(string $uri)
     {
-        Logger::logInfo("Called analyzeURIAsync, uri=$uri");
         $path_to_analyze = Utils::uriToPath($uri);
-        $relative_path_to_analyze = FileRef::getProjectRelativePathForPath($path_to_analyze);
-        Logger::logInfo("Maybe going to analyze this file: $path_to_analyze");
+        Logger::logInfo("Called analyzeURIAsync, uri=$uri, path=$path_to_analyze");
         $this->analyze_request_set[$path_to_analyze] = $uri;
         // Don't call file_path_lister immediately -
         // That has to walk the directories in .phan/config.php to see if the requested path is included and not excluded.
@@ -670,6 +668,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * @param string|null $rootPath The rootPath of the workspace. Is null if no folder is open.
      * @param int|null $processId The process Id of the parent process that started the server. Is null if the process has not been started by another process. If the parent process is not alive then the server should exit (see exit notification) its process.
      * @return Promise <InitializeResult>
+     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function initialize(ClientCapabilities $capabilities, string $rootPath = null, int $processId = null): Promise
     {

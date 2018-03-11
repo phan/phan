@@ -102,12 +102,9 @@ final class GenericMultiArrayType extends ArrayType
     protected function canCastToNonNullableType(Type $type) : bool
     {
         if ($type instanceof GenericArrayType) {
-            foreach ($this->genericArrayElementTypes() as $inner_type) {
-                if ($type->canCastToType($type->genericArrayElementType())) {
-                    return true;
-                }
-            }
-            return false;
+            return $this->genericArrayElementUnionType()->canCastToUnionType(
+                $type->genericArrayElementUnionType()
+            );
         }
 
         // TODO: More precise about checking if can cast to ArrayShapeType
@@ -132,14 +129,20 @@ final class GenericMultiArrayType extends ArrayType
         return true;
     }
 
+    /** @var ?UnionType */
+    private $element_types_union_type;
+
     /**
-     * @return array<int,Type>
+     * @return UnionType
      * A variation of this type that is not generic.
-     * i.e. 'int[]' becomes 'int'.
+     * i.e. '(int|string)[]' becomes 'int|string'.
      */
-    public function genericArrayElementTypes() : array
+    public function genericArrayElementUnionType() : UnionType
     {
-        return $this->element_types;
+        return $this->element_types_union_type
+            ?? ($this->element_types_union_type = UnionType::of(
+                UnionType::normalizeGenericMultiArrayTypes($this->element_types)
+            ));
     }
 
     public function __toString() : string

@@ -484,7 +484,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                 false
             );
         };
-        $remove_object_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) use ($traversable_type) : Context {
+        $remove_object_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
             return $cv->updateVariableWithConditionalFilter(
                 $var_node,
                 $context,
@@ -493,7 +493,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                 function (UnionType $union_type) : bool {
                     return $union_type->hasPossiblyObjectTypes();
                 },
-                function (UnionType $union_type) use ($traversable_type) : UnionType {
+                function (UnionType $union_type) : UnionType {
                     $new_type_builder = new UnionTypeBuilder();
                     $has_null = false;
                     $has_other_nullable_types = false;

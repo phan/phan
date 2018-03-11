@@ -34,7 +34,8 @@ class PHPUnitNotDeadCodePlugin extends PluginV2 implements PostAnalyzeNodeCapabi
     }
 }
 
-class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor {
+class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
+{
     /** @var FullyQualifiedClassName */
     private static $phpunit_test_case_fqsen;
 
@@ -47,7 +48,8 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor {
      * @override
      * This is called after the parse phase is completely finished, so $this->code_base contains all class definitions
      */
-    public function visitClass(Node $unused_node) {
+    public function visitClass(Node $unused_node)
+    {
         if (!Config::get_track_references()) {
             return;
         }
@@ -123,7 +125,8 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor {
         return false;
     }
 
-    public static function init() {
+    public static function init()
+    {
         $fqsen = FullyQualifiedClassName::make('\\PHPUnit\Framework', 'TestCase');
         self::$phpunit_test_case_fqsen = $fqsen;
         self::$phpunit_test_case_type = $fqsen->asType();

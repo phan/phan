@@ -3,7 +3,6 @@
 namespace Phan\Config;
 
 use Phan\AST\Parser;
-use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
@@ -18,7 +17,11 @@ use Composer\Semver\Constraint\ConstraintInterface;
  */
 class Initializer
 {
-    public static function initPhanConfig(CLI $cli, array $opts) : int
+    /**
+     * @param array<string,mixed> $opts
+     * Returns a process exit code for `phan --init`
+     */
+    public static function initPhanConfig(array $opts) : int
     {
         Config::setValue('use_polyfill_parser', true);
         $cwd = getcwd();
@@ -233,7 +236,7 @@ EOT;
             return null;
         }
         $level = max(1, min(5, (int)$level));
-        $is_strong_or_weaker_level = $level >= 2;
+        //$is_strong_or_weaker_level = $level >= 2;  // TODO: use
         $is_average_level = $level >= 3;
         $is_weak_level    = $level >= 4;
         $is_weakest_level = $level >= 5;

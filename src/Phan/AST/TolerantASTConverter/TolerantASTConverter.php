@@ -185,14 +185,14 @@ final class TolerantASTConverter
         if (!\in_array($ast_version, self::SUPPORTED_AST_VERSIONS)) {
             throw new \InvalidArgumentException(sprintf("Unexpected version: want %s, got %d", implode(', ', self::SUPPORTED_AST_VERSIONS), $ast_version));
         }
-        $this->startParsing($file_contents, $parser_node);
+        $this->startParsing($file_contents);
         $stmts = self::phpParserNodeToAstNode($parser_node);
         // return self::normalizeNamespaces($stmts);
         return $stmts;
     }
 
     /** @return void */
-    private function startParsing(string $file_contents, PhpParser\Node $parser_node)
+    private function startParsing(string $file_contents)
     {
         self::$decl_id = 0;
         self::$should_add_placeholders = $this->instance_should_add_placeholders;

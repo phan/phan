@@ -808,15 +808,15 @@ class ContextNode
         // TODO: support namespace aliases for functions
         if ($is_function_declaration) {
             $function_fqsen = FullyQualifiedFunctionName::make($namespace, $function_name);
-            if ($this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
-                return $this->code_base->getFunctionByFQSEN($function_fqsen);
+            if ($code_base->hasFunctionWithFQSEN($function_fqsen)) {
+                return $code_base->getFunctionByFQSEN($function_fqsen);
             }
         } elseif (($this->node->flags & ast\flags\NAME_RELATIVE) !== 0) {
             $function_fqsen = FullyQualifiedFunctionName::make($namespace, $function_name);
-            if (!$this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
+            if (!$code_base->hasFunctionWithFQSEN($function_fqsen)) {
                 $this->throwUndeclaredFunctionIssueException($function_fqsen);
             }
-            return $this->code_base->getFunctionByFQSEN($function_fqsen);
+            return $code_base->getFunctionByFQSEN($function_fqsen);
         } else {
             if (($this->node->flags & ast\flags\NAME_NOT_FQ) !== 0) {
                 if ($context->hasNamespaceMapFor(\ast\flags\USE_FUNCTION, $function_name)) {
@@ -825,18 +825,18 @@ class ContextNode
                     \assert($function_fqsen instanceof FullyQualifiedFunctionName);
 
                     // Make sure the method we're calling actually exists
-                    if (!$this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
+                    if (!$code_base->hasFunctionWithFQSEN($function_fqsen)) {
                         // The FQSEN from 'use MyNS\function_name;' was the only possible fqsen for that function.
                         $this->throwUndeclaredFunctionIssueException($function_fqsen);
                     }
 
-                    return $this->code_base->getFunctionByFQSEN($function_fqsen);
+                    return $code_base->getFunctionByFQSEN($function_fqsen);
                 }
                 // For relative and non-fully qualified functions (e.g. namespace\foo(), foo())
                 $function_fqsen = FullyQualifiedFunctionName::make($namespace, $function_name);
 
-                if ($this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
-                    return $this->code_base->getFunctionByFQSEN($function_fqsen);
+                if ($code_base->hasFunctionWithFQSEN($function_fqsen)) {
+                    return $code_base->getFunctionByFQSEN($function_fqsen);
                 }
                 if ($namespace === '') {
                     throw new IssueException(
@@ -858,11 +858,11 @@ class ContextNode
         }
 
         // Make sure the method we're calling actually exists
-        if (!$this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
+        if (!$code_base->hasFunctionWithFQSEN($function_fqsen)) {
             $this->throwUndeclaredFunctionIssueException($function_fqsen);
         }
 
-        return $this->code_base->getFunctionByFQSEN($function_fqsen);
+        return $code_base->getFunctionByFQSEN($function_fqsen);
     }
 
     /**

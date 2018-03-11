@@ -762,7 +762,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // but not others will be treated as absent.
         // TODO: Improve in future releases
         // NOTE: We let ContextMergeVisitor->visitTry decide if the block exit status is valid.
-        $original_context = $context;
         $context = (new ContextMergeVisitor(
             $context,
             [$try_context]
@@ -1227,7 +1226,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $context = $this->context;
         $class = $context->getClassInScope($this->code_base);
         $is_static = (\end($this->parent_node_list)->flags & \ast\flags\MODIFIER_STATIC) !== 0;
-        $property = $class->getPropertyByNameInContext($this->code_base, $prop_name, $context, $is_static);
 
         $context = $this->context->withScope(new PropertyScope(
             $context->getScope(),

@@ -55,7 +55,6 @@ class EmptyUnionTypeTest extends BaseTest
         }
 
         $empty_regular = new UnionType([]);
-        $empty_subclass = UnionType::empty();
 
         $candidate_arg_lists = $this->generateArgLists($method);
         if (count($candidate_arg_lists) === 0) {
@@ -146,10 +145,10 @@ class EmptyUnionTypeTest extends BaseTest
                 ];
             case Closure::class:
                 return [
-                    function (...$args) {
+                    function (...$unused_args) {
                         return false;
                     },
-                    function (...$args) {
+                    function (...$unused_args) {
                         return true;
                     },
                 ];
