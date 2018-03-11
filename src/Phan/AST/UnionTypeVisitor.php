@@ -771,8 +771,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // TODO: Also return types such as array<int, mixed>?
         // TODO: Fix or suppress false positives PhanTypeArraySuspicious caused by loops...
-        // return ArrayShapeType::empty(false)->asUnionType();
-        return ArrayType::instance(false)->asUnionType();
+        return ArrayShapeType::empty(false)->asUnionType();
     }
 
 

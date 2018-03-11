@@ -133,13 +133,13 @@ final class ArrayShapeType extends ArrayType
                     }
                 }
                 return true;
-            } else {
-                // array{key:T} can cast to array.
-                return true;
             }
+            // array{key:T} can cast to array.
+            return true;
         }
 
-        if ($type->isArrayLike()) {
+        if (\get_class($type) === IterableType::class) {
+            // can cast to Iterable but not Traversable
             return true;
         }
 

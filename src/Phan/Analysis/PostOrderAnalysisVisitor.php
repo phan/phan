@@ -1567,6 +1567,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // will analyze $x['key'] = expr in AssignmentVisitor
                 return $context;
             }
+        } elseif ($parent_kind === \ast\AST_ARRAY_ELEM) {
+            if ($this->shouldSkipNestedDim()) {
+                return $context;
+            }
+        } elseif ($parent_kind === \ast\AST_ISSET || $parent_kind === \ast\AST_UNSET || $parent_kind === \ast\AST_EMPTY) {
+            return $context;
         }
         // Check the array type to trigger TypeArraySuspicious
         try {
@@ -1609,7 +1615,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     return true;
                 }
                 return false;
+            } elseif ($kind === \ast\AST_ARRAY_ELEM) {
+                $prev_parent_node = \prev($parent_node_list);  // this becomes AST_ARRAY
+                continue;
+            } elseif ($kind === \ast\AST_ARRAY) {
+                continue;
+            } elseif ($kind === \ast\AST_UNSET) {
+                return true;  // This is removing the offset
             }
+
             return false;
         }
     }

@@ -2,9 +2,9 @@
 %s:33 PhanUndeclaredClassInCallable Reference to undeclared class \parent in callable \parent::foo
 %s:34 PhanUndeclaredClassInCallable Reference to undeclared class \static in callable \static::foo
 %s:35 PhanUndeclaredClassInCallable Reference to undeclared class \self in callable \self::foo
-%s:37 PhanTypeMismatchArgument Argument 1 (x) is array but \C370::foo() takes int defined at %s:41
-%s:38 PhanTypeMismatchArgument Argument 1 (x) is array but \C370::foo() takes int defined at %s:41
-%s:39 PhanTypeMismatchArgument Argument 1 (x) is array but \C370::foo() takes int defined at %s:41
+%s:37 PhanTypeMismatchArgument Argument 1 (x) is array{} but \C370::foo() takes int defined at %s:41
+%s:38 PhanTypeMismatchArgument Argument 1 (x) is array{} but \C370::foo() takes int defined at %s:41
+%s:39 PhanTypeMismatchArgument Argument 1 (x) is array{} but \C370::foo() takes int defined at %s:41
 %s:47 PhanContextNotObjectInCallable Cannot access self when not in object context, but code is using callable self::foo
 %s:48 PhanContextNotObjectInCallable Cannot access static when not in object context, but code is using callable static::foo
 %s:49 PhanContextNotObjectInCallable Cannot access parent when not in object context, but code is using callable parent::foo

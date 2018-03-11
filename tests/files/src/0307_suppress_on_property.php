@@ -11,4 +11,9 @@ class Foo307 {
      * @suppress PhanTypeMismatchProperty
      */
     public $y = [];
+
+    /**
+     * @var ArrayAccess
+     */
+    public $z = ['key' => 'value'];
 }

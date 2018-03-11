@@ -1,3 +1,3 @@
 %s:8 PhanTypeMismatchDimFetch When fetching an array index from a value of type array<string,string>, found an array index of type int, but expected the index to be of type string
-%s:9 PhanTypeMismatchDimFetch When fetching an array index from a value of type array<string,string>, found an array index of type array, but expected the index to be of type string
+%s:9 PhanTypeMismatchDimFetch When fetching an array index from a value of type array<string,string>, found an array index of type array{}, but expected the index to be of type string
 %s:10 PhanTypeMismatchDimFetch When fetching an array index from a value of type array<int,string>, found an array index of type string, but expected the index to be of type int

@@ -2233,6 +2233,9 @@ final class TolerantASTConverter
         return $ast_visibility;
     }
 
+    /**
+     * @suppress PhanTypeMismatchArgument casting to a more specific node
+     */
     private static function phpParserPropertyToAstNode(PhpParser\Node\PropertyDeclaration $n, int $start_line) : ast\Node
     {
         $prop_elems = [];
@@ -2249,6 +2252,9 @@ final class TolerantASTConverter
         return new ast\Node(ast\AST_PROP_DECL, $flags, $prop_elems, $prop_elems[0]->lineno ?? (self::getStartLine($n) ?: $start_line));
     }
 
+    /**
+     * @suppress PhanTypeMismatchArgument casting to something more specific
+     */
     private static function phpParserClassConstToAstNode(PhpParser\Node\ClassConstDeclaration $n, int $start_line) : ast\Node
     {
         $const_elems = [];

@@ -16,7 +16,7 @@ class Message
     public $body;
 
     /**
-     * @var string[]
+     * @var array<string,string>
      */
     public $headers;
 
@@ -41,8 +41,8 @@ class Message
     }
 
     /**
-     * @param ?\AdvancedJsonRpc\Message $body
-     * @param string[] $headers
+     * @param ?MessageBody $body
+     * @param array<string,string> $headers
      */
     public function __construct(MessageBody $body = null, array $headers = [])
     {

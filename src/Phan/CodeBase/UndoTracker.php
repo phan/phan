@@ -131,7 +131,6 @@ class UndoTracker
     {
         $file = $this->current_parsed_file;
         if (!\is_string($file)) {
-            debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
             throw new \Error("Called recordUndo in CodeBaseMutable, but not parsing a file");
         }
         if (!isset($this->undoOperationsForPath[$file])) {
