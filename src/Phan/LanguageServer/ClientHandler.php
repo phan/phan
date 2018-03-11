@@ -40,6 +40,8 @@ class ClientHandler
      * @param string $method The method to call
      * @param array|object $params The method parameters
      * @return Promise <mixed> Resolved with the result of the request or rejected with an error
+     *
+     * @suppress PhanUnreferencedPublicMethod may be used as LSP support improves?
      */
     public function request(string $method, $params): Promise
     {

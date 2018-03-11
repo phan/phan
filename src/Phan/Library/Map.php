@@ -54,6 +54,7 @@ class Map extends \SplObjectStorage
     /**
      * @return Map
      * A new map with each key and value cloned
+     * @suppress PhanUnreferencedPublicMethod possibly useful but currently unused
      */
     public function deepCopy() : Map
     {
@@ -80,6 +81,7 @@ class Map extends \SplObjectStorage
      * @return Set
      * A new set with the unique values from this map.
      * Precondition: values of this map are objects.
+     * @suppress PhanUnreferencedPublicMethod possibly useful but currently unused
      */
     public function valueSet() : Set
     {
@@ -94,6 +96,7 @@ class Map extends \SplObjectStorage
      * @return Set
      * A new set with the unique keys from this map.
      * Precondition: values of this set are objects.
+     * @suppress PhanUnreferencedPublicMethod possibly useful but currently unused
      */
     public function keySet() : Set
     {

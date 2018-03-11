@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use Phan\CodeBase;
 use Phan\Language\FileRef;
 use Phan\Language\UnionType;
 
@@ -120,16 +119,6 @@ abstract class UnaddressableTypedElement
     }
 
     /**
-     * Variables can't be variadic. This is the same as getUnionType for
-     * variables, but not necessarily for subclasses. Method will return
-     * the element type (such as `DateTime`) for variadic parameters.
-     */
-    public function getNonVariadicUnionType() : UnionType
-    {
-        return $this->getUnionType();
-    }
-
-    /**
      * @return int
      */
     public function getFlags() : int
@@ -155,6 +144,7 @@ abstract class UnaddressableTypedElement
      * @param int $flags
      *
      * @return void
+     * @suppress PhanUnreferencedPublicMethod unused, other modifiers are used by Phan right now
      */
     public function setFlags(int $flags)
     {
@@ -186,6 +176,7 @@ abstract class UnaddressableTypedElement
      * @param int $phan_flags
      *
      * @return void
+     * @suppress PhanUnreferencedPublicMethod potentially used in the future
      */
     public function setPhanFlags(int $phan_flags)
     {
@@ -215,16 +206,5 @@ abstract class UnaddressableTypedElement
     public function getFileRef() : FileRef
     {
         return $this->file_ref;
-    }
-
-    /**
-     * This method must be called before analysis
-     * begins.
-     *
-     * @return void
-     */
-    public function hydrate(CodeBase $unused_code_base)
-    {
-        // Do nothing unless overridden
     }
 }

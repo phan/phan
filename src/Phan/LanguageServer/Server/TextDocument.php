@@ -81,6 +81,7 @@ class TextDocument
      *
      * @param TextDocumentItem $textDocument The document that was opened.
      * @return void
+     * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
     public function didOpen(TextDocumentItem $textDocument)
     {
@@ -102,8 +103,9 @@ class TextDocument
      *
      * @param VersionedTextDocumentIdentifier $textDocument
      * @param string|null $text (NOTE: can't use ?T here)
-     * @suppress PhanTypeMismatchArgument
      * @return void
+     * @suppress PhanTypeMismatchArgument
+     * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
     public function didSave(TextDocumentIdentifier $textDocument, string $text = null)
     {
@@ -118,6 +120,7 @@ class TextDocument
      * @param VersionedTextDocumentIdentifier $textDocument
      * @param TextDocumentContentChangeEvent[] $contentChanges
      * @return void
+     * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
     public function didChange(VersionedTextDocumentIdentifier $textDocument, array $contentChanges)
     {
@@ -137,6 +140,7 @@ class TextDocument
      *
      * @param TextDocumentIdentifier $textDocument The document that was closed
      * @return void
+     * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
     public function didClose(TextDocumentIdentifier $textDocument)
     {

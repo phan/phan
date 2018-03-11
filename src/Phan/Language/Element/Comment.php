@@ -1094,6 +1094,7 @@ class Comment
     /**
      * Sets A UnionType defined by a (at)return directive
      * @return void
+     * @suppress PhanUnreferencedPublicMethod not used right now, but making it available for plugins
      */
     public function setReturnType(UnionType $return_union_type)
     {
@@ -1209,9 +1210,10 @@ class Comment
     }
 
     /**
-     * @unused
      * @return CommentParameter
      * The magic property with the given name. May or may not have a type.
+     * @unused
+     * @suppress PhanUnreferencedPublicMethod not used right now, but making it available for plugins
      */
     public function getMagicPropertyWithName(
         string $name

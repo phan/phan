@@ -61,10 +61,13 @@ class Logger
     /**
      * @param resource $newFile
      * @return void
+     * @suppress PhanUnreferencedPublicMethod this is made available for debugging issues
      */
     public static function setLogFile($newFile)
     {
-        assert(is_resource($newFile));
+        if (!is_resource($newFile)) {
+            throw new \InvalidArgumentException("Expected newFile to be a resource, got " . gettype($newFile));
+        }
         if (is_resource(self::$file)) {
             if (self::$file === $newFile) {
                 return;

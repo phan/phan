@@ -52,6 +52,7 @@ class Workspace
      *
      * @param FileEvent[] $changes
      * @return void
+     * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
     public function didChangeWatchedFiles(array $changes)
     {
@@ -75,7 +76,11 @@ class Workspace
         }
     }
 
-    // no-op for now. Stop the JSON RPC2 framework from warning about this method being undefined.
+    /**
+     * no-op for now. Stop the JSON RPC2 framework from warning about this method being undefined.
+     * TODO: Define this so that Phan can respond to changes in client configuration.
+     * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
+     */
     public function didChangeConfiguration($settings)
     {
     }

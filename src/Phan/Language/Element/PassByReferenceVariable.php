@@ -95,16 +95,6 @@ class PassByReferenceVariable extends Variable
         return $this->element->getFileRef();
     }
 
-    public function isDeprecated() : bool
-    {
-        return $this->element->isDeprecated();
-    }
-
-    public function setIsDeprecated(bool $is_deprecated)
-    {
-        $this->element->setIsDeprecated($is_deprecated);
-    }
-
     public function isPHPInternal() : bool
     {
         return $this->element->isPHPInternal();

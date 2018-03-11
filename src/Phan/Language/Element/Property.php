@@ -70,6 +70,8 @@ class Property extends ClassElement
     /**
      * @return FullyQualifiedPropertyName the FQSEN with the original definition (Even if this is private/protected and inherited from a trait). Used for dead code detection.
      *                                    Inheritance tests use getDefiningFQSEN() so that access checks won't break.
+     *
+     * @suppress PhanUnreferencedPublicMethod this is used, but the invocation could be one of multiple classes.
      */
     public function getRealDefiningFQSEN() : FullyQualifiedPropertyName
     {

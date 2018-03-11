@@ -216,6 +216,7 @@ abstract class TypedElement implements TypedElementInterface
      * @param int $bits combination of flags from Flags::* constants to disable
      *
      * @return void
+     * @suppress PhanUnreferencedPublicMethod keeping this for consistency
      */
     public function disablePhanFlagBits(int $bits)
     {

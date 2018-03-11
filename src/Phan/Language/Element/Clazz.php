@@ -2318,6 +2318,9 @@ class Clazz extends AddressableElement
         return $string;
     }
 
+    /**
+     * @suppress PhanUnreferencedPublicMethod (toStubInfo is used by callers for more flexibility)
+     */
     public function toStub(CodeBase $code_base) : string
     {
         list($namespace, $string) = $this->toStubInfo($code_base);

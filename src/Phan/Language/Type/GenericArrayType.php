@@ -101,27 +101,6 @@ final class GenericArrayType extends ArrayType
     }
 
     /**
-     * @param int $key_type
-     * The new key type.
-     *
-     * @return Type
-     * A new type that is a copy of this type but with the
-     * given nullability value.
-     */
-    public function withKeyType(int $key_type) : Type
-    {
-        if ($key_type === $this->key_type) {
-            return $this;
-        }
-
-        return GenericArrayType::fromElementType(
-            $this->element_type,
-            $this->is_nullable,
-            $key_type
-        );
-    }
-
-    /**
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly

@@ -28,6 +28,7 @@ class ArrayType extends IterableType
 
     /**
      * @return UnionType with ArrayType subclass(es)
+     * @suppress PhanUnreferencedPublicMethod may be used in the future or for plugins as array shape support improves.
      */
     public static function combineArrayTypesMerging(UnionType $union_type) : UnionType
     {

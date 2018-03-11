@@ -2360,12 +2360,12 @@ class Issue
 
     /**
      * @return int
+     * @suppress PhanUnreferencedPublicMethod (no reporters use this right now)
      */
     public function getRemediationDifficulty() : int
     {
         return $this->remediation_difficulty;
     }
-
 
     /**
      * @return string

@@ -61,6 +61,7 @@ class Position
      *
      * @param string $content
      * @return int
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function toOffset(string $content): int
     {

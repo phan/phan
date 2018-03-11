@@ -11,14 +11,14 @@ if [ "x$TEST_SUITE" == "x" ]; then
 fi
 case "$TEST_SUITE" in
 	__FakeSelfTest)
-		./phan --dead-code-detection --memory-limit 1G
+		./phan --memory-limit 1G
 		exit $?
 		;;
 	__FakeSelfFallbackTest)
 		./phan --plugin PHPUnitNotDeadCodePlugin \
 			--dead-code-detection \
 			--polyfill-parse-all-element-doc-comments \
-			--use-fallback-parser \
+			--force-polyfill-parser \
 			--memory-limit 1G
 		exit $?
 		;;

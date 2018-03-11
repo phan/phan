@@ -3,10 +3,15 @@ Phan NEWS
 ?? ??? 2018, Phan 0.12.3 (dev)
 ------------------------
 
+New Features(CLI, Configs)
++ Add `--polyfill-parse-all-element-doc-comments` for PHP 7.0.
+  If you're using the polyfill (e.g. using `--force-polyfill-parser`), this will parse doc comments on class constants in php 7.0.
+  (Normally, the polyfill wouldn't include that information, to closely imitate `php-ast`'s behavior)
+
 New Features(Analysis)
-+ Add `PhanWriteOnlyPublicProperty`, `PhanWriteOnlyProtectedProperty`, and `PhanWriteOnlyPrivateProperty` issue types,
++ Add new issue types `PhanWriteOnlyPublicProperty`, `PhanWriteOnlyProtectedProperty`, and `PhanWriteOnlyPrivateProperty`,
   which will be emitted on properties that are written to but never read from.
-  (when dead code detection is enabled).
+  (Requires that dead code detection be enabled)
 
 Maintenance
 + Add `--disable-usage-on-error` option to `phan_client` (#1540)

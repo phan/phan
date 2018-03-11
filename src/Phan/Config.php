@@ -768,11 +768,6 @@ class Config
         return self::$track_references;
     }
 
-    public static function get_dead_code_detection() : bool
-    {
-        return self::getValue('dead_code_detection');
-    }
-
     public static function get_backward_compatibility_checks() : bool
     {
         return self::$backward_compatibility_checks;

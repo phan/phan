@@ -35,6 +35,7 @@ class Range
      *
      * @param Position $position
      * @return bool
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function includes(Position $position): bool
     {

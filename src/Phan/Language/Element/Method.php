@@ -207,24 +207,6 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
-     * @return bool
-     * True if this is the magic `__get` method
-     */
-    public function getIsMagicGet() : bool
-    {
-        return ($this->getName() === '__get');
-    }
-
-    /**
-     * @return bool
-     * True if this is the magic `__set` method
-     */
-    public function getIsMagicSet() : bool
-    {
-        return ($this->getName() === '__set');
-    }
-
-    /**
      * @return Method
      * A default constructor for the given class
      */

@@ -2253,11 +2253,11 @@ final class TolerantASTConverter
     {
         $const_elems = [];
         $doc_comment = $n->getDocCommentText();
-        foreach ($n->constElements->children ?? [] as $i => $prop) {
-            if ($prop instanceof Token) {
+        foreach ($n->constElements->children ?? [] as $i => $const_elem) {
+            if ($const_elem instanceof Token) {
                 continue;
             }
-            $const_elems[] = self::phpParserConstelemToAstConstelem($prop, $i === 0 ? $doc_comment : null);
+            $const_elems[] = self::phpParserConstelemToAstConstelem($const_elem, $i === 0 ? $doc_comment : null);
         }
         $flags = self::phpParserVisibilityToAstVisibility($n->modifiers);
 

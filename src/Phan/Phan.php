@@ -434,6 +434,7 @@ class Phan implements IgnoredFilesFilterInterface
      *
      * TODO: This is no longer referenced, was removed while sqlite3 was temporarily removed.
      *       It would help in daemon mode if this was re-enabled
+     * @suppress PhanUnreferencedPublicMethod potentially useful but currently unused
      */
     public static function expandedFileList(
         CodeBase $code_base,

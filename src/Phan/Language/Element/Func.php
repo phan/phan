@@ -330,6 +330,9 @@ class Func extends AddressableElement implements FunctionInterface
         return false;
     }
 
+    /**
+     * @suppress PhanUnreferencedPublicMethod (toStubInfo is used by callers for more flexibility)
+     */
     public function toStub() : string
     {
         list($namespace, $string) = $this->toStubInfo();

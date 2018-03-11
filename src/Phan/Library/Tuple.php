@@ -11,6 +11,7 @@ abstract class Tuple
     /**
      * @return int
      * The arity of this tuple
+     * @suppress PhanUnreferencedPublicMethod potentially used in the future
      */
     public function arity() : int
     {
