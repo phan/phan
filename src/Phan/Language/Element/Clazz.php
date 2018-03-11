@@ -769,6 +769,18 @@ class Clazz extends AddressableElement
         );
     }
 
+    public function getPropertyByName(
+        CodeBase $code_base,
+        string $name
+    ) : Property {
+        return $code_base->getPropertyByFQSEN(
+            FullyQualifiedPropertyName::make(
+                $this->getFQSEN(),
+                $name
+            )
+        );
+    }
+
     /**
      * Checks if a given property can be accessed by the class in the current Context
      * (if any)

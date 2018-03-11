@@ -63,6 +63,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * Handles workspace/* method calls
      *
      * @var Server\Workspace
+     * @suppress PhanWriteOnlyPublicProperty used by AdvancedJsonRpc\Dispatcher via reflection
      */
     public $workspace;
 

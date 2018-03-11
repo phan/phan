@@ -15,6 +15,7 @@ class TextDocumentContentChangeEvent
      * The range of the document that changed.
      *
      * @var Range|null
+     * @suppress PhanUnreferencedPublicProperty (We don't support partial updates, yet)
      */
     public $range;
 
@@ -22,6 +23,7 @@ class TextDocumentContentChangeEvent
      * The length of the range that got replaced.
      *
      * @var int|null
+     * @suppress PhanUnreferencedPublicProperty (We don't support partial updates, yet)
      */
     public $rangeLength;
 

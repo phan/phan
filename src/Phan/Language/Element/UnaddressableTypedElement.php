@@ -26,8 +26,9 @@ abstract class UnaddressableTypedElement
      * @var UnionType|null
      * A set of types satisfied by this typed structural
      * element.
+     * Prefer using getUnionType() - getUnionType() is overridden by VariadicParameter
      */
-    private $type = null;
+    protected $type = null;
 
     /**
      * @var int
@@ -103,15 +104,6 @@ abstract class UnaddressableTypedElement
     public function setUnionType(UnionType $type)
     {
         $this->type = $type;
-    }
-
-    /**
-     * @return void
-     */
-    protected function convertToNonVariadic()
-    {
-        // Avoid a redundant clone of toGenericArray()
-        $this->type = $this->getUnionType();
     }
 
     /**

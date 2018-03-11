@@ -6,7 +6,6 @@ namespace Phan\LanguageServer\Client;
 use Phan\LanguageServer\ClientHandler;
 use Phan\LanguageServer\Protocol\Diagnostic;
 use Sabre\Event\Promise;
-use JsonMapper;
 
 /**
  * Provides method handlers for all textDocument/* methods
@@ -21,15 +20,9 @@ class TextDocument
      */
     private $handler;
 
-    /**
-     * @var JsonMapper
-     */
-    private $mapper;
-
-    public function __construct(ClientHandler $handler, JsonMapper $mapper)
+    public function __construct(ClientHandler $handler)
     {
         $this->handler = $handler;
-        $this->mapper = $mapper;
     }
 
     /**

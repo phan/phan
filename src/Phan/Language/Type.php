@@ -54,6 +54,8 @@ class Type
     /**
      * @var string
      * A legal array entry in an array shape (e.g. 'field:string[]')
+     *
+     * @suppress PhanUnreferencedPublicClassConstant
      */
     const array_shape_entry_regex_noncapturing =
         '(?:' . self::shape_key_regex . ')\s*:\s*(?:' . self::simple_type_regex . ')';

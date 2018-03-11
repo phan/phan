@@ -27,14 +27,6 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     abstract public function getTestFiles();
 
     /**
-     * @return ?string - Can be overwritten by subclasses to get a reason to skip this directory.
-     */
-    public function getSkipReason()
-    {
-        return null;
-    }
-
-    /**
      * Setup our state before running each test
      *
      * @return void

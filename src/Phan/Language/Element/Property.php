@@ -1,8 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use Phan\Config;
-use Phan\Language\FileRef;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\PropertyScope;
@@ -175,28 +173,40 @@ class Property extends ClassElement
     }
 
     /**
-     * @param FileRef $file_ref
-     * A reference to a location in which this typed structural
-     * element is referenced.
+     * Returns true if at least one of the references to this property was **reading** the property
      *
-     * @param bool $is_read_reference
-     * If false, track that this has been read.
-     *
+     * Precondition: Config::get_track_references() === true
+     */
+    public function hasReadReference() : bool
+    {
+        return $this->getPhanFlagsHasState(Flags::WAS_PROPERTY_READ);
+    }
+
+    /**
      * @return void
      */
-    public function addReference(FileRef $file_ref, $is_read_reference = true)
+    public function setHasReadReference()
     {
-        if (Config::get_track_references()) {
-            // Currently, we don't need to track references to PHP-internal methods/functions/constants
-            // such as PHP_VERSION, strlen(), Closure::bind(), etc.
-            // This may change in the future.
-            if ($this->isPHPInternal()) {
-                return;
-            }
-            $this->reference_list[$file_ref->__toString()] = $file_ref;
-            if ($is_read_reference) {
-                $this->enablePhanFlagBits(Flags::WAS_PROPERTY_READ);
-            }
+        $this->enablePhanFlagBits(Flags::WAS_PROPERTY_READ);
+    }
+
+    /**
+     * Copy addressable references from an element of the same subclass
+     * @override
+     * @return void
+     */
+    public function copyReferencesFrom(AddressableElement $element)
+    {
+        if ($this === $element) {
+            // Should be impossible
+            return;
+        }
+        \assert($element instanceof Property);
+        foreach ($element->reference_list as $key => $file_ref) {
+            $this->reference_list[$key] = $file_ref;
+        }
+        if ($element->hasReadReference()) {
+            $this->setHasReadReference();
         }
     }
 }

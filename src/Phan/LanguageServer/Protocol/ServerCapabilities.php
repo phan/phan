@@ -12,6 +12,7 @@ class ServerCapabilities
      * Defines how text documents are synced.
      *
      * @var TextDocumentSyncOptions|int|null
+     * @suppress PhanWriteOnlyPublicProperty (used by AdvancedJsonRpc)
      */
     public $textDocumentSync;
 

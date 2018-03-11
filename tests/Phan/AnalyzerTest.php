@@ -16,13 +16,6 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 
 class AnalyzerTest extends BaseTest
 {
-
-    private $class_name_list;
-    private $interface_name_list;
-    private $trait_name_list;
-    private $const_name_list;
-    private $function_name_list;
-
     /**
      * @var CodeBase
      */
@@ -30,18 +23,6 @@ class AnalyzerTest extends BaseTest
 
     protected function setUp()
     {
-        global $internal_class_name_list;
-        global $internal_interface_name_list;
-        global $internal_trait_name_list;
-        global $internal_const_name_list;
-        global $internal_function_name_list;
-        $this->class_name_list = $internal_class_name_list;
-        $this->interface_name_list = $internal_interface_name_list;
-        $this->trait_name_list = $internal_trait_name_list;
-        $this->const_name_list = CodeBase::getPHPInternalConstantNameList();
-        $this->function_name_list = $internal_function_name_list;
-
-
         $this->code_base =
             $code_base = new CodeBase(
                 [], // $this->class_name_list,

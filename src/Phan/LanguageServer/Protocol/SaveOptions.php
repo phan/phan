@@ -12,6 +12,7 @@ class SaveOptions
     /**
      * @var bool|null
      * The client is supposed to include the content on save.
+     * @suppress PhanWriteOnlyPublicProperty (used by AdvancedJsonRpc)
      */
     public $includeText;
 }

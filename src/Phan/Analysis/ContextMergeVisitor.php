@@ -2,7 +2,6 @@
 namespace Phan\Analysis;
 
 use Phan\AST\Visitor\KindVisitorImplementation;
-use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Scope;
 use Phan\Language\Type\NullType;
@@ -11,12 +10,6 @@ use ast\Node;
 
 class ContextMergeVisitor extends KindVisitorImplementation
 {
-
-    /**
-     * @var CodeBase
-     */
-    private $code_base;
-
     /**
      * @var Context
      * The context in which the node we're going to be looking
@@ -32,11 +25,6 @@ class ContextMergeVisitor extends KindVisitorImplementation
     private $child_context_list;
 
     /**
-     * @param CodeBase $code_base
-     * A code base needs to be passed in because we require
-     * it to be initialized before any classes or files are
-     * loaded.
-     *
      * @param Context $context
      * The context of the parser at the node for which we'd
      * like to determine a type
@@ -46,11 +34,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
      * parsing of all first-level children of this node
      */
     public function __construct(
-        CodeBase $code_base,
         Context $context,
         array $child_context_list
     ) {
-        $this->code_base = $code_base;
         $this->context = $context;
         $this->child_context_list = $child_context_list;
     }
@@ -68,7 +54,6 @@ class ContextMergeVisitor extends KindVisitorImplementation
      */
     public function visit(Node $node) : Context
     {
-
         // TODO: if ($this->context->isInGlobalScope()) {
         //            copy local to global
         //       }

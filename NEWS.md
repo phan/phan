@@ -3,6 +3,11 @@ Phan NEWS
 ?? ??? 2018, Phan 0.12.3 (dev)
 ------------------------
 
+New Features(Analysis)
++ Add `PhanWriteOnlyPublicProperty`, `PhanWriteOnlyProtectedProperty`, and `PhanWriteOnlyPrivateProperty` issue types,
+  which will be emitted on properties that are written to but never read from.
+  (when dead code detection is enabled).
+
 Maintenance
 + Add `--disable-usage-on-error` option to `phan_client` (#1540)
 + Print directory which phan daemon is going to await analysis requests for (#1544)

@@ -67,6 +67,7 @@ class Workspace
         }
         // TODO: more than one file
         foreach ($changes as $change) {
+            // TODO: What about CREATED? Will that be emitted for renaming files?
             if ($change->type === FileChangeType::CHANGED) {
                 $uri = $change->uri;
                 $this->server->analyzeURIAsync($uri);

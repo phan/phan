@@ -350,8 +350,10 @@ final class GenericArrayType extends ArrayType
         return $key_types ?: self::KEY_MIXED;
     }
 
+    /** @suppress PhanUnreferencedPublicClassConstant */
     const CONVERT_KEY_MIXED_TO_EMPTY_UNION_TYPE = 0;
     const CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE = 1;
+
     /**
      * @return UnionType
      */

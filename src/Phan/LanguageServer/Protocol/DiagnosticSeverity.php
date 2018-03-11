@@ -25,6 +25,7 @@ abstract class DiagnosticSeverity
 
     /**
      * Reports a hint.
+     * @suppress PhanUnreferencedPublicClassConstant unused, but documented
      */
     const HINT = 4;
 }

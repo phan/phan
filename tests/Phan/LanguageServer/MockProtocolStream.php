@@ -29,7 +29,10 @@ class MockProtocolStream extends Emitter implements ProtocolReader, ProtocolWrit
         return Promise\resolve(null);
     }
 
-    /** @var bool TODO: use in tests */
+    /**
+     * @var bool TODO: use in tests
+     * @suppress PhanWriteOnlyPublicProperty not yet used in tests
+     */
     public $did_stop_accepting_new_requests = false;
 
     /**

@@ -23,6 +23,15 @@ class VariadicParameter extends Parameter
     }
 
     /**
+     * @return void
+     */
+    private function convertToNonVariadic()
+    {
+        // Avoid a redundant clone of toGenericArray()
+        $this->type = $this->getUnionType();
+    }
+
+    /**
      * @return bool - True when this is a non-variadic clone of a variadic parameter.
      * (We avoid bugs by adding new types to a variadic parameter if this is cloned.)
      * However, error messages still need to convert variadic parameters to a string.
@@ -91,7 +100,7 @@ class VariadicParameter extends Parameter
         return new Parameter(
             $this->getFileRef(),
             $this->getName(),
-            $this->getNonVariadicUnionType(),
+            $this->type,
             Flags::bitVectorWithState($this->getFlags(), \ast\flags\PARAM_VARIADIC, false)
         );
     }
@@ -104,8 +113,7 @@ class VariadicParameter extends Parameter
      */
     public function getNonVariadicUnionType() : UnionType
     {
-        // if ($this->isCloneOfVariadic()) { throw new \Error("Calling getNonVariadicUnionType on clone?\n"); }
-        return parent::getUnionType();
+        return $this->type;
     }
 
     /**
@@ -131,6 +139,6 @@ class VariadicParameter extends Parameter
             // TODO: Figure out why asNonEmptyGenericArrayTypes() causes test failures
             return parent::getUnionType()->asGenericArrayTypes(GenericArrayType::KEY_INT);
         }
-        return parent::getUnionType();
+        return $this->type;
     }
 }

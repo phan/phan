@@ -12,8 +12,6 @@ class Consistent implements Hasher
 {
     const VIRTUAL_COPY_COUNT = 16;  // Larger number means a more balanced distribution.
     const MAX = 0x40000000;  // i.e. (1 << 30)
-    /** @var int */
-    protected $groupCount;
     /** @var array<int,int> - Sorted list of hash values, for binary search. */
     protected $hashRingIds;
     /** @var array<int,int> - Groups corresponding to hash values in hashRingIds */
@@ -21,8 +19,6 @@ class Consistent implements Hasher
 
     public function __construct(int $groupCount)
     {
-        $this->groupCount = $groupCount;
-
         $map = [];
         for ($group = 0; $group < $groupCount; $group++) {
             foreach (self::getHashesForGroup($group) as $hash) {

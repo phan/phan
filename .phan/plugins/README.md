@@ -140,6 +140,13 @@ Enforces that loose equality is used for numeric operands (e.g. `2 == 2.0`), and
 
 - **PhanPluginNumericalComparison**: non numerical values compared by the operators '==' or '!=='; numerical values compared by the operators '===' or '!=='
 
+#### PHPUnitNotDeadCodePlugin
+
+Marks unit tests and dataProviders of subclasses of PHPUnit\Framework\TestCase as referenced.
+Avoids false positives when `--dead-code-detection` is enabled.
+
+(Does not emit any issue types)
+
 ### 4. Demo plugins:
 
 These files demonstrate plugins for Phan.
