@@ -336,9 +336,12 @@ class CLI
                     Config::setValue('plugins', []);
                     break;
                 case 'plugin':
+                    if (!is_array($value)) {
+                        $value = [$value];
+                    }
                     Config::setValue(
                         'plugins',
-                        array_unique(array_merge(Config::getValue('plugins'), [$value]))
+                        array_unique(array_merge(Config::getValue('plugins'), $value))
                     );
                     break;
                 case 'use-fallback-parser':
@@ -453,7 +456,8 @@ class CLI
             }
         }
 
-        while ($key = array_pop($pruneargv)) {
+        while (count($pruneargv) > 0) {
+            $key = array_pop($pruneargv);
             unset($argv[$key]);
         }
 

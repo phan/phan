@@ -1013,7 +1013,7 @@ final class TolerantASTConverter
             'Microsoft\PhpParser\Node\ClassConstDeclaration' => function (PhpParser\Node\ClassConstDeclaration $n, int $start_line) : ast\Node {
                 return self::phpParserClassConstToAstNode($n, $start_line);
             },
-            'Microsoft\PhpParser\Node\MissingMemberDeclaration' => function (PhpParser\Node\MissingMemberDeclaration $n, int $start_line) {
+            'Microsoft\PhpParser\Node\MissingMemberDeclaration' => function (PhpParser\Node\MissingMemberDeclaration $unused_n, int $unused_start_line) {
                 // This node type is generated for something that isn't a function/constant/property. e.g. "public example();"
                 return null;
             },

@@ -104,9 +104,9 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
         throw new \Error("serializing an FQSEN (" . (string)$this . ") is forbidden\n");
     }
 
-    public function unserialize($serialized)
+    public function unserialize($unused_serialized)
     {
         // We compare and look up FQSENs by their identity
-        throw new \Error("unserializing an FQSEN (" . (string)$this . ") is forbidden\n");
+        throw new \Error("unserializing an FQSEN ($unused_serialized) is forbidden\n");
     }
 }

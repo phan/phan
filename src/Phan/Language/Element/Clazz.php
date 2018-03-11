@@ -296,7 +296,6 @@ class Clazz extends AddressableElement
             $method_list =
                 FunctionFactory::methodListFromReflectionClassAndMethod(
                     $method_context,
-                    $code_base,
                     $class,
                     $reflection_method
                 );
@@ -2369,8 +2368,8 @@ class Clazz extends AddressableElement
             $stub .= "\n\n    // methods\n";
 
             $is_interface = $this->isInterface();
-            $stub .= implode("\n", array_map(function (Method $method) use ($code_base, $is_interface) {
-                return $method->toStub($code_base, $is_interface);
+            $stub .= implode("\n", array_map(function (Method $method) use ($is_interface) {
+                return $method->toStub($is_interface);
             }, $method_map));
         }
 

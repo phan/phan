@@ -187,7 +187,8 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      *
      * @return UnionType
      * The resulting type(s) of the binary operation
-     * @suppress PhanPluginUnusedMethodArgument
+     *
+     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function visitBinaryConcat(Node $node) : UnionType
     {

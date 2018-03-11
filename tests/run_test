@@ -15,7 +15,14 @@ case "$TEST_SUITE" in
 		exit $?
 		;;
 	__FakeSelfFallbackTest)
+		PLUGIN_PATH=$HOME/.phan-ci/UnusedVariablePlugin-c20aea3e.php
+
+		ARGS=""
+		if [ -e "$PLUGIN_PATH" ]; then
+			ARGS="--plugin $PLUGIN_PATH"
+		fi
 		./phan --plugin PHPUnitNotDeadCodePlugin \
+			$ARGS \
 			--dead-code-detection \
 			--polyfill-parse-all-element-doc-comments \
 			--force-polyfill-parser \

@@ -39,6 +39,8 @@ use ast\Node;
  * possibly new context as modified by the given node.
  *
  * @property-read CodeBase $code_base
+ *
+ * @phan-file-suppress PhanPluginUnusedPublicMethodArgument implementing faster no-op methods for common visit*
  */
 class ParseVisitor extends ScopeVisitor
 {
@@ -330,7 +332,7 @@ class ParseVisitor extends ScopeVisitor
 
         if ($context->isPHPInternal()) {
             // only for stubs
-            foreach (FunctionFactory::functionListFromFunction($method, $code_base) as $method_variant) {
+            foreach (FunctionFactory::functionListFromFunction($method) as $method_variant) {
                 \assert($method_variant instanceof Method);
                 $class->addMethod($code_base, $method_variant, new None);
             }
@@ -657,7 +659,7 @@ class ParseVisitor extends ScopeVisitor
 
         if ($context->isPHPInternal()) {
             // only for stubs
-            foreach (FunctionFactory::functionListFromFunction($func, $code_base) as $func_variant) {
+            foreach (FunctionFactory::functionListFromFunction($func) as $func_variant) {
                 \assert($func_variant instanceof Func);
                 $code_base->addFunction($func_variant);
             }

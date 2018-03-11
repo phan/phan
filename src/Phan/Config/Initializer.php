@@ -76,6 +76,7 @@ class Initializer
 
     /**
      * @return array<string,string[]> maps a config name to a list of comment lines about that config
+     * @suppress PhanPluginUnusedVariable used in loop
      */
     private static function computeCommentNameDocumentationMap() : array
     {

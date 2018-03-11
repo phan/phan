@@ -114,7 +114,7 @@ class ArrayType extends IterableType
     /**
      * Overridden in subclasses
      *
-     * @param int $key_type
+     * @param int $key_type @phan-unused-param (TODO: Use?)
      * Corresponds to the type of the array keys. Set this to a GenericArrayType::KEY_* constant.
      *
      * @return Type

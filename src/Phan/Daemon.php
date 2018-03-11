@@ -223,6 +223,8 @@ class Daemon
      *
      * @param string $format - printf style format string
      * @param mixed ...$args - printf args
+     *
+     * @suppress PhanPluginUnusedPublicMethodArgument (Currently commented out)
      */
     public static function debugf(string $format, ...$args)
     {

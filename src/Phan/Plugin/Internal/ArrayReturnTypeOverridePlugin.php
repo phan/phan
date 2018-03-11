@@ -22,6 +22,8 @@ use Phan\PluginV2;
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  *
  * TODO: Refactor this.
+ *
+ * @phan-file-suppress PhanPluginUnusedClosureArgument
  */
 final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
     ReturnTypeOverrideCapability

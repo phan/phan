@@ -39,7 +39,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
-     * @suppress PhanPluginUnusedMethodArgument
+     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function visit(Node $node) : Context
     {

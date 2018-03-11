@@ -80,6 +80,8 @@ class Workspace
      * no-op for now. Stop the JSON RPC2 framework from warning about this method being undefined.
      * TODO: Define this so that Phan can respond to changes in client configuration.
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
+     *
+     * @param $settings @phan-unused-param
      */
     public function didChangeConfiguration($settings)
     {

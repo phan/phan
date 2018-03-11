@@ -24,6 +24,8 @@ use Phan\AST\Visitor\KindVisitorImplementation;
  *
  * TODO: Change to AnalysisVisitor if this ever emits issues.
  * TODO: Analyze switch (if there is a default) in another PR (And handle fallthrough)
+ *
+ * @phan-file-suppress PhanPluginUnusedPublicFinalMethodArgument
  */
 final class BlockExitStatusChecker extends KindVisitorImplementation
 {

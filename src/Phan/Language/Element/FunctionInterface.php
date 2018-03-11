@@ -216,7 +216,7 @@ interface FunctionInterface extends AddressableElementInterface
      */
     public function analyzeWithNewParams(Context $context, CodeBase $code_base, array $parameter_list) : Context;
 
-    public function getElementNamespace(CodeBase $code_base) : string;
+    public function getElementNamespace() : string;
 
     /**
      * @return UnionType

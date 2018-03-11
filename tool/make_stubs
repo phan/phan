@@ -25,6 +25,9 @@ class StubsGenerator {
 
     public static function printHelpAndExit(string $message = '', int $exit_code = 1)
     {
+        if ($message) {
+            echo "$message\n";
+        }
         global $argv;
         $prog_name = $argv[0];
         echo <<<EOT

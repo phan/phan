@@ -62,7 +62,7 @@ final class StringFunctionPlugin extends PluginV2 implements
     /**
      * @return array<string,\Closure>
      */
-    private static function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
+    private static function getAnalyzeFunctionCallClosuresStatic() : array
     {
         $make_order_warner = static function (int $expected_const_pos, int $expected_variable_pos) : \Closure {
             $expected_arg_count = 1 + (int)max($expected_const_pos, $expected_variable_pos);
@@ -196,13 +196,14 @@ final class StringFunctionPlugin extends PluginV2 implements
     /**
      * @return array<string,\Closure>
      * @override
+     * @suppress PhanPluginUnusedPublicFinalMethodArgument
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
     {
         // Unit tests invoke this repeatedly. Cache it.
         static $analyzers = null;
         if ($analyzers === null) {
-            $analyzers = self::getAnalyzeFunctionCallClosuresStatic($code_base);
+            $analyzers = self::getAnalyzeFunctionCallClosuresStatic();
         }
         return $analyzers;
     }

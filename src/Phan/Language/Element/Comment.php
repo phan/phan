@@ -1018,7 +1018,7 @@ class Comment
         // a Closure would be bound with bind() or bindTo(), so using a custom tag.
         //
         // TODO: Also add a version which forbids using $this in the closure?
-        if (preg_match('/@(PhanClosureScope|phan-closure-scope)\s+(' . UnionType::union_type_regex . ')/', $line, $match)) {
+        if (preg_match('/@(PhanClosureScope|phan-closure-scope)\s+(' . Type::type_regex . ')/', $line, $match)) {
             $closure_scope_union_type_string = $match[2];
         }
 

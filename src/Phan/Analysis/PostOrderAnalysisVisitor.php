@@ -166,10 +166,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function visitWhile(Node $node) : Context
     {
-        return $this->visitIfElem($node);
+        return $this->context;
     }
 
     /**
@@ -179,10 +180,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function visitSwitch(Node $node) : Context
     {
-        return $this->visitIfElem($node);
+        return $this->context;
     }
 
     /**
@@ -192,10 +194,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function visitSwitchCase(Node $node) : Context
     {
-        return $this->visitIfElem($node);
+        return $this->context;
     }
 
     /**
@@ -205,10 +208,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function visitExprList(Node $node) : Context
     {
-        return $this->visitIfElem($node);
+        return $this->context;
     }
 
     /**
