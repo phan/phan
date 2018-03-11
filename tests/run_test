@@ -15,7 +15,11 @@ case "$TEST_SUITE" in
 		exit $?
 		;;
 	__FakeSelfFallbackTest)
-		./phan --use-fallback-parser --memory-limit 1G
+		./phan --plugin PHPUnitNotDeadCodePlugin \
+			--dead-code-detection \
+			--polyfill-parse-all-element-doc-comments \
+			--force-polyfill-parser \
+			--memory-limit 1G
 		exit $?
 		;;
 	__FakePHP70Test)

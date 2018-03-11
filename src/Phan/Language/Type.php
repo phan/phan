@@ -54,6 +54,8 @@ class Type
     /**
      * @var string
      * A legal array entry in an array shape (e.g. 'field:string[]')
+     *
+     * @suppress PhanUnreferencedPublicClassConstant
      */
     const array_shape_entry_regex_noncapturing =
         '(?:' . self::shape_key_regex . ')\s*:\s*(?:' . self::simple_type_regex . ')';
@@ -180,9 +182,9 @@ class Type
     const _bit_nullable = (1 << 2);
 
     /**
-     * @var string|null
-     * The namespace of this type such as '\' or
-     * '\Phan\Language'
+     * @var string
+     * The namespace of this type such as '' (for internal types such as 'int')
+     * or '\' or '\Phan\Language'
      */
     protected $namespace = null;
 
@@ -1046,6 +1048,9 @@ class Type
      * @return FullyQualifiedClassName
      * A fully-qualified class name derived from this type
      * (This differs from asFQSEN() in ClosureType)
+     *
+     * @deprecated
+     * @suppress PhanUnreferencedPublicMethod (just use FullyQualifiedClassName::fromType($this))
      */
     public function asClassFQSEN() : FullyQualifiedClassName
     {
@@ -1065,6 +1070,7 @@ class Type
     /**
      * @return bool
      * True if this namespace is defined
+     * @suppress PhanUnreferencedPublicMethod (TODO: remove?)
      */
     public function hasNamespace() : bool
     {
@@ -1410,6 +1416,8 @@ class Type
     /**
      * @return bool
      * True if this type has any template parameter types
+     * @suppress PhanUnreferencedPublicMethod potentially used in the future
+     *           TODO: Would need to override this in ArrayShapeType, GenericArrayType?
      */
     public function hasTemplateParameterTypes() : bool
     {

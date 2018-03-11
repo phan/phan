@@ -12,6 +12,7 @@ class InitializeResult
      * The capabilities the language server provides.
      *
      * @var ServerCapabilities
+     * @suppress PhanWriteOnlyPublicProperty (Used by AdvancedJsonRpc)
      */
     public $capabilities;
 

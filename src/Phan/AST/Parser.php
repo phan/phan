@@ -67,6 +67,7 @@ class Parser
             $converter = new TolerantASTConverter();
             $converter->setShouldAddPlaceholders(false);
             $converter->setPHPVersionId(Config::get_closest_target_php_version_id());
+            $converter->setParseAllDocComments(Config::getValue('polyfill_parse_all_element_doc_comments'));
             $errors = [];
             try {
                 $node = $converter->parseCodeAsPHPAST($file_contents, Config::AST_VERSION, $errors);
@@ -95,6 +96,7 @@ class Parser
         $converter = new TolerantASTConverter();
         $converter->setShouldAddPlaceholders(false);
         $converter->setPHPVersionId(Config::get_closest_target_php_version_id());
+        $converter->setParseAllDocComments(Config::getValue('polyfill_parse_all_element_doc_comments'));
         $errors = [];
         try {
             $node = $converter->parseCodeAsPHPAST($file_contents, Config::AST_VERSION, $errors);

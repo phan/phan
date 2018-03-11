@@ -16,6 +16,7 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\PassByReferenceVariable;
+use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
@@ -1646,7 +1647,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             // Mark that this property has been referenced from
             // this context
-            $property->addReference($this->context);
+            if (Config::get_track_references()) {
+                $this->trackPropertyReference($property, $node);
+            }
         } catch (IssueException $exception) {
             // We'll check out some reasons it might not exist
             // before logging the issue
@@ -1707,6 +1710,29 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         return $this->context;
+    }
+
+    /**
+     * @return void
+     */
+    private function trackPropertyReference(Property $property, Node $node)
+    {
+        $property->addReference($this->context);
+        if (!$property->hasReadReference() && !$this->isAssignmentOrNestedAssignment($node)) {
+            $property->setHasReadReference();
+        }
+    }
+
+    private function isAssignmentOrNestedAssignment(Node $node) : bool
+    {
+        $parent_node = \end($this->parent_node_list);
+        $parent_kind = $parent_node->kind;
+        if ($parent_kind === \ast\AST_DIM) {
+            return $parent_node->children['expr'] === $node && $this->shouldSkipNestedDim();
+        } elseif ($parent_kind === \ast\AST_ASSIGN || $parent_kind === \ast\AST_ASSIGN_REF) {
+            return $parent_node->children['var'] === $node;
+        }
+        return false;
     }
 
     /**
@@ -1792,7 +1818,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         FunctionInterface $method,
         Node $node
     ) {
-        $method->addReference($this->context);
+        $code_base = $this->code_base;
+        $context = $this->context;
+
+        $method->addReference($context);
 
         // Create variables for any pass-by-reference
         // parameters
@@ -1815,8 +1844,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         // We don't do anything with it; just create it
                         // if it doesn't exist
                         $variable = (new ContextNode(
-                            $this->code_base,
-                            $this->context,
+                            $code_base,
+                            $context,
                             $argument
                         ))->getOrCreateVariable();
                     } catch (NodeException $e) {
@@ -1833,14 +1862,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         // if it doesn't exist
                         try {
                             (new ContextNode(
-                                $this->code_base,
-                                $this->context,
+                                $code_base,
+                                $context,
                                 $argument
                             ))->getOrCreateProperty($argument->children['prop'], $argument->kind == \ast\AST_STATIC_PROP);
                         } catch (IssueException $exception) {
                             Issue::maybeEmitInstance(
-                                $this->code_base,
-                                $this->context,
+                                $code_base,
+                                $context,
                                 $exception->getIssueInstance()
                             );
                         } catch (\Exception $exception) {
@@ -1859,8 +1888,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         ArgumentType::analyze(
             $method,
             $node,
-            $this->context,
-            $this->code_base
+            $context,
+            $code_base
         );
 
         // Take another pass over pass-by-reference parameters
@@ -1875,11 +1904,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 continue;
             }
 
-            if (Config::get_track_references()) {
-                (new ArgumentVisitor(
-                    $this->code_base,
-                    $this->context
-                ))($argument);
+            $kind = $argument->kind;
+            if ($kind === \ast\AST_CLOSURE) {
+                if (Config::get_track_references()) {
+                    $this->trackReferenceToClosure($argument);
+                }
             }
 
             // If the parameter is pass-by-reference and we're
@@ -1887,19 +1916,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // the parameter and variable types to eachother
             $variable = null;
             if ($parameter->isPassByReference()) {
-                if ($argument->kind == \ast\AST_VAR) {
+                if ($kind === \ast\AST_VAR) {
                     try {
                         $variable = (new ContextNode(
-                            $this->code_base,
-                            $this->context,
+                            $code_base,
+                            $context,
                             $argument
                         ))->getOrCreateVariable();
                     } catch (NodeException $e) {
                         // E.g. `function_accepting_reference(${$varName})` - Phan can't analyze outer type of ${$varName}
                         continue;
                     }
-                } elseif ($argument->kind == \ast\AST_STATIC_PROP
-                    || $argument->kind == \ast\AST_PROP
+                } elseif ($kind === \ast\AST_STATIC_PROP
+                    || $kind === \ast\AST_PROP
                 ) {
                     $property_name = $argument->children['prop'];
 
@@ -1908,14 +1937,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         // if it doesn't exist
                         try {
                             $variable = (new ContextNode(
-                                $this->code_base,
-                                $this->context,
+                                $code_base,
+                                $context,
                                 $argument
                             ))->getOrCreateProperty($argument->children['prop'], $argument->kind == \ast\AST_STATIC_PROP);
+                            $variable->addReference($context);
                         } catch (IssueException $exception) {
                             Issue::maybeEmitInstance(
-                                $this->code_base,
-                                $this->context,
+                                $code_base,
+                                $context,
                                 $exception->getIssueInstance()
                             );
                         } catch (\Exception $exception) {
@@ -1987,6 +2017,25 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $node->children['args'],
             $method
         );
+    }
+
+    /**
+     * @return void
+     */
+    private function trackReferenceToClosure(Node $argument)
+    {
+        try {
+            $inner_context = $this->context->withLineNumberStart($argument->lineno ?? 0);
+            $method = (new ContextNode(
+                $this->code_base,
+                $inner_context,
+                $argument
+            ))->getClosure();
+
+            $method->addReference($inner_context);
+        } catch (\Exception $exception) {
+            // Swallow it
+        }
     }
 
     /**

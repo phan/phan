@@ -610,10 +610,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // of all child context into a single scope based
         // on any possible branching structure
         $context = (new ContextMergeVisitor(
-            $this->code_base,
             $context,
             $child_context_list
-        ))($node);
+        ))->__invoke($node);
 
         $unused_final_context = $this->postOrderAnalyze($context, $node);
 
@@ -703,10 +702,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
             // ContextMergeVisitor will include the incoming scope($context) if the if elements aren't comprehensive
             $context = (new ContextMergeVisitor(
-                $this->code_base,
                 $fallthrough_context,  // e.g. "if (!is_string($x)) { $x = ''; }" should result in inferring $x is a string.
                 $child_context_list
-            ))($node);
+            ))->__invoke($node);
         }
 
         $context = $this->postOrderAnalyze($context, $node);
@@ -766,7 +764,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // NOTE: We let ContextMergeVisitor->visitTry decide if the block exit status is valid.
         $original_context = $context;
         $context = (new ContextMergeVisitor(
-            $this->code_base,
             $context,
             [$try_context]
         ))->mergeTryContext($node);
@@ -802,7 +799,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // of all child context into a single scope based
             // on any possible branching structure
             $context = (new ContextMergeVisitor(
-                $this->code_base,
                 $context,
                 $catch_context_list
             ))->mergeCatchContext($node);
@@ -906,7 +902,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         if ($right_node instanceof Node) {
             $right_context = $this->analyzeAndGetUpdatedContext($context_with_left_condition, $node, $right_node);
             $context = (new ContextMergeVisitor(
-                $this->code_base,
                 $context,
                 [$context, $context_with_left_condition, $right_context]
             ))($node);
@@ -971,7 +966,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         if ($right_node instanceof Node) {
             $right_context = $this->analyzeAndGetUpdatedContext($context_with_false_left_condition, $node, $right_node);
             $context = (new ContextMergeVisitor(
-                $this->code_base,
                 $context,
                 [$context, $context_with_true_left_condition, $right_context]
             ))->combineChildContextList();
@@ -1051,10 +1045,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
         if (\count($child_context_list) >= 1) {
             $context = (new ContextMergeVisitor(
-                $this->code_base,
                 $context,
                 $child_context_list
-            ))($node);
+            ))->__invoke($node);
         }
 
         $context = $this->postOrderAnalyze($context, $node);

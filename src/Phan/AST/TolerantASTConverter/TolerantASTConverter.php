@@ -103,6 +103,9 @@ final class TolerantASTConverter
     /** @var FilePositionMap */
     private static $file_position_map;
 
+    /** @var bool */
+    private static $parse_all_doc_comments = false;
+
     /** @var bool Sets equivalent static option in self::_start_parsing() */
     private $instance_should_add_placeholders = false;
 
@@ -111,6 +114,11 @@ final class TolerantASTConverter
      * Set to a newer version to support comments on class constants, etc.
      */
     private $instance_php_version_id_parsing = PHP_VERSION_ID;
+
+    /**
+     * @var bool can be used to force all doc comments to be parsed
+     */
+    private $instance_parse_all_doc_comments = false;
 
     // No-op.
     public function __construct()
@@ -127,6 +135,15 @@ final class TolerantASTConverter
     public function setPHPVersionId(int $value)
     {
         $this->instance_php_version_id_parsing = $value;
+    }
+
+    /**
+     * Parse all doc comments, even the ones the current php version's php-ast would be incapable of providing.
+     * @return void
+     */
+    public function setParseAllDocComments(bool $value)
+    {
+        $this->instance_parse_all_doc_comments = $value;
     }
 
     /**
@@ -180,6 +197,7 @@ final class TolerantASTConverter
         self::$decl_id = 0;
         self::$should_add_placeholders = $this->instance_should_add_placeholders;
         self::$php_version_id_parsing = $this->instance_php_version_id_parsing;
+        self::$parse_all_doc_comments = $this->instance_parse_all_doc_comments;
         self::$file_position_map = new FilePositionMap($file_contents);
         // $file_contents required for looking up line numbers.
         // TODO: Other data structures?
@@ -2168,18 +2186,12 @@ final class TolerantASTConverter
     private static function phpParserConstelemToAstConstelem(PhpParser\Node\ConstElement $n, $doc_comment) : ast\Node
     {
         $start_line = self::getStartLine($n);
-        if (self::$php_version_id_parsing >= 70100) {
-            $doc_comment = self::extractPhpdocComment($n) ?: $doc_comment;
-        } else {
-            $doc_comment = null;
-        }
-
         $children = [
             'name' => self::variableTokenToString($n->name),
             'value' => self::phpParserNodeToAstNode($n->assignment),
         ];
 
-        if (self::$php_version_id_parsing >= 70100) {
+        if (self::$php_version_id_parsing >= 70100 || self::$parse_all_doc_comments) {
             $children['docComment'] = self::extractPhpdocComment($n) ?? $doc_comment;
         }
         return new ast\Node(ast\AST_CONST_ELEM, 0, $children, $start_line);
@@ -2241,11 +2253,11 @@ final class TolerantASTConverter
     {
         $const_elems = [];
         $doc_comment = $n->getDocCommentText();
-        foreach ($n->constElements->children ?? [] as $i => $prop) {
-            if ($prop instanceof Token) {
+        foreach ($n->constElements->children ?? [] as $i => $const_elem) {
+            if ($const_elem instanceof Token) {
                 continue;
             }
-            $const_elems[] = self::phpParserConstelemToAstConstelem($prop, $i === 0 ? $doc_comment : null);
+            $const_elems[] = self::phpParserConstelemToAstConstelem($const_elem, $i === 0 ? $doc_comment : null);
         }
         $flags = self::phpParserVisibilityToAstVisibility($n->modifiers);
 
@@ -2279,7 +2291,7 @@ final class TolerantASTConverter
         ];
         $doc_comment = self::extractPhpdocComment($declare) ?? $first_doc_comment;
         // $first_doc_comment = null;
-        if (self::$php_version_id_parsing >= 70100) {
+        if (self::$php_version_id_parsing >= 70100 || self::$parse_all_doc_comments) {
             $children['docComment'] = $doc_comment;
         }
         $node = new ast\Node(ast\AST_CONST_ELEM, 0, $children, self::getStartLine($declare));

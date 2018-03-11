@@ -1309,6 +1309,7 @@ class UnionType implements \Serializable
      * @return bool
      * True if this union contains the Traversable type.
      * (Call asExpandedTypes() first to check for subclasses of Traversable)
+     * @suppress PhanUnreferencedPublicMethod not used right now.
      */
     public function hasTraversable() : bool
     {
@@ -1649,6 +1650,7 @@ class UnionType implements \Serializable
      * A UnionType with known callable types kept, other types filtered out.
      *
      * @see nonGenericArrayTypes
+     * @suppress PhanUnreferencedPublicMethod not used right now.
      */
     public function isExclusivelyCallable() : bool
     {
@@ -2175,11 +2177,6 @@ class UnionType implements \Serializable
         }
 
         $builder->addType($bool_type);
-    }
-
-    public static function createBuilderFromTypeList(array $type_list) : UnionTypeBuilder
-    {
-        return new UnionTypeBuilder(\count($type_list) <= 1 ? $type_list : self::getUniqueTypes($type_list));
     }
 
     /**

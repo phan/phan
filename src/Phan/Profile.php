@@ -22,6 +22,8 @@ trait Profile
      *
      * @param \Closure $closure
      * Any closure to measure how long it takes to run
+     *
+     * @suppress PhanUnreferencedProtectedMethod (unused, may use something similar in the future)
      */
     protected static function time(string $label, \Closure $closure)
     {

@@ -54,6 +54,7 @@ class Set extends \SplObjectStorage
      * @return Set
      * A new Set containing only the elements that appear in
      * all parameters
+     * @suppress PhanUnreferencedPublicMethod potentially useful but currently unused
      */
     public static function intersectAll(array $set_list) : Set
     {
@@ -94,6 +95,7 @@ class Set extends \SplObjectStorage
      * @return Set
      * A new Set containing any element that appear in
      * any parameters
+     * @suppress PhanUnreferencedPublicMethod potentially useful but currently unused
      */
     public static function unionAll(array $set_list) : Set
     {
@@ -113,6 +115,7 @@ class Set extends \SplObjectStorage
     /**
      * @return bool
      * True if this set contains any elements in the given list
+     * @suppress PhanUnreferencedPublicMethod potentially useful but currently unused
      */
     public function containsAny(array $element_list) : bool
     {
@@ -134,6 +137,7 @@ class Set extends \SplObjectStorage
      * @return Set
      * A new set for which all elements when passed to the given
      * closure return true
+     * @suppress PhanUnreferencedPublicMethod potentially useful but currently unused
      */
     public function filter(\Closure $closure)
     {
@@ -182,6 +186,7 @@ class Set extends \SplObjectStorage
      * The first element for which the given closure returns
      * true is returned or false if no elements pass the
      * given closure
+     * @suppress PhanUnreferencedPublicMethod potentially useful but currently unused
      */
     public function find(\Closure $closure)
     {

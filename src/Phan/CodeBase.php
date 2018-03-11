@@ -1409,14 +1409,6 @@ class CodeBase
     }
 
     /**
-     * @return void
-     */
-    public function store()
-    {
-        // TODO: ...
-    }
-
-    /**
      * @return string[]
      * The list of files that depend on the code in the given
      * file path

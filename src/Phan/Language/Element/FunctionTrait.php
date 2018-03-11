@@ -338,6 +338,7 @@ trait FunctionTrait
      * @return bool - Does any parameter type possibly require recursive analysis if more specific types are provided?
      *
      * If this returns true, there is at least one parameter and at least one of those can be overridden with a more specific type.
+     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function needsRecursiveAnalysis() : bool
     {
@@ -517,6 +518,7 @@ trait FunctionTrait
      *
      * @return void
      * @internal
+     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function appendParameter(Parameter $parameter)
     {
@@ -528,6 +530,7 @@ trait FunctionTrait
      *
      * Call this before calling appendParameter, if parameters were already added.
      * @internal
+     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function clearParameterList()
     {
@@ -714,6 +717,7 @@ trait FunctionTrait
     /**
      * @param array<string,UnionType> maps a subset of param names to the unmodified phpdoc parameter types. May differ from real parameter types
      * @return void
+     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function setPHPDocParameterTypeMap(array $parameter_map)
     {
@@ -724,6 +728,7 @@ trait FunctionTrait
      * Records the fact that $parameter_name is an output-only reference.
      * @param string $parameter_name
      * @return void
+     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function recordOutputReferenceParamName(string $parameter_name)
     {
@@ -732,6 +737,7 @@ trait FunctionTrait
 
     /**
      * @return array<int,string> list of output references. Usually empty.
+     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function getOutputReferenceParamNames() : array
     {
@@ -740,6 +746,7 @@ trait FunctionTrait
 
     /**
      * @return array<string,UnionType> maps a subset of param names to the unmodified phpdoc parameter types.
+     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function getPHPDocParameterTypeMap()
     {
@@ -757,6 +764,7 @@ trait FunctionTrait
 
     /**
      * @return ?UnionType the raw phpdoc union type
+     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function getPHPDocReturnType()
     {
@@ -788,6 +796,7 @@ trait FunctionTrait
      * (With an equal or larger remaining recursion depth)
      *
      * @param array<int,Parameter> $parameter_list
+     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function analyzeWithNewParams(Context $context, CodeBase $code_base, array $parameter_list) : Context
     {
@@ -861,6 +870,7 @@ trait FunctionTrait
 
     /**
      * Returns true if this function or method has additional analysis logic for invocations (From internal and user defined plugins)
+     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function hasFunctionCallAnalyzer() : bool
     {
@@ -874,6 +884,7 @@ trait FunctionTrait
      * @param Context $context
      * @param array<int,Node|int|string|float> $args
      * @return void
+     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
     public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args)
     {

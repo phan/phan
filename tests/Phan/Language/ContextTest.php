@@ -88,9 +88,4 @@ class ContextTest extends BaseTest
 
         $this->assertSame('\C::f', (string)$context->getScope()->getFQSEN());
     }
-
-    public function disabled_testNamespaceMap()
-    {
-        // ...
-    }
 }

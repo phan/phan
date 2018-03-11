@@ -72,6 +72,9 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         return $result;
     }
 
+    /**
+     * @suppress PhanUnreferencedPublicMethod toStubInfo is used by callers instead
+     */
     public function toStub() : string
     {
         list($namespace, $string) = $this->toStubInfo();

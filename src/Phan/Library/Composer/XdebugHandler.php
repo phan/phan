@@ -45,7 +45,6 @@ class XdebugHandler
 
     private $loaded;
     private $envScanDir;
-    private $version;
     private $tmpIni;
 
     /**
@@ -55,11 +54,6 @@ class XdebugHandler
     {
         $this->loaded = extension_loaded('xdebug');
         $this->envScanDir = getenv('PHP_INI_SCAN_DIR');
-
-        if ($this->loaded) {
-            $ext = new \ReflectionExtension('xdebug');
-            $this->version = strval($ext->getVersion());
-        }
     }
 
     /**

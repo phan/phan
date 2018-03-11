@@ -1,0 +1,6 @@
+src/023_write_only_property.php:4 PhanWriteOnlyPublicProperty Possibly zero read references to public property \MyClass23::a
+src/023_write_only_property.php:5 PhanWriteOnlyProtectedProperty Possibly zero read references to protected property \MyClass23::b
+src/023_write_only_property.php:6 PhanWriteOnlyPrivateProperty Possibly zero read references to private property \MyClass23::c
+src/023_write_only_property.php:15 PhanUnreferencedPublicProperty Possibly zero references to public property \MyClass23::g
+src/023_write_only_property.php:34 PhanWriteOnlyPublicProperty Possibly zero read references to public property \OtherClass::subclassProp
+src/023_write_only_property.php:35 PhanUnreferencedPublicProperty Possibly zero references to public property \OtherClass::subclassPropUnused

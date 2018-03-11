@@ -241,7 +241,7 @@ class ConditionVisitor extends KindVisitorImplementation
         // We analyze the right hand side of `cond($x) || cond2($x)` as if `cond($x)` was false.
         $right_true_context = (new ConditionVisitor($code_base, $left_false_context))($right);
         // When the ConditionVisitor is true, at least one of the left or right contexts must be true.
-        return (new ContextMergeVisitor($code_base, $context, [$left_true_context, $right_true_context]))->combineChildContextList();
+        return (new ContextMergeVisitor($context, [$left_true_context, $right_true_context]))->combineChildContextList();
     }
 
     /**

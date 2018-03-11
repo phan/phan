@@ -71,6 +71,12 @@ class Config
         // of the php executable used to execute phan.
         'target_php_version' => null,
 
+        // Supported values: '7.0', '7.1', '7.2', null.
+        // If this is set to null,
+        // then Phan assumes the PHP version which is closest to the minor version
+        // of the php executable used to execute phan.
+        'polyfill_parse_all_element_doc_comments' => true,
+
         // A list of individual files to include in analysis
         // with a path relative to the root directory of the
         // project
@@ -760,11 +766,6 @@ class Config
     public static function get_track_references() : bool
     {
         return self::$track_references;
-    }
-
-    public static function get_dead_code_detection() : bool
-    {
-        return self::getValue('dead_code_detection');
     }
 
     public static function get_backward_compatibility_checks() : bool

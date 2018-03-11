@@ -15,6 +15,7 @@ class Diagnostic
      * The range at which the message applies.
      *
      * @var Range
+     * @suppress PhanWriteOnlyPublicProperty this is serialized and sent to the client.
      */
     public $range;
 
@@ -23,6 +24,7 @@ class Diagnostic
      * client to interpret diagnostics as error, warning, info or hint.
      *
      * @var int|null
+     * @suppress PhanWriteOnlyPublicProperty this is serialized and sent to the client.
      */
     public $severity;
 
@@ -30,6 +32,7 @@ class Diagnostic
      * The diagnostic's code. Can be omitted.
      *
      * @var int|string|null
+     * @suppress PhanWriteOnlyPublicProperty this is serialized and sent to the client.
      */
     public $code;
 
@@ -38,6 +41,7 @@ class Diagnostic
      * diagnostic, e.g. 'typescript' or 'super lint'.
      *
      * @var string|null
+     * @suppress PhanWriteOnlyPublicProperty this is serialized and sent to the client.
      */
     public $source;
 
@@ -45,6 +49,7 @@ class Diagnostic
      * The diagnostic's message.
      *
      * @var string
+     * @suppress PhanWriteOnlyPublicProperty this is serialized and sent to the client.
      */
     public $message;
 

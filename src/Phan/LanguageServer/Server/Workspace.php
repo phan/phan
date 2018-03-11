@@ -52,6 +52,7 @@ class Workspace
      *
      * @param FileEvent[] $changes
      * @return void
+     * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
     public function didChangeWatchedFiles(array $changes)
     {
@@ -67,6 +68,7 @@ class Workspace
         }
         // TODO: more than one file
         foreach ($changes as $change) {
+            // TODO: What about CREATED? Will that be emitted for renaming files?
             if ($change->type === FileChangeType::CHANGED) {
                 $uri = $change->uri;
                 $this->server->analyzeURIAsync($uri);
@@ -74,7 +76,11 @@ class Workspace
         }
     }
 
-    // no-op for now. Stop the JSON RPC2 framework from warning about this method being undefined.
+    /**
+     * no-op for now. Stop the JSON RPC2 framework from warning about this method being undefined.
+     * TODO: Define this so that Phan can respond to changes in client configuration.
+     * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
+     */
     public function didChangeConfiguration($settings)
     {
     }

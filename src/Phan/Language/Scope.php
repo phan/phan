@@ -68,6 +68,7 @@ abstract class Scope
     /**
      * @return bool
      * True if this scope has an FQSEN
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function hasFQSEN() : bool
     {

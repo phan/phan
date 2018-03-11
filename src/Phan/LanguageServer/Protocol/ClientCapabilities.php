@@ -11,6 +11,7 @@ class ClientCapabilities
      * The client supports workspace/xfiles requests
      *
      * @var bool|null
+     * @suppress PhanUnreferencedPublicProperty may use eventually
      */
     public $xfilesProvider;
 
@@ -18,6 +19,7 @@ class ClientCapabilities
      * The client supports textDocument/xcontent requests
      *
      * @var bool|null
+     * @suppress PhanUnreferencedPublicProperty may use eventually
      */
     public $xcontentProvider;
 
@@ -25,6 +27,7 @@ class ClientCapabilities
      * The client supports xcache/* requests
      *
      * @var bool|null
+     * @suppress PhanUnreferencedPublicProperty may use eventually
      */
     public $xcacheProvider;
 }

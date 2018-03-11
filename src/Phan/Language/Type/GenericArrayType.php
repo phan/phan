@@ -101,27 +101,6 @@ final class GenericArrayType extends ArrayType
     }
 
     /**
-     * @param int $key_type
-     * The new key type.
-     *
-     * @return Type
-     * A new type that is a copy of this type but with the
-     * given nullability value.
-     */
-    public function withKeyType(int $key_type) : Type
-    {
-        if ($key_type === $this->key_type) {
-            return $this;
-        }
-
-        return GenericArrayType::fromElementType(
-            $this->element_type,
-            $this->is_nullable,
-            $key_type
-        );
-    }
-
-    /**
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly
@@ -350,8 +329,10 @@ final class GenericArrayType extends ArrayType
         return $key_types ?: self::KEY_MIXED;
     }
 
+    /** @suppress PhanUnreferencedPublicClassConstant */
     const CONVERT_KEY_MIXED_TO_EMPTY_UNION_TYPE = 0;
     const CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE = 1;
+
     /**
      * @return UnionType
      */

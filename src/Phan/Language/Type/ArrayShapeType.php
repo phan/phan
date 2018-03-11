@@ -184,9 +184,10 @@ final class ArrayShapeType extends ArrayType
     }
 
     /**
+     * Returns an empty array shape (for `array{}`)
      * @param bool $is_nullable
      * @return ArrayShapeType
-     * TODO: deduplicate
+     * @suppress PhanUnreferencedPublicMethod (TODO: Remove if we support empty array shapes and still don't use this)
      */
     public static function empty(
         bool $is_nullable = false

@@ -170,29 +170,32 @@ class Issue
     const ParamSignaturePHPDocMismatchParamType                       = 'PhanParamSignaturePHPDocMismatchParamType';
 
     // Issue::CATEGORY_NOOP
-    const NoopArray                 = 'PhanNoopArray';
-    const NoopClosure               = 'PhanNoopClosure';
-    const NoopConstant              = 'PhanNoopConstant';
-    const NoopProperty              = 'PhanNoopProperty';
-    const NoopVariable              = 'PhanNoopVariable';
-    const NoopUnaryOperator         = 'PhanNoopUnaryOperator';
-    const NoopBinaryOperator        = 'PhanNoopBinaryOperator';
-    const UnreferencedClass         = 'PhanUnreferencedClass';
-    const UnreferencedFunction      = 'PhanUnreferencedFunction';
-    const UnreferencedPublicMethod  = 'PhanUnreferencedPublicMethod';
-    const UnreferencedProtectedMethod = 'PhanUnreferencedProtectedMethod';
-    const UnreferencedPrivateMethod = 'PhanUnreferencedPrivateMethod';
-    const UnreferencedPublicProperty = 'PhanUnreferencedPublicProperty';
+    const NoopArray                     = 'PhanNoopArray';
+    const NoopClosure                   = 'PhanNoopClosure';
+    const NoopConstant                  = 'PhanNoopConstant';
+    const NoopProperty                  = 'PhanNoopProperty';
+    const NoopVariable                  = 'PhanNoopVariable';
+    const NoopUnaryOperator             = 'PhanNoopUnaryOperator';
+    const NoopBinaryOperator            = 'PhanNoopBinaryOperator';
+    const UnreferencedClass             = 'PhanUnreferencedClass';
+    const UnreferencedFunction          = 'PhanUnreferencedFunction';
+    const UnreferencedPublicMethod      = 'PhanUnreferencedPublicMethod';
+    const UnreferencedProtectedMethod   = 'PhanUnreferencedProtectedMethod';
+    const UnreferencedPrivateMethod     = 'PhanUnreferencedPrivateMethod';
+    const UnreferencedPublicProperty    = 'PhanUnreferencedPublicProperty';
     const UnreferencedProtectedProperty = 'PhanUnreferencedProtectedProperty';
-    const UnreferencedPrivateProperty = 'PhanUnreferencedPrivateProperty';
-    const UnreferencedConstant      = 'PhanUnreferencedConstant';
+    const UnreferencedPrivateProperty   = 'PhanUnreferencedPrivateProperty';
+    const WriteOnlyPublicProperty       = 'PhanWriteOnlyPublicProperty';
+    const WriteOnlyProtectedProperty    = 'PhanWriteOnlyProtectedProperty';
+    const WriteOnlyPrivateProperty      = 'PhanWriteOnlyPrivateProperty';
+    const UnreferencedConstant          = 'PhanUnreferencedConstant';
     const UnreferencedPublicClassConstant = 'PhanUnreferencedPublicClassConstant';
     const UnreferencedProtectedClassConstant = 'PhanUnreferencedProtectedClassConstant';
     const UnreferencedPrivateClassConstant = 'PhanUnreferencedPrivateClassConstant';
-    const UnreferencedClosure       = 'PhanUnreferencedClosure';
-    const UnreferencedUseNormal = 'PhanUnreferencedUseNormal';
-    const UnreferencedUseFunction = 'PhanUnreferencedUseFunction';
-    const UnreferencedUseConstant = 'PhanUnreferencedUseConstant';
+    const UnreferencedClosure           = 'PhanUnreferencedClosure';
+    const UnreferencedUseNormal         = 'PhanUnreferencedUseNormal';
+    const UnreferencedUseFunction       = 'PhanUnreferencedUseFunction';
+    const UnreferencedUseConstant       = 'PhanUnreferencedUseConstant';
 
     // Issue::CATEGORY_REDEFINE
     const RedefineClass             = 'PhanRedefineClass';
@@ -306,9 +309,13 @@ class Issue
     // See https://docs.codeclimate.com/v1.0/docs/remediation
     const REMEDIATION_A = 1000000;
     const REMEDIATION_B = 3000000;
+    /** @suppress PhanUnreferencedPublicClassConstant */
     const REMEDIATION_C = 6000000;
+    /** @suppress PhanUnreferencedPublicClassConstant */
     const REMEDIATION_D = 12000000;
+    /** @suppress PhanUnreferencedPublicClassConstant */
     const REMEDIATION_E = 16000000;
+    /** @suppress PhanUnreferencedPublicClassConstant */
     const REMEDIATION_F = 18000000;
 
     // type id constants.
@@ -1714,6 +1721,30 @@ class Issue
                 6016
             ),
             new Issue(
+                self::WriteOnlyPublicProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero read references to public property {PROPERTY}",
+                self::REMEDIATION_B,
+                6025
+            ),
+            new Issue(
+                self::WriteOnlyProtectedProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero read references to protected property {PROPERTY}",
+                self::REMEDIATION_B,
+                6026
+            ),
+            new Issue(
+                self::WriteOnlyPrivateProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero read references to private property {PROPERTY}",
+                self::REMEDIATION_B,
+                6027
+            ),
+            new Issue(
                 self::UnreferencedPublicClassConstant,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -2329,12 +2360,12 @@ class Issue
 
     /**
      * @return int
+     * @suppress PhanUnreferencedPublicMethod (no reporters use this right now)
      */
     public function getRemediationDifficulty() : int
     {
         return $this->remediation_difficulty;
     }
-
 
     /**
      * @return string

@@ -24,6 +24,9 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->{$fn_name}($node);
     }
 
+    /**
+     * @suppress PhanUnreferencedPublicMethod
+     */
     public function handleMissingNodeKind(Node $node)
     {
         fprintf(STDERR, "Unexpected Node kind. Node:\n%s\n", Debug::nodeToString($node));

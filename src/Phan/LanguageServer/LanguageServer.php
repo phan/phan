@@ -63,6 +63,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * Handles workspace/* method calls
      *
      * @var Server\Workspace
+     * @suppress PhanWriteOnlyPublicProperty used by AdvancedJsonRpc\Dispatcher via reflection
      */
     public $workspace;
 
@@ -732,6 +733,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         return $textDocumentSyncOptions;
     }
 
+    /**
+     * @suppress PhanUnreferencedPublicMethod this is called by the client through AdvancedJsonRpc
+     */
     public function initialized()
     {
         Logger::logInfo("Called initialized on language server, currently a no-op");

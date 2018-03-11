@@ -31,6 +31,7 @@ class CLI
 
     /**
      * @return OutputInterface
+     * @suppress PhanUnreferencedPublicMethod not used yet.
      */
     public function getOutput() : OutputInterface
     {
@@ -115,6 +116,8 @@ class CLI
                 'output:',
                 'output-mode:',
                 'parent-constructor-required:',
+                'polyfill-parse-all-element-doc-comments',
+                'plugin:',
                 'print-memory-usage-summary',
                 'processes:',
                 'progress-bar',
@@ -314,6 +317,9 @@ class CLI
                 case 'target-php-version':
                     Config::setValue('target_php_version', $value);
                     break;
+                case 'polyfill-parse-all-element-doc-comments':
+                    Config::setValue('polyfill_parse_all_element_doc_comments', true);
+                    break;
                 case 'd':
                 case 'project-root-directory':
                     // We handle this flag before parsing options so
@@ -328,6 +334,12 @@ class CLI
                 case 'disable-plugins':
                     // Slightly faster, e.g. for daemon mode with lowest latency (along with --quick).
                     Config::setValue('plugins', []);
+                    break;
+                case 'plugin':
+                    Config::setValue(
+                        'plugins',
+                        array_unique(array_merge(Config::getValue('plugins'), [$value]))
+                    );
                     break;
                 case 'use-fallback-parser':
                     Config::setValue('use_fallback_parser', true);
@@ -679,6 +691,10 @@ Usage: {$argv[0]} [options] [files...]
  --disable-plugins
   Don't run any plugins. Slightly faster.
 
+ --plugin <pluginName|path/to/Plugin.php>
+  Add an additional plugin to run. This flag can be repeated.
+  (Either pass the name of the plugin or a relative/absolute path to the plugin)
+
  --use-fallback-parser
   If a file to be analyzed is syntactically invalid
   (i.e. "php --syntax-check path/to/file" would emit a syntax error),
@@ -744,6 +760,10 @@ Extended help:
 
  --markdown-issue-messages
   Emit issue messages with markdown formatting.
+
+ --polyfill-parse-all-element-doc-comments
+  Makes the polyfill aware of doc comments on class constants and declare statements
+  even when imitating parsing a PHP 7.0 codebase.
 
  --language-server-on-stdin
   Start the language server (For the Language Server protocol).

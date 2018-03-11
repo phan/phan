@@ -21,7 +21,10 @@ use ast\Node;
  */
 abstract class PluginAwareAnalysisVisitor extends PluginAwareBaseAnalysisVisitor
 {
-    /** @var Node|null - Set after the constructor is called */
+    /**
+     * @var Node|null - Set after the constructor is called
+     * @suppress PhanUnreferencedProtectedProperty (Some plugins might use this. Note that this class is deprecated.)
+     */
     protected $parent_node;
 
     // Implementations should omit the constructor or call parent::__construct(CodeBase $code_base, Context $context)

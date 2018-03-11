@@ -469,6 +469,8 @@ return [
         'PregRegexCheckerPlugin',
         'PrintfCheckerPlugin',
 
+        // 'PHPUnitNotDeadCodePlugin',  // Marks phpunit test case subclasses and test cases as refernced code. only useful for runs when dead code detection is enabled
+
         // NOTE: This plugin only produces correct results when
         //       Phan is run on a single core (-j1).
         // 'UnusedSuppressionPlugin',

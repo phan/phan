@@ -12,6 +12,7 @@ abstract class FileChangeType
 {
     /**
      * The file got created.
+     * @suppress PhanUnreferencedPublicClassConstant
      */
     const CREATED = 1;
 

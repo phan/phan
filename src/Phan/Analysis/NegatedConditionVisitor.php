@@ -208,7 +208,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         $right_false_context = (new NegatedConditionVisitor($code_base, $left_true_context))($right);
         // When the NegatedConditionVisitor is false, at least one of the left or right contexts must be false.
         // (NegatedConditionVisitor returns a context for when the input Node's value was falsey)
-        return (new ContextMergeVisitor($code_base, $context, [$left_false_context, $right_false_context]))->combineChildContextList();
+        return (new ContextMergeVisitor($context, [$left_false_context, $right_false_context]))->combineChildContextList();
     }
 
     /**

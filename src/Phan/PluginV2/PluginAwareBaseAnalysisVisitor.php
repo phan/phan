@@ -48,6 +48,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
      * A guess at how hard the issue will be to fix from the
      * set {Issue:REMEDIATION_A, Issue:REMEDIATION_B, ...
      * Issue::REMEDIATION_F} with F being the hardest.
+     * @suppress PhanUnreferencedPublicMethod (this plugin type is deprecated)
      */
     public function emit(
         string $issue_type,

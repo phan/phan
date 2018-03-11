@@ -15,9 +15,6 @@ final class CSVPrinter implements BufferedPrinterInterface
     /** @var resource */
     private $stream;
 
-    /** @var array */
-    private $messages = [];
-
     /** @param IssueInstance $instance */
     public function print(IssueInstance $instance)
     {

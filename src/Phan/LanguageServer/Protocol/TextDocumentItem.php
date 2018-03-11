@@ -21,6 +21,7 @@ class TextDocumentItem
      * The text document's language identifier.
      *
      * @var string
+     * @suppress PhanUnreferencedPublicProperty (Part of the protocol but Phan doesn't use it)
      */
     public $languageId;
 
@@ -29,6 +30,7 @@ class TextDocumentItem
      * change, including undo/redo).
      *
      * @var int
+     * @suppress PhanUnreferencedPublicProperty (Part of the protocol but Phan doesn't use it)
      */
     public $version;
 
