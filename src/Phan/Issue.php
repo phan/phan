@@ -2,6 +2,11 @@
 namespace Phan;
 
 use Phan\Language\Context;
+use Phan\Language\Element\TypedElement;
+use Phan\Language\Element\UnaddressableTypedElement;
+use Phan\Language\FQSEN;
+use Phan\Language\Type;
+use Phan\Language\UnionType;
 
 /**
  * An issue emitted during the course of analysis
@@ -2424,7 +2429,7 @@ class Issue
      * @param int $line
      * The line number (start) where the issue was found
      *
-     * @param mixed ...$template_parameters
+     * @param string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement ...$template_parameters
      * Any template parameters required for the issue
      * message
      *
@@ -2455,7 +2460,7 @@ class Issue
      * @param int $line
      * The line number (start) where the issue was found
      *
-     * @param array<int,string|int|float|bool|object> $template_parameters
+     * @param array<int,string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $template_parameters
      * Any template parameters required for the issue
      * message
      *
@@ -2554,7 +2559,7 @@ class Issue
      * @param int $lineno
      * The line number where the issue was found
      *
-     * @param string|int|float|bool|object ...$parameters
+     * @param string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement ...$parameters
      * Template parameters for the issue's error message.
      * If these are objects, they should define __toString()
      *
@@ -2590,7 +2595,7 @@ class Issue
      * @param int $lineno
      * The line number where the issue was found
      *
-     * @param array<int,string|int|float|bool|object> $parameters
+     * @param array<int,string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $parameters
      * Template parameters for the issue's error message
      *
      * @return void
