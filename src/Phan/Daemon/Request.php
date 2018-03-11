@@ -41,7 +41,7 @@ class Request
     /** @var Responder|null - Null after the response is sent. */
     private $responder;
 
-    /** @var array */
+    /** @var array<string,mixed> */
     private $config;
 
     /** @var BufferedOutput */
@@ -210,7 +210,7 @@ class Request
      * Currently supports only JSON.
      * TODO: HTTP protocol.
      *
-     * @param array $response
+     * @param array<string,mixed> $response
      * @return void
      */
     public function sendJSONResponse(array $response)

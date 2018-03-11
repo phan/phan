@@ -12,7 +12,7 @@ final class JSONPrinter implements BufferedPrinterInterface
     /** @var  OutputInterface */
     private $output;
 
-    /** @var array */
+    /** @var array<int,array> */
     private $messages = [];
 
     /** @param IssueInstance $instance */

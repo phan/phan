@@ -376,7 +376,7 @@ final class GenericArrayType extends ArrayType
     }
 
     /**
-     * @param array $array - The array keys are used for the final result.
+     * @param array<int|string,mixed> $array - The array keys are used for the final result.
      *
      * @return int
      * Corresponds to the type of the array keys of $array. This is a GenericArrayType::KEY_* constant (KEY_INT, KEY_STRING, or KEY_MIXED).

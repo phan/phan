@@ -21,7 +21,7 @@ class IssueInstance
      * @param Issue $issue
      * @param string $file
      * @param int $line
-     * @param array $template_parameters
+     * @param array<int,string|int|float|bool|object> $template_parameters
      */
     public function __construct(
         Issue $issue,
@@ -41,6 +41,9 @@ class IssueInstance
         }
     }
 
+    /**
+     * @param array<int,string|int|float|bool|object> $template_parameters
+     */
     private static function generatePlainMessage(
         Issue $issue,
         array $template_parameters
@@ -62,6 +65,9 @@ class IssueInstance
         );
     }
 
+    /**
+     * @param array<int,string|int|float|bool|object> $template_parameters
+     */
     private static function generateColorizedMessage(
         Issue $issue,
         array $template_parameters

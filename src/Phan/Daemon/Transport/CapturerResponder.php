@@ -7,19 +7,20 @@ namespace Phan\Daemon\Transport;
  */
 class CapturerResponder implements Responder
 {
-    /** @var array the data for getRequestData() */
+    /** @var array<string,mixed> the data for getRequestData() */
     private $request_data;
 
     /** @var ?array the data sent via sendAndClose */
     private $response_data;
 
+    /** @param array<string,mixed> $data the data for getRequestData() */
     public function __construct(array $data)
     {
         $this->request_data = $data;
     }
 
     /**
-     * @return array the request data
+     * @return array<string,mixed> the request data
      */
     public function getRequestData()
     {

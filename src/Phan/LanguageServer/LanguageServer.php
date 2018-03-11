@@ -204,7 +204,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * @param \Closure $file_path_lister
      * Returns string[] - A list of files to scan. This may be different from the previous contents.
      *
-     * @param array $options (leave empty for stdout)
+     * @param array<string,mixed> $options (leave empty for stdout)
      *
      * @return Request|null - A writeable request, which has been fully read from.
      * Callers should close after they are finished writing.

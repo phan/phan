@@ -2455,7 +2455,7 @@ class Issue
      * @param int $line
      * The line number (start) where the issue was found
      *
-     * @param array $template_parameters
+     * @param array<int,string|int|float|bool|object> $template_parameters
      * Any template parameters required for the issue
      * message
      *
@@ -2590,7 +2590,7 @@ class Issue
      * @param int $lineno
      * The line number where the issue was found
      *
-     * @param array parameters
+     * @param array<int,string|int|float|bool|object> $parameters
      * Template parameters for the issue's error message
      *
      * @return void

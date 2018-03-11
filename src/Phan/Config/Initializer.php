@@ -223,9 +223,9 @@ EOT;
     ];
 
     /**
-     * @param array $composer_settings (can be empty for --init-no-composer)
+     * @param array<string,mixed> $composer_settings (can be empty for --init-no-composer)
      * @param ?string $vendor_path (can be null for --init-no-composer)
-     * @param array $opts parsed from getopt
+     * @param array<string,mixed> $opts parsed from getopt
      * @return ?InitializedSettings
      */
     private static function createPhanSettingsForComposerSettings(array $composer_settings, $vendor_path, array $opts)

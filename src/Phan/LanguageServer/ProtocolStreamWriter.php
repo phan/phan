@@ -19,7 +19,7 @@ class ProtocolStreamWriter implements ProtocolWriter
     private $output;
 
     /**
-     * @var array $messages
+     * @var array<int,array{message:string,promise:Promise}> $messages
      */
     private $messages = [];
 
