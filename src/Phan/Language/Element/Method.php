@@ -630,7 +630,7 @@ class Method extends ClassElement implements FunctionInterface
         return $string;
     }
 
-    public function toStub(CodeBase $code_base, bool $class_is_interface = false) : string
+    public function toStub(bool $class_is_interface = false) : string
     {
         $string = '    ';
         // It's an error to have visibility or abstract in an interface's stub (e.g. JsonSerializable)

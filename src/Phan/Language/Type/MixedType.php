@@ -35,6 +35,9 @@ final class MixedType extends NativeType
         return $union_type->hasType($this);
     }
 
+    /**
+     * @suppress PhanPluginUnusedPublicFinalMethodArgument (TODO: maybe use it in the future?)
+     */
     public function asGenericArrayType(int $key_type) : Type
     {
         return ArrayType::instance(false);

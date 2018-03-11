@@ -19,9 +19,13 @@ use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
 use ast\Node;
 
-// TODO: Make $x != null remove FalseType and NullType from $x
-// TODO: Make $x > 0, $x < 0, $x >= 50, etc.  remove FalseType and NullType from $x
-// TODO: if (a || b || c || d) might get really slow, due to creating both ConditionVisitor and NegatedConditionVisitor
+/**
+ * TODO: Make $x != null remove FalseType and NullType from $x
+ * TODO: Make $x > 0, $x < 0, $x >= 50, etc.  remove FalseType and NullType from $x
+ * TODO: if (a || b || c || d) might get really slow, due to creating both ConditionVisitor and NegatedConditionVisitor
+ *
+ * @phan-file-suppress PhanPluginUnusedClosureArgument
+ */
 class ConditionVisitor extends KindVisitorImplementation
 {
     use ConditionVisitorUtil;

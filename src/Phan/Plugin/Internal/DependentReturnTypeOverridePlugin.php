@@ -37,6 +37,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
         $make_dependent_type_method = static function (int $expected_bool_pos, $type_if_true, $type_if_false, $type_if_unknown) : \Closure {
             /**
              * @return UnionType
+             * @suppress PhanPluginUnusedClosureArgument
              */
             return static function (
                 CodeBase $code_base,
@@ -74,7 +75,10 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
         $string_if_2_true           = $make_dependent_type_method(1, $string_union_type, $void_union_type, $nullable_string_union_type);
         $string_if_2_true_else_true = $make_dependent_type_method(1, $string_union_type, $true_union_type, $string_or_true_union_type);
 
-        /** @return UnionType */
+        /**
+         * @return UnionType
+         * @suppress PhanPluginUnusedClosureArgument
+         */
         $json_decode_return_type_handler = static function (
             CodeBase $code_base,
             Context $context,

@@ -35,6 +35,13 @@ else
   echo "Using cached extension."
 fi
 
+PLUGIN_PATH=$HOME/.phan-ci/UnusedVariablePlugin-c20aea3e.php
+
+if [[ ! -e "$PLUGIN_PATH" ]]; then
+    rm -r "$HOME/.phan-ci"
+    curl --create-dirs -fsS https://raw.githubusercontent.com/phan/PhanUnusedVariable/c20aea3e468654481c8bfb1d9c4938ff5fe107ba/src/UnusedVariablePlugin.php -o "$PLUGIN_PATH" || rm "$PLUGIN_PATH"
+fi
+
 echo "extension=$EXPECTED_AST_FILE" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 
 php -r 'function_exists("ast\parse_code") || (print("Failed to enable php-ast\n") && exit(1));'

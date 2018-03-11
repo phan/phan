@@ -57,7 +57,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
     /**
      * People who have translations may subclass this plugin and return a mapping from other locales to those locales translations of $fmt_str.
      * @return string[] mapping locale to the translation (e.g. ['fr_FR' => 'Bonjour'] for $fmt_str == 'Hello')
-     * @suppress PhanPluginUnusedVariable
+     * @suppress PhanPluginUnusedProtectedMethodArgument
      */
     protected static function gettextForAllLocales(string $fmt_str)
     {

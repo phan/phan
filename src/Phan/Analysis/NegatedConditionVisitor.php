@@ -292,9 +292,9 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         if (self::isArgumentListWithVarAsFirstArgument($args)) {
             $function_name = \strtolower(\ltrim($raw_function_name, '\\'));
             if (\count($args) !== 1) {
-                if (\strcasecmp($function_name, 'is_a') === 0) {
+                /*if (\strcasecmp($function_name, 'is_a') === 0) {
                     return $this->analyzeNegationOfVariableIsA($args, $context);
-                }
+                }*/
                 return $context;
             }
             static $map;
@@ -323,11 +323,13 @@ class NegatedConditionVisitor extends KindVisitorImplementation
 
     // TODO: negate instanceof
 
+    /*
     private function analyzeNegationOfVariableIsA(array $args, Context $context) : Context
     {
         // TODO: implement
         return $context;
     }
+     */
 
     /**
      * @return array<string,\Closure> (ConditionVisitor $cv, Node $var_node, Context $context) -> Context

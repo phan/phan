@@ -190,6 +190,7 @@ class ParameterTypesAnalyzer
 
     /**
      * @return void
+     * @suppress PhanPluginUnusedVariable
      */
     private static function checkCommentParametersAreInOrder(CodeBase $code_base, FunctionInterface $method)
     {

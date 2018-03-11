@@ -45,14 +45,14 @@ class ContextMergeVisitor extends KindVisitorImplementation
      * Default visitor for node kinds that do not have
      * an overriding method
      *
-     * @param Node $node
+     * @param Node $unused_node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visit(Node $node) : Context
+    public function visit(Node $unused_node) : Context
     {
         // TODO: if ($this->context->isInGlobalScope()) {
         //            copy local to global
@@ -269,6 +269,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
         // Get the intersection of all types for all versions of
         // the variable from every side of the branch
+        /** @suppress PhanPluginUnusedVariable plugin doesn't handle loops well */
         $union_type =
             function (string $variable_name) use ($scope_list) {
                 $previous_type = null;

@@ -117,7 +117,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     }
 
     /**
-     * @param CodeBase $code_base (@phan-unused-param, may be used by subclasses)
+     * @param CodeBase $code_base (@phan-unused-param, this is used by subclasses)
      * The code base in which this element exists.
      *
      * @return bool
@@ -142,7 +142,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     }
 
     /**
-     * @param CodeBase $code_base
+     * @param CodeBase $code_base (@phan-unused-param, this is used by subclasses)
      * The code base in which this element exists.
      *
      * @return bool
@@ -153,7 +153,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         Context $context
     ) : bool {
         // Figure out which namespace this element is within
-        $element_namespace = $this->getElementNamespace($code_base);
+        $element_namespace = $this->getElementNamespace();
 
         // Get our current namespace from the context
         $context_namespace = $context->getNamespace();
@@ -246,7 +246,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         // Do nothing unless overridden
     }
 
-    public function getElementNamespace(CodeBase $unused_code_base) : string
+    public function getElementNamespace() : string
     {
         $element_fqsen = $this->getFQSEN();
         \assert($element_fqsen instanceof FullyQualifiedGlobalStructuralElement);

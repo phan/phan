@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\Type;
@@ -38,7 +37,6 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     }
 
     /**
-     * @param CodeBase $code_base
      * @param string $name
      * The name of a builtin constant to build a new GlobalConstant structural
      * element from.
@@ -48,16 +46,12 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
      * builtin constant.
      */
     public static function fromGlobalConstantName(
-        CodeBase $code_base,
         string $name
     ) : GlobalConstant {
-        if ($name === 'strict_types') {
-            debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-        }
-        if (!defined($name)) {
+        if (!\defined($name)) {
             throw new \InvalidArgumentException(sprintf("This should not happen, defined(%s) is false, but the constant was returned by get_defined_constants()", var_export($name, true)));
         }
-        $value = constant($name);
+        $value = \constant($name);
         $constant_fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
             '\\' . $name
         );

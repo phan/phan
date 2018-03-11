@@ -13,7 +13,7 @@ use Phan\Output\IssueCollectorInterface;
 class ParallelChildCollector implements IssueCollectorInterface
 {
     /**
-     * @var Resource
+     * @var resource
      */
     private $message_queue_resource;
 
@@ -89,8 +89,10 @@ class ParallelChildCollector implements IssueCollectorInterface
      * Remove all collected issues (from the parse phase) for the given file paths.
      * Called from daemon mode.
      *
-     * @param string[] $files - the relative paths to those files
+     * @param string[] $files @phan-unused-param - the relative paths to those files
      * @return void
+     *
+     * @override
      */
     public function removeIssuesForFiles(array $files)
     {

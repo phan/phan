@@ -320,7 +320,7 @@ class CodeBase
                 continue;
             }
             try {
-                $const_obj = GlobalConstant::fromGlobalConstantName($this, $const_name);
+                $const_obj = GlobalConstant::fromGlobalConstantName($const_name);
                 $this->addGlobalConstant($const_obj);
             } catch (\InvalidArgumentException $e) {
                 // Workaround for windows bug in #1011
@@ -376,7 +376,6 @@ class CodeBase
                 // Force loading these even if automatic loading failed.
                 // (Shouldn't happen, the function list is fetched from reflection by callers.
                 $function_alternate_generator = FunctionFactory::functionListFromReflectionFunction(
-                    $this,
                     $function_fqsen,
                     new \ReflectionFunction($function_fqsen->getNamespacedName())
                 );
@@ -608,9 +607,9 @@ class CodeBase
         if ($this->undo_tracker) {
             $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($file, $key) {
                 Daemon::debugf("Undoing addParsedNamespaceMap file = %s namespace = %s\n", $file, $key);
-                unset($this->parsed_namespace_maps[$file][$key]);
+                unset($inner->parsed_namespace_maps[$file][$key]);
                 // Hack: addParsedNamespaceMap is called at least once per each file, so unset file-level suppressions at the same time in daemon mode
-                unset($this->file_level_suppression_set[$file]);
+                unset($inner->file_level_suppression_set[$file]);
             });
         }
     }
@@ -1345,7 +1344,6 @@ class CodeBase
 
             // Add each method returned for the signature
             foreach (FunctionFactory::functionListFromSignature(
-                $this,
                 $canonical_fqsen,
                 $signature
             ) as $function) {
@@ -1362,7 +1360,6 @@ class CodeBase
         } elseif ($found) {
             // Phan doesn't have extended information for the signature for this function, but the function exists.
             foreach (FunctionFactory::functionListFromReflectionFunction(
-                $this,
                 $canonical_fqsen,
                 new \ReflectionFunction($name)
             ) as $function) {
@@ -1402,6 +1399,7 @@ class CodeBase
 
     /**
      * @return void
+     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function flushDependenciesForFile(string $file_path)
     {
@@ -1412,6 +1410,7 @@ class CodeBase
      * @return string[]
      * The list of files that depend on the code in the given
      * file path
+     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function dependencyListForFile(string $file_path) : array
     {

@@ -17,6 +17,7 @@ cache:
   directories:
     - $HOME/.composer/cache
     - $HOME/.cache/phan-ast/build
+    - $HOME/.phan-ci
 
 # We invoke php multiple times via CLI in several tests, so enable the opcache file cache.
 before_install:

@@ -6,6 +6,8 @@ use Phan\Language\Type\ArrayType;
 
 /**
  * NOTE: there may also be instances of UnionType that are empty, due to the constructor being public
+ *
+ * @phan-file-suppress PhanPluginUnusedPublicFinalMethodArgument the results don't depend on passed in parameters
  */
 final class EmptyUnionType extends UnionType
 {

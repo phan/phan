@@ -196,7 +196,7 @@ class ArgumentType
                 Issue::AccessMethodInternal,
                 $context->getLineNumberStart(),
                 (string)$method->getFQSEN(),
-                $method->getElementNamespace($code_base) ?: '\\',
+                $method->getElementNamespace() ?: '\\',
                 $method->getFileRef()->getFile(),
                 $method->getFileRef()->getLineNumberStart(),
                 ($context->getNamespace()) ?: '\\'

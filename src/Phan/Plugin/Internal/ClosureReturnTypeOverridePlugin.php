@@ -54,7 +54,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
         $call_user_func_callback = static function (
             CodeBase $code_base,
             Context $context,
-            Func $function,
+            Func $unused_function,
             array $args
         ) : UnionType {
             $element_types = UnionType::empty();
@@ -82,7 +82,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
         $call_user_func_array_callback = static function (
             CodeBase $code_base,
             Context $context,
-            Func $function,
+            Func $unused_function,
             array $args
         ) : UnionType {
             $element_types = UnionType::empty();
@@ -177,7 +177,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
         $call_user_func_callback = static function (
             CodeBase $code_base,
             Context $context,
-            Func $function,
+            Func $unused_function,
             array $args
         ) {
             if (\count($args) < 1) {
@@ -197,7 +197,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
         $call_user_func_array_callback = static function (
             CodeBase $code_base,
             Context $context,
-            Func $function,
+            Func $unused_function,
             array $args
         ) {
             if (\count($args) < 2) {
