@@ -17,6 +17,7 @@ New Features(Analysis)
 + Add limited support for analyzing `unset` on variables and the first dimension of arrays.
   Unsetting variables does not yet work in branches.
 + Don't emit `PhanTypeInvalidDimOffset` in `isset`/`empty`/`unset`
++ Improve Phan's analysis of loose equality (#1101)
 + Add new issue types `PhanWriteOnlyPublicProperty`, `PhanWriteOnlyProtectedProperty`, and `PhanWriteOnlyPrivateProperty`,
   which will be emitted on properties that are written to but never read from.
   (Requires that dead code detection be enabled)
