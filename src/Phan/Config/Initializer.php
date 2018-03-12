@@ -237,7 +237,7 @@ EOT;
             return null;
         }
         $level = max(1, min(5, (int)$level));
-        //$is_strong_or_weaker_level = $level >= 2;  // TODO: use
+        $is_strong_or_weaker_level = $level >= 2;
         $is_average_level = $level >= 3;
         $is_weak_level    = $level >= 4;
         $is_weakest_level = $level >= 5;
@@ -282,11 +282,12 @@ EOT;
             // TODO: Migrate to a smaller subset scalar_implicit_partial as analysis gets stricter?
             'scalar_implicit_partial'  => [],
             'ignore_undeclared_variables_in_global_scope' => $is_average_level,
+            'ignore_undeclared_functions_with_known_signatures' => $is_strong_or_weaker_level,
             'backward_compatibility_checks' => false,  // this is slow
             'check_docblock_signature_return_type_match' => !$is_average_level,
             'prefer_narrowed_phpdoc_param_type' => true,
             'prefer_narrowed_phpdoc_return_type' => true,
-            'ensure_signature_compatibility' => !$is_weak_level,
+            'analyze_signature_compatibility' => !$is_weak_level,
             'phpdoc_type_mapping' => [],
             'dead_code_detection' => false,  // this is slow
             'quick_mode' => $is_weakest_level,
