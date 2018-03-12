@@ -36,7 +36,7 @@ Bug Fixes
 
 New Features(Analysis)
 
-+ Emit `PhanTypeInvalidDimOffsetArrayDestructuring` when an unknown offset value is used in an array destructuring assignment (#1534)
++ Emit `PhanTypeInvalidDimOffsetArrayDestructuring` when an unknown offset value is used in an array destructuring assignment (#1534, #1477)
   (E.g. `foreach ($expr as ['key' => $value])`, `list($k) = [2]`, etc.)
 
 Plugins
