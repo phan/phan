@@ -8,6 +8,7 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
+use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\IntType;
@@ -40,6 +41,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
         $int_type    = IntType::instance(false);
         $string_type = StringType::instance(false);
         $int_or_string_or_false = new UnionType([$int_type, $string_type, $false_type]);
+        $int_or_string = new UnionType([$int_type, $string_type]);
 
         $get_element_type_of_first_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type, $false_type) : UnionType {
             if (\count($args) >= 1) {
@@ -278,6 +280,22 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $key_union_type->asGenericArrayTypes(GenericArrayType::KEY_INT);
         };
+        $each_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type, $false_type, $int_or_string) : UnionType {
+            if (\count($args) >= 1) {
+                $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+                $element_types = $array_type->genericArrayElementTypes();
+                $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($array_type);
+                if ($key_type_enum !== GenericArrayType::KEY_MIXED) {
+                    $key_type = GenericArrayType::unionTypeForKeyType($key_type_enum);
+                } else {
+                    $key_type = $int_or_string;
+                }
+                $array_shape_type = ArrayShapeType::fromFieldTypes([$key_type, $element_types], false);
+
+                return new UnionType([$array_shape_type, $false_type]);
+            }
+            return $mixed_type->asUnionType();
+        };
         return [
             // Gets the element types of the first
             'array_pop'   => $get_element_type_of_first_arg,
@@ -288,6 +306,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             'pos'         => $get_element_type_of_first_arg,  // alias of 'current'
             'prev'        => $get_element_type_of_first_arg,
             'reset'       => $get_element_type_of_first_arg,
+            'each'        => $each_callback,
 
             'key'          => $get_key_type_of_first_arg,
             'array_search' => $get_key_type_of_second_arg,
