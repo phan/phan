@@ -2,6 +2,7 @@
 namespace Phan\Analysis;
 
 use Phan\AST\UnionTypeVisitor;
+use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\IssueException;
 use Phan\Issue;
@@ -15,7 +16,15 @@ use ast\Node;
 
 trait ConditionVisitorUtil
 {
+    /** @var CodeBase */
     protected $code_base;
+
+    /**
+     * @var Context
+     * The context in which the node we're going to be looking
+     * at exits.
+     */
+    protected $context;
 
     /**
      * Remove any types which are definitely truthy from that variable (objects, TrueType, ResourceType, etc.)
@@ -258,6 +267,103 @@ trait ConditionVisitorUtil
             }
         }
         return $context;
+    }
+
+    /**
+     * @param Node $var_node
+     * @param Node|int|float|string $expr
+     * @return Context - Constant after inferring type from an expression such as `if ($x !== 'literal')`
+     */
+    protected final function updateVariableToBeNotEqual(
+        Node $var_node,
+        $expr,
+        Context $context
+    ) : Context {
+        $var_name = $var_node->children['name'] ?? null;
+        // http://php.net/manual/en/types.comparisons.php#types.comparisions-loose
+        if (\is_string($var_name)) {
+            try {
+                if ($expr instanceof Node) {
+                    if ($expr->kind === \ast\AST_CONST) {
+                        $exprNameNode = $expr->children['name'];
+                        if ($exprNameNode->kind === \ast\AST_NAME) {
+                            // Currently, only add this inference when we're absolutely sure this is a check rejecting null/false/true
+                            $exprName = $exprNameNode->children['name'];
+                            switch (\strtolower($exprName)) {
+                                case 'null':
+                                case 'false':
+                                    return $this->removeFalseyFromVariable($var_node, $context, false);
+                                case 'true':
+                                    return $this->removeTrueFromVariable($var_node, $context);
+                            }
+                        }
+                    }
+                } elseif ($expr == false) {
+                    if ($expr == null) {
+                        return $this->removeFalseyFromVariable($var_node, $context, false);
+                    }
+                    return $this->removeFalseFromVariable($var_node, $context);;
+                } elseif ($expr == null) {
+                    return $this->removeNullFromVariable($var_node, $context, false);
+                } elseif ($expr == true) {  // e.g. 1, "1", -1
+                    return $this->removeTrueFromVariable($var_node, $context);
+                }
+            } catch (\Exception $e) {
+                // Swallow it (E.g. IssueException for undefined variable)
+            }
+        }
+        return $context;
+    }
+
+    /**
+     * @param Node|int|float|string $left
+     * @param Node|int|float|string $right
+     * @return Context - Constant after inferring type from an expression such as `if ($x !== false)`
+     */
+    protected function analyzeAndUpdateToBeIdentical($left, $right) : Context
+    {
+        if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
+            // e.g. `if (!($x !== null))` or `if ($x === null)`
+            return $this->updateVariableToBeIdentical($left, $right, $this->context);
+        } elseif (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
+            // e.g. if (!(null !== $x))
+            return $this->updateVariableToBeIdentical($right, $left, $this->context);
+        }
+        return $this->context;
+    }
+
+    /**
+     * @param Node|int|float|string $left
+     * @param Node|int|float|string $right
+     * @return Context - Constant after inferring type from an expression such as `if ($x !== false)`
+     */
+    protected function analyzeAndUpdateToBeNotIdentical($left, $right) : Context
+    {
+        if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
+            // e.g. if ($x !== null)
+            return $this->updateVariableToBeNotIdentical($left, $right, $this->context);
+        } elseif (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
+            // e.g. if (null !== $x)
+            return $this->updateVariableToBeNotIdentical($right, $left, $this->context);
+        }
+        return $this->context;
+    }
+
+    /**
+     * @param Node|int|float|string $left
+     * @param Node|int|float|string $right
+     * @return Context - Constant after inferring type from an expression such as `if ($x == 'literal')`
+     */
+    protected function analyzeAndUpdateToBeNotEqual($left, $right) : Context
+    {
+        if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
+            // e.g. if (!($x == null))
+            return $this->updateVariableToBeNotEqual($left, $right, $this->context);
+        } elseif (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
+            // e.g. if (!(null == $x))
+            return $this->updateVariableToBeNotEqual($right, $left, $this->context);
+        }
+        return $this->context;
     }
 
     /**

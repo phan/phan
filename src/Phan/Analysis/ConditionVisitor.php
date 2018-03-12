@@ -18,6 +18,7 @@ use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
 use ast\Node;
+use ast\flags;
 
 /**
  * TODO: Make $x != null remove FalseType and NullType from $x
@@ -35,7 +36,7 @@ class ConditionVisitor extends KindVisitorImplementation
      * The context in which the node we're going to be looking
      * at exits.
      */
-    private $context;
+    protected $context;
 
     /**
      * @param CodeBase $code_base
@@ -163,53 +164,22 @@ class ConditionVisitor extends KindVisitorImplementation
     public function visitBinaryOp(Node $node) : Context
     {
         $flags = $node->flags;
-        if ($flags === \ast\flags\BINARY_BOOL_AND) {
+        if ($flags === flags\BINARY_BOOL_AND) {
             return $this->analyzeShortCircuitingAnd($node->children['left'], $node->children['right']);
-        } elseif ($flags === \ast\flags\BINARY_BOOL_OR) {
+        } elseif ($flags === flags\BINARY_BOOL_OR) {
             return $this->analyzeShortCircuitingOr($node->children['left'], $node->children['right']);
-        } elseif ($flags === \ast\flags\BINARY_IS_IDENTICAL) {
+        } elseif ($flags === flags\BINARY_IS_IDENTICAL || $flags === flags\BINARY_IS_EQUAL) {
+            // TODO: Could be more precise, and preserve 0, [], etc. for `$x == null`
             $this->checkVariablesDefined($node);
-            return $this->analyzeIsIdentical($node->children['left'], $node->children['right']);
-        } elseif ($flags === \ast\flags\BINARY_IS_NOT_IDENTICAL || $flags === \ast\flags\BINARY_IS_NOT_EQUAL) {
+            return $this->analyzeAndUpdateToBeIdentical($node->children['left'], $node->children['right']);
+        } elseif ($flags === flags\BINARY_IS_NOT_IDENTICAL) {
             $this->checkVariablesDefined($node);
             // TODO: Add a different function for IS_NOT_EQUAL, e.g. analysis of != null should be different from !== null (First would remove FalseType)
-            return $this->analyzeIsNotIdentical($node->children['left'], $node->children['right']);
+            return $this->analyzeAndUpdateToBeNotIdentical($node->children['left'], $node->children['right']);
+        } elseif ($flags === flags\BINARY_IS_NOT_EQUAL) {
+            return $this->analyzeAndUpdateToBeNotEqual($node->children['left'], $node->children['right']);
         } else {
             $this->checkVariablesDefined($node);
-        }
-        return $this->context;
-    }
-
-    /**
-     * @param Node|int|float|string $left
-     * @param Node|int|float|string $right
-     * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
-     */
-    private function analyzeIsIdentical($left, $right) : Context
-    {
-        if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
-            // e.g. if ($x === null)
-            return $this->updateVariableToBeIdentical($left, $right, $this->context);
-        } elseif (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
-            // e.g. if (null === $x)
-            return $this->updateVariableToBeIdentical($right, $left, $this->context);
-        }
-        return $this->context;
-    }
-
-    /**
-     * @param Node|int|float|string $left
-     * @param Node|int|float|string $right
-     * @return Context - Constant after inferring type from an expression such as `if ($x !== false)`
-     */
-    private function analyzeIsNotIdentical($left, $right) : Context
-    {
-        if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
-            // e.g. if ($x !== null)
-            return $this->updateVariableToBeNotIdentical($left, $right, $this->context);
-        } elseif (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
-            // e.g. if (null !== $x)
-            return $this->updateVariableToBeNotIdentical($right, $left, $this->context);
         }
         return $this->context;
     }
@@ -315,7 +285,7 @@ class ConditionVisitor extends KindVisitorImplementation
     public function visitUnaryOp(Node $node) : Context
     {
         $expr_node = $node->children['expr'];
-        if ($node->flags !== \ast\flags\UNARY_BOOL_NOT) {
+        if ($node->flags !== flags\UNARY_BOOL_NOT) {
             if ($expr_node instanceof Node) {
                 $this->checkVariablesDefined($expr_node);
             }
