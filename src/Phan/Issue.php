@@ -57,6 +57,7 @@ class Issue
     const NonClassMethodCall        = 'PhanNonClassMethodCall';
     const TypeArrayOperator         = 'PhanTypeArrayOperator';
     const TypeArraySuspicious       = 'PhanTypeArraySuspicious';
+    const TypeArrayUnsetSuspicious  = 'PhanTypeArrayUnsetSuspicious';
     const TypeArraySuspiciousNullable = 'PhanTypeArraySuspiciousNullable';
     const TypeSuspiciousIndirectVariable = 'PhanTypeSuspiciousIndirectVariable';
     const TypeComparisonFromArray   = 'PhanTypeComparisonFromArray';
@@ -862,6 +863,14 @@ class Issue
                 "Suspicious array access to {TYPE}",
                 self::REMEDIATION_B,
                 10009
+            ),
+            new Issue(
+                self::TypeArrayUnsetSuspicious,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Suspicious attempt to unset an offset of a value of type {TYPE}",
+                self::REMEDIATION_B,
+                10048
             ),
             new Issue(
                 self::TypeComparisonToArray,

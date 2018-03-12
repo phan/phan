@@ -1,0 +1,2 @@
+%s:7 PhanUndeclaredVariable Variable $myVar is undeclared
+%s:11 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{b:array<int,string>} but \strlen() takes string

@@ -1301,7 +1301,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
                 continue;
             }
-            $element_type = $type->arrayShapeFieldTypes()[$dim_value] ?? null;
+            $element_type = $type->getFieldTypes()[$dim_value] ?? null;
             if ($element_type !== null) {
                 // $element_type may be non-null but $element_type->isEmpty() may be true.
                 // So, we use null to indicate failure below

@@ -342,6 +342,23 @@ class Context extends FileRef
     }
 
     /**
+     * Unset a variable in this context's scope. Note that
+     * this does not create a new context. You're actually
+     * removing the variable from the context. Use with
+     * caution.
+     *
+     * @param string $variable_name
+     * The name of a variable to remove from the context.
+     *
+     * @return void
+     */
+    public function unsetScopeVariable(
+        string $variable_name
+    ) {
+        $this->getScope()->unsetVariable($variable_name);
+    }
+
+    /**
      * @return bool
      * True if this context is currently within a class
      * scope, else false.

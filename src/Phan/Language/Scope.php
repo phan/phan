@@ -196,6 +196,36 @@ abstract class Scope
     }
 
     /**
+     * @param string $variable_name
+     * The name of a variable to unset in the local scope
+     *
+     * @return Scope
+     *
+     * TODO: Make this work properly and merge properly when the variable is in a branch
+     *
+     * @suppress PhanUnreferencedPublicMethod unused, but adding to be consistent with `withVariable`
+     */
+    public function withUnsetVariable(string $variable_name) : Scope
+    {
+        $scope = clone($this);
+        $scope->unsetVariable($variable_name);
+        return $scope;
+    }
+
+    /**
+     * @param string $variable_name
+     * The name of a variable to unset in the local scope
+     *
+     * @return void
+     *
+     * TODO: Make this work properly and merge properly when the variable is in a branch (BranchScope)
+     */
+    public function unsetVariable(string $variable_name)
+    {
+        unset($this->variable_map[$variable_name]);
+    }
+
+    /**
      * @return void
      */
     public function addVariable(Variable $variable)

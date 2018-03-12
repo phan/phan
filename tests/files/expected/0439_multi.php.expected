@@ -1,0 +1,1 @@
+%s:4 PhanTypeInvalidDimOffset Invalid offset "otherOffset" of array type array{offset:string,first:int}

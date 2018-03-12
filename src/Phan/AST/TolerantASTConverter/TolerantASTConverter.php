@@ -1341,6 +1341,10 @@ final class TolerantASTConverter
             'Microsoft\PhpParser\Node\Expression\UnsetIntrinsicExpression' => function (PhpParser\Node\Expression\UnsetIntrinsicExpression $n, int $start_line) {
                 $stmts = [];
                 foreach ($n->expressions->children as $var) {
+                    if ($var instanceof Token) {
+                        // Skip over ',' and invalid tokens
+                        continue;
+                    }
                     $stmts[] = new ast\Node(ast\AST_UNSET, 0, ['var' => self::phpParserNodeToAstNode($var)], self::getEndLine($var) ?: $start_line);
                 }
                 return \count($stmts) === 1 ? $stmts[0] : $stmts;
