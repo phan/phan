@@ -210,7 +210,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($union_type->isEmpty()) {
                 return;
             }
-            if (!$union_type->asExpandedTypes($this->code_base)->hasArrayLike()) {
+            if (!$union_type->asExpandedTypes($this->code_base)->hasArrayLike() && !$union_type->canCastToType(MixedType::instance(false))) {
                 $this->emitIssue(
                     Issue::TypeArrayUnsetSuspicious,
                     $node->lineno ?? 0,
