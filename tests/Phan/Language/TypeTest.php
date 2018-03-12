@@ -295,6 +295,14 @@ class TypeTest extends BaseTest
                 'array{field:int}'
             ],
             [
+                'array<string,int>',
+                'array{field:int=}'
+            ],
+            [
+                'array<string,int>|array<string,string>',
+                'array{field:int|string}'
+            ],
+            [
                 'array<int,int>|array<int,string>',
                 'array{0:int,1:string}'
             ],

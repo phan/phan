@@ -3,6 +3,7 @@
 namespace Phan\Tests\Language;
 
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
@@ -108,6 +109,14 @@ class UnionTypeTest extends BaseTest
         $this->assertUnionTypeStringEqual(
             '[false => "string"]',
             'array{0:string}'
+        );
+    }
+
+    public function testArrayUniformMultipleValues()
+    {
+        $this->assertUnionTypeStringEqual(
+            '[false => rand(0,1) ? "string" : 2]',
+            'array{0:int|string}'
         );
     }
 
@@ -414,6 +423,38 @@ class UnionTypeTest extends BaseTest
 
         $this->assertSame('?string[]', (string)$type);
         $this->assertSame(self::createGenericArrayTypeWithMixedKey(StringType::instance(false), true), $type);
+    }
+
+    public function testUnionInArrayShape()
+    {
+        // array keys are integers, values are strings
+        $union_type = self::makePHPDocUnionType('array{key:int|string[]}');
+        $this->assertSame(1, $union_type->typeCount());
+        $types = $union_type->getTypeSet();
+        $type = reset($types);
+
+        $this->assertSame('array{key:int|string[]}', (string)$type);
+        $this->assertSame('array<string,int>|array<string,string[]>', (string)$union_type->withFlattenedArrayShapeTypeInstances());
+        \assert($type instanceof ArrayShapeType);
+        $field_union_type = $type->getFieldTypes()['key'];
+        $this->assertFalse($field_union_type->getIsPossiblyUndefined());
+    }
+
+    public function testOptionalInArrayShape()
+    {
+        // array keys are integers, values are strings
+        $union_type = self::makePHPDocUnionType('array{key:int|string=}');
+        $this->assertSame(1, $union_type->typeCount());
+        $types = $union_type->getTypeSet();
+        $type = reset($types);
+
+        $this->assertSame('array{key:int|string=}', (string)$type);
+        \assert($type instanceof ArrayShapeType);
+        $this->assertSame('array<string,int>|array<string,string>', (string)$union_type->withFlattenedArrayShapeTypeInstances());
+        $field_union_type = $type->getFieldTypes()['key'];
+        $this->assertTrue($field_union_type->getIsPossiblyUndefined());
+        $this->assertSame('int|string=', (string)$field_union_type);
+        $this->assertSame([IntType::instance(false), StringType::instance(false)], $field_union_type->getTypeSet());
     }
 
     private static function createGenericArrayTypeWithMixedKey(Type $type, bool $is_nullable) : GenericArrayType

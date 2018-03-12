@@ -58,7 +58,7 @@ class Type
      * @suppress PhanUnreferencedPublicClassConstant
      */
     const array_shape_entry_regex_noncapturing =
-        '(?:' . self::shape_key_regex . ')\s*:\s*(?:' . self::simple_type_regex . ')';
+        '(?:' . self::shape_key_regex . ')\s*:\s*(?:' . self::simple_type_regex . '=?)';
 
     /**
      * @var string
@@ -83,8 +83,8 @@ class Type
           . '>'
           . '|'
           . '\{('  // Expect either '{' or '<', after a word token.
-            . '(?:' . self::shape_key_regex . '\s*:\s*(?-6))'  // {shape_key_regex:<type_regex>}
-            . '(?:,' . self::shape_key_regex . '\s*:\s*(?-6))*'  // {shape_key_regex:<type_regex>}
+            . '(?:' . self::shape_key_regex . '\s*:\s*(?-6)(?:\|(?-6))*=?)'  // {shape_key_regex:<type_regex>}
+            . '(?:,' . self::shape_key_regex . '\s*:\s*(?-6)(?:\|(?-6))*=?)*'  // {shape_key_regex:<type_regex>}
           . ')?\})?'
         . ')'
         . '(\[\])*'
@@ -114,8 +114,8 @@ class Type
               . '>'
               . '|'
               . '(\{)('  // Expect either '{' or '<', after a word token. Match '{' to disambiguate 'array{}'
-                . '(?:' . self::shape_key_regex . '\s*:\s*(?-9))'  // {shape_key_regex:<type_regex>}
-                . '(?:,' . self::shape_key_regex . '\s*:\s*(?-9))*'  // {shape_key_regex:<type_regex>}
+                . '(?:' . self::shape_key_regex . '\s*:\s*(?-9)(?:\|(?-9))*=?)'  // {shape_key_regex:<type_regex>}
+                . '(?:,' . self::shape_key_regex . '\s*:\s*(?-9)(?:\|(?-9))*=?)*'  // {shape_key_regex:<type_regex>}
               . ')?\})?'
             . ')'
           . '(\[\])*'
@@ -1008,6 +1008,10 @@ class Type
     {
         return array_map(
             function (string $component_string) use ($context, $source) : UnionType {
+                if (\substr($component_string, -1) === '=') {
+                    $type = UnionType::fromStringInContext(\substr($component_string, 0, -1), $context, $source);
+                    return $type->withIsPossiblyUndefined(true);
+                }
                 return UnionType::fromStringInContext($component_string, $context, $source);
             },
             $shape_components

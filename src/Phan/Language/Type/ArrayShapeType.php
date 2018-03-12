@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use Phan\Language\AnnotatedUnionType;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
@@ -16,7 +17,7 @@ final class ArrayShapeType extends ArrayType
     const NAME = 'array';
 
     /**
-     * @var array<string|int,UnionType>
+     * @var array<string|int,UnionType|AnnotatedUnionType>
      * Maps 0 or more field names to the corresponding types
      */
     private $field_types = [];
@@ -146,10 +147,15 @@ final class ArrayShapeType extends ArrayType
             } elseif ($type instanceof ArrayShapeType) {
                 foreach ($type->field_types as $key => $field_type) {
                     $this_field_type = $this->field_types[$key] ?? null;
-                    // Can't cast {a:int} to {a:int, other:string} if other is missing?
+                    // Can't cast {a:int} to {a:int, other:string} if other is missing
                     if ($this_field_type === null) {
+                        if ($field_type->getIsPossiblyUndefined()) {
+                            // ... unless the other field is allowed to be undefined.
+                            continue;
+                        }
                         return false;
                     }
+                    // can't cast {a:int} to {a:string} or {a:string=}
                     if (!$this_field_type->canCastToUnionType($field_type)) {
                         return false;
                     }

@@ -822,10 +822,20 @@ class Clazz extends AddressableElement
                 $type_of_class_of_property
             );
         } else {
-            // If the definition of the property is protected, then the subclasses of the defining class can access it.
-            return $accessing_class_type->asExpandedTypes($code_base)->canCastToUnionType(
-                $type_of_class_of_property->asUnionType()
-            );
+            // If the definition of the property is protected,
+            // then the subclasses of the defining class can access it.
+            foreach ($accessing_class_type->asExpandedTypes($code_base)->getTypeSet() as $type) {
+                if ($type->canCastToType($type_of_class_of_property)) {
+                    return true;
+                }
+            }
+            // and base classes of the defining class can access it
+            foreach ($type_of_class_of_property->asExpandedTypes($code_base)->getTypeSet() as $type) {
+                if ($type->canCastToType($accessing_class_type)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

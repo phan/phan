@@ -1276,7 +1276,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param UnionType $union_type
+     * @param UnionType $union_type a union type with at least one top level array shape type
      * @param int|string|float|bool $dim_value a scalar dimension. TODO: Warn about null?
      * @return ?UnionType|?false
      *  returns false if there the offset was invalid and there are no ways to get that offset
@@ -1288,16 +1288,20 @@ class UnionTypeVisitor extends AnalysisVisitor
         $resulting_element_type = null;
         foreach ($union_type->getTypeSet() as $type) {
             if (!($type instanceof ArrayShapeType)) {
-                $has_non_array_shape_type = true;
                 if ($type instanceof StringType) {
                     if (\is_int($dim_value)) {
+                        // If we request a string offset from a string, that's not valid. Only accept integer dimensions as valid.
+                        $has_non_array_shape_type = true;
                         // in php, indices of strings can be negative
                         if ($resulting_element_type !== null) {
                             $resulting_element_type = $resulting_element_type->withType(StringType::instance(false));
                         } else {
                             $resulting_element_type = StringType::instance(false)->asUnionType();
                         }
-                    } // TODO: Warn about string indices?
+                    } // TODO: Warn about string indices of strings?
+                } elseif ($type->isArrayLike() || $type instanceof MixedType) {
+                    // TODO: Be more precise for objects implementing ArrayAccess?
+                    $has_non_array_shape_type = true;
                 }
                 continue;
             }

@@ -397,6 +397,7 @@ return [
         'file' => 'string',
         'line' => 'int'
     ],
+    // TODO: Could use array shape types to document ast\Node->children in more detail.
     'ast\node' => [
         'kind' => 'int',
         'flags' => 'int',
