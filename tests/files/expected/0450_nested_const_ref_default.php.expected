@@ -1,0 +1,3 @@
+%s:6 PhanTypeMismatchArgumentInternal Argument 1 (var) is string but \count() takes \Countable|array
+%s:21 PhanUndeclaredConstant Reference to undeclared constant \CONSTVAL_MISSING
+%s:23 PhanUndeclaredConstant Reference to undeclared constant \CONSTVAL_MISSING
