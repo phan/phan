@@ -556,7 +556,7 @@ final class TolerantASTConverter
                 $return_type_line = self::getEndLine($n->returnType) ?: $start_line;
                 $return_type = self::phpParserTypeToAstNode($n->returnType, $return_type_line);
                 if ($n->questionToken !== null) {
-                    $return_type = new ast\Node(ast\AST_NULLABLE_TYPE, 0, ['type' => $ast_return_type], $return_type_line);
+                    $return_type = new ast\Node(ast\AST_NULLABLE_TYPE, 0, ['type' => $return_type], $return_type_line);
                 }
                 return self::astDeclClosure(
                     $n->byRefToken !== null,

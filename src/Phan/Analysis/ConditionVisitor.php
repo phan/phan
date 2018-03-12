@@ -130,7 +130,8 @@ class ConditionVisitor extends KindVisitorImplementation
      *
      * TODO: Add to NegatedConditionVisitor
      */
-    private function checkArrayAccessDefined(Node $node) {
+    private function checkArrayAccessDefined(Node $node)
+    {
         $code_base = $this->code_base;
         $context = $this->context;
 

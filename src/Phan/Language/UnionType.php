@@ -7,6 +7,7 @@ use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Issue;
+use Phan\Language\AnnotatedUnionType;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -250,7 +251,7 @@ class UnionType implements \Serializable
         if (\count($parts) <= 1) {
             return $parts;
         }
-        if (!\preg_match('/[<(]/', $type_string)) {
+        if (!\preg_match('/[<({]/', $type_string)) {
             return $parts;
         }
         return self::mergeTypeParts($parts);
@@ -289,7 +290,7 @@ class UnionType implements \Serializable
         foreach ($parts as $part) {
             if (\count($prev_parts) > 0) {
                 $prev_parts[] = $part;
-                $delta += \substr_count($part, '<') + \substr_count($part, '(') - \substr_count($part, '>') - \substr_count($part, ')');
+                $delta += \substr_count($part, '<') + \substr_count($part, '(') + \substr_count($part, '{') - \substr_count($part, '>') - \substr_count($part, ')') - \substr_count($part, '}');
                 if ($delta <= 0) {
                     if ($delta === 0) {
                         $results[] = \implode('|', $prev_parts);
@@ -300,12 +301,12 @@ class UnionType implements \Serializable
                 }
                 continue;
             }
-            $bracket_count = \substr_count($part, '<') + \substr_count($part, '(');
+            $bracket_count = \substr_count($part, '<') + \substr_count($part, '(') + \substr_count($part, '{');
             if ($bracket_count === 0) {
                 $results[] = $part;
                 continue;
             }
-            $delta = $bracket_count - \substr_count($part, '>') - \substr_count($part, ')');
+            $delta = $bracket_count - \substr_count($part, '>') - \substr_count($part, ')') - \substr_count($part, '}');
             if ($delta === 0) {
                 $results[] = $part;
             } elseif ($delta > 0) {
@@ -424,7 +425,7 @@ class UnionType implements \Serializable
         if ($function_fqsen instanceof FullyQualifiedMethodName) {
             $class_fqsen =
                 $function_fqsen->getFullyQualifiedClassName();
-            $class_name = $class_fqsen->getName();
+            $class_name = $class_fqsen->getNamespacedName();
             $function_name =
                 $class_name . '::' . $function_fqsen->getName();
         } else {
@@ -2270,6 +2271,30 @@ class UnionType implements \Serializable
             return $this;
         }
         return UnionType::of($types);
+    }
+
+    /**
+     * Base implementation. Overridden by AnnotatedUnionType.
+     */
+    public function withIsPossiblyUndefined(bool $is_possibly_undefined) : UnionType
+    {
+        if ($is_possibly_undefined === false) {
+            return $this;
+        }
+        $result = new AnnotatedUnionType($this->getTypeSet(), true);
+        $result->is_possibly_undefined = $is_possibly_undefined;
+        return $result;
+    }
+
+    /**
+     * Base implementation. Overridden by AnnotatedUnionType.
+     * Used for fields of array shapes.
+     *
+     * This is distinct from null - The array shape offset potentially doesn't exist at all, which is different from existing and being null.
+     */
+    public function getIsPossiblyUndefined() : bool
+    {
+        return false;
     }
 }
 

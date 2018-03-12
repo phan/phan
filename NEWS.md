@@ -9,7 +9,10 @@ New Features(CLI, Configs)
   (Normally, the polyfill wouldn't include that information, to closely imitate `php-ast`'s behavior)
 
 New Features(Analysis)
-+ Infer the type of `[]` as `array{}` (the empty array), not `array`.
++ Infer the type of `[]` as `array{}` (the empty array), not `array`. (#1382)
++ Allow phpdoc `@param` array shapes to contain optional fields. (E.g. `array{requiredKey:int,optionalKey:string=}`) (#1382)
+  An array shape is now allowed to cast to another array shape, as long as the required fields are compatible with the target type,
+  and any optional fields from the target type are absent in the source type or compatible.
 + Emit `PhanTypeArrayUnsetSuspicious` when trying to unset the offset of something that isn't an array or array-like.
 + Add limited support for analyzing `unset` on variables and the first dimension of arrays.
   Unsetting variables does not yet work in branches.
@@ -23,8 +26,10 @@ Maintenance
 + Print directory which phan daemon is going to await analysis requests for (#1544)
 
 Bug Fixes
++ Allow phpdoc `@param` array shapes to contain union types (#1382)
 + Remove leading `./` from Phan's relative paths for files (#1548, #1538)
 + Reduce false positives in dead code detection for constants/properties/methods.
++ Don't warn when base classes access protected properties of their subclasses.
 
 02 Mar 2018, Phan 0.12.2
 ------------------------

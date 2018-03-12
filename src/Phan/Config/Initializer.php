@@ -18,7 +18,7 @@ use Composer\Semver\Constraint\ConstraintInterface;
 class Initializer
 {
     /**
-     * @param array<string,mixed> $opts
+     * @param array{init-overwrite:mixed=,init-no-composer:mixed=,init-level:string=} $opts
      * Returns a process exit code for `phan --init`
      */
     public static function initPhanConfig(array $opts) : int
@@ -225,7 +225,7 @@ EOT;
     /**
      * @param array<string,mixed> $composer_settings (can be empty for --init-no-composer)
      * @param ?string $vendor_path (can be null for --init-no-composer)
-     * @param array<string,mixed> $opts parsed from getopt
+     * @param array{init-overwrite:mixed=,init-no-composer:mixed=,init-level:string=} $opts parsed from getopt
      * @return ?InitializedSettings
      */
     private static function createPhanSettingsForComposerSettings(array $composer_settings, $vendor_path, array $opts)

@@ -25,6 +25,13 @@ use TypeError;
 
 class EmptyUnionTypeTest extends BaseTest
 {
+    const SKIPPED_METHOD_NAMES = [
+        'unserialize',  // throws
+        '__construct',
+        // UnionType implementation can't be optimized
+        'withIsPossiblyUndefined',
+        'getIsPossiblyUndefined',
+    ];
 
     public function testMethods()
     {
@@ -35,7 +42,7 @@ class EmptyUnionTypeTest extends BaseTest
                 continue;
             }
             $method_name = $method->getName();
-            if (\in_array($method_name, ['unserialize', '__construct'], true)) {
+            if (\in_array($method_name, self::SKIPPED_METHOD_NAMES, true)) {
                 continue;
             }
             $failures .= $this->checkHasSameImplementationForEmpty($method);
@@ -112,6 +119,8 @@ class EmptyUnionTypeTest extends BaseTest
         $type = $param->getType();
         $type_name = (string)$type;
         switch ($type_name) {
+            case 'bool':
+                return [false, true];
             case 'array':
                 return [[]];
             case 'int':
