@@ -920,4 +920,12 @@ final class EmptyUnionType extends UnionType
     {
         return true;
     }
+
+    /**
+     * @param int|string $field_key
+     */
+    public function withoutArrayShapeField($field_key) : UnionType
+    {
+        return $this;
+    }
 }

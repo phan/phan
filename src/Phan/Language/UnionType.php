@@ -2254,6 +2254,23 @@ class UnionType implements \Serializable
             return $type->shouldBeReplacedBySpecificTypes();
         });
     }
+
+    /**
+     * @param int|string $field_key
+     */
+    public function withoutArrayShapeField($field_key) : UnionType
+    {
+        $types = $this->type_set;
+        foreach ($types as $i => $type) {
+            if ($type instanceof ArrayShapeType) {
+                $types[$i] = $type->withoutField($field_key);
+            }
+        }
+        if ($types === $this->type_set) {
+            return $this;
+        }
+        return UnionType::of($types);
+    }
 }
 
 UnionType::init();

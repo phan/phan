@@ -113,7 +113,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->context,
             $node,
             $right_type
-        ))($node->children['var']);
+        ))->__invoke($node->children['var']);
 
         if ($node->children['expr'] instanceof Node
             && $node->children['expr']->kind == \ast\AST_CLOSURE
@@ -144,6 +144,90 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitAssignRef(Node $node) : Context
     {
         return $this->visitAssign($node);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitUnset(Node $node) : Context
+    {
+        $context = $this->context;
+        // Get the type of the thing being unset
+        $var_node = $node->children['var'];
+        if (!is_object($var_node)) {
+            var_export($node);
+        }
+
+        $kind = $var_node->kind;
+        if ($kind === \ast\AST_VAR) {
+            $var_name = $var_node->children['name'];
+            if (\is_string($var_name)) {
+                // TODO: Make this work in branches
+                $context->unsetScopeVariable($var_name);
+            }
+            // I think DollarDollarPlugin already warns, so don't warn here.
+        } elseif ($kind === \ast\AST_DIM) {
+            $this->analyzeUnsetDim($var_node);
+        }
+        return $context;
+    }
+
+    /**
+     * @param Node $node a node of type AST_DIM in unset()
+     * @return void
+     * @see UnionTypeVisitor::resolveArrayShapeElementTypes()
+     * @see UnionTypeVisitor::visitDim()
+     */
+    private function analyzeUnsetDim(Node $node)
+    {
+        $expr_node = $node->children['expr'];
+        if (!($expr_node instanceof Node)) {
+            // php -l would warn
+            return;
+        }
+
+        // For now, just handle a single level of dimensions for unset($x['field']);
+        if ($expr_node->kind === \ast\AST_VAR) {
+            $var_name = $expr_node->children['name'];
+            if (!\is_string($var_name)) {
+                return;
+            }
+
+            $context = $this->context;
+            $scope = $context->getScope();
+            if (!$scope->hasVariableWithName($var_name)) {
+                // TODO: Warn about potentially pointless unset in function scopes?
+                return;
+            }
+            // TODO: Could warn about invalid offsets for isset
+            $variable = $scope->getVariableByName($var_name);
+            $union_type = $variable->getUnionType();
+            if ($union_type->isEmpty()) {
+                return;
+            }
+            if (!$union_type->asExpandedTypes($this->code_base)->hasArrayLike()) {
+                $this->emitIssue(
+                    Issue::TypeArrayUnsetSuspicious,
+                    $node->lineno ?? 0,
+                    (string)$union_type
+                );
+            }
+            if (!$union_type->hasTopLevelArrayShapeTypeInstances()) {
+                return;
+            }
+            $dim_node = $node->children['dim'];
+            $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $this->context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
+            // TODO: detect and warn about null
+            if (!\is_scalar($dim_value)) {
+                return;
+            }
+            $variable->setUnionType($variable->getUnionType()->withoutArrayShapeField($dim_value));
+        }
     }
 
     /**
@@ -1567,6 +1651,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // will analyze $x['key'] = expr in AssignmentVisitor
                 return $context;
             }
+        } elseif ($parent_kind === \ast\AST_ARRAY_ELEM) {
+            if ($this->shouldSkipNestedDim()) {
+                return $context;
+            }
+        } elseif ($parent_kind === \ast\AST_ISSET || $parent_kind === \ast\AST_UNSET || $parent_kind === \ast\AST_EMPTY) {
+            return $context;
         }
         // Check the array type to trigger TypeArraySuspicious
         try {
@@ -1609,7 +1699,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     return true;
                 }
                 return false;
+            } elseif ($kind === \ast\AST_ARRAY_ELEM) {
+                $prev_parent_node = \prev($parent_node_list);  // this becomes AST_ARRAY
+                continue;
+            } elseif ($kind === \ast\AST_ARRAY) {
+                continue;
+            } elseif ($kind === \ast\AST_UNSET) {
+                return true;  // This is removing the offset
             }
+
             return false;
         }
     }

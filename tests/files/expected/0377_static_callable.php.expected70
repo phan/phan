@@ -1,4 +1,4 @@
 %s:11 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \TestStaticCallable377::triple() takes int defined at %s:24
-%s:17 PhanTypeMismatchArgument Argument 1 (x) is array but \TestStaticCallable377::triple() takes int defined at %s:24
-%s:18 PhanTypeMismatchArgument Argument 1 (x) is array but \TestStaticCallable377::triple() takes int defined at %s:24
+%s:17 PhanTypeMismatchArgument Argument 1 (x) is array{} but \TestStaticCallable377::triple() takes int defined at %s:24
+%s:18 PhanTypeMismatchArgument Argument 1 (x) is array{} but \TestStaticCallable377::triple() takes int defined at %s:24
 %s:20 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \TestStaticCallable377::triple() takes int defined at %s:24

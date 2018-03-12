@@ -771,8 +771,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // TODO: Also return types such as array<int, mixed>?
         // TODO: Fix or suppress false positives PhanTypeArraySuspicious caused by loops...
-        // return ArrayShapeType::empty(false)->asUnionType();
-        return ArrayType::instance(false)->asUnionType();
+        return ArrayShapeType::empty(false)->asUnionType();
     }
 
 
@@ -1302,7 +1301,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
                 continue;
             }
-            $element_type = $type->arrayShapeFieldTypes()[$dim_value] ?? null;
+            $element_type = $type->getFieldTypes()[$dim_value] ?? null;
             if ($element_type !== null) {
                 // $element_type may be non-null but $element_type->isEmpty() may be true.
                 // So, we use null to indicate failure below

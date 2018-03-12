@@ -182,6 +182,10 @@ abstract class ScopeVisitor extends AnalysisVisitor
             } else {
                 $alias = $child_node->children['alias'];
             }
+            if (!\is_string($alias)) {
+                // Should be impossible
+                continue;
+            }
 
             // if AST_USE does not have any flags set, then its AST_USE_ELEM
             // children will (this will be for AST_GROUP_USE)

@@ -699,6 +699,7 @@ trait FunctionTrait
             if ($default_is_null) {
                 // The parameter constructor or above check for wasEmpty already took care of null default case
             } else {
+                $default_type = $default_type->withFlattenedArrayShapeTypeInstances();
                 if ($wasEmpty) {
                     $parameter->addUnionType($default_type);
                 } else {

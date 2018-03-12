@@ -1,1 +1,2 @@
-%s:7 PhanTypeMismatchProperty Assigning array to property but \Foo307::x is \ArrayAccess
+%s:7 PhanTypeMismatchProperty Assigning array{} to property but \Foo307::x is \ArrayAccess
+%s:18 PhanTypeMismatchProperty Assigning array{key:string} to property but \Foo307::z is \ArrayAccess

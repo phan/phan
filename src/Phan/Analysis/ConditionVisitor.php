@@ -97,6 +97,61 @@ class ConditionVisitor extends KindVisitorImplementation
     }
 
     /**
+     * Check if variables from within a generic condition are defined.
+     * @param Node $node
+     * A node to parse
+     * @return void
+     */
+    private function checkVariablesDefinedInIsset(Node $node)
+    {
+        while ($node->kind === \ast\AST_UNARY_OP) {
+            $node = $node->children['expr'];
+            if (!($node instanceof Node)) {
+                return;
+            }
+        }
+        if ($node->kind === \ast\AST_DIM) {
+            $this->checkArrayAccessDefined($node);
+            return;
+        }
+        // Get the type just to make sure everything
+        // is defined.
+        UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node,
+            true
+        );
+    }
+
+    /**
+     * Analyzes (isset($x['field']))
+     * @return void
+     *
+     * TODO: Add to NegatedConditionVisitor
+     */
+    private function checkArrayAccessDefined(Node $node) {
+        $code_base = $this->code_base;
+        $context = $this->context;
+
+        // TODO: Infer that the offset exists after this check
+        UnionTypeVisitor::unionTypeFromNode(
+            $code_base,
+            $context,
+            $node->children['dim'],
+            true
+        );
+        // Check the array type to trigger TypeArraySuspicious
+        /* $array_type = */
+        UnionTypeVisitor::unionTypeFromNode(
+            $code_base,
+            $context,
+            $node->children['expr'],
+            true
+        );
+    }
+
+    /**
      * @param Node $node
      * A node to parse
      *
@@ -299,7 +354,7 @@ class ConditionVisitor extends KindVisitorImplementation
         $context = $this->context;
         $var_node = $node->children['var'];
         if ($var_node->kind !== \ast\AST_VAR) {
-            $this->checkVariablesDefined($var_node);
+            $this->checkVariablesDefinedInIsset($var_node);
             return $context;
         }
 
@@ -637,7 +692,7 @@ class ConditionVisitor extends KindVisitorImplementation
             // Don't emit notices for if (empty($x)) {}, etc.
             return $this->removeTruthyFromVariable($var_node, $this->context, true);
         }
-        $this->checkVariablesDefined($node);
+        $this->checkVariablesDefinedInIsset($var_node);
         return $this->context;
     }
 

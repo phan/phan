@@ -9,6 +9,11 @@ New Features(CLI, Configs)
   (Normally, the polyfill wouldn't include that information, to closely imitate `php-ast`'s behavior)
 
 New Features(Analysis)
++ Infer the type of `[]` as `array{}` (the empty array), not `array`.
++ Emit `PhanTypeArrayUnsetSuspicious` when trying to unset the offset of something that isn't an array or array-like.
++ Add limited support for analyzing `unset` on variables and the first dimension of arrays.
+  Unsetting variables does not yet work in branches.
++ Don't emit `PhanTypeInvalidDimOffset` in `isset`/`empty`/`unset`
 + Add new issue types `PhanWriteOnlyPublicProperty`, `PhanWriteOnlyProtectedProperty`, and `PhanWriteOnlyPrivateProperty`,
   which will be emitted on properties that are written to but never read from.
   (Requires that dead code detection be enabled)

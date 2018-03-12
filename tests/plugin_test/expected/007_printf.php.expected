@@ -8,7 +8,7 @@ src/007_printf.php:8 PhanPluginPrintfNoSpecifiers None of the formatting argumen
 src/007_printf.php:9 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args\n" are used
 src/007_printf.php:10 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args\n" are used
 src/007_printf.php:11 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args\n" are used
-src/007_printf.php:13 PhanTypeMismatchArgumentInternal Argument 1 (format) is array but \printf() takes string
+src/007_printf.php:13 PhanTypeMismatchArgumentInternal Argument 1 (format) is array{} but \printf() takes string
 src/007_printf.php:14 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "3" are used
 src/007_printf.php:14 PhanTypeMismatchArgumentInternal Argument 1 (format) is int but \printf() takes string
 src/007_printf.php:16 PhanPluginPrintfNoArguments No format string arguments are given for "Hello world\n", consider using fwrite instead

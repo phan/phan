@@ -123,7 +123,7 @@ class UnionTypeTest extends BaseTest
     {
         $this->assertUnionTypeStringEqual(
             '[]',
-            'array'
+            'array{}'
         );
     }
     public function testInternalObject()

@@ -152,6 +152,11 @@ class EmptyUnionTypeTest extends BaseTest
                         return true;
                     },
                 ];
+            case '':
+                if ($param->getName() === 'field_key') {
+                    return ['', 'key', 0, 2, false, 2.5];
+                }
+                break;
         }
         throw new TypeError("Unable to handle param {$type_name} \${$param->getName()}");
     }

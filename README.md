@@ -14,7 +14,7 @@ and does not attempt to track values.
 The easiest way to use Phan is via Composer.
 
 ```
-composer require --dev phan/phan
+composer require phan/phan
 ```
 
 With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/phan/phan/wiki/Getting-Started#creating-a-config-file) in
@@ -251,7 +251,7 @@ Usage: ./phan [options] [files...]
     that Phan infers from composer.json's "autoload" settings
   [--init-analyze-file] can be used as a relative path alongside files
     that Phan infers from composer.json's "bin" settings
-  [--init-no-composer] can be used to tell Phan that the project 
+  [--init-no-composer] can be used to tell Phan that the project
     is not a composer project.
     Phan will not check for composer.json or vendor/,
     and will not include those paths in the generated config.
@@ -302,6 +302,10 @@ Usage: ./phan [options] [files...]
 
  --disable-plugins
   Don't run any plugins. Slightly faster.
+
+ --plugin <pluginName|path/to/Plugin.php>
+  Add an additional plugin to run. This flag can be repeated.
+  (Either pass the name of the plugin or a relative/absolute path to the plugin)
 
  --use-fallback-parser
   If a file to be analyzed is syntactically invalid

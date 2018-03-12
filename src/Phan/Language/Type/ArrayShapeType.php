@@ -52,6 +52,28 @@ final class ArrayShapeType extends ArrayType
     }
 
     /**
+     * @return array<string|int,UnionType>
+     * An array mapping field keys of this type to their union types.
+     */
+    public function getFieldTypes() : array
+    {
+        return $this->field_types;
+    }
+
+    /**
+     * @param int|string $field_key
+     */
+    public function withoutField($field_key) : ArrayShapeType
+    {
+        $field_types = $this->field_types;
+        if (!\array_key_exists($field_key, $field_types)) {
+            return $this;
+        }
+        unset($field_types[$field_key]);
+        return self::fromFieldTypes($field_types, $this->is_nullable);
+    }
+
+    /**
      * @param bool $is_nullable
      * Set to true if the type should be nullable, else pass
      * false
@@ -66,7 +88,7 @@ final class ArrayShapeType extends ArrayType
             return $this;
         }
 
-        return ArrayShapeType::fromFieldTypes(
+        return self::fromFieldTypes(
             $this->field_types,
             $is_nullable
         );
@@ -133,13 +155,13 @@ final class ArrayShapeType extends ArrayType
                     }
                 }
                 return true;
-            } else {
-                // array{key:T} can cast to array.
-                return true;
             }
+            // array{key:T} can cast to array.
+            return true;
         }
 
-        if ($type->isArrayLike()) {
+        if (\get_class($type) === IterableType::class) {
+            // can cast to Iterable but not Traversable
             return true;
         }
 
@@ -205,15 +227,6 @@ final class ArrayShapeType extends ArrayType
     public function isGenericArray() : bool
     {
         return true;
-    }
-
-    /**
-     * @return array<string|int,UnionType>
-     * An array of mapping field keys of this type to field types
-     */
-    public function arrayShapeFieldTypes() : array
-    {
-        return $this->field_types;
     }
 
     public function __toString() : string

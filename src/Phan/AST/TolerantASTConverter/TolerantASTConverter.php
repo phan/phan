@@ -1341,6 +1341,10 @@ final class TolerantASTConverter
             'Microsoft\PhpParser\Node\Expression\UnsetIntrinsicExpression' => function (PhpParser\Node\Expression\UnsetIntrinsicExpression $n, int $start_line) {
                 $stmts = [];
                 foreach ($n->expressions->children as $var) {
+                    if ($var instanceof Token) {
+                        // Skip over ',' and invalid tokens
+                        continue;
+                    }
                     $stmts[] = new ast\Node(ast\AST_UNSET, 0, ['var' => self::phpParserNodeToAstNode($var)], self::getEndLine($var) ?: $start_line);
                 }
                 return \count($stmts) === 1 ? $stmts[0] : $stmts;
@@ -2233,6 +2237,9 @@ final class TolerantASTConverter
         return $ast_visibility;
     }
 
+    /**
+     * @suppress PhanTypeMismatchArgument casting to a more specific node
+     */
     private static function phpParserPropertyToAstNode(PhpParser\Node\PropertyDeclaration $n, int $start_line) : ast\Node
     {
         $prop_elems = [];
@@ -2249,6 +2256,9 @@ final class TolerantASTConverter
         return new ast\Node(ast\AST_PROP_DECL, $flags, $prop_elems, $prop_elems[0]->lineno ?? (self::getStartLine($n) ?: $start_line));
     }
 
+    /**
+     * @suppress PhanTypeMismatchArgument casting to something more specific
+     */
     private static function phpParserClassConstToAstNode(PhpParser\Node\ClassConstDeclaration $n, int $start_line) : ast\Node
     {
         $const_elems = [];

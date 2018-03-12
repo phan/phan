@@ -4,4 +4,4 @@
 %s:25 PhanMismatchVariadicComment int ...$x is variadic in comment, but not variadic in param ($x)
 %s:25 PhanMismatchVariadicParam array $y is not variadic in comment, but variadic in param (...$y)
 %s:32 PhanMismatchVariadicParam int $z is not variadic in comment, but variadic in param (...$z)
-%s:36 PhanTypeMismatchArgument Argument 3 (y) is array but \badvariadic258b() takes int defined at %s:16
+%s:36 PhanTypeMismatchArgument Argument 3 (y) is array{} but \badvariadic258b() takes int defined at %s:16

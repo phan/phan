@@ -107,27 +107,31 @@ final class GenericArrayType extends ArrayType
      */
     protected function canCastToNonNullableType(Type $type) : bool
     {
-        if ($type instanceof GenericArrayType) {
-            if (!$this->genericArrayElementType()
-                ->canCastToType($type->genericArrayElementType())) {
-                return false;
-            }
-            if ((($this->key_type ?: self::KEY_MIXED) & ($type->key_type ?: self::KEY_MIXED)) === 0) {
-                // Attempting to cast an int key to a string key (or vice versa) is normally invalid.
-                // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
-                return Config::getValue('scalar_array_key_cast');
+        if ($type instanceof ArrayType) {
+            if ($type instanceof GenericArrayType) {
+                if (!$this->genericArrayElementType()
+                    ->canCastToType($type->genericArrayElementType())) {
+                    return false;
+                }
+                if ((($this->key_type ?: self::KEY_MIXED) & ($type->key_type ?: self::KEY_MIXED)) === 0) {
+                    // Attempting to cast an int key to a string key (or vice versa) is normally invalid.
+                    // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
+                    return Config::getValue('scalar_array_key_cast');
+                }
+                return true;
+            } elseif ($type instanceof ArrayShapeType) {
+                if ((($this->key_type ?: self::KEY_MIXED) & $type->getKeyType()) === 0 && !Config::getValue('scalar_array_key_cast')) {
+                    // Attempting to cast an int key to a string key (or vice versa) is normally invalid.
+                    // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
+                    return false;
+                }
+                return $this->genericArrayElementUnionType()->canCastToUnionType($type->genericArrayElementUnionType());
             }
             return true;
-        } elseif ($type instanceof ArrayShapeType) {
-            if ((($this->key_type ?: self::KEY_MIXED) & $type->getKeyType()) === 0 && !Config::getValue('scalar_array_key_cast')) {
-                // Attempting to cast an int key to a string key (or vice versa) is normally invalid.
-                // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
-                return false;
-            }
-            return $this->genericArrayElementUnionType()->canCastToUnionType($type->genericArrayElementUnionType());
         }
 
-        if ($type->isArrayLike()) {
+        if (\get_class($type) === IterableType::class) {
+            // can cast to Iterable but not Traversable
             return true;
         }
 
