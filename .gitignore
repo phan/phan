@@ -7,5 +7,7 @@ samples
 all_output.*
 *.swo
 *.swp
+*.zip
 /tags
 .phan/config.local.php
+nohup.out
