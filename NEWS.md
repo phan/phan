@@ -21,6 +21,7 @@ New Features(Analysis)
 + Add new issue types `PhanWriteOnlyPublicProperty`, `PhanWriteOnlyProtectedProperty`, and `PhanWriteOnlyPrivateProperty`,
   which will be emitted on properties that are written to but never read from.
   (Requires that dead code detection be enabled)
++ Improve Phan's analysis of switch statements and fix bugs. (#1561)
 
 Maintenance
 + Add `--disable-usage-on-error` option to `phan_client` (#1540)

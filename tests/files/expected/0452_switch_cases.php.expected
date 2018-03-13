@@ -1,0 +1,2 @@
+%s:11 PhanTypeMismatchArgumentInternal Argument 1 (var) is false but \count() takes \Countable|array
+%s:24 PhanTypeMismatchArgumentInternal Argument 1 (var) is \stdClass|float but \count() takes \Countable|array
