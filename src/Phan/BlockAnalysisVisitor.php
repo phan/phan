@@ -643,30 +643,48 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         ));
 
         $context = $this->preOrderAnalyze($context, $node);
+        $scope = $context->getScope();
         $child_context_list = [];
 
         // TODO: Improve inferences in switch statements?
         // TODO: Behave differently if switch lists don't cover every case (e.g. if there is no default)
-        foreach ($node->children as $child_node) {
+        $has_default = false;
+        foreach ($node->children as $i => $child_node) {
             // Step into each child node and get an
             // updated context for the node
-            $child_context = $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
+            $child_context = $context->withScope(new BranchScope($scope));
+            $child_context->withLineNumberStart($child_node->lineno);
+            $child_context = $this->analyzeAndGetUpdatedContext($child_context, $node, $child_node);
 
+            if ($child_node->children['cond'] === null) {
+                $has_default = true;
+            }
             // We can improve analysis of `case` blocks by using
             // a BlockExitStatusChecker to avoid propogating invalid inferences.
-            if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($child_node->children['stmts'])) {
-                $child_context_list[] = $child_context;
+            $stmts_node = $child_node->children['stmts'];
+            if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node)) {
+                // Skip over empty case statements (incomplete heuristic), TODO: test
+                if (\count($stmts_node->children ?? []) !== 0 || $i === \count($node->children) - 1) {
+                    $child_context_list[] = $child_context;
+                }
             }
         }
 
-        if (count($child_context_list) > 0) {
-            // For case statements, we need to merge the contexts
-            // of all child context into a single scope based
-            // on any possible branching structure
-            $context = (new ContextMergeVisitor(
-                $context,
-                $child_context_list
-            ))->__invoke($node);
+        if (\count($child_context_list) > 0) {
+            if (!$has_default) {
+                $child_context_list[] = $context;
+            }
+            if (\count($child_context_list) >= 2) {
+                // For case statements, we need to merge the contexts
+                // of all child context into a single scope based
+                // on any possible branching structure
+                $context = (new ContextMergeVisitor(
+                    $context,
+                    $child_context_list
+                ))->combineChildContextList();
+            } else {
+                $context = $child_context_list[0];
+            }
         }
 
         return $this->postOrderAnalyze($context, $node);
@@ -756,7 +774,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context = (new ContextMergeVisitor(
                 $fallthrough_context,  // e.g. "if (!is_string($x)) { $x = ''; }" should result in inferring $x is a string.
                 $child_context_list
-            ))->__invoke($node);
+            ))->visitIf($node);
         }
 
         $context = $this->postOrderAnalyze($context, $node);

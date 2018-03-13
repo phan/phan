@@ -947,7 +947,8 @@ final class TolerantASTConverter
              * @suppress PhanTypeMismatchArgument incorrect phpdoc for breakoutLevel
              */
             'Microsoft\PhpParser\Node\Statement\BreakOrContinueStatement' => function (PhpParser\Node\Statement\BreakOrContinueStatement $n, int $start_line) : ast\Node {
-                switch ($n->breakOrContinueKeyword->kind) {
+                $raw_kind = $n->breakOrContinueKeyword->kind;
+                switch ($raw_kind) {
                     case TokenKind::BreakKeyword:
                         $kind = ast\AST_BREAK;
                         break;
@@ -955,7 +956,7 @@ final class TolerantASTConverter
                         $kind = ast\AST_CONTINUE;
                         break;
                     default:
-                        throw new \InvalidArgumentException("Invalid BreakOrContinueStatement token $kind");
+                        throw new \InvalidArgumentException("Invalid BreakOrContinueStatement token $raw_kind");
                 }
                 return new ast\Node($kind, 0, ['depth' => isset($n->breakoutLevel) ? (int)self::phpParserNodeToAstNode($n->breakoutLevel) : null], $start_line);
             },
