@@ -1,7 +1,15 @@
 #!/usr/bin/env bash
+function print_all_tests {
+	echo "Valid tests are below:" 1>&2
+	echo 1>&2
+	SCRIPT_PATH="${BASH_SOURCE[0]}"
+	SCRIPT_DIR="$( cd "$( dirname "$SCRIPT_PATH" )" && pwd )"
+	grep --only -E '^\s*\w+\)' < $SCRIPT_PATH| sed 's,\s*\|),,g' |sort 1>&2
+	grep --only -E '<testsuite name="\w+"' < "$SCRIPT_DIR/../phpunit.xml" | sed 's,.*name="\(\w\+\)".*,\1,g' | sort 1>&2
+}
 if [ "$#" != 1 ]; then
 	echo "Usage: $0 \$TEST_SUITE" 1>&2
-	echo "E.g. PhanTest" 1>&2
+	print_all_tests
 	exit 1
 fi
 TEST_SUITE="$1"
@@ -62,6 +70,15 @@ case "$TEST_SUITE" in
 		;;
 	__*)
 		echo "Unknown test '$TEST_SUITE' (Tests beginning with __ are not phpunit tests)" 1>&2
+		echo 1>&2
+		print_all_tests
+		exit 1
+		;;
+	-*)
+		echo "This script does not accept flags" 1>&2
+		echo "Usage: $0 \$TEST_SUITE" 1>&2
+		echo 1>&2
+		print_all_tests
 		exit 1
 		;;
 	*)
