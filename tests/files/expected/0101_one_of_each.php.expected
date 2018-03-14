@@ -11,6 +11,13 @@
 %s:37 PhanNoopProperty Unused property
 %s:42 PhanNoopVariable Unused variable
 %s:48 PhanParamReqAfterOpt Required argument follows optional
+%s:51 PhanParamSpecial1 Argument 2 (pieces) is string but \join() takes array when argument 1 is string
+%s:51 PhanTypeMismatchArgumentInternal Argument 2 (pieces) is string but \join() takes array
+%s:54 PhanParamSpecial2 Argument 1 (pieces) is \join but string() takes array when passed only one argument
+%s:57 PhanParamSpecial3 The last argument to \array_udiff must be of type callable
+%s:57 PhanTypeConversionFromArray array to string conversion
+%s:60 PhanParamSpecial4 The second to last argument to \array_uintersect_uassoc must be of type callable
+%s:60 PhanTypeConversionFromArray array to string conversion
 %s:64 PhanParamTooFew Call with 0 arg(s) to \f6() which requires 1 arg(s) defined at %s:63
 %s:71 PhanParamTooMany Call with 2 arg(s) to \f7() which only takes 1 arg(s) defined at %s:70
 %s:74 PhanParamTooManyInternal Call with 2 arg(s) to \strlen() which only takes 1 arg(s)

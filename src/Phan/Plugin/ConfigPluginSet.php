@@ -18,6 +18,7 @@ use Phan\Plugin\Internal\CallableParamPlugin;
 use Phan\Plugin\Internal\CompactPlugin;
 use Phan\Plugin\Internal\ClosureReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\DependentReturnTypeOverridePlugin;
+use Phan\Plugin\Internal\MiscParamPlugin;
 use Phan\Plugin\Internal\StringFunctionPlugin;
 use Phan\Plugin\PluginImplementation;
 use Phan\PluginV2;
@@ -404,6 +405,7 @@ final class ConfigPluginSet extends PluginV2 implements
                 new ClosureReturnTypeOverridePlugin(),
                 new DependentReturnTypeOverridePlugin(),
                 new StringFunctionPlugin(),
+                new MiscParamPlugin(),
             ];
             $plugin_set = array_merge($internal_return_type_plugins, $plugin_set);
         }

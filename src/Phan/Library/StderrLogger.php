@@ -8,7 +8,8 @@ use Psr\Log\LoggerTrait;
 /**
  * A PSR-3 logger for the composer xdebug handler
  */
-class StderrLogger implements LoggerInterface {
+class StderrLogger implements LoggerInterface
+{
     use LoggerTrait;
 
     /**
