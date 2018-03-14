@@ -37,6 +37,12 @@ EOT
     $handler->check();
 }
 
+// Automatically restart if xdebug is loaded
+if (extension_loaded('xdebug')) {
+    // Restart if xdebug is loading, unless the environment variable PHAN_ALLOW_XDEBUG is set.
+    (new XdebugHandler('phan'))->check();
+}
+
 return new CodeBase(
     $internal_class_name_list,
     $internal_interface_name_list,
