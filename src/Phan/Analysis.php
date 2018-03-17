@@ -9,6 +9,7 @@ use Phan\Analysis\DuplicateFunctionAnalyzer;
 use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\Analysis\ReturnTypesAnalyzer;
 use Phan\Analysis\ReferenceCountsAnalyzer;
+use Phan\Analysis\ThrowsTypesAnalyzer;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
@@ -270,6 +271,11 @@ class Analysis
             );
 
             ReturnTypesAnalyzer::analyzeReturnTypes(
+                $code_base,
+                $function_or_method
+            );
+
+            ThrowsTypesAnalyzer::analyzeThrowsTypes(
                 $code_base,
                 $function_or_method
             );

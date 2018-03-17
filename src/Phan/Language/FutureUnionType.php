@@ -3,6 +3,7 @@ namespace Phan\Language;
 
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
+use Phan\Exception\IssueException;
 use ast\Node;
 
 /**

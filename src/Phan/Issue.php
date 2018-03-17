@@ -46,6 +46,7 @@ class Issue
     const UndeclaredTypeParameter   = 'PhanUndeclaredTypeParameter';
     const UndeclaredTypeReturnType  = 'PhanUndeclaredTypeReturnType';
     const UndeclaredTypeProperty    = 'PhanUndeclaredTypeProperty';
+    const UndeclaredTypeThrowsType  = 'PhanUndeclaredTypeThrowsType';
     const UndeclaredVariable        = 'PhanUndeclaredVariable';
     const UndeclaredVariableDim     = 'PhanUndeclaredVariableDim';
     const UndeclaredClassInCallable = 'PhanUndeclaredClassInCallable';
@@ -71,6 +72,10 @@ class Issue
     const TypeInvalidInstanceof     = 'PhanTypeInvalidInstanceof';
     const TypeInvalidDimOffset      = 'PhanTypeInvalidDimOffset';
     const TypeInvalidDimOffsetArrayDestructuring = 'PhanTypeInvalidDimOffsetArrayDestructuring';
+    const TypeInvalidThrowsNonObject = 'PhanTypeInvalidThrowsNonObject';
+    const TypeInvalidThrowsNonThrowable = 'PhanTypeInvalidThrowsNonThrowable';
+    const TypeInvalidThrowsIsTrait = 'PhanTypeInvalidThrowsIsTrait';
+    const TypeInvalidThrowsIsInterface = 'PhanTypeInvalidThrowsIsInterface';
     const TypeMagicVoidWithReturn   = 'PhanTypeMagicVoidWithReturn';
     const TypeMismatchArgument      = 'PhanTypeMismatchArgument';
     const TypeMismatchArgumentInternal = 'PhanTypeMismatchArgumentInternal';
@@ -686,6 +691,14 @@ class Issue
                 11028
             ),
             new Issue(
+                self::UndeclaredTypeThrowsType,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "@throws type of {METHOD} has undeclared type {TYPE}",
+                self::REMEDIATION_B,
+                11034
+            ),
+            new Issue(
                 self::UndeclaredClassAliasOriginal,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
@@ -1144,6 +1157,38 @@ class Issue
                 "Suspicious argument {TYPE} for an echo/print statement",
                 self::REMEDIATION_B,
                 10049
+            ),
+            new Issue(
+                self::TypeInvalidThrowsNonObject,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "@throws annotation of {FUNCTIONLIKE} has invalid non-object type {TYPE}, expected a class",
+                self::REMEDIATION_B,
+                10050
+            ),
+            new Issue(
+                self::TypeInvalidThrowsIsTrait,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "@throws annotation of {FUNCTIONLIKE} has invalid trait type {TYPE}, expected a class",
+                self::REMEDIATION_B,
+                10051
+            ),
+            new Issue(
+                self::TypeInvalidThrowsIsInterface,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "@throws annotation of {FUNCTIONLIKE} has suspicious interface type {TYPE} for an @throws annotation, expected class (Zend PHP allows interfaces to be caught, so this might be intentional)",
+                self::REMEDIATION_B,
+                10052
+            ),
+            new Issue(
+                self::TypeInvalidThrowsNonThrowable,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "@throws annotation of {FUNCTIONLIKE} has suspicious class type {TYPE}, which does not extend Error/Exception",
+                self::REMEDIATION_B,
+                10053
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

@@ -25,6 +25,8 @@ New Features(Analysis)
 + Add `PhanTypeSuspiciousEcho` to warn about suspicious types being passed to echo/print statements.
   This now warns about booleans, arrays, resources, null, non-stringable classes, combinations of those types, etc.
   (`var_export` or JSON encoding usually makes more sense for a boolean/null)
++ Make Phan check that types in `@throws` annotations are valid; don't warn about classes in `@throws` being unreferenced. (#1555)
+  New issue types: `PhanUndeclaredTypeThrowsType`, `PhanTypeInvalidThrowsNonObject`, `PhanTypeInvalidThrowsNonThrowable`, `PhanTypeInvalidThrowsIsTrait`, `PhanTypeInvalidThrowsIsInterface`
 
 Maintenance
 + Add `--disable-usage-on-error` option to `phan_client` (#1540)

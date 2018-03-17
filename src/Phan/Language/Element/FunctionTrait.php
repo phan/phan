@@ -920,6 +920,15 @@ trait FunctionTrait
     }
 
     /**
+     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
+     */
+    public function getThrowsUnionType() : UnionType
+    {
+        $comment = $this->comment;
+        return $comment ? $comment->getThrowsUnionType() : UnionType::empty();
+    }
+
+    /**
      * Initialize the inner scope of this method with variables created from the parameters.
      *
      * Deferred until the parse phase because getting the UnionType of parameter defaults requires having all class constants be known.

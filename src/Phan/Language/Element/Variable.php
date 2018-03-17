@@ -5,6 +5,7 @@ use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Exception\IssueException;
 use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
