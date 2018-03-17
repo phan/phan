@@ -9,6 +9,7 @@ use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClosureType;
+use Phan\Language\Type\ClosureTypeDeclaration;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
@@ -71,20 +72,21 @@ class Type
     const type_regex =
         '('
         . '(?:\??\((?-1)\)|'
+        . '(?:Closure(\([^()]*\))(?:[:](?-2))?)|'  // TODO: Allow parsing nesting. TODO: Support callable.
         . '(' . self::simple_type_regex . ')'  // 2 patterns
         . '(?:'
           . '<'
             . '('
-              . '(?-4)(?:\|(?-4))*'
+              . '(?-5)(?:\|(?-5))*'
               . '(\s*,\s*'
-                . '(?-5)(?:\|(?-5))*'
+                . '(?-6)(?:\|(?-6))*'
               . ')*'
             . ')'
           . '>'
           . '|'
           . '\{('  // Expect either '{' or '<', after a word token.
-            . '(?:' . self::shape_key_regex . '\s*:\s*(?-6)(?:\|(?-6))*=?)'  // {shape_key_regex:<type_regex>}
-            . '(?:,' . self::shape_key_regex . '\s*:\s*(?-6)(?:\|(?-6))*=?)*'  // {shape_key_regex:<type_regex>}
+            . '(?:' . self::shape_key_regex . '\s*:\s*(?-7)(?:\|(?-7))*=?)'  // {shape_key_regex:<type_regex>}
+            . '(?:,' . self::shape_key_regex . '\s*:\s*(?-7)(?:\|(?-7))*=?)*'  // {shape_key_regex:<type_regex>}
           . ')?\})?'
         . ')'
         . '(\[\])*'
@@ -103,6 +105,7 @@ class Type
         . '('
           . '(?:'
             . '\??\((?-1)\)|'
+            . '(?:Closure(\([^()]*\))(?:|:(?-2)))|'  // TODO: Allow parsing nesting. TODO: Support callable.
             . '(' . self::simple_type_regex_or_this . ')'  // 3 patterns
             . '(?:<'
               . '('
@@ -698,6 +701,17 @@ class Type
                     $is_nullable
                 );
             }
+            if (\strcasecmp($type_name, 'Closure') === 0) {
+                $return_type = \array_pop($shape_components);
+                if (!$return_type) {
+                    throw new \AssertionError("Expected at least one component");
+                }
+                return ClosureTypeDeclaration::instanceForTypes(
+                    self::shapeComponentStringsToTypes($shape_components, new Context(), Type::FROM_NODE),
+                    UnionType::fromStringInContext($return_type, new Context(), Type::FROM_PHPDOC),
+                    $is_nullable
+                );
+            }
         }
 
         if (empty($namespace)) {
@@ -795,8 +809,15 @@ class Type
         );
         while (\substr($string, -1) === ')') {
             if ($string[0] === '?') {
+                if ($string[1] !== '(') {
+                    // Account for the Closure(params...):return syntax
+                    break;
+                }
                 $string = '?' . \substr($string, 2, -1);
             } else {
+                if ($string[0] !== '(') {
+                    break;
+                }
                 $string = \substr($string, 1, -1);
             }
         }
@@ -832,10 +853,23 @@ class Type
         $is_nullable = $tuple->_3;
         $shape_components = $tuple->_4;
         if (\is_array($shape_components)) {
-            return ArrayShapeType::fromFieldTypes(
-                self::shapeComponentStringsToTypes($shape_components, $context, $source),
-                $is_nullable
-            );
+            if (\strcasecmp($type_name, 'array') === 0) {
+                return ArrayShapeType::fromFieldTypes(
+                    self::shapeComponentStringsToTypes($shape_components, $context, $source),
+                    $is_nullable
+                );
+            }
+            if (\strcasecmp($type_name, 'Closure') === 0) {
+                $return_type = \array_pop($shape_components);
+                if (!$return_type) {
+                    throw new \AssertionError("Expected a return type");
+                }
+                return ClosureTypeDeclaration::instanceForTypes(
+                    self::shapeComponentStringsToTypes($shape_components, $context, $source),
+                    UnionType::fromStringInContext($return_type, $context, $source),
+                    $is_nullable
+                );
+            }
         }
 
         // Map the names of the types to actual types in the
@@ -1849,6 +1883,15 @@ class Type
         return $cache[$type_string] ?? ($cache[$type_string] = self::typeStringComponentsInner($type_string));
     }
 
+    /**
+     * @return Tuple5<string,string,array<int,string>,bool,?array<string|int,string>>
+     * A 5-tuple with the following types:
+     * 0: the namespace
+     * 1: the type name.
+     * 2: The template parameters, if any
+     * 3: Whether or not the type is nullable
+     * 4: The shape components, if any. Null unless this is an array shape type string such as 'array{field:int}'
+     */
     private static function typeStringComponentsInner(
         string $type_string
     ) {
@@ -1859,28 +1902,31 @@ class Type
         $match = [];
         $is_nullable = false;
         if (\preg_match('/^' . self::type_regex_or_this. '$/', $type_string, $match)) {
+            if ($match[3] !== '') {
+                return self::closureTypeStringComponents($type_string, $match[3]);
+            }
             if (!isset($match[2])) {
                 // Parse '(X)' as 'X'
                 return self::typeStringComponents(\substr($match[1], 1, -1));
-            } elseif (!isset($match[3])) {
+            } elseif (!isset($match[4])) {
                 // Parse '?(X[]) as '?X[]'
                 return self::typeStringComponents('?' . \substr($match[2], 2, -1));
             }
-            $type_string = $match[3];
+            $type_string = $match[4];
 
             // Rip out the nullability indicator if it
             // exists and note its nullability
-            $is_nullable = ($match[4] ?? '') === '?';
+            $is_nullable = ($match[5] ?? '') === '?';
             if ($is_nullable) {
                 $type_string = \substr($type_string, 1);
             }
 
-            if (($match[8] ?? '') !== '') {
-                $shape_components = self::extractShapeComponents($match[9] ?? '');  // will be empty array for 'array{}'
+            if (($match[9] ?? '') !== '') {
+                $shape_components = self::extractShapeComponents($match[10] ?? '');  // will be empty array for 'array{}'
             } else {
                 // Recursively parse this
-                $template_parameter_type_name_list = ($match[6] ?? '') !== ''
-                    ? self::extractNameList($match[6])
+                $template_parameter_type_name_list = ($match[7] ?? '') !== ''
+                    ? self::extractNameList($match[7])
                     : [];
             }
         }
@@ -1907,6 +1953,52 @@ class Type
             $is_nullable,
             $shape_components
         );
+    }
+
+    /**
+     * @return Tuple5<string,string,array<int,string>,bool,?array<string|int,string>>
+     * A 5-tuple with the following types:
+     * 0: the namespace
+     * 1: the type name.
+     * 2: The template parameters, if any
+     * 3: Whether or not the type is nullable
+     * 4: The shape components, if any. Null unless this is an array shape type string such as 'array{field:int}'
+     */
+    private static function closureTypeStringComponents(string $type_string, string $inner) : Tuple5
+    {
+        $parts = self::closureParams(\trim(\substr($inner, 1, -1)));
+        // TODO: parse params, same as @method
+
+        // Parse the optional return type for this closure
+        $i = \strpos($type_string, $inner) + \strlen($inner);
+        $colon_index = \strpos($type_string, ':', $i);
+
+        if ($colon_index !== false) {
+            $return_type_string = \ltrim(\substr($type_string, $colon_index + 1));
+        } else {
+            $return_type_string = 'void';
+        }
+        $parts[] = $return_type_string;
+
+        return new Tuple5(
+            '\\',
+            'Closure',
+            [],
+            false,
+            $parts
+        );
+    }
+
+    private static function closureParams(string $arg_list)
+    {
+        // Special check if param list has 0 params.
+        if ($arg_list === '') {
+            return [];
+        }
+        $comment_params = [];
+        // TODO: Would need to use a different approach if templates were ever supported
+        //       e.g. The magic method parsing doesn't support commas?
+        return explode(',', $arg_list);
     }
 
     /**

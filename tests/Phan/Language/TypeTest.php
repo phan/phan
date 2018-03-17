@@ -9,6 +9,7 @@ use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClosureType;
+use Phan\Language\Type\ClosureTypeDeclaration;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
@@ -68,9 +69,12 @@ class TypeTest extends BaseTest
         $this->assertParsesAsType(VoidType::instance(false), 'void');
     }
 
-    private function assertSameType(Type $expected, Type $actual)
+    private function assertSameType(Type $expected, Type $actual, string $extra = '')
     {
         $message = \sprintf("Expected %s to be %s", (string)$actual, (string)$expected);
+        if ($extra) {
+            $message .= ": $extra";
+        }
         $this->assertEquals($expected, $actual, $message);
         $this->assertSame($expected, $actual, $message);
     }
@@ -244,6 +248,35 @@ class TypeTest extends BaseTest
         );
         $this->assertSameType($expectedStringArrayType, $stringArrayType);
         $this->assertSame('?float[]', (string)$stringArrayType);
+    }
+
+    public function testClosureAnnotation()
+    {
+        foreach (['Closure():void', 'Closure()'] as $union_type_string) {
+            $expectedClosureVoidType = ClosureTypeDeclaration::instanceForTypes(
+                [],
+                VoidType::instance(false)->asUnionType(),
+                false
+            );
+            $this->assertParsesAsType($expectedClosureVoidType, $union_type_string);
+            $closureVoidType = self::makePHPDocType($union_type_string);
+            $this->assertSame('Closure():void', (string)$closureVoidType, "failed parsing $union_type_string");
+        }
+    }
+
+    public function testClosureIntAnnotation()
+    {
+        foreach (['Closure(int):int', 'Closure(int $p1)'] as $union_type_string) {
+            // TODO: Finish implementing
+            $expectedClosureVoidType = ClosureTypeDeclaration::instanceForTypes(
+                [new ClosureTypeParameter(IntType::instance(false), false, false, false)],  // PARAM_REF, PARAM_VARIADIC, IS_OPTIONAL
+                VoidType::instance(false)->asUnionType(),
+                false
+            );
+            $this->assertParsesAsType($expectedClosureVoidType, $union_type_string);
+            $closureVoidType = self::makePHPDocType($union_type_string);
+            $this->assertSame('Closure():void', (string)$closureVoidType, "failed parsing $union_type_string");
+        }
     }
 
     /**
