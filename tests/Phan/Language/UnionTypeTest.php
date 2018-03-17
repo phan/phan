@@ -448,7 +448,7 @@ class UnionTypeTest extends BaseTest
         $types = $union_type->getTypeSet();
         $type = reset($types);
 
-        $this->assertSame('array{key:int|string=}', (string)$type);
+        $this->assertSame('array{key?:int|string}', (string)$type);
         \assert($type instanceof ArrayShapeType);
         $this->assertSame('array<string,int>|array<string,string>', (string)$union_type->withFlattenedArrayShapeTypeInstances());
         $field_union_type = $type->getFieldTypes()['key'];

@@ -85,7 +85,7 @@ class UnionType implements \Serializable
         }
     }
 
-    private static function ofUniqueTypes(array $type_list)
+    protected static function ofUniqueTypes(array $type_list)
     {
         $n = \count($type_list);
         if ($n === 0) {

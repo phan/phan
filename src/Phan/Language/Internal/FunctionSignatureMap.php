@@ -54,8 +54,8 @@ PHAN;
  *
  *   \Phan\Language\UnionType->withFlattenedArrayShapeTypeInstances() may be of help to programatically convert these to array<string,T1>|array<string,T2>
  *
- * - This started using array shapes with optional fields for union types (array{key:int=}).
- *   The `=` after the union type indicates that the field is optional.
+ * - This started using array shapes with optional fields for union types (array{key?:int}).
+ *   A `?` after the array shape field's key indicates that the field is optional.
  */
 return [
 '__halt_compiler' => [''],
@@ -6710,7 +6710,7 @@ return [
 'parse_ini_file' => ['array|false', 'filename'=>'string', 'process_sections='=>'bool', 'scanner_mode='=>'int'],
 'parse_ini_string' => ['array|false', 'ini_string'=>'string', 'process_sections='=>'bool', 'scanner_mode='=>'int'],
 'parse_str' => ['void', 'encoded_string'=>'string', '&w_result='=>'array'],
-'parse_url' => ['array{scheme:string=,host:string=,port:int=,user:string=,pass:string=,path:string=,query:string=,fragment:string=}|string|int|null', 'url'=>'string', 'url_component='=>'int'],
+'parse_url' => ['array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|string|int|null', 'url'=>'string', 'url_component='=>'int'],
 'ParseError::__clone' => ['void'],
 'ParseError::__construct' => ['void', 'message='=>'string', 'code='=>'int', 'previous='=>'?Throwable|?ParseError'],
 'ParseError::__toString' => ['string'],
@@ -10222,7 +10222,7 @@ return [
 'unlink' => ['bool', 'filename'=>'string', 'context='=>'resource'],
 'unpack' => ['array', 'format'=>'string', 'data'=>'string', 'offset='=>'int'],
 'unregister_tick_function' => ['void', 'function_name'=>'string'],
-'unserialize' => ['mixed', 'variable_representation'=>'string', 'allowed_classes='=>'array{allowed_classes:string[]|bool=}'],
+'unserialize' => ['mixed', 'variable_representation'=>'string', 'allowed_classes='=>'array{allowed_classes?:string[]|bool}'],
 'unset' => ['void', 'var='=>'mixed', '...='=>'mixed'],
 'untaint' => ['bool', '&rw_string'=>'string', '&...rw_strings='=>'string'],
 'uopz_allow_exit' => ['void', 'allow'=>'bool'],

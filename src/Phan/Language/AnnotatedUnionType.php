@@ -21,7 +21,10 @@ class AnnotatedUnionType extends UnionType
      */
     public function withIsPossiblyUndefined(bool $is_possibly_undefined) : UnionType
     {
-        if ($is_possibly_undefined === $this->is_possibly_undefined) {
+        if (!$is_possibly_undefined) {
+            return UnionType::ofUniqueTypes($this->getTypeSet());
+        }
+        if (!$this->is_possibly_undefined) {
             return $this;
         }
         $result = clone($this);
@@ -41,5 +44,38 @@ class AnnotatedUnionType extends UnionType
             return $result . '=';
         }
         return $result;
+    }
+
+    /**
+     * Add a type name to the list of types
+     *
+     * @return UnionType
+     * @override
+     */
+    public function withType(Type $type)
+    {
+        return parent::withType($type)->withIsPossiblyUndefined(false);
+    }
+
+    /**
+     * Add a type name to the list of types
+     *
+     * @return UnionType
+     * @override
+     */
+    public function withoutType(Type $type)
+    {
+        return parent::withoutType($type)->withIsPossiblyUndefined(false);
+    }
+
+    /**
+     * Returns a union type which add the given types to this type
+     *
+     * @return UnionType
+     * @override
+     */
+    public function withUnionType(UnionType $union_type)
+    {
+        return parent::withUnionType($union_type)->withIsPossiblyUndefined(false);
     }
 }
