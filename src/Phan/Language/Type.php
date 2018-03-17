@@ -1289,6 +1289,16 @@ class Type
 
     /**
      * @return bool
+     * True if this type is a printable scalar.
+     * @internal
+     */
+    public function isPrintableScalar() : bool
+    {
+        return false;  // Overridden in subclass ScalarType
+    }
+
+    /**
+     * @return bool
      * True if this type is a callable or a Closure.
      */
     public function isCallable() : bool
@@ -1663,7 +1673,7 @@ class Type
             ],
         ];
 
-        return $matrix[(string)$this][(string)$type] ?? false;
+        return $matrix[$this->__toString()][$type->__toString()] ?? false;
     }
 
     /**

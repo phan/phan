@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use Phan\Config;
 use Phan\Language\Type;
 
 // Not sure if it made sense to extend BoolType, so not doing that.
@@ -46,5 +47,11 @@ final class TrueType extends ScalarType
     public function getNormalizationFlags() : int
     {
         return $this->is_nullable ? (self::_bit_nullable | self::_bit_true) : self::_bit_true;
+    }
+
+    public function isPrintableScalar() : bool
+    {
+        // This would be '1', which is probably not intended
+        return Config::getValue('scalar_implicit_cast');
     }
 }

@@ -5,8 +5,8 @@ $attribute = new DOMAttr('name');
 $attribute = new DOMAttr('name', 'value');
 echo $attribute->name;
 $attributeOwnerElement = $attribute->ownerElement;
-echo $attribute->schemaTypeInfo;
-echo $attribute->specified;
+var_export($attribute->schemaTypeInfo);
+var_export($attribute->specified);
 $attribute->value = 'value';
 
 $document = new DOMDocument();
@@ -39,7 +39,7 @@ $documentTypeNotations = $documentType->notations;
 echo $documentType->internalSubset;
 
 $element = new DOMElement('name');
-echo $element->schemaTypeInfo;
+var_export($element->schemaTypeInfo);  // https://secure.php.net/manual/en/class.domelement.php#domelement.props.schematypeinfo
 echo $element->tagName;
 
 $entity = new DOMEntity();

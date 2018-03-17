@@ -462,29 +462,51 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     * @suppress PhanAccessMethodInternal
      */
     public function visitPrint(Node $node) : Context
     {
+        $code_base = $this->code_base;
+        $context = $this->context;
+        $expr_node = $node->children['expr'];
         $type = UnionTypeVisitor::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $node->children['expr'],
+            $code_base,
+            $context,
+            $expr_node,
             true
         );
 
-        // TODO: Check objects and resources as well?
-        if ($type->isType(ArrayType::instance(false))
-            || $type->isType(ArrayType::instance(true))
-            || $type->isGenericArray()
-        ) {
+        if (!$type->hasPrintableScalar()) {
+            if ($type->isType(ArrayType::instance(false))
+                || $type->isType(ArrayType::instance(true))
+                || $type->isGenericArray()
+            ) {
+                $this->emitIssue(
+                    Issue::TypeConversionFromArray,
+                    $expr_node->lineno ?? $node->lineno,
+                    'string'
+                );
+                return $context;
+            }
+            if (!$context->getIsStrictTypes()) {
+                try {
+                    foreach ($type->asExpandedTypes($code_base)->asClassList($code_base, $context) as $clazz) {
+                        if ($clazz->hasMethodWithName($code_base, "__toString")) {
+                            return $context;
+                        }
+                    }
+                } catch (CodeBaseException $e) {
+                    // Swallow "Cannot find class", go on to emit issue
+                }
+            }
             $this->emitIssue(
-                Issue::TypeConversionFromArray,
-                $node->lineno ?? 0,
-                'string'
+                Issue::TypeSuspiciousEcho,
+                $expr_node->lineno ?? $node->lineno,
+                (string)$type
             );
         }
 
-        return $this->context;
+        return $context;
     }
 
     /**

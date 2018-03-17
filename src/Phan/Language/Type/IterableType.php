@@ -13,6 +13,11 @@ class IterableType extends NativeType
         return true;
     }
 
+    public function isPrintableScalar() : bool
+    {
+        return false;  // Overridden in subclass IterableType
+    }
+
     public function isPossiblyObject() : bool
     {
         return true;  // can be Traversable, which is an object

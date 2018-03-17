@@ -14,6 +14,11 @@ abstract class ScalarType extends NativeType
         return true;
     }
 
+    public function isPrintableScalar() : bool
+    {
+        return true;  // Overridden in subclass IterableType and ResourceType
+    }
+
     public function isSelfType() : bool
     {
         return false;

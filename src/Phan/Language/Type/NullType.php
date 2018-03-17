@@ -115,4 +115,10 @@ final class NullType extends ScalarType
     {
         return true;  // Null is always falsey.
     }
+
+    public function isPrintableScalar() : bool
+    {
+        // This would be '', which is probably not intended. allow null in union types for `echo` if there are **other** valid types.
+        return Config::get_null_casts_as_any_type();
+    }
 }
