@@ -48,16 +48,16 @@ class C5 {}
 function f2($p1 = null, $p2) {}
 
 // Issue::PhanParamSpecial1
-
-
+echo join('str', 'str');
+echo join([], 'str');
 // Issue::PhanParamSpecial2
-
+echo join('notanarray');
 
 // Issue::PhanParamSpecial3
-
+echo array_udiff([], [], []);
 
 // Issue::PhanParamSpecial4
-
+echo array_uintersect_uassoc([], [], [], 'strcasecmp');
 
 // Issue::PhanParamTooFew
 function f6($i) {}

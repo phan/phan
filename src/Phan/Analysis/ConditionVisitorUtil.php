@@ -302,7 +302,8 @@ trait ConditionVisitorUtil
                     if ($expr == null) {
                         return $this->removeFalseyFromVariable($var_node, $context, false);
                     }
-                    return $this->removeFalseFromVariable($var_node, $context);;
+                    return $this->removeFalseFromVariable($var_node, $context);
+                    ;
                 } elseif ($expr == null) {
                     return $this->removeNullFromVariable($var_node, $context, false);
                 } elseif ($expr == true) {  // e.g. 1, "1", -1
