@@ -49,7 +49,7 @@ class Type
         '(\??)([a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*|\$this)';
 
     const shape_key_regex =
-        '[-._a-zA-Z0-9\x7f-\xff]+';
+        '[-._a-zA-Z0-9\x7f-\xff]+\??';
 
     /**
      * @var string
@@ -1006,16 +1006,22 @@ class Type
      */
     private static function shapeComponentStringsToTypes(array $shape_components, Context $context, int $source) : array
     {
-        return array_map(
-            function (string $component_string) use ($context, $source) : UnionType {
+        $result = [];
+        foreach ($shape_components as $key => $component_string) {
+            if (\is_string($key) && \substr($key, -1) === '?') {
                 if (\substr($component_string, -1) === '=') {
-                    $type = UnionType::fromStringInContext(\substr($component_string, 0, -1), $context, $source);
-                    return $type->withIsPossiblyUndefined(true);
+                    $component_string = \substr($component_string, 0, -1);
                 }
-                return UnionType::fromStringInContext($component_string, $context, $source);
-            },
-            $shape_components
-        );
+                $key = \substr($key, 0, -1);
+                $result[$key] = UnionType::fromStringInContext($component_string, $context, $source)->withIsPossiblyUndefined(true);
+            } elseif (\substr($component_string, -1) === '=') {
+                $component_string = \substr($component_string, 0, -1);
+                $result[$key] = UnionType::fromStringInContext($component_string, $context, $source)->withIsPossiblyUndefined(true);
+            } else {
+                $result[$key] = UnionType::fromStringInContext($component_string, $context, $source);
+            }
+        }
+        return $result;
     }
 
     /**

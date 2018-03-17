@@ -10,7 +10,7 @@ New Features(CLI, Configs)
 
 New Features(Analysis)
 + Infer the type of `[]` as `array{}` (the empty array), not `array`. (#1382)
-+ Allow phpdoc `@param` array shapes to contain optional fields. (E.g. `array{requiredKey:int,optionalKey:string=}`) (#1382)
++ Allow phpdoc `@param` array shapes to contain optional fields. (E.g. `array{requiredKey:int,optionalKey?:string}`) (#1382)
   An array shape is now allowed to cast to another array shape, as long as the required fields are compatible with the target type,
   and any optional fields from the target type are absent in the source type or compatible.
 + Emit `PhanTypeArrayUnsetSuspicious` when trying to unset the offset of something that isn't an array or array-like.

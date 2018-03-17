@@ -1,3 +1,3 @@
 %s:5 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
 %s:6 PhanTypeMismatchArgumentInternal Argument 1 (var) is string but \count() takes \Countable|array
-%s:7 PhanTypeInvalidDimOffset Invalid offset "Host" of array type array{scheme:string=,host:string=,port:int=,user:string=,pass:string=,path:string=,query:string=,fragment:string=}|int|null|string
+%s:7 PhanTypeInvalidDimOffset Invalid offset "Host" of array type array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|int|null|string

@@ -1,1 +1,1 @@
-%s:5 PhanTypeMismatchArgumentInternal Argument 2 (allowed_classes) is array{allowed_classes:array{0:array{0:string}}} but \unserialize() takes array{allowed_classes:bool|string[]=}
+%s:5 PhanTypeMismatchArgumentInternal Argument 2 (allowed_classes) is array{allowed_classes:array{0:array{0:string}}} but \unserialize() takes array{allowed_classes?:bool|string[]}

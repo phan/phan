@@ -1,10 +1,10 @@
-%s:7 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{strKey:string=,intKey:int=} but \strlen() takes string
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{strKey?:string,intKey?:int} but \strlen() takes string
 %s:9 PhanTypeMismatchArgumentInternal Argument 1 (var) is int but \count() takes \Countable|array
 %s:12 PhanTypeMismatchArgumentInternal Argument 1 (var) is string but \count() takes \Countable|array
-%s:17 PhanTypeMismatchArgument Argument 1 (options) is array{strKey:int} but \acceptsOptionArray() takes array{strKey:string=,intKey:int=} defined at %s:6
-%s:19 PhanTypeMismatchArgument Argument 1 (options) is array{strKey:null} but \acceptsOptionArray() takes array{strKey:string=,intKey:int=} defined at %s:6
-%s:21 PhanTypeMismatchArgument Argument 1 (options) is array{intKey:string} but \acceptsOptionArray() takes array{strKey:string=,intKey:int=} defined at %s:6
-%s:22 PhanTypeMismatchArgument Argument 1 (options) is array{intKey:null} but \acceptsOptionArray() takes array{strKey:string=,intKey:int=} defined at %s:6
-%s:23 PhanTypeMismatchArgument Argument 1 (options) is array{intKey:string,strKey:string} but \acceptsOptionArray() takes array{strKey:string=,intKey:int=} defined at %s:6
+%s:17 PhanTypeMismatchArgument Argument 1 (options) is array{strKey:int} but \acceptsOptionArray() takes array{strKey?:string,intKey?:int} defined at %s:6
+%s:19 PhanTypeMismatchArgument Argument 1 (options) is array{strKey:null} but \acceptsOptionArray() takes array{strKey?:string,intKey?:int} defined at %s:6
+%s:21 PhanTypeMismatchArgument Argument 1 (options) is array{intKey:string} but \acceptsOptionArray() takes array{strKey?:string,intKey?:int} defined at %s:6
+%s:22 PhanTypeMismatchArgument Argument 1 (options) is array{intKey:null} but \acceptsOptionArray() takes array{strKey?:string,intKey?:int} defined at %s:6
+%s:23 PhanTypeMismatchArgument Argument 1 (options) is array{intKey:string,strKey:string} but \acceptsOptionArray() takes array{strKey?:string,intKey?:int} defined at %s:6
 %s:30 PhanTypeMismatchArgumentInternal Argument 1 (var) is ?string but \count() takes \Countable|array
-%s:37 PhanTypeMismatchArgument Argument 1 (options) is array{nullableStrKey:int} but \acceptsOptionArrayB() takes array{nullableStrKey:?string=} defined at %s:28
+%s:37 PhanTypeMismatchArgument Argument 1 (options) is array{nullableStrKey:int} but \acceptsOptionArrayB() takes array{nullableStrKey?:?string} defined at %s:28
