@@ -132,6 +132,11 @@ class Comment
     private $magic_method_map = [];
 
     /**
+     * @var UnionType a list of types for (at)throws annotations
+     */
+    private $throw_union_type;
+
+    /**
      * @var Option<Type>
      * An optional class name defined by an (at)phan-closure-scope directive.
      * (overrides the class in which it is analyzed)
@@ -168,9 +173,12 @@ class Comment
      *
      * @param array<int,CommentMethod> $magic_method_list
      *
+     *
      * @param Option<Type>|None $closure_scope
      * For closures: Allows us to document the class of the object
      * to which a closure will be bound.
+     *
+     * @param UnionType $throw_union_type
      */
     private function __construct(
         int $comment_flags,
@@ -183,7 +191,8 @@ class Comment
         array $magic_property_list,
         array $magic_method_list,
         array $phan_overrides,
-        Option $closure_scope
+        Option $closure_scope,
+        UnionType $throw_union_type
     ) {
         $this->comment_flags = $comment_flags;
         $this->variable_list = $variable_list;
@@ -193,6 +202,7 @@ class Comment
         $this->return_union_type = $return_union_type;
         $this->suppress_issue_list = $suppress_issue_list;
         $this->closure_scope = $closure_scope;
+        $this->throw_union_type = $throw_union_type;
 
         foreach ($this->parameter_list as $i => $parameter) {
             $name = $parameter->getName();
@@ -353,7 +363,8 @@ class Comment
                 [],
                 [],
                 [],
-                new None
+                new None,
+                UnionType::empty()
             );
         }
 
@@ -368,6 +379,7 @@ class Comment
         $closure_scope = new None;
         $comment_flags = 0;
         $phan_overrides = [];
+        $throw_union_type = UnionType::empty();
 
         $lines = \explode("\n", $comment);
         $comment_lines_count = \count($lines);
@@ -394,7 +406,7 @@ class Comment
             }
             // https://secure.php.net/manual/en/regexp.reference.internal-options.php
             // (?i) makes this case sensitive, (?-1) makes it case insensitive
-            if (\preg_match('/@((?i)param|var|return|returns|inherits|suppress|phan-[a-z0-9_-]*(?-i)|method|property|template|PhanClosureScope)\b/', $line, $matches)) {
+            if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|suppress|phan-[a-z0-9_-]*(?-i)|method|property|template|PhanClosureScope)\b/', $line, $matches)) {
                 $type = \strtolower($matches[1]);
 
                 if ($type === 'param') {
@@ -438,6 +450,18 @@ class Comment
                         self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line),
                         '@returns',
                         '@return'
+                    );
+                } elseif ($type === 'throws') {
+                    $check_compatible('@throws', Comment::FUNCTION_LIKE, $i, $line);
+                    $throw_union_type = $throw_union_type->withUnionType(self::returnTypeFromCommentLine($context, $line));
+                } elseif ($type === 'throw') {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::MisspelledAnnotation,
+                        self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line),
+                        '@throw',
+                        '@throws'
                     );
                 } elseif ($type === 'suppress') {
                     $suppress_issue_type = self::suppressIssueFromCommentLine($line);
@@ -565,7 +589,8 @@ class Comment
             $magic_property_list,
             $magic_method_list,
             $phan_overrides,
-            $closure_scope
+            $closure_scope,
+            $throw_union_type
         );
     }
 
@@ -590,7 +615,7 @@ class Comment
     }
 
     // TODO: Is `@return &array` valid phpdoc2?
-    const return_comment_regex = '/@(?:phan-)?return\s+(&\s*)?(' . UnionType::union_type_regex_or_this . '+)/';
+    const return_comment_regex = '/@(?:phan-)?(?:return|throws)\s+(&\s*)?(' . UnionType::union_type_regex_or_this . '+)/';
 
     /**
      * @param Context $context
@@ -1238,6 +1263,14 @@ class Comment
     }
 
     /**
+     * @return UnionType list of types for throws statements
+     */
+    public function getThrowsUnionType() : UnionType
+    {
+        return $this->throw_union_type;
+    }
+
+    /**
      * @return array<int,CommentParameter>
      */
     public function getVariableList() : array
@@ -1265,6 +1298,9 @@ class Comment
 
         if ($this->return_union_type) {
             $string .= " * @return {$this->return_union_type}\n";
+        }
+        foreach ($this->throw_union_type->getTypeSet() as $type) {
+            $string .= " * @throws {$type}\n";
         }
 
         $string .= " */\n";

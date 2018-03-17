@@ -322,6 +322,8 @@ interface FunctionInterface extends AddressableElementInterface
      */
     public function setComment(Comment $comment);
 
+    public function getThrowsUnionType() : UnionType;
+
     /**
      * @return bool
      * True if this is a magic phpdoc method (declared via (at)method on class declaration phpdoc)
