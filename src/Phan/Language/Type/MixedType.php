@@ -42,4 +42,9 @@ final class MixedType extends NativeType
     {
         return ArrayType::instance(false);
     }
+
+    public function isPrintableScalar() : bool
+    {
+        return true;  // It's possible.
+    }
 }

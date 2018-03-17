@@ -1273,6 +1273,22 @@ class UnionType implements \Serializable
 
     /**
      * @return bool
+     * True if any types in this union are a printable scalar, or this is the empty union type
+     * @internal
+     */
+    public function hasPrintableScalar() : bool
+    {
+        if ($this->isEmpty()) {
+            return true;
+        }
+
+        return $this->hasTypeMatchingCallback(function (Type $type) : bool {
+            return $type->isPrintableScalar();
+        });
+    }
+
+    /**
+     * @return bool
      * True if this union has array-like types (is of type array, is
      * a generic array, or implements ArrayAccess).
      */

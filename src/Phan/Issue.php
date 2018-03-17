@@ -94,6 +94,7 @@ class Issue
     const TypeMissingReturn         = 'PhanTypeMissingReturn';
     const TypeNonVarPassByRef       = 'PhanTypeNonVarPassByRef';
     const TypeParentConstructorCalled = 'PhanTypeParentConstructorCalled';
+    const TypeSuspiciousEcho        = 'PhanTypeSuspiciousEcho';
     const TypeVoidAssignment        = 'PhanTypeVoidAssignment';
     const TypeInvalidCallableArraySize = 'PhanTypeInvalidCallableArraySize';
     const TypeInvalidCallableArrayKey = 'PhanTypeInvalidCallableArrayKey';
@@ -1135,6 +1136,14 @@ class Issue
                 "Invalid offset {SCALAR} of array type {TYPE} in an array destructuring assignment",
                 self::REMEDIATION_B,
                 10047
+            ),
+            new Issue(
+                self::TypeSuspiciousEcho,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Suspicious argument {TYPE} for an echo/print statement",
+                self::REMEDIATION_B,
+                10049
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use Phan\Config;
 use Phan\Language\Type;
 
 final class FalseType extends ScalarType
@@ -55,5 +56,11 @@ final class FalseType extends ScalarType
     public function getNormalizationFlags() : int
     {
         return $this->is_nullable ? (self::_bit_nullable | self::_bit_false) : self::_bit_false;
+    }
+
+    public function isPrintableScalar() : bool
+    {
+        // This would be '', which is probably not intended
+        return Config::getValue('scalar_implicit_cast');
     }
 }

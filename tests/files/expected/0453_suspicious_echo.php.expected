@@ -1,0 +1,12 @@
+%s:3 PhanTypeSuspiciousEcho Suspicious argument null for an echo/print statement
+%s:4 PhanTypeSuspiciousEcho Suspicious argument resource for an echo/print statement
+%s:5 PhanTypeSuspiciousEcho Suspicious argument false for an echo/print statement
+%s:6 PhanTypeSuspiciousEcho Suspicious argument true for an echo/print statement
+%s:10 PhanTypeSuspiciousEcho Suspicious argument null for an echo/print statement
+%s:11 PhanTypeSuspiciousEcho Suspicious argument resource for an echo/print statement
+%s:12 PhanTypeSuspiciousEcho Suspicious argument false for an echo/print statement
+%s:13 PhanTypeSuspiciousEcho Suspicious argument true for an echo/print statement
+%s:15 PhanTypeSuspiciousEcho Suspicious argument \stdClass for an echo/print statement
+%s:25 PhanTypeSuspiciousEcho Suspicious argument \NonStringableClass for an echo/print statement
+%s:28 PhanTypeSuspiciousEcho Suspicious argument array{key:string}|false for an echo/print statement
+%s:34 PhanTypeSuspiciousEcho Suspicious argument void for an echo/print statement

@@ -22,6 +22,9 @@ New Features(Analysis)
   which will be emitted on properties that are written to but never read from.
   (Requires that dead code detection be enabled)
 + Improve Phan's analysis of switch statements and fix bugs. (#1561)
++ Add `PhanTypeSuspiciousEcho` to warn about suspicious types being passed to echo/print statements.
+  This now warns about booleans, arrays, resources, null, non-stringable classes, combinations of those types, etc.
+  (`var_export` or JSON encoding usually makes more sense for a boolean/null)
 
 Maintenance
 + Add `--disable-usage-on-error` option to `phan_client` (#1540)

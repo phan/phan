@@ -5,4 +5,9 @@ final class ResourceType extends NativeType
 {
     /** @phan-override */
     const NAME = 'resource';
+
+    public function isPrintableScalar() : bool
+    {
+        return false;
+    }
 }
