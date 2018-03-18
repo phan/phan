@@ -4,11 +4,12 @@ namespace Phan\Plugin\Internal;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
-use Phan\Language\Element\Func;
+use Phan\Language\Element\FunctionInterface;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
 use ast;
 use ast\Node;
+use Closure;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
@@ -60,11 +61,12 @@ final class StringFunctionPlugin extends PluginV2 implements
     }
 
     /**
-     * @return array<string,\Closure>
+     * @return array<string,Closure>
+     * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
      */
     private static function getAnalyzeFunctionCallClosuresStatic() : array
     {
-        $make_order_warner = static function (int $expected_const_pos, int $expected_variable_pos) : \Closure {
+        $make_order_warner = static function (int $expected_const_pos, int $expected_variable_pos) : Closure {
             $expected_arg_count = 1 + (int)max($expected_const_pos, $expected_variable_pos);
             /**
              * @return void
@@ -72,7 +74,7 @@ final class StringFunctionPlugin extends PluginV2 implements
             return static function (
                 CodeBase $code_base,
                 Context $context,
-                Func $function,
+                FunctionInterface $function,
                 array $args
             ) use (
                 $expected_const_pos,

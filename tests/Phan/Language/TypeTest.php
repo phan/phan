@@ -43,9 +43,11 @@ class TypeTest extends BaseTest
         $this->assertParsesAsType(ArrayType::instance(false), '((array))');
     }
 
+    const delimited_type_regex_or_this = '@^' . Type::type_regex_or_this . '$@';
+
     public function assertParsesAsType(Type $expected_type, string $type_string)
     {
-        $this->assertTrue(\preg_match('@^' . Type::type_regex_or_this . '$@', $type_string) > 0, "Failed to parse '$type_string'");
+        $this->assertTrue(\preg_match(self::delimited_type_regex_or_this, $type_string) > 0, "Failed to parse '$type_string'");
         $this->assertSameType($expected_type, self::makePHPDocType($type_string));
     }
 
@@ -291,7 +293,7 @@ class TypeTest extends BaseTest
             false,
             false
         );
-        foreach (['Closure(int,mixed):int', 'Closure(int $p1,$other): int'] as $union_type_string) {
+        foreach (['Closure(int,mixed):int', '\Closure(int,mixed):int', 'Closure(int $p1,$other): int'] as $union_type_string) {
             $this->verifyClosureParam($expected_closure_type, $union_type_string, 'Closure(int,mixed):int');
         }
     }
@@ -306,8 +308,11 @@ class TypeTest extends BaseTest
             false,
             false
         );
-        foreach (['Closure(?int|?string $argName) : ?int|?string', 'Closure(?int|?string):?int|?string'] as $union_type_string) {
-            $this->verifyClosureParam($expected_closure_scalar_type, $union_type_string, 'Closure(?int|?string):?int|?string');
+        foreach ([
+            'Closure(?int|?string $argName) : (?int|?string)',
+            'Closure(?int|?string):(?int|?string)',
+        ] as $union_type_string) {
+            $this->verifyClosureParam($expected_closure_scalar_type, $union_type_string, 'Closure(?int|?string):(?int|?string)');
         }
     }
 

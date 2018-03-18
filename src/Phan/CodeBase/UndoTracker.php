@@ -27,7 +27,8 @@ class UndoTracker
     private $current_parsed_file;
 
     /**
-     * @var array<string,array<int,\Closure>> operations to undo for a current path
+     * @var array<string,array<int,Closure>> operations to undo for a current path
+     * @phan-var array<string,array<int,Closure(CodeBase)>>
      */
     private $undoOperationsForPath = [];
 

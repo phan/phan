@@ -3,6 +3,7 @@ namespace Phan\Language\Element;
 
 use Phan\CodeBase;
 use Phan\Language\Context;
+use Phan\Language\Type\ClosureDeclarationType;
 use Phan\Language\UnionType;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -15,6 +16,11 @@ use ast\Node;
  */
 interface FunctionInterface extends AddressableElementInterface
 {
+    /**
+     * An easy workaround to mark a functionlike as accepting an infinite number of optional parameters
+     * TODO: Distinguish between __call and __callStatic invoked manually and via magic (See uses of this constant)
+     */
+    const INFINITE_PARAMETERS = 999999;
 
     /**
      * @return FullyQualifiedMethodName|FullyQualifiedFunctionName
@@ -345,4 +351,10 @@ interface FunctionInterface extends AddressableElementInterface
      * If this returns true, there is at least one parameter and at least one of those can be overridden with a more specific type.
      */
     public function needsRecursiveAnalysis() : bool;
+
+    /**
+     * Returns a ClosureDeclarationType based on phpdoc+real types.
+     * The return value is used for type casting rule checking.
+     */
+    public function asClosureDeclarationType() : ClosureDeclarationType;
 }

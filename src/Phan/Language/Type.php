@@ -44,6 +44,9 @@ class Type
     const simple_type_regex =
         '(\??)[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*';
 
+    const simple_noncapturing_type_regex =
+        '\??[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*';
+
     /**
      * @var string
      * A legal type identifier (e.g. 'int' or 'DateTime')
@@ -61,7 +64,7 @@ class Type
      * @suppress PhanUnreferencedPublicClassConstant
      */
     const array_shape_entry_regex_noncapturing =
-        '(?:' . self::shape_key_regex . ')\s*:\s*(?:' . self::simple_type_regex . '=?)';
+        '(?:' . self::shape_key_regex . ')\s*:\s*(?:' . self::simple_noncapturing_type_regex . '=?)';
 
     /**
      * @var string
@@ -73,9 +76,18 @@ class Type
      */
     const type_regex =
         '('
-        . '(?:\??\((?-1)\)|'
-        . '(?:Closure(\([^()]*\))(?:\s*:\s*(?-2)(?:\|(?-2))*)?)|'  // TODO: Allow parsing nesting. TODO: Support callable.
-        . '(' . self::simple_type_regex . ')'  // 2 patterns
+        . '(?:\??\((?-1)\)|'  // Recursion: "?(T)" or "(T)" with brackets
+        // TODO: Allow parsing nesting.
+        . '(?:'
+          . '\\\\?Closure(\([^()]*\))' // TODO: Support callable.
+          . '(?:\s*:\s*'  // optional return type, can be ":T" or ":(T1|T2)" or ": ?(T1|T2)"
+            . '(?:'
+              . self::simple_noncapturing_type_regex . '|'  // Forbid ambiguity in `Closure():int[]` by disallowing complex return types without '()'. Always parse that as `(Closure():int)[]`.
+              . '\((?-2)(?:\s*\|\s*(?-2))*\)'
+            . ')'
+          . ')?'
+        . ')|'
+        . '(' . self::simple_type_regex . ')'  // ?T or T. TODO: Get rid of pattern for '?'?
         . '(?:'
           . '<'
             . '('
@@ -107,7 +119,16 @@ class Type
         . '('
           . '(?:'
             . '\??\((?-1)\)|'
-            . '(?:Closure(\([^()]*\))(?:\s*:\s*(?-2)(?:\|(?-2))*)?)|'  // TODO: Allow parsing nesting. TODO: Support callable.
+            // TODO: Support nesting
+            . '(?:'
+              . '\\\\?Closure(\([^()]*\))' // TODO: Support callable.
+              . '(?:\s*:\s*'  // optional return type, can be ":T" or ":(T1|T2)"
+                . '(?:'
+                  . self::simple_noncapturing_type_regex . '|'  // Forbid ambiguity in `Closure():int[]` by disallowing complex return types without '()'. Always parse that as `(Closure():int)[]`.
+                  . '\((?-2)(?:\s*\|\s*(?-2))*\)'  // Complicated return types can be placed within ().
+                . ')'
+              . ')?'
+            . ')|'
             . '(' . self::simple_type_regex_or_this . ')'  // 3 patterns
             . '(?:<'
               . '('
@@ -323,13 +344,9 @@ class Type
             "Type name cannot be empty"
         );
 
-        \assert(
-            false === \strpos(
-                $type_name,
-                '|'
-            ),
-            "Type name may not contain a pipe."
-        );
+        if (\strpos($type_name, '|') !== false) {
+            throw new \AssertionError("Type name '$type_name' may not contain a pipe");
+        }
 
         // Create a canonical representation of the
         // namespace and name
@@ -706,7 +723,12 @@ class Type
             if (\strcasecmp($type_name, 'Closure') === 0) {
                 $return_type = \array_pop($shape_components);
                 if (!$return_type) {
-                    throw new \AssertionError("Expected at least one component");
+                    // shouldn't happen
+                    throw new \AssertionError("Expected at least one component of a closure phpdoc type");
+                }
+                if ($return_type[0] === '(' && \substr($return_type, -1) === ')') {
+                    // TODO: Maybe catch that in UnionType parsing instead
+                    $return_type = \substr($return_type, 1, -1);
                 }
                 return ClosureDeclarationType::instanceForTypes(
                     self::closureParamComponentStringsToParams($shape_components, new Context(), Type::FROM_NODE),
@@ -866,6 +888,9 @@ class Type
                 $return_type = \array_pop($shape_components);
                 if (!$return_type) {
                     throw new \AssertionError("Expected a return type");
+                }
+                if ($return_type[0] === '(' && \substr($return_type, -1) === ')') {
+                    $return_type = \substr($return_type, 1, -1);
                 }
                 return ClosureDeclarationType::instanceForTypes(
                     self::closureParamComponentStringsToParams($shape_components, $context, $source),
@@ -1066,7 +1091,7 @@ class Type
      * @param array<int,string> $param_components Maps field keys (integers or strings) to the corresponding type representations
      * @param Context $context
      * @param int $source
-     * @return array<int,ClosureDeclarationType> The types for the representations of types, in the given $context
+     * @return array<int,ClosureDeclarationParameter> The types for the representations of types, in the given $context
      *
      * @see Comment::magicParamFromMagicMethodParamString() - This is similar but has minor differences, such as references
      */

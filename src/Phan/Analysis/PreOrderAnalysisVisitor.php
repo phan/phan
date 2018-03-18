@@ -18,6 +18,7 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Scope\ClosureScope;
 use Phan\Language\Type;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use ast\Node;
 
@@ -277,6 +278,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         if ($function->getHasYield()) {
             $this->setReturnTypeOfGenerator($function, $node);
         }
+        if (!$function->getHasReturn() && $function->getUnionType()->isEmpty()) {
+            $function->setUnionType(VoidType::instance(false)->asUnionType());
+        }
 
         return $context;
     }
@@ -444,6 +448,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 // Pass the variable into a new scope
                 $func->getInternalScope()->addVariable($variable);
             }
+        }
+        if (!$func->getHasReturn() && $func->getUnionType()->isEmpty()) {
+            $func->setUnionType(VoidType::instance(false)->asUnionType());
         }
 
         if ($func->getHasYield()) {

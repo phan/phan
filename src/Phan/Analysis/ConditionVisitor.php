@@ -19,6 +19,7 @@ use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
 use ast\Node;
 use ast\flags;
+use Closure;
 
 /**
  * TODO: Make $x != null remove FalseType and NullType from $x
@@ -457,11 +458,12 @@ class ConditionVisitor extends KindVisitorImplementation
      *
      * This contains Phan's logic for inferring the resulting union types of variables, e.g. in \is_array($x).
      *
-     * @return array<string,\Closure> - The closures to call for a given global function
+     * @return array<string,Closure> - The closures to call for a given global function
+     * @phan-return array<string,Closure(Variable,array):void>
      */
     private static function initTypeModifyingClosuresForVisitCall() : array
     {
-        $make_basic_assertion_callback = static function (string $union_type_string) : \Closure {
+        $make_basic_assertion_callback = static function (string $union_type_string) : Closure {
             $type = UnionType::fromFullyQualifiedString(
                 $union_type_string
             );

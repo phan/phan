@@ -26,6 +26,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
         ~(ContextNode::RESOLVE_KEYS_SKIP_UNKNOWN_KEYS | ContextNode::RESOLVE_ARRAY_VALUES);
 
 
+    /** @return void */
     private function analyzePattern(CodeBase $code_base, Context $context, Func $function, string $pattern)
     {
         /**
@@ -50,6 +51,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
             }
         });
         if ($err !== null) {
+            // TODO: scan for 'at offset %d$' and print the corresponding section of the regex. Note: Have to remove delimiters and unescape characters within the delimiters.
             $this->emitIssue(
                 $code_base,
                 $context,
@@ -62,7 +64,8 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
     }
 
     /**
-     * @return \Closure[]
+     * @return array<string,\Closure>
+     * @phan-return array<string, Closure(CodeBase,Context,Func,array):void>
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
     {

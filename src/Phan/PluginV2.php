@@ -44,13 +44,13 @@ use Phan\PluginV2\IssueEmitter;
  *     Called after the analysis phase is complete.
  *     (implement \Phan\PluginV2\FinalizeProcessCapability)
  *
- *  8. public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : \Closure[]
+ *  8. public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array<string, Closure(CodeBase,Context,Func|Method,array):void>
  *     Maps FQSEN of function or method to a closure used to analyze the function in question.
  *     'MyClass::myMethod' can be used as the FQSEN of a static or instance method.
  *     See .phan/plugins/PregRegexCheckerPlugin.php as an example.
  *
  *      Closure Type: function(CodeBase $code_base, Context $context, Func|Method $function, array $args) : void {...}
- *  9. public function getReturnTypeOverrides(CodeBase $code_base) : array
+ *  9. public function getReturnTypeOverrides(CodeBase $code_base) : array<string,Closure(CodeBase,Context,Func|Method,array):UnionType>
  *     Maps FQSEN of function or method to a closure used to override the returned UnionType.
  *     See \Phan\Plugin\Internal\ArrayReturnTypeOverridePlugin as an example (That is automatically loaded by phan)
  *

@@ -51,7 +51,7 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
     public function asType() : Type
     {
         return Type::fromFullyQualifiedString(
-            (string)$this
+            $this->__toString()
         );
     }
 

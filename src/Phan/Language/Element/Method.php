@@ -408,7 +408,7 @@ class Method extends ClassElement implements FunctionInterface
         $method->setSuppressIssueList($comment->getSuppressIssueList());
 
         if ($method->getIsMagicCall() || $method->getIsMagicCallStatic()) {
-            $method->setNumberOfOptionalParameters(999);
+            $method->setNumberOfOptionalParameters(FunctionInterface::INFINITE_PARAMETERS);
             $method->setNumberOfRequiredParameters(0);
         }
 

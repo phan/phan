@@ -10,6 +10,7 @@ use Phan\Language\Type\CallableType;
 use Phan\Language\Type;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
 use Phan\PluginV2;
+use Closure;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
@@ -23,8 +24,9 @@ final class CallableParamPlugin extends PluginV2 implements
 
     /**
      * @param array<int,int> $params
+     * @phan-return Closure(CodeBase,Context,FunctionInterface,array):void
      */
-    private static function generateClosure(array $params) : \Closure
+    private static function generateClosure(array $params) : Closure
     {
         $key = \json_encode($params);
         static $cache = [];
@@ -65,6 +67,7 @@ final class CallableParamPlugin extends PluginV2 implements
 
     /**
      * @return array<string,\Closure>
+     * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
      */
     private function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
     {
@@ -115,7 +118,7 @@ final class CallableParamPlugin extends PluginV2 implements
     }
 
     /**
-     * @return array<string,\Closure>
+     * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
     {

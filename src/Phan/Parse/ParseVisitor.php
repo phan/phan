@@ -14,6 +14,7 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionFactory;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
@@ -742,7 +743,7 @@ class ParseVisitor extends ScopeVisitor
             ], true)) {
                 if ($this->context->isInFunctionLikeScope()) {
                     $this->context->getFunctionLikeInScope($this->code_base)
-                                  ->setNumberOfOptionalParameters(999999);
+                                  ->setNumberOfOptionalParameters(FunctionInterface::INFINITE_PARAMETERS);
                 }
             } elseif ($function_name === 'define') {
                 // TODO: infer constant type from literal, string concatenation operators, etc?

@@ -13,6 +13,7 @@ use Phan\Language\UnionType;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
 use Phan\PluginV2\StopParamAnalysisException;
 use Phan\PluginV2;
+use Closure;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
@@ -24,7 +25,8 @@ final class MiscParamPlugin extends PluginV2 implements
     AnalyzeFunctionCallCapability
 {
     /**
-     * @return array<string,\Closure>
+     * @return array<string,Closure>
+     * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
      */
     private function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
     {
@@ -297,7 +299,8 @@ final class MiscParamPlugin extends PluginV2 implements
     }
 
     /**
-     * @return array<string,\Closure>
+     * @return array<string,Closure>
+     * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
     {

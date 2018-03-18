@@ -17,6 +17,7 @@ use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
 use ast\Node;
+use Closure;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
@@ -129,7 +130,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             }
             $closure_types = UnionType::empty();
             foreach ($function_like_list as $function_like) {
-                $closure_types = $closure_types->withType(ClosureType::instanceWithClosureFQSEN($function_like->getFQSEN()));
+                $closure_types = $closure_types->withType(ClosureType::instanceWithClosureFQSEN($function_like->getFQSEN(), $function_like));
             }
             return $closure_types;
         };
@@ -252,7 +253,10 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
         return $analyzers;
     }
 
-    public static function createNormalArgumentCache(CodeBase $code_base, Context $context) : \Closure
+    /**
+     * @phan-return Closure(mixed,int):UnionType
+     */
+    public static function createNormalArgumentCache(CodeBase $code_base, Context $context) : Closure
     {
         $cache = [];
         return function ($argument, int $i) use ($code_base, $context, &$cache) : UnionType {

@@ -11,9 +11,11 @@ use Phan\Language\FutureUnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
+use Phan\Language\Type\ClosureDeclarationParameter;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
@@ -541,5 +543,19 @@ class Parameter extends Variable
         }
 
         return $string;
+    }
+
+    public function asClosureDeclarationParameter() : ClosureDeclarationParameter
+    {
+        $param_type = $this->getNonVariadicUnionType();
+        if ($param_type->isEmpty()) {
+            $param_type = MixedType::instance(false)->asUnionType();
+        }
+        return new ClosureDeclarationParameter(
+            $param_type,
+            $this->isVariadic(),
+            $this->isPassByReference(),
+            $this->isOptional()
+        );
     }
 }

@@ -30,6 +30,6 @@
 %s:38 PhanTypeMismatchArgument Argument 1 (x) is array<int,\stdClass> but \p364() takes \stdClass defined at %s:45
 %s:39 PhanTypeMismatchArgument Argument 1 (x) is array<int,string> but \p364() takes \stdClass defined at %s:45
 %s:40 PhanTypeMismatchArgument Argument 1 (x) is array<int,string> but \p364() takes \stdClass defined at %s:45
-%s:41 PhanParamTypeMismatch Argument 3 is \Closure but \array_uintersect_assoc() takes array
+%s:41 PhanParamTypeMismatch Argument 3 is Closure(mixed,mixed):(float|int) but \array_uintersect_assoc() takes array
 %s:41 PhanTypeMismatchArgument Argument 1 (x) is array<int,string> but \p364() takes \stdClass defined at %s:45
 %s:42 PhanTypeMismatchArgument Argument 1 (x) is array<int,string> but \p364() takes \stdClass defined at %s:45

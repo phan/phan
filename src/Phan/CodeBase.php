@@ -449,7 +449,7 @@ class CodeBase
     }
 
     /**
-     * @param array{clone:CodeBase,callbacks:?Closure[]}
+     * @param array{clone:CodeBase,callbacks:?(Closure():void)[]}
      * @return void
      */
     public function restoreFromRestorePoint(array $restore_point)
@@ -485,7 +485,7 @@ class CodeBase
      * For use by daemon mode when running without pcntl
      * Returns a serialized representation of everything in this CodeBase.
      * @internal
-     * @return array{clone:CodeBase,callbacks:?Closure[]}
+     * @return array{clone:CodeBase,callbacks:?Closure():void)[]}
      */
     public function createRestorePoint() : array
     {
@@ -493,7 +493,7 @@ class CodeBase
         $clone = clone($this);
         // make a deep copy of the NamespaceMapEntry objects within parsed_namespace_maps
         $clone->parsed_namespace_maps = unserialize(serialize($clone->parsed_namespace_maps));
-        // @var array<int,?Closure>
+        /** @var array<int,?Closure()> */
         $callbacks = [];
         // Create callbacks to restore classes
         foreach ($this->fqsen_class_map as $class) {
