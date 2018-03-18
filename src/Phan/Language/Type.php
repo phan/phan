@@ -9,7 +9,7 @@ use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClosureType;
-use Phan\Language\Type\ClosureTypeDeclaration;
+use Phan\Language\Type\ClosureDeclarationType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
@@ -706,9 +706,10 @@ class Type
                 if (!$return_type) {
                     throw new \AssertionError("Expected at least one component");
                 }
-                return ClosureTypeDeclaration::instanceForTypes(
+                return ClosureDeclarationType::instanceForTypes(
                     self::shapeComponentStringsToTypes($shape_components, new Context(), Type::FROM_NODE),
                     UnionType::fromStringInContext($return_type, new Context(), Type::FROM_PHPDOC),
+                    false,
                     $is_nullable
                 );
             }
@@ -864,9 +865,10 @@ class Type
                 if (!$return_type) {
                     throw new \AssertionError("Expected a return type");
                 }
-                return ClosureTypeDeclaration::instanceForTypes(
+                return ClosureDeclarationType::instanceForTypes(
                     self::shapeComponentStringsToTypes($shape_components, $context, $source),
                     UnionType::fromStringInContext($return_type, $context, $source),
+                    false,
                     $is_nullable
                 );
             }
@@ -1995,7 +1997,6 @@ class Type
         if ($arg_list === '') {
             return [];
         }
-        $comment_params = [];
         // TODO: Would need to use a different approach if templates were ever supported
         //       e.g. The magic method parsing doesn't support commas?
         return explode(',', $arg_list);

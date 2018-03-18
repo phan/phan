@@ -4,55 +4,64 @@ namespace Phan\Language\Type;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
-final class ClosureTypeDeclaration extends Type
+final class ClosureDeclarationType extends Type
 {
     /** Not an override */
     const NAME = 'Closure';
 
-    /** @var array<int,UnionType> */
-    private $param_types;
+    /** @var array<int,ClosureDeclarationParameter> */
+    private $params;
 
     /** @var UnionType */
     private $return_type;
 
+    /** @var bool */
+    private $returns_reference;
+
     /**
-     * @param array<int,UnionType> $param_types
+     * @param array<int,ClosureDeclarationParameter> $param_types
      * @param UnionType $return_type
      */
-    protected function __construct(array $param_types, UnionType $return_type, bool $is_nullable)
+    protected function __construct(array $param_types, UnionType $return_type, bool $returns_reference, bool $is_nullable)
     {
         parent::__construct('\\', self::NAME, [], $is_nullable);
-        $this->param_types = $param_types;
+        $this->params = $param_types;
         $this->return_type = $return_type;
+        $this->returns_reference = $returns_reference;
     }
 
     /**
-     * @param array<int,UnionType> $param_types
+     * @param array<int,ClosureDeclarationParameter> $params
      * @param UnionType $return_type
      */
-    public static function instanceForTypes(array $param_types, UnionType $return_type, bool $is_nullable)
+    public static function instanceForTypes(array $params, UnionType $return_type, bool $returns_reference, bool $is_nullable)
     {
         static $cache = [];
         $key_parts = [];
         if ($is_nullable) {
             $key_parts[] = '?';
         }
-        foreach ($param_types as $type) {
-            $key_parts[] = $type->generateUniqueId();
+        if ($returns_reference) {
+            $key_parts[] = '&';
+        }
+        foreach ($params as $param_info) {
+            $key_parts[] = $param_info->generateUniqueId();
         }
         $key_parts[] = $return_type->generateUniqueId();
-        $key = \implode(',', $key_parts);
+        $key = json_encode($key_parts);
 
-        return $cache[$key] ?? ($cache[$key] = new self($param_types, $return_type, $is_nullable));
+        return $cache[$key] ?? ($cache[$key] = new self($params, $return_type, $returns_reference, $is_nullable));
     }
 
+    /**
+     * Used when serializing this type in union types.
+     * @return string (e.g. "Closure(int,string&...):string[]")
+     */
     public function __toString() : string
     {
         $parts = [];
-        // TODO: CommentParameter instead of Parameter
-        foreach ($this->param_types as $key => $value) {
-            $value_repr = $value->__toString();
-            $parts[] = $value_repr;
+        foreach ($this->params as $value) {
+            $parts[] = $value->__toString();
         }
         $return_type_string = $this->return_type->__toString();
         return ($this->is_nullable ? '?' : '') . 'Closure(' . \implode(',', $parts) . '):' . $return_type_string;
