@@ -3,12 +3,14 @@ namespace Phan\Language;
 
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Language\Element\Comment;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClosureType;
+use Phan\Language\Type\ClosureDeclarationParameter;
 use Phan\Language\Type\ClosureDeclarationType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
@@ -72,7 +74,7 @@ class Type
     const type_regex =
         '('
         . '(?:\??\((?-1)\)|'
-        . '(?:Closure(\([^()]*\))(?:[:](?-2))?)|'  // TODO: Allow parsing nesting. TODO: Support callable.
+        . '(?:Closure(\([^()]*\))(?:\s*:\s*(?-2)(?:\|(?-2))*)?)|'  // TODO: Allow parsing nesting. TODO: Support callable.
         . '(' . self::simple_type_regex . ')'  // 2 patterns
         . '(?:'
           . '<'
@@ -105,7 +107,7 @@ class Type
         . '('
           . '(?:'
             . '\??\((?-1)\)|'
-            . '(?:Closure(\([^()]*\))(?:|:(?-2)))|'  // TODO: Allow parsing nesting. TODO: Support callable.
+            . '(?:Closure(\([^()]*\))(?:\s*:\s*(?-2)(?:\|(?-2))*)?)|'  // TODO: Allow parsing nesting. TODO: Support callable.
             . '(' . self::simple_type_regex_or_this . ')'  // 3 patterns
             . '(?:<'
               . '('
@@ -707,7 +709,7 @@ class Type
                     throw new \AssertionError("Expected at least one component");
                 }
                 return ClosureDeclarationType::instanceForTypes(
-                    self::shapeComponentStringsToTypes($shape_components, new Context(), Type::FROM_NODE),
+                    self::closureParamComponentStringsToParams($shape_components, new Context(), Type::FROM_NODE),
                     UnionType::fromStringInContext($return_type, new Context(), Type::FROM_PHPDOC),
                     false,
                     $is_nullable
@@ -866,7 +868,7 @@ class Type
                     throw new \AssertionError("Expected a return type");
                 }
                 return ClosureDeclarationType::instanceForTypes(
-                    self::shapeComponentStringsToTypes($shape_components, $context, $source),
+                    self::closureParamComponentStringsToParams($shape_components, $context, $source),
                     UnionType::fromStringInContext($return_type, $context, $source),
                     false,
                     $is_nullable
@@ -1059,6 +1061,49 @@ class Type
         }
         return $result;
     }
+
+    /**
+     * @param array<int,string> $param_components Maps field keys (integers or strings) to the corresponding type representations
+     * @param Context $context
+     * @param int $source
+     * @return array<int,ClosureDeclarationType> The types for the representations of types, in the given $context
+     *
+     * @see Comment::magicParamFromMagicMethodParamString() - This is similar but has minor differences, such as references
+     */
+    private static function closureParamComponentStringsToParams(array $param_components, Context $context, int $source) : array
+    {
+        // TODO: Allow () within param types...
+        $result = [];
+        foreach ($param_components as $param_string) {
+            if ($param_string === '') {
+                // TODO: warn
+                continue;
+            }
+            if (preg_match('/^(' . UnionType::union_type_regex . ')?\s*(&\s*)?(?:(\.\.\.)\s*)?(?:\$' . Comment::WORD_REGEX . ')?((?:\s*=.*)?)$/', $param_string, $param_match)) {
+                // Note: a closure declaration can be by reference, unlike (at)method
+                $union_type_string = $param_match[1] ?: 'mixed';
+                $union_type = UnionType::fromStringInContext(
+                    $union_type_string,
+                    $context,
+                    $source
+                );
+                $is_reference = $param_match[19] !== '';
+                $is_variadic = $param_match[20] === '...';
+                $default_str = $param_match[22];
+                $has_default_value = $default_str !== '';
+                if ($has_default_value) {
+                    $default_value_repr = trim(explode('=', $default_str, 2)[1]);
+                    if (strcasecmp($default_value_repr, 'null') === 0) {
+                        $union_type = $union_type->nullableClone();
+                    }
+                }
+                // $var_name = $param_match[19]; // would be unused
+                $result[] = new ClosureDeclarationParameter($union_type, $is_variadic, $is_reference, $has_default_value);
+            }  // TODO: Otherwise, warn
+        }
+        return $result;
+    }
+
 
     /**
      * @var ?UnionType of [$this]
@@ -1999,7 +2044,7 @@ class Type
         }
         // TODO: Would need to use a different approach if templates were ever supported
         //       e.g. The magic method parsing doesn't support commas?
-        return explode(',', $arg_list);
+        return \array_map('trim', \explode(',', $arg_list));
     }
 
     /**

@@ -251,35 +251,97 @@ class TypeTest extends BaseTest
         $this->assertSame('?float[]', (string)$stringArrayType);
     }
 
+    private static function makeBasicClosureParam(string $type_string) : ClosureDeclarationParameter
+    {
+        // is_variadic, is_reference, is_optional
+        return new ClosureDeclarationParameter(
+            UnionType::fromFullyQualifiedString($type_string),
+            false,
+            false,
+            false
+        );
+    }
+
+    private function verifyClosureParam(ClosureDeclarationType $expected_closure_type, string $union_type_string, string $normalized_type_string)
+    {
+        $this->assertParsesAsType($expected_closure_type, $union_type_string);
+        $parsed_closure_type = self::makePHPDocType($union_type_string);
+        $this->assertSame($normalized_type_string, (string)$parsed_closure_type, "failed parsing $union_type_string");
+    }
+
     public function testClosureAnnotation()
     {
-        $expectedClosureVoidType = ClosureDeclarationType::instanceForTypes(
+        $expected_closure_void_type = ClosureDeclarationType::instanceForTypes(
             [],
             VoidType::instance(false)->asUnionType(),
             false,
             false
         );
         foreach (['Closure():void', 'Closure()'] as $union_type_string) {
-            $this->assertParsesAsType($expectedClosureVoidType, $union_type_string);
-            $closureVoidType = self::makePHPDocType($union_type_string);
-            $this->assertSame('Closure():void', (string)$closureVoidType, "failed parsing $union_type_string");
+            $this->verifyClosureParam($expected_closure_void_type, $union_type_string, 'Closure():void');
         }
     }
 
-    public function testClosureIntAnnotation()
+
+    public function testClosureBasicAnnotation()
     {
-        $param = new ClosureDeclarationParameter(IntType::instance(false)->asUnionType(), false, false, false);
-        $expectedClosureIntType = ClosureDeclarationType::instanceForTypes(
-            [$param],  // PARAM_REF, PARAM_VARIADIC, IS_OPTIONAL
+        $expected_closure_type = ClosureDeclarationType::instanceForTypes(
+            [self::makeBasicClosureParam('int'), self::makeBasicClosureParam('mixed')],
             IntType::instance(false)->asUnionType(),
             false,
             false
         );
-        foreach (['Closure(int):int', 'Closure(int $p1): int'] as $union_type_string) {
-            // TODO: Finish implementing
-            $this->assertParsesAsType($expectedClosureIntType, $union_type_string);
-            $closureVoidType = self::makePHPDocType($union_type_string);
-            $this->assertSame('Closure():void', (string)$closureVoidType, "failed parsing $union_type_string");
+        foreach (['Closure(int,mixed):int', 'Closure(int $p1,$other): int'] as $union_type_string) {
+            $this->verifyClosureParam($expected_closure_type, $union_type_string, 'Closure(int,mixed):int');
+        }
+    }
+
+    public function testClosureUnionAnnotation()
+    {
+        $nullable_scalar_param = self::makeBasicClosureParam('?int|?string');
+
+        $expected_closure_scalar_type = ClosureDeclarationType::instanceForTypes(
+            [$nullable_scalar_param],
+            UnionType::fromFullyQualifiedString('?int|?string'),
+            false,
+            false
+        );
+        foreach (['Closure(?int|?string $argName) : ?int|?string', 'Closure(?int|?string):?int|?string'] as $union_type_string) {
+            $this->verifyClosureParam($expected_closure_scalar_type, $union_type_string, 'Closure(?int|?string):?int|?string');
+        }
+    }
+
+    public function testClosureRefVariadicAnnotations()
+    {
+        // is_variadic, is_reference, is_optional
+        $string_ref_annotation = new ClosureDeclarationParameter(UnionType::fromFullyQualifiedString('string'), false, true, false);
+        $variadic_bool_annotation = new ClosureDeclarationParameter(UnionType::fromFullyQualifiedString('bool'), true, true, false);
+
+        $expected_closure_type = ClosureDeclarationType::instanceForTypes(
+            [$string_ref_annotation, $variadic_bool_annotation],
+            UnionType::fromFullyQualifiedString('void'),
+            false,
+            false
+        );
+        foreach (['Closure(string &$arg, bool &...$switches) : void', 'Closure(string&,bool&...)'] as $union_type_string) {
+            $this->verifyClosureParam($expected_closure_type, $union_type_string, 'Closure(string&,bool&...):void');
+        }
+    }
+
+    public function testClosureOptionalParam()
+    {
+        // is_variadic, is_reference, is_optional
+        $optional_string_annotation = new ClosureDeclarationParameter(UnionType::fromFullyQualifiedString('?string'), false, false, true);
+        $optional_int_annotation = new ClosureDeclarationParameter(UnionType::fromFullyQualifiedString('int'), false, false, true);
+
+        $expected_closure_type = ClosureDeclarationType::instanceForTypes(
+            [$optional_string_annotation, $optional_int_annotation],
+            UnionType::fromFullyQualifiedString('void'),
+            false,
+            false
+        );
+        foreach (['Closure(string $arg=null,int $y = 2) : void', 'Closure(?string=,int=)'] as $union_type_string) {
+            $this->verifyClosureParam($expected_closure_type, $union_type_string, 'Closure(?string=,int=):void');
         }
     }
 
