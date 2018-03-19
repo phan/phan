@@ -213,7 +213,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             foreach ($matches as $group) {
                 $annotation_name = $group[1];
                 $type_string = $group[2];
-                $var_name = $group[18];
+                $var_name = $group[20];
                 $type = UnionType::fromStringInContext($type_string, $context, Type::FROM_PHPDOC);
                 $this->createVarForInlineComment($code_base, $context, $var_name, $type, $annotation_name === 'phan-var-force');
             }

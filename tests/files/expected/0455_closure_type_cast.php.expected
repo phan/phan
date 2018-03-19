@@ -1,0 +1,24 @@
+%s:8 PhanTypeSuspiciousEcho Suspicious argument Closure(int):void for an echo/print statement
+%s:9 PhanTypeMismatchArgument Argument 1 (p0) is \stdClass but Closure(int):void() takes int defined at %s:6
+%s:10 PhanParamTooFew Call with 0 arg(s) to Closure(int):void() which requires 1 arg(s) defined at %s:6
+%s:15 PhanTypeMismatchArgument Argument 1 (fn) is Closure(int,string):void but \expects_int_param() takes Closure(int):void defined at %s:6
+%s:17 PhanTypeMismatchArgument Argument 1 (fn) is Closure(int&):void but \expects_int_param() takes Closure(int):void defined at %s:6
+%s:24 PhanTypeMismatchArgument Argument 1 (p0) is \stdClass but Closure(int=):void() takes int defined at %s:22
+%s:26 PhanTypeMismatchArgument Argument 1 (p0) is null but Closure(int=):void() takes int defined at %s:22
+%s:28 PhanTypeMismatchArgument Argument 1 (fn) is Closure(int):void but \expects_optional_int_param() takes Closure(int=):void defined at %s:22
+%s:31 PhanTypeMismatchArgument Argument 1 (fn) is Closure(int,string):void but \expects_optional_int_param() takes Closure(int=):void defined at %s:22
+%s:32 PhanTypeMismatchArgument Argument 1 (fn) is Closure():void but \expects_optional_int_param() takes Closure(int=):void defined at %s:22
+%s:33 PhanTypeMismatchArgument Argument 1 (fn) is Closure(int&=):void but \expects_optional_int_param() takes Closure(int=):void defined at %s:22
+%s:41 PhanParamTooMany Call with 1 arg(s) to Closure():int() which only takes 0 arg(s) defined at %s:40
+%s:42 PhanTypeMismatchReturn Returning type int but expects_int_return() is declared to return \stdClass
+%s:48 PhanTypeMismatchArgument Argument 1 (fn) is Closure():array but \expects_int_return() takes Closure():int defined at %s:40
+%s:49 PhanTypeMismatchArgument Argument 1 (fn) is Closure(array):int but \expects_int_return() takes Closure():int defined at %s:40
+%s:57 PhanTypeVoidAssignment Cannot assign void return value
+%s:58 PhanTypeMismatchArgument Argument 1 (fn) is Closure():void but \expects_int_param() takes Closure(int):void defined at %s:6
+%s:59 PhanTypeMismatchArgument Argument 1 (fn) is Closure():void but \expects_int_return() takes Closure():int defined at %s:40
+%s:67 PhanTypeMismatchArgument Argument 1 (fn) is Closure(mixed):void but \expects_void() takes Closure():void defined at %s:56
+%s:68 PhanTypeMismatchArgument Argument 1 (fn) is Closure():int but \expects_void() takes Closure():void defined at %s:56
+%s:69 PhanTypeMismatchArgument Argument 1 (fn) is Closure(int):void but \expects_void() takes Closure():void defined at %s:56
+%s:77 PhanTypeMismatchArgument Argument 1 (p0) is array{0:string} but Closure(string...):void() takes string defined at %s:74
+%s:80 PhanTypeMismatchArgument Argument 1 (fn) is Closure(int...):void but \expects_void_variadic() takes Closure(string...):void defined at %s:74
+%s:82 PhanTypeMismatchArgument Argument 1 (fn) is Closure(string):void but \expects_void_variadic() takes Closure(string...):void defined at %s:74

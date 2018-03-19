@@ -28,6 +28,7 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Type;
 use Phan\Language\Type\ClosureType;
+use Phan\Language\Type\ClosureDeclarationType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
@@ -690,24 +691,24 @@ class ContextNode
 
                 foreach ($union_type->getTypeSet() as $type) {
                     // TODO: Allow CallableType to have FQSENs as well, e.g. `$x = [MyClass::class, 'myMethod']` has an FQSEN in a sense.
-                    if (!($type instanceof ClosureType)) {
-                        continue;
-                    }
+                    if ($type instanceof ClosureType) {
+                        $closure_fqsen =
+                            FullyQualifiedFunctionName::fromFullyQualifiedString(
+                                (string)$type->asFQSEN()
+                            );
 
-                    $closure_fqsen =
-                        FullyQualifiedFunctionName::fromFullyQualifiedString(
-                            (string)$type->asFQSEN()
-                        );
-
-                    if ($this->code_base->hasFunctionWithFQSEN(
-                        $closure_fqsen
-                    )) {
-                        // Get the closure
-                        $function = $this->code_base->getFunctionByFQSEN(
+                        if ($this->code_base->hasFunctionWithFQSEN(
                             $closure_fqsen
-                        );
+                        )) {
+                            // Get the closure
+                            $function = $this->code_base->getFunctionByFQSEN(
+                                $closure_fqsen
+                            );
 
-                        yield $function;
+                            yield $function;
+                        }
+                    } elseif ($type instanceof ClosureDeclarationType) {
+                        yield $type;
                     }
                 }
             }

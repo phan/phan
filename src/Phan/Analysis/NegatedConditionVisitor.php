@@ -20,6 +20,7 @@ use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
 use ast\Node;
 use ast\flags;
+use Closure;
 
 // TODO: Make $x != null remove FalseType and NullType from $x
 // TODO: Make $x > 0, $x < 0, $x >= 50, etc.  remove FalseType and NullType from $x
@@ -302,7 +303,8 @@ class NegatedConditionVisitor extends KindVisitorImplementation
      */
 
     /**
-     * @return array<string,\Closure> (ConditionVisitor $cv, Node $var_node, Context $context) -> Context
+     * @return array<string,Closure> (NegatedConditionVisitor $cv, Node $var_node, Context $context) -> Context
+     * @phan-return array<string,Closure(NegatedConditionVisitor,Node,Context):Context>
      */
     private static function createNegationCallbackMap() : array
     {
@@ -311,7 +313,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         };
 
         // Remove any Types from UnionType that are subclasses of $base_class_name
-        $make_basic_negated_assertion_callback = static function (string $base_class_name) : \Closure {
+        $make_basic_negated_assertion_callback = static function (string $base_class_name) : Closure {
             return static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) use ($base_class_name) : Context {
                 return $cv->updateVariableWithConditionalFilter(
                     $var_node,

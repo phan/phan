@@ -1402,11 +1402,16 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $node
             );
 
-        $type = ClosureType::instanceWithClosureFQSEN(
-            $closure_fqsen
-        )->asUnionType();
+        if ($this->code_base->hasFunctionWithFQSEN($closure_fqsen)) {
+            $func = $this->code_base->getFunctionByFQSEN($closure_fqsen);
+        } else {
+            $func = null;
+        }
 
-        return $type;
+        return ClosureType::instanceWithClosureFQSEN(
+            $closure_fqsen,
+            $func
+        )->asUnionType();
     }
 
     /**

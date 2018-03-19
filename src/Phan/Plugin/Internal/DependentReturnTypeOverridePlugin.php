@@ -11,6 +11,7 @@ use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\PluginV2;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
+use Closure;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
@@ -25,6 +26,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
 {
     /**
      * @return array<string,\Closure>
+     * @phan-return array<string, Closure(CodeBase,Context,Func,array):UnionType>
      */
     private static function getReturnTypeOverridesStatic(CodeBase $code_base) : array
     {
@@ -34,7 +36,10 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
         $void_union_type = VoidType::instance(false)->asUnionType();
         $nullable_string_union_type = StringType::instance(true)->asUnionType();
 
-        $make_dependent_type_method = static function (int $expected_bool_pos, $type_if_true, $type_if_false, $type_if_unknown) : \Closure {
+        /**
+         * @phan-return Closure(CodeBase,Context,Func,array):UnionType
+         */
+        $make_dependent_type_method = static function (int $expected_bool_pos, $type_if_true, $type_if_false, $type_if_unknown) : Closure {
             /**
              * @return UnionType
              * @suppress PhanPluginUnusedClosureArgument
@@ -49,7 +54,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
                 $type_if_unknown,
                 $type_if_false,
                 $expected_bool_pos
-) {
+) : UnionType {
                 if (\count($args) <= $expected_bool_pos) {
                     return $type_if_false;
                 }
@@ -88,7 +93,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             $json_decode_array_types,
             $json_decode_object_types,
             $json_decode_array_or_object_types
-) {
+) : UnionType {
             //  mixed json_decode ( string $json [, bool $assoc = FALSE [, int $depth = 512 [, int $options = 0 ]]] )
             //  $options can include JSON_OBJECT_AS_ARRAY in a bitmask
             // TODO: reject `...` operator? (Low priority)

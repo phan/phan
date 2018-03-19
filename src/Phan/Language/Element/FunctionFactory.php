@@ -114,7 +114,7 @@ class FunctionFactory
         );
 
         if ($method->getIsMagicCall() || $method->getIsMagicCallStatic()) {
-            $method->setNumberOfOptionalParameters(999);
+            $method->setNumberOfOptionalParameters(FunctionInterface::INFINITE_PARAMETERS);
             $method->setNumberOfRequiredParameters(0);
         }
         $method->setIsDeprecated($reflection_method->isDeprecated());

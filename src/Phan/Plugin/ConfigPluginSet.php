@@ -65,10 +65,16 @@ final class ConfigPluginSet extends PluginV2 implements
     /** @var array<int,Plugin>|null - Cached plugin set for this instance. Lazily generated. */
     private $pluginSet;
 
-    /** @var array<int,\Closure>|null - plugins to analyze nodes in pre order. */
+    /**
+     * @var array<int,Closure>|null - plugins to analyze nodes in pre order.
+     * @phan-var array<int,Closure(CodeBase,Context,Node):void>|null
+     */
     private $preAnalyzeNodePluginSet;
 
-    /** @var array<int,\Closure>|null - plugins to analyze nodes in post order. */
+    /**
+     * @var array<int,Closure> - plugins to analyze nodes in post order.
+     * @phan-var array<int,Closure(CodeBase,Context,Node,array<int,Node>):void>|null
+     */
     private $postAnalyzeNodePluginSet;
 
     /** @var array<int,AnalyzeClassCapability>|null - plugins to analyze class declarations. */
@@ -443,8 +449,9 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
-     * @return array<int,\Closure>
+     * @return array<int,Closure>
      *         Returned value maps ast\Node->kind to [function(CodeBase $code_base, Context $context, Node $node, array<int,Node> $parent_node_list = []): void]
+     * @phan-return array<int,Closure(CodeBase,Context,Node,array<int,Node>=):void>
      */
     private static function filterPreAnalysisPlugins(array $plugin_set) : array
     {

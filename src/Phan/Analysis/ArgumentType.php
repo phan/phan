@@ -73,7 +73,7 @@ class ArgumentType
                         Issue::ParamTooFewInternal,
                         $node->lineno ?? 0,
                         $argcount,
-                        (string)$method->getFQSEN(),
+                        $method->getRepresentationForIssue(),
                         $method->getNumberOfRequiredParameters()
                     );
                 } else {
@@ -83,7 +83,7 @@ class ArgumentType
                         Issue::ParamTooFew,
                         $node->lineno ?? 0,
                         $argcount,
-                        (string)$method->getFQSEN(),
+                        $method->getRepresentationForIssue(),
                         $method->getNumberOfRequiredParameters(),
                         $method->getFileRef()->getFile(),
                         $method->getFileRef()->getLineNumberStart()
@@ -111,7 +111,7 @@ class ArgumentType
                         Issue::ParamTooManyInternal,
                         $node->lineno ?? 0,
                         $argcount,
-                        (string)$method->getFQSEN(),
+                        $method->getRepresentationForIssue(),
                         $max
                     );
                 } else {
@@ -121,7 +121,7 @@ class ArgumentType
                         Issue::ParamTooMany,
                         $node->lineno ?? 0,
                         $argcount,
-                        (string)$method->getFQSEN(),
+                        $method->getRepresentationForIssue(),
                         $max,
                         $method->getFileRef()->getFile(),
                         $method->getFileRef()->getLineNumberStart()
@@ -154,7 +154,7 @@ class ArgumentType
                     $context,
                     Issue::DeprecatedFunctionInternal,
                     $context->getLineNumberStart(),
-                    (string)$method->getFQSEN()
+                    $method->getRepresentationForIssue()
                 );
             }
         } else {
@@ -165,7 +165,7 @@ class ArgumentType
                     $context,
                     Issue::DeprecatedFunction,
                     $context->getLineNumberStart(),
-                    (string)$method->getFQSEN(),
+                    $method->getRepresentationForIssue(),
                     $method->getFileRef()->getFile(),
                     $method->getFileRef()->getLineNumberStart()
                 );
@@ -184,7 +184,7 @@ class ArgumentType
                 $context,
                 Issue::AccessMethodInternal,
                 $context->getLineNumberStart(),
-                (string)$method->getFQSEN(),
+                $method->getRepresentationForIssue(),
                 $method->getElementNamespace() ?: '\\',
                 $method->getFileRef()->getFile(),
                 $method->getFileRef()->getLineNumberStart(),
@@ -268,7 +268,7 @@ class ArgumentType
                     Issue::ParamTooFewCallable,
                     $context->getLineNumberStart(),
                     $argcount,
-                    (string)$method->getFQSEN(),
+                    $method->getRepresentationForIssue(),
                     $method->getNumberOfRequiredParameters(),
                     $method->getFileRef()->getFile(),
                     $method->getFileRef()->getLineNumberStart()
@@ -294,7 +294,7 @@ class ArgumentType
                     Issue::ParamTooManyCallable,
                     $context->getLineNumberStart(),
                     $argcount,
-                    (string)$method->getFQSEN(),
+                    $method->getRepresentationForIssue(),
                     $max,
                     $method->getFileRef()->getFile(),
                     $method->getFileRef()->getLineNumberStart()
@@ -420,7 +420,7 @@ class ArgumentType
                             Issue::TypeNonVarPassByRef,
                             $node->lineno ?? 0,
                             ($i+1),
-                            (string)$method->getFQSEN()
+                            $method->getRepresentationForIssue()
                         );
                     }
                 } else {
@@ -533,7 +533,7 @@ class ArgumentType
                 ($i+1),
                 $alternate_parameter->getName(),
                 $argument_type_expanded,
-                (string)$method->getFQSEN(),
+                $method->getRepresentationForIssue(),
                 (string)$parameter_type
             );
             return;
@@ -546,7 +546,7 @@ class ArgumentType
             ($i+1),
             $alternate_parameter->getName(),
             $argument_type_expanded,
-            (string)$method->getFQSEN(),
+            $method->getRepresentationForIssue(),
             (string)$parameter_type,
             $method->getFileRef()->getFile(),
             $method->getFileRef()->getLineNumberStart()

@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 
@@ -14,6 +15,12 @@ final class ClosureType extends Type
      */
     private $fqsen;
 
+    /**
+     * @var ?FunctionInterface (Kept to check for type compatibility)
+     * NOTE: We may use class FQSENs (for __invoke) or Method FQSENs if the closure was created via reflection
+     */
+    private $func;
+
     // Same as instance(), but guaranteed not to have memoized state.
     private static function closureInstance() : ClosureType
     {
@@ -24,7 +31,7 @@ final class ClosureType extends Type
         return $instance;
     }
 
-    public static function instanceWithClosureFQSEN(FQSEN $fqsen)
+    public static function instanceWithClosureFQSEN(FQSEN $fqsen, FunctionInterface $func = null)
     {
         static $original_instance = null;
         if ($original_instance === null) {
@@ -34,6 +41,7 @@ final class ClosureType extends Type
         // Avoids picking up changes to ClosureType::instance(false) in the case that a result depends on asFQSEN()
         $instance = clone($original_instance);
         $instance->fqsen = $fqsen;
+        $instance->func = $func;
         $instance->memoizeFlushAll();
         return $instance;
     }
@@ -70,7 +78,16 @@ final class ClosureType extends Type
     protected function canCastToNonNullableType(Type $type) : bool
     {
         if ($type->isCallable()) {
-            return !$this->getIsNullable() || $type->getIsNullable();
+            if ($this->getIsNullable() && !$type->getIsNullable()) {
+                return false;
+            }
+            if ($type instanceof ClosureDeclarationType) {
+                // Check if the function declaration is known and available. It's not available for the generic \Closure.
+                if ($this->func) {
+                    return $this->func->asClosureDeclarationType()->canCastToNonNullableClosureDeclarationType($type);
+                }
+            }
+            return true;
         }
 
         return parent::canCastToNonNullableType($type);
@@ -112,5 +129,13 @@ final class ClosureType extends Type
     public function isCallable() : bool
     {
         return true;
+    }
+
+    public function __toString()
+    {
+        if ($this->func) {
+            return $this->func->asClosureDeclarationType()->__toString();
+        }
+        return '\Closure';
     }
 }

@@ -697,18 +697,18 @@ class Comment
         // Parse https://docs.phpdoc.org/references/phpdoc/tags/param.html
         // Exceptions: Deliberately allow "&" in "@param int &$x" when documenting references.
         // Warn if there is neither a union type nor a variable
-        if ($matched && (isset($match[2]) || isset($match[17]))) {
+        if ($matched && (isset($match[2]) || isset($match[21]))) {
             if (!isset($match[2])) {
                 return new CommentParameter('', UnionType::empty());
             }
             $original_type = $match[2];
 
-            $is_variadic = ($match[18] ?? '') === '...';
+            $is_variadic = ($match[20] ?? '') === '...';
 
             if ($is_var && $is_variadic) {
                 $variable_name = '';  // "@var int ...$x" is nonsense and invalid phpdoc.
             } else {
-                $variable_name = $match[19] ?? '';
+                $variable_name = $match[21] ?? '';
             }
             // Fix typos or non-standard phpdoc tags, according to the user's configuration.
             // Does nothing by default.
@@ -837,6 +837,9 @@ class Comment
         return '';
     }
 
+    /** @internal */
+    const magic_param_regex = '/^(' . UnionType::union_type_regex . ')?\s*(?:(\.\.\.)\s*)?(?:\$' . self::WORD_REGEX . ')?((?:\s*=.*)?)$/';
+
     /**
      * Parses a magic method based on https://phpdoc.org/docs/latest/references/phpdoc/tags/method.html
      * @return ?CommentParameter - if null, the phpdoc magic method was invalid.
@@ -855,7 +858,7 @@ class Comment
         // https://github.com/phpDocumentor/phpDocumentor2/pull/1271/files - phpdoc allows passing an default value.
         // Phan allows `=.*`, to indicate that a parameter is optional
         // TODO: in another PR, check that optional parameters aren't before required parameters.
-        if (preg_match('/^(' . UnionType::union_type_regex . ')?\s*(?:(\.\.\.)\s*)?(?:\$' . self::WORD_REGEX . ')?((?:\s*=.*)?)$/', $param_string, $param_match)) {
+        if (preg_match(self::magic_param_regex, $param_string, $param_match)) {
             // Note: a magic method parameter can be variadic, but it can't be pass-by-reference? (No support in __call)
             $union_type_string = $param_match[1];
             $union_type = UnionType::fromStringInContext(
@@ -863,8 +866,8 @@ class Comment
                 $context,
                 Type::FROM_PHPDOC
             );
-            $is_variadic = $param_match[17] === '...';
-            $default_str = $param_match[19];
+            $is_variadic = $param_match[19] === '...';
+            $default_str = $param_match[21];
             $has_default_value = $default_str !== '';
             if ($has_default_value) {
                 $default_value_repr = trim(explode('=', $default_str, 2)[1]);
@@ -872,7 +875,7 @@ class Comment
                     $union_type = $union_type->nullableClone();
                 }
             }
-            $var_name = $param_match[18];
+            $var_name = $param_match[20];
             if ($var_name === '') {
                 // placeholder names are p1, p2, ...
                 $var_name = 'p' . ($param_index + 1);
@@ -923,9 +926,9 @@ class Comment
                 // > When the intended method does not have a return value then the return type MAY be omitted; in which case 'void' is implied.
                 $return_union_type = VoidType::instance(false)->asUnionType();
             }
-            $method_name = $match[24];
+            $method_name = $match[26];
 
-            $arg_list = trim($match[25]);
+            $arg_list = trim($match[27]);
             $comment_params = [];
             // Special check if param list has 0 params.
             if ($arg_list !== '') {
@@ -991,7 +994,7 @@ class Comment
         if (\preg_match('/@(?:phan-)?(property|property-read|property-write)(?:\s+(' . UnionType::union_type_regex . '))?(?:\s+(?:\\$' . self::WORD_REGEX . '))/', $line, $match)) {
             $type = $match[2] ?? '';
 
-            $property_name = $match[18] ?? '';
+            $property_name = $match[20] ?? '';
             if ($property_name === '') {
                 return null;
             }

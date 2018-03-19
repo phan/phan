@@ -200,11 +200,11 @@ final class ArrayShapeType extends ArrayType
         static $cache = [];
 
         $key_parts = [];
-        if ($is_nullable) {
-            $key_parts[] = '?';
-        }
         foreach ($field_types as $key => $field_union_type) {
             $key_parts[$key] = $field_union_type->generateUniqueId();
+        }
+        if ($is_nullable) {
+            $key_parts[] = '?';
         }
         $key = \json_encode($key_parts);
 

@@ -5,8 +5,11 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
 use Phan\Language\Element\Comment;
+use Phan\Language\Type\ClosureDeclarationType;
+use Phan\Language\Type\ClosureDeclarationParameter;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
@@ -50,6 +53,17 @@ trait FunctionTrait
      * structural element
      */
     public abstract function getFQSEN();
+
+    /**
+     * @return string
+     * The fully-qualified structural element name of this
+     * structural element
+     */
+    public function getRepresentationForIssue() : string
+    {
+        return $this->getFQSEN()->__toString();
+
+    }
 
     /**
      * @var int
@@ -153,6 +167,11 @@ trait FunctionTrait
      * @var \Closure|null (CodeBase, Context, Func|Method $func, Node[]|string[]|int[] $arg_list) => void
      */
     private $function_call_analyzer_callback = null;
+
+    /**
+     * @var ClosureDeclarationType|null (Lazily generated)
+     */
+    private $as_closure_declaration_type;
 
     /**
      * @return int
@@ -841,6 +860,8 @@ trait FunctionTrait
     /** @return Context */
     public abstract function getContext() : Context;
 
+    public abstract function getFileRef() : FileRef;
+
     /**
      * Returns true if the return type depends on the argument, and a plugin makes Phan aware of that.
      */
@@ -998,6 +1019,37 @@ trait FunctionTrait
                 },
                 $this->getParameterList()
             )
+        );
+    }
+
+    /**
+     * Returns a ClosureDeclarationType based on phpdoc+real types.
+     * The return value is used for type casting rule checking.
+     * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
+     */
+    public function asClosureDeclarationType() : ClosureDeclarationType
+    {
+        return $this->as_closure_declaration_type ?? ($this->as_closure_declaration_type = $this->createClosureDeclarationType());
+    }
+
+    public abstract function returnsRef() : bool;
+
+    private function createClosureDeclarationType() : ClosureDeclarationType
+    {
+        $params = array_map(function (Parameter $parameter) : ClosureDeclarationParameter {
+            return $parameter->asClosureDeclarationParameter();
+        }, $this->getParameterList());
+
+        $return_type = $this->getUnionType();
+        if ($return_type->isEmpty()) {
+            $return_type = MixedType::instance(false)->asUnionType();
+        }
+        return new ClosureDeclarationType(
+            $this->getFileRef(),
+            $params,
+            $return_type,
+            $this->returnsRef(),
+            false
         );
     }
 }
