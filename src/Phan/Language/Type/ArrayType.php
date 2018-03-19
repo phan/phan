@@ -128,6 +128,12 @@ class ArrayType extends IterableType
         // TODO: Allow one more level of nesting? E.g. array->array[], but array[]->array[]
         return ArrayType::instance(false);
     }
+
+    protected function canCastToNonNullableType(Type $type) : bool
+    {
+        // CallableDeclarationType is not a native type, we check separately here
+        return parent::canCastToNonNullableType($type) || $type instanceof CallableDeclarationType;
+    }
 }
 // Trigger the autoloader for GenericArrayType so that it won't be called
 // before ArrayType.

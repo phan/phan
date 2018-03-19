@@ -13,14 +13,15 @@ New Features(Analysis)
 + Allow phpdoc `@param` array shapes to contain optional fields. (E.g. `array{requiredKey:int,optionalKey?:string}`) (#1382)
   An array shape is now allowed to cast to another array shape, as long as the required fields are compatible with the target type,
   and any optional fields from the target type are absent in the source type or compatible.
-+ Add closures with annotated param types and return to Phan's type system(#1578).
++ Add `Closure` and `callable` with annotated param types and return to Phan's type system(#1578, #1581).
   This is not a part of the phpdoc2 standard or any other standard.
   These can be used in any phpdoc tags that Phan is aware of,
   to indicate their expected types (`@param`, `@var`, `@return`, etc.)
 
   Examples:
 
-  - `function(int $x) : ?int {return $x;}` has the type `Closure(int):?int`
+  - `function(int $x) : ?int {return $x;}` has the type `Closure(int):?int`,
+    which can cast to `callable(int):?int`
   - `function(array &$x) {$x[] = 2;}` has the type `Closure(array&):void`
   - `function(int $i = 2, int ...$args) : void {}`
     has the type `Closure(int=,int...):void`

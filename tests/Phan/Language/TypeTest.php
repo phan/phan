@@ -7,12 +7,14 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\BoolType;
+use Phan\Language\Type\CallableDeclarationType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\ClosureDeclarationType;
 use Phan\Language\Type\ClosureDeclarationParameter;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
+use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
@@ -264,12 +266,13 @@ class TypeTest extends BaseTest
         );
     }
 
-    private function verifyClosureParam(ClosureDeclarationType $expected_closure_type, string $union_type_string, string $normalized_type_string)
+    private function verifyClosureParam(FunctionLikeDeclarationType $expected_closure_type, string $union_type_string, string $normalized_type_string)
     {
         $this->assertTrue(\preg_match(self::delimited_type_regex_or_this, $union_type_string) > 0, "Failed to parse '$union_type_string'");
         $parsed_closure_type = self::makePHPDocType($union_type_string);
-        $this->assertInstanceOf(ClosureDeclarationType::class, $parsed_closure_type);
+        $this->assertSame(get_class($expected_closure_type), get_class($parsed_closure_type));
         $this->assertSame($normalized_type_string, (string)$parsed_closure_type, "failed parsing $union_type_string");
+        $this->assertSame($normalized_type_string, (string)$expected_closure_type, "Bad precondition for $expected_closure_type");
         $this->assertTrue($expected_closure_type->canCastToType($parsed_closure_type), "failed casting $union_type_string");
         $this->assertTrue($parsed_closure_type->canCastToType($expected_closure_type), "failed casting $union_type_string");
     }
@@ -288,6 +291,19 @@ class TypeTest extends BaseTest
         }
     }
 
+    public function testCallableAnnotation()
+    {
+        $expected_closure_void_type = new CallableDeclarationType(
+            new Context(),
+            [self::makeBasicClosureParam('string')],
+            IntType::instance(false)->asUnionType(),
+            false,
+            false
+        );
+        foreach (['callable(string):int', 'callable(string $x):int'] as $union_type_string) {
+            $this->verifyClosureParam($expected_closure_void_type, $union_type_string, 'callable(string):int');
+        }
+    }
 
     public function testClosureBasicAnnotation()
     {

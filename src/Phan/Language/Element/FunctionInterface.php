@@ -3,7 +3,7 @@ namespace Phan\Language\Element;
 
 use Phan\CodeBase;
 use Phan\Language\Context;
-use Phan\Language\Type\ClosureDeclarationType;
+use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\UnionType;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -32,7 +32,7 @@ interface FunctionInterface extends AddressableElementInterface
     /**
      * @return string
      * The fully-qualified structural element name of this
-     * structural element, or a string for ClosureDeclarationType which lacks a real FQSEN
+     * structural element, or a string for FunctionLikeDeclarationType which lacks a real FQSEN
      */
     public function getRepresentationForIssue() : string;
 
@@ -360,8 +360,8 @@ interface FunctionInterface extends AddressableElementInterface
     public function needsRecursiveAnalysis() : bool;
 
     /**
-     * Returns a ClosureDeclarationType based on phpdoc+real types.
+     * Returns a FunctionLikeDeclarationType based on phpdoc+real types.
      * The return value is used for type casting rule checking.
      */
-    public function asClosureDeclarationType() : ClosureDeclarationType;
+    public function asFunctionLikeDeclarationType() : FunctionLikeDeclarationType;
 }
