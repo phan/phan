@@ -81,10 +81,10 @@ final class ClosureType extends Type
             if ($this->getIsNullable() && !$type->getIsNullable()) {
                 return false;
             }
-            if ($type instanceof ClosureDeclarationType) {
+            if ($type instanceof FunctionLikeDeclarationType) {
                 // Check if the function declaration is known and available. It's not available for the generic \Closure.
                 if ($this->func) {
-                    return $this->func->asClosureDeclarationType()->canCastToNonNullableClosureDeclarationType($type);
+                    return $this->func->asFunctionLikeDeclarationType()->canCastToNonNullableFunctionLikeDeclarationType($type);
                 }
             }
             return true;
@@ -134,7 +134,7 @@ final class ClosureType extends Type
     public function __toString()
     {
         if ($this->func) {
-            return $this->func->asClosureDeclarationType()->__toString();
+            return $this->func->asFunctionLikeDeclarationType()->__toString();
         }
         return '\Closure';
     }

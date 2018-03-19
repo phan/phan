@@ -3,10 +3,10 @@ namespace Phan\Language\Type;
 
 use Phan\Language\Type;
 
-final class ClosureDeclarationType extends FunctionLikeDeclarationType
+final class CallableDeclarationType extends FunctionLikeDeclarationType
 {
     /** @override */
-    const NAME = 'Closure';
+    const NAME = 'callable';
 
     /**
      * @return bool
@@ -20,11 +20,20 @@ final class ClosureDeclarationType extends FunctionLikeDeclarationType
                 return false;
             }
             if ($type instanceof FunctionLikeDeclarationType) {
-                return $this->canCastToNonNullableFunctionLikeDeclarationType($type);
+                // TODO: Weaker mode to allow callable to cast to Closure
+                return $type instanceof CallableDeclarationType && $this->canCastToNonNullableFunctionLikeDeclarationType($type);
             }
             return true;
         }
 
         return parent::canCastToNonNullableType($type);
+    }
+
+    /**
+     * @override to stop PhanUndeclaredTypeParameter
+     */
+    public function isNativeType() : bool
+    {
+        return true;
     }
 }

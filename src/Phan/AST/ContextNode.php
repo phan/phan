@@ -28,7 +28,7 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Type;
 use Phan\Language\Type\ClosureType;
-use Phan\Language\Type\ClosureDeclarationType;
+use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
@@ -707,7 +707,7 @@ class ContextNode
 
                             yield $function;
                         }
-                    } elseif ($type instanceof ClosureDeclarationType) {
+                    } elseif ($type instanceof FunctionLikeDeclarationType) {
                         yield $type;
                     }
                 }

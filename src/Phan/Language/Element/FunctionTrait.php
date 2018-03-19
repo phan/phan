@@ -10,6 +10,7 @@ use Phan\Language\FQSEN;
 use Phan\Language\Element\Comment;
 use Phan\Language\Type\ClosureDeclarationType;
 use Phan\Language\Type\ClosureDeclarationParameter;
+use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
@@ -62,7 +63,6 @@ trait FunctionTrait
     public function getRepresentationForIssue() : string
     {
         return $this->getFQSEN()->__toString();
-
     }
 
     /**
@@ -169,7 +169,7 @@ trait FunctionTrait
     private $function_call_analyzer_callback = null;
 
     /**
-     * @var ClosureDeclarationType|null (Lazily generated)
+     * @var FunctionLikeDeclarationType|null (Lazily generated)
      */
     private $as_closure_declaration_type;
 
@@ -1023,18 +1023,18 @@ trait FunctionTrait
     }
 
     /**
-     * Returns a ClosureDeclarationType based on phpdoc+real types.
+     * Returns a FunctionLikeDeclarationType based on phpdoc+real types.
      * The return value is used for type casting rule checking.
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */
-    public function asClosureDeclarationType() : ClosureDeclarationType
+    public function asFunctionLikeDeclarationType() : FunctionLikeDeclarationType
     {
-        return $this->as_closure_declaration_type ?? ($this->as_closure_declaration_type = $this->createClosureDeclarationType());
+        return $this->as_closure_declaration_type ?? ($this->as_closure_declaration_type = $this->createFunctionLikeDeclarationType());
     }
 
     public abstract function returnsRef() : bool;
 
-    private function createClosureDeclarationType() : ClosureDeclarationType
+    private function createFunctionLikeDeclarationType() : FunctionLikeDeclarationType
     {
         $params = array_map(function (Parameter $parameter) : ClosureDeclarationParameter {
             return $parameter->asClosureDeclarationParameter();

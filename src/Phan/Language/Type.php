@@ -8,12 +8,14 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\BoolType;
+use Phan\Language\Type\CallableDeclarationType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\ClosureDeclarationParameter;
 use Phan\Language\Type\ClosureDeclarationType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
+use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\GenericMultiArrayType;
 use Phan\Language\Type\IntType;
@@ -79,7 +81,7 @@ class Type
         . '(?:\??\((?-1)\)|'  // Recursion: "?(T)" or "(T)" with brackets
         // TODO: Allow parsing nesting.
         . '(?:'
-          . '\\\\?Closure(\([^()]*\))' // TODO: Support callable.
+          . '\??(?:\\\\?Closure|callable)(\([^()]*\))'
           . '(?:\s*:\s*'  // optional return type, can be ":T" or ":(T1|T2)" or ": ?(T1|T2)"
             . '(?:'
               . self::simple_noncapturing_type_regex . '|'  // Forbid ambiguity in `Closure():int[]` by disallowing complex return types without '()'. Always parse that as `(Closure():int)[]`.
@@ -121,7 +123,7 @@ class Type
             . '\??\((?-1)\)|'
             // TODO: Support nesting
             . '(?:'
-              . '\\\\?Closure(\([^()]*\))' // TODO: Support callable.
+              . '\\\\?(?:Closure|callable)(\([^()]*\))'
               . '(?:\s*:\s*'  // optional return type, can be ":T" or ":(T1|T2)"
                 . '(?:'
                   . self::simple_noncapturing_type_regex . '|'  // Forbid ambiguity in `Closure():int[]` by disallowing complex return types without '()'. Always parse that as `(Closure():int)[]`.
@@ -720,23 +722,8 @@ class Type
                     $is_nullable
                 );
             }
-            if (\strcasecmp($type_name, 'Closure') === 0) {
-                $return_type = \array_pop($shape_components);
-                if (!$return_type) {
-                    // shouldn't happen
-                    throw new \AssertionError("Expected at least one component of a closure phpdoc type");
-                }
-                if ($return_type[0] === '(' && \substr($return_type, -1) === ')') {
-                    // TODO: Maybe catch that in UnionType parsing instead
-                    $return_type = \substr($return_type, 1, -1);
-                }
-                return new ClosureDeclarationType(
-                    new Context(),
-                    self::closureParamComponentStringsToParams($shape_components, new Context(), Type::FROM_NODE),
-                    UnionType::fromStringInContext($return_type, new Context(), Type::FROM_PHPDOC),
-                    false,
-                    $is_nullable
-                );
+            if ($type_name === 'Closure' || $type_name === 'callable') {
+                return self::fromFullyQualifiedFunctionLike($type_name === 'Closure', $shape_components, $is_nullable);
             }
         }
 
@@ -779,6 +766,34 @@ class Type
         );
     }
 
+    /**
+     * @param bool $is_closure_type
+     * @param array<int,string> $shape_components
+     * @param bool $is_nullable
+     */
+    private static function fromFullyQualifiedFunctionLike(
+        bool $is_closure_type,
+        array $shape_components,
+        bool $is_nullable
+    ) : FunctionLikeDeclarationType {
+        $return_type = \array_pop($shape_components);
+        if (!$return_type) {
+            // shouldn't happen
+            throw new \AssertionError("Expected at least one component of a closure phpdoc type");
+        }
+        if ($return_type[0] === '(' && \substr($return_type, -1) === ')') {
+            // TODO: Maybe catch that in UnionType parsing instead
+            $return_type = \substr($return_type, 1, -1);
+        }
+        $params = self::closureParamComponentStringsToParams($shape_components, new Context(), Type::FROM_NODE);
+        $return_type = UnionType::fromStringInContext($return_type, new Context(), Type::FROM_NODE);
+
+        if ($is_closure_type) {
+            return new ClosureDeclarationType(new Context(), $params, $return_type, false, $is_nullable);
+        } else {
+            return new CallableDeclarationType(new Context(), $params, $return_type, false, $is_nullable);
+        }
+    }
     /**
      * @param array<int,UnionType> $template_parameter_type_list
      * @param bool $is_nullable
@@ -885,21 +900,8 @@ class Type
                     $is_nullable
                 );
             }
-            if (\strcasecmp($type_name, 'Closure') === 0) {
-                $return_type = \array_pop($shape_components);
-                if (!$return_type) {
-                    throw new \AssertionError("Expected a return type");
-                }
-                if ($return_type[0] === '(' && \substr($return_type, -1) === ')') {
-                    $return_type = \substr($return_type, 1, -1);
-                }
-                return new ClosureDeclarationType(
-                    $context,
-                    self::closureParamComponentStringsToParams($shape_components, $context, $source),
-                    UnionType::fromStringInContext($return_type, $context, $source),
-                    false,
-                    $is_nullable
-                );
+            if ($type_name === 'Closure' || $type_name === 'callable') {
+                return self::fromFunctionLikeInContext($type_name === 'Closure', $shape_components, $context, $source, $is_nullable);
             }
         }
 
@@ -1061,6 +1063,36 @@ class Type
             $is_nullable,
             $source
         );
+    }
+
+    /**
+     * @param bool $is_closure_type
+     * @param array<int,string> $shape_components
+     * @param Context $context
+     * @param int $source
+     * @param bool $is_nullable
+     */
+    private static function fromFunctionLikeInContext(
+        bool $is_closure_type,
+        array $shape_components,
+        Context $context,
+        int $source,
+        bool $is_nullable
+    ) : FunctionLikeDeclarationType {
+        $return_type = \array_pop($shape_components);
+        if (!$return_type) {
+            throw new \AssertionError("Expected a return type");
+        }
+        if ($return_type[0] === '(' && \substr($return_type, -1) === ')') {
+            $return_type = \substr($return_type, 1, -1);
+        }
+        $params = self::closureParamComponentStringsToParams($shape_components, $context, $source);
+        $return = UnionType::fromStringInContext($return_type, $context, $source);
+        if ($is_closure_type) {
+            return new ClosureDeclarationType($context, $params, $return, false, $is_nullable);
+        } else {
+            return new CallableDeclarationType($context, $params, $return, false, $is_nullable);
+        }
     }
 
     /**
@@ -1411,7 +1443,7 @@ class Type
      */
     public function isCallable() : bool
     {
-        return false;  // Overridden in subclass CallableType, ClosureType
+        return false;  // Overridden in subclass CallableType, ClosureType, FunctionLikeDeclarationType
     }
 
     /**
@@ -2056,7 +2088,7 @@ class Type
 
         return new Tuple5(
             '\\',
-            'Closure',
+            \strncmp($type_string, 'callable', 8) === 0 ? 'callable' : 'Closure',
             [],
             false,
             $parts

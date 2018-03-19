@@ -7,6 +7,7 @@ use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type\CallableType;
+use Phan\Language\Type\CallableDeclarationType;
 use Phan\Language\Type;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
 use Phan\PluginV2;
@@ -78,7 +79,8 @@ final class CallableParamPlugin extends PluginV2 implements
                 // If there's a type such as Closure|string|int, don't automatically assume that any string or array passed in is meant to be a callable.
                 // Explicitly require at least one type to be `callable`
                 if ($param->getUnionType()->hasTypeMatchingCallback(function (Type $type) : bool {
-                    return $type instanceof CallableType;
+                    // TODO: More specific closure for CallableDeclarationType
+                    return $type instanceof CallableType || $type instanceof CallableDeclarationType;
                 })) {
                     $params[] = $i;
                 }

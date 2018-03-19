@@ -57,6 +57,13 @@ class Daemon
             while (true) {
                 $gotSignal = false;  // reset this.
                 // We get an error from stream_socket_accept. After the RuntimeException is thrown, pcntl_signal is called.
+                /**
+                 * @param int $severity
+                 * @param string $message
+                 * @param string $file
+                 * @param int $line
+                 * @return bool
+                 */
                 $previousErrorHandler = set_error_handler(function ($severity, $message, $file, $line) use (&$previousErrorHandler) {
                     self::debugf("In new error handler '$message'");
                     if (!preg_match('/stream_socket_accept/i', $message)) {
