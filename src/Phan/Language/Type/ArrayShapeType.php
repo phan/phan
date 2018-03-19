@@ -278,15 +278,21 @@ final class ArrayShapeType extends ArrayType
             $recursion_depth < 20,
             "Recursion has gotten out of hand"
         );
-        // TODO: Use UnionType::merge from a future change?
-        $result_fields = [];
-        foreach ($this->field_types as $key => $union_type) {
-            // UnionType already increments recursion_depth before calling asExpandedTypes on a subclass of Type,
-            // and has a depth limit of 10.
-            // Don't increase recursion_depth here, it's too easy to reach.
-            $result_fields[$key] = $union_type->asExpandedTypes($code_base, $recursion_depth);
-        }
-        return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asUnionType();
+        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) {
+            $result_fields = [];
+            foreach ($this->field_types as $key => $union_type) {
+                // UnionType already increments recursion_depth before calling asExpandedTypes on a subclass of Type,
+                // and has a depth limit of 10.
+                // Don't increase recursion_depth here, it's too easy to reach.
+                $expanded_field_type = $union_type->asExpandedTypes($code_base, $recursion_depth);
+                if ($union_type->getIsPossiblyUndefined()) {
+                    // array{key?:string} should become array{key?:string}.
+                    $expanded_field_type = $union_type->withIsPossiblyUndefined(true);
+                }
+                $result_fields[$key] = $expanded_field_type;
+            }
+            return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asUnionType();
+        });
     }
 
     /**
@@ -312,7 +318,7 @@ final class ArrayShapeType extends ArrayType
     }
 
     /**
-     * Computes the union of two or more array shape types.
+     * Computes the non-nullable union of two or more array shape types.
      *
      * E.g. array{0: string} + array{0:int,1:int} === array{0:int|string,1:int}
      * @param array<int,ArrayShapeType> $array_shape_types

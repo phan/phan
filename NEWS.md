@@ -13,6 +13,27 @@ New Features(Analysis)
 + Allow phpdoc `@param` array shapes to contain optional fields. (E.g. `array{requiredKey:int,optionalKey?:string}`) (#1382)
   An array shape is now allowed to cast to another array shape, as long as the required fields are compatible with the target type,
   and any optional fields from the target type are absent in the source type or compatible.
++ In issue messages, represent closures by their signatures instead of as `\closure_{hexdigits}`
++ Emit `PhanTypeArrayUnsetSuspicious` when trying to unset the offset of something that isn't an array or array-like.
++ Add limited support for analyzing `unset` on variables and the first dimension of arrays.
+  Unsetting variables does not yet work in branches.
++ Don't emit `PhanTypeInvalidDimOffset` in `isset`/`empty`/`unset`
++ Improve Phan's analysis of loose equality (#1101)
++ Add new issue types `PhanWriteOnlyPublicProperty`, `PhanWriteOnlyProtectedProperty`, and `PhanWriteOnlyPrivateProperty`,
+  which will be emitted on properties that are written to but never read from.
+  (Requires that dead code detection be enabled)
++ Improve Phan's analysis of switch statements and fix bugs. (#1561)
++ Add `PhanTypeSuspiciousEcho` to warn about suspicious types being passed to echo/print statements.
+  This now warns about booleans, arrays, resources, null, non-stringable classes, combinations of those types, etc.
+  (`var_export` or JSON encoding usually makes more sense for a boolean/null)
++ Make Phan infer that top level array keys for expressions such as `if (isset($x['keyName']))` exist and are non-null. (#1514)
++ Make Phan infer that top level array keys for expressions such as `if (array_key_exists('keyName', $x))` exist. (#1514)
++ Make Phan aware of types after negated of `isset`/`array_key_exists` checks for array shapes (E.g. `if (!array_key_exists('keyName', $x)) { var_export($x['keyName']); }`)
+  Note: This will likely fail to warn if the variable is already a mix of generic arrays and array shapes.
++ Make Phan check that types in `@throws` annotations are valid; don't warn about classes in `@throws` being unreferenced. (#1555)
+  New issue types: `PhanUndeclaredTypeThrowsType`, `PhanTypeInvalidThrowsNonObject`, `PhanTypeInvalidThrowsNonThrowable`, `PhanTypeInvalidThrowsIsTrait`, `PhanTypeInvalidThrowsIsInterface`
+
+New types:
 + Add `Closure` and `callable` with annotated param types and return to Phan's type system(#1578, #1581).
   This is not a part of the phpdoc2 standard or any other standard.
   These can be used in any phpdoc tags that Phan is aware of,
@@ -43,21 +64,6 @@ New Features(Analysis)
   - Placeholder variable names can be part of these types,
     similarly to `@method` (`Closure($unknown,int $count=0):T`
     is equivalent to `Closure(mixed,int):T`
-+ In issue messages, represent closures by their signatures instead of as `\closure_{hexdigits}`
-+ Emit `PhanTypeArrayUnsetSuspicious` when trying to unset the offset of something that isn't an array or array-like.
-+ Add limited support for analyzing `unset` on variables and the first dimension of arrays.
-  Unsetting variables does not yet work in branches.
-+ Don't emit `PhanTypeInvalidDimOffset` in `isset`/`empty`/`unset`
-+ Improve Phan's analysis of loose equality (#1101)
-+ Add new issue types `PhanWriteOnlyPublicProperty`, `PhanWriteOnlyProtectedProperty`, and `PhanWriteOnlyPrivateProperty`,
-  which will be emitted on properties that are written to but never read from.
-  (Requires that dead code detection be enabled)
-+ Improve Phan's analysis of switch statements and fix bugs. (#1561)
-+ Add `PhanTypeSuspiciousEcho` to warn about suspicious types being passed to echo/print statements.
-  This now warns about booleans, arrays, resources, null, non-stringable classes, combinations of those types, etc.
-  (`var_export` or JSON encoding usually makes more sense for a boolean/null)
-+ Make Phan check that types in `@throws` annotations are valid; don't warn about classes in `@throws` being unreferenced. (#1555)
-  New issue types: `PhanUndeclaredTypeThrowsType`, `PhanTypeInvalidThrowsNonObject`, `PhanTypeInvalidThrowsNonThrowable`, `PhanTypeInvalidThrowsIsTrait`, `PhanTypeInvalidThrowsIsInterface`
 
 Maintenance
 + Add `--disable-usage-on-error` option to `phan_client` (#1540)

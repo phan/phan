@@ -66,6 +66,7 @@ PHAN;
  *   For some signatures, e.g. set_error_handler, this results in repetition, because callable(T1=) can't cast to callable(T1).
  */
 return [
+'_' => ['string', 'message'=>'string'],
 '__halt_compiler' => [''],
 'abs' => ['int', 'number'=>'int'],
 'abs\'1' => ['float', 'number'=>'float'],

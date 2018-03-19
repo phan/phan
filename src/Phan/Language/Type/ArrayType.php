@@ -112,6 +112,35 @@ class ArrayType extends IterableType
     }
 
     /**
+     * E.g. string|array{0:T1|T2,1:float} + [0 => int] becomes string|array{0:int, 1:float}
+     *
+     * TODO: Remove any top level native types that can't have offsets, e.g. IntType, null, etc.
+     *
+     * @param UnionType $left the left hand side (e.g. of a isset check).
+     * @param int|string $field_dim_value
+     * @param UnionType $field_type
+     * @return UnionType with ArrayType subclass(es)
+     */
+    public static function combineArrayShapeTypesWithField(UnionType $left, $field_dim_value, UnionType $field_type) : UnionType
+    {
+        $result = new UnionTypeBuilder();
+        $left_array_shape_types = [];
+        foreach ($left->getTypeSet() as $type) {
+            if ($type instanceof ArrayShapeType) {
+                $left_array_shape_types[] = $type;
+            } else {
+                $result->addType($type);
+            }
+        }
+        $result->addType(ArrayShapeType::combineWithPrecedence(
+            ArrayShapeType::fromFieldTypes([$field_dim_value => $field_type], false),
+            // TODO: Add possibly_undefined annotations in union
+            ArrayShapeType::union($left_array_shape_types)
+        ));
+        return $result->getUnionType();
+    }
+
+    /**
      * Overridden in subclasses
      *
      * @param int $key_type @phan-unused-param (TODO: Use?)

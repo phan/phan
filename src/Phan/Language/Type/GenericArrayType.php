@@ -264,7 +264,7 @@ final class GenericArrayType extends ArrayType
             "Recursion has gotten out of hand"
         );
 
-        $union_type = $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) {
+        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) {
             $union_type = $this->asUnionType();
 
             $class_fqsen = $this->genericArrayElementType()->asFQSEN();
@@ -312,7 +312,6 @@ final class GenericArrayType extends ArrayType
             }
             return $recursive_union_type_builder->getUnionType();
         });
-        return $union_type;
     }
 
     public static function keyTypeFromUnionTypeKeys(UnionType $union_type) : int
