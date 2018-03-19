@@ -123,7 +123,7 @@ class Type
             . '\??\((?-1)\)|'
             // TODO: Support nesting
             . '(?:'
-              . '\\\\?(?:Closure|callable)(\([^()]*\))'
+              . '\??(?:\\\\?Closure|callable)(\([^()]*\))'
               . '(?:\s*:\s*'  // optional return type, can be ":T" or ":(T1|T2)"
                 . '(?:'
                   . self::simple_noncapturing_type_regex . '|'  // Forbid ambiguity in `Closure():int[]` by disallowing complex return types without '()'. Always parse that as `(Closure():int)[]`.
