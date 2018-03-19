@@ -1,0 +1,4 @@
+%s:11 PhanTypeMismatchReturn Returning type Closure(int):int but return_closure() is declared to return Closure(int):string
+%s:13 PhanUndeclaredStaticMethod Static call to undeclared method \Closure::fromCallable
+%s:15 PhanUndeclaredStaticMethod Static call to undeclared method \Closure::fromCallable
+%s:17 PhanTypeMismatchReturn Returning type Closure():string but return_closure() is declared to return Closure(int):string

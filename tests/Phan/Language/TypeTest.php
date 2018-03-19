@@ -266,14 +266,18 @@ class TypeTest extends BaseTest
 
     private function verifyClosureParam(ClosureDeclarationType $expected_closure_type, string $union_type_string, string $normalized_type_string)
     {
-        $this->assertParsesAsType($expected_closure_type, $union_type_string);
+        $this->assertTrue(\preg_match(self::delimited_type_regex_or_this, $union_type_string) > 0, "Failed to parse '$union_type_string'");
         $parsed_closure_type = self::makePHPDocType($union_type_string);
+        $this->assertInstanceOf(ClosureDeclarationType::class, $parsed_closure_type);
         $this->assertSame($normalized_type_string, (string)$parsed_closure_type, "failed parsing $union_type_string");
+        $this->assertTrue($expected_closure_type->canCastToType($parsed_closure_type), "failed casting $union_type_string");
+        $this->assertTrue($parsed_closure_type->canCastToType($expected_closure_type), "failed casting $union_type_string");
     }
 
     public function testClosureAnnotation()
     {
-        $expected_closure_void_type = ClosureDeclarationType::instanceForTypes(
+        $expected_closure_void_type = new ClosureDeclarationType(
+            new Context(),
             [],
             VoidType::instance(false)->asUnionType(),
             false,
@@ -287,7 +291,8 @@ class TypeTest extends BaseTest
 
     public function testClosureBasicAnnotation()
     {
-        $expected_closure_type = ClosureDeclarationType::instanceForTypes(
+        $expected_closure_type = new ClosureDeclarationType(
+            new Context(),
             [self::makeBasicClosureParam('int'), self::makeBasicClosureParam('mixed')],
             IntType::instance(false)->asUnionType(),
             false,
@@ -302,7 +307,8 @@ class TypeTest extends BaseTest
     {
         $nullable_scalar_param = self::makeBasicClosureParam('?int|?string');
 
-        $expected_closure_scalar_type = ClosureDeclarationType::instanceForTypes(
+        $expected_closure_scalar_type = new ClosureDeclarationType(
+            new Context(),
             [$nullable_scalar_param],
             UnionType::fromFullyQualifiedString('?int|?string'),
             false,
@@ -322,7 +328,8 @@ class TypeTest extends BaseTest
         $string_ref_annotation = new ClosureDeclarationParameter(UnionType::fromFullyQualifiedString('string'), false, true, false);
         $variadic_bool_annotation = new ClosureDeclarationParameter(UnionType::fromFullyQualifiedString('bool'), true, true, false);
 
-        $expected_closure_type = ClosureDeclarationType::instanceForTypes(
+        $expected_closure_type = new ClosureDeclarationType(
+            new Context(),
             [$string_ref_annotation, $variadic_bool_annotation],
             UnionType::fromFullyQualifiedString('void'),
             false,
@@ -339,7 +346,8 @@ class TypeTest extends BaseTest
         $optional_string_annotation = new ClosureDeclarationParameter(UnionType::fromFullyQualifiedString('?string'), false, false, true);
         $optional_int_annotation = new ClosureDeclarationParameter(UnionType::fromFullyQualifiedString('int'), false, false, true);
 
-        $expected_closure_type = ClosureDeclarationType::instanceForTypes(
+        $expected_closure_type = new ClosureDeclarationType(
+            new Context(),
             [$optional_string_annotation, $optional_int_annotation],
             UnionType::fromFullyQualifiedString('void'),
             false,

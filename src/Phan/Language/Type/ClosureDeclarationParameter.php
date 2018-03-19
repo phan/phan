@@ -1,7 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use Phan\Language\Element\Parameter;
 use Phan\Language\UnionType;
+use Phan\Language\FileRef;
 
 /**
  * Not a type, but used by ClosureDeclarationType
@@ -28,6 +30,9 @@ final class ClosureDeclarationParameter
         $this->is_optional = $is_optional || $is_variadic;
     }
 
+    /**
+     * @suppress PhanUnreferencedPublicMethod
+     */
     public function getNonVariadicUnionType() : UnionType
     {
         return $this->type;
@@ -64,37 +69,6 @@ final class ClosureDeclarationParameter
         return $repr;
     }
 
-    public function toStub(string $paramName) : string
-    {
-        $repr = $this->type->__toString() . ' ';
-        if ($this->is_variadic) {
-            $repr .= '...';
-        }
-        if ($this->is_reference) {
-            $repr .= '&';
-        }
-        $repr .= '$' . $paramName;
-        if ($this->is_optional && !$this->is_variadic) {
-            $repr .= '=';
-        }
-        return $repr;
-    }
-
-    public function generateUniqueId() : string
-    {
-        $repr = (string)$this->type->generateUniqueId();
-        if ($this->is_variadic) {
-            $repr .= '...';
-        }
-        if ($this->is_reference) {
-            $repr .= '&';
-        }
-        if ($this->is_optional && !$this->is_variadic) {
-            $repr .= '=';
-        }
-        return $repr;
-    }
-
     /**
      * @see \Phan\Analysis\ParameterTypesAnalyzer::analyzeOverrideSignatureForOverriddenMethod() - Similar logic using LSP
      */
@@ -108,6 +82,47 @@ final class ClosureDeclarationParameter
             return false;
         }
         // TODO: stricter? (E.g. shouldn't allow int|string to cast to int)
-        return $this->type->canCastToUnionType($other->getNonVariadicUnionType());
+        return $this->type->canCastToUnionType($other->type);
+    }
+
+    // TODO: Memoize?
+    public function asNonVariadicRegularParameter(int $i) : Parameter
+    {
+        $flags = 0;
+        // Skip variadic
+        if ($this->is_reference) {
+            $flags |= \ast\flags\PARAM_REF;
+        }
+        $result = Parameter::create(
+            (new FileRef())->withFile('phpdoc'),
+            "p$i",
+            $this->type,
+            $flags
+        );
+        if ($this->is_optional && !$this->is_variadic) {
+            $result->setDefaultValueType($this->type);
+        }
+        return $result;
+    }
+
+    public function asRegularParameter(int $i) : Parameter
+    {
+        $flags = 0;
+        if ($this->is_variadic) {
+            $flags |= \ast\flags\PARAM_VARIADIC;
+        }
+        if ($this->is_reference) {
+            $flags |= \ast\flags\PARAM_REF;
+        }
+        $result = Parameter::create(
+            (new FileRef())->withFile('phpdoc'),
+            "p$i",
+            $this->type,
+            $flags
+        );
+        if ($this->is_optional && !$this->is_variadic) {
+            $result->setDefaultValueType(MixedType::instance(false)->asUnionType());
+        }
+        return $result;
     }
 }

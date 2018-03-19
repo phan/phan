@@ -2,14 +2,29 @@
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
+use Phan\Language\Context;
+use Phan\Language\Element\Comment;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Parameter;
+use Phan\Language\FileRef;
+use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\Scope\ClosedScope;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Closure;
+use ast\Node;
 
-final class ClosureDeclarationType extends Type
+/**
+ * @phan-file-suppress PhanPluginUnusedPublicFinalMethodArgument
+ */
+final class ClosureDeclarationType extends Type implements FunctionInterface
 {
     /** Not an override */
     const NAME = 'Closure';
+
+    /** @var FileRef */
+    private $file_ref;
 
     /** @var array<int,ClosureDeclarationParameter> */
     private $params;
@@ -35,53 +50,31 @@ final class ClosureDeclarationType extends Type
      * @param array<int,ClosureDeclarationParameter> $params
      * @param UnionType $return_type
      */
-    protected function __construct(array $params, UnionType $return_type, bool $returns_reference, bool $is_nullable)
+    public function __construct(FileRef $file_ref, array $params, UnionType $return_type, bool $returns_reference, bool $is_nullable)
     {
         parent::__construct('\\', self::NAME, [], $is_nullable);
+        $this->file_ref = FileRef::copyFileRef($file_ref);
         $this->params = $params;
         $this->return_type = $return_type;
         $this->returns_reference = $returns_reference;
 
         $required_param_count = 0;
-        $optional_param_count = \count($params);
-        ;
+        $optional_param_count = 0;
         // TODO: Warn about required after optional
         foreach ($params as $param) {
-            if (!$param->isOptional()) {
+            if ($param->isOptional()) {
+                $optional_param_count++;
+                if ($param->isVariadic()) {
+                    $this->is_variadic = true;
+                    $optional_param_count = FunctionInterface::INFINITE_PARAMETERS - $required_param_count;
+                    break;
+                }
+            } else {
                 $required_param_count++;
-            } elseif ($param->isVariadic()) {
-                $this->is_variadic = true;
-                $optional_param_count = FunctionInterface::INFINITE_PARAMETERS;
-                break;
             }
         }
         $this->required_param_count = $required_param_count;
         $this->optional_param_count = $optional_param_count;
-    }
-
-    /**
-     * @param array<int,ClosureDeclarationParameter> $params
-     * @param UnionType $return_type
-     * @param bool $returns_reference is this referring to a closure with a reference return value?
-     * @param bool $is_nullable is this a nullable type?
-     */
-    public static function instanceForTypes(array $params, UnionType $return_type, bool $returns_reference, bool $is_nullable)
-    {
-        static $cache = [];
-        $key_parts = [];
-        if ($is_nullable) {
-            $key_parts[] = '?';
-        }
-        if ($returns_reference) {
-            $key_parts[] = '&';
-        }
-        foreach ($params as $param_info) {
-            $key_parts[] = $param_info->generateUniqueId();
-        }
-        $key_parts[] = $return_type->generateUniqueId();
-        $key = json_encode($key_parts);
-
-        return $cache[$key] ?? ($cache[$key] = new self($params, $return_type, $returns_reference, $is_nullable));
     }
 
     /**
@@ -155,7 +148,7 @@ final class ClosureDeclarationType extends Type
         if ($this->required_param_count > $type->required_param_count) {
             return false;
         }
-        if ($this->optional_param_count < $type->optional_param_count) {
+        if ($this->getNumberOfParameters() < $type->getNumberOfParameters()) {
             return false;
         }
         if ($this->returns_reference !== $type->returns_reference) {
@@ -187,4 +180,413 @@ final class ClosureDeclarationType extends Type
     ) : UnionType {
         return $this->asUnionType();
     }
+
+    // Begin FunctionInterface overrides. Most of these are intentionally no-ops
+    /**
+     * @override
+     * @return void
+     */
+    public function addReference(FileRef $_)
+    {
+    }
+
+    /** @override */
+    public function getReferenceCount(CodeBase $_) : int
+    {
+        return 1;
+    }
+
+    /** @override */
+    public function getReferenceList() : array
+    {
+        return [];
+    }
+
+    /** @override */
+    public function isPrivate() : bool
+    {
+        return false;
+    }
+
+    /** @override */
+    public function isProtected() : bool
+    {
+        return false;
+    }
+
+    /** @override */
+    public function isPublic() : bool
+    {
+        return true;
+    }
+
+    /** @override */
+    public function setFQSEN(FQSEN $_)
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    /** @override */
+    public function alternateGenerator(CodeBase $_) : \Generator
+    {
+        yield $this;
+    }
+
+    /** @override */
+    public function analyze(Context $context, CodeBase $_) : Context
+    {
+        return $context;
+    }
+
+    /** @override */
+    public function analyzeFunctionCall(CodeBase $unused_code_base, Context $unused_context, array $_)
+    {
+        throw new \AssertionError('should not call ' . __METHOD__);
+    }
+
+    /** @override */
+    public function analyzeWithNewParams(Context $unused_context, CodeBase $unused_codebase, array $unused_parameter_list) : Context
+    {
+        throw new \AssertionError('should not call ' . __METHOD__);
+    }
+
+    /** @override */
+    public function appendParameter(Parameter $_)
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    /** @override */
+    public function clearParameterList()
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    /** @override */
+    public function cloneParameterList()
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    /** @override */
+    public function ensureScopeInitialized(CodeBase $_)
+    {
+    }
+
+    /** @override */
+    public function asClosureDeclarationType() : ClosureDeclarationType
+    {
+        return $this;
+    }
+
+    /** @override */
+    public function getComment()
+    {
+        return null;
+    }
+
+    /** @override */
+    public function getDependentReturnType(CodeBase $code_base, Context $context, array $args) : UnionType
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    /** @override */
+    public function hasDependentReturnType() : bool
+    {
+        return false;
+    }
+
+    // TODO: Maybe create mock FQSENs for these instead.
+    /** @override */
+    public function getElementNamespace() : string
+    {
+        return '\\';
+    }
+
+    /** @override */
+    public function getFQSEN()
+    {
+        $hash = \substr(\md5($this->__toString()), 0, 12);
+        return FullyQualifiedFunctionName::fromFullyQualifiedString('\\closure_phpdoc' . $hash);
+    }
+
+    /** @override */
+    public function getRepresentationForIssue() : string
+    {
+        // Represent this as "Closure(int):void" in issue messages instead of \closure_phpdoc_abcd123456Df
+        return $this->__toString();
+    }
+
+    /** @override */
+    public function getHasReturn() : bool
+    {
+        return true;
+    }
+
+    /** @override */
+    public function getInternalScope() : ClosedScope
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    /** @return Node|null */
+    public function getNode()
+    {
+        return null;
+    }
+
+    /** @override */
+    public function getNumberOfRequiredParameters() : int
+    {
+        return $this->required_param_count;
+    }
+
+    /** @override */
+    public function getNumberOfOptionalParameters() : int
+    {
+        return $this->optional_param_count;
+    }
+
+    /** @override */
+    public function getNumberOfRequiredRealParameters() : int
+    {
+        return $this->required_param_count;
+    }
+
+    /** @override */
+    public function getNumberOfOptionalRealParameters() : int
+    {
+        return $this->optional_param_count;
+    }
+
+    /** @override */
+    public function getNumberOfParameters() : int
+    {
+        return $this->optional_param_count + $this->required_param_count;
+    }
+
+    /** @override */
+    public function getOutputReferenceParamNames() : array
+    {
+        return [];
+    }
+
+    /** @override */
+    public function getPHPDocParameterTypeMap()
+    {
+        // Implement?
+        return [];
+    }
+
+    /** @override */
+    public function getPHPDocReturnType()
+    {
+        return $this->return_type;
+    }
+
+    /**
+     * @return Parameter|null
+     * @override
+     */
+    public function getParameterForCaller(int $i)
+    {
+        $list = $this->params;
+        if (count($list) === 0) {
+            return null;
+        }
+        $parameter = $list[$i] ?? null;
+        if ($parameter) {
+            // This is already not variadic
+            return $parameter->asNonVariadicRegularParameter($i);
+        }
+        return null;
+    }
+
+    /**
+     * @return array<int,Parameter>
+     */
+    public function getParameterList() : array
+    {
+        $result = [];
+        foreach ($this->params as $i => $param) {
+            $result[] = $param->asRegularParameter($i);
+        }
+        return $result;
+    }
+
+    public function getRealParameterList()
+    {
+        return $this->getParameterList();
+    }
+
+    public function getRealReturnType() : UnionType
+    {
+        return $this->return_type;
+    }
+
+    public function getThrowsUnionType() : UnionType
+    {
+        return UnionType::empty();
+    }
+
+    public function hasFunctionCallAnalyzer() : bool
+    {
+        return false;
+    }
+
+    public function isFromPHPDoc() : bool
+    {
+        return true;
+    }
+
+    public function isNSInternal(CodeBase $code_base) : bool
+    {
+        return false;
+    }
+
+    public function isNSInternalAccessFromContext(CodeBase $code_base, Context $context) : bool
+    {
+        return false;
+    }
+
+    public function isReturnTypeUndefined() : bool
+    {
+        return false;
+    }
+
+    public function needsRecursiveAnalysis() : bool
+    {
+        return false;
+    }
+
+    public function recordOutputReferenceParamName(string $parameter_name)
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    public function returnsRef() : bool
+    {
+        return $this->returns_reference;
+    }
+
+    public function setComment(Comment $comment)
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    public function setFunctionCallAnalyzer(Closure $analyzer)
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    public function setDependentReturnTypeClosure(Closure $analyzer)
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    public function setHasReturn(bool $_)
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    public function setHasYield(bool $_)
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    public function setInternalScope(ClosedScope $scope)
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    public function setIsReturnTypeUndefined(bool $_)
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    public function setNumberOfOptionalParameters(int $_)
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    public function setNumberOfRequiredParameters(int $_)
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    public function setPHPDocParameterTypeMap(array $parameter_map)
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    /**
+     * @param ?UnionType the raw phpdoc union type
+     */
+    public function setPHPDocReturnType($union_type)
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    public function getContext() : Context
+    {
+        return (new Context())
+            ->withFile($this->file_ref->getFile())
+            ->withLineNumberStart($this->file_ref->getLineNumberStart());
+    }
+
+    public function getUnionType() : UnionType
+    {
+        return $this->return_type;
+    }
+
+    public function getSuppressIssueList() : array
+    {
+        // TODO: Inherit suppress issue list from phpdoc declaring this?
+        return [];
+    }
+
+    public function hasSuppressIssue(string $issue_type) : bool
+    {
+        return in_array($issue_type, $this->getSuppressIssueList());
+    }
+
+    public function hydrate(CodeBase $_)
+    {
+    }
+
+    public function incrementSuppressIssueCount(string $issue_name)
+    {
+    }
+
+    public function isDeprecated() : bool
+    {
+        return false;
+    }
+
+    public function getFileRef() : FileRef
+    {
+        return $this->file_ref;
+    }
+
+    public function isPHPInternal() : bool
+    {
+        return false;
+    }
+
+    public function setIsDeprecated(bool $_)
+    {
+    }
+
+    public function setSuppressIssueList(array $issues)
+    {
+        throw new \AssertionError('should not call ' . __METHOD__);
+    }
+
+    public function setUnionType(UnionType $type)
+    {
+        throw new \AssertionError('should not call ' . __METHOD__);
+    }
+
+    // End FunctionInterface overrides
 }

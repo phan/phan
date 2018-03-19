@@ -30,6 +30,13 @@ interface FunctionInterface extends AddressableElementInterface
     public function getFQSEN();
 
     /**
+     * @return string
+     * The fully-qualified structural element name of this
+     * structural element, or a string for ClosureDeclarationType which lacks a real FQSEN
+     */
+    public function getRepresentationForIssue() : string;
+
+    /**
      * @return void
      */
     public function setInternalScope(ClosedScope $internal_scope);
@@ -252,7 +259,7 @@ interface FunctionInterface extends AddressableElementInterface
      * @param ?UnionType the raw phpdoc union type
      * @return void
      */
-    public function setPHPDocReturnType($parameter_map);
+    public function setPHPDocReturnType($union_type);
 
     /**
      * @return ?UnionType the raw phpdoc union type
@@ -315,7 +322,7 @@ interface FunctionInterface extends AddressableElementInterface
      */
     public function ensureScopeInitialized(CodeBase $code_base);
 
-    /** @return Node */
+    /** @return Node|null */
     public function getNode();
 
     /**

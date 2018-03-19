@@ -730,7 +730,8 @@ class Type
                     // TODO: Maybe catch that in UnionType parsing instead
                     $return_type = \substr($return_type, 1, -1);
                 }
-                return ClosureDeclarationType::instanceForTypes(
+                return new ClosureDeclarationType(
+                    new Context(),
                     self::closureParamComponentStringsToParams($shape_components, new Context(), Type::FROM_NODE),
                     UnionType::fromStringInContext($return_type, new Context(), Type::FROM_PHPDOC),
                     false,
@@ -892,7 +893,8 @@ class Type
                 if ($return_type[0] === '(' && \substr($return_type, -1) === ')') {
                     $return_type = \substr($return_type, 1, -1);
                 }
-                return ClosureDeclarationType::instanceForTypes(
+                return new ClosureDeclarationType(
+                    $context,
                     self::closureParamComponentStringsToParams($shape_components, $context, $source),
                     UnionType::fromStringInContext($return_type, $context, $source),
                     false,
