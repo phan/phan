@@ -8,10 +8,10 @@ $internal_function_name_list = get_defined_functions()['internal'];
 
 if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
   // This is the normal path when Phan is installed only in the scope of a project.
-    require_once __DIR__ . '/../vendor/autoload.php';
+    $autoloader = require_once __DIR__ . '/../vendor/autoload.php';
 } else {
   // This is the path to autoload.php when Phan is installed globally.
-    require_once __DIR__ . '/../../../autoload.php';
+    $autoloader = require_once __DIR__ . '/../../../autoload.php';
 }
 
 use Composer\XdebugHandler\XdebugHandler;
@@ -37,10 +37,19 @@ EOT
     $handler->check();
 }
 
+// Attempt to load a composer class loader
+$class_resolver = null;
+if ($autoloader instanceof \Composer\Autoload\ClassLoader) {
+    $class_resolver = new \Phan\ClassResolver\ComposerResolver($autoloader);
+} else {
+    $class_resolver = new \Phan\ClassResolver\ReflectionResolver();
+}
+
 return new CodeBase(
     $internal_class_name_list,
     $internal_interface_name_list,
     $internal_trait_name_list,
     CodeBase::getPHPInternalConstantNameList(),
-    $internal_function_name_list
+    $internal_function_name_list,
+    $class_resolver
 );

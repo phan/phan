@@ -3,6 +3,7 @@ namespace Phan;
 
 use Phan\CodeBase\ClassMap;
 use Phan\CodeBase\UndoTracker;
+use Phan\Exception\FileNotFoundException;
 use Phan\Language\Context;
 use Phan\Language\Element\ClassAliasRecord;
 use Phan\Language\Element\ClassConstant;
@@ -163,6 +164,15 @@ class CodeBase
     private $has_enabled_undo_tracker = false;
 
     /**
+     * If a ClassResolver is set, Phan will attempt to autoload a class it does not have in its registry. This allows
+     * for Phan to skip analyzing the entire codebase and rather, use the ClassResolver to attempt to resolve classes
+     * at evaluation time, and dynamically analyze new classes as they are found.
+     *
+     * @var ClassResolver\ClassResolverInterface
+     */
+    private $class_resolver;
+
+    /**
      * Initialize a new CodeBase
      * TODO: Remove internal_function_name_list completely?
      * @param string[] $internal_class_name_list
@@ -170,13 +180,15 @@ class CodeBase
      * @param string[] $internal_trait_name_list
      * @param string[] $internal_constant_name_list
      * @param string[] $internal_function_name_list
+     * @param ClassResolver\ClassResolverInterface $class_resolver Optional class to resolve class => file name
      */
     public function __construct(
         array $internal_class_name_list,
         array $internal_interface_name_list,
         array $internal_trait_name_list,
         array $internal_constant_name_list,
-        array $internal_function_name_list
+        array $internal_function_name_list,
+        ClassResolver\ClassResolverInterface $class_resolver = null
     ) {
         $this->fqsen_class_map = new Map;
         $this->fqsen_class_map_internal = new Map;
@@ -188,6 +200,7 @@ class CodeBase
         $this->class_fqsen_class_map_map = new Map;
         $this->method_set = new Set;
         $this->internal_function_fqsen_set = new Set;
+        $this->class_resolver = $class_resolver;
 
         // Add any pre-defined internal classes, interfaces,
         // constants, traits and functions
@@ -753,12 +766,62 @@ class CodeBase
      * True if a Clazz with the given FQSEN exists
      */
     public function hasClassWithFQSEN(
-        FullyQualifiedClassName $fqsen
+        FullyQualifiedClassName $fqsen,
+        bool $autoload = true
     ) : bool {
         if ($this->fqsen_class_map->offsetExists($fqsen)) {
             return true;
         }
+
+        if ($autoload && $this->lazyLoadClassWithFQSEN($fqsen)) {
+            return true;
+        }
+
         return $this->lazyLoadPHPInternalClassWithFQSEN($fqsen);
+    }
+
+    /**
+     * @return bool
+     * @throws FileNotFoundException If the returned file path does not exist
+     * True if the class was able to be lazy loaded
+     */
+    private function lazyLoadClassWithFQSEN(
+        FullyQualifiedClassName $fqsen
+    ) : bool {
+        if (!$this->class_resolver) {
+            return false;
+        }
+
+        $file = $this->class_resolver->fileForClass($fqsen);
+        if (!$file) {
+            return false;
+        }
+
+        $file_path = realpath($file);
+
+        if (!file_exists($file) || !$file_path) {
+            throw new FileNotFoundException(
+                sprintf(
+                    'The path returned from the class resolver for the classs "%s" does not exist: "%s"',
+                    $fqsen->getNamespacedName(),
+                    $file_path
+                )
+            );
+        }
+
+        // Attempt to make file relative to cwd
+        $cwd = getcwd();
+        if (strpos($file_path, $cwd) === 0) {
+            $file_path = substr($file_path, strlen($cwd) + 1);
+        }
+
+        $this->setCurrentParsedFile($file_path);
+        $this->flushDependenciesForFile($file_path);
+
+        // Parse the file
+        $context = Analysis::parseFile($this, $file_path);
+        $this->setCurrentParsedFile(null);
+        return true;
     }
 
     /**

@@ -321,7 +321,7 @@ class ParseVisitor extends ScopeVisitor
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
-        while ($code_base->hasMethodWithFQSEN($method_fqsen)) {
+        while ($code_base->hasMethodWithFQSEN($method_fqsen, false)) {
             $method_fqsen =
                 $method_fqsen->withAlternateId(++$alternate_id);
         }
