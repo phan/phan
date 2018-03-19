@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use Phan\Language\Type;
+
 final class CallableType extends NativeType
 {
     /** @phan-override */
@@ -13,5 +15,11 @@ final class CallableType extends NativeType
     public function isCallable() : bool
     {
         return true;
+    }
+
+    protected function canCastToNonNullableType(Type $type) : bool
+    {
+        // CallableDeclarationType is not a native type, we check separately here
+        return parent::canCastToNonNullableType($type) || $type instanceof CallableDeclarationType;
     }
 }
