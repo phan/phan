@@ -173,6 +173,14 @@ class CodeBase
     private $class_resolver;
 
     /**
+     * Whilst dynamically resolving files using the ClassResolver, must to protect against recursive loops. Thus
+     * tracking which files are currently being parsed is necessary. This class=>boolean array holds the tracking info.
+     *
+     * @var array
+     */
+    private $class_resolver_parsing = [];
+
+    /**
      * Initialize a new CodeBase
      * TODO: Remove internal_function_name_list completely?
      * @param string[] $internal_class_name_list
@@ -792,10 +800,18 @@ class CodeBase
             return false;
         }
 
-        $file = $this->class_resolver->fileForClass($fqsen);
-        if (!$file) {
+        $class = $fqsen->getNamespacedName();
+        if (isset($this->class_resolver_parsing[$class])) {
             return false;
         }
+
+        $file = $this->class_resolver->fileForClass($fqsen);
+        if (!$file) {
+            unset($this->class_resolver_parsing[$class]);
+            return false;
+        }
+
+        $parsing[$class] = true;
 
         $file_path = realpath($file);
 
@@ -820,8 +836,10 @@ class CodeBase
 
         // Parse the file
         $context = Analysis::parseFile($this, $file_path);
+        unset($this->class_resolver_parsing[$class]);
         $this->setCurrentParsedFile(null);
-        return true;
+
+        return $context->getFile() === $file_path;
     }
 
     /**
