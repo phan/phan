@@ -11,6 +11,7 @@ class ComposerResolver implements ClassResolverInterface
 {
     /**
      * @var \Composer\Autoload\ClassLoader
+     * @suppress PhanUndeclaredTypeProperty
      */
     private $composer_class_loader;
 
@@ -18,6 +19,7 @@ class ComposerResolver implements ClassResolverInterface
      * ClassResolver constructor.
      *
      * @param ClassLoader $composer_class_loader
+     * @suppress PhanUndeclaredTypeProperty
      */
     public function __construct(ClassLoader $composer_class_loader)
     {

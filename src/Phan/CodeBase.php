@@ -168,7 +168,7 @@ class CodeBase
      * for Phan to skip analyzing the entire codebase and rather, use the ClassResolver to attempt to resolve classes
      * at evaluation time, and dynamically analyze new classes as they are found.
      *
-     * @var ClassResolver\ClassResolverInterface
+     * @var ClassResolver\ClassResolverInterface|null
      */
     private $class_resolver;
 
@@ -188,7 +188,7 @@ class CodeBase
      * @param string[] $internal_trait_name_list
      * @param string[] $internal_constant_name_list
      * @param string[] $internal_function_name_list
-     * @param ClassResolver\ClassResolverInterface $class_resolver Optional class to resolve class => file name
+     * @param ClassResolver\ClassResolverInterface|null $class_resolver Optional class to resolve class => file name
      */
     public function __construct(
         array $internal_class_name_list,
@@ -811,7 +811,7 @@ class CodeBase
             return false;
         }
 
-        $parsing[$class] = true;
+        $this->class_resolver_parsing[$class] = true;
 
         $file_path = realpath($file);
 
