@@ -829,13 +829,13 @@ final class TolerantASTConverter
                         throw new \RuntimeException("Invalid yield expression kind {$n->yieldOrYieldFromKeyword->kind}");
                 }
                 $array_element = $n->arrayElement;
-                $element_value = $array_element->elementValue;
+                $elementValue = $array_element->elementValue ?? null;
                 // Workaround for <= 0.0.5
-                $ast_expr = ($element_value !== null && !($element_value instanceof MissingToken)) ? self::phpParserNodeToAstNode($array_element->elementValue) : null;
+                $ast_expr = ($elementValue !== null && !($elementValue instanceof MissingToken)) ? self::phpParserNodeToAstNode($elementValue) : null;
                 if ($kind === \ast\AST_YIELD) {
                     $children = [
                         'value' => $ast_expr,
-                        'key' => $array_element->elementKey   !== null ? self::phpParserNodeToAstNode($array_element->elementKey) : null,
+                        'key' => ($array_element->elementKey ?? null) !== null ? self::phpParserNodeToAstNode($array_element->elementKey) : null,
                     ];
                 } else {
                     $children = [
