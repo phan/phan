@@ -62,6 +62,7 @@ New Features(Analysis)
 Maintenance
 + Add `--disable-usage-on-error` option to `phan_client` (#1540)
 + Print directory which phan daemon is going to await analysis requests for (#1544)
++ Upgrade the dependency `Microsoft/tolerant-php-parser` to 0.0.10 (includes minor bug fixes)
 
 Bug Fixes
 + Allow phpdoc `@param` array shapes to contain union types (#1382)
