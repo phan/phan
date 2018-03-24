@@ -23,7 +23,9 @@ use Phan\Library\StderrLogger;
 if (extension_loaded('xdebug')) {
     // TODO: Remove this workaround for https://github.com/composer/xdebug-handler/issues/46 once a new xdebug-handler version is released.
     //       Update composer.json as well.
-    $_SERVER['argv'][0] = Config::projectPath($_SERVER['argv'][0]);
+    if (Phar::running()) {
+        $_SERVER['argv'][0] = Config::projectPath($_SERVER['argv'][0]);
+    }
 
     // Restart if xdebug is loading, unless the environment variable PHAN_ALLOW_XDEBUG is set.
     $handler = new XdebugHandler('phan');
