@@ -1,6 +1,6 @@
 Phan NEWS
 
-?? ??? 2018, Phan 0.12.3 (dev)
+24 Mar 2018, Phan 0.12.3
 ------------------------
 
 New Features(CLI, Configs)
@@ -16,7 +16,7 @@ New Features(Analysis)
 + In issue messages, represent closures by their signatures instead of as `\closure_{hexdigits}`
 + Emit `PhanTypeArrayUnsetSuspicious` when trying to unset the offset of something that isn't an array or array-like.
 + Add limited support for analyzing `unset` on variables and the first dimension of arrays.
-  Unsetting variables does not yet work in branches.
+  Unsetting variables does not yet work in conditional branches.
 + Don't emit `PhanTypeInvalidDimOffset` in `isset`/`empty`/`unset`
 + Improve Phan's analysis of loose equality (#1101)
 + Add new issue types `PhanWriteOnlyPublicProperty`, `PhanWriteOnlyProtectedProperty`, and `PhanWriteOnlyPrivateProperty`,
