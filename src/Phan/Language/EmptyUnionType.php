@@ -911,6 +911,12 @@ final class EmptyUnionType extends UnionType
     }
 
     /** @override */
+    public function hasMixedType() : bool
+    {
+        return false;
+    }
+
+    /** @override */
     public function withFlattenedArrayShapeTypeInstances() : UnionType
     {
         return $this;

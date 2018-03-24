@@ -2251,6 +2251,16 @@ class UnionType implements \Serializable
         return false;
     }
 
+    public function hasMixedType() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type instanceof MixedType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function withFlattenedArrayShapeTypeInstances() : UnionType
     {
         if (!$this->hasArrayShapeTypeInstances()) {

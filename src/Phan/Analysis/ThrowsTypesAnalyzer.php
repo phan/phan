@@ -7,6 +7,7 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
+use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\TemplateType;
 
 class ThrowsTypesAnalyzer
@@ -58,6 +59,10 @@ class ThrowsTypesAnalyzer
                     (string)$method->getFQSEN()
                 );
             }
+            return;
+        }
+        if ($type instanceof ObjectType) {
+            // (at)throws object is valid
             return;
         }
         static $throwable;
