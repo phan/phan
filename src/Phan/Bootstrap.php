@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+use Phan\CodeBase;
+
 // Listen for all errors
 error_reporting(E_ALL);
 
@@ -61,6 +63,7 @@ function with_disabled_phan_error_handler(Closure $closure)
  * This is a named function instead of a closure to make stack traces easier to read.
  *
  * @suppress PhanUnreferencedFunction
+ * @suppress PhanAccessMethodInternal
  */
 function phan_error_handler($errno, $errstr, $errfile, $errline)
 {
@@ -69,6 +72,12 @@ function phan_error_handler($errno, $errstr, $errfile, $errline)
         return false;
     }
     error_log("$errfile:$errline [$errno] $errstr\n");
+    if (class_exists(CodeBase::class, false)) {
+        $most_recent_file = CodeBase::getMostRecentlyParsedOrAnalyzedFile();
+        if (is_string($most_recent_file)) {
+            error_log("(Crashed when parsing/analyzing '$most_recent_file')\n");
+        }
+    }
     if (error_reporting() === 0) {
         // https://secure.php.net/manual/en/language.operators.errorcontrol.php
         // Don't make Phan terminate if the @-operator was being used on an expression.

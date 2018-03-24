@@ -447,6 +447,8 @@ class Analysis
         $context = (new Context)->withFile($file_path);
         $context->importNamespaceMapFromParsePhase($code_base);
 
+        $code_base->setCurrentAnalyzedFile($file_path);
+
         // Convert the file to an Abstract Syntax Tree
         // before passing it on to the recursive version
         // of this method

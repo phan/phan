@@ -163,6 +163,11 @@ class CodeBase
     private $has_enabled_undo_tracker = false;
 
     /**
+     * @var ?string (The currently parsed or analyzed file, if any. Used only for the crash reporting output)
+     */
+    private static $current_file = null;
+
+    /**
      * Initialize a new CodeBase
      * TODO: Remove internal_function_name_list completely?
      * @param string[] $internal_class_name_list
@@ -271,9 +276,29 @@ class CodeBase
      */
     public function setCurrentParsedFile($current_parsed_file)
     {
+        self::$current_file = $current_parsed_file;
         if ($this->undo_tracker) {
             $this->undo_tracker->setCurrentParsedFile($current_parsed_file);
         }
+    }
+
+    /**
+     * Sets the currently analyzed file, to improve Phan's crash reporting.
+     * @param string|null $current_analyzed_file
+     * @return void
+     */
+    public function setCurrentAnalyzedFile($current_analyzed_file)
+    {
+        self::$current_file = $current_analyzed_file;
+    }
+
+    /**
+     * @return ?string
+     * @internal - For use only by the phan error handler
+     */
+    public static function getMostRecentlyParsedOrAnalyzedFile()
+    {
+        return self::$current_file;
     }
 
     /**
