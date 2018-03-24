@@ -38,5 +38,4 @@ $iterator = new CallbackFilterIterator(
 );
 $phar->buildFromIterator($iterator, $dir);
 
-$phar->setStub("#!/usr/bin/env php\n" . $phar->createDefaultStub('src/phan.php'));
 echo "Created phar in build/phan.phar\n";

@@ -16,17 +16,10 @@ if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
 
 use Composer\XdebugHandler\XdebugHandler;
 use Phan\CodeBase;
-use Phan\Config;
 use Phan\Library\StderrLogger;
 
 // Automatically restart if xdebug is loaded
 if (extension_loaded('xdebug')) {
-    // TODO: Remove this workaround for https://github.com/composer/xdebug-handler/issues/46 once a new xdebug-handler version is released.
-    //       Update composer.json as well.
-    if (Phar::running()) {
-        $_SERVER['argv'][0] = Config::projectPath($_SERVER['argv'][0]);
-    }
-
     // Restart if xdebug is loading, unless the environment variable PHAN_ALLOW_XDEBUG is set.
     $handler = new XdebugHandler('phan');
     if (!getenv('PHAN_DISABLE_XDEBUG_WARN')) {
