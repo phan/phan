@@ -942,11 +942,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $true_context = (new ConditionVisitor(
                 $this->code_base,
                 $base_context
-            ))($cond_node);
+            ))->__invoke($cond_node);
             $false_context = (new NegatedConditionVisitor(
                 $this->code_base,
                 $base_context
-            ))($cond_node);
+            ))->__invoke($cond_node);
         } else {
             $true_context = $context;
             $false_context = $this->context;

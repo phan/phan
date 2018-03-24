@@ -238,6 +238,14 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
+    /**
+     * @return bool - True if not empty, not possibly undefined, and at least one type is NullType or nullable.
+     */
+    public function containsNullableOrUndefined() : bool
+    {
+        return false;
+    }
+
     /** @override */
     public function nonNullableClone() : UnionType
     {

@@ -834,6 +834,14 @@ class UnionType implements \Serializable
         return false;
     }
 
+    /**
+     * @return bool - True if not empty, not possibly undefined, and at least one type is NullType or nullable.
+     */
+    public function containsNullableOrUndefined() : bool
+    {
+        return $this->containsNullable();
+    }
+
     public function nonNullableClone() : UnionType
     {
         $builder = new UnionTypeBuilder();

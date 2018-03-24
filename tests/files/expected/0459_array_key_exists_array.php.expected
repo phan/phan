@@ -1,0 +1,7 @@
+%s:9 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{otherKey:mixed,key:string} but \strlen() takes string
+%s:11 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{key:string} but \strlen() takes string
+%s:14 PhanTypeMismatchArgumentInternal Argument 2 (search) is string but \array_key_exists() takes array
+%s:15 PhanTypeMismatchArgumentInternal Argument 1 (var) is string but \count() takes \Countable|array
+%s:28 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{key:string,otherKey:int} but \strlen() takes string
+%s:30 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{key:string} but \strlen() takes string
+%s:31 PhanTypeInvalidDimOffset Invalid offset "otherKey" of array type array{key:string}
