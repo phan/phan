@@ -10235,7 +10235,7 @@ return [
 'ui\draw\text\font\fontfamilies' => ['array'],
 'ui\quit' => ['void'],
 'ui\run' => ['void', 'flags='=>'int'],
-'uksort' => ['bool', '&rw_array_arg'=>'array', 'cmp_function'=>'callable(mixed,mixed):string'],
+'uksort' => ['bool', '&rw_array_arg'=>'array', 'cmp_function'=>'callable(mixed,mixed):int'],
 'umask' => ['int', 'mask='=>'int'],
 'UnderflowException::__clone' => ['void'],
 'UnderflowException::__construct' => ['void', 'message='=>'string', 'code='=>'int', 'previous='=>'?Throwable|?UnderflowException'],
