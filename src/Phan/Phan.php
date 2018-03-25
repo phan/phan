@@ -202,9 +202,6 @@ class Phan implements IgnoredFilesFilterInterface
                     exit(2);
                 }
                 LanguageServerLogger::logInfo(sprintf("language server (pid=%d) accepted connection", getmypid()));
-
-                // FIXME use sabre or some other async code
-                // FIXME implement
             }
             self::setPrinter($request->getPrinter());
 
