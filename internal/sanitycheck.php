@@ -3,7 +3,8 @@
 /**
  * @throws ReflectionException
  */
-function load_internal_function(string $function_name) : ReflectionFunctionAbstract {
+function load_internal_function(string $function_name) : ReflectionFunctionAbstract
+{
     if (strpos($function_name, '::') !== false) {
         list($class_name, $method_name) = explode('::', $function_name, 2);
         $class = new ReflectionClass($class_name);
@@ -13,7 +14,8 @@ function load_internal_function(string $function_name) : ReflectionFunctionAbstr
     }
 }
 
-function getParametersCountsFromPhan (array $fields) {
+function getParametersCountsFromPhan(array $fields)
+{
     $numRequired = 0;
     unset($fields[0]);
     $numOptional = count($fields);
@@ -24,7 +26,7 @@ function getParametersCountsFromPhan (array $fields) {
         if (strpos($type, '...') !== false) {
             $numOptional = 10000;
             break;
-        } else if (strpos($type, '=') === false) {
+        } elseif (strpos($type, '=') === false) {
             $numRequired++;
             if ($sawOptional) {
                 $sawOptionalAfterRequired = true;
@@ -38,14 +40,15 @@ function getParametersCountsFromPhan (array $fields) {
 /**
  * @param ReflectionParameter[] $args
  */
-function getParameterCountsFromReflection(array $args) {
+function getParameterCountsFromReflection(array $args)
+{
     $numRequired = 0;
     $numOptional = count($args);
-    foreach ($args as $i => $reflection_parameter) {
+    foreach ($args as $reflection_parameter) {
         if ($reflection_parameter->isVariadic()) {
             $numOptional = 10000;
             break;
-        } else if ($reflection_parameter->isOptional() || $reflection_parameter->isDefaultValueAvailable()) {
+        } elseif ($reflection_parameter->isOptional() || $reflection_parameter->isDefaultValueAvailable()) {
         } else {
             $numRequired++;
         }
@@ -54,10 +57,14 @@ function getParameterCountsFromReflection(array $args) {
 }
 
 // TODO: reuse code?
-class PhanParameterInfo {
+class PhanParameterInfo
+{
     /** @var string */
     public $name;
-    /** @var string */
+    /**
+     * @var string
+     * @suppress PhanWriteOnlyPublicProperty may use this in the future, e.g. for warnings
+     */
     public $original_name_spec;
 
     /** @var bool */
@@ -69,7 +76,8 @@ class PhanParameterInfo {
 
     public $value;
 
-    public function __construct(string $original_name_spec, string $value_spec) {
+    public function __construct(string $original_name_spec, string $value_spec)
+    {
         $this->original_name_spec = $original_name_spec;
         $name = $original_name_spec;
         $this->is_by_reference = ($name[0] ?? '') === '&';
@@ -87,7 +95,8 @@ class PhanParameterInfo {
  * @param string[] $fields
  * @return PhanParameterInfo[]
  */
-function get_parameters_from_phan($fields) {
+function get_parameters_from_phan($fields)
+{
     unset($fields[0]);
     $result = [];
     foreach ($fields as $original_name => $value) {
@@ -96,8 +105,12 @@ function get_parameters_from_phan($fields) {
     return $result;
 }
 
-// TODO: consistent naming
-function check_fields(string $function_name, array $fields, array $signatures) : void {
+/**
+ * @return void
+ * TODO: consistent naming
+ */
+function check_fields(string $function_name, array $fields, array $signatures)
+{
     $return_type = $fields[0];  // TODO: Check type
     assert(is_string($return_type));
 
@@ -106,7 +119,7 @@ function check_fields(string $function_name, array $fields, array $signatures) :
     // echo $function_name . "\n";
     try {
         $function = load_internal_function($function_name);
-    } catch(ReflectionException $e) {
+    } catch (ReflectionException $e) {
         return;
     }
     assert($function instanceof ReflectionFunctionAbstract);
@@ -114,7 +127,9 @@ function check_fields(string $function_name, array $fields, array $signatures) :
     // TODO: Account for alternate signatures, check for $function_name . "\1"
     $has_alternate = isset($signatures[$function_name . "'1"]);
     if ($real_return_type !== '' && strtolower(ltrim($real_return_type)) !== strtolower($return_type)) {
-        if ($has_alternate) { echo "(Has alternate): "; }
+        if ($has_alternate) {
+            echo "(Has alternate): ";
+        }
         echo "Found mismatch for $function_name: Reflection says return type is '$real_return_type', Phan says return type is '$return_type'\n";
     }
 
@@ -126,16 +141,22 @@ function check_fields(string $function_name, array $fields, array $signatures) :
         echo "Saw optional after required for $original_function_name: " . json_encode($fields) . "\n";
     }
     if ($php_computed_required_count !== $php_required_count) {
-        if ($has_alternate) { echo "(Has alternate): "; }
+        if ($has_alternate) {
+            echo "(Has alternate): ";
+        }
         echo "Found mismatch for $original_function_name: Computed required count ($php_computed_required_count) !== getNumberOfRequiredParameters ($php_required_count)\n";
     }
 
     if ($php_required_count < $phan_required_count) {
-        if ($has_alternate) { echo "(Has alternate): "; }
+        if ($has_alternate) {
+            echo "(Has alternate): ";
+        }
         echo "Found mismatch for $original_function_name: PHP has fewer required parameters ($php_required_count) than phan does ($phan_required_count): " . json_encode($fields) . "\n";
     }
     if ($php_optional_count > $phan_optional_count) {
-        if ($has_alternate) { echo "(Has alternate): "; }
+        if ($has_alternate) {
+            echo "(Has alternate): ";
+        }
         echo "Found mismatch for $original_function_name: PHP has more optional parameters ($php_optional_count) than phan does ($phan_optional_count): " . json_encode($fields) . "\n";
     }
 
@@ -145,7 +166,9 @@ function check_fields(string $function_name, array $fields, array $signatures) :
         if ($phan_parameter instanceof PhanParameterInfo) {
             $reflection_is_by_reference = $reflection_parameter->isPassedByReference();
             if ($phan_parameter->is_by_reference !== $reflection_is_by_reference) {
-                if ($has_alternate) { echo "(Has alternate): "; }
+                if ($has_alternate) {
+                    echo "(Has alternate): ";
+                }
                 if ($reflection_is_by_reference) {
                     echo "Found mismatch for $original_function_name param \${$reflection_parameter->getName()} and phan param \${$phan_parameter->name}: PHP says param is by reference, but phan doesn't: " . json_encode($fields) . "\n";
                 } else {
@@ -154,7 +177,9 @@ function check_fields(string $function_name, array $fields, array $signatures) :
             }
             $reflection_is_variadic = $reflection_parameter->isVariadic();
             if ($phan_parameter->is_variadic !== $reflection_is_variadic) {
-                if ($has_alternate) { echo "(Has alternate): "; }
+                if ($has_alternate) {
+                    echo "(Has alternate): ";
+                }
                 if ($reflection_is_variadic) {
                     echo "Found mismatch for $original_function_name param \${$reflection_parameter->getName()} and phan param \${$phan_parameter->name}: PHP says param is variadic, but phan doesn't: " . json_encode($fields) . "\n";
                 } else {
@@ -164,7 +189,9 @@ function check_fields(string $function_name, array $fields, array $signatures) :
 
             $reflection_is_optional = $reflection_parameter->isOptional() || $reflection_is_variadic;
             if ($phan_parameter->is_optional !== $reflection_is_optional) {
-                if ($has_alternate) { echo "(Has alternate): "; }
+                if ($has_alternate) {
+                    echo "(Has alternate): ";
+                }
                 if ($reflection_is_optional) {
                     echo "Found mismatch for $original_function_name param \${$reflection_parameter->getName()} and phan param \${$phan_parameter->name}: PHP says param is optional, but phan doesn't: " . json_encode($fields) . "\n";
                 } else {
@@ -179,7 +206,9 @@ function check_fields(string $function_name, array $fields, array $signatures) :
                     if ($reflection_representation === 'array' && stripos($phan_representation, '[]') !== false) {
                         // nothing to do
                     } else {
-                        if ($has_alternate) { echo "(Has alternate): "; }
+                        if ($has_alternate) {
+                            echo "(Has alternate): ";
+                        }
                         echo "Found mismatch for $original_function_name param \${$reflection_parameter->getName()} and phan param \${$phan_parameter->name}: PHP says param is type '$reflection_representation', but phan says '{$phan_representation}: " . json_encode($fields) . "\n";
                     }
                 }
@@ -188,7 +217,8 @@ function check_fields(string $function_name, array $fields, array $signatures) :
     }
 }
 
-function main_check_fields() {
+function main_check_fields()
+{
     error_reporting(E_ALL);
 
     $signatures = require __DIR__ . '/../src/Phan/Language/Internal/FunctionSignatureMap.php';

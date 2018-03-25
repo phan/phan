@@ -299,20 +299,21 @@ class Issue
     const CATEGORY_NAME = [
         self::CATEGORY_ACCESS            => 'AccessError',
         self::CATEGORY_ANALYSIS          => 'Analysis',
+        self::CATEGORY_COMMENT           => 'CommentError',
         self::CATEGORY_COMPATIBLE        => 'CompatError',
         self::CATEGORY_CONTEXT           => 'Context',
         self::CATEGORY_DEPRECATED        => 'DeprecatedError',
+        self::CATEGORY_GENERIC           => 'Generic',
+        self::CATEGORY_INTERNAL          => 'Internal',
         self::CATEGORY_NOOP              => 'NOOPError',
         self::CATEGORY_PARAMETER         => 'ParamError',
+        self::CATEGORY_PLUGIN            => 'Plugin',
         self::CATEGORY_REDEFINE          => 'RedefineError',
         self::CATEGORY_STATIC            => 'StaticCallError',
+        self::CATEGORY_SYNTAX            => 'Syntax',
         self::CATEGORY_TYPE              => 'TypeError',
         self::CATEGORY_UNDEFINED         => 'UndefError',
         self::CATEGORY_VARIABLE          => 'VarError',
-        self::CATEGORY_PLUGIN            => 'Plugin',
-        self::CATEGORY_GENERIC           => 'Generic',
-        self::CATEGORY_INTERNAL          => 'Internal',
-        self::CATEGORY_SYNTAX            => 'Syntax',
     ];
 
     const SEVERITY_LOW      = 0;

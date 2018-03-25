@@ -15,14 +15,16 @@ define('ORIGINAL_SIGNATURE_PATH', dirname(__DIR__) . '/src/Phan/Language/Interna
  * TODO: This has a bit of code in common with sanitycheck.php, refactor?
  * phpdoc-en can be downloaded via 'svn checkout https://svn.php.net/repository/phpdoc/modules/doc-en phpdoc-en'
  */
-class IncompatibleSignatureDetector {
+class IncompatibleSignatureDetector
+{
     /** @var string */
     private $reference_directory;
 
     /** @var string */
     private $doc_base_directory;
 
-    private function __construct(string $dir) {
+    private function __construct(string $dir)
+    {
         if (!is_dir($dir)) {
             echo "Could not find '$dir'\n";
             self::printUsageAndExit();
@@ -33,10 +35,11 @@ class IncompatibleSignatureDetector {
             self::printUsageAndExit();
         }
         $this->reference_directory = realpath($en_reference_dir);
-        $this->base_directory = realpath($dir);
+        $this->doc_base_directory = realpath($dir);
     }
 
-    private static function printUsageAndExit(int $exit_code = 1) {
+    private static function printUsageAndExit(int $exit_code = 1)
+    {
         global $argv;
         $program_name = $argv[0];
         $msg = <<<EOT
@@ -62,14 +65,16 @@ EOT;
     private $files_for_function_name_list;
 
 
-    private function getFilesForFunctionNameList() {
+    private function getFilesForFunctionNameList()
+    {
         if ($this->files_for_function_name_list === null) {
             $this->files_for_function_name_list = $this->populateFilesForFunctionNameList();
         }
         return $this->files_for_function_name_list;
     }
 
-    private function scandirForXML(string $dir) : array {
+    private function scandirForXML(string $dir) : array
+    {
         $result = [];
         foreach (self::scandir($dir) as $basename) {
             if (substr($basename, -4) !== '.xml') {
@@ -81,7 +86,8 @@ EOT;
                 $result[$full_path] = $normalized_name;
             }
         }
-        return $result;;
+        return $result;
+        ;
     }
 
     // These aren't built in functions, but they're documented like them.
@@ -93,13 +99,14 @@ EOT;
         '__autoload',
     ];
 
-    private function populateFilesForFunctionNameList() {
+    private function populateFilesForFunctionNameList()
+    {
         $this->files_for_function_name_list = [];
         $reference_directory = $this->reference_directory;
         foreach (self::scandir($reference_directory) as $subpath) {
             $functions_subsubdir = "$reference_directory/$subpath/functions";
             if (is_dir($functions_subsubdir)) {
-                foreach (self::scandirForXML($functions_subsubdir) as $function_doc_fullpath => $function_name) {
+                foreach (self::scandirForXML($functions_subsubdir) as $function_doc_fullpath => $unused_function_name) {
                     $xml = $this->getSimpleXMLForFile($function_doc_fullpath);
                     if (!$xml) {
                         continue;
@@ -121,14 +128,16 @@ EOT;
     /** @var array<string,array<string,string>>|null */
     private $folders_for_class_name_list;
 
-    private function getFoldersForClassNameList() {
+    private function getFoldersForClassNameList()
+    {
         if ($this->folders_for_class_name_list === null) {
             $this->folders_for_class_name_list = $this->populateFoldersForClassNameList();
         }
         return $this->folders_for_class_name_list;
     }
 
-    private function populateFoldersForClassNameList() {
+    private function populateFoldersForClassNameList()
+    {
         $this->folders_for_class_name_list = [];
         $reference_directory = $this->reference_directory;
         // TODO: Extract inheritance from classname.xml
@@ -146,7 +155,8 @@ EOT;
     }
 
     /** @return void */
-    public static function main() {
+    public static function main()
+    {
         error_reporting(E_ALL);
         global $argv;
         if (\count($argv) < 2) {
@@ -183,7 +193,8 @@ EOT;
         }
     }
 
-    public static function sortSignatureMapInPlace() {
+    public static function sortSignatureMapInPlace()
+    {
         $phan_signatures = self::readSignatureMap();
         self::sortSignatureMap($phan_signatures);
         $sorted_phan_signatures_path = ORIGINAL_SIGNATURE_PATH . '.sorted';
@@ -191,7 +202,11 @@ EOT;
         self::saveSignatureMap($sorted_phan_signatures_path, $phan_signatures);
     }
 
-    private function selfTest() {
+    /**
+     * @suppress PhanPluginMixedKeyNoKey
+     */
+    private function selfTest()
+    {
         $this->expectFunctionLikeSignaturesMatch('strlen', ['int', 'string' => 'string']);
         $this->expectFunctionLikeSignaturesMatch('ob_clean', ['void']);
         $this->expectFunctionLikeSignaturesMatch('intdiv', ['int', 'dividend' => 'int', 'divisor' => 'int']);
@@ -199,7 +214,8 @@ EOT;
         $this->expectFunctionLikeSignaturesMatch('mb_chr', ['string', 'cp' => 'int', 'encoding=' => 'string']);
     }
 
-    private function expectFunctionLikeSignaturesMatch(string $function_name, array $expected) {
+    private function expectFunctionLikeSignaturesMatch(string $function_name, array $expected)
+    {
         $actual = $this->parseFunctionLikeSignature($function_name);
         if ($expected !== $actual) {
             printf("Extraction failed for %s\nExpected: %s\nActual:   %s\n", $function_name, json_encode($expected), json_encode($actual));
@@ -207,7 +223,9 @@ EOT;
         }
     }
 
-    public function parseFunctionLikeSignature(string $method_name) : ?array {
+    /** @return ?array */
+    public function parseFunctionLikeSignature(string $method_name)
+    {
         if (stripos($method_name, '::') !== false) {
             $parts = \explode('::', $method_name);
             \assert(\count($parts) === 2, new Error("Too many parts"));
@@ -220,7 +238,8 @@ EOT;
     /**
      * @return ?array
      */
-    public function parseFunctionSignature(string $function_name) : ?array {
+    public function parseFunctionSignature(string $function_name)
+    {
         $function_name_lc = strtolower($function_name);
         $function_name_file_map = $this->getFilesForFunctionNameList();
         $function_signature_files = $function_name_file_map[$function_name_lc] ?? null;
@@ -246,7 +265,8 @@ EOT;
     /**
      * @return ?array<string,SimpleXMLElement>
      */
-    public function getMethodsForClassName(string $class_name) : ?array {
+    public function getMethodsForClassName(string $class_name)
+    {
         $class_name_lc = strtolower($class_name);
         $class_name_file_map = $this->getFoldersForClassNameList();
         $class_name_files = $class_name_file_map[$class_name_lc] ?? null;
@@ -283,7 +303,8 @@ EOT;
     /**
      * @return ?array
      */
-    public function parseMethodSignature(string $class_name, string $method_name) : ?array {
+    public function parseMethodSignature(string $class_name, string $method_name)
+    {
         $class_name_lc = strtolower($class_name);
         $method_name_lc = strtolower($method_name);
         $class_name_file_map = $this->getFoldersForClassNameList();
@@ -310,14 +331,18 @@ EOT;
     /** @var array<string,?SimpleXMLElement */
     private $simple_xml_cache = [];
 
-    private function getSimpleXMLForFile(string $file_path) : ?SimpleXMLElement {
+    /** @return ?SimpleXMLElement */
+    private function getSimpleXMLForFile(string $file_path)
+    {
         if (array_key_exists($file_path, $this->simple_xml_cache)) {
             return $this->simple_xml_cache[$file_path];
         }
         return $this->simple_xml_cache[$file_path] = $this->getSimpleXMLForFileUncached($file_path);
     }
 
-    private function getSimpleXMLForFileUncached(string $file_path) : ?SimpleXMLElement {
+    /** @return ?SimpleXMLElement */
+    private function getSimpleXMLForFileUncached(string $file_path)
+    {
         $signature_file_contents = file_get_contents($file_path);
         if (!is_string($signature_file_contents)) {
             self::debug("Could not read '$file_path'\n");
@@ -336,7 +361,9 @@ EOT;
         return $result;
     }
 
-    private function getFunctionNameFromXML(SimpleXMLElement $xml) : ?string {
+    /** @return ?string */
+    private function getFunctionNameFromXML(SimpleXMLElement $xml)
+    {
         $name = $xml->xpath('/a:refentry/a:refnamediv/a:refname');
         if (count($name) === 0) {
             return null;
@@ -355,7 +382,9 @@ EOT;
         return null;
     }
 
-    private function getMethodNameFromXML(SimpleXMLElement $xml) : ?string {
+    /** @return ?string */
+    private function getMethodNameFromXML(SimpleXMLElement $xml)
+    {
         $name = $xml->xpath('/a:refentry/a:refnamediv/a:refname');
         if (count($name) === 0) {
             return null;
@@ -374,7 +403,13 @@ EOT;
         return null;
     }
 
-    private function parseFunctionLikeSignatureForXML(string $function_name, ?SimpleXMLElement $xml) : ?array {
+    /**
+     * @param string $function_name
+     * @param ?SimpleXMLElement $xml
+     * @return ?array
+     */
+    private function parseFunctionLikeSignatureForXML(string $function_name, $xml)
+    {
         if (!$xml) {
             return null;
         }
@@ -386,7 +421,7 @@ EOT;
             return null;
         }
         $function_description = $function_description_list[0];
-        $function_return_type = $function_description->type;
+        // $function_return_type = $function_description->type;
         $return_type = self::toTypeString($function_description->type);
         $params = $this->extractMethodParams($function_description->methodparam);
         $result = array_merge([$return_type], $params);
@@ -396,7 +431,8 @@ EOT;
     /**
      * @return array<int,string>
      */
-    private function extractMethodParams(SimpleXMLElement $param) {
+    private function extractMethodParams(SimpleXMLElement $param)
+    {
         if ($param->count() === 0) {
             return [];
         }
@@ -418,7 +454,8 @@ EOT;
         return $result;
     }
 
-    private static function toTypeString($type) : string {
+    private static function toTypeString($type) : string
+    {
         // TODO: Validate that Phan can parse these?
         $type = (string)$type;
         if (strcasecmp($type, 'scalar') === 0) {
@@ -436,10 +473,11 @@ EOT;
      */
     private $known_entities = null;
 
-    private function computeKnownEntities() {
+    private function computeKnownEntities()
+    {
         $this->known_entities = [];
         foreach (['doc-base/entities/global.ent', 'en/contributors.ent', 'en/extensions.ent', 'en/language-defs.ent', 'en/language-snippets.ent'] as $sub_path) {
-            foreach (explode("\n", file_get_contents("$this->base_directory/$sub_path")) as $line) {
+            foreach (explode("\n", file_get_contents("$this->doc_base_directory/$sub_path")) as $line) {
                 if (preg_match('/^<!ENTITY\s+(\S+)/', $line, $matches)) {
                     $entity_name = $matches[1];
                     $this->known_entities[strtolower($entity_name)] = true;
@@ -449,16 +487,18 @@ EOT;
         return $this->known_entities;
     }
 
-    private function getKnownEntities() {
+    private function getKnownEntities()
+    {
         if (!is_array($this->known_entities)) {
             $this->known_entities = $this->computeKnownEntities();
         }
         return $this->known_entities;
     }
 
-    private function normalizeEntityFile(string $contents) : string {
+    private function normalizeEntityFile(string $contents) : string
+    {
         $entities = $this->getKnownEntities();
-        return preg_replace_callback('/&([-a-zA-Z_.0-9]+);/', function($matches) use ($entities) {
+        return preg_replace_callback('/&([-a-zA-Z_.0-9]+);/', function ($matches) use ($entities) {
             $entity_name = $matches[1];
             if (isset($entities[strtolower($entity_name)])) {
                 return "BEGINENTITY{$entity_name}ENDENTITY";
@@ -469,11 +509,16 @@ EOT;
     }
 
     /** @return array<string,array<int|string,string>> */
-    public static function readSignatureMap() : array {
+    public static function readSignatureMap() : array
+    {
         return require(ORIGINAL_SIGNATURE_PATH);
     }
 
-    public static function readSignatureHeader() : string {
+    /**
+     * @suppress PhanPluginUnusedVariable $header in loop not detected
+     */
+    public static function readSignatureHeader() : string
+    {
         $fin = fopen(ORIGINAL_SIGNATURE_PATH, 'r');
         if (!$fin) {
             throw new RuntimeException("Failed to start reading header\n");
@@ -493,8 +538,10 @@ EOT;
     }
     /**
      * @param array<string,array<int|string,string>> $phan_signatures
+     * @return void
      */
-    public static function saveSignatureMap(string $new_signature_path, array $phan_signatures, bool $include_header = true) : void {
+    public static function saveSignatureMap(string $new_signature_path, array $phan_signatures, bool $include_header = true)
+    {
         $contents = self::serializeSignatures($phan_signatures);
         if ($include_header) {
             $contents = self::readSignatureHeader() . $contents;
@@ -503,9 +550,9 @@ EOT;
     }
 
     /** @return void */
-    public function addMissingFunctionLikeSignatures() {
+    public function addMissingFunctionLikeSignatures()
+    {
         $phan_signatures = self::readSignatureMap();
-        $new_signatures = [];
         $this->addMissingGlobalFunctionSignatures($phan_signatures);
         $this->addMissingMethodSignatures($phan_signatures);
         $new_signature_path = ORIGINAL_SIGNATURE_PATH . '.extra_signatures';
@@ -514,8 +561,12 @@ EOT;
         self::saveSignatureMap($new_signature_path, $phan_signatures);
     }
 
-    public static function sortSignatureMap(array &$phan_signatures) {
-        uksort($phan_signatures, function(string $a, string $b) {
+    /**
+     * @param array<string,array> &$phan_signatures
+     */
+    public static function sortSignatureMap(array &$phan_signatures)
+    {
+        uksort($phan_signatures, function (string $a, string $b) : int {
             $a = strtolower(str_replace("'", "\x0", $a));
             $b = strtolower(str_replace("'", "\x0", $b));
             return $a <=> $b;
@@ -531,10 +582,11 @@ EOT;
         return $phan_signatures_lc;
     }
 
-    protected function addMissingGlobalFunctionSignatures(array &$phan_signatures) : void
+    /** @return void */
+    protected function addMissingGlobalFunctionSignatures(array &$phan_signatures)
     {
         $phan_signatures_lc = self::getLowercaseSignatureMap($phan_signatures);
-        foreach ($this->getFilesForFunctionNameList() as $function_name => $files) {
+        foreach ($this->getFilesForFunctionNameList() as $function_name => $unused_files) {
             if (isset($phan_signatures_lc[strtolower($function_name)])) {
                 continue;
             }
@@ -546,9 +598,11 @@ EOT;
         }
     }
 
-    protected function addMissingMethodSignatures(array &$phan_signatures) : void {
+    /** @return void */
+    protected function addMissingMethodSignatures(array &$phan_signatures)
+    {
         $phan_signatures_lc = self::getLowercaseSignatureMap($phan_signatures);
-        foreach ($this->getFoldersForClassNameList() as $class_name => $folder) {
+        foreach ($this->getFoldersForClassNameList() as $class_name => $unused_folder) {
             foreach ($this->getMethodsForClassName($class_name) ?? [] as $method_name => $xml) {
                 if (isset($phan_signatures_lc[strtolower($method_name)])) {
                     continue;
@@ -563,7 +617,8 @@ EOT;
     }
 
     /** @return void */
-    public function updateFunctionSignatures() {
+    public function updateFunctionSignatures()
+    {
         $phan_signatures = self::readSignatureMap();
         $new_signatures = [];
         foreach ($phan_signatures as $method_name => $arguments) {
@@ -579,7 +634,8 @@ EOT;
         self::saveSignatureMap($new_signature_path, $new_signatures);
     }
 
-    private static function encodeScalar($scalar) {
+    private static function encodeScalar($scalar)
+    {
         if (is_string($scalar)) {
             return "'" . addcslashes($scalar, "'") . "'";
         }
@@ -589,7 +645,7 @@ EOT;
     public static function encodeSingleSignature(string $function_like_name, array $arguments) : string
     {
         $result = self::encodeScalar($function_like_name) . ' => [';
-        foreach($arguments as $key => $arg) {
+        foreach ($arguments as $key => $arg) {
             if ($key !== 0) {
                 $result .= ', ' . self::encodeScalar($key) . '=>';
             }
@@ -599,7 +655,8 @@ EOT;
         return $result;
     }
 
-    public static function serializeSignatures(array $signatures) : string {
+    public static function serializeSignatures(array $signatures) : string
+    {
         $parts = ["return [\n"];
         foreach ($signatures as $function_like_name => $arguments) {
             $parts[] = self::encodeSingleSignature($function_like_name, $arguments);
@@ -611,7 +668,8 @@ EOT;
     /**
      * @return array|null
      */
-    private function updateSignature(string $function_like_name, array $arguments_from_phan) {
+    private function updateSignature(string $function_like_name, array $arguments_from_phan)
+    {
         $return_type = $arguments_from_phan[0];
         $arguments_from_svn = null;
         if ($return_type === '') {
@@ -650,7 +708,8 @@ EOT;
     }
 
     // Same as scandir, but ignores hidden files
-    private static function scandir(string $directory) : array {
+    private static function scandir(string $directory) : array
+    {
         $result = [];
         foreach (scandir($directory) as $subpath) {
             if ($subpath[0] !== '.') {
@@ -660,16 +719,20 @@ EOT;
         return $result;
     }
 
-    private static function debug(string $msg) {
+    /**
+     * @param string $msg @phan-unused-param
+     */
+    private static function debug(string $msg)
+    {
         // uncomment the below line to see debug output
         // fwrite(STDERR, $msg);
     }
 
-    private static function info(string $msg) {
+    private static function info(string $msg)
+    {
         // comment out the below line to hide debug output
         fwrite(STDERR, $msg);
     }
 }
 
 IncompatibleSignatureDetector::main();
-
