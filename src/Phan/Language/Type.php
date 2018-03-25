@@ -25,6 +25,7 @@ use Phan\Language\Type\NativeType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
+use Phan\Language\Type\ScalarRawType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
@@ -165,6 +166,7 @@ class Type
         'null'      => true,
         'object'    => true,
         'resource'  => true,
+        'scalar'    => true,
         'static'    => true,
         'string'    => true,
         'true'      => true,
@@ -183,9 +185,12 @@ class Type
      * (numeric not supported yet)
      */
     const _soft_internal_type_set = [
+        'false'     => true,
         'mixed'     => true,
         'object'    => true,
         'resource'  => true,
+        'scalar'    => true,
+        'true'      => true,
     ];
 
     // Distinguish between multiple ways types can be created.
@@ -610,6 +615,8 @@ class Type
                 return ObjectType::instance($is_nullable);
             case 'resource':
                 return ResourceType::instance($is_nullable);
+            case 'scalar':
+                return ScalarRawType::instance($is_nullable);
             case 'string':
                 return StringType::instance($is_nullable);
             case 'true':

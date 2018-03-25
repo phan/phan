@@ -7,11 +7,11 @@ use Phan\Language\UnionTypeBuilder;
 use Phan\CodeBase;
 
 /**
- * Callers should split this up into multiple GenericArrayType instances
+ * Callers should split this up into multiple GenericArrayType instances.
  *
  * This is generated from phpdoc array<int, T1|T2> where callers expect a subclass of Type.
  */
-final class GenericMultiArrayType extends ArrayType
+final class GenericMultiArrayType extends ArrayType implements MultiType
 {
     /** @phan-override */
     const NAME = 'array';
@@ -73,12 +73,13 @@ final class GenericMultiArrayType extends ArrayType
 
     /**
      * @return array<int,GenericArrayType>
+     * @override
      */
-    public function asGenericArrayTypeInstances() : array
+    public function asIndividualTypeInstances() : array
     {
         return \array_map(function (Type $type) {
             return GenericArrayType::fromElementType($type, $this->is_nullable, $this->key_type);
-        }, UnionType::normalizeGenericMultiArrayTypes($this->element_types));
+        }, UnionType::normalizeMultiTypes($this->element_types));
     }
 
     /**
@@ -141,7 +142,7 @@ final class GenericMultiArrayType extends ArrayType
     {
         return $this->element_types_union_type
             ?? ($this->element_types_union_type = UnionType::of(
-                UnionType::normalizeGenericMultiArrayTypes($this->element_types)
+                UnionType::normalizeMultiTypes($this->element_types)
             ));
     }
 

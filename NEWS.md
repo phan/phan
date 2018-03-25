@@ -6,6 +6,8 @@ Phan NEWS
 New Features(Analysis)
 + Detect unreachable catch statements (#112)
   (Check if an earlier catch statement caught an ancestor of a given catch statement)
++ Support phpdoc3's `scalar` type in phpdoc. (#1589)
+  That type is equivalent to `bool|float|int|string`.
 
 Bug Fixes
 + Analyze conditionals wrapped by `@(cond)` (e.g. `if (@array_key_exists('key', $array)) {...}`) (#1591)

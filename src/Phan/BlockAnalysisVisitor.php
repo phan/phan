@@ -915,7 +915,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @return void
      * @suppress PhanPluginUnusedVariable
      */
-    private function checkUnreachableCatch(array $catch_nodes, Context $context) {
+    private function checkUnreachableCatch(array $catch_nodes, Context $context)
+    {
         if (count($catch_nodes) <= 1) {
             return;
         }
