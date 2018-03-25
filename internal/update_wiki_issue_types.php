@@ -139,8 +139,6 @@ EOT;
                 $message = $issue->getTemplateRaw();
                 $placeholder = <<<EOT
 
-TODO: Describe this.
-
 ```
 $message
 ```
@@ -149,8 +147,8 @@ $message
 EOT;
                 // TODO: Fill this in with automatically generated contents
                 // TODO: uncomment
-                // $writer->append($header . "\n");
-                // $writer->append($placeholder);
+                $writer->append($header . "\n");
+                $writer->append($placeholder);
             }
         }
         $wiki_filename_new = $wiki_filename . '.new';

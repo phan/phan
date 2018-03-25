@@ -34,60 +34,6 @@ Cannot access protected class constant {CONST} defined at {FILE}:{LINE}
 ```
 
 
-## PhanAccessClassConstantInternal
-
-This issue comes up when there is an attempt to access an `@internal` class constant outside of the namespace in which it's defined.
-
-```
-Cannot access internal class constant {CONST} defined at {FILE}:{LINE}
-```
-
-## PhanAccessClassInternal
-
-This issue comes up when there is an attempt to access an `@internal` class constant outside of the namespace in which it's defined.
-
-```
-Cannot access internal {CLASS} defined at {FILE}:{LINE}
-```
-
-## PhanAccessConstantInternal
-
-This issue comes up when there is an attempt to access an `@internal` global constant outside of the namespace in which it's defined.
-
-```
-Cannot access internal constant {CONST} of namepace {NAMESPACE} defined at {FILE}:{LINE} from namespace {NAMESPACE}
-```
-
-## PhanAccessPropertyPrivate
-
-This issue comes up when there is an attempt to access a private property outside of the scope in which it's defined.
-
-```
-Cannot access private property {PROPERTY}
-```
-
-This will be emitted for the following code.
-
-```php
-class C1 { private static $p = 42; }
-print C1::$p;
-```
-
-## PhanAccessPropertyProtected
-
-This issue comes up when there is an attempt to access a protected property outside of the scope in which it's defined or an implementing child class.
-
-```
-Cannot access protected property {PROPERTY}
-```
-
-This will be emitted for the following code.
-
-```php
-class C1 { protected static $p = 42; }
-print C1::$p;
-```
-
 ## PhanAccessExtendsFinalClass
 
 This issue comes up when there is an attempt to extend a user-defined final class.
@@ -115,14 +61,6 @@ This will be emitted for the following code.
 
 ```php
 class A extends Closure {}
-```
-
-## PhanAccessMethodInternal
-
-This issue comes up when there is an attempt to access an `@internal` method outside of the namespace in which it's defined.
-
-```
-Cannot access internal method {METHOD} of namespace {NAMESPACE} defined at {FILE}:{LINE} from namespace {NAMESPACE}
 ```
 
 ## PhanAccessMethodPrivate
@@ -195,20 +133,6 @@ Declaration of phpdoc method {METHOD} is an unnecessary override of final method
 Accessing own constructor directly via {CLASS}::__construct
 ```
 
-# Internal
-
-This issue category comes up when there is an attempt to access an `@internal` element (property, class, constant, method, function, etc.) outside of the namespace in which it's defined.
-
-This category is completely unrelated to elements being internal to PHP (i.e. part of PHP core or PHP modules).
-
-## PhanAccessPropertyInternal
-
-This issue comes up when there is an attempt to access an `@internal` property outside of the namespace in which it's defined.
-
-```
-Cannot access internal property {PROPERTY} of namespace {NAMESPACE} defined at {FILE}:{LINE} from namespace {NAMESPACE}
-```
-
 ## PhanAccessPropertyNonStaticAsStatic
 
 This issue comes up when there is an attempt to access a non-static(instance) property as if it were a static property.
@@ -222,6 +146,36 @@ This will be emitted for the following code.
 ```php
 class A { public $prop = 'value'; }
 $x = A::$prop;
+```
+
+## PhanAccessPropertyPrivate
+
+This issue comes up when there is an attempt to access a private property outside of the scope in which it's defined.
+
+```
+Cannot access private property {PROPERTY}
+```
+
+This will be emitted for the following code.
+
+```php
+class C1 { private static $p = 42; }
+print C1::$p;
+```
+
+## PhanAccessPropertyProtected
+
+This issue comes up when there is an attempt to access a protected property outside of the scope in which it's defined or an implementing child class.
+
+```
+Cannot access protected property {PROPERTY}
+```
+
+This will be emitted for the following code.
+
+```php
+class C1 { protected static $p = 42; }
+print C1::$p;
 ```
 
 ## PhanAccessPropertyStaticAsNonStatic
@@ -246,12 +200,52 @@ Access level to {METHOD} must be compatible with {METHOD} defined in {FILE}:{LIN
 ```
 
 
+## PhanAccessSignatureMismatchInternal
+
+```
+Access level to {METHOD} must be compatible with internal {METHOD}
+```
+
 ## PhanAccessStaticToNonStatic
 
 This issue is emitted when a class redeclares an inherited static method as an instance method.
 
 ```
 Cannot make static method {METHOD}() non static
+```
+
+## PhanAccessWrongInheritanceCategory
+
+```
+Attempting to inherit {CLASSLIKE} defined at {FILE}:{LINE} as if it were a {CLASSLIKE}
+```
+
+## PhanAccessWrongInheritanceCategoryInternal
+
+```
+Attempting to inherit internal {CLASSLIKE} as if it were a {CLASSLIKE}
+```
+
+# Analysis
+
+This category will be emitted when Phan doesn't know how to analyze something.
+
+Please do file an issue or otherwise get in touch if you get one of these (or an uncaught exception, or anything else thats shitty).
+
+[![Gitter](https://badges.gitter.im/phan/phan.svg)](https://gitter.im/phan/phan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
+
+## PhanUnanalyzable
+
+This issue will be emitted when we hit a structure that Phan doesn't know how to parse. More commonly this will be expressed by Phan having an uncaught exception or behaving poorly.
+
+```
+Expression is unanalyzable or feature is unimplemented. Please create an issue at https://github.com/phan/phan/issues/new.
+```
+## PhanUnanalyzableInheritance
+
+```
+Unable to determine the method(s) which {METHOD} overrides, but Phan inferred that it did override something earlier. Please create an issue at https://github.com/phan/phan/issues/new with a test case.
 ```
 
 # CompatError
@@ -268,6 +262,30 @@ The config `Config::get()->backward_compatibility_checks` must be enabled for th
 {CLASS} expression may not be PHP 7 compatible
 ```
 
+## PhanCompatibleIterableTypePHP70
+
+```
+Return type '{TYPE}' means a Traversable/array value starting in PHP 7.1. In PHP 7.0, iterable refers to a class/interface with the name 'iterable'
+```
+
+## PhanCompatibleKeyedArrayAssignPHP70
+
+```
+Using array keys in an array destructuring assignment is not compatible with PHP 7.0
+```
+
+## PhanCompatibleNullableTypePHP70
+
+```
+Nullable type '{TYPE}' is not compatible with PHP 7.0
+```
+
+## PhanCompatibleNullableTypePHP71
+
+```
+Type '{TYPE}' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
+```
+
 ## PhanCompatiblePHP7
 
 This issue will be thrown if there is an expression that may be treated differently in PHP7 than it was in previous major versions of the PHP runtime. Take a look at the [PHP7 Migration Manual](http://php.net/manual/en/migration70.incompatible.php) to understand changes in behavior.
@@ -282,6 +300,18 @@ This will be emitted for the following code.
 
 ```php
 $c->$m[0]();
+```
+
+## PhanCompatibleShortArrayAssignPHP70
+
+```
+Square bracket syntax for an array destructuring assignment is not compatible with PHP 7.0
+```
+
+## PhanCompatibleVoidTypePHP70
+
+```
+Return type '{TYPE}' means the absense of a return value starting in PHP 7.1. In PHP 7.0, void refers to a class/interface with the name 'void'
 ```
 
 # Context
@@ -302,11 +332,23 @@ This will be emitted for the following code.
 new parent;
 ```
 
+## PhanContextNotObjectInCallable
+
+```
+Cannot access {CLASS} when not in object context, but code is using callable {METHOD}
+```
+
 # DeprecatedError
 
 This category of issue comes up when you're accessing deprecated elements (as marked by the `@deprecated` comment).
 
 **Note!** Only classes, traits, interfaces, methods, functions, properties, and traits may be marked as deprecated. You can't deprecate a variable or any other expression.
+
+## PhanDeprecatedClass
+
+```
+Call to deprecated class {CLASS} defined at {FILE}:{LINE}
+```
 
 ## PhanDeprecatedFunction
 
@@ -322,6 +364,30 @@ This will be emitted for the following code.
 /** @deprecated  */
 function f1() {}
 f1();
+```
+
+## PhanDeprecatedFunctionInternal
+
+```
+Call to deprecated function {FUNCTIONLIKE}()
+```
+
+## PhanDeprecatedInterface
+
+```
+Using a deprecated interface {INTERFACE} defined at {FILE}:{LINE}
+```
+
+## PhanDeprecatedProperty
+
+```
+Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}
+```
+
+## PhanDeprecatedTrait
+
+```
+Using a deprecated trait {TRAIT} defined at {FILE}:{LINE}
 ```
 
 # NOOPError
@@ -340,6 +406,12 @@ This will be emitted for the following code.
 
 ```php
 [1,2,3];
+```
+
+## PhanNoopBinaryOperator
+
+```
+Unused result of a binary '{OPERATOR}' operator
 ```
 
 ## PhanNoopClosure
@@ -390,6 +462,12 @@ class C {
 }
 ```
 
+## PhanNoopUnaryOperator
+
+```
+Unused result of a unary '{OPERATOR}' operator
+```
+
 ## PhanNoopVariable
 
 Emitted when you have a reference to a variable that is unused.
@@ -403,6 +481,12 @@ This will be emitted for the following code.
 ```php
 $a = 42;
 $a;
+```
+
+## PhanUnreachableCatch
+
+```
+Catch statement for {CLASSLIKE} is unreachable. An earlier catch statement at line {LINE} caught the ancestor class/interface {CLASSLIKE}
 ```
 
 ## PhanUnreferencedClass
@@ -434,9 +518,123 @@ new $v2;
 
 YMMV.
 
+## PhanUnreferencedClosure
+
+```
+Possibly zero references to closure {FUNCTION}
+```
+
+## PhanUnreferencedConstant
+
+```
+Possibly zero references to global constant {CONST}
+```
+
+## PhanUnreferencedFunction
+
+```
+Possibly zero references to function {FUNCTION}
+```
+
+## PhanUnreferencedPrivateClassConstant
+
+```
+Possibly zero references to public class constant {CONST}
+```
+
+## PhanUnreferencedPrivateMethod
+
+```
+Possibly zero references to private method {METHOD}
+```
+
+## PhanUnreferencedPrivateProperty
+
+```
+Possibly zero references to private property {PROPERTY}
+```
+
+## PhanUnreferencedProtectedClassConstant
+
+```
+Possibly zero references to protected class constant {CONST}
+```
+
+## PhanUnreferencedProtectedMethod
+
+```
+Possibly zero references to protected method {METHOD}
+```
+
+## PhanUnreferencedProtectedProperty
+
+```
+Possibly zero references to protected property {PROPERTY}
+```
+
+## PhanUnreferencedPublicClassConstant
+
+```
+Possibly zero references to public class constant {CONST}
+```
+
+## PhanUnreferencedPublicMethod
+
+```
+Possibly zero references to public method {METHOD}
+```
+
+## PhanUnreferencedPublicProperty
+
+```
+Possibly zero references to public property {PROPERTY}
+```
+
+## PhanUnreferencedUseConstant
+
+```
+Possibly zero references to use statement for constant {CONST} ({CONST})
+```
+
+## PhanUnreferencedUseFunction
+
+```
+Possibly zero references to use statement for function {FUNCTION} ({FUNCTION})
+```
+
+## PhanUnreferencedUseNormal
+
+```
+Possibly zero references to use statement for classlike/namespace {CLASSLIKE} ({CLASSLIKE})
+```
+
+## PhanWriteOnlyPrivateProperty
+
+```
+Possibly zero read references to private property {PROPERTY}
+```
+
+## PhanWriteOnlyProtectedProperty
+
+```
+Possibly zero read references to protected property {PROPERTY}
+```
+
+## PhanWriteOnlyPublicProperty
+
+```
+Possibly zero read references to public property {PROPERTY}
+```
+
 # ParamError
 
 This category of error comes up when you're messing up your method or function parameters in some way.
+
+## PhanParamRedefined
+
+```
+Redefinition of parameter {PARAMETER}
+```
 
 ## PhanParamReqAfterOpt
 
@@ -472,16 +670,10 @@ For a check with much lower false positives and clearer issue messages, use the 
 Declaration of {METHOD} should be compatible with internal {METHOD}
 ```
 
-## PhanParamSignaturePHPDocMismatchReturnType
+## PhanParamSignaturePHPDocMismatchHasNoParamType
 
 ```
-Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (method returning '{TYPE}' cannot override method returning '{TYPE}') defined in {FILE}:{LINE}
-```
-
-## PhanParamSignaturePHPDocMismatchParamType
-
-```
-Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}') defined in {FILE}:{LINE}
+Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}') defined in {FILE}:{LINE}
 ```
 
 ## PhanParamSignaturePHPDocMismatchHasParamType
@@ -490,22 +682,10 @@ Declaration of real/@method {METHOD} should be compatible with real/@method {MET
 Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} of has type '{TYPE}' cannot replace original parameter with no type) defined in {FILE}:{LINE}
 ```
 
-## PhanParamSignaturePHPDocMismatchHasNoParamType
+## PhanParamSignaturePHPDocMismatchParamIsNotReference
 
 ```
-Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}') defined in {FILE}:{LINE}
-```
-
-## PhanParamSignaturePHPDocMismatchParamVariadic
-
-```
-Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} is a variadic parameter replacing a non-variadic parameter) defined in {FILE}:{LINE}
-```
-
-## PhanParamSignaturePHPDocMismatchParamNotVariadic
-
-```
-Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} is a non-variadic parameter replacing a variadic parameter) defined in {FILE}:{LINE}
+Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} is a non-reference parameter overriding a reference parameter) defined in {FILE}:{LINE}
 ```
 
 ## PhanParamSignaturePHPDocMismatchParamIsReference
@@ -514,10 +694,28 @@ Declaration of real/@method {METHOD} should be compatible with real/@method {MET
 Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} is a reference parameter overriding a non-reference parameter) defined in {FILE}:{LINE}
 ```
 
-## PhanParamSignaturePHPDocMismatchParamIsNotReference
+## PhanParamSignaturePHPDocMismatchParamNotVariadic
 
 ```
-Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} is a non-reference parameter overriding a reference parameter) defined in {FILE}:{LINE}
+Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} is a non-variadic parameter replacing a variadic parameter) defined in {FILE}:{LINE}
+```
+
+## PhanParamSignaturePHPDocMismatchParamType
+
+```
+Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}') defined in {FILE}:{LINE}
+```
+
+## PhanParamSignaturePHPDocMismatchParamVariadic
+
+```
+Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} is a variadic parameter replacing a non-variadic parameter) defined in {FILE}:{LINE}
+```
+
+## PhanParamSignaturePHPDocMismatchReturnType
+
+```
+Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (method returning '{TYPE}' cannot override method returning '{TYPE}') defined in {FILE}:{LINE}
 ```
 
 ## PhanParamSignaturePHPDocMismatchTooFewParameters
@@ -532,60 +730,6 @@ Declaration of real/@method {METHOD} should be compatible with real/@method {MET
 Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (the method override requires {COUNT} parameter(s), but the overridden method requires only {COUNT}) defined in {FILE}:{LINE}
 ```
 
-## PhanParamSignatureRealMismatch....
-
-## PhanParamSignatureRealMismatchParamType
-
-`PhanParamSignatureRealMismatch*` compare the real param and return types (ignoring PHPDoc types, i.e. same types Reflection would tell you)
-and warn if an overriding method's signature is incompatible with the overridden internal method. (i.e. PHP interpreter would warn or throw)
-
-
-```
-Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}') defined in {FILE}:{LINE}
-```
-
-## PhanParamSignatureRealMismatchParamTypeInternal
-
-```
-Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}')
-```
-
-## PhanParamSignatureRealMismatchReturnType
-
-```
-Declaration of {METHOD} should be compatible with {METHOD} (method returning '{TYPE}' cannot override method returning '{TYPE}') defined in {FILE}:{LINE}
-```
-
-## PhanParamSignatureRealMismatchReturnTypeInternal
-
-```
-Declaration of {METHOD} should be compatible with internal {METHOD} (method returning '{TYPE}' cannot override method returning '{TYPE}')
-```
-
-## PhanParamSignatureRealMismatchParamType
-
-```
-Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}') defined in {FILE}:{LINE}
-```
-
-## PhanParamSignatureRealMismatchParamTypeInternal
-
-```
-Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}')
-```
-
-## PhanParamSignatureRealMismatchHasParamType,
-
-```
-Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} of has type '{TYPE}' cannot replace original parameter with no type) defined in {FILE}:{LINE}
-```
-
-## PhanParamSignatureRealMismatchHasParamTypeInternal
-
-```
-Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} of has type '{TYPE}' cannot replace original parameter with no type)
-```
-
 ## PhanParamSignatureRealMismatchHasNoParamType
 
 ```
@@ -598,28 +742,28 @@ Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} w
 Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}')
 ```
 
-## PhanParamSignatureRealMismatchParamVariadic
+## PhanParamSignatureRealMismatchHasParamType
 
 ```
-Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} is a variadic parameter replacing a non-variadic parameter) defined in {FILE}:{LINE}
+Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} has type '{TYPE}' cannot replace original parameter with no type) defined in {FILE}:{LINE}
 ```
 
-## PhanParamSignatureRealMismatchParamVariadicInternal
+## PhanParamSignatureRealMismatchHasParamTypeInternal
 
 ```
-Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a variadic parameter replacing a non-variadic parameter)
+Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} of has type '{TYPE}' cannot replace original parameter with no type)
 ```
 
-## PhanParamSignatureRealMismatchParamNotVariadic
+## PhanParamSignatureRealMismatchParamIsNotReference
 
 ```
-Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} is a non-variadic parameter replacing a variadic parameter) defined in {FILE}:{LINE}
+Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} is a non-reference parameter overriding a reference parameter) defined in {FILE}:{LINE}
 ```
 
-## PhanParamSignatureRealMismatchParamNotVariadicInternal
+## PhanParamSignatureRealMismatchParamIsNotReferenceInternal
 
 ```
-Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a non-variadic parameter replacing a variadic parameter)
+Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a non-reference parameter overriding a reference parameter)
 ```
 
 ## PhanParamSignatureRealMismatchParamIsReference
@@ -634,16 +778,52 @@ Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} i
 Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a reference parameter overriding a non-reference parameter)
 ```
 
-## PhanParamSignatureRealMismatchParamIsNotReference
+## PhanParamSignatureRealMismatchParamNotVariadic
 
 ```
-Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} is a non-reference parameter overriding a reference parameter) defined in {FILE}:{LINE}
+Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} is a non-variadic parameter replacing a variadic parameter) defined in {FILE}:{LINE}
 ```
 
-## PhanParamSignatureRealMismatchParamIsNotReferenceInternal
+## PhanParamSignatureRealMismatchParamNotVariadicInternal
 
 ```
-Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a non-reference parameter overriding a reference parameter)
+Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a non-variadic parameter replacing a variadic parameter)
+```
+
+## PhanParamSignatureRealMismatchParamType
+
+```
+Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}') defined in {FILE}:{LINE}
+```
+
+## PhanParamSignatureRealMismatchParamTypeInternal
+
+```
+Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}')
+```
+
+## PhanParamSignatureRealMismatchParamVariadic
+
+```
+Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} is a variadic parameter replacing a non-variadic parameter) defined in {FILE}:{LINE}
+```
+
+## PhanParamSignatureRealMismatchParamVariadicInternal
+
+```
+Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a variadic parameter replacing a non-variadic parameter)
+```
+
+## PhanParamSignatureRealMismatchReturnType
+
+```
+Declaration of {METHOD} should be compatible with {METHOD} (method returning '{TYPE}' cannot override method returning '{TYPE}') defined in {FILE}:{LINE}
+```
+
+## PhanParamSignatureRealMismatchReturnTypeInternal
+
+```
+Declaration of {METHOD} should be compatible with internal {METHOD} (method returning '{TYPE}' cannot override method returning '{TYPE}')
 ```
 
 ## PhanParamSignatureRealMismatchTooFewParameters
@@ -694,6 +874,12 @@ The last argument to {FUNCTIONLIKE} must be of type {TYPE}
 The second to last argument to {FUNCTIONLIKE} must be of type {TYPE}
 ```
 
+## PhanParamSuspiciousOrder
+
+```
+Argument #{INDEX} of this call to {FUNCTIONLIKE} is typically a literal or constant but isn't, but argument #{INDEX} (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
+```
+
 ## PhanParamTooFew
 
 This issue indicates that you're not passing in at least the number of required parameters to a function or method.
@@ -707,6 +893,12 @@ This will be emitted for the code
 ```php
 function f6($i) {}
 f6();
+```
+
+## PhanParamTooFewCallable
+
+```
+Call with {COUNT} arg(s) to {FUNCTIONLIKE}() (as a provided callable) which requires {COUNT} arg(s) defined at {FILE}:{LINE}
 ```
 
 ## PhanParamTooFewInternal
@@ -738,6 +930,12 @@ function f7($i) {}
 f7(1, 2);
 ```
 
+## PhanParamTooManyCallable
+
+```
+Call with {COUNT} arg(s) to {FUNCTIONLIKE}() (As a provided callable) which only takes {COUNT} arg(s) defined at {FILE}:{LINE}
+```
+
 ## PhanParamTooManyInternal
 
 This issue is emitted when you're passing more than the number of required and optional parameters than are defined for an internal method or function.
@@ -761,6 +959,18 @@ Argument {INDEX} is {TYPE} but {FUNCTIONLIKE}() takes {TYPE}
 # RedefineError
 
 This category of issue come up when more than one thing of whatever type have the same name and namespace.
+
+## PhanIncompatibleCompositionMethod
+
+```
+Declaration of {METHOD} must be compatible with {METHOD} in {FILE} on line {LINE}
+```
+
+## PhanIncompatibleCompositionProp
+
+```
+{TRAIT} and {TRAIT} define the same property ({PROPERTY}) in the composition of {CLASS}. However, the definition differs and is considered incompatible. Class was composed in {FILE} on line {LINE}
+```
 
 ## PhanRedefineClass
 
@@ -829,33 +1039,6 @@ You'll see this issue with code like
 function strlen() {}
 ```
 
-## PhanRequiredTraitNotAdded
-
-This happens when a trait name is used in a trait adaptations clause, but that trait wasn't added to the class.
-
-```
-Required trait {TRAIT} for trait adaptation was not added to class
-```
-
-You'll see this issue with code like
-
-```php
-trait T1 {}
-trait T2 {}
-class A {
-	use T1 {T2::foo as bar;}
-}
-```
-
-# Syntax
-
-Emitted for syntax errors.
-
-## PhanSyntaxError
-
-This emits warnings for unparseable PHP files (detected by `php-ast`).
-Note: This is not the same thing as running `php -l` on a file - PhanSyntaxError checks for syntax errors, but not sematics such as where certain expressions can occur (Which `php -l` would check for).
-
 # StaticCallError
 
 ## PhanStaticCallToNonStatic
@@ -876,6 +1059,18 @@ C19::f();
 # TypeError
 
 This category of issue come from using incorrect types or types that cannot cast to the expected types.
+
+## PhanMismatchVariadicComment
+
+```
+{PARAMETER} is variadic in comment, but not variadic in param ({PARAMETER})
+```
+
+## PhanMismatchVariadicParam
+
+```
+{PARAMETER} is not variadic in comment, but variadic in param ({PARAMETER})
+```
 
 ## PhanNonClassMethodCall
 
@@ -912,6 +1107,18 @@ This issue will be emitted for the following code
 $a = false; if($a[1]) {}
 ```
 
+## PhanTypeArraySuspiciousNullable
+
+```
+Suspicious array access to nullable {TYPE}
+```
+
+## PhanTypeArrayUnsetSuspicious
+
+```
+Suspicious attempt to unset an offset of a value of type {TYPE}
+```
+
 ## PhanTypeComparisonFromArray
 
 Comparing an array to a non-array will result in this issue.
@@ -946,6 +1153,36 @@ if (42 == [1, 2]) {}
 array to {TYPE} conversion
 ```
 
+## PhanTypeExpectedObject
+
+```
+Expected an object instance but saw expression with type {TYPE}
+```
+
+## PhanTypeExpectedObjectOrClassName
+
+```
+Expected an object instance or the name of a class but saw expression with type {TYPE}
+```
+
+## PhanTypeExpectedObjectPropAccess
+
+```
+Expected an object instance when accessing an instance property, but saw an expression with type {TYPE}
+```
+
+## PhanTypeExpectedObjectPropAccessButGotNull
+
+```
+Expected an object instance when accessing an instance property, but saw an expression with type {TYPE}
+```
+
+## PhanTypeExpectedObjectStaticPropAccess
+
+```
+Expected an object instance or a class name when accessing a static property, but saw an expression with type {TYPE}
+```
+
 ## PhanTypeInstantiateAbstract
 
 ```
@@ -970,6 +1207,48 @@ This issue will be emitted for the following code
 interface E {} (new E);
 ```
 
+## PhanTypeInvalidCallableArrayKey
+
+```
+In a place where phan was expecting a callable, saw an array with an unexpected key for element #{INDEX} (expected [$class_or_expr, $method_name])
+```
+
+## PhanTypeInvalidCallableArraySize
+
+```
+In a place where phan was expecting a callable, saw an array of size {COUNT}, but callable arrays must be of size 2
+```
+
+## PhanTypeInvalidCallableObjectOfMethod
+
+```
+In a place where phan was expecting a callable, saw a two-element array with a class or expression with an unexpected type {TYPE} (expected a class type or string). Method name was {METHOD}
+```
+
+## PhanTypeInvalidClosureScope
+
+```
+Invalid @phan-closure-scope: expected a class name, got {TYPE}
+```
+
+## PhanTypeInvalidDimOffset
+
+```
+Invalid offset {SCALAR} of array type {TYPE}
+```
+
+## PhanTypeInvalidDimOffsetArrayDestructuring
+
+```
+Invalid offset {SCALAR} of array type {TYPE} in an array destructuring assignment
+```
+
+## PhanTypeInvalidInstanceof
+
+```
+Found an instanceof class name of type {TYPE}, but class name must be a valid object or a string
+```
+
 ## PhanTypeInvalidLeftOperand
 
 ```
@@ -980,6 +1259,30 @@ Invalid operator: right operand is array and left is not
 
 ```
 Invalid operator: left operand is array and right is not
+```
+
+## PhanTypeInvalidThrowsIsInterface
+
+```
+@throws annotation of {FUNCTIONLIKE} has suspicious interface type {TYPE} for an @throws annotation, expected class (Zend PHP allows interfaces to be caught, so this might be intentional)
+```
+
+## PhanTypeInvalidThrowsIsTrait
+
+```
+@throws annotation of {FUNCTIONLIKE} has invalid trait type {TYPE}, expected a class
+```
+
+## PhanTypeInvalidThrowsNonObject
+
+```
+@throws annotation of {FUNCTIONLIKE} has invalid non-object type {TYPE}, expected a class
+```
+
+## PhanTypeInvalidThrowsNonThrowable
+
+```
+@throws annotation of {FUNCTIONLIKE} has suspicious class type {TYPE}, which does not extend Error/Exception
 ```
 
 ## PhanTypeMagicVoidWithReturn
@@ -1020,10 +1323,64 @@ This will be emitted for the code
 strlen(42);
 ```
 
+## PhanTypeMismatchArrayDestructuringKey
+
+```
+Attempting an array destructing assignment with a key of type {TYPE} but the only key types of the right hand side are of type {TYPE}
+```
+
+## PhanTypeMismatchDeclaredParam
+
+```
+Doc-block of ${VARIABLE} in {METHOD} contains phpdoc param type {TYPE} which is incompatible with the param type {TYPE} declared in the signature
+```
+
+## PhanTypeMismatchDeclaredParamNullable
+
+```
+Doc-block of ${VARIABLE} in {METHOD} is phpdoc param type {TYPE} which is not a permitted replacement of the nullable param type {TYPE} declared in the signature ('?T' should be documented as 'T|null' or '?T')
+```
+
+## PhanTypeMismatchDeclaredReturn
+
+```
+Doc-block of {METHOD} contains declared return type {TYPE} which is incompatible with the return type {TYPE} declared in the signature
+```
+
+## PhanTypeMismatchDeclaredReturnNullable
+
+```
+Doc-block of {METHOD} has declared return type {TYPE} which is not a permitted replacement of the nullable return type {TYPE} declared in the signature ('?T' should be documented as 'T|null' or '?T')
+```
+
 ## PhanTypeMismatchDefault
 
 ```
 Default value for {TYPE} ${VARIABLE} can't be {TYPE}
+```
+
+## PhanTypeMismatchDimAssignment
+
+```
+When appending to a value of type {TYPE}, found an array access index of type {TYPE}, but expected the index to be of type {TYPE}
+```
+
+## PhanTypeMismatchDimEmpty
+
+```
+Assigning to an empty array index of a value of type {TYPE}, but expected the index to exist and be of type {TYPE}
+```
+
+## PhanTypeMismatchDimFetch
+
+```
+When fetching an array index from a value of type {TYPE}, found an array index of type {TYPE}, but expected the index to be of type {TYPE}
+```
+
+## PhanTypeMismatchDimFetchNullable
+
+```
+When fetching an array index from a value of type {TYPE}, found an array index of type {TYPE}, but expected the index to be of the non-nullable type {TYPE}
 ```
 
 ## PhanTypeMismatchForeach
@@ -1064,6 +1421,18 @@ This issue is emitted from the following code
 class G { function f() : int { return 'string'; } }
 ```
 
+## PhanTypeMismatchUnpackKey
+
+```
+When unpacking a value of type {TYPE}, the value's keys were of type {TYPE}, but the keys should be consecutive integers starting from 0
+```
+
+## PhanTypeMismatchUnpackValue
+
+```
+Attempting to unpack a value of type {TYPE} which does not contain any subtypes of iterable (such as array or Traversable)
+```
+
 ## PhanTypeMissingReturn
 
 ```
@@ -1094,32 +1463,16 @@ class F { static function f(&$v) {} } F::f('string');
 Must call parent::__construct() from {CLASS} which extends {CLASS}
 ```
 
-## PhanUndeclaredTypeParameter
-
-If you have a parameter on a function or method of a type that is not defined, you'll see this issue.
+## PhanTypeSuspiciousEcho
 
 ```
-Parameter of undeclared type {TYPE}
+Suspicious argument {TYPE} for an echo/print statement
 ```
 
-This issue will be emitted from the following code
-
-```php
-function f(Undef $p) {}
-```
-
-## PhanUndeclaredTypeProperty
-
-If you have a property with an undefined type, you'll see this issue.
+## PhanTypeSuspiciousIndirectVariable
 
 ```
-Property {PROPERTY} has undeclared type {TYPE}
-```
-
-This issue will be emitted from the following code
-
-```php
-class D { /** @var Undef */ public $p; }
+Indirect variable ${(expr)} has invalid inner expression type {TYPE}, expected string/integer
 ```
 
 ## PhanTypeVoidAssignment
@@ -1142,6 +1495,24 @@ $a = (new A)->v();
 This category of issue come up when there are references to undefined things. These are a big source of false-positives in Phan given that code bases often take liberties with calling methods on sub-classes of the class defined to be returned by a function and things like that.
 
 You can ignore all errors of this category by passing in the command-line argument `-i` or `--ignore-undeclared`.
+
+## PhanAmbiguousTraitAliasSource
+
+```
+Trait alias {METHOD} has an ambiguous source method {METHOD} with more than one possible source trait. Possibilities: {TRAIT}
+```
+
+## PhanClassContainsAbstractMethod
+
+```
+non-abstract class {CLASS} contains abstract method {METHOD} declared at {FILE}:{LINE}
+```
+
+## PhanClassContainsAbstractMethodInternal
+
+```
+non-abstract class {CLASS} contains abstract internal method {METHOD}
+```
 
 ## PhanEmptyFile
 
@@ -1170,6 +1541,24 @@ This issue will be emitted from the following code
 class F { function f() { $v = parent::f(); } }
 ```
 
+## PhanRequiredTraitNotAdded
+
+This happens when a trait name is used in a trait adaptations clause, but that trait wasn't added to the class.
+
+```
+Required trait {TRAIT} for trait adaptation was not added to class
+```
+
+You'll see this issue with code like
+
+```php
+trait T1 {}
+trait T2 {}
+class A {
+	use T1 {T2::foo as bar;}
+}
+```
+
 ## PhanTraitParentReference
 
 If you reference `parent` from within a trait, you'll get this issue. This is a low priority issue given that it is legal in PHP, but for general-purpose traits you should probably avoid this pattern.
@@ -1184,26 +1573,22 @@ This issue will be emitted from the following code
 trait T { function f() { return parent::f(); } }
 ```
 
-# Analysis
-
-This category will be emitted when Phan doesn't know how to analyze something.
-
-Please do file an issue or otherwise get in touch if you get one of these (or an uncaught exception, or anything else thats shitty).
-
-[![Gitter](https://badges.gitter.im/phan/phan.svg)](https://gitter.im/phan/phan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-
-
-## PhanUnanalyzable
-
-This issue will be emitted when we hit a structure that Phan doesn't know how to parse. More commonly this will be expressed by Phan having an uncaught exception or behaving poorly.
+## PhanUndeclaredAliasedMethodOfTrait
 
 ```
-Expression is unanalyzable or feature is unimplemented. Please create an issue at https://github.com/phan/phan/issues/new.
+Alias {METHOD} was defined for a method {METHOD} which does not exist in trait {TRAIT}
 ```
+
 ## PhanUndeclaredClass
 
 ```
 Reference to undeclared class {CLASS}
+```
+
+## PhanUndeclaredClassAliasOriginal
+
+```
+Reference to undeclared class {CLASS} for the original class of a class_alias for {CLASS}
 ```
 
 ## PhanUndeclaredClassCatch
@@ -1224,6 +1609,12 @@ try {} catch (Undef $exception) {}
 
 ```
 Reference to constant {CONST} from undeclared class {CLASS}
+```
+
+## PhanUndeclaredClassInCallable
+
+```
+Reference to undeclared class {CLASS} in callable {METHOD}
 ```
 
 ## PhanUndeclaredClassInstanceof
@@ -1255,6 +1646,12 @@ function g(Undef $v) { $v->f(); }
 
 ```
 Reference to undeclared class {CLASS}
+```
+
+## PhanUndeclaredClosureScope
+
+```
+Reference to undeclared class {CLASS} in @phan-closure-scope
 ```
 
 ## PhanUndeclaredConstant
@@ -1298,6 +1695,12 @@ This issue will be emitted for the code
 f10();
 ```
 
+## PhanUndeclaredFunctionInCallable
+
+```
+Call to undeclared function {FUNCTION} in callable
+```
+
 ## PhanUndeclaredInterface
 
 Implementing an interface that doesn't exist or otherwise can't be found will emit this issue.
@@ -1316,6 +1719,12 @@ class C17 implements C18 {}
 
 ```
 Call to undeclared method {METHOD}
+```
+
+## PhanUndeclaredMethodInCallable
+
+```
+Call to undeclared method {METHOD} in callable. Possible object type(s) for that method are {TYPE}
 ```
 
 ## PhanUndeclaredProperty
@@ -1341,6 +1750,12 @@ This issue will be emitted from the following code
 
 ```php
 C::staticMethod();
+```
+
+## PhanUndeclaredStaticMethodInCallable
+
+```
+Reference to undeclared static method {METHOD} in callable
 ```
 
 ## PhanUndeclaredStaticProperty
@@ -1372,6 +1787,46 @@ An example would be
 class C20 { use T2; }
 ```
 
+## PhanUndeclaredTypeParameter
+
+If you have a parameter on a function or method of a type that is not defined, you'll see this issue.
+
+```
+Parameter of undeclared type {TYPE}
+```
+
+This issue will be emitted from the following code
+
+```php
+function f(Undef $p) {}
+```
+
+## PhanUndeclaredTypeProperty
+
+If you have a property with an undefined type, you'll see this issue.
+
+```
+Property {PROPERTY} has undeclared type {TYPE}
+```
+
+This issue will be emitted from the following code
+
+```php
+class D { /** @var Undef */ public $p; }
+```
+
+## PhanUndeclaredTypeReturnType
+
+```
+Return type of {METHOD} is undeclared type {TYPE}
+```
+
+## PhanUndeclaredTypeThrowsType
+
+```
+@throws type of {METHOD} has undeclared type {TYPE}
+```
+
 ## PhanUndeclaredVariable
 
 Trying to use a variable that hasn't been defined anywhere in scope will produce this issue.
@@ -1386,6 +1841,12 @@ An example would be
 $v9 = $v10;
 ```
 
+## PhanUndeclaredVariableDim
+
+```
+Variable ${VARIABLE} was undeclared, but array fields are being added to it.
+```
+
 # VarError
 
 ## PhanVariableUseClause
@@ -1397,6 +1858,18 @@ Non-variables not allowed within use clause
 # Generic
 
 This category contains issues related to [Phan's generic type support](https://github.com/phan/phan/wiki/Generic-Types)
+
+## PhanGenericConstructorTypes
+
+```
+Missing template parameters {PARAMETER} on constructor for generic class {CLASS}
+```
+
+## PhanGenericGlobalVariable
+
+```
+Global variable {VARIABLE} may not be assigned an instance of a generic class
+```
 
 ## PhanTemplateTypeConstant
 
@@ -1422,4 +1895,118 @@ This is emitted when a static property's PHPdoc contains an `@var` type declared
 static property {PROPERTY} may not have a template type
 ```
 
+
+
+# Internal
+
+This issue category comes up when there is an attempt to access an `@internal` element (property, class, constant, method, function, etc.) outside of the namespace in which it's defined.
+
+This category is completely unrelated to elements being internal to PHP (i.e. part of PHP core or PHP modules).
+
+## PhanAccessClassConstantInternal
+
+This issue comes up when there is an attempt to access an `@internal` class constant outside of the namespace in which it's defined.
+
+```
+Cannot access internal class constant {CONST} defined at {FILE}:{LINE}
+```
+
+## PhanAccessClassInternal
+
+This issue comes up when there is an attempt to access an `@internal` class constant outside of the namespace in which it's defined.
+
+```
+Cannot access internal {CLASS} defined at {FILE}:{LINE}
+```
+
+## PhanAccessConstantInternal
+
+This issue comes up when there is an attempt to access an `@internal` global constant outside of the namespace in which it's defined.
+
+```
+Cannot access internal constant {CONST} of namepace {NAMESPACE} defined at {FILE}:{LINE} from namespace {NAMESPACE}
+```
+
+## PhanAccessMethodInternal
+
+This issue comes up when there is an attempt to access an `@internal` method outside of the namespace in which it's defined.
+
+```
+Cannot access internal method {METHOD} of namespace {NAMESPACE} defined at {FILE}:{LINE} from namespace {NAMESPACE}
+```
+
+## PhanAccessPropertyInternal
+
+This issue comes up when there is an attempt to access an `@internal` property outside of the namespace in which it's defined.
+
+```
+Cannot access internal property {PROPERTY} of namespace {NAMESPACE} defined at {FILE}:{LINE} from namespace {NAMESPACE}
+```
+
+# CommentError
+
+This is emitted for some (but not all) comments which Phan thinks are invalid or unparseable.
+
+## PhanCommentOverrideOnNonOverrideConstant
+
+```
+Saw an @override annotation for class constant {CONST}, but could not find an overridden constant
+```
+
+## PhanCommentOverrideOnNonOverrideMethod
+
+```
+Saw an @override annotation for method {METHOD}, but could not find an overridden method and it is not a magic method
+```
+
+## PhanCommentParamOnEmptyParamList
+
+```
+Saw an @param annotation for {VARIABLE}, but the param list of {FUNCTIONLIKE} is empty
+```
+
+## PhanCommentParamOutOfOrder
+
+```
+Expected @param annotation for {VARIABLE} to be before the @param annotation for {VARIABLE}
+```
+
+## PhanCommentParamWithoutRealParam
+
+```
+Saw an @param annotation for {VARIABLE}, but it was not found in the param list of {FUNCTIONLIKE}
+```
+
+## PhanInvalidCommentForDeclarationType
+
+```
+The phpdoc comment for {COMMENT} cannot occur on a {TYPE}
+```
+
+## PhanMisspelledAnnotation
+
+```
+Saw misspelled annotation {COMMENT}, should be one of {COMMENT}
+```
+
+## PhanUnextractableAnnotation
+
+```
+Saw unextractable annotation for comment {COMMENT}
+```
+
+## PhanUnextractableAnnotationPart
+
+```
+Saw unextractable annotation for a fragment of comment {COMMENT}: {COMMENT}
+```
+
+# Syntax
+
+Emitted for syntax errors.
+
+## PhanSyntaxError
+
+This emits warnings for unparseable PHP files (detected by `php-ast`).
+Note: This is not the same thing as running `php -l` on a file - PhanSyntaxError checks for syntax errors, but not sematics such as where certain expressions can occur (Which `php -l` would check for).
 
