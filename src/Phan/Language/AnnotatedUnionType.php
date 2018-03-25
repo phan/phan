@@ -91,7 +91,8 @@ class AnnotatedUnionType extends UnionType
     /**
      * @override
      */
-    public function generateUniqueId() : string {
+    public function generateUniqueId() : string
+    {
         $id = parent::generateUniqueId();
         if ($this->is_possibly_undefined) {
             return $id . '=';

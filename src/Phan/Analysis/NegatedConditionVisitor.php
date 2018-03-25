@@ -582,7 +582,8 @@ class NegatedConditionVisitor extends KindVisitorImplementation
     /**
      * Analyze expressions such as $x['offset'] inside of a negated isset type check
      */
-    public function checkComplexIsset(Node $var_node) {
+    public function checkComplexIsset(Node $var_node)
+    {
         $context = $this->context;
         if ($var_node->kind === \ast\AST_DIM) {
             $expr_node = $var_node;

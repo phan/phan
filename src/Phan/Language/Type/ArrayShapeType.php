@@ -101,7 +101,7 @@ final class ArrayShapeType extends ArrayType
         return true;
     }
 
-    /** @return array<int,type> */
+    /** @return array<int,Type> */
     private function computeGenericArrayTypeInstances() : array
     {
         $union_type_builder = new UnionTypeBuilder();
