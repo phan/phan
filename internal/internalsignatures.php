@@ -207,7 +207,8 @@ EOT;
         }
     }
 
-    public function parseFunctionLikeSignature(string $method_name) : ?array {
+    /** @return ?array */
+    public function parseFunctionLikeSignature(string $method_name) {
         if (stripos($method_name, '::') !== false) {
             $parts = \explode('::', $method_name);
             \assert(\count($parts) === 2, new Error("Too many parts"));

@@ -96,8 +96,11 @@ function get_parameters_from_phan($fields) {
     return $result;
 }
 
-// TODO: consistent naming
-function check_fields(string $function_name, array $fields, array $signatures) : void {
+/**
+ * @return void
+ * TODO: consistent naming
+ */
+function check_fields(string $function_name, array $fields, array $signatures) {
     $return_type = $fields[0];  // TODO: Check type
     assert(is_string($return_type));
 
