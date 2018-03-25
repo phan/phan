@@ -597,6 +597,36 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         throw new \AssertionError('should not call ' . __METHOD__);
     }
 
+    /**
+     * @return array<mixed,string> in the same format as FunctionSignatureMap.php
+     * @override (Unused, but part of the interface)
+     */
+    public function toFunctionSignatureArray() : array
+    {
+        // no need for returns ref yet
+        $stub .= '(' . implode(', ', array_map(function (Parameter $parameter) : string {
+            return $parameter->toStubString();
+        }, $this->getRealParameterList())) . ')';
+
+        $return_type = $this->return_type;
+        $stub = [$return_type->__toString()];
+        foreach ($this->params as $i => $parameter) {
+            $name = "p$i";
+            if ($parameter->isOptional()) {
+                $name .= '=';
+            }
+            $type_string = $parameter->getNonVariadicUnionType()->__toString();
+            if ($parameter->isPassByReference()) {
+                $type_string .= '&';
+            }
+            if ($parameter->isVariadic()) {
+                $type_string .= '...';
+            }
+            $stub[$name] = $type_string;
+        }
+        return $stub;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
     // End FunctionInterface overrides
     ////////////////////////////////////////////////////////////////////////////////

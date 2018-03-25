@@ -364,4 +364,9 @@ interface FunctionInterface extends AddressableElementInterface
      * The return value is used for type casting rule checking.
      */
     public function asFunctionLikeDeclarationType() : FunctionLikeDeclarationType;
+
+    /**
+     * @return array<mixed,string> in the same format as FunctionSignatureMap.php
+     */
+    public function toFunctionSignatureArray() : array;
 }

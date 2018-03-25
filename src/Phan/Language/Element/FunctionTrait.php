@@ -1052,4 +1052,32 @@ trait FunctionTrait
             false
         );
     }
+
+    /**
+     * @return array<mixed,string> in the same format as FunctionSignatureMap.php
+     */
+    public function toFunctionSignatureArray() : array
+    {
+        $return_type = $this->getUnionType();
+        $stub = [$return_type->__toString()];
+        '@phan-var array<mixed,string> $stub';  // TODO: Should not warn about PhanTypeMismatchDimFetch in isset below
+        foreach ($this->getParameterList() as $parameter) {
+            $name = $parameter->getName();
+            if (!$name || isset($stub[$name])) {
+                throw new \InvalidArgumentException("Invalid name '$name' for {$this->getFQSEN()}");
+            }
+            if ($parameter->isOptional()) {
+                $name .= '=';
+            }
+            $type_string = $parameter->getUnionType()->__toString();
+            if ($parameter->isVariadic()) {
+                $name = '...' . $name;
+            }
+            if ($parameter->isPassByReference()) {
+                $name = '&' . $name;
+            }
+            $stub[$name] = $type_string;
+        }
+        return $stub;
+    }
 }
