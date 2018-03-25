@@ -5,7 +5,7 @@
 @phan-file-suppress PhanUndeclaredVariable
 PHAN;
 
-// This is unused, but thanks to the file-level suppression, it doesn't work.
+// This is unused, but thanks to the file-level suppression, it doesn't warn.
 use function ast\parse_code;
 use const ast\flags\MAGIC_FUNCTION;
 
