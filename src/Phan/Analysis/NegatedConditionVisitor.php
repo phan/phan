@@ -222,7 +222,11 @@ class NegatedConditionVisitor extends KindVisitorImplementation
     public function visitUnaryOp(Node $node) : Context
     {
         $expr_node = $node->children['expr'];
-        if (($node->flags ?? 0) !== flags\UNARY_BOOL_NOT) {
+        $flags = $node->flags;
+        if ($flags !== flags\UNARY_BOOL_NOT) {
+            if ($flags === flags\UNARY_SILENCE) {
+                return $this->__invoke($expr_node);
+            }
             if ($expr_node instanceof Node) {
                 $this->checkVariablesDefined($expr_node);
             }

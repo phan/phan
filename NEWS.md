@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 2018, Phan 0.12.4 (dev)
 ------------------------
 
+Bug Fixes
++ Analyze conditionals wrapped by `@(cond)` (e.g. `if (@array_key_exists('key', $array)) {...}`) (#1591)
+
 24 Mar 2018, Phan 0.12.3
 ------------------------
 

@@ -269,10 +269,10 @@ class ConditionVisitor extends KindVisitorImplementation
         }
         $code_base = $this->code_base;
         $context = $this->context;
-        $left_false_context = (new NegatedConditionVisitor($code_base, $context))($left);
-        $left_true_context = (new ConditionVisitor($code_base, $context))($left);
+        $left_false_context = (new NegatedConditionVisitor($code_base, $context))->__invoke($left);
+        $left_true_context = (new ConditionVisitor($code_base, $context))->__invoke($left);
         // We analyze the right hand side of `cond($x) || cond2($x)` as if `cond($x)` was false.
-        $right_true_context = (new ConditionVisitor($code_base, $left_false_context))($right);
+        $right_true_context = (new ConditionVisitor($code_base, $left_false_context))->__invoke($right);
         // When the ConditionVisitor is true, at least one of the left or right contexts must be true.
         return (new ContextMergeVisitor($context, [$left_true_context, $right_true_context]))->combineChildContextList();
     }
@@ -288,7 +288,12 @@ class ConditionVisitor extends KindVisitorImplementation
     public function visitUnaryOp(Node $node) : Context
     {
         $expr_node = $node->children['expr'];
-        if ($node->flags !== flags\UNARY_BOOL_NOT) {
+        $flags = $node->flags;
+        if ($flags !== flags\UNARY_BOOL_NOT) {
+            if ($flags === flags\UNARY_SILENCE) {
+                return $this->__invoke($expr_node);
+            }
+            // TODO: Emit dead code issue for non-nodes
             if ($expr_node instanceof Node) {
                 $this->checkVariablesDefined($expr_node);
             }
@@ -296,7 +301,7 @@ class ConditionVisitor extends KindVisitorImplementation
         }
         // TODO: Emit dead code issue for non-nodes
         if ($expr_node instanceof Node) {
-            return (new NegatedConditionVisitor($this->code_base, $this->context))($expr_node);
+            return (new NegatedConditionVisitor($this->code_base, $this->context))->__invoke($expr_node);
         }
         return $this->context;
     }
