@@ -42,7 +42,9 @@ class WikiIssueTypeUpdater
         $program = $argv[0];
         $help = <<<EOT
 Usage: $program
+
 EOT;
+        fwrite(STDERR, $help);
         exit($exit_code);
     }
 

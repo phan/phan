@@ -44,7 +44,7 @@ function getParameterCountsFromReflection(array $args)
 {
     $numRequired = 0;
     $numOptional = count($args);
-    foreach ($args as $i => $reflection_parameter) {
+    foreach ($args as $reflection_parameter) {
         if ($reflection_parameter->isVariadic()) {
             $numOptional = 10000;
             break;
@@ -61,7 +61,10 @@ class PhanParameterInfo
 {
     /** @var string */
     public $name;
-    /** @var string */
+    /**
+     * @var string
+     * @suppress PhanWriteOnlyPublicProperty may use this in the future, e.g. for warnings
+     */
     public $original_name_spec;
 
     /** @var bool */

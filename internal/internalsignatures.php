@@ -106,7 +106,7 @@ EOT;
         foreach (self::scandir($reference_directory) as $subpath) {
             $functions_subsubdir = "$reference_directory/$subpath/functions";
             if (is_dir($functions_subsubdir)) {
-                foreach (self::scandirForXML($functions_subsubdir) as $function_doc_fullpath => $function_name) {
+                foreach (self::scandirForXML($functions_subsubdir) as $function_doc_fullpath => $unused_function_name) {
                     $xml = $this->getSimpleXMLForFile($function_doc_fullpath);
                     if (!$xml) {
                         continue;
@@ -238,7 +238,7 @@ EOT;
     /**
      * @return ?array
      */
-    public function parseFunctionSignature(string $function_name) : ?array
+    public function parseFunctionSignature(string $function_name)
     {
         $function_name_lc = strtolower($function_name);
         $function_name_file_map = $this->getFilesForFunctionNameList();
@@ -265,7 +265,7 @@ EOT;
     /**
      * @return ?array<string,SimpleXMLElement>
      */
-    public function getMethodsForClassName(string $class_name) : ?array
+    public function getMethodsForClassName(string $class_name)
     {
         $class_name_lc = strtolower($class_name);
         $class_name_file_map = $this->getFoldersForClassNameList();
@@ -303,7 +303,7 @@ EOT;
     /**
      * @return ?array
      */
-    public function parseMethodSignature(string $class_name, string $method_name) : ?array
+    public function parseMethodSignature(string $class_name, string $method_name)
     {
         $class_name_lc = strtolower($class_name);
         $method_name_lc = strtolower($method_name);
@@ -331,7 +331,8 @@ EOT;
     /** @var array<string,?SimpleXMLElement */
     private $simple_xml_cache = [];
 
-    private function getSimpleXMLForFile(string $file_path) : ?SimpleXMLElement
+    /** @return ?SimpleXMLElement */
+    private function getSimpleXMLForFile(string $file_path)
     {
         if (array_key_exists($file_path, $this->simple_xml_cache)) {
             return $this->simple_xml_cache[$file_path];
@@ -339,7 +340,8 @@ EOT;
         return $this->simple_xml_cache[$file_path] = $this->getSimpleXMLForFileUncached($file_path);
     }
 
-    private function getSimpleXMLForFileUncached(string $file_path) : ?SimpleXMLElement
+    /** @return ?SimpleXMLElement */
+    private function getSimpleXMLForFileUncached(string $file_path)
     {
         $signature_file_contents = file_get_contents($file_path);
         if (!is_string($signature_file_contents)) {
@@ -359,7 +361,8 @@ EOT;
         return $result;
     }
 
-    private function getFunctionNameFromXML(SimpleXMLElement $xml) : ?string
+    /** @return ?string */
+    private function getFunctionNameFromXML(SimpleXMLElement $xml)
     {
         $name = $xml->xpath('/a:refentry/a:refnamediv/a:refname');
         if (count($name) === 0) {
@@ -379,7 +382,8 @@ EOT;
         return null;
     }
 
-    private function getMethodNameFromXML(SimpleXMLElement $xml) : ?string
+    /** @return ?string */
+    private function getMethodNameFromXML(SimpleXMLElement $xml)
     {
         $name = $xml->xpath('/a:refentry/a:refnamediv/a:refname');
         if (count($name) === 0) {
@@ -399,7 +403,12 @@ EOT;
         return null;
     }
 
-    private function parseFunctionLikeSignatureForXML(string $function_name, ?SimpleXMLElement $xml) : ?array
+    /**
+     * @param string $function_name
+     * @param ?SimpleXMLElement $xml
+     * @return ?array
+     */
+    private function parseFunctionLikeSignatureForXML(string $function_name, $xml)
     {
         if (!$xml) {
             return null;
@@ -412,7 +421,7 @@ EOT;
             return null;
         }
         $function_description = $function_description_list[0];
-        $function_return_type = $function_description->type;
+        // $function_return_type = $function_description->type;
         $return_type = self::toTypeString($function_description->type);
         $params = $this->extractMethodParams($function_description->methodparam);
         $result = array_merge([$return_type], $params);
@@ -505,6 +514,9 @@ EOT;
         return require(ORIGINAL_SIGNATURE_PATH);
     }
 
+    /**
+     * @suppress PhanPluginUnusedVariable $header in loop not detected
+     */
     public static function readSignatureHeader() : string
     {
         $fin = fopen(ORIGINAL_SIGNATURE_PATH, 'r');
@@ -540,7 +552,6 @@ EOT;
     public function addMissingFunctionLikeSignatures()
     {
         $phan_signatures = self::readSignatureMap();
-        $new_signatures = [];
         $this->addMissingGlobalFunctionSignatures($phan_signatures);
         $this->addMissingMethodSignatures($phan_signatures);
         $new_signature_path = ORIGINAL_SIGNATURE_PATH . '.extra_signatures';
@@ -573,7 +584,7 @@ EOT;
     protected function addMissingGlobalFunctionSignatures(array &$phan_signatures) : void
     {
         $phan_signatures_lc = self::getLowercaseSignatureMap($phan_signatures);
-        foreach ($this->getFilesForFunctionNameList() as $function_name => $files) {
+        foreach ($this->getFilesForFunctionNameList() as $function_name => $unused_files) {
             if (isset($phan_signatures_lc[strtolower($function_name)])) {
                 continue;
             }
@@ -588,7 +599,7 @@ EOT;
     protected function addMissingMethodSignatures(array &$phan_signatures) : void
     {
         $phan_signatures_lc = self::getLowercaseSignatureMap($phan_signatures);
-        foreach ($this->getFoldersForClassNameList() as $class_name => $folder) {
+        foreach ($this->getFoldersForClassNameList() as $class_name => $unused_folder) {
             foreach ($this->getMethodsForClassName($class_name) ?? [] as $method_name => $xml) {
                 if (isset($phan_signatures_lc[strtolower($method_name)])) {
                     continue;
@@ -705,6 +716,9 @@ EOT;
         return $result;
     }
 
+    /**
+     * @param string $msg @phan-unused-param
+     */
     private static function debug(string $msg)
     {
         // uncomment the below line to see debug output
