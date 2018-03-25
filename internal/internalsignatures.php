@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
+define('ORIGINAL_SIGNATURE_PATH', dirname(__DIR__) . '/src/Phan/Language/Internal/FunctionSignatureMap.php');
+
 /**
  * A utility to read php.net's xml documentation for functions, methods,
  * and use that to update Phan's internal signature map (Currently just return types of functions and methods)
@@ -27,7 +29,7 @@ class IncompatibleSignatureDetector {
         }
         $en_reference_dir = "$dir/en/reference";
         if (!is_dir($en_reference_dir)) {
-            echo "Could not find subdirectory '$en_reference_dir'\n";
+            fwrite(STDERR, "Could not find subdirectory '$en_reference_dir'\n");
             self::printUsageAndExit();
         }
         $this->reference_directory = realpath($en_reference_dir);
@@ -36,9 +38,22 @@ class IncompatibleSignatureDetector {
 
     private static function printUsageAndExit(int $exit_code = 1) {
         global $argv;
-        echo "Usage: $argv[0] path/to/phpdoc_svn_dir\n";
-        echo "  phpdoc_svn_dir can be checked out via 'svn checkout https://svn.php.net/repository/phpdoc/modules/doc-en phpdoc-en' (subversion must be installed)\n";
-        echo "  see http://doc.php.net/tutorial/structure.php\n";
+        $program_name = $argv[0];
+        $msg = <<<EOT
+Usage: $program_name command [...args]
+  $program_name sort
+    Sort the internal signature map in place
+  $program_name help
+    Print this help message
+  $program_name update-svn path/to/phpdoc_svn_dir
+    Update any of Phan's missing signatures based on a checkout of the docs.php.net source repo.
+
+    phpdoc_svn_dir can be checked out via 'svn checkout https://svn.php.net/repository/phpdoc/modules/doc-en phpdoc-en' (subversion must be installed)
+    (and updated via 'svn update')
+    see http://doc.php.net/tutorial/structure.php
+
+EOT;
+        fwrite(STDERR, $msg);
         exit($exit_code);
     }
 
@@ -134,22 +149,44 @@ class IncompatibleSignatureDetector {
     public static function main() {
         error_reporting(E_ALL);
         global $argv;
-        if (\count($argv) !== 2) {
+        if (\count($argv) < 2) {
             // TODO: CLI flags
             self::printUsageAndExit();
         }
-        $detector = new IncompatibleSignatureDetector($argv[1]);
-        $detector->selfTest();
+        $command = $argv[1];
+        switch ($command) {
+            case 'sort':
+                if (count($argv) !== 2) {
+                    fwrite(STDERR, "Invalid argument count\n");
+                    self::printUsageAndExit();
+                }
+                self::sortSignatureMapInPlace();
+                break;
+            case 'update-svn':
+                if (count($argv) !== 3) {
+                    fwrite(STDERR, "Invalid argument count\n");
+                    self::printUsageAndExit();
+                }
+                $detector = new IncompatibleSignatureDetector($argv[2]);
+                $detector->selfTest();
 
-        // $detector->sortSignatureMapInPlace();
-        $detector->addMissingFunctionLikeSignatures();
-        $detector->updateFunctionSignatures();
+                $detector->addMissingFunctionLikeSignatures();
+                $detector->updateFunctionSignatures();
+                break;
+            case 'help':
+            case '--help':
+            case '-h':
+                self::printUsageAndExit(0);
+            default:
+                fwrite(STDERR, "Invalid command '$command'\n");
+                self::printUsageAndExit(1);
+        }
     }
 
     public static function sortSignatureMapInPlace() {
         $phan_signatures = self::readSignatureMap();
         self::sortSignatureMap($phan_signatures);
-        $sorted_phan_signatures_path = self::ORIGINAL_SIGNATURE_PATH . '.sorted';
+        $sorted_phan_signatures_path = ORIGINAL_SIGNATURE_PATH . '.sorted';
         self::info("Saving sorted Phan signatures to '$sorted_phan_signatures_path'\n");
         self::saveSignatureMap($sorted_phan_signatures_path, $phan_signatures);
     }
@@ -430,15 +467,14 @@ class IncompatibleSignatureDetector {
             return $matches[0];
         }, $contents);
     }
-    const ORIGINAL_SIGNATURE_PATH = __DIR__ . '/../src/Phan/Language/Internal/FunctionSignatureMap.php';
 
     /** @return array<string,array<int|string,string>> */
     public static function readSignatureMap() : array {
-        return require(self::ORIGINAL_SIGNATURE_PATH);
+        return require(ORIGINAL_SIGNATURE_PATH);
     }
 
     public static function readSignatureHeader() : string {
-        $fin = fopen(self::ORIGINAL_SIGNATURE_PATH, 'r');
+        $fin = fopen(ORIGINAL_SIGNATURE_PATH, 'r');
         if (!$fin) {
             throw new RuntimeException("Failed to start reading header\n");
         }
@@ -472,7 +508,7 @@ class IncompatibleSignatureDetector {
         $new_signatures = [];
         $this->addMissingGlobalFunctionSignatures($phan_signatures);
         $this->addMissingMethodSignatures($phan_signatures);
-        $new_signature_path = self::ORIGINAL_SIGNATURE_PATH . '.extra_signatures';
+        $new_signature_path = ORIGINAL_SIGNATURE_PATH . '.extra_signatures';
         self::info("Saving function signatures with extra paths to $new_signature_path (updating param and return types)\n");
         self::sortSignatureMap($phan_signatures);
         self::saveSignatureMap($new_signature_path, $phan_signatures);
@@ -538,7 +574,7 @@ class IncompatibleSignatureDetector {
             }
             $new_signatures[$method_name] = self::updateSignature($method_name, $arguments);
         }
-        $new_signature_path = self::ORIGINAL_SIGNATURE_PATH . '.new';
+        $new_signature_path = ORIGINAL_SIGNATURE_PATH . '.new';
         self::info("Saving modified function signatures to $new_signature_path (updating param and return types)\n");
         self::saveSignatureMap($new_signature_path, $new_signatures);
     }
