@@ -538,8 +538,9 @@ EOT;
     }
     /**
      * @param array<string,array<int|string,string>> $phan_signatures
+     * @return void
      */
-    public static function saveSignatureMap(string $new_signature_path, array $phan_signatures, bool $include_header = true) : void
+    public static function saveSignatureMap(string $new_signature_path, array $phan_signatures, bool $include_header = true)
     {
         $contents = self::serializeSignatures($phan_signatures);
         if ($include_header) {
@@ -581,7 +582,8 @@ EOT;
         return $phan_signatures_lc;
     }
 
-    protected function addMissingGlobalFunctionSignatures(array &$phan_signatures) : void
+    /** @return void */
+    protected function addMissingGlobalFunctionSignatures(array &$phan_signatures)
     {
         $phan_signatures_lc = self::getLowercaseSignatureMap($phan_signatures);
         foreach ($this->getFilesForFunctionNameList() as $function_name => $unused_files) {
@@ -596,7 +598,8 @@ EOT;
         }
     }
 
-    protected function addMissingMethodSignatures(array &$phan_signatures) : void
+    /** @return void */
+    protected function addMissingMethodSignatures(array &$phan_signatures)
     {
         $phan_signatures_lc = self::getLowercaseSignatureMap($phan_signatures);
         foreach ($this->getFoldersForClassNameList() as $class_name => $unused_folder) {
