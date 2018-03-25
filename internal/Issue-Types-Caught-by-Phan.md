@@ -1,7 +1,7 @@
 <!-- This is mirrored at https://github.com/phan/phan/wiki/Issue-Types-Caught-by-Phan -->
 <!-- The copy distributed with Phan is in the internal folder because it may be removed or moved elsewhere -->
 
-See [\Phan\Issue](https://github.com/phan/phan/blob/master/src/Phan/Issue.php) for the most up to date list of error types that are emitted. Below is a listing of all issue types as of [8c1435](https://github.com/phan/phan/tree/8c1435f6044f15fa4fd39c2abf713062214f4087/). The test case [0101_one_of_each.php](https://github.com/phan/phan/blob/master/tests/files/src/0101_one_of_each.php) was intended to cover all examples in this document.
+See [\Phan\Issue](https://github.com/phan/phan/blob/master/src/Phan/Issue.php) for the most up to date list of error types that are emitted. Below is a listing of all issue types as of [47e98af](https://github.com/phan/phan/tree/47e98af627276a90c377fd349c69f6cd3063efda/). The test case [0101_one_of_each.php](https://github.com/phan/phan/blob/master/tests/files/src/0101_one_of_each.php) was originally intended to cover all examples in this document.
 
 A concise summary of issue categories found by Phan can be seen in [Phan's README](https://github.com/phan/phan#features).
 
@@ -15,7 +15,7 @@ In addition to the below issue types, there are [additional issue types that can
 
 This category of issue is emitted when you're trying to access things that you can't access.
 Note: in this document, "`@internal`" refers to user-defined elements with `/** @internal */` in their PHPDoc,
-while "internal" refers to classes, etc.  that are built into PHP and PHP modules (e.g. `
+while "internal" refers to classes, functions, methods, etc.  that are built into PHP and PHP modules (e.g. `is_string`, `stdClass`, etc)
 
 ## PhanAccessClassConstantPrivate
 
