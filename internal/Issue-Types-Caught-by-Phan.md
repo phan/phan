@@ -195,6 +195,12 @@ Declaration of phpdoc method {METHOD} is an unnecessary override of final method
 Accessing own constructor directly via {CLASS}::__construct
 ```
 
+# Internal
+
+This issue category comes up when there is an attempt to access an `@internal` element (property, class, constant, method, function, etc.) outside of the namespace in which it's defined.
+
+This category is completely unrelated to elements being internal to PHP (i.e. part of PHP core or PHP modules).
+
 ## PhanAccessPropertyInternal
 
 This issue comes up when there is an attempt to access an `@internal` property outside of the namespace in which it's defined.
@@ -840,6 +846,10 @@ class A {
 	use T1 {T2::foo as bar;}
 }
 ```
+
+# Syntax
+
+Emitted for syntax errors.
 
 ## PhanSyntaxError
 
