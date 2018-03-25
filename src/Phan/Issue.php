@@ -189,6 +189,7 @@ class Issue
     const NoopVariable                  = 'PhanNoopVariable';
     const NoopUnaryOperator             = 'PhanNoopUnaryOperator';
     const NoopBinaryOperator            = 'PhanNoopBinaryOperator';
+    const UnreachableCatch              = 'PhanUnreachableCatch';
     const UnreferencedClass             = 'PhanUnreferencedClass';
     const UnreferencedFunction          = 'PhanUnreferencedFunction';
     const UnreferencedPublicMethod      = 'PhanUnreferencedPublicMethod';
@@ -1859,6 +1860,14 @@ class Issue
                 "Possibly zero references to use statement for constant {CONST} ({CONST})",
                 self::REMEDIATION_B,
                 6024
+            ),
+            new Issue(
+                self::UnreachableCatch,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Catch statement for {CLASSLIKE} is unreachable. An earlier catch statement at line {LINE} caught the ancestor class/interface {CLASSLIKE}",
+                self::REMEDIATION_B,
+                6028
             ),
 
             // Issue::CATEGORY_REDEFINE

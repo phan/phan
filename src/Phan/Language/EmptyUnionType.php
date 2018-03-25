@@ -659,6 +659,19 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
+     * Takes "MyClass|int|array|?object" and returns "MyClass|?object"
+     *
+     * @return UnionType
+     * A UnionType with known object types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     */
+    public function objectTypesWithKnownFQSENs() : UnionType
+    {
+        return $this;
+    }
+
+    /**
      * Returns true if objectTypes would be non-empty.
      *
      * @return bool

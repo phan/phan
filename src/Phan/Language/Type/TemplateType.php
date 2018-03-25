@@ -62,6 +62,12 @@ final class TemplateType extends Type
         return true;
     }
 
+    public function isObjectWithKnownFQSEN() : bool
+    {
+        // We have a template type ID, not an fqsen
+        return false;
+    }
+
     public function isPossiblyObject() : bool
     {
         return true;

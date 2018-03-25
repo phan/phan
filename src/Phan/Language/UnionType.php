@@ -1584,6 +1584,21 @@ class UnionType implements \Serializable
     }
 
     /**
+     * Takes "MyClass|int|array|?object" and returns "MyClass"
+     *
+     * @return UnionType
+     * A UnionType with known object types with known FQSENs kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     */
+    public function objectTypesWithKnownFQSENs() : UnionType
+    {
+        return $this->makeFromFilter(function (Type $type) : bool {
+            return $type->isObjectWithKnownFQSEN();
+        });
+    }
+
+    /**
      * Returns true if objectTypes would be non-empty.
      *
      * @return bool

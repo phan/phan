@@ -65,6 +65,11 @@ abstract class NativeType extends Type
         return false;
     }
 
+    public function isObjectWithKnownFQSEN() : bool
+    {
+        return false;
+    }
+
     public function isPossiblyObject() : bool
     {
         return false;

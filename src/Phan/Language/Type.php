@@ -1457,6 +1457,15 @@ class Type
 
     /**
      * @return bool
+     * True if this type is an object (and not the phpdoc `object` or a template)
+     */
+    public function isObjectWithKnownFQSEN() : bool
+    {
+        return true;  // Overridden in various subclasses
+    }
+
+    /**
+     * @return bool
      * True if this type is possibly an object (or the phpdoc `object`)
      * This is the same as isObject(), except that it returns true for the exact class of IterableType.
      */

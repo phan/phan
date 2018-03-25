@@ -902,15 +902,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 (string)$exception->getFQSEN()
             );
 
-            // The class doesn't exist. Analyze the variable as if it's a Throwable.
-            // (Wouldn't work for php 5.6, but phan doesn't support php < 7.
-            $variable = Variable::fromNodeInContext(
-                $node->children['var'],
-                $this->context,
-                $this->code_base,
-                false
-            );
-
             $union_type = $union_type->withType(Type::fromFullyQualifiedString('\Throwable'));
         }
 

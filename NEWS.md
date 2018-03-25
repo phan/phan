@@ -3,6 +3,10 @@ Phan NEWS
 ?? ??? 2018, Phan 0.12.4 (dev)
 ------------------------
 
+New Features(Analysis)
++ Detect unreachable catch statements (#112)
+  (Check if an earlier catch statement caught an ancestor of a given catch statement)
+
 Bug Fixes
 + Analyze conditionals wrapped by `@(cond)` (e.g. `if (@array_key_exists('key', $array)) {...}`) (#1591)
 

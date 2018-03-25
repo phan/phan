@@ -3,6 +3,7 @@ namespace Phan;
 
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\Visitor\Element;
+use Phan\AST\UnionTypeVisitor;
 use Phan\Analysis\BlockExitStatusChecker;
 use Phan\Analysis\ConditionVisitor;
 use Phan\Analysis\NegatedConditionVisitor;
@@ -842,9 +843,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // them
         $catch_context_list = [$try_context];
 
-        foreach ($node->children['catches']->children as $catch_node) {
+        $catch_nodes = $node->children['catches']->children ?? [];
+
+        foreach ($catch_nodes as $catch_node) {
             // Note: ContextMergeVisitor expects to get each individual catch
             assert($catch_node instanceof Node);
+
             // The conditions need to communicate to the outer
             // scope for things like assigning veriables.
             $catch_context = $context->withScope(
@@ -861,6 +865,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // NOTE: We let ContextMergeVisitor->mergeCatchContext decide if the block exit status is valid.
             $catch_context_list[] = $catch_context;
         }
+
+        $this->checkUnreachableCatch($catch_nodes, $context);
 
         // first context is the try. If there's a second context, it's a catch.
         if (count($catch_context_list) >= 2) {
@@ -901,6 +907,54 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // context to be the incoming context. Otherwise,
         // we pass our new context up to our parent
         return $context;
+    }
+
+    /**
+     * @param array<int,Node> $catch_nodes
+     * @param Context $context
+     * @return void
+     * @suppress PhanPluginUnusedVariable
+     */
+    private function checkUnreachableCatch(array $catch_nodes, Context $context) {
+        if (count($catch_nodes) <= 1) {
+            return;
+        }
+        $caught_union_types = [];
+        $code_base = $this->code_base;
+
+        foreach ($catch_nodes as $catch_node) {
+            $union_type = UnionTypeVisitor::unionTypeFromClassNode(
+                $code_base,
+                $context,
+                $catch_node->children['class']
+            )->objectTypesWithKnownFQSENs();
+
+            $catch_line = $catch_node->lineno ?? 0;
+
+            foreach ($union_type->getTypeSet() as $type) {
+                foreach ($type->asExpandedTypes($code_base)->getTypeSet() as $ancestor_type) {
+                    // Check if any of the ancestors were already caught by a previous catch statement
+                    $line = $caught_union_types[\spl_object_id($ancestor_type)] ?? null;
+
+                    if ($line !== null) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::UnreachableCatch,
+                            $catch_line,
+                            (string)$type,
+                            $line,
+                            (string)$ancestor_type
+                        );
+                        break;
+                    }
+                }
+            }
+            foreach ($union_type->getTypeSet() as $type) {
+                // Track where this ancestor type was thrown
+                $caught_union_types[\spl_object_id($type)] = $catch_line;
+            }
+        }
     }
 
     /**
