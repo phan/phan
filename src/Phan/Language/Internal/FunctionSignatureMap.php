@@ -10263,7 +10263,7 @@ return [
 'SolrClient::__construct' => ['void', 'clientOptions'=>'array'],
 'SolrClient::__destruct' => [''],
 'SolrClient::addDocument' => ['SolrUpdateResponse', 'doc'=>'solrinputdocument', 'allowdups='=>'bool', 'commitwithin='=>'int'],
-'SolrClient::addDocuments' => ['void', 'docs'=>'array', 'allowdups='=>'bool', 'commitwithin='=>'int'],
+'SolrClient::addDocuments' => ['SolrUpdateResponse', 'docs'=>'array', 'allowdups='=>'bool', 'commitwithin='=>'int'],
 'SolrClient::commit' => ['SolrUpdateResponse', 'maxsegments='=>'int', 'waitflush='=>'bool', 'waitsearcher='=>'bool'],
 'SolrClient::deleteById' => ['SolrUpdateResponse', 'id'=>'string'],
 'SolrClient::deleteByIds' => ['SolrUpdateResponse', 'ids'=>'array'],
