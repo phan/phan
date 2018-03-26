@@ -64,6 +64,14 @@ PHAN;
  *   (Phan assumes that callbacks with optional arguments can be cast to callbacks with/without those args (Similar to inheritance checks)
  *   (e.g. callable(T1,T2=) can be cast to callable(T1) or callable(T1,T2), in the same way that a subclass would check).
  *   For some signatures, e.g. set_error_handler, this results in repetition, because callable(T1=) can't cast to callable(T1).
+ *
+ * Sources of stub info:
+ *
+ * 1. Reflection
+ * 2. docs.php.net's SVN repo or website, and examples (See internal/internalsignatures.php)
+ * 3. Various websites documenting individual extensions
+ * 4. PHPStorm stubs (For anything missing from the above sources)
+ *    See internal/internalsignatures.php
  */
 return [
 '_' => ['string', 'message'=>'string'],
