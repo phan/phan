@@ -64,6 +64,7 @@ class PhanPHPLinter
 
         $failure_code = 0;
         $temporary_file_mapping_contents = [];
+		// TODO: Check that path gets defined
         foreach ($opts->file_list as $path) {
             if (isset($opts->temporary_file_map[$path])) {
                 $temporary_path = $opts->temporary_file_map[$path];
@@ -260,7 +261,7 @@ class PhanPHPLinterOpts
     /** @var string tcp:// or unix:// socket URL of the daemon. */
     public $url;
 
-    /** @var string[] - file list */
+    /** @var array<int,string> - file list */
     public $file_list = [];
 
     /** @var string[]|null - optional, maps original files to temporary file path to use as a substitute. */

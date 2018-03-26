@@ -4,6 +4,7 @@ namespace Phan\Analysis;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Issue;
@@ -492,6 +493,9 @@ class ArgumentType
             if ($argument_type_expanded->canCastToUnionType(
                 $alternate_parameter->getNonVariadicUnionType()
             )) {
+                if (Config::get_strict_param_check() && $argument_type->typeCount() > 1) {
+                    self::analyzeParameterStrict($code_base, $context, $method, $argument_type, $alternate_parameter, $lineno, $i);
+                }
                 return;
             }
         }
@@ -551,6 +555,70 @@ class ArgumentType
             $method->getFileRef()->getFile(),
             $method->getFileRef()->getLineNumberStart()
         );
+    }
+
+    private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, Variable $alternate_parameter, int $lineno, int $i)
+    {
+        $type_set = $argument_type->getTypeSet();
+        \assert(\count($type_set) >= 2);
+
+        $parameter_type = $alternate_parameter->getNonVariadicUnionType();
+
+        // For the strict
+        foreach ($type_set as $type) {
+            // Expand it to include all parent types up the chain
+            $individual_type_expanded = $type->asExpandedTypes($code_base);
+
+            // See if the argument can be cast to the
+            // parameter
+            if (!$individual_type_expanded->canCastToUnionType(
+                $parameter_type
+            )) {
+                if ($method->isPHPInternal()) {
+                    // If we are not in strict mode and we accept a string parameter
+                    // and the argument we are passing has a __toString method then it is ok
+                    if (!$context->getIsStrictTypes() && $parameter_type->hasType(StringType::instance(false))) {
+                        try {
+                            foreach ($individual_type_expanded->asClassList($code_base, $context) as $clazz) {
+                                if ($clazz->hasMethodWithName($code_base, "__toString")) {
+                                    return;
+                                }
+                            }
+                        } catch (CodeBaseException $e) {
+                            // Swallow "Cannot find class", go on to emit issue
+                        }
+                    }
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::TypeMismatchArgumentStrictInternal,
+                        $lineno,
+                        ($i+1),
+                        $alternate_parameter->getName(),
+                        $argument_type,
+                        $method->getRepresentationForIssue(),
+                        (string)$parameter_type,
+                        $individual_type_expanded
+                    );
+                    return;
+                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypeMismatchArgumentStrict,
+                    $lineno,
+                    ($i+1),
+                    $alternate_parameter->getName(),
+                    $argument_type,
+                    $method->getRepresentationForIssue(),
+                    (string)$parameter_type,
+                    $individual_type_expanded,
+                    $method->getFileRef()->getFile(),
+                    $method->getFileRef()->getLineNumberStart()
+                );
+                return;
+            }
+        }
     }
 
     /**

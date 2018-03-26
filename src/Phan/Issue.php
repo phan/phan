@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\UnaddressableTypedElement;
@@ -81,6 +82,8 @@ class Issue
     const TypeMagicVoidWithReturn   = 'PhanTypeMagicVoidWithReturn';
     const TypeMismatchArgument      = 'PhanTypeMismatchArgument';
     const TypeMismatchArgumentInternal = 'PhanTypeMismatchArgumentInternal';
+    const TypeMismatchArgumentStrict = 'PhanTypeMismatchArgumentStrict';
+    const TypeMismatchArgumentStrictInternal = 'PhanTypeMismatchArgumentStrictInternal';
     const TypeMismatchDefault       = 'PhanTypeMismatchDefault';
     const TypeMismatchDimAssignment = 'PhanTypeMismatchDimAssignment';
     const TypeMismatchDimEmpty      = 'PhanTypeMismatchDimEmpty';
@@ -825,6 +828,22 @@ class Issue
                 "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE}",
                 self::REMEDIATION_B,
                 10004
+            ),
+            new Issue(
+                self::TypeMismatchArgumentStrict,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                10054
+            ),
+            new Issue(
+                self::TypeMismatchArgumentStrictInternal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)",
+                self::REMEDIATION_B,
+                10055
             ),
             new Issue(
                 self::TypeMismatchReturn,

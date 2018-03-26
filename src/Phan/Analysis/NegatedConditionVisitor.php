@@ -6,6 +6,8 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
+use Phan\Exception\IssueException;
+use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
 use Phan\Language\Type;
@@ -326,7 +328,67 @@ class NegatedConditionVisitor extends KindVisitorImplementation
 
     // TODO: empty, isset
 
-    // TODO: negate instanceof
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitInstanceof(Node $node) : Context
+    {
+        //$this->checkVariablesDefined($node);
+        // Only look at things of the form
+        // `$variable instanceof ClassName`
+        $expr_node = $node->children['expr'];
+        $context = $this->context;
+        if (!($expr_node instanceof Node) || $expr_node->kind !== \ast\AST_VAR) {
+            return $context;
+        }
+
+        $code_base = $this->code_base;
+
+        try {
+            // Get the variable we're operating on
+            $variable = $this->getVariableFromScope($expr_node, $context);
+            if (\is_null($variable)) {
+                return $context;
+            }
+
+            // Get the type that we're checking it against
+            $class_node = $node->children['class'];
+            $right_hand_union_type = UnionTypeVisitor::unionTypeFromNode(
+                $code_base,
+                $context,
+                $class_node
+            )->objectTypes();
+
+            if ($right_hand_union_type->typeCount() !== 1) {
+                return $context;
+            }
+            $right_hand_type = $right_hand_union_type->getTypeSet()[0];
+
+            // TODO: Assert that instanceof right hand type is valid in NegatedConditionVisitor as well
+
+            // Make a copy of the variable
+            $variable = clone($variable);
+            $new_variable_type = $variable->getUnionType()->withoutSubclassesOf($code_base, $right_hand_type);
+            // See https://secure.php.net/instanceof -
+            $variable->setUnionType($new_variable_type);
+
+            // Overwrite the variable with its new type
+            $context = $context->withScopeVariable(
+                $variable
+            );
+        } catch (IssueException $exception) {
+            Issue::maybeEmitInstance($code_base, $context, $exception->getIssueInstance());
+        } catch (\Exception $exception) {
+            // Swallow it
+        }
+
+        return $context;
+    }
 
     /*
     private function analyzeNegationOfVariableIsA(array $args, Context $context) : Context

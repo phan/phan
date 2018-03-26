@@ -85,6 +85,8 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 $nameNode = $astNode->children['name'];
                 if ($nameNode->kind === \ast\AST_NAME) {
                     $name = $nameNode->children['name'];
+                    \assert(\is_string($name));
+
                     if (\strcasecmp($name, '__DIR__') === 0) {
                         // Relative to the directory of that file... Hopefully doesn't contain a format specifier
                         return new PrimitiveValue('(__DIR__ literal)');
@@ -282,7 +284,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      * @param CodeBase $code_base
      * @param Context $context
      * @param FunctionInterface $function
-     * @param Node|string|int $pattern_node
+     * @param Node|string|float|int $pattern_node
      * @param null|Node[]|string[]|int[] $arg_nodes arguments following the format string. Null if the arguments could not be determined.
      * @return void
      */
@@ -754,13 +756,13 @@ class ConversionSpec
  */
 class PrimitiveValue
 {
-    /** @var int|string|float|null The primitive value of the expression if it could be determined. */
+    /** @var int|string|float|bool|null The primitive value of the expression if it could be determined. */
     public $value;
     /** @var bool Whether or not the expression value was translated. */
     public $is_translated;
 
     /**
-     * @param array|int|string|float|null $value
+     * @param array|int|string|float|bool|null $value
      */
     public function __construct($value, bool $is_translated = false)
     {

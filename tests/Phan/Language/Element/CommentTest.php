@@ -15,8 +15,8 @@ use Phan\Library\None;
  */
 class CommentTest extends BaseTest
 {
-    /** @var CodeBase|null */
-    protected $code_base = null;
+    /** @var CodeBase */
+    protected $code_base;
 
     const overrides = [
         'read_type_annotations' => true,
@@ -35,6 +35,9 @@ class CommentTest extends BaseTest
         }
     }
 
+    /**
+     * @suppress PhanTypeMismatchProperty
+     */
     protected function tearDown()
     {
         $this->code_base = null;

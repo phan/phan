@@ -821,6 +821,25 @@ class UnionType implements \Serializable
         return false;
     }
 
+    public function withoutSubclassesOf(CodeBase $code_base, Type $object_type) {
+        $is_nullable = $this->containsNullable();
+        $new_variable_type = $this;
+
+        foreach ($this->type_set as $type) {
+            if ($type->asExpandedTypes($code_base)->hasType($object_type)) {
+                $new_variable_type = $new_variable_type->withoutType($type);
+            }
+        }
+        if ($is_nullable) {
+            if ($new_variable_type->isEmpty()) {
+                // There was a null somewhere in the old union type.
+                return NullType::instance(false)->asUnionType();
+            }
+            return $new_variable_type->nullableClone();
+        }
+        return $new_variable_type;
+    }
+
     /**
      * @return bool - True if not empty and at least one type is NullType or nullable.
      */
@@ -1257,6 +1276,93 @@ class UnionType implements \Serializable
                     }
                 }
             }
+        }
+
+        // Only if no source types can be cast to any target
+        // types do we say that we cannot perform the cast
+        return false;
+    }
+
+    /**
+     * @param UnionType $target
+     * A type to check to see if this can cast to it.
+     *
+     * Every single type in this type must be able to cast to a type in $target (Empty types can cast to empty)
+     *
+     * @return bool
+     * True if this type is allowed to cast to the given type
+     * i.e. int->float is allowed  while float->int is not.
+     */
+    public function canStrictCastToUnionType(
+        UnionType $target
+    ) : bool {
+        // Fast-track most common cases first
+        $type_set = $this->type_set;
+        // If either type is unknown, we can't call it
+        // a success
+        if (\count($type_set) === 0) {
+            return true;
+        }
+        $target_type_set = $target->type_set;
+        if (\count($target_type_set) === 0) {
+            return true;
+        }
+
+        // every single type in T overlaps with T, a future call to Type->canCastToType will pass.
+        $matches = true;
+        foreach ($type_set as $type) {
+            if (!\in_array($type, $target_type_set)) {
+                $matches = false;
+                break;
+            }
+        }
+        if ($matches) {
+            return true;
+        }
+        static $float_type;
+        static $int_type;
+        static $mixed_type;
+        static $null_type;
+        if ($null_type === null) {
+            $int_type   = IntType::instance(false);
+            $float_type = FloatType::instance(false);
+            $mixed_type = MixedType::instance(false);
+            $null_type  = NullType::instance(false);
+        }
+
+        // Check conversion on the cross product of all
+        // type combinations and see if any can cast to
+        // any.
+        $matches = true;
+        foreach ($type_set as $source_type) {
+            foreach ($target_type_set as $target_type) {
+                if (!$source_type->canCastToType($target_type)) {
+                    $matches = false;
+                    break;
+                }
+            }
+        }
+        if ($matches) {
+            return true;
+        }
+
+        // Allow casting ?T to T|null for any type T. Check if null is part of this type first.
+        if (\in_array($null_type, $target_type_set, true)) {
+            foreach ($type_set as $source_type) {
+                // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
+                $matches = false;
+                $non_null_source_type = $source_type->withIsNullable(false);
+                foreach ($target_type_set as $target_type) {
+                    if (!$non_null_source_type->canCastToType($target_type)) {
+                        $matches = true;
+                        break;
+                    }
+                }
+                if (!$matches) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         // Only if no source types can be cast to any target

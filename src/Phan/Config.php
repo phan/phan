@@ -753,6 +753,11 @@ class Config
         return self::$null_casts_as_any_type;
     }
 
+    public static function get_strict_param_check() : bool
+    {
+        return true;
+    }
+
     public static function get_null_casts_as_array() : bool
     {
         return self::$null_casts_as_array;

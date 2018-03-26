@@ -62,7 +62,7 @@ EOT;
         $code_base = require_once(dirname(__DIR__) . '/src/codebase.php');
 
         $extension_name = $options['e'] ?? $options['extension'] ?? null;
-        if (isset($extension_name)) {
+        if (is_string($extension_name)) {
             self::printStubsForExtension($extension_name, $code_base);
             return;
         }
