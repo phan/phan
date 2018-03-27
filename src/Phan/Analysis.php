@@ -3,6 +3,7 @@ namespace Phan;
 
 use Phan\AST\ASTSimplifier;
 use Phan\AST\Parser;
+use Phan\AST\PhanAnnotationAdder;
 use Phan\AST\TolerantASTConverter\ParseException;
 use Phan\AST\Visitor\Element;
 use Phan\Analysis\DuplicateFunctionAnalyzer;
@@ -135,7 +136,6 @@ class Analysis
                 );
             }
         }
-
 
         $context = self::parseNodeInContext(
             $code_base,
@@ -520,6 +520,7 @@ class Analysis
                 );
             }
         }
+        PhanAnnotationAdder::applyFull($node);
 
         $context = (new BlockAnalysisVisitor($code_base, $context))($node);
         $context->warnAboutUnusedUseElements($code_base);

@@ -45,6 +45,9 @@ class UnionTypeTest extends BaseTest
     // Based on BaseTest
     // TODO: Investigate instantiating CodeBase in a cheaper way (lazily?)
     protected $backupStaticAttributesBlacklist = [
+        'Phan\AST\PhanAnnotationAdder' => [
+            'closures_for_kind',
+        ],
         'Phan\Language\Type' => [
             'canonical_object_map',
             'internal_fn_cache',

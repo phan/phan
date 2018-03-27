@@ -1067,6 +1067,11 @@ class UnionTypeVisitor extends AnalysisVisitor
         return BoolType::instance(false)->asUnionType();
     }
 
+    /** @internal - Duplicated for performance. Use PhanAnnotationAdder instead */
+    const FLAG_IGNORE_NULLABLE = 1 << 29;
+    /** @internal - Duplicated for performance. Use PhanAnnotationAdder instead */
+    const FLAG_IGNORE_UNDEF = 1 << 30;
+
     /**
      * Visit a node with kind `\ast\AST_DIM`
      *
@@ -1126,13 +1131,13 @@ class UnionTypeVisitor extends AnalysisVisitor
         );
 
         // Figure out what the types of accessed array
-        // elements would be
+        // elements would be.
         $generic_types =
             $union_type->genericArrayElementTypes();
 
         // If we have generics, we're all set
         if (!$generic_types->isEmpty()) {
-            if ($this->isSuspiciousNullable($union_type)) {
+            if ($this->isSuspiciousNullable($union_type) && !($node->flags & self::FLAG_IGNORE_NULLABLE)) {
                 $this->emitIssue(
                     Issue::TypeArraySuspiciousNullable,
                     $node->lineno ?? 0,

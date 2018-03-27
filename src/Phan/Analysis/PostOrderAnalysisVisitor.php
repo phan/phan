@@ -2,6 +2,7 @@
 namespace Phan\Analysis;
 
 use Phan\AST\AnalysisVisitor;
+use Phan\AST\PhanAnnotationAdder;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -1663,21 +1664,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         $parent_node = \end($this->parent_node_list);
         $parent_kind = $parent_node->kind;
-        if ($parent_kind === \ast\AST_DIM) {
-            if ($parent_node->children['expr'] === $node && $this->shouldSkipNestedDim()) {
-                // will analyze $x['key']['nextKey'] = expr in AssignmentVisitor, but analyze $x[$other['key']] = expr here.
-                return $context;
-            }
-        } elseif ($parent_kind === \ast\AST_ASSIGN || $parent_kind === \ast\AST_ASSIGN_REF) {
-            if ($parent_node->children['var'] === $node) {
-                // will analyze $x['key'] = expr in AssignmentVisitor
-                return $context;
-            }
-        } elseif ($parent_kind === \ast\AST_ARRAY_ELEM) {
-            if ($this->shouldSkipNestedDim()) {
-                return $context;
-            }
-        } elseif ($parent_kind === \ast\AST_ISSET || $parent_kind === \ast\AST_UNSET || $parent_kind === \ast\AST_EMPTY) {
+        if ($node->flags & PhanAnnotationAdder::FLAG_IGNORE_NULLABLE_AND_UNDEF) {
             return $context;
         }
         // Check the array type to trigger TypeArraySuspicious
@@ -1710,27 +1697,34 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $cur_parent_node = \end($parent_node_list);
         for (;; $cur_parent_node = $prev_parent_node) {
             $prev_parent_node = \prev($parent_node_list);
-            $kind = $prev_parent_node->kind;
-            if ($kind === \ast\AST_DIM) {
-                if ($prev_parent_node->children['expr'] !== $cur_parent_node) {
-                    return false;
-                }
-                continue;
-            } elseif ($kind === \ast\AST_ASSIGN || $kind === \ast\AST_ASSIGN_REF) {
-                if ($prev_parent_node->children['var'] === $cur_parent_node) {
+            switch ($prev_parent_node->kind) {
+                case \ast\AST_DIM:
+                    if ($prev_parent_node->children['expr'] !== $cur_parent_node) {
+                        return false;
+                    }
+                    break;
+                case \ast\AST_ASSIGN:
+                case \ast\AST_ASSIGN_REF:
+                    return $prev_parent_node->children['var'] === $cur_parent_node;
+                case \ast\AST_ARRAY_ELEM:
+                    $prev_parent_node = \prev($parent_node_list);  // this becomes AST_ARRAY
+                    break;
+                case \ast\AST_ARRAY:
+                    break;
+                case \ast\AST_ISSET:
+                case \ast\AST_UNSET:
                     return true;
-                }
-                return false;
-            } elseif ($kind === \ast\AST_ARRAY_ELEM) {
-                $prev_parent_node = \prev($parent_node_list);  // this becomes AST_ARRAY
-                continue;
-            } elseif ($kind === \ast\AST_ARRAY) {
-                continue;
-            } elseif ($kind === \ast\AST_UNSET) {
-                return true;  // This is removing the offset
-            }
+                case \ast\AST_BINARY_OP:
+                    if ($prev_parent_node->flags !== \ast\flags\BINARY_COALESCE) {
+                        return false;
+                    }
 
-            return false;
+                    // Don't warn about $x being possibly null in $x['offset'] ?? null
+                    // TODO: Does this handle `($x['offset'] ?? $y['offset']) ?? null` ?
+                    return $prev_parent_node->children['left'] === $cur_parent_node;
+                default:
+                    return false;
+            }
         }
     }
 
@@ -1852,6 +1846,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $parent_node = \end($this->parent_node_list);
         $parent_kind = $parent_node->kind;
         if ($parent_kind === \ast\AST_DIM) {
+            // TODO: Limit this just to accesses? Right now, this might include AST_ARRAY
             return $parent_node->children['expr'] === $node && $this->shouldSkipNestedDim();
         } elseif ($parent_kind === \ast\AST_ASSIGN || $parent_kind === \ast\AST_ASSIGN_REF) {
             return $parent_node->children['var'] === $node;
