@@ -13,12 +13,15 @@ use ast\flags;
  * and returns the new Node.
  * The original \ast\Node objects are not modified.
  *
- * This adds to $node->children - Many of these types can have null
+ * This adds to $node->children - Many different AST node kinds can be used in places Phan needs to know about
+ * (for being potentially null/undefined)
  *
  * Current annotations:
  *
  * 1. Mark $x in isset($x['key']['nested']) as being acceptable to have null offsets.
  *    Same for $x in $x ?? null, empty($x['offset']), and so on.
+ * 2. Mark $x and $x['key'] in "$x['key'] = $y" as being acceptable to be null or undefined.
+ *    and so on (e.g. ['key' => $x[0]] = $y)
  */
 class PhanAnnotationAdder
 {

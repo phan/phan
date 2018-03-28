@@ -1662,8 +1662,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             true
         );
 
-        $parent_node = \end($this->parent_node_list);
-        $parent_kind = $parent_node->kind;
         if ($node->flags & PhanAnnotationAdder::FLAG_IGNORE_NULLABLE_AND_UNDEF) {
             return $context;
         }
@@ -1685,13 +1683,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @return bool true if the union type should skip analysis here.
+     * @return bool true if the union type should skip analysis due to being the left hand side expression of an assignment
      * We skip checks for $x['key'] being valid in expressions such as `$x['key']['key2']['key3'] = 'value';`
      * because those expressions will create $x['key'] as a side effect.
      *
      * Precondition: $parent_node->kind === \ast\AST_DIM && $parent_node->children['expr'] is $node
      */
-    private function shouldSkipNestedDim() : bool
+    private function shouldSkipNestedAssignDim() : bool
     {
         $parent_node_list = $this->parent_node_list;
         $cur_parent_node = \end($parent_node_list);
@@ -1711,17 +1709,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     break;
                 case \ast\AST_ARRAY:
                     break;
-                case \ast\AST_ISSET:
-                case \ast\AST_UNSET:
-                    return true;
-                case \ast\AST_BINARY_OP:
-                    if ($prev_parent_node->flags !== \ast\flags\BINARY_COALESCE) {
-                        return false;
-                    }
-
-                    // Don't warn about $x being possibly null in $x['offset'] ?? null
-                    // TODO: Does this handle `($x['offset'] ?? $y['offset']) ?? null` ?
-                    return $prev_parent_node->children['left'] === $cur_parent_node;
                 default:
                     return false;
             }
@@ -1846,8 +1833,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $parent_node = \end($this->parent_node_list);
         $parent_kind = $parent_node->kind;
         if ($parent_kind === \ast\AST_DIM) {
-            // TODO: Limit this just to accesses? Right now, this might include AST_ARRAY
-            return $parent_node->children['expr'] === $node && $this->shouldSkipNestedDim();
+            return $parent_node->children['expr'] === $node && $this->shouldSkipNestedAssignDim();
         } elseif ($parent_kind === \ast\AST_ASSIGN || $parent_kind === \ast\AST_ASSIGN_REF) {
             return $parent_node->children['var'] === $node;
         }

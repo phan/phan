@@ -1069,8 +1069,6 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /** @internal - Duplicated for performance. Use PhanAnnotationAdder instead */
     const FLAG_IGNORE_NULLABLE = 1 << 29;
-    /** @internal - Duplicated for performance. Use PhanAnnotationAdder instead */
-    const FLAG_IGNORE_UNDEF = 1 << 30;
 
     /**
      * Visit a node with kind `\ast\AST_DIM`
