@@ -61,6 +61,11 @@ final class ArrayShapeType extends ArrayType
         return $this->field_types;
     }
 
+    public function isNotEmptyArrayShape() : bool
+    {
+        return \count($this->field_types) !== 0;
+    }
+
     /**
      * @param int|string $field_key
      */
