@@ -356,6 +356,7 @@ class ConditionVisitor extends KindVisitorImplementation
 
     private function checkComplexIsset(Node $var_node) : Context
     {
+        // TODO: isset($obj->prop['offset']) should imply $obj is not null (removeNullFromVariable)
         $context = $this->context;
         if ($var_node->kind === \ast\AST_DIM) {
             $expr_node = $var_node;
@@ -392,7 +393,6 @@ class ConditionVisitor extends KindVisitorImplementation
                     $this->context = $context;
                 }
             }
-            $this->checkVariablesDefined($var_node);
         }
         return $context;
     }
