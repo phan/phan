@@ -1415,6 +1415,18 @@ class UnionType implements \Serializable
 
     /**
      * @return bool
+     * True if this union has array-like types (is of type array,
+     * or is a generic array)
+     */
+    public function hasArray() : bool
+    {
+        return $this->hasTypeMatchingCallback(function (Type $type) : bool {
+            return $type instanceof ArrayType;
+        });
+    }
+
+    /**
+     * @return bool
      * True if this union has array-like types (is of type array, is
      * a generic array, is an array shape, or implements ArrayAccess).
      */

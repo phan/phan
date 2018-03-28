@@ -122,11 +122,39 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             return ($options_result & JSON_OBJECT_AS_ARRAY) !== 0 ? $json_decode_array_types : $json_decode_object_types;
         };
 
+        $str_replace_types = UnionType::fromFullyQualifiedString('string|string[]');
+        $str_array_type = UnionType::fromFullyQualifiedString('string[]');
+
+        $str_replace_handler = static function (
+            CodeBase $code_base,
+            Context $context,
+            Func $function,
+            array $args
+        ) use (
+            $string_union_type,
+            $str_replace_types
+        ) : UnionType {
+            //  mixed json_decode ( string $json [, bool $assoc = FALSE [, int $depth = 512 [, int $options = 0 ]]] )
+            //  $options can include JSON_OBJECT_AS_ARRAY in a bitmask
+            // TODO: reject `...` operator? (Low priority)
+            if (\count($args) < 3) {
+                return $str_replace_types;
+            }
+            $union_type = UnionTypeVisitor::unionTypeFromNode($args[2]);
+            $has_array = $union_type->hasArray();
+            if ($union_type->canCastToUnionType($string_union_type)) {
+                return $has_array ? $str_replace_types : $string_union_type;
+            }
+            return $has_array ? $str_array_type : $str_replace_types;
+        };
+
         return [
             // commonly used functions where the return type depends on a passed in boolean
             'var_export'                => $string_if_2_true,
             'print_r'                   => $string_if_2_true_else_true,
             'json_decode'               => $json_decode_return_type_handler,
+            //
+            'str_replace' => $str_replace_handler,
         ];
     }
 

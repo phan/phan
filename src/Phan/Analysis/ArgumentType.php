@@ -564,6 +564,9 @@ class ArgumentType
 
         $parameter_type = $alternate_parameter->getNonVariadicUnionType();
 
+        $mismatch_type_set = UnionType::empty();
+        $mismatch_expanded_types = null;
+
         // For the strict
         foreach ($type_set as $type) {
             // Expand it to include all parent types up the chain
@@ -578,47 +581,83 @@ class ArgumentType
                     // If we are not in strict mode and we accept a string parameter
                     // and the argument we are passing has a __toString method then it is ok
                     if (!$context->getIsStrictTypes() && $parameter_type->hasType(StringType::instance(false))) {
-                        try {
-                            foreach ($individual_type_expanded->asClassList($code_base, $context) as $clazz) {
-                                if ($clazz->hasMethodWithName($code_base, "__toString")) {
-                                    return;
-                                }
-                            }
-                        } catch (CodeBaseException $e) {
-                            // Swallow "Cannot find class", go on to emit issue
+                        if ($this->hasToString($code_base, $context, $individual_type_expanded)) {
+                            continue;
                         }
                     }
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeMismatchArgumentStrictInternal,
-                        $lineno,
-                        ($i+1),
-                        $alternate_parameter->getName(),
-                        $argument_type,
-                        $method->getRepresentationForIssue(),
-                        (string)$parameter_type,
-                        $individual_type_expanded
-                    );
-                    return;
                 }
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::TypeMismatchArgumentStrict,
-                    $lineno,
-                    ($i+1),
-                    $alternate_parameter->getName(),
-                    $argument_type,
-                    $method->getRepresentationForIssue(),
-                    (string)$parameter_type,
-                    $individual_type_expanded,
-                    $method->getFileRef()->getFile(),
-                    $method->getFileRef()->getLineNumberStart()
-                );
-                return;
+                $mismatch_type_set = $mismatch_type_set->withType($parameter_type);
+                if ($mismatch_expanded_types === null) {
+                    // Warn about the first type
+                    $mismatch_expanded_types = $individual_type_expanded;
+                }
             }
         }
+
+
+        if ($mismatch_expanded_types === null) {
+            // No mismatches
+            return;
+        }
+
+        if ($method->isPHPInternal()) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                self::getStrictIssueType($mismatch_type_set, true),
+                $lineno,
+                ($i+1),
+                $alternate_parameter->getName(),
+                $mismatch_type_set,
+                $method->getRepresentationForIssue(),
+                (string)$parameter_type,
+                $mismatch_expanded_types
+            );
+            return;
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            self::getStrictIssueType($mismatch_type_set, false),
+            $lineno,
+            ($i+1),
+            $alternate_parameter->getName(),
+            $argument_type,
+            $method->getRepresentationForIssue(),
+            (string)$parameter_type,
+            $individual_type_expanded,
+            $method->getFileRef()->getFile(),
+            $method->getFileRef()->getLineNumberStart()
+        );
+    }
+
+    private static function getStrictIssueType(UnionType $union_type, bool $is_internal) : string {
+        if ($union_type->typeCount() !== 1) {
+            return $is_internal ? Issue::TypeMismatchArgumentStrictInternal : Issue::TypeMismatchArgumentStrict;
+        }
+        $type = \reset($union_type->getTypeSet());
+        //if ($type instanceof NullType) {
+        //}
+        //if ($type instanceof FalseType) {
+        //}
+        return $is_internal ? Issue::TypeMismatchArgumentStrictInternal : Issue::TypeMismatchArgumentStrict;
+    }
+
+    private static function hasToString(
+        CodeBase $code_base,
+        Context $context,
+        UnionType $individual_type_expanded
+    ) : bool {
+        try {
+            foreach ($individual_type_expanded->asClassList($code_base, $context) as $clazz) {
+                if ($clazz->hasMethodWithName($code_base, "__toString")) {
+                    return true;
+                }
+            }
+        } catch (CodeBaseException $e) {
+            // Swallow "Cannot find class", go on to emit issue
+        }
+        return false;
     }
 
     /**
