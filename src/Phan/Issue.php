@@ -1180,7 +1180,7 @@ class Issue
                 self::TypeInvalidThrowsIsInterface,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "@throws annotation of {FUNCTIONLIKE} has suspicious interface type {TYPE} for an @throws annotation, expected class (Zend PHP allows interfaces to be caught, so this might be intentional)",
+                "@throws annotation of {FUNCTIONLIKE} has suspicious interface type {TYPE} for an @throws annotation, expected class (PHP allows interfaces to be caught, so this might be intentional)",
                 self::REMEDIATION_B,
                 10052
             ),

@@ -40,7 +40,7 @@ try {
 } catch (TypeError $exception) {  // should warn about Error
 }
 
-// In Zend PHP, you can catch interfaces as well (but not in HHVM)
+// In PHP, you can catch interfaces as well (but not in HHVM)
 interface MyExceptionInterface {}
 class ExceptionC extends ExceptionA implements MyExceptionInterface {}
 

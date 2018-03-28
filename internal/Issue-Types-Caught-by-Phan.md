@@ -1264,7 +1264,7 @@ Invalid operator: left operand is array and right is not
 ## PhanTypeInvalidThrowsIsInterface
 
 ```
-@throws annotation of {FUNCTIONLIKE} has suspicious interface type {TYPE} for an @throws annotation, expected class (Zend PHP allows interfaces to be caught, so this might be intentional)
+@throws annotation of {FUNCTIONLIKE} has suspicious interface type {TYPE} for an @throws annotation, expected class (PHP allows interfaces to be caught, so this might be intentional)
 ```
 
 ## PhanTypeInvalidThrowsIsTrait

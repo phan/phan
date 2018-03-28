@@ -32,7 +32,7 @@ if (!class_exists('\ast\Node')) {
  * This is implemented as a collection of static methods for performance,
  * but functionality is provided through instance methods.
  * (The private methods may become instance methods if the performance impact is negligible
- * in Zend PHP and HHVM)
+ * in PHP and HHVM)
  *
  * The instance methods set all of the options (static variables)
  * each time they are invoked,
