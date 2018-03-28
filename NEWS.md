@@ -11,6 +11,7 @@ New Features(Analysis)
 
 Bug Fixes
 + Analyze conditionals wrapped by `@(cond)` (e.g. `if (@array_key_exists('key', $array)) {...}`) (#1591)
++ Appending an unknown type to an array shape should update Phan's inferred keys(int) and values(mixed) of an array. (#1560)
 
 24 Mar 2018, Phan 0.12.3
 ------------------------

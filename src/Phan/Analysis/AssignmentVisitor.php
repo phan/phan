@@ -540,8 +540,16 @@ class AssignmentVisitor extends AnalysisVisitor
             } else {
                 $key_type_enum = GenericArrayType::KEY_INT;
             }
-            $right_type =
-                $this->right_type->asGenericArrayTypes($key_type_enum);
+            $right_inner_type = $this->right_type;
+            if ($right_inner_type->isEmpty()) {
+                if ($key_type_enum === GenericArrayType::KEY_MIXED) {
+                    $right_type = ArrayType::instance(false)->asUnionType();
+                } else {
+                    $right_type = GenericArrayType::fromElementType(MixedType::instance(false), false, $key_type_enum)->asUnionType();
+                }
+            } else {
+                $right_type = $right_inner_type->asGenericArrayTypes($key_type_enum);
+            }
         }
 
         // Recurse into whatever we're []'ing

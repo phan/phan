@@ -320,11 +320,11 @@ final class GenericArrayType extends ArrayType
         foreach ($union_type->getTypeSet() as $type) {
             if ($type instanceof GenericArrayType) {
                 $key_types |= $type->key_type;
-                continue;
                 // TODO: support array shape as well?
             } elseif ($type instanceof ArrayShapeType) {
-                $key_types |= $type->getKeyType();
-                continue;
+                if ($type->isNotEmptyArrayShape()) {
+                    $key_types |= $type->getKeyType();
+                }
             }
         }
         // int|string corresponds to KEY_MIXED (KEY_INT|KEY_STRING)
