@@ -22,6 +22,9 @@ use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
 use ast\Node;
 
+/**
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ */
 class Parameter extends Variable
 {
     const REFERENCE_DEFAULT = 1;

@@ -11,6 +11,8 @@ class DuplicateClassAnalyzer
      * Check to see if the given Clazz is a duplicate
      *
      * @return void
+     *
+     * @suppress PhanPartialTypeMismatchArgument static handling has ambiguity
      */
     public static function analyzeDuplicateClass(
         CodeBase $code_base,

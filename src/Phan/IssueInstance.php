@@ -2,6 +2,9 @@
 namespace Phan;
 
 use Phan\Output\Colorizing;
+use Phan\Language\FQSEN;
+use Phan\Language\Type;
+use Phan\Language\UnionType;
 
 class IssueInstance
 {
@@ -21,7 +24,7 @@ class IssueInstance
      * @param Issue $issue
      * @param string $file
      * @param int $line
-     * @param array<int,string|int|float|bool|object> $template_parameters
+     * @param array<int,string|int|FQSEN|Type|UnionType> $template_parameters
      */
     public function __construct(
         Issue $issue,
@@ -66,7 +69,7 @@ class IssueInstance
     }
 
     /**
-     * @param array<int,string|int|float|bool|object> $template_parameters
+     * @param array<int,string|int|FQSEN|Type|UnionType> $template_parameters
      */
     private static function generateColorizedMessage(
         Issue $issue,

@@ -1019,10 +1019,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         if ($name !== 'assert') {
             return $this->context;
         }
-        $args = $node->children['args'];
-        if (!isset($node->children['args']->children[0])
-            || !($node->children['args']->children[0] instanceof Node)
-        ) {
+        $args_first_child = $node->children['args']->children[0] ?? null;
+        if (!($args_first_child instanceof Node)) {
             return $this->context;
         }
 
@@ -1031,7 +1029,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         return (new ConditionVisitor(
             $this->code_base,
             $this->context
-        ))->__invoke($args->children[0]);
+        ))->__invoke($args_first_child);
     }
 
     /**
