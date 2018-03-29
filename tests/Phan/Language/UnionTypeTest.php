@@ -202,6 +202,7 @@ class UnionTypeTest extends BaseTest
      * the first statement in the statement list in the given
      * code.
      * @suppress PhanDeprecatedFunction
+     * @suppress PhanPartialTypeMismatchArgument
      */
     private function typeStringFromCode(string $code) : string
     {

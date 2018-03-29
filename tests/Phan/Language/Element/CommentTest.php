@@ -24,6 +24,7 @@ class CommentTest extends BaseTest
         'read_magic_method_annotations' => true,
     ];
 
+    /** @var array<string,mixed> */
     protected $old_values = [];
 
     protected function setUp()

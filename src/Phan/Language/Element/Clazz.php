@@ -190,7 +190,7 @@ class Clazz extends AddressableElement
 
         if ($class_name === "Traversable") {
             // Make sure that canCastToExpandedUnionType() works as expected for Traversable and its subclasses
-            $clazz->setUnionType($clazz->getUnionType()->withType(IterableType::instance(false)));
+            $clazz->addAdditionalType(IterableType::instance(false));
         }
 
         // Note: If there are multiple calls to Clazz->addProperty(),
@@ -364,9 +364,7 @@ class Clazz extends AddressableElement
         $this->parent_type = $parent_type;
 
         // Add the parent to the union type of this class
-        $this->setUnionType($this->getUnionType()->withType(
-            $parent_type
-        ));
+        $this->addAdditionalType($parent_type);
     }
 
     /**
@@ -569,9 +567,9 @@ class Clazz extends AddressableElement
 
         // Add the interface to the union type of this
         // class
-        $this->setUnionType($this->getUnionType()->withUnionType(
-            UnionType::fromFullyQualifiedString((string)$fqsen)
-        ));
+        $this->addAdditionalType(
+            Type::fromFullyQualifiedString($fqsen->__toString())
+        );
     }
 
     /**
@@ -1544,9 +1542,9 @@ class Clazz extends AddressableElement
         $this->trait_fqsen_list[] = $fqsen;
 
         // Add the trait to the union type of this class
-        $this->setUnionType($this->getUnionType()->withUnionType(
-            UnionType::fromFullyQualifiedString((string)$fqsen)
-        ));
+        $this->addAdditionalType(
+            Type::fromFullyQualifiedString($fqsen->__toString())
+        );
     }
 
     /**

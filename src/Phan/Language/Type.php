@@ -1702,6 +1702,10 @@ class Type
             $union_type = $union_type->withUnionType(
                 $clazz->getUnionType()
             );
+            $additional_union_type = $clazz->getAdditionalTypes();
+            if ($additional_union_type !== null) {
+                $union_type = $union_type->withUnionType($additional_union_type);
+            }
 
             // Recurse up the tree to include all types
             $representation = (string)$this;
@@ -1727,10 +1731,6 @@ class Type
                 $recursive_union_type_builder->addType(
                     $alias_fqsen->asType()
                 );
-            }
-            $additional_union_type = $clazz->getAdditionalTypes();
-            if ($additional_union_type !== null) {
-                $recursive_union_type_builder->addUnionType($additional_union_type);
             }
 
             return $recursive_union_type_builder->getUnionType();

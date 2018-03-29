@@ -281,8 +281,14 @@ final class GenericArrayType extends ArrayType
 
             $clazz = $code_base->getClassByFQSEN($class_fqsen);
 
+            $class_union_type = $clazz->getUnionType();
+            $additional_union_type = $clazz->getAdditionalTypes();
+            if ($additional_union_type !== null) {
+                $class_union_type = $union_type->withUnionType($additional_union_type);
+            }
+
             $union_type = $union_type->withUnionType(
-                $clazz->getUnionType()->asGenericArrayTypes($this->key_type)
+                $class_union_type->asGenericArrayTypes($this->key_type)
             );
 
             // Recurse up the tree to include all types

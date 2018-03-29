@@ -25,6 +25,8 @@ use Phan\Library\Some;
  * TODO: Pass the doccomment line's index to the Element that will use the client,
  * so that it can be used for more precise line numbers (E.g. for where magic methods were declared,
  * where functions with no signature types but phpdoc types declared types that are invalid class names, etc.
+ *
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 class Comment
 {
