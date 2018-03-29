@@ -154,9 +154,12 @@ class CLI
             // TODO: Add an option to allow searching ancestor directories?
             \chdir($overriden_project_root_directory);
         }
-        Config::setProjectRootDirectory(
-            \getcwd()
-        );
+        $cwd = \getcwd();
+        if (!is_string($cwd)) {
+            echo "Failed to find current working directory\n";
+            exit(1);
+        }
+        Config::setProjectRootDirectory($cwd);
 
         if (\array_key_exists('init', $opts)) {
             $exit_code = Initializer::initPhanConfig($opts);
@@ -211,6 +214,10 @@ class CLI
                 case 'file-list':
                     $file_list = \is_array($value) ? $value : [$value];
                     foreach ($file_list as $file_name) {
+                        if (!is_string($file_name)) {
+                            error_log("invalid argument for --file-list");
+                            continue;
+                        }
                         $file_path = Config::projectPath($file_name);
                         if (is_file($file_path) && is_readable($file_path)) {
                             /** @var array<int,string> */
@@ -245,8 +252,8 @@ class CLI
                     if (!in_array($value, $factory->getTypes(), true)) {
                         $this->usage(
                             sprintf(
-                                'Unknown output mode "%s". Known values are [%s]',
-                                $value,
+                                'Unknown output mode %s. Known values are [%s]',
+                                json_encode($value),
                                 implode(',', $factory->getTypes())
                             ),
                             EXIT_FAILURE

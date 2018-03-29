@@ -82,7 +82,13 @@ class Issue
     const TypeMagicVoidWithReturn   = 'PhanTypeMagicVoidWithReturn';
     const TypeMismatchArgument      = 'PhanTypeMismatchArgument';
     const TypeMismatchArgumentInternal = 'PhanTypeMismatchArgumentInternal';
-    const TypeMismatchArgumentStrict = 'PhanTypeMismatchArgumentStrict';
+    const PartialTypeMismatchArgument = 'PhanPartialTypeMismatchArgument';
+    const PartialTypeMismatchArgumentInternal= 'PhanPartialTypeMismatchArgumentInternal';
+    const PossiblyNullTypeArgument  = 'PhanPossiblyNullTypeArgument';
+    const PossiblyNullTypeArgumentInternal = 'PhanPossiblyNullTypeArgumentInternal';
+    const PossiblyFalseTypeArgument  = 'PhanPossiblyFalseTypeArgument';
+    const PossiblyFalseTypeArgumentInternal = 'PhanPossiblyFalseTypeArgumentInternal';
+
     const TypeMismatchArgumentStrictInternal = 'PhanTypeMismatchArgumentStrictInternal';
     const TypeMismatchDefault       = 'PhanTypeMismatchDefault';
     const TypeMismatchDimAssignment = 'PhanTypeMismatchDimAssignment';
@@ -830,7 +836,7 @@ class Issue
                 10004
             ),
             new Issue(
-                self::TypeMismatchArgumentStrict,
+                self::PartialTypeMismatchArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
@@ -838,12 +844,44 @@ class Issue
                 10054
             ),
             new Issue(
-                self::TypeMismatchArgumentStrictInternal,
+                self::PartialTypeMismatchArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)",
                 self::REMEDIATION_B,
                 10055
+            ),
+            new Issue(
+                self::PossiblyNullTypeArgument,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                10056
+            ),
+            new Issue(
+                self::PossiblyNullTypeArgumentInternal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)",
+                self::REMEDIATION_B,
+                10057
+            ),
+            new Issue(
+                self::PossiblyFalseTypeArgument,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                10058
+            ),
+            new Issue(
+                self::PossiblyFalseTypeArgumentInternal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)",
+                self::REMEDIATION_B,
+                10059
             ),
             new Issue(
                 self::TypeMismatchReturn,
@@ -2506,6 +2544,7 @@ class Issue
         int $line,
         array $template_parameters = []
     ) : IssueInstance {
+        // TODO: Add callable to expanded union types instead
         return new IssueInstance(
             $this,
             $file,

@@ -3,6 +3,7 @@ namespace Phan\Plugin\Internal;
 
 use Phan\CodeBase;
 use Phan\AST\ContextNode;
+use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Type\StringType;
@@ -128,11 +129,12 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
         $str_replace_handler = static function (
             CodeBase $code_base,
             Context $context,
-            Func $function,
+            Func $unused_function,
             array $args
         ) use (
             $string_union_type,
-            $str_replace_types
+            $str_replace_types,
+            $str_array_type
         ) : UnionType {
             //  mixed json_decode ( string $json [, bool $assoc = FALSE [, int $depth = 512 [, int $options = 0 ]]] )
             //  $options can include JSON_OBJECT_AS_ARRAY in a bitmask
@@ -140,7 +142,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             if (\count($args) < 3) {
                 return $str_replace_types;
             }
-            $union_type = UnionTypeVisitor::unionTypeFromNode($args[2]);
+            $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2]);
             $has_array = $union_type->hasArray();
             if ($union_type->canCastToUnionType($string_union_type)) {
                 return $has_array ? $str_replace_types : $string_union_type;

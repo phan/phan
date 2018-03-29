@@ -154,13 +154,10 @@ class PhanPHPLinter
             // Convert this to a relative path
             if (strncmp($dirname . '/', $real, strlen($dirname . '/')) === 0) {
                 $real = substr($real, strlen($dirname . '/'));
-                if (isset($opts->temporary_file_map[$path])) {
-                    // If we are analyzing a temporary file, but it's within a project, then output the path to a temporary file for consistency.
-                    // (Tools which pass something a temporary path expect a temporary path in the output.)
-                    $file_mapping[$real] = $opts->temporary_file_map[$path];
-                } else {
-                    $file_mapping[$real] = $path;
-                }
+                $mapped_path = isset($opts->temporary_file_map[$path]) ? $opts->temporary_file_map[$path] : $path;
+                // If we are analyzing a temporary file, but it's within a project, then output the path to a temporary file for consistency.
+                // (Tools which pass something a temporary path expect a temporary path in the output.)
+                $file_mapping[$real] = $mapped_path;
                 $real_files[] = $real;
             } else {
                 self::debugInfo("Not in a Phan project, nothing to do.");

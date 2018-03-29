@@ -58,13 +58,13 @@ class ContextNode
     /** @var Context */
     private $context;
 
-    /** @var Node|string|float|int|null */
+    /** @var Node|bool|string|float|int|null */
     private $node;
 
     /**
      * @param CodeBase $code_base
      * @param Context $context
-     * @param Node|string|float|int|null $node
+     * @param Node|array|string|float|int|null $node
      */
     public function __construct(
         CodeBase $code_base,

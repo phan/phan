@@ -71,7 +71,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      *
      * @param CodeBase $code_base
      * @param Context $context
-     * @param int|string|float|Node|array $astNode
+     * @param bool|int|string|float|Node|array $astNode
      * @return ?PrimitiveValue
      */
     protected function astNodeToPrimitive(CodeBase $code_base, Context $context, $astNode)
@@ -111,6 +111,9 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                     // TODO: Use Phan's function resolution?
                     // TODO: ngettext?
                     $name = $nameNode->children['name'];
+                    if (!\is_string($name)) {
+                        return null;
+                    }
                     if ($name === '_' || strcasecmp($name, 'gettext') === 0) {
                         $childArg = $astNode->children['args']->children[0] ?? null;
                         if ($childArg === null) {

@@ -311,7 +311,7 @@ class Request
             return null;
         }
         $new_file_mapping_contents = [];
-        $method = $request['method'] ?? null;
+        $method = $request['method'] ?? '';
         switch ($method) {
             case 'analyze_all':
                 // Analyze the default list of files. No expected params.

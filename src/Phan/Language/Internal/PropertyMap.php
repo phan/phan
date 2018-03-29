@@ -3,6 +3,7 @@ namespace Phan\Language\Internal;
 
 $ordinary_ast_node = 'ast\Node|float|int|string';
 $ast_node_shape_inner = \implode(',', [
+    "args?:ast\Node",
     "cond?:$ordinary_ast_node",
     "expr?:$ordinary_ast_node",
     "left?:$ordinary_ast_node",
@@ -12,7 +13,7 @@ $ast_node_shape_inner = \implode(',', [
     "docComment?:?string",
 ]);
 
-$ast_node_children_types = 'array{' . $ast_node_shape_inner . '}|ast\Node[]|array[]|int[]|string[]|float[]|bool[]|null[]}';
+$ast_node_children_types = 'array{' . $ast_node_shape_inner . '}|ast\Node[]|array[]|int[]|string[]|float[]|bool[]|null[]';
 
 /**
  * A mapping from class name to property name to property type.
