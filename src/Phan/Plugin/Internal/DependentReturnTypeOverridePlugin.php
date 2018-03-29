@@ -126,7 +126,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
         $str_replace_types = UnionType::fromFullyQualifiedString('string|string[]');
         $str_array_type = UnionType::fromFullyQualifiedString('string[]');
 
-        $str_replace_handler = static function (
+        $third_argument_string_or_array_handler = static function (
             CodeBase $code_base,
             Context $context,
             Func $unused_function,
@@ -155,8 +155,11 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             'var_export'                => $string_if_2_true,
             'print_r'                   => $string_if_2_true_else_true,
             'json_decode'               => $json_decode_return_type_handler,
-            //
-            'str_replace' => $str_replace_handler,
+            // Functions with dependent return types
+            'str_replace'                 => $third_argument_string_or_array_handler,
+            'preg_replace'                => $third_argument_string_or_array_handler,
+            'preg_replace_callback'       => $third_argument_string_or_array_handler,
+            'preg_replace_callback_array' => $third_argument_string_or_array_handler,
         ];
     }
 

@@ -738,7 +738,7 @@ class Config
     }
 
     /**
-     * @return array
+     * @return array<string,mixed>
      * A map of configuration keys and their values
      */
     public function toArray() : array
