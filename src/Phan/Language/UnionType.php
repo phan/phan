@@ -821,7 +821,8 @@ class UnionType implements \Serializable
         return false;
     }
 
-    public function withoutSubclassesOf(CodeBase $code_base, Type $object_type) {
+    public function withoutSubclassesOf(CodeBase $code_base, Type $object_type)
+    {
         $is_nullable = $this->containsNullable();
         $new_variable_type = $this;
 

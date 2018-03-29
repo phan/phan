@@ -635,7 +635,8 @@ class ArgumentType
         );
     }
 
-    private static function getStrictIssueType(UnionType $union_type, bool $is_internal) : string {
+    private static function getStrictIssueType(UnionType $union_type, bool $is_internal) : string
+    {
         if ($union_type->typeCount() === 1) {
             $type = $union_type->getTypeSet()[0];
             if ($type instanceof NullType) {
