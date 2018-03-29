@@ -226,10 +226,10 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         $expr_node = $node->children['expr'];
         $flags = $node->flags;
         if ($flags !== flags\UNARY_BOOL_NOT) {
-            if ($flags === flags\UNARY_SILENCE) {
-                return $this->__invoke($expr_node);
-            }
             if ($expr_node instanceof Node) {
+                if ($flags === flags\UNARY_SILENCE) {
+                    return $this->__invoke($expr_node);
+                }
                 $this->checkVariablesDefined($expr_node);
             }
             return $this->context;
@@ -378,7 +378,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
             $variable->setUnionType($new_variable_type);
 
             // Overwrite the variable with its new type
-            $context = $context->withScopeVariable(
+            $context = clone($context)->withScopeVariable(
                 $variable
             );
         } catch (IssueException $exception) {
@@ -638,6 +638,9 @@ class NegatedConditionVisitor extends KindVisitorImplementation
     public function visitIsset(Node $node) : Context
     {
         $var_node = $node->children['var'];
+        if (!($var_node instanceof Node)) {
+            return $this->context;
+        }
         if (($var_node->kind ?? null) !== \ast\AST_VAR) {
             return $this->checkComplexIsset($var_node);
         }
@@ -686,6 +689,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
      * @param Variable $variable the variable being modified by inferences from isset or array_key_exists
      * @param Node|string|float|int|bool $dim_node represents the dimension being accessed. (E.g. can be a literal or an AST_CONST, etc.
      * @param Context $context the context with inferences made prior to this condition
+     * @suppress PhanPartialTypeMismatchArgument
      */
     private function withNullOrUnsetArrayShapeTypes(Variable $variable, $dim_node, Context $context, bool $remove_offset) : Context
     {
@@ -738,7 +742,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         $context = $this->context;
         $var_node = $node->children['expr'];
         // if (!empty($x))
-        if ($var_node->kind === \ast\AST_VAR) {
+        if ($var_node instanceof Node && $var_node->kind === \ast\AST_VAR) {
             // Don't check if variables are defined - don't emit notices for if (!empty($x)) {}, etc.
             $var_name = $var_node->children['name'];
             if (is_string($var_name)) {

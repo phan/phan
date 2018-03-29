@@ -67,7 +67,8 @@ final class ArrayShapeType extends ArrayType
     }
 
     /**
-     * @param int|string $field_key
+     * @param int|string|float|bool $field_key
+     * @suppress PhanPartialTypeMismatchArgumentInternal
      */
     public function withoutField($field_key) : ArrayShapeType
     {
@@ -342,7 +343,7 @@ final class ArrayShapeType extends ArrayType
         foreach ($array_shape_types as $type) {
             foreach ($type->field_types as $key => $union_type) {
                 $old_union_type = $field_types[$key] ?? null;
-                if (!isset($old_union_type)) {
+                if ($old_union_type === null) {
                     $field_types[$key] = $union_type;
                     continue;
                 }

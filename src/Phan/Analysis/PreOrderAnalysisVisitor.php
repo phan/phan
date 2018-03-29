@@ -384,7 +384,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         ) {
             $uses = $node->children['uses'];
             foreach ($uses->children as $use) {
-                if ($use->kind != \ast\AST_CLOSURE_VAR) {
+                if (!($use instanceof Node) || $use->kind != \ast\AST_CLOSURE_VAR) {
                     $this->emitIssue(
                         Issue::VariableUseClause,
                         $node->lineno ?? 0
@@ -535,7 +535,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // In php 7.0, a **valid** parsed AST would be an \ast\AST_LIST.
         // However, --force-polyfill-parser will emit \ast\AST_ARRAY.
         $var_node = $node->children['var'];
-        if (Config::get_closest_target_php_version_id() < 70100 && $node->children['var']->kind === \ast\AST_ARRAY) {
+        if (Config::get_closest_target_php_version_id() < 70100 && $var_node instanceof Node && $var_node->kind === \ast\AST_ARRAY) {
             $this->analyzeArrayAssignBackwardsCompatibility($var_node);
         }
         return $this->context;
@@ -568,6 +568,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         }
 
         $value_node = $node->children['value'];
+        if (!($value_node instanceof Node)) {
+            return $this->context;
+        }
         if ($value_node->kind == \ast\AST_ARRAY) {
             if (Config::get_closest_target_php_version_id() < 70100) {
                 $this->analyzeArrayAssignBackwardsCompatibility($value_node);

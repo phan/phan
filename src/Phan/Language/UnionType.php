@@ -2424,7 +2424,7 @@ class UnionType implements \Serializable
     }
 
     /**
-     * @param int|string $field_key
+     * @param int|string|float|bool $field_key
      */
     public function withoutArrayShapeField($field_key) : UnionType
     {

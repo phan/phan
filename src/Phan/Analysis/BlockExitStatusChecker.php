@@ -26,6 +26,7 @@ use Phan\AST\Visitor\KindVisitorImplementation;
  * TODO: Analyze switch (if there is a default) in another PR (And handle fallthrough)
  *
  * @phan-file-suppress PhanPluginUnusedPublicFinalMethodArgument
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 final class BlockExitStatusChecker extends KindVisitorImplementation
 {
@@ -87,9 +88,10 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if ($cond instanceof Node) {
             // TODO: Could look up values for remaining constants and inline expressions, but doing that has low value.
             if ($cond->kind === \ast\AST_CONST) {
-                $condName = $cond->children['name'];
-                if ($condName->kind === \ast\AST_NAME) {
-                    return strcasecmp($condName->children['name'], 'true') === 0;
+                $cond_name = $cond->children['name'];
+                if ($cond_name->kind === \ast\AST_NAME) {
+                    $cond_name_string = $cond_name->children['name'];
+                    return \is_string($cond_name_string) && strcasecmp($cond_name_string, 'true') === 0;
                 }
             }
             return false;

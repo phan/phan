@@ -961,7 +961,7 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
-     * @param int|string $field_key
+     * @param int|string|float|bool $field_key
      */
     public function withoutArrayShapeField($field_key) : UnionType
     {

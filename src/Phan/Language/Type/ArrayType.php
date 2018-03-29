@@ -117,7 +117,7 @@ class ArrayType extends IterableType
      * TODO: Remove any top level native types that can't have offsets, e.g. IntType, null, etc.
      *
      * @param UnionType $left the left hand side (e.g. of a isset check).
-     * @param int|string $field_dim_value
+     * @param int|string|float|bool $field_dim_value (Ideally int|string)
      * @param UnionType $field_type
      * @return UnionType with ArrayType subclass(es)
      */

@@ -48,6 +48,7 @@ if (!\function_exists('spl_object_id')) {
 
 /**
  * Methods for an AST node in context
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 class ContextNode
 {
@@ -58,13 +59,13 @@ class ContextNode
     /** @var Context */
     private $context;
 
-    /** @var Node|bool|string|float|int|null */
+    /** @var Node|bool|string|float|int|bool|null */
     private $node;
 
     /**
      * @param CodeBase $code_base
      * @param Context $context
-     * @param Node|array|string|float|int|null $node
+     * @param Node|array|string|float|int|bool|null $node
      */
     public function __construct(
         CodeBase $code_base,
@@ -1310,7 +1311,8 @@ class ContextNode
             "Node must be of type ast\AST_CONST"
         );
 
-        if ($node->children['name']->kind !== ast\AST_NAME) {
+        $constant_name = $node->children['name']->children['name'] ?? null;
+        if (!\is_string($constant_name)) {
             throw new NodeException(
                 $node,
                 "Can't determine constant name"
@@ -1319,7 +1321,6 @@ class ContextNode
 
         $code_base = $this->code_base;
 
-        $constant_name = $node->children['name']->children['name'];
         $constant_name_lower = \strtolower($constant_name);
         if ($constant_name_lower === 'true' || $constant_name_lower === 'false' || $constant_name_lower === 'null') {
             return $code_base->getGlobalConstantByFQSEN(

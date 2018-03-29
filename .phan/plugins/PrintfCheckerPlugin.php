@@ -71,7 +71,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      *
      * @param CodeBase $code_base
      * @param Context $context
-     * @param bool|int|string|float|Node|array $astNode
+     * @param bool|int|string|float|Node|array|null $astNode
      * @return ?PrimitiveValue
      */
     protected function astNodeToPrimitive(CodeBase $code_base, Context $context, $astNode)
@@ -184,12 +184,12 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             Func $function,
             array $args
         ) {
-            if (\count($args) < 1) {
-                return;
-            }
             // TODO: Resolve global constants and class constants?
             // TODO: Check for AST_UNPACK
-            $pattern = $args[0];
+            $pattern = $args[0] ?? null;
+            if ($pattern === null) {
+                return;
+            }
             if ($pattern instanceof Node) {
                 $pattern = (new ContextNode($code_base, $context, $pattern))->getEquivalentPHPScalarValue();
             }
@@ -289,8 +289,8 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      * @param CodeBase $code_base
      * @param Context $context
      * @param FunctionInterface $function
-     * @param Node|string|float|int $pattern_node
-     * @param null|Node[]|string[]|int[] $arg_nodes arguments following the format string. Null if the arguments could not be determined.
+     * @param Node|array|string|float|int|bool|null $pattern_node
+     * @param Node[]|string[]|int[] $arg_nodes arguments following the format string. Null if the arguments could not be determined.
      * @return void
      */
     protected function analyzePrintfPattern(CodeBase $code_base, Context $context, FunctionInterface $function, $pattern_node, $arg_nodes)
@@ -309,7 +309,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
 
         $fmt_str = $primitive_for_fmtstr->value;
         $is_translated = $primitive_for_fmtstr->is_translated;
-        $specs = ConversionSpec::extract_all($fmt_str);
+        $specs = is_string($fmt_str) ? ConversionSpec::extract_all($fmt_str) : [];
         $fmt_str = (string)$fmt_str;
         /**
          * @param string $issue_type
