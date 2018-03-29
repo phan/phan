@@ -9,6 +9,10 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use ast\Node;
 
+/**
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
+ */
 abstract class ScopeVisitor extends AnalysisVisitor
 {
 
@@ -63,7 +67,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
         $declares = $node->children['declares'];
         $name = $declares->children[0]->children['name'];
         $value = $declares->children[0]->children['value'];
-        if ('strict_types' === $name) {
+        if ('strict_types' === $name && is_int($value)) {
             return $this->context->withStrictTypes($value);
         }
 

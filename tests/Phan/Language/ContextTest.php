@@ -12,6 +12,9 @@ use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Tests\BaseTest;
 use Phan\Parse\ParseVisitor;
 
+/**
+ * @phan-file-suppress PhanPartialTypeMismatchArgument TODO: phpunit lib
+ */
 class ContextTest extends BaseTest
 {
 

@@ -109,8 +109,8 @@ class ASTSimplifier
     }
 
     /**
-     * @param \ast\Node[] $statements
-     * @return \ast\Node[][]|bool[] - [New/old list, bool $modified] An equivalent list after simplifying (or the original list)
+     * @param array<int,?Node|?float|?int|?string|?float|?bool> $statements
+     * @return array{0:array<int,\ast\Node>,1:bool} - [New/old list, bool $modified] An equivalent list after simplifying (or the original list)
      */
     private function normalizeStatementList(array $statements) : array
     {
@@ -341,6 +341,7 @@ class ASTSimplifier
         while (count($children) > 2) {
             $r = array_pop($children);
             $l = array_pop($children);
+            assert($l instanceof Node && $r instanceof Node);
             $l->children['stmts']->flags = 0;
             $r->children['stmts']->flags = 0;
             $inner_if_node = self::buildIfNode($l, $r);

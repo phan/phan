@@ -458,7 +458,7 @@ class ArgumentType
                 $argument,
                 true
             );
-            self::analyzeParameter($code_base, $context, $method, $argument_type, $node->lineno ?? 0, $i);
+            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $node->lineno ?? 0, $i);
         }
     }
 

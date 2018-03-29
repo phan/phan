@@ -11,6 +11,9 @@ use Phan\Language\Type\GenericArrayType;
 use Phan\Language\UnionType;
 use ast\Node;
 
+/**
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ */
 class Method extends ClassElement implements FunctionInterface
 {
     use \Phan\Analysis\Analyzable;

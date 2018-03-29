@@ -31,6 +31,8 @@ use ast\Node;
  * - If there is more than one possible child context, merges state from them (variable types)
  *
  * @see $this->visit
+ *
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 class BlockAnalysisVisitor extends AnalysisVisitor
 {

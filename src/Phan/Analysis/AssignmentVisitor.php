@@ -29,6 +29,9 @@ use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use ast\Node;
 
+/**
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ */
 class AssignmentVisitor extends AnalysisVisitor
 {
     /**

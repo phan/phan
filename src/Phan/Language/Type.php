@@ -39,6 +39,14 @@ use Phan\Library\Tuple5;
 
 use InvalidArgumentException;
 
+/**
+ * The base class for all of Phan's types.
+ * A plain Type represents a class instance.
+ * Separate subclasses exist for NativeType, ArrayType, ScalarType, TemplateType, etc.
+ *
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
+ */
 class Type
 {
     use \Phan\Memoize;

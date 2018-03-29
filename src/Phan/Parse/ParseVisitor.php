@@ -44,6 +44,8 @@ use ast\Node;
  * @property-read CodeBase $code_base
  *
  * @phan-file-suppress PhanPluginUnusedPublicMethodArgument implementing faster no-op methods for common visit*
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  */
 class ParseVisitor extends ScopeVisitor
 {
@@ -544,6 +546,7 @@ class ParseVisitor extends ScopeVisitor
         foreach ($node->children as $child_node) {
             \assert($child_node instanceof Node, 'expected class const element to be a Node');
             $name = $child_node->children['name'];
+            \assert(\is_string($name));
 
             $fqsen = FullyQualifiedClassConstantName::fromStringInContext(
                 $name,

@@ -8,6 +8,10 @@ use Phan\Language\Type;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 
+/**
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
+ */
 class FunctionFactory
 {
     /**
@@ -47,6 +51,7 @@ class FunctionFactory
     }
 
     /**
+     * @param string[] $signature
      * @return array<int,Func>
      * One or more (alternate) methods begotten from
      * reflection info and internal method data

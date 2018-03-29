@@ -32,6 +32,9 @@ use Phan\Plugin\ConfigPluginSet;
 
 use Closure;
 
+/**
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ */
 class Clazz extends AddressableElement
 {
     use \Phan\Memoize;

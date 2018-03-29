@@ -28,6 +28,9 @@ use Phan\Language\UnionType;
 use ast\Node;
 use ast\flags;
 
+/**
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ */
 class PostOrderAnalysisVisitor extends AnalysisVisitor
 {
     /**

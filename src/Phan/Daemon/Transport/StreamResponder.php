@@ -34,6 +34,10 @@ class StreamResponder implements Responder
     {
         if (!$this->did_read_request_data) {
             $response_connection = $this->connection;
+            if (!$response_connection) {
+                Daemon::debugf("Should not happen, missing a response connection");  // debugging code
+                return null;
+            }
             Daemon::debugf("Got a connection");  // debugging code
             $request_bytes = '';
             while (!feof($response_connection)) {

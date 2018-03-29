@@ -692,7 +692,7 @@ class ConversionSpec
     /**
      * Extract a list of directives from a format string.
      * @param string $fmt_str a format string to extract directives from.
-     * @return ConversionSpec[][] array(int position => array of ConversionSpec referring to arg at that position)
+     * @return array<int,array<int,ConversionSpec>> array(int position => array of ConversionSpec referring to arg at that position)
      */
     public static function extract_all($fmt_str) : array
     {

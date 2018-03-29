@@ -342,8 +342,12 @@ class Request
                 }
                 if (\is_null($error_message)) {
                     $file_mapping_contents = $request[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] ?? [];
-                    $new_file_mapping_contents = self::normalizeFileMappingContents($file_mapping_contents, $error_message);
-                    $request[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] = $new_file_mapping_contents;
+                    if (is_array($file_mapping_contents)) {
+                        $new_file_mapping_contents = self::normalizeFileMappingContents($file_mapping_contents, $error_message);
+                        $request[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] = $new_file_mapping_contents;
+                    } else {
+                        $error_message = 'Must pass an optional array or null for temporary_file_mapping_contents';
+                    }
                 }
                 if ($error_message !== null) {
                     Daemon::debugf($error_message);
@@ -466,6 +470,7 @@ class Request
      * Substitutes files. We assume that the original file path exists already, and reject it if it doesn't.
      * (i.e. it was returned by $file_path_lister in the past)
      *
+     * @param array<string,string> $temporary_file_mapping_contents
      * @return void
      */
     private static function applyTemporaryFileMappingForParsePhase(CodeBase $code_base, array $temporary_file_mapping_contents)

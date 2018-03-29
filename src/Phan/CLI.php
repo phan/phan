@@ -16,6 +16,8 @@ use Symfony\Component\Console\Output\StreamOutput;
  * Contains methods for parsing CLI arguments to Phan,
  * outputting to the CLI, as well as helper methods to retrieve files/folders
  * for the analyzed project.
+ *
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  */
 class CLI
 {
@@ -235,6 +237,10 @@ class CLI
                     if (!$this->file_list_only) {
                         $directory_list = \is_array($value) ? $value : [$value];
                         foreach ($directory_list as $directory_name) {
+                            if (!is_string($directory_name)) {
+                                error_log("Invalid --directory setting");
+                                return;
+                            }
                             $this->file_list_in_config = array_merge(
                                 $this->file_list,
                                 $this->directoryNameToFileList(

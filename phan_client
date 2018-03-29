@@ -25,6 +25,9 @@
  * (Install phpVERSION-dev/pecl to install extensions from source/pecl (phpize, configure, make install/pecl install))
  *
  * TODO: tutorial or repo.
+ *
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  */
 class PhanPHPLinter
 {
