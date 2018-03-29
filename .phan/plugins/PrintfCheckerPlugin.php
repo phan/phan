@@ -85,7 +85,9 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 $nameNode = $astNode->children['name'];
                 if ($nameNode->kind === \ast\AST_NAME) {
                     $name = $nameNode->children['name'];
-                    \assert(\is_string($name));
+                    if (!\is_string($name)) {
+                        return null;
+                    }
 
                     if (\strcasecmp($name, '__DIR__') === 0) {
                         // Relative to the directory of that file... Hopefully doesn't contain a format specifier
