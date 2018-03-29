@@ -378,7 +378,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
             $variable->setUnionType($new_variable_type);
 
             // Overwrite the variable with its new type
-            $context = clone($context)->withScopeVariable(
+            $context = $context->withScopeVariable(
                 $variable
             );
         } catch (IssueException $exception) {

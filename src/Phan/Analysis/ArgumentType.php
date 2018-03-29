@@ -21,6 +21,9 @@ use Phan\Language\UnionType;
 use Phan\PluginV2\StopParamAnalysisException;
 use ast\Node;
 
+/**
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ */
 class ArgumentType
 {
 

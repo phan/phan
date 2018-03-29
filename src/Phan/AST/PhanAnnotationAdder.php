@@ -161,7 +161,7 @@ class PhanAnnotationAdder
     }
 
     /**
-     * @param Node|array|bool|int|float $node
+     * @param Node|array|int|string|float|bool|null $node
      * @return void
      */
     public static function applyFull($node)

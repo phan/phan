@@ -1170,10 +1170,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $child_context_list[] = $child_context;
         }
         if (\count($child_context_list) >= 1) {
+            if (\count($child_context_list) < 2) {
+                $child_context_list[] = $context;
+            }
             $context = (new ContextMergeVisitor(
                 $context,
                 $child_context_list
-            ))->__invoke($node);
+            ))->combineChildContextList();
         }
 
         $context = $this->postOrderAnalyze($context, $node);

@@ -7,6 +7,9 @@ use ast\Node;
  * This simplifies a PHP AST into a form which is easier to analyze,
  * and returns the new Node.
  * The original \ast\Node objects are not modified.
+ *
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  */
 class ASTSimplifier
 {
