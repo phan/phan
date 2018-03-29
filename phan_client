@@ -203,6 +203,10 @@ class PhanPHPLinter
         $response_bytes = implode('', $response_lines);
         // This uses the 'phplike' format imitating php's error format. "%s in %s on line %d"
         $response = json_decode($response_bytes, true);
+        if (!is_array($response)) {
+            self::debugError(sprintf("Invalid response from phan for %s: expected JSON object: %s", $opts->url, $response_bytes));
+            return;
+        }
         $status = isset($response['status']) ? $response['status'] : null;
         if ($status === 'ok') {
             self::dumpJSONIssues($response, $file_mapping);

@@ -73,6 +73,13 @@ class Clazz extends AddressableElement
     private $did_finish_parsing = true;
 
     /**
+     * @var ?UnionType for Type->asExpandedTypes()
+     *
+     * TODO: This won't reverse in daemon mode?
+     */
+    private $additional_union_types = null;
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -2628,12 +2635,28 @@ class Clazz extends AddressableElement
         $are_constants_hydrated = $this->are_constants_hydrated;
         $is_hydrated = $this->is_hydrated;
         $original_union_type = $this->getUnionType();
+        $additional_union_types = $this->additional_union_types;
 
-        return function () use ($original_union_type, $is_hydrated, $are_constants_hydrated) {
+        return function () use ($original_union_type, $is_hydrated, $are_constants_hydrated, $additional_union_types) {
             $this->memoizeFlushAll();
             $this->are_constants_hydrated = $are_constants_hydrated;
             $this->is_hydrated = $is_hydrated;
             $this->setUnionType($original_union_type);
+            $this->additional_union_types = $additional_union_types;
         };
+    }
+
+    /**
+     * @return void
+     */
+    public function addAdditionalType(Type $type) {
+        $this->additional_union_types = ($this->additional_union_types ?? UnionType::empty())->withType($type);
+    }
+
+    /**
+     * @return ?UnionType
+     */
+    public function getAdditionalTypes() {
+        return $this->additional_union_types;
     }
 }

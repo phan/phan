@@ -1728,6 +1728,10 @@ class Type
                     $alias_fqsen->asType()
                 );
             }
+            $additional_union_type = $clazz->getAdditionalTypes();
+            if ($additional_union_type !== null) {
+                $recursive_union_type_builder->addUnionType($additional_union_type);
+            }
 
             return $recursive_union_type_builder->getUnionType();
         });

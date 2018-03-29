@@ -348,15 +348,12 @@ class ParseVisitor extends ScopeVisitor
         if ('__construct' === $method_name) {
             $class->setIsParentConstructorCalled(false);
         } elseif ('__invoke' === $method_name) {
-            $class->setUnionType($class->getUnionType()->withType(
-                CallableType::instance(false)
-            ));
+            // TODO: More precise callable shape
+            $class->addAdditionalType(CallableType::instance(false));
         } elseif ('__toString' === $method_name
             && !$this->context->getIsStrictTypes()
         ) {
-            $class->setUnionType($class->getUnionType()->withType(
-                StringType::instance(false)
-            ));
+            $class->addAdditionalType(StringType::instance(false));
         }
 
 
