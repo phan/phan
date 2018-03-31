@@ -169,11 +169,14 @@ EOT;
      */
     abstract protected function getAvailableMethodSignatures() : array;
 
+    /**
+     * @param array<string,array<int|string,string>> $phan_signatures
+     */
     protected static function getLowercaseSignatureMap(array $phan_signatures) : array
     {
         $phan_signatures_lc = [];
         foreach ($phan_signatures as $key => $signature) {
-            $phan_signatures_lc[strtolower($key)] = $signature;
+            $phan_signatures_lc[\strtolower($key)] = $signature;
         }
         return $phan_signatures_lc;
     }
@@ -264,6 +267,9 @@ EOT;
         file_put_contents($new_signature_path, $contents);
     }
 
+    /**
+     * @param array<string,array<int|string,string>> $signatures
+     */
     public static function serializeSignatures(array $signatures) : string
     {
         $parts = ["return [\n"];

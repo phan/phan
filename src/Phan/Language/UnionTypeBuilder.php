@@ -66,6 +66,9 @@ final class UnionTypeBuilder
         return $this->type_set;
     }
 
+    /**
+     * @suppress PhanPartialTypeMismatchArgument
+     * */
     public function getUnionType() : UnionType
     {
         return UnionType::of($this->type_set);

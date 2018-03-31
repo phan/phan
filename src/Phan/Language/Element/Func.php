@@ -13,6 +13,9 @@ use Phan\Language\Type;
 use Phan\Language\UnionType;
 use ast\Node;
 
+/**
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ */
 class Func extends AddressableElement implements FunctionInterface
 {
     use \Phan\Analysis\Analyzable;

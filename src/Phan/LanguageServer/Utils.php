@@ -36,6 +36,7 @@ class Utils
      */
     public static function pathToUri(string $filepath) : string
     {
+        // TODO: Make the return value of str_replace depend on the param value
         $filepath = \trim(\str_replace('\\', '/', $filepath), '/');
         $parts = \explode('/', $filepath);
         // Don't %-encode the colon after a Windows drive letter

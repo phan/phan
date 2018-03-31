@@ -14,6 +14,9 @@ use Phan\Language\Element\Variable;
 use Phan\Language\UnionType;
 use ast\Node;
 
+/**
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
+ */
 trait ConditionVisitorUtil
 {
     /** @var CodeBase */

@@ -290,11 +290,11 @@ class ConditionVisitor extends KindVisitorImplementation
         $expr_node = $node->children['expr'];
         $flags = $node->flags;
         if ($flags !== flags\UNARY_BOOL_NOT) {
-            if ($flags === flags\UNARY_SILENCE) {
-                return $this->__invoke($expr_node);
-            }
             // TODO: Emit dead code issue for non-nodes
             if ($expr_node instanceof Node) {
+                if ($flags === flags\UNARY_SILENCE) {
+                    return $this->__invoke($expr_node);
+                }
                 $this->checkVariablesDefined($expr_node);
             }
             return $this->context;
@@ -332,6 +332,9 @@ class ConditionVisitor extends KindVisitorImplementation
     {
         $context = $this->context;
         $var_node = $node->children['var'];
+        if (!($var_node instanceof Node)) {
+            return $context;
+        }
         if (($var_node->kind ?? null) !== \ast\AST_VAR) {
             return $this->checkComplexIsset($var_node);
         }
@@ -698,9 +701,11 @@ class ConditionVisitor extends KindVisitorImplementation
             return $this->context;
         }
         $args = $node->children['args']->children;
+        $first_arg = $args[0] ?? null;
+
         // Only look at things of the form
         // `\is_string($variable)`
-        if (!self::isArgumentListWithVarAsFirstArgument($args)) {
+        if (!($first_arg instanceof Node && $first_arg->kind === \ast\AST_VAR)) {
             if (\strcasecmp($raw_function_name, 'array_key_exists') === 0 && \count($args) === 2) {
                 return $this->analyzeArrayKeyExists($args);
             }
@@ -729,7 +734,7 @@ class ConditionVisitor extends KindVisitorImplementation
 
         try {
             // Get the variable we're operating on
-            $variable = $this->getVariableFromScope($args[0], $context);
+            $variable = $this->getVariableFromScope($first_arg, $context);
 
             if (\is_null($variable)) {
                 return $context;
@@ -793,6 +798,10 @@ class ConditionVisitor extends KindVisitorImplementation
     public function visitEmpty(Node $node) : Context
     {
         $var_node = $node->children['expr'];
+        if (!($var_node instanceof Node)) {
+            return $this->context;
+        }
+        // Should always be a node for valid ASTs, tolerant-php-parser may produce invalid nodes
         if ($var_node->kind === \ast\AST_VAR) {
             // Don't emit notices for if (empty($x)) {}, etc.
             return $this->removeTruthyFromVariable($var_node, $this->context, true);

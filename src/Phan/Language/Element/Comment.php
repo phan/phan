@@ -25,6 +25,8 @@ use Phan\Library\Some;
  * TODO: Pass the doccomment line's index to the Element that will use the client,
  * so that it can be used for more precise line numbers (E.g. for where magic methods were declared,
  * where functions with no signature types but phpdoc types declared types that are invalid class names, etc.
+ *
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 class Comment
 {
@@ -95,7 +97,7 @@ class Comment
     private $parameter_map = [];
 
     /**
-     * @var array<int,string>
+     * @var array<int,TemplateType>
      * A list of template types parameterizing a generic class
      */
     private $template_type_list = [];
@@ -158,7 +160,7 @@ class Comment
      *
      * @param array<int,CommentParameter> $parameter_list
      *
-     * @param array<int,string> $template_type_list
+     * @param array<int,TemplateType> $template_type_list
      * A list of template types parameterizing a generic class
      *
      * @param Option<Type>|None $inherited_type (Note: some issues with templates and narrowing signature types to phpdoc type, added None as a workaround)
@@ -173,6 +175,7 @@ class Comment
      *
      * @param array<int,CommentMethod> $magic_method_list
      *
+     * @param array<string,mixed> $phan_overrides
      *
      * @param Option<Type>|None $closure_scope
      * For closures: Allows us to document the class of the object
@@ -423,9 +426,8 @@ class Comment
                     // Make sure support for generic types is enabled
                     if (Config::getValue('generic_types_enabled')) {
                         $check_compatible('@template', [Comment::ON_CLASS], $i, $line);
-                        if (($template_type =
-                            self::templateTypeFromCommentLine($line))
-                        ) {
+                        $template_type = self::templateTypeFromCommentLine($line);
+                        if ($template_type) {
                             $template_type_list[] = $template_type;
                         }
                     }

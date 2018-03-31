@@ -11,6 +11,7 @@ class PHP72Test extends AbstractPhanFileTest
         'target_php_version' => '7.2',
     ];
 
+    /** @var array<string,mixed> */
     protected $old_values = [];
 
     public function setUp()

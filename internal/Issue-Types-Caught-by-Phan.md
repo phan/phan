@@ -1087,6 +1087,45 @@ $v8 = null;
 $v8->f();
 ```
 
+## PhanPartialTypeMismatchArgument
+
+```
+Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}
+```
+
+## PhanPartialTypeMismatchArgumentInternal
+
+```
+Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)
+```
+
+## PhanPossiblyFalseTypeArgument
+
+This issue (and other `PhanPossibly*` issues) may be emitted when `strict_param_checking` is true
+(when some types of the argument match, but not others.)
+
+```
+Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}
+```
+
+## PhanPossiblyFalseTypeArgumentInternal
+
+```
+Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)
+```
+
+## PhanPossiblyNullTypeArgument
+
+```
+Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}
+```
+
+## PhanPossiblyNullTypeArgumentInternal
+
+```
+Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)
+```
+
 ## PhanTypeArrayOperator
 
 ```
@@ -1512,6 +1551,18 @@ non-abstract class {CLASS} contains abstract method {METHOD} declared at {FILE}:
 
 ```
 non-abstract class {CLASS} contains abstract internal method {METHOD}
+```
+
+## PhanEmptyFQSENInCallable
+
+```
+Possible call to a function '{FUNCTIONLIKE}' with an empty FQSEN.
+```
+
+## PhanEmptyFQSENInClasslike
+
+```
+Possible use of a classlike '{CLASSLIKE}' with an empty FQSEN.
 ```
 
 ## PhanEmptyFile

@@ -93,7 +93,8 @@ class PhanParameterInfo
 
 /**
  * @param string[] $fields
- * @return PhanParameterInfo[]
+ * @phan-param array{0:string}|array<string,string> $fields
+ * @return array<int,PhanParameterInfo>
  */
 function get_parameters_from_phan($fields)
 {

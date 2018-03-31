@@ -48,6 +48,7 @@ if (!\function_exists('spl_object_id')) {
 
 /**
  * Methods for an AST node in context
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 class ContextNode
 {
@@ -58,13 +59,13 @@ class ContextNode
     /** @var Context */
     private $context;
 
-    /** @var Node|string|null */
+    /** @var Node|bool|string|float|int|bool|null */
     private $node;
 
     /**
      * @param CodeBase $code_base
      * @param Context $context
-     * @param Node|string|null $node
+     * @param Node|array|string|float|int|bool|null $node
      */
     public function __construct(
         CodeBase $code_base,
@@ -1000,18 +1001,19 @@ class ContextNode
         $property_name,
         bool $is_static
     ) : Property {
+        $node = $this->node;
 
         \assert(
-            $this->node instanceof ast\Node,
+            $node instanceof ast\Node,
             '$this->node must be a node'
         );
 
-        $property_name = $this->node->children['prop'];
+        $property_name = $node->children['prop'];
 
         // Give up for things like C::$prop_name
         if (!\is_string($property_name)) {
             throw new NodeException(
-                $this->node,
+                $node,
                 "Cannot figure out non-string property name"
             );
         }
@@ -1024,15 +1026,15 @@ class ContextNode
             $class_list = (new ContextNode(
                 $this->code_base,
                 $this->context,
-                $this->node->children['expr'] ??
-                    $this->node->children['class']
+                $node->children['expr'] ??
+                    $node->children['class']
             ))->getClassList(true, $expected_type_categories, $expected_issue);
         } catch (CodeBaseException $exception) {
             if ($is_static) {
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredStaticProperty)(
                         $this->context->getFile(),
-                        $this->node->lineno ?? 0,
+                        $node->lineno ?? 0,
                         [ $property_name, (string)$exception->getFQSEN() ]
                     )
                 );
@@ -1040,7 +1042,7 @@ class ContextNode
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredProperty)(
                         $this->context->getFile(),
-                        $this->node->lineno ?? 0,
+                        $node->lineno ?? 0,
                         [ "{$exception->getFQSEN()}->$property_name" ]
                     )
                 );
@@ -1062,7 +1064,7 @@ class ContextNode
                 // will make this method analyze the code as if all properties were declared or had @property annotations.
                 if (!$is_static && $class->hasGetMethod($this->code_base) && !$class->getForbidUndeclaredMagicProperties($this->code_base)) {
                     throw new UnanalyzableException(
-                        $this->node,
+                        $node,
                         "Can't determine if property {$property_name} exists in class {$class->getFQSEN()} with __get defined"
                     );
                 }
@@ -1081,7 +1083,7 @@ class ContextNode
                 throw new IssueException(
                     Issue::fromType(Issue::DeprecatedProperty)(
                         $this->context->getFile(),
-                        $this->node->lineno ?? 0,
+                        $node->lineno ?? 0,
                         [
                             (string)$property->getFQSEN(),
                             $property->getFileRef()->getFile(),
@@ -1100,7 +1102,7 @@ class ContextNode
                 throw new IssueException(
                     Issue::fromType(Issue::AccessPropertyInternal)(
                         $this->context->getFile(),
-                        $this->node->lineno ?? 0,
+                        $node->lineno ?? 0,
                         [
                             (string)$property->getFQSEN(),
                             $property->getElementNamespace(),
@@ -1160,7 +1162,7 @@ class ContextNode
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredStaticProperty)(
                         $this->context->getFile(),
-                        $this->node->lineno ?? 0,
+                        $node->lineno ?? 0,
                         [ $property_name, (string)$class_fqsen ]
                     )
                 );
@@ -1168,7 +1170,7 @@ class ContextNode
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredProperty)(
                         $this->context->getFile(),
-                        $this->node->lineno ?? 0,
+                        $node->lineno ?? 0,
                         [ "$class_fqsen->$property_name" ]
                     )
                 );
@@ -1176,7 +1178,7 @@ class ContextNode
         }
 
         throw new NodeException(
-            $this->node,
+            $node,
             "Cannot figure out property from {$this->context}"
         );
     }
@@ -1309,7 +1311,8 @@ class ContextNode
             "Node must be of type ast\AST_CONST"
         );
 
-        if ($node->children['name']->kind !== ast\AST_NAME) {
+        $constant_name = $node->children['name']->children['name'] ?? null;
+        if (!\is_string($constant_name)) {
             throw new NodeException(
                 $node,
                 "Can't determine constant name"
@@ -1318,7 +1321,6 @@ class ContextNode
 
         $code_base = $this->code_base;
 
-        $constant_name = $node->children['name']->children['name'];
         $constant_name_lower = \strtolower($constant_name);
         if ($constant_name_lower === 'true' || $constant_name_lower === 'false' || $constant_name_lower === 'null') {
             return $code_base->getGlobalConstantByFQSEN(
@@ -1862,8 +1864,9 @@ class ContextNode
 
     public function getValueForMagicConst()
     {
-        assert($this->node->kind === ast\AST_MAGIC_CONST);
-        return $this->getValueForMagicConstByNode($this->node);
+        $node = $this->node;
+        \assert($node instanceof Node && $node->kind === ast\AST_MAGIC_CONST);
+        return $this->getValueForMagicConstByNode($node);
     }
 
     public function getValueForMagicConstByNode(Node $node)

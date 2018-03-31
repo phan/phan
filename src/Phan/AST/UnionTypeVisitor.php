@@ -50,6 +50,8 @@ use ast\Node;
 /**
  * Determine the UnionType associated with a
  * given node
+ * @phan-file-suppress PhanPartialTypeMismatchArgument node is complicated
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal node is complicated
  */
 class UnionTypeVisitor extends AnalysisVisitor
 {

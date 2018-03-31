@@ -28,6 +28,9 @@ use Phan\Language\UnionType;
 use ast\Node;
 use ast\flags;
 
+/**
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ */
 class PostOrderAnalysisVisitor extends AnalysisVisitor
 {
     /**
@@ -94,8 +97,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             true
         );
 
+        $var_node = $node->children['var'];
         \assert(
-            $node->children['var'] instanceof Node,
+            $var_node instanceof Node,
             "Expected left side of assignment to be a var"
         );
 
@@ -114,18 +118,18 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->context,
             $node,
             $right_type
-        ))->__invoke($node->children['var']);
+        ))->__invoke($var_node);
 
-        if ($node->children['expr'] instanceof Node
-            && $node->children['expr']->kind == \ast\AST_CLOSURE
+        $expr_node = $node->children['expr'];
+        if ($expr_node instanceof Node
+            && $expr_node->kind == \ast\AST_CLOSURE
         ) {
-            $closure_node = $node->children['expr'];
             $method = (new ContextNode(
                 $this->code_base,
                 $this->context->withLineNumberStart(
-                    $closure_node->lineno ?? 0
+                    $expr_node->lineno ?? 0
                 ),
-                $closure_node
+                $expr_node
             ))->getClosure();
 
             $method->addReference($this->context);
@@ -160,8 +164,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $context = $this->context;
         // Get the type of the thing being unset
         $var_node = $node->children['var'];
-        if (!is_object($var_node)) {
-            var_export($node);
+        if (!($var_node instanceof Node)) {
+            return $context;
         }
 
         $kind = $var_node->kind;

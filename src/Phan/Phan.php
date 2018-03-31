@@ -131,6 +131,8 @@ class Phan implements IgnoredFilesFilterInterface
         CLI::progress('parse', 0.0);
         $code_base->setCurrentParsedFile(null);
         foreach ($file_path_list as $i => $file_path) {
+            \assert(\is_string($file_path));
+
             $code_base->setCurrentParsedFile($file_path);
             CLI::progress('parse', ($i + 1) / $file_count);
 

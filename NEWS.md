@@ -3,16 +3,30 @@ Phan NEWS
 ?? ??? 2018, Phan 0.12.4 (dev)
 ------------------------
 
+New Features(CLI, Configs)
++ Add a `strict_param_checking` config setting.
+  If this is set to true, then Phan will warn if at least one of the types
+  in an argument's union type can't cast to the expected parameter type.
+  New issue types: `PartialTypeMismatchArgument`, `PossiblyNullTypeArgument`, and `PossiblyFalseTypeArgument`
+  (along with equivalents for internal functions and methods)
+
+  Setting this to true will likely introduce large numbers of warnings.
+  Those issue types would need to be suppressed entirely,
+  or with `@phan-file-suppress`, or with `@suppress`.
+
 New Features(Analysis)
 + Detect unreachable catch statements (#112)
   (Check if an earlier catch statement caught an ancestor of a given catch statement)
 + Support phpdoc3's `scalar` type in phpdoc. (#1589)
   That type is equivalent to `bool|float|int|string`.
++ Improve inferences about ternary conditionals.
++ Start analyzing negated `instanceof` conditionals such as `assert(!($x instanceof MyClass))`.
 
 Bug Fixes
 + Don't emit false positive `PhanTypeArraySuspiciousNullable`, etc. for complex isset/empty/unset expressions. (#642)
 + Analyze conditionals wrapped by `@(cond)` (e.g. `if (@array_key_exists('key', $array)) {...}`) (#1591)
 + Appending an unknown type to an array shape should update Phan's inferred keys(int) and values(mixed) of an array. (#1560)
++ Make line numbers for arguments more accurate
 
 24 Mar 2018, Phan 0.12.3
 ------------------------

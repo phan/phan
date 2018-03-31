@@ -38,7 +38,7 @@ final class ArrayShapeType extends ArrayType
     private $generic_array_element_union_type = null;
 
     /**
-     * @param array<string|int,UnionType> $types
+     * @param array<string|int,UnionType|AnnotatedUnionType> $types
      * Maps 0 or more field names to the corresponding types
      *
      * @param bool $is_nullable
@@ -67,7 +67,8 @@ final class ArrayShapeType extends ArrayType
     }
 
     /**
-     * @param int|string $field_key
+     * @param int|string|float|bool $field_key
+     * @suppress PhanPartialTypeMismatchArgumentInternal
      */
     public function withoutField($field_key) : ArrayShapeType
     {
@@ -106,11 +107,17 @@ final class ArrayShapeType extends ArrayType
         return true;
     }
 
-    /** @return array<int,Type> */
+    /** @return array<int,ArrayType> */
     private function computeGenericArrayTypeInstances() : array
     {
+        $field_types = $this->field_types;
+        if (\count($field_types) === 0) {
+            // there are 0 fields, so we know nothing about the field types (and there's no way to indicate an empty array yet)
+            return [ArrayType::instance($this->is_nullable)];
+        }
+
         $union_type_builder = new UnionTypeBuilder();
-        foreach ($this->field_types as $key => $field_union_type) {
+        foreach ($field_types as $key => $field_union_type) {
             foreach ($field_union_type->getTypeSet() as $type) {
                 $union_type_builder->addType(GenericArrayType::fromElementType($type, $this->is_nullable, \is_string($key) ? GenericArrayType::KEY_STRING : GenericArrayType::KEY_INT));
             }
@@ -192,7 +199,7 @@ final class ArrayShapeType extends ArrayType
     }
 
     /**
-     * @param array<string|int,UnionType> $field_types
+     * @param array<string|int,UnionType|AnnotatedUnionType> $field_types
      * @param bool $is_nullable
      * @return ArrayShapeType
      * TODO: deduplicate
@@ -301,19 +308,15 @@ final class ArrayShapeType extends ArrayType
     }
 
     /**
-     * @return GenericArrayType[]
+     * @return array<int,ArrayType>
      * @override
      */
     public function withFlattenedArrayShapeTypeInstances() : array
     {
-        if (\is_array($this->as_generic_array_type_instances)) {
-            return $this->as_generic_array_type_instances;
+        $instances = $this->as_generic_array_type_instances;
+        if (\is_array($instances)) {
+            return $instances;
         }
-        if (\count($this->field_types) === 0) {
-            // there are 0 fields, so we know nothing about the field types (and there's no way to indicate an empty array yet)
-            return $this->as_generic_array_type_instances = [ArrayType::instance($this->is_nullable)];
-        }
-
         return $this->as_generic_array_type_instances = $this->computeGenericArrayTypeInstances();
     }
 
@@ -327,6 +330,7 @@ final class ArrayShapeType extends ArrayType
      *
      * E.g. array{0: string} + array{0:int,1:int} === array{0:int|string,1:int}
      * @param array<int,ArrayShapeType> $array_shape_types
+     * @suppress PhanPartialTypeMismatchArgument
      */
     public static function union(array $array_shape_types) : ArrayShapeType
     {
@@ -342,7 +346,7 @@ final class ArrayShapeType extends ArrayType
         foreach ($array_shape_types as $type) {
             foreach ($type->field_types as $key => $union_type) {
                 $old_union_type = $field_types[$key] ?? null;
-                if (!isset($old_union_type)) {
+                if ($old_union_type === null) {
                     $field_types[$key] = $union_type;
                     continue;
                 }

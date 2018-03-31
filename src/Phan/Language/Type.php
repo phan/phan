@@ -39,6 +39,14 @@ use Phan\Library\Tuple5;
 
 use InvalidArgumentException;
 
+/**
+ * The base class for all of Phan's types.
+ * A plain Type represents a class instance.
+ * Separate subclasses exist for NativeType, ArrayType, ScalarType, TemplateType, etc.
+ *
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
+ */
 class Type
 {
     use \Phan\Memoize;
@@ -1694,6 +1702,10 @@ class Type
             $union_type = $union_type->withUnionType(
                 $clazz->getUnionType()
             );
+            $additional_union_type = $clazz->getAdditionalTypes();
+            if ($additional_union_type !== null) {
+                $union_type = $union_type->withUnionType($additional_union_type);
+            }
 
             // Recurse up the tree to include all types
             $representation = (string)$this;

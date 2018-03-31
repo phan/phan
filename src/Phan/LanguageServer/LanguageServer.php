@@ -596,7 +596,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $path = Config::projectPath($issue['location']['path']);
         $issue_uri = Utils::pathToUri($path);
         $start_line = $issue['location']['lines']['begin'];
-        $start_line = max($start_line, 1);
+        $start_line = (int)max($start_line, 1);
         // If we ever supported end_line:
         // $end_line = $issue['location']['lines']['end'] ?? $start_line;
         // $end_line = max($end_line, 1);

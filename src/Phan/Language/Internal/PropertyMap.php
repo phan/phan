@@ -1,6 +1,25 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Internal;
 
+$ordinary_ast_node = 'ast\Node|float|int|string';
+$ast_node_shape_inner = \implode(',', [
+    "args?:ast\Node",
+    "class?:ast\Node",
+    "cond?:$ordinary_ast_node",
+    "const?:string",
+    "dim?:$ordinary_ast_node",
+    "docComment?:?string",
+    "expr?:$ordinary_ast_node",
+    "key?:$ordinary_ast_node",
+    "left?:$ordinary_ast_node",
+    "name?:$ordinary_ast_node",
+    "right?:$ordinary_ast_node",
+    "var?:ast\Node",
+    "value?:$ordinary_ast_node",
+]);
+
+$ast_node_children_types = 'array{' . $ast_node_shape_inner . '}|ast\Node[]|array[]|int[]|string[]|float[]|bool[]|null[]';
+
 /**
  * A mapping from class name to property name to property type.
  *
@@ -402,14 +421,14 @@ return [
         'kind' => 'int',
         'flags' => 'int',
         'lineno' => 'int',
-        'children' => 'ast\Node\Decl[]|ast\Node[]|array[]|int[]|string[]|float[]|bool[]|null[]',  // NOTE: in the latest version, this is consistently an array, even for edge cases like statement lists of single statements.
+        'children' => $ast_node_children_types,  // NOTE: in the latest version, this is consistently an array, even for edge cases like statement lists of single statements.
         'endLineno' => 'int',
     ],
     'ast\node\decl' => [
         'kind' => 'int',
         'flags' => 'int',
         'lineno' => 'int',
-        'children' => 'ast\Node\Decl[]|ast\Node[]|array[]|int[]|string[]|float[]|bool[]|null[]',  // NOTE: in the latest version, this is consistently an array, even for edge cases like statement lists of single statements.
+        'children' => $ast_node_children_types,  // NOTE: in the latest version, this is consistently an array, even for edge cases like statement lists of single statements.
         'endLineno' => 'int',
         'name' => '?string',
         'docComment' => '?string',

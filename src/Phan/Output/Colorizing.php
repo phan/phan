@@ -4,6 +4,9 @@ namespace Phan\Output;
 
 use Phan\Issue;
 use Phan\Config;
+use Phan\Language\FQSEN;
+use Phan\Language\Type;
+use Phan\Language\UnionType;
 
 // Colorizing codes are based on https://github.com/kevinlebrun/colors.php/
 class Colorizing
@@ -94,7 +97,7 @@ class Colorizing
 
     /**
      * @param string $template
-     * @param array<int,int|string> $template_parameters
+     * @param array<int,int|string|FQSEN|Type|UnionType> $template_parameters
      */
     public static function colorizeTemplate(
         string $template,
@@ -120,7 +123,7 @@ class Colorizing
 
     /**
      * @param string $template_type (A key of _uncolored_format_string_for_template, e.g. "FILE")
-     * @param int|string $arg (Argument for format string, e.g. a type name, method fqsen, line number, etc.)
+     * @param int|string|FQSEN|Type|UnionType $arg (Argument for format string, e.g. a type name, method fqsen, line number, etc.)
      * @return string - Colorized for unix terminals.
      */
     public static function colorizeField(string $template_type, $arg) : string

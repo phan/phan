@@ -16,6 +16,8 @@ use Symfony\Component\Console\Output\StreamOutput;
  * Contains methods for parsing CLI arguments to Phan,
  * outputting to the CLI, as well as helper methods to retrieve files/folders
  * for the analyzed project.
+ *
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  */
 class CLI
 {
@@ -125,6 +127,7 @@ class CLI
                 'quick',
                 'require-config-exists',
                 'signature-compatibility',
+                'strict-param-checking',
                 'target-php-version',
                 'use-fallback-parser',
                 'version',
@@ -154,9 +157,12 @@ class CLI
             // TODO: Add an option to allow searching ancestor directories?
             \chdir($overriden_project_root_directory);
         }
-        Config::setProjectRootDirectory(
-            \getcwd()
-        );
+        $cwd = \getcwd();
+        if (!is_string($cwd)) {
+            echo "Failed to find current working directory\n";
+            exit(1);
+        }
+        Config::setProjectRootDirectory($cwd);
 
         if (\array_key_exists('init', $opts)) {
             $exit_code = Initializer::initPhanConfig($opts);
@@ -211,6 +217,10 @@ class CLI
                 case 'file-list':
                     $file_list = \is_array($value) ? $value : [$value];
                     foreach ($file_list as $file_name) {
+                        if (!is_string($file_name)) {
+                            error_log("invalid argument for --file-list");
+                            continue;
+                        }
                         $file_path = Config::projectPath($file_name);
                         if (is_file($file_path) && is_readable($file_path)) {
                             /** @var array<int,string> */
@@ -228,6 +238,10 @@ class CLI
                     if (!$this->file_list_only) {
                         $directory_list = \is_array($value) ? $value : [$value];
                         foreach ($directory_list as $directory_name) {
+                            if (!is_string($directory_name)) {
+                                error_log("Invalid --directory setting");
+                                return;
+                            }
                             $this->file_list_in_config = array_merge(
                                 $this->file_list,
                                 $this->directoryNameToFileList(
@@ -245,8 +259,8 @@ class CLI
                     if (!in_array($value, $factory->getTypes(), true)) {
                         $this->usage(
                             sprintf(
-                                'Unknown output mode "%s". Known values are [%s]',
-                                $value,
+                                'Unknown output mode %s. Known values are [%s]',
+                                json_encode($value),
                                 implode(',', $factory->getTypes())
                             ),
                             EXIT_FAILURE
@@ -346,6 +360,9 @@ class CLI
                     break;
                 case 'use-fallback-parser':
                     Config::setValue('use_fallback_parser', true);
+                    break;
+                case 'strict-param-checking':
+                    Config::setValue('strict_param_checking', true);
                     break;
                 case 's':
                 case 'daemonize-socket':
@@ -698,6 +715,9 @@ Usage: {$argv[0]} [options] [files...]
  --plugin <pluginName|path/to/Plugin.php>
   Add an additional plugin to run. This flag can be repeated.
   (Either pass the name of the plugin or a relative/absolute path to the plugin)
+
+ --strict-param-checking
+  Enables the config option `strict_param_checking`.
 
  --use-fallback-parser
   If a file to be analyzed is syntactically invalid

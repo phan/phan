@@ -961,10 +961,25 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
-     * @param int|string $field_key
+     * @param int|string|float|bool $field_key
      */
     public function withoutArrayShapeField($field_key) : UnionType
     {
         return $this;
+    }
+
+    public function withoutSubclassesOf(CodeBase $code_base, Type $object_type) : UnionType
+    {
+        return $this;
+    }
+
+    public function canStrictCastToUnionType(UnionType $target) : bool
+    {
+        return true;
+    }
+
+    public function hasArray() : bool
+    {
+        return false;
     }
 }
