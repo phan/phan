@@ -1,0 +1,5 @@
+src/026_strict_return_checks.php:16 PhanPossiblyNullTypeReturn Returning type int|null but notNull() is declared to return int (null is incompatible)
+src/026_strict_return_checks.php:23 PhanPartialTypeMismatchReturn Returning type int|null but expectNull() is declared to return null (int is incompatible)
+src/026_strict_return_checks.php:31 PhanPossiblyFalseTypeReturn Returning type false|int but notFalse() is declared to return int (false is incompatible)
+src/026_strict_return_checks.php:39 PhanPartialTypeMismatchReturn Returning type false|int but expectFalse() is declared to return false (int is incompatible)
+src/026_strict_return_checks.php:53 PhanPartialTypeMismatchReturn Returning type \StrictReturnChecks|\ast\Node but partiallyValid() is declared to return \ast\Node (\StrictInterface|\StrictReturnChecks is incompatible)

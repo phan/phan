@@ -1,0 +1,3 @@
+src/025_strict_param_checks.php:4 PhanPossiblyFalseTypeArgumentInternal Argument 1 (string) is false|string but \strlen() takes string (false is incompatible)
+src/025_strict_param_checks.php:6 PhanPossiblyNullTypeArgumentInternal Argument 1 (numerator) is int|null but \intdiv() takes int (null is incompatible)
+src/025_strict_param_checks.php:8 PhanPartialTypeMismatchArgumentInternal Argument 1 (numerator) is int|string but \intdiv() takes int (string is incompatible)
