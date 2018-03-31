@@ -10,6 +10,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Debug;
 use Phan\Exception\CodeBaseException;
+use Phan\Exception\EmptyFQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
 use Phan\Exception\TypeException;
@@ -2218,7 +2219,18 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public static function functionLikeListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $log_error) : array
     {
-        $function_fqsens = (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node);
+        try {
+            $function_fqsens = (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node);
+        } catch (EmptyFQSENException $e) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::EmptyFQSENInCallable,
+                $context->getLineNumberStart(),
+                $e->getFQSEN()
+            );
+            return [];
+        }
         $functions = [];
         foreach ($function_fqsens as $fqsen) {
             if ($fqsen instanceof FullyQualifiedMethodName) {

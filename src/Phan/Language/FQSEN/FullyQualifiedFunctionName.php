@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\FQSEN;
 
+use Phan\Exception\EmptyFQSENException;
 use Phan\Language\Context;
 use ast\Node;
 
@@ -56,10 +57,9 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
         $parts = \explode('\\', $fqsen_string);
         $name = \array_pop($parts);
 
-        \assert(
-            !empty($name),
-            "The name cannot be empty"
-        );
+        if ($name === '') {
+            throw new EmptyFQSENException("The name cannot be empty", $fqsen_string);
+        }
 
         // Check for a name map
         if ($context->hasNamespaceMapFor(static::getNamespaceMapType(), $fqsen_string)) {

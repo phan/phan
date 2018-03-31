@@ -53,6 +53,8 @@ class Issue
     const UndeclaredStaticMethodInCallable = 'PhanUndeclaredStaticMethodInCallable';
     const UndeclaredFunctionInCallable = 'PhanUndeclaredFunctionInCallable';
     const UndeclaredMethodInCallable = 'PhanUndeclaredMethodInCallable';
+    const EmptyFQSENInCallable      = 'PhanEmptyFQSENInCallable';
+    const EmptyFQSENInClasslike     = 'PhanEmptyFQSENInClasslike';
 
     // Issue::CATEGORY_TYPE
     const NonClassMethodCall        = 'PhanNonClassMethodCall';
@@ -739,6 +741,22 @@ class Issue
                 "Call to undeclared method {METHOD} in callable. Possible object type(s) for that method are {TYPE}",
                 self::REMEDIATION_B,
                 11033
+            ),
+            new Issue(
+                self::EmptyFQSENInCallable,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Possible call to a function '{FUNCTIONLIKE}' with an empty FQSEN.",
+                self::REMEDIATION_B,
+                11035
+            ),
+            new Issue(
+                self::EmptyFQSENInClasslike,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Possible use of a classlike '{CLASSLIKE}' with an empty FQSEN.",
+                self::REMEDIATION_B,
+                11036
             ),
 
             // Issue::CATEGORY_ANALYSIS

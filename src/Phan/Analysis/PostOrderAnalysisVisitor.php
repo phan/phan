@@ -1221,7 +1221,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // Get the name of the static class being referenced
         $static_class = '';
-        if ($node->children['class']->kind == \ast\AST_NAME) {
+        $class_node = $node->children['class'];
+        if (!($class_node instanceof Node)) {
+            $static_class = (string)$class_node;
+        } elseif ($node->children['class']->kind == \ast\AST_NAME) {
             $static_class = (string)$node->children['class']->children['name'];
         }
 

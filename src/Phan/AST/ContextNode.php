@@ -4,6 +4,7 @@ namespace Phan\AST;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
+use Phan\Exception\EmptyFQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
 use Phan\Exception\TypeException;
@@ -410,11 +411,22 @@ class ContextNode
             return $cached_result;
         }
         $code_base = $this->code_base;
-        $union_type = UnionTypeVisitor::unionTypeFromClassNode(
-            $code_base,
-            $context,
-            $node
-        );
+        try {
+            $union_type = UnionTypeVisitor::unionTypeFromClassNode(
+                $code_base,
+                $context,
+                $node
+            );
+        } catch (EmptyFQSENException $e) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::EmptyFQSENInClasslike,
+                $this->node->lineno ?? $context->getLineNumberStart(),
+                $e->getFQSEN()
+            );
+            $union_type = UnionType::empty();
+        }
         if ($union_type->isEmpty()) {
             $result = [$union_type, []];
             $context->setCachedClassListOfNode($node_id, $result);
@@ -665,11 +677,13 @@ class ContextNode
     public function getFunctionFromNode()
     {
         $expression = $this->node;
+        $code_base = $this->code_base;
+        $context = $this->context;
 
         if ($expression->kind == ast\AST_VAR) {
             $variable_name = (new ContextNode(
-                $this->code_base,
-                $this->context,
+                $code_base,
+                $context,
                 $expression
             ))->getVariableName();
 
@@ -678,10 +692,10 @@ class ContextNode
             }
 
             // $var() - hopefully a closure, otherwise we don't know
-            if ($this->context->getScope()->hasVariableWithName(
+            if ($context->getScope()->hasVariableWithName(
                 $variable_name
             )) {
-                $variable = $this->context->getScope()
+                $variable = $context->getScope()
                     ->getVariableByName($variable_name);
 
                 $union_type = $variable->getUnionType();
@@ -697,11 +711,11 @@ class ContextNode
                                 (string)$type->asFQSEN()
                             );
 
-                        if ($this->code_base->hasFunctionWithFQSEN(
+                        if ($code_base->hasFunctionWithFQSEN(
                             $closure_fqsen
                         )) {
                             // Get the closure
-                            $function = $this->code_base->getFunctionByFQSEN(
+                            $function = $code_base->getFunctionByFQSEN(
                                 $closure_fqsen
                             );
 
@@ -717,17 +731,26 @@ class ContextNode
         ) {
             try {
                 $method = (new ContextNode(
-                    $this->code_base,
-                    $this->context,
+                    $code_base,
+                    $context,
                     $expression
                 ))->getFunction($expression->children['name']);
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
-                    $this->code_base,
-                    $this->context,
+                    $code_base,
+                    $context,
                     $exception->getIssueInstance()
                 );
-                return $this->context;
+                return $context;
+            } catch (EmptyFQSENException $exception) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::EmptyFQSENInCallable,
+                    $expression->children['name']->lineno ?? $context->getLineNumberStart(),
+                    $exception->getFQSEN()
+                );
+                return $context;
             }
 
             yield $method;
@@ -737,21 +760,21 @@ class ContextNode
             || $expression->kind == ast\AST_METHOD_CALL
         ) {
             $class_list = (new ContextNode(
-                $this->code_base,
-                $this->context,
+                $code_base,
+                $context,
                 $expression
             ))->getClassList(false, self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
 
             foreach ($class_list as $class) {
                 if (!$class->hasMethodWithName(
-                    $this->code_base,
+                    $code_base,
                     '__invoke'
                 )) {
                     continue;
                 }
 
                 $method = $class->getMethodByName(
-                    $this->code_base,
+                    $code_base,
                     '__invoke'
                 );
 
@@ -760,10 +783,10 @@ class ContextNode
             }
         } elseif ($expression->kind === ast\AST_CLOSURE) {
             $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
-                $this->context->withLineNumberStart($expression->lineno ?? 0),
+                $context->withLineNumberStart($expression->lineno ?? 0),
                 $expression
             );
-            $method = $this->code_base->getFunctionByFQSEN($closure_fqsen);
+            $method = $code_base->getFunctionByFQSEN($closure_fqsen);
             yield $method;
         }
         // TODO: AST_CLOSURE

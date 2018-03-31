@@ -3,6 +3,7 @@ namespace Phan\Language;
 
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Exception\EmptyFQSENException;
 use Phan\Language\Element\Comment;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
@@ -35,6 +36,8 @@ use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;
 use Phan\Library\Tuple5;
+
+use InvalidArgumentException;
 
 class Type
 {
@@ -759,10 +762,12 @@ class Type
             $namespace = '\\' . $namespace;
         }
 
-        \assert(
-            !empty($namespace) && !empty($type_name),
-            "Type was not fully qualified"
-        );
+        if ($type_name === '') {
+            throw new EmptyFQSENException("Type was not fully qualified", $fully_qualified_string);
+        }
+        if ($namespace === '') {
+            throw new InvalidArgumentException("Type was not fully qualified");
+        };
 
         return self::make(
             $namespace,

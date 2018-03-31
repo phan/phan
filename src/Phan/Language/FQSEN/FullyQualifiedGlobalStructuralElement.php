@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\FQSEN;
 
+use Phan\Exception\EmptyFQSENException;
 use Phan\Language\Context;
 use Phan\Language\Type;
 
@@ -34,9 +35,11 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         string $name,
         int $alternate_id = 0
     ) {
-        \assert(!empty($name), "The name cannot be empty");
+        if ($name === '') {
+            throw new EmptyFQSENException("The name of an FQSEN cannot be empty", rtrim($namespace, '\\') . '\\');
+        }
 
-        \assert(!empty($namespace), "The namespace cannot be empty");
+        \assert($namespace !== '', "The namespace cannot be empty");
 
         \assert(
             $namespace[0] === '\\',

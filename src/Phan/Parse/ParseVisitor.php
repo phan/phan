@@ -736,7 +736,7 @@ class ParseVisitor extends ScopeVisitor
         // it can be called with anything.
         $expression = $node->children['expr'];
 
-        if ($expression->kind === \ast\AST_NAME) {
+        if ($expression instanceof Node && $expression->kind === \ast\AST_NAME) {
             $function_name = \strtolower($expression->children['name']);
             if (\in_array($function_name, [
                 'func_get_args', 'func_get_arg', 'func_num_args'
@@ -792,7 +792,7 @@ class ParseVisitor extends ScopeVisitor
     {
         $call = $node->children['class'];
 
-        if ($call->kind == \ast\AST_NAME) {
+        if ($call instanceof Node && $call->kind == \ast\AST_NAME) {
             $func_name = \strtolower($call->children['name']);
             if ($func_name == 'parent') {
                 // Make sure it is not a crazy dynamic parent method call
