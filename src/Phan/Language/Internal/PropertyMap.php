@@ -16,6 +16,7 @@ $ast_node_shape_inner = \implode(',', [
     "right?:$ordinary_ast_node",
     "var?:ast\Node",
     "value?:$ordinary_ast_node",
+    "stmts?:?ast\Node",
 ]);
 
 $ast_node_children_types = 'array{' . $ast_node_shape_inner . '}|ast\Node[]|array[]|int[]|string[]|float[]|bool[]|null[]';

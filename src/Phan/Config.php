@@ -56,6 +56,9 @@ class Config
     private static $strict_param_checking = false;
 
     /** @var bool */
+    private static $strict_return_checking = false;
+
+    /** @var bool */
     private static $track_references = false;
 
     /** @var bool */
@@ -224,8 +227,15 @@ class Config
 
         // If enabled, Phan will warn if **any** type in the argument's type
         // cannot be cast to a type in the parameter's expected type.
-        // Setting this to true will introduce a large number of false positives (and some bugs).
+        // Setting this to true will introduce a large number of false positives
+        // (and reveal some bugs).
         'strict_param_checking' => false,
+
+        // If enabled, Phan will warn if **any** type in the return value's type
+        // cannot be cast to a type in the declared return type.
+        // Setting this to true will introduce a large number of false positives
+        // (and reveal some bugs).
+        'strict_return_checking' => false,
 
         // If enabled, scalars (int, float, bool, string, null)
         // are treated as if they can cast to each other.
@@ -766,6 +776,11 @@ class Config
         return self::$strict_param_checking;
     }
 
+    public static function get_strict_return_checking() : bool
+    {
+        return self::$strict_param_checking;
+    }
+
     public static function get_null_casts_as_array() : bool
     {
         return self::$null_casts_as_array;
@@ -845,6 +860,9 @@ class Config
                 break;
             case 'strict_param_checking':
                 self::$strict_param_checking = $value;
+                break;
+            case 'strict_return_checking':
+                self::$strict_return_checking = $value;
                 break;
             case 'dead_code_detection':
             case 'force_tracking_references':

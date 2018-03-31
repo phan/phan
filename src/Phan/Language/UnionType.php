@@ -2471,6 +2471,21 @@ class UnionType implements \Serializable
     {
         return false;
     }
+
+    // Assumes this was already expanded
+    public function hasClassWithToStringMethod(CodeBase $code_base, Context $context) : bool
+    {
+        try {
+            foreach ($this->asClassList($code_base, $context) as $clazz) {
+                if ($clazz->hasMethodWithName($code_base, "__toString")) {
+                    return true;
+                }
+            }
+        } catch (CodeBaseException $e) {
+            // Swallow "Cannot find class", go on to emit issue
+        }
+        return false;
+    }
 }
 
 UnionType::init();

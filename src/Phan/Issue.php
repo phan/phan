@@ -102,6 +102,9 @@ class Issue
     const TypeMismatchForeach       = 'PhanTypeMismatchForeach';
     const TypeMismatchProperty      = 'PhanTypeMismatchProperty';
     const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
+    const PartialTypeMismatchReturn = 'PhanPartialTypeMismatchReturn';
+    const PossiblyNullTypeReturn  = 'PhanPossiblyNullTypeReturn';
+    const PossiblyFalseTypeReturn  = 'PhanPossiblyFalseTypeReturn';
     const TypeMismatchDeclaredReturn = 'PhanTypeMismatchDeclaredReturn';
     const TypeMismatchDeclaredReturnNullable = 'PhanTypeMismatchDeclaredReturnNullable';
     const TypeMismatchDeclaredParam = 'PhanTypeMismatchDeclaredParam';
@@ -889,6 +892,30 @@ class Issue
                 "Returning type {TYPE} but {FUNCTIONLIKE}() is declared to return {TYPE}",
                 self::REMEDIATION_B,
                 10005
+            ),
+            new Issue(
+                self::PartialTypeMismatchReturn,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Returning type {TYPE} but {FUNCTIONLIKE}() is declared to return {TYPE} ({TYPE} is incompatible)",
+                self::REMEDIATION_B,
+                10060
+            ),
+            new Issue(
+                self::PossiblyNullTypeReturn,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Returning type {TYPE} but {FUNCTIONLIKE}() is declared to return {TYPE} ({TYPE} is incompatible)",
+                self::REMEDIATION_B,
+                10061
+            ),
+            new Issue(
+                self::PossiblyFalseTypeReturn,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Returning type {TYPE} but {FUNCTIONLIKE}() is declared to return {TYPE} ({TYPE} is incompatible)",
+                self::REMEDIATION_B,
+                10062
             ),
             new Issue(
                 self::TypeMismatchDeclaredReturn,

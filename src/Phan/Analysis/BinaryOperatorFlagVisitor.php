@@ -103,6 +103,23 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         ]));
     }
 
+    /**
+     * Analyzes the `<=>` operator.
+     *
+     * @param Node $node @phan-unused-param
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinarySpaceship(Node $node) : UnionType
+    {
+        // TODO: Any sanity checks should go here.
+
+        // <=> returns -1, 0, or 1
+        return IntType::instance(false)->asUnionType();
+    }
+
     // Code can bitwise xor strings byte by byte in PHP
     public function visitBinaryBitwiseXor(Node $node) : UnionType
     {

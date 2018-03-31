@@ -993,4 +993,9 @@ final class EmptyUnionType extends UnionType
     {
         return false;
     }
+
+    public function hasClassWithToStringMethod(CodeBase $code_base, Context $context) : bool
+    {
+        return false;
+    }
 }

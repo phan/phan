@@ -1793,7 +1793,7 @@ class ContextNode
      * @see $this->getEquivalentPHPValue
      *
      * @param Node|float|int|string $node
-     * @return Node|Node[]|string[]|int[]|float[]|string|float|int|bool|null -
+     * @return Node|string[]|int[]|float[]|string|float|int|bool|null -
      *         If this could be resolved and we're certain of the value, this gets a raw PHP value for $node.
      *         Otherwise, this returns $node.
      */
@@ -1915,7 +1915,9 @@ class ContextNode
      *
      * This does not create new object instances.
      *
-     * @return Node|string[]|int[]|float[]|string|float|int|bool|null - If this could be resolved and we're certain of the value, this gets an equivalent definition. Otherwise, this returns $node.
+     * @return Node|string[]|int[]|float[]|string|float|int|bool|null -
+     *   If this could be resolved and we're certain of the value, this gets an equivalent definition.
+     *   Otherwise, this returns $node.
      * @throws InvalidArgumentException if the object could not be determined - Callers must catch this.
      */
     public function getEquivalentPHPValue(int $flags = self::RESOLVE_DEFAULT)
@@ -1934,6 +1936,7 @@ class ContextNode
      *         Otherwise, this returns $node. If this would be an array, this returns $node.
      *
      * @throws InvalidArgumentException if the object could not be determined - Callers must catch this.
+     * @suppress PhanPartialTypeMismatchReturn the flags prevent this from returning an array
      */
     public function getEquivalentPHPScalarValue()
     {

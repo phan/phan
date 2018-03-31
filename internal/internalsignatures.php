@@ -727,7 +727,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 $param_name .= '=';
             }
 
-            $result[$param_name] = static::toTypeString($part->type);
+            $result[$param_name] = self::toTypeString($part->type);
         }
         return $result;
     }

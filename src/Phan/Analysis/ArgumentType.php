@@ -588,8 +588,8 @@ class ArgumentType
                     // If we are not in strict mode and we accept a string parameter
                     // and the argument we are passing has a __toString method then it is ok
                     if (!$context->getIsStrictTypes() && $parameter_type->hasType(StringType::instance(false))) {
-                        if (self::hasToString($code_base, $context, $individual_type_expanded)) {
-                            continue;
+                        if ($individual_type_expanded->hasClassWithToStringMethod($code_base, $context)) {
+                            continue;  // don't warn about $type
                         }
                     }
                 }
@@ -650,23 +650,6 @@ class ArgumentType
             }
         }
         return $is_internal ? Issue::PartialTypeMismatchArgumentInternal : Issue::PartialTypeMismatchArgument;
-    }
-
-    private static function hasToString(
-        CodeBase $code_base,
-        Context $context,
-        UnionType $individual_type_expanded
-    ) : bool {
-        try {
-            foreach ($individual_type_expanded->asClassList($code_base, $context) as $clazz) {
-                if ($clazz->hasMethodWithName($code_base, "__toString")) {
-                    return true;
-                }
-            }
-        } catch (CodeBaseException $e) {
-            // Swallow "Cannot find class", go on to emit issue
-        }
-        return false;
     }
 
     /**
