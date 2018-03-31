@@ -769,7 +769,6 @@ class Comment
     private static function templateTypeFromCommentLine(
         string $line
     ) {
-        $match = [];
         // TODO: Just use WORD_REGEX? Backslashes or nested templates wouldn't make sense.
         if (preg_match('/@template\s+(' . Type::simple_type_regex. ')/', $line, $match)) {
             $template_type_identifier = $match[1];

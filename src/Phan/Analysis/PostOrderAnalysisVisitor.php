@@ -775,22 +775,24 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitReturn(Node $node) : Context
     {
+        $context = $this->context;
         // Make sure we're actually returning from a method.
-        if (!$this->context->isInFunctionLikeScope()) {
-            return $this->context;
+        if (!$context->isInFunctionLikeScope()) {
+            return $context;
         }
+        $code_base = $this->code_base;
 
         // Check real return types instead of phpdoc return types in traits for #800
         // TODO: Why did Phan originally not analyze return types of traits at all in 4c6956c05222e093b29393ceaa389ffb91041bdc
         $is_trait = false;
-        if ($this->context->isInClassScope()) {
-            $clazz = $this->context->getClassInScope($this->code_base);
+        if ($context->isInClassScope()) {
+            $clazz = $context->getClassInScope($code_base);
             $is_trait = $clazz->isTrait();
         }
 
 
         // Get the method/function/closure we're in
-        $method = $this->context->getFunctionLikeInScope($this->code_base);
+        $method = $context->getFunctionLikeInScope($code_base);
 
         \assert(
             !empty($method),
@@ -801,12 +803,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // (For traits, lower the false positive rate by comparing against the real return type instead of the phpdoc type (#800))
         $method_return_type = $is_trait ? $method->getRealReturnType() : $method->getUnionType();
 
+        if ($method->getHasYield()) {  // Function that is syntactically a Generator.
+            return $context;  // Analysis was completed in PreOrderAnalysisVisitor
+        }
+        // This leaves functions which aren't syntactically generators.
+
         // Figure out what is actually being returned
-        foreach ($this->getReturnTypes($this->context, $node->children['expr']) as $expression_type) {
-            if ($method->getHasYield()) {  // Function that is syntactically a Generator.
-                continue;  // Analysis was completed in PreOrderAnalysisVisitor
-            }
-            // This leaves functions which aren't syntactically generators.
+        // TODO: Properly check return values of array shapes
+        foreach ($this->getReturnTypes($context, $node->children['expr']) as $expression_type) {
 
             // If there is no declared type, see if we can deduce
             // what it should be based on the return type
@@ -826,20 +830,20 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 continue;
             }
 
-            // C
-            if (!$method->isReturnTypeUndefined()
-                && !$expression_type->canCastToExpandedUnionType(
-                    $method_return_type,
-                    $this->code_base
-                )
-            ) {
-                $this->emitIssue(
-                    Issue::TypeMismatchReturn,
-                    $node->lineno ?? 0,
-                    (string)$expression_type,
-                    $method->getName(),
-                    (string)$method_return_type
-                );
+            // Check if the return type is compatible with the declared return type.
+            if (!$method->isReturnTypeUndefined()) {
+
+                // We allow base classes to cast to subclasses, and subclasses to cast to baseclasses,
+                // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
+                if (!$this->checkCanCastToReturnType($code_base, $expression_type, $method_return_type)) {
+                    $this->emitIssue(
+                        Issue::TypeMismatchReturn,
+                        $node->lineno ?? 0,
+                        (string)$expression_type,
+                        $method->getName(),
+                        (string)$method_return_type
+                    );
+                }
             }
             // For functions that aren't syntactically Generators,
             // update the set/existence of return values.
@@ -856,7 +860,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
         }
 
-        return $this->context;
+        return $context;
+    }
+
+    private function checkCanCastToReturnType(CodeBase $code_base, UnionType $expression_type, UnionType $method_return_type)
+    {
+        if ($method_return_type->hasTemplateParameterTypes()) {
+            // TODO: Better casting logic for template types (E.g. should be able to cast None to Option<MyClass>, but not Some<int> to Option<MyClass>
+            return $expression_type->canCastToExpandedUnionType($method_return_type, $code_base);
+        }
+        // We allow base classes to cast to subclasses, and subclasses to cast to baseclasses,
+        // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
+        return $expression_type->asExpandedTypes($code_base)->canCastToUnionType($method_return_type) ||
+            $expression_type->canCastToUnionType($method_return_type->asExpandedTypes($code_base));
     }
 
     /**

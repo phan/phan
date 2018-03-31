@@ -686,7 +686,7 @@ class UnionType implements \Serializable
             }
         }
 
-        return $has_template ? new UnionType($concrete_type_list) : $this;
+        return $has_template ? UnionType::of($concrete_type_list) : $this;
     }
 
     /**
@@ -698,6 +698,18 @@ class UnionType implements \Serializable
     {
         return $this->hasTypeMatchingCallback(function (Type $type) : bool {
             return ($type instanceof TemplateType);
+        });
+    }
+
+    /**
+     * @return bool
+     * True if this union type has any types that have generic
+     * types
+     */
+    public function hasTemplateParameterTypes() : bool
+    {
+        return $this->hasTypeMatchingCallback(function (Type $type) : bool {
+            return $type->hasTemplateParameterTypes();
         });
     }
 
