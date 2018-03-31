@@ -336,8 +336,19 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
             fwrite(STDERR, "Could not find subdirectory '$en_reference_dir'\n");
             static::printUsageAndExit();
         }
-        $this->reference_directory = realpath($en_reference_dir);
-        $this->doc_base_directory = realpath($dir);
+        $this->reference_directory = self::realpath($en_reference_dir);
+        $this->doc_base_directory = self::realpath($dir);
+    }
+
+    private static function realpath(string $dir) : string
+    {
+        $realpath = realpath($dir);
+        if (!is_string($realpath)) {
+            fwrite(STDERR, "Could not find realpath of '$dir'\n");
+            static::printUsageAndExit();
+            throw new RuntimeException("unreachable");
+        }
+        return $realpath;
     }
 
     /** @var array<string,array<string,string>> a set of unique file names */
@@ -855,7 +866,13 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
         }
         Phan::setIssueCollector(new BufferingCollector());
 
-        $this->directory = realpath($dir);
+        $realpath = realpath($dir);
+        if (!is_string($realpath)) {
+            echo "Could not find realpath of '$dir'\n";
+            static::printUsageAndExit();
+            return;
+        }
+        $this->directory = $realpath;
 
         // TODO: Change to a more suitable configuration?
         $this->code_base = require(__DIR__ . '/../src/codebase.php');

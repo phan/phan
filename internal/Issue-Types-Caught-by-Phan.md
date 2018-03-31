@@ -1104,6 +1104,14 @@ This issue may be emitted when `strict_param_checking` is true, when analyzing a
 Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)
 ```
 
+## PhanPartialTypeMismatchProperty
+
+This issue (and similar issues) may be emitted when `strict_property_checking` is true
+
+```
+Assigning {TYPE} to property but {PROPERTY} is {TYPE} ({TYPE} is incompatible)
+```
+
 ## PhanPartialTypeMismatchReturn
 
 This issue (and similar issues) may be emitted when `strict_return_checking` is true
@@ -1129,6 +1137,12 @@ This issue may be emitted when `strict_param_checking` is true
 Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)
 ```
 
+## PhanPossiblyFalseTypeMismatchProperty
+
+```
+Assigning {TYPE} to property but {PROPERTY} is {TYPE} ({TYPE} is incompatible)
+```
+
 ## PhanPossiblyFalseTypeReturn
 
 This issue may be emitted when `strict_return_checking` is true
@@ -1151,6 +1165,12 @@ This issue may be emitted when `strict_param_checking` is true
 
 ```
 Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)
+```
+
+## PhanPossiblyNullTypeMismatchProperty
+
+```
+Assigning {TYPE} to property but {PROPERTY} is {TYPE} ({TYPE} is incompatible)
 ```
 
 ## PhanPossiblyNullTypeReturn

@@ -22,9 +22,11 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use ast\Node;
@@ -714,6 +716,9 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->code_base
             )) {
                 $this->addTypesToProperty($property, $node);
+                if (Config::get_strict_property_checking() && $this->right_type->typeCount() > 1) {
+                    $this->analyzePropertyAssignmentStrict($clazz, $property, $this->right_type, $node);
+                }
             } elseif ($property_union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
                 // Add any type if this is a subclass with array access.
                 $this->addTypesToProperty($property, $node);
@@ -738,8 +743,8 @@ class AssignmentVisitor extends AnalysisVisitor
                         (string)$property_union_type
                     );
                 } else {
-                    // TODO: Also do this elsewhere?
-                    if (Config::get_strict_property_checking() && $new_types->typeCount() > 1) {
+                    if (Config::get_strict_property_checking() && $this->right_type->typeCount() > 1) {
+                        $this->analyzePropertyAssignmentStrict($clazz, $property, $this->right_type, $node);
                     }
                     $this->right_type = $new_types;
                     $this->addTypesToProperty($property, $node);
@@ -752,6 +757,7 @@ class AssignmentVisitor extends AnalysisVisitor
             // stdClass is an exception to this, for issues such as https://github.com/phan/phan/pull/700
             return $this->context;
         } else {
+            // This is a regular assignment, not an assignment to an offset
             if (!$this->right_type->canCastToExpandedUnionType(
                 $property_union_type,
                 $this->code_base
@@ -769,12 +775,77 @@ class AssignmentVisitor extends AnalysisVisitor
                 );
                 return $this->context;
             }
+
+            if (Config::get_strict_property_checking() && $this->right_type->typeCount() > 1) {
+                $this->analyzePropertyAssignmentStrict($clazz, $property, $this->right_type, $node);
+            }
         }
 
         // After having checked it, add this type to it
         $this->addTypesToProperty($property, $node);
 
         return $this->context;
+    }
+
+    private function analyzePropertyAssignmentStrict(Clazz $clazz, Property $property, UnionType $assignment_type, Node $node)
+    {
+        $type_set = $assignment_type->getTypeSet();
+        \assert(\count($type_set) >= 2);
+
+        $property_union_type = $property->getUnionType();
+        if ($property_union_type->hasTemplateType()) {
+            $property_union_type = $property_union_type->asExpandedTypes($this->code_base);
+        }
+
+        $mismatch_type_set = UnionType::empty();
+        $mismatch_expanded_types = null;
+
+        // For the strict
+        foreach ($type_set as $type) {
+            // Expand it to include all parent types up the chain
+            $individual_type_expanded = $type->asExpandedTypes($this->code_base);
+
+            // See if the argument can be cast to the
+            // parameter
+            if (!$individual_type_expanded->canCastToUnionType(
+                $property_union_type
+            )) {
+                $mismatch_type_set = $mismatch_type_set->withType($type);
+                if ($mismatch_expanded_types === null) {
+                    // Warn about the first type
+                    $mismatch_expanded_types = $individual_type_expanded;
+                }
+            }
+        }
+
+
+        if ($mismatch_expanded_types === null) {
+            // No mismatches
+            return;
+        }
+
+        $this->emitIssue(
+            self::getStrictIssueType($mismatch_type_set),
+            $node->lineno ?? 0,
+            (string)$this->right_type,
+            "{$clazz->getFQSEN()}::{$property->getName()}",
+            (string)$property_union_type,
+            (string)$mismatch_expanded_types
+        );
+    }
+
+    private static function getStrictIssueType(UnionType $union_type) : string
+    {
+        if ($union_type->typeCount() === 1) {
+            $type = $union_type->getTypeSet()[0];
+            if ($type instanceof NullType) {
+                return Issue::PossiblyNullTypeMismatchProperty;
+            }
+            if ($type instanceof FalseType) {
+                return Issue::PossiblyFalseTypeMismatchProperty;
+            }
+        }
+        return Issue::PartialTypeMismatchProperty;
     }
 
     /**

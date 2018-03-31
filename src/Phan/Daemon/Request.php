@@ -41,7 +41,7 @@ class Request
     /** @var Responder|null - Null after the response is sent. */
     private $responder;
 
-    /** @var array<string,mixed> */
+    /** @var array{method:string,files:array<int,string>,format:string,temporary_file_mapping_contents:array<string,string>} */
     private $config;
 
     /** @var BufferedOutput */
@@ -60,6 +60,9 @@ class Request
     /** @var bool */
     private $should_exit;
 
+    /**
+     * @param array{method:string,files:array<int,string>,format:string,temporary_file_mapping_contents:array<string,string>} $config
+     */
     private function __construct(Responder $responder, array $config, bool $should_exit)
     {
         $this->responder = $responder;
@@ -197,10 +200,14 @@ class Request
     /**
      * TODO: convert absolute path to relative paths.
      * @return array<string,string> - Maps original relative file paths to contents.
+     * @suppress PhanPartialTypeMismatchArgumentInternal
      */
     public function getTemporaryFileMapping() : array
     {
         $mapping = $this->config[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] ?? [];
+        if (!is_array($mapping)) {
+            $mapping = [];
+        }
         Daemon::debugf("Have the following files in mapping: %s", json_encode(array_keys($mapping)));
         return $mapping;
     }
@@ -296,6 +303,7 @@ class Request
      * @param \Closure $file_path_lister
      * @param Responder $responder
      * @return ?Request - non-null if this is a worker process with work to do. null if request failed or this is the master.
+     * @suppress PhanPartialTypeMismatchArgument pre-existing
      */
     public static function accept(CodeBase $code_base, \Closure $file_path_lister, Responder $responder, bool $fork)
     {

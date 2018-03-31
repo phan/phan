@@ -871,7 +871,7 @@ class Config
                 self::$strict_param_checking = $value;
                 break;
             case 'strict_property_checking':
-                self::$strict_param_checking = $value;
+                self::$strict_property_checking = $value;
                 break;
             case 'strict_return_checking':
                 self::$strict_return_checking = $value;
