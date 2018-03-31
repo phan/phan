@@ -11,3 +11,4 @@ src/009_vprintf.php:14 PhanTypeMismatchArgumentInternal Argument 2 (args) is int
 src/009_vprintf.php:16 PhanPluginPrintfNoArguments No format string arguments are given for "Hello world\n", consider using fwrite instead
 src/009_vprintf.php:18 PhanTypeMismatchArgumentInternal Argument 3 (args) is string but \vfprintf() takes array
 src/009_vprintf.php:19 PhanTypeMismatchArgumentInternal Argument 3 (args) is true but \vfprintf() takes array
+src/009_vprintf.php:23 PhanPartialTypeMismatchArgumentInternal Argument 1 (format) is array{0:string}|string but \vprintf() takes string (array{0:string} is incompatible)
