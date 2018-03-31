@@ -762,7 +762,7 @@ class ConversionSpec
  */
 class PrimitiveValue
 {
-    /** @var int|string|float|bool|null The primitive value of the expression if it could be determined. */
+    /** @var array|int|string|float|bool|null The primitive value of the expression if it could be determined. */
     public $value;
     /** @var bool Whether or not the expression value was translated. */
     public $is_translated;

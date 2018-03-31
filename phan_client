@@ -407,9 +407,11 @@ EOB;
                     if (!\is_array($this->file_list) || count($this->file_list) !== 1) {
                         $this->usage('--flycheck-file should be specified after the first occurrence of -l.', 1);
                     }
-                    $this->temporary_file_map = [
-                    $this->file_list[0] => $value,
-                    ];
+                    if (!is_string($value)) {
+                        $this->usage('--flycheck-file should be passed a string value', 1);
+                        break;  // unreachable
+                    }
+                    $this->temporary_file_map = [$this->file_list[0] => $value];
                     break;
                 case 't':
                 case 'temporary-file-map':
@@ -419,6 +421,7 @@ EOB;
                     $mapping = json_decode($value, true);
                     if (!\is_array($mapping)) {
                         $this->usage('--temporary-file-map should be a JSON encoded map from source file to temporary file to analyze instead', 1);
+                        break;  // unreachable
                     }
                     $this->temporary_file_map = $mapping;
 

@@ -103,11 +103,11 @@ class Comment
     private $template_type_list = [];
 
     /**
-     * @var Option<Type>|null
+     * @var Option<Type>|None
      * Classes may specify their inherited type explicitly
      * via `(at)inherits Type`.
      */
-    private $inherited_type = null;
+    private $inherited_type;
 
     /**
      * @var UnionType|null
@@ -139,7 +139,7 @@ class Comment
     private $throw_union_type;
 
     /**
-     * @var Option<Type>
+     * @var Option<Type>|None
      * An optional class name defined by an (at)phan-closure-scope directive.
      * (overrides the class in which it is analyzed)
      */

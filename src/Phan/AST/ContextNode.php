@@ -59,7 +59,7 @@ class ContextNode
     /** @var Context */
     private $context;
 
-    /** @var Node|bool|string|float|int|bool|null */
+    /** @var Node|array|bool|string|float|int|bool|null */
     private $node;
 
     /**

@@ -18,7 +18,7 @@ class PassByReferenceVariable extends Variable
     /** @var Variable */
     private $parameter;
 
-    /** @var TypedElement */
+    /** @var TypedElement|UnaddressableTypedElement TODO: Make a common interface which has methods implemented */
     private $element;
 
     /** @param TypedElement|UnaddressableTypedElement $element */

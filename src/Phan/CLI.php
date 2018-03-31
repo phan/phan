@@ -128,7 +128,9 @@ class CLI
                 'require-config-exists',
                 'signature-compatibility',
                 'strict-param-checking',
+                'strict-property-checking',
                 'strict-return-checking',
+                'strict-type-checking',
                 'target-php-version',
                 'use-fallback-parser',
                 'version',
@@ -365,7 +367,15 @@ class CLI
                 case 'strict-param-checking':
                     Config::setValue('strict_param_checking', true);
                     break;
+                case 'strict-property-checking':
+                    Config::setValue('strict_property_checking', true);
+                    break;
                 case 'strict-return-checking':
+                    Config::setValue('strict_return_checking', true);
+                    break;
+                case 'strict-type-checking':
+                    Config::setValue('strict_param_checking', true);
+                    Config::setValue('strict_property_checking', true);
                     Config::setValue('strict_return_checking', true);
                     break;
                 case 's':
@@ -724,8 +734,15 @@ Usage: {$argv[0]} [options] [files...]
  --strict-param-checking
   Enables the config option `strict_param_checking`.
 
+ --strict-property-checking
+  Enables the config option `strict_property_checking`.
+
  --strict-return-checking
   Enables the config option `strict_return_checking`.
+
+ --strict-type-checking
+  Equivalent to
+  `--strict-param-checking --strict-property-checking --strict-return-checking`.
 
  --use-fallback-parser
   If a file to be analyzed is syntactically invalid

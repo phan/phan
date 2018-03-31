@@ -101,6 +101,9 @@ class Issue
     const TypeMismatchVariadicParam = 'PhanMismatchVariadicParam';
     const TypeMismatchForeach       = 'PhanTypeMismatchForeach';
     const TypeMismatchProperty      = 'PhanTypeMismatchProperty';
+    const PossiblyNullTypeMismatchProperty = 'PhanPossiblyNullTypeMismatchProperty';
+    const PossiblyFalseTypeMismatchProperty = 'PhanPossiblyFalseTypeMismatchProperty';
+    const PartialTypeMismatchProperty = 'PhanPartialTypeMismatchProperty';
     const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
     const PartialTypeMismatchReturn = 'PhanPartialTypeMismatchReturn';
     const PossiblyNullTypeReturn  = 'PhanPossiblyNullTypeReturn';
@@ -796,6 +799,30 @@ class Issue
                 "Assigning {TYPE} to property but {PROPERTY} is {TYPE}",
                 self::REMEDIATION_B,
                 10001
+            ),
+            new Issue(
+                self::PartialTypeMismatchProperty,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Assigning {TYPE} to property but {PROPERTY} is {TYPE} ({TYPE} is incompatible)",
+                self::REMEDIATION_B,
+                10063
+            ),
+            new Issue(
+                self::PossiblyNullTypeMismatchProperty,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Assigning {TYPE} to property but {PROPERTY} is {TYPE} ({TYPE} is incompatible)",
+                self::REMEDIATION_B,
+                10064
+            ),
+            new Issue(
+                self::PossiblyFalseTypeMismatchProperty,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Assigning {TYPE} to property but {PROPERTY} is {TYPE} ({TYPE} is incompatible)",
+                self::REMEDIATION_B,
+                10065
             ),
             new Issue(
                 self::TypeMismatchDefault,

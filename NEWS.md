@@ -13,6 +13,12 @@ New Features(CLI, Configs)
   Setting this to true will likely introduce large numbers of warnings.
   Those issue types would need to be suppressed entirely,
   or with `@phan-file-suppress`, or with `@suppress`.
++ Add a `strict_property_checking` config setting. (And a `--strict-property-checking` CLI flag)
+  If this is set to true, then Phan will warn if at least one of the types
+  in an assignment's union type can't cast to the expected property type.
+  New issue types: `PhanPartialTypeMismatchProperty`, `PhanPossiblyNullTypeProperty`, and `PhanPossiblyFalseTypeProperty`
+
+  NOTE: This option does not make Phan check if all possible expressions have a given property, but may do that in the future.
 + Add a `strict_return_checking` config setting. (And a `--strict-return-checking` CLI flag)
   If this is set to true, then Phan will warn if at least one of the types
   in a return statement's union type can't cast to the expected return type type.
@@ -21,6 +27,7 @@ New Features(CLI, Configs)
   Setting this to true will likely introduce large numbers of warnings.
   Those issue types would need to be suppressed entirely,
   or with `@phan-file-suppress`, or with `@suppress`.
++ Add a `--strict-type-checking` CLI flag, to enable all of the new strict property/param/return type checks.
 
 New Features(Analysis)
 + Detect unreachable catch statements (#112)

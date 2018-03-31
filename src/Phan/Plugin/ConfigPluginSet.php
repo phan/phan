@@ -369,7 +369,10 @@ final class ConfigPluginSet extends PluginV2 implements
         return \count($this->analyzePropertyPluginSet) > 0;
     }
 
-    /** @return void */
+    /**
+     * @return void
+     * @suppress PhanPartialTypeMismatchProperty
+     */
     private function ensurePluginsExist()
     {
         if (!\is_null($this->pluginSet)) {
