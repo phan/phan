@@ -56,6 +56,9 @@ class Config
     private static $strict_param_checking = false;
 
     /** @var bool */
+    private static $strict_property_checking = false;
+
+    /** @var bool */
     private static $strict_return_checking = false;
 
     /** @var bool */
@@ -777,9 +780,14 @@ class Config
         return self::$strict_param_checking;
     }
 
+    public static function get_strict_property_checking() : bool
+    {
+        return self::$strict_property_checking;
+    }
+
     public static function get_strict_return_checking() : bool
     {
-        return self::$strict_param_checking;
+        return self::$strict_return_checking;
     }
 
     public static function get_null_casts_as_array() : bool
@@ -860,6 +868,9 @@ class Config
                 self::$array_casts_as_null = $value;
                 break;
             case 'strict_param_checking':
+                self::$strict_param_checking = $value;
+                break;
+            case 'strict_property_checking':
                 self::$strict_param_checking = $value;
                 break;
             case 'strict_return_checking':
