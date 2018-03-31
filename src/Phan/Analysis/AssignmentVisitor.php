@@ -724,7 +724,6 @@ class AssignmentVisitor extends AnalysisVisitor
                 // then preserve the array shape type.
                 $new_types = $this->typeCheckDimAssignment($property_union_type, $node)->withFlattenedArrayShapeTypeInstances();
 
-                // TODO: More precise than canCastToExpandedUnionType
                 if (!$new_types->canCastToExpandedUnionType(
                     $property_union_type,
                     $this->code_base
@@ -738,9 +737,6 @@ class AssignmentVisitor extends AnalysisVisitor
                         (string)$property_union_type
                     );
                 } else {
-                    // TODO: Also do this elsewhere?
-                    if (Config::get_strict_property_checking() && $new_types->typeCount() > 1) {
-                    }
                     $this->right_type = $new_types;
                     $this->addTypesToProperty($property, $node);
                 }
