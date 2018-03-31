@@ -330,7 +330,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * Check if a given variable is undeclared.
-     * @param Node - Node with kind AST_VAR
+     * @param Node $node Node with kind AST_VAR
      * @return void
      */
     private function checkForUndeclaredVariable(Node $node)

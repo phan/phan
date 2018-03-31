@@ -239,7 +239,7 @@ final class GenericArrayType extends ArrayType
     }
 
     /**
-     * @param CodeBase
+     * @param CodeBase $code_base
      * The code base to use in order to find super classes, etc.
      *
      * @param $recursion_depth

@@ -107,7 +107,10 @@ final class ArrayShapeType extends ArrayType
         return true;
     }
 
-    /** @return array<int,ArrayType> */
+    /**
+     * @return array<int,ArrayType>
+     * @suppress PhanPartialTypeMismatchReturn
+     */
     private function computeGenericArrayTypeInstances() : array
     {
         $field_types = $this->field_types;
@@ -263,10 +266,10 @@ final class ArrayShapeType extends ArrayType
     }
 
     /**
-     * @param CodeBase
+     * @param CodeBase $code_base
      * The code base to use in order to find super classes, etc.
      *
-     * @param $recursion_depth
+     * @param int $recursion_depth
      * This thing has a tendency to run-away on me. This tracks
      * how bad I messed up by seeing how far the expanded types
      * go

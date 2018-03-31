@@ -510,7 +510,7 @@ trait FunctionTrait
     }
 
     /**
-     * @param UnionType
+     * @param UnionType $union_type
      * The real (non-phpdoc) return type of this method in its given context.
      *
      * @return void
@@ -762,7 +762,7 @@ trait FunctionTrait
     }
 
     /**
-     * @param array<string,UnionType> maps a subset of param names to the unmodified phpdoc parameter types. May differ from real parameter types
+     * @param array<string,UnionType> $parameter_map maps a subset of param names to the unmodified phpdoc parameter types. May differ from real parameter types
      * @return void
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */

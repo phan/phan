@@ -440,7 +440,7 @@ class Comment
                     }
                 } elseif ($type === 'return') {
                     $check_compatible('@return', Comment::FUNCTION_LIKE, $i, $line);
-                    $type = self::returnTypeFromCommentLine($context, $line)->withUnionType($return_union_type);
+                    $type = self::returnTypeFromCommentLine($code_base, $context, $line, $lineno, $i, $comment_lines_count)->withUnionType($return_union_type);
                     if (!$type->isEmpty()) {
                         $return_union_type = $type;
                     }
@@ -455,7 +455,7 @@ class Comment
                     );
                 } elseif ($type === 'throws') {
                     $check_compatible('@throws', Comment::FUNCTION_LIKE, $i, $line);
-                    $throw_union_type = $throw_union_type->withUnionType(self::returnTypeFromCommentLine($context, $line));
+                    $throw_union_type = $throw_union_type->withUnionType(self::returnTypeFromCommentLine($code_base, $context, $line, $lineno, $i, $comment_lines_count));
                 } elseif ($type === 'throw') {
                     Issue::maybeEmit(
                         $code_base,
@@ -469,6 +469,14 @@ class Comment
                     $suppress_issue_type = self::suppressIssueFromCommentLine($line);
                     if ($suppress_issue_type !== '') {
                         $suppress_issue_list[] = $suppress_issue_type;
+                    } else {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::UnextractableAnnotation,
+                            self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line),
+                            trim($line)
+                        );
                     }
                 } elseif ($type === 'property') {
                     $check_compatible('@property', [Comment::ON_CLASS], $i, $line);
@@ -491,7 +499,7 @@ class Comment
                 } elseif ($type === 'phanclosurescope' || $type === 'phan-closure_scope') {
                     // TODO: different type for closures
                     $check_compatible('@PhanClosureScope', Comment::FUNCTION_LIKE, $i, $line);
-                    $closure_scope = self::getPhanClosureScopeFromCommentLine($context, $line);
+                    $closure_scope = self::getPhanClosureScopeFromCommentLine($code_base, $context, $line, $lineno, $i, $comment_lines_count);
                 } elseif (\strpos($type, 'phan-') === 0) {
                     if ($type === 'phan-forbid-undeclared-magic-properties') {
                         $check_compatible('@phan-forbid-undeclared-magic-properties', [Comment::ON_CLASS], $i, $line);
@@ -501,14 +509,14 @@ class Comment
                         $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS;
                     } elseif ($type === 'phan-closure-scope') {
                         $check_compatible('@phan-closure-scope', Comment::FUNCTION_LIKE, $i, $line);
-                        $closure_scope = self::getPhanClosureScopeFromCommentLine($context, $line);
+                        $closure_scope = self::getPhanClosureScopeFromCommentLine($code_base, $context, $line, $lineno, $i, $comment_lines_count);
                     } elseif ($type === 'phan-param') {
                         $check_compatible('@phan-param', Comment::FUNCTION_LIKE, $i, $line);
                         $phan_overrides['param'][] =
                             self::parameterFromCommentLine($code_base, $context, $line, false, $lineno, $i, $comment_lines_count);
                     } elseif ($type === 'phan-return') {
                         $check_compatible('@phan-return', Comment::FUNCTION_LIKE, $i, $line);
-                        $phan_overrides['return'] = self::returnTypeFromCommentLine($context, $line);
+                        $phan_overrides['return'] = self::returnTypeFromCommentLine($code_base, $context, $line, $lineno, $i, $comment_lines_count);
                     } elseif ($type === 'phan-override') {
                         $check_compatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i, $line);
                         $comment_flags |= Flags::IS_OVERRIDE_INTENDED;
@@ -602,7 +610,7 @@ class Comment
     private static function emitInvalidCommentForDeclarationType(
         CodeBase $code_base,
         Context $context,
-        string $annotationType,
+        string $annotation_type,
         int $comment_type,
         int $lineno
     ) {
@@ -611,7 +619,7 @@ class Comment
             $context,
             Issue::InvalidCommentForDeclarationType,
             $lineno,
-            $annotationType,
+            $annotation_type,
             self::NAME_FOR_TYPE[$comment_type]
         );
     }
@@ -628,15 +636,41 @@ class Comment
      *
      * @return UnionType
      * The declared return type
+     * @suppress PhanParamSuspiciousOrder strstr
      */
     private static function returnTypeFromCommentLine(
+        CodeBase $code_base,
         Context $context,
-        string $line
+        string $line,
+        int $lineno,
+        int $i,
+        int $comment_lines_count
     ) {
         $return_union_type_string = '';
 
         if (\preg_match(self::return_comment_regex, $line, $match)) {
             $return_union_type_string = $match[2];
+            $raw_match = $match[0];
+            $char_at_end_offset = $line[\strpos($line, $raw_match) + \strlen($raw_match)] ?? ' ';
+            if (strstr(' \t', $char_at_end_offset) === false) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::UnextractableAnnotationSuffix,
+                    self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line),
+                    \trim($line),
+                    $return_union_type_string,
+                    $char_at_end_offset
+                );
+            }
+        } else {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::UnextractableAnnotation,
+                self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line),
+                trim($line)
+            );
         }
         // Not emitting any issues about failing to extract, e.g. `@return - Description of what this returns` is a valid comment.
         $return_union_type_string = self::rewritePHPDocType($return_union_type_string);
@@ -703,6 +737,9 @@ class Comment
             if (!isset($match[2])) {
                 return new CommentParameter('', UnionType::empty());
             }
+            if (!$is_var && !isset($match[21])) {
+                self::checkParamWithoutVarName($code_base, $context, $line, $match[0], $match[2], $lineno, $i, $comment_lines_count);
+            }
             $original_type = $match[2];
 
             $is_variadic = ($match[20] ?? '') === '...';
@@ -739,23 +776,65 @@ class Comment
                 false,  // has_default_value
                 $is_output_parameter
             );
-        } else {
-            // Don't warn about @param $x Description of $x goes here
-            // TODO: extract doc comment of @param &$x?
-            // TODO: Use the right for the name of the comment parameter?
-            //       (don't see a benefit, would create a type if it was (at)var on a function-like)
-            if (!\preg_match('/@(param|var)\s+(\.\.\.)?\s*(\\$\S+)/', $line)) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::UnextractableAnnotation,
-                    self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line),
-                    \trim($line)
-                );
-            }
+        }
+
+        // Don't warn about @param $x Description of $x goes here
+        // TODO: extract doc comment of @param &$x?
+        // TODO: Use the right for the name of the comment parameter?
+        //       (don't see a benefit, would create a type if it was (at)var on a function-like)
+        if (!\preg_match('/@(param|var)\s+(\.\.\.)?\s*(\\$\S+)/', $line)) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::UnextractableAnnotation,
+                self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line),
+                \trim($line)
+            );
         }
 
         return new CommentParameter('', UnionType::empty());
+    }
+
+    /**
+     * This should be uncommon: $line is a parameter for which a parameter name could not be parsed
+     * @suppress PhanParamSuspiciousOrder
+     */
+    private static function checkParamWithoutVarName(
+        CodeBase $code_base,
+        Context $context,
+        string $line,
+        string $raw_match,
+        string $union_type_string,
+        int $lineno,
+        int $i,
+        int $comment_lines_count
+    ) {
+
+        $match_offset = \strpos($line, $raw_match);
+        $end_offset = $match_offset + strlen($raw_match);
+
+        $char_at_end_offset = $line[$end_offset] ?? ' ';
+        $issue_line = self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line);
+        if (strstr(" \t\n", $char_at_end_offset) === false) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::UnextractableAnnotationSuffix,
+                $issue_line,
+                \trim($line),
+                $union_type_string,
+                $char_at_end_offset
+            );
+        }
+
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            Issue::UnextractableAnnotationElementName,
+            $issue_line,
+            \trim($line),
+            $union_type_string
+        );
     }
 
     /**
@@ -1037,8 +1116,12 @@ class Comment
      * (Phan expects a ClassScope to have exactly one type)
      */
     private static function getPhanClosureScopeFromCommentLine(
+        CodeBase $code_base,
         Context $context,
-        string $line
+        string $line,
+        int $lineno,
+        int $comment_line_offset,
+        int $comment_lines_count
     ) : Option {
         $closure_scope_union_type_string = '';
 
@@ -1058,6 +1141,13 @@ class Comment
                 Type::FROM_PHPDOC
             ));
         }
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            Issue::UnextractableAnnotation,
+            self::guessActualLineLocation($context, $lineno, $comment_line_offset, $comment_lines_count, $line),
+            trim($line)
+        );
         return new None();
     }
 
