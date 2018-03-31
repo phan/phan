@@ -169,7 +169,7 @@ class ASTSimplifier
      * If this returns true, the expression has no side effects, and can safely be reordered.
      * (E.g. returns true for `MY_CONST` or `false` in `if (MY_CONST === ($x = y))`
      *
-     * @param Node|string|float|int
+     * @param Node|string|float|int $node
      */
     private static function isExpressionWithoutSideEffects($node) : bool
     {

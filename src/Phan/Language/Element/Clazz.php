@@ -1758,7 +1758,7 @@ class Clazz extends AddressableElement
      * The entire code base from which we'll find ancestor
      * details
      *
-     * @param array<int,FullyQualifiedClassName>
+     * @param array<int,FullyQualifiedClassName> $fqsen_list
      * A list of class FQSENs to turn into a list of
      * Clazz objects
      *

@@ -244,7 +244,7 @@ interface FunctionInterface extends AddressableElementInterface
     public function getRealParameterList();
 
     /**
-     * @param array<string,UnionType> maps a subset of param names to the unmodified phpdoc parameter types.
+     * @param array<string,UnionType> $parameter_map maps a subset of param names to the unmodified phpdoc parameter types.
      * Will differ from real parameter types (ideally narrower)
      * @return void
      */
@@ -256,7 +256,7 @@ interface FunctionInterface extends AddressableElementInterface
     public function getPHPDocParameterTypeMap();
 
     /**
-     * @param ?UnionType the raw phpdoc union type
+     * @param ?UnionType $union_type the raw phpdoc union type
      * @return void
      */
     public function setPHPDocReturnType($union_type);

@@ -63,7 +63,7 @@ class GlobalScope extends Scope
      * @param Variable $variable
      * A variable to add to the local scope
      *
-     * @return Scope;
+     * @return Scope
      */
     public function withVariable(Variable $variable) : Scope
     {
