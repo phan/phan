@@ -708,6 +708,7 @@ class Config
      * @return string
      * Get the root directory of the project that we're
      * scanning
+     * @suppress PhanPossiblyFalseTypeReturn getcwd() can technically be false, but we should have checked earlier
      */
     public static function getProjectRootDirectory() : string
     {

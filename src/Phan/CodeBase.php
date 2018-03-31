@@ -59,6 +59,8 @@ use ReflectionClass;
  *
  * This supports undoing some operations in the parse phase,
  * for a background daemon analyzing single files. (Phan\CodeBase\UndoTracker)
+ *
+ * @phan-file-suppress PhanPartialTypeMismatchReturn the way generic objects is type hinted is inadequate, etc.
  */
 class CodeBase
 {

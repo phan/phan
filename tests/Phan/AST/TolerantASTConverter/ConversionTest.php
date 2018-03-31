@@ -16,6 +16,9 @@ use ast;
 
 class ConversionTest extends BaseTest
 {
+    /**
+     * @return array<int,string>
+     */
     protected function _scanSourceDirForPHP(string $source_dir) : array
     {
         $files = [];
@@ -68,7 +71,7 @@ class ConversionTest extends BaseTest
     /**
      * Asserts that valid files get parsed the same way by php-ast and the polyfill.
      *
-     * @return string[]|int[] [string $file_path, int $ast_version]
+     * @return array{0:string,1:int}[] array of [string $file_path, int $ast_version]
      * @suppress PhanPluginUnusedVariable
      */
     public function astValidFileExampleProvider()

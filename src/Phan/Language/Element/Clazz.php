@@ -576,6 +576,7 @@ class Clazz extends AddressableElement
     /**
      * @return array<int,FullyQualifiedClassName>
      * Get the list of interfaces implemented by this class
+     * @suppress PhanPartialTypeMismatchReturn
      */
     public function getInterfaceFQSENList() : array
     {
@@ -1559,6 +1560,7 @@ class Clazz extends AddressableElement
     /**
      * @return array<int,FullyQualifiedClassName>
      * A list of FQSEN's for included traits
+     * @suppress PhanPartialTypeMismatchReturn TODO: investigate
      */
     public function getTraitFQSENList() : array
     {
@@ -2664,7 +2666,8 @@ class Clazz extends AddressableElement
     /**
      * @param array<string,UnionType> $template_parameter_type_map
      */
-    public function resolveParentTemplateType(array $template_parameter_type_map) : UnionType {
+    public function resolveParentTemplateType(array $template_parameter_type_map) : UnionType
+    {
         if (\count($template_parameter_type_map) === 0) {
             return UnionType::empty();
         }

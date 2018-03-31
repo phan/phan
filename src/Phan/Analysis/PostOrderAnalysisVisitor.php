@@ -814,7 +814,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Figure out what is actually being returned
         // TODO: Properly check return values of array shapes
         foreach ($this->getReturnTypes($context, $node->children['expr']) as $expression_type) {
-
             // If there is no declared type, see if we can deduce
             // what it should be based on the return type
             if ($method_return_type->isEmpty()
@@ -835,7 +834,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             // Check if the return type is compatible with the declared return type.
             if (!$method->isReturnTypeUndefined()) {
-
                 // We allow base classes to cast to subclasses, and subclasses to cast to baseclasses,
                 // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
                 if (!$this->checkCanCastToReturnType($code_base, $expression_type, $method_return_type)) {
@@ -930,6 +928,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
 
+        // If we have TypeMismatchReturn already, then also suppress the partial mismatch warnings as well.
+        if ($this->context->hasSuppressIssue($code_base, Issue::TypeMismatchReturn)) {
+            return;
+        }
         $this->emitIssue(
             self::getStrictIssueType($mismatch_type_set),
             $node->lineno ?? 0,

@@ -60,6 +60,7 @@ final class UnionTypeBuilder
 
     /**
      * @return array<int,Type>
+     * @suppress PhanPartialTypeMismatchReturn additional types were inferred
      */
     public function getTypeSet() : array
     {

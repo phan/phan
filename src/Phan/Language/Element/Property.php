@@ -72,6 +72,7 @@ class Property extends ClassElement
      *                                    Inheritance tests use getDefiningFQSEN() so that access checks won't break.
      *
      * @suppress PhanUnreferencedPublicMethod this is used, but the invocation could be one of multiple classes.
+     * @suppress PhanPartialTypeMismatchReturn TODO: Allow subclasses to make property types more specific
      */
     public function getRealDefiningFQSEN() : FullyQualifiedPropertyName
     {
