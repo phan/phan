@@ -28,6 +28,10 @@ New Features(CLI, Configs)
   Those issue types would need to be suppressed entirely,
   or with `@phan-file-suppress`, or with `@suppress`.
 + Add a `--strict-type-checking` CLI flag, to enable all of the new strict property/param/return type checks.
++ Add a `guess_unknown_parameter_type_using_default` config,
+  which can be enabled to make Phan more aggresively infer the types of undocument optional parameters
+  from the parameter's default value.
+  E.g. `function($x = 'val')` would make Phan infer that the function expects $x to have a type of `string`, not `string|mixed`.
 
 New Features(Analysis)
 + Detect unreachable catch statements (#112)

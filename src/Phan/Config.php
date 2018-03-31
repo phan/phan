@@ -193,6 +193,13 @@ class Config
         // If this is null, this will be inferred from target_php_version.
         'allow_method_param_type_widening' => false,
 
+        // Set this to true to make Phan guess that undocumented parameter types
+        // (for optional parameters) have the same type as default values
+        // (Instead of combining that type with `mixed`).
+        // E.g. `function($x = 'val')` would make Phan infer that $x had a type of `string`, not `string|mixed`.
+        // Phan will not assume it knows specific types if the default value is false or null.
+        'guess_unknown_parameter_type_using_default' => false,
+
         // If enabled, inherit any missing phpdoc for types from
         // the parent method if none is provided.
         //

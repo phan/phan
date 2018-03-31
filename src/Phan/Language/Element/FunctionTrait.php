@@ -5,14 +5,19 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\Element\Comment;
 use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
-use Phan\Language\Element\Comment;
-use Phan\Language\Type\ClosureDeclarationType;
+use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\BoolType;
 use Phan\Language\Type\ClosureDeclarationParameter;
+use Phan\Language\Type\ClosureDeclarationType;
+use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FunctionLikeDeclarationType;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
+use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
 use ast\Node;
 use Closure;
@@ -703,24 +708,23 @@ trait FunctionTrait
             // default shouldn't be treated as the one
             // and only allowable type.
             $wasEmpty = $parameter->getUnionType()->isEmpty();
-            if ($wasEmpty) {
-                // TODO: Errors on usage of ?mixed are poorly defined and greatly differ from phan's old behavior.
-                // Consider passing $default_is_null once this is fixed.
-                $parameter->addUnionType(
-                    MixedType::instance(false)->asUnionType()
-                );
-            }
 
             // If we have no other type info about a parameter,
             // just because it has a default value of null
             // doesn't mean that is its type. Any type can default
             // to null
             if ($default_is_null) {
+                if ($wasEmpty) {
+                    $parameter->addUnionType(MixedType::instance(false)->asUnionType());
+                }
                 // The parameter constructor or above check for wasEmpty already took care of null default case
             } else {
                 $default_type = $default_type->withFlattenedArrayShapeTypeInstances();
                 if ($wasEmpty) {
-                    $parameter->addUnionType($default_type);
+                    $parameter->addUnionType(self::inferNormalizedTypesOfDefault($default_type));
+                    if (!Config::getValue('guess_unknown_parameter_type_using_default')) {
+                        $parameter->addUnionType(MixedType::instance(false)->asUnionType());
+                    }
                 } else {
                     // Don't add both `int` and `?int` to the same set.
                     foreach ($default_type->getTypeSet() as $default_type_part) {
@@ -732,6 +736,29 @@ trait FunctionTrait
                 }
             }
         }
+    }
+
+    private static function inferNormalizedTypesOfDefault(UnionType $default_type) : UnionType
+    {
+        $type_set = $default_type->getTypeSet();
+        if (\count($type_set) === 0) {
+            return $default_type;
+        }
+        $normalized_default_type = new UnionType();
+        foreach ($type_set as $type) {
+            if ($type instanceof FalseType || $type instanceof NullType) {
+                return MixedType::instance(false)->asUnionType();
+            } elseif ($type instanceof GenericArrayType) {
+                // Ideally should be the **only** type.
+                $normalized_default_type = $normalized_default_type->withType(ArrayType::instance(false));
+            } elseif ($type instanceof TrueType) {
+                // e.g. for `function myFn($x = true) { }, $x is probably of type bool, but we're less sure about the type of $x from `$x = false`
+                $normalized_default_type = $normalized_default_type->withType(BoolType::instance(false));
+            } else {
+                $normalized_default_type = $normalized_default_type->withType($type);
+            }
+        }
+        return $normalized_default_type;
     }
 
     /**
