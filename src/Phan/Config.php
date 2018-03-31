@@ -42,7 +42,7 @@ class Config
      */
     private static $configuration = self::DEFAULT_CONFIGURATION;
 
-    // The 6 most commonly accessed configs:
+    // The most commonly accessed configs:
     /** @var bool */
     private static $null_casts_as_any_type = false;
 
@@ -51,6 +51,9 @@ class Config
 
     /** @var bool */
     private static $array_casts_as_null = false;
+
+    /** @var bool */
+    private static $strict_param_checking = false;
 
     /** @var bool */
     private static $track_references = false;
@@ -218,6 +221,11 @@ class Config
         // type can be cast to null. Setting this to true
         // will cut down on false positives.
         'null_casts_as_any_type' => false,
+
+        // If enabled, Phan will warn if **any** type in the argument's type
+        // cannot be cast to a type in the parameter's expected type.
+        // Setting this to true will introduce a large number of false positives (and some bugs).
+        'strict_param_checking' => false,
 
         // If enabled, scalars (int, float, bool, string, null)
         // are treated as if they can cast to each other.
@@ -753,9 +761,9 @@ class Config
         return self::$null_casts_as_any_type;
     }
 
-    public static function get_strict_param_check() : bool
+    public static function get_strict_param_checking() : bool
     {
-        return true;
+        return self::$strict_param_checking;
     }
 
     public static function get_null_casts_as_array() : bool
@@ -834,6 +842,9 @@ class Config
                 break;
             case 'array_casts_as_null':
                 self::$array_casts_as_null = $value;
+                break;
+            case 'strict_param_checking':
+                self::$strict_param_checking = $value;
                 break;
             case 'dead_code_detection':
             case 'force_tracking_references':

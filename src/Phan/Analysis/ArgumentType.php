@@ -500,7 +500,7 @@ class ArgumentType
             if ($argument_type_expanded->canCastToUnionType(
                 $alternate_parameter->getNonVariadicUnionType()
             )) {
-                if (Config::get_strict_param_check() && $argument_type->typeCount() > 1) {
+                if (Config::get_strict_param_checking() && $argument_type->typeCount() > 1) {
                     self::analyzeParameterStrict($code_base, $context, $method, $argument_type, $alternate_parameter, $lineno, $i);
                 }
                 return;

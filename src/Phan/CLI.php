@@ -127,6 +127,7 @@ class CLI
                 'quick',
                 'require-config-exists',
                 'signature-compatibility',
+                'strict-param-checking',
                 'target-php-version',
                 'use-fallback-parser',
                 'version',
@@ -359,6 +360,9 @@ class CLI
                     break;
                 case 'use-fallback-parser':
                     Config::setValue('use_fallback_parser', true);
+                    break;
+                case 'strict-param-checking':
+                    Config::setValue('strict_param_checking', true);
                     break;
                 case 's':
                 case 'daemonize-socket':
@@ -711,6 +715,9 @@ Usage: {$argv[0]} [options] [files...]
  --plugin <pluginName|path/to/Plugin.php>
   Add an additional plugin to run. This flag can be repeated.
   (Either pass the name of the plugin or a relative/absolute path to the plugin)
+
+ --strict-param-checking
+  Enables the config option `strict_param_checking`.
 
  --use-fallback-parser
   If a file to be analyzed is syntactically invalid
