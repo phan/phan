@@ -707,7 +707,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     }
 
     /**
-     * @return array<int,string>
+     * @return array<string,string>
      */
     private function extractMethodParams(SimpleXMLElement $param)
     {

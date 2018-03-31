@@ -120,8 +120,32 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         return IntType::instance(false)->asUnionType();
     }
 
-    // Code can bitwise xor strings byte by byte in PHP
+    /**
+     * Code can bitwise xor strings byte by byte in PHP
+     * @override
+     */
     public function visitBinaryBitwiseXor(Node $node) : UnionType
+    {
+        return $this->analyzeBinaryBitwiseCommon($node);
+    }
+
+    /**
+     * @override
+     */
+    public function visitBinaryBitwiseOr(Node $node) : UnionType
+    {
+        return $this->analyzeBinaryBitwiseCommon($node);
+    }
+
+    /**
+     * @override
+     */
+    public function visitBinaryBitwiseAnd(Node $node) : UnionType
+    {
+        return $this->analyzeBinaryBitwiseCommon($node);
+    }
+
+    private function analyzeBinaryBitwiseCommon(Node $node) : UnionType
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,

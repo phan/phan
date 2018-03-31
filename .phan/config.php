@@ -213,6 +213,7 @@ return [
         'PhanPossiblyFalseTypeArgumentInternal',
         'PhanPossiblyNullTypeArgument',
         'PhanPossiblyNullTypeArgumentInternal',
+        'PhanPossiblyNullTypeReturn',
         // 'PhanUndeclaredMethod',
     ],
 

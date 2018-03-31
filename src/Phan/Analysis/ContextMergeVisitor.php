@@ -195,6 +195,8 @@ class ContextMergeVisitor extends KindVisitorImplementation
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * @suppress PhanPossiblyFalseTypeReturn child_context_list is not empty
      */
     public function visitIf(Node $node) : Context
     {

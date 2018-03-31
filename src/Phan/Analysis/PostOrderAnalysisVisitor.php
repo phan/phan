@@ -1052,7 +1052,22 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         // Allow nested ternary operators, or arrays within ternary operators
-        yield from $this->getReturnTypes($true_context, $true_node);
+        if (($node->children['true'] ?? null) !== null) {
+            yield from $this->getReturnTypes($true_context, $true_node);
+        } else {
+            // E.g. From the left hand side of yield (int|false) ?: default,
+            // yielding false is impossible.
+            foreach ($this->getReturnTypes($true_context, $true_node) as $raw_union_type) {
+                if ($raw_union_type->isEmpty() || !$raw_union_type->containsFalsey()) {
+                    yield $raw_union_type;
+                } else {
+                    $raw_union_type = $raw_union_type->nonFalseyClone();
+                    if (!$raw_union_type->isEmpty()) {
+                        yield $raw_union_type;
+                    }
+                }
+            }
+        }
 
         yield from $this->getReturnTypes($false_context, $node->children['false']);
     }
