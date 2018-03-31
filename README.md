@@ -309,6 +309,19 @@ Usage: ./phan [options] [files...]
   Add an additional plugin to run. This flag can be repeated.
   (Either pass the name of the plugin or a relative/absolute path to the plugin)
 
+ --strict-param-checking
+  Enables the config option `strict_param_checking`.
+
+ --strict-property-checking
+  Enables the config option `strict_property_checking`.
+
+ --strict-return-checking
+  Enables the config option `strict_return_checking`.
+
+ --strict-type-checking
+  Equivalent to
+  `--strict-param-checking --strict-property-checking --strict-return-checking`.
+
  --use-fallback-parser
   If a file to be analyzed is syntactically invalid
   (i.e. "php --syntax-check path/to/file" would emit a syntax error),

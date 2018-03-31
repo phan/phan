@@ -741,7 +741,8 @@ Usage: {$argv[0]} [options] [files...]
   Enables the config option `strict_return_checking`.
 
  --strict-type-checking
-  Equivalent to `--strict-param-checking --strict-property-checking --strict-return-checking`
+  Equivalent to
+  `--strict-param-checking --strict-property-checking --strict-return-checking`.
 
  --use-fallback-parser
   If a file to be analyzed is syntactically invalid
