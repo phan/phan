@@ -89,7 +89,6 @@ class Issue
     const PossiblyFalseTypeArgument  = 'PhanPossiblyFalseTypeArgument';
     const PossiblyFalseTypeArgumentInternal = 'PhanPossiblyFalseTypeArgumentInternal';
 
-    const TypeMismatchArgumentStrictInternal = 'PhanTypeMismatchArgumentStrictInternal';
     const TypeMismatchDefault       = 'PhanTypeMismatchDefault';
     const TypeMismatchDimAssignment = 'PhanTypeMismatchDimAssignment';
     const TypeMismatchDimEmpty      = 'PhanTypeMismatchDimEmpty';

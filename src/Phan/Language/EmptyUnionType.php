@@ -967,4 +967,19 @@ final class EmptyUnionType extends UnionType
     {
         return $this;
     }
+
+    public function withoutSubclassesOf(CodeBase $code_base, Type $object_type) : UnionType
+    {
+        return $this;
+    }
+
+    public function canStrictCastToUnionType(UnionType $target) : bool
+    {
+        return true;
+    }
+
+    public function hasArray() : bool
+    {
+        return false;
+    }
 }

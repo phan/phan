@@ -2647,14 +2647,16 @@ class Clazz extends AddressableElement
     /**
      * @return void
      */
-    public function addAdditionalType(Type $type) {
+    public function addAdditionalType(Type $type)
+    {
         $this->additional_union_types = ($this->additional_union_types ?? UnionType::empty())->withType($type);
     }
 
     /**
      * @return ?UnionType
      */
-    public function getAdditionalTypes() {
+    public function getAdditionalTypes()
+    {
         return $this->additional_union_types;
     }
 }

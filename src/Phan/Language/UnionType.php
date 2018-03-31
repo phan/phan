@@ -821,7 +821,7 @@ class UnionType implements \Serializable
         return false;
     }
 
-    public function withoutSubclassesOf(CodeBase $code_base, Type $object_type)
+    public function withoutSubclassesOf(CodeBase $code_base, Type $object_type) : UnionType
     {
         $is_nullable = $this->containsNullable();
         $new_variable_type = $this;
@@ -1293,10 +1293,11 @@ class UnionType implements \Serializable
      * @return bool
      * True if this type is allowed to cast to the given type
      * i.e. int->float is allowed  while float->int is not.
+     *
+     * @suppress PhanUnreferencedPublicMethod may be used elsewhere in the future
      */
-    public function canStrictCastToUnionType(
-        UnionType $target
-    ) : bool {
+    public function canStrictCastToUnionType(UnionType $target) : bool
+    {
         // Fast-track most common cases first
         $type_set = $this->type_set;
         // If either type is unknown, we can't call it
@@ -1320,14 +1321,8 @@ class UnionType implements \Serializable
         if ($matches) {
             return true;
         }
-        static $float_type;
-        static $int_type;
-        static $mixed_type;
         static $null_type;
         if ($null_type === null) {
-            $int_type   = IntType::instance(false);
-            $float_type = FloatType::instance(false);
-            $mixed_type = MixedType::instance(false);
             $null_type  = NullType::instance(false);
         }
 
