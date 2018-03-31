@@ -398,6 +398,10 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $file_path_list = ($this->file_path_lister)(true);
         $filtered_uris_to_analyze = [];
         foreach ($uris_to_analyze as $path_to_analyze => $uri) {
+            if (!is_string($uri)) {
+                Logger::logInfo("Uri for path '$path_to_analyze' is not a string, should not happen");
+                continue;
+            }
             $relative_path_to_analyze = FileRef::getProjectRelativePathForPath($path_to_analyze);
             if (!\in_array($uri, $file_path_list) && !\in_array($relative_path_to_analyze, $file_path_list)) {
                 Logger::logInfo("Path '$relative_path_to_analyze' (URI '$uri') not in parse list, skipping");

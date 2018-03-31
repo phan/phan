@@ -382,8 +382,9 @@ class Clazz extends AddressableElement
      */
     public function getParentTypeOption()
     {
-        if ($this->hasParentType()) {
-            return new Some($this->parent_type);
+        $parent_type = $this->parent_type;
+        if ($parent_type !== null) {
+            return new Some($parent_type);
         }
 
         return new None;
@@ -575,6 +576,7 @@ class Clazz extends AddressableElement
     /**
      * @return array<int,FullyQualifiedClassName>
      * Get the list of interfaces implemented by this class
+     * @suppress PhanPartialTypeMismatchReturn
      */
     public function getInterfaceFQSENList() : array
     {
@@ -1558,6 +1560,7 @@ class Clazz extends AddressableElement
     /**
      * @return array<int,FullyQualifiedClassName>
      * A list of FQSEN's for included traits
+     * @suppress PhanPartialTypeMismatchReturn TODO: investigate
      */
     public function getTraitFQSENList() : array
     {
@@ -2658,5 +2661,36 @@ class Clazz extends AddressableElement
     public function getAdditionalTypes()
     {
         return $this->additional_union_types;
+    }
+
+    /**
+     * @param array<string,UnionType> $template_parameter_type_map
+     */
+    public function resolveParentTemplateType(array $template_parameter_type_map) : UnionType
+    {
+        if (\count($template_parameter_type_map) === 0) {
+            return UnionType::empty();
+        }
+        $parent_type = $this->parent_type;
+        if ($parent_type === null) {
+            return UnionType::empty();
+        }
+        if (!$parent_type->hasTemplateParameterTypes()) {
+            return UnionType::empty();
+        }
+        $parent_template_parameter_type_list = $parent_type->getTemplateParameterTypeList();
+        $changed = false;
+        foreach ($parent_template_parameter_type_list as $i => $template_type) {
+            $new_template_type = $template_type->withTemplateParameterTypeMap($template_parameter_type_map);
+            if ($template_type === $new_template_type) {
+                continue;
+            }
+            $parent_template_parameter_type_list[$i] = $new_template_type;
+            $changed = true;
+        }
+        if (!$changed) {
+            return UnionType::empty();
+        }
+        return Type::fromType($parent_type, $parent_template_parameter_type_list)->asUnionType();
     }
 }

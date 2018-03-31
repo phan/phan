@@ -1089,20 +1089,33 @@ $v8->f();
 
 ## PhanPartialTypeMismatchArgument
 
+This issue (and similar issues) may be emitted when `strict_param_checking` is true, when analyzing a user-defined function.
+(when some types of the argument's union type match, but not others.)
+
 ```
 Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}
 ```
 
 ## PhanPartialTypeMismatchArgumentInternal
 
+This issue may be emitted when `strict_param_checking` is true, when analyzing an internal function.
+
 ```
 Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)
 ```
 
+## PhanPartialTypeMismatchReturn
+
+This issue (and similar issues) may be emitted when `strict_return_checking` is true
+(when some types of the return statement's union type match, but not others.)
+
+```
+Returning type {TYPE} but {FUNCTIONLIKE}() is declared to return {TYPE} ({TYPE} is incompatible)
+```
+
 ## PhanPossiblyFalseTypeArgument
 
-This issue (and other `PhanPossibly*` issues) may be emitted when `strict_param_checking` is true
-(when some types of the argument match, but not others.)
+This issue may be emitted when `strict_param_checking` is true
 
 ```
 Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}
@@ -1110,11 +1123,23 @@ Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE
 
 ## PhanPossiblyFalseTypeArgumentInternal
 
+This issue may be emitted when `strict_param_checking` is true
+
 ```
 Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)
 ```
 
+## PhanPossiblyFalseTypeReturn
+
+This issue may be emitted when `strict_return_checking` is true
+
+```
+Returning type {TYPE} but {FUNCTIONLIKE}() is declared to return {TYPE} ({TYPE} is incompatible)
+```
+
 ## PhanPossiblyNullTypeArgument
+
+This issue may be emitted when `strict_param_checking` is true
 
 ```
 Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}
@@ -1122,8 +1147,18 @@ Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE
 
 ## PhanPossiblyNullTypeArgumentInternal
 
+This issue may be emitted when `strict_param_checking` is true
+
 ```
 Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)
+```
+
+## PhanPossiblyNullTypeReturn
+
+This issue may be emitted when `strict_return_checking` is true
+
+```
+Returning type {TYPE} but {FUNCTIONLIKE}() is declared to return {TYPE} ({TYPE} is incompatible)
 ```
 
 ## PhanTypeArrayOperator
@@ -2060,4 +2095,3 @@ Emitted for syntax errors.
 
 This emits warnings for unparseable PHP files (detected by `php-ast`).
 Note: This is not the same thing as running `php -l` on a file - PhanSyntaxError checks for syntax errors, but not sematics such as where certain expressions can occur (Which `php -l` would check for).
-

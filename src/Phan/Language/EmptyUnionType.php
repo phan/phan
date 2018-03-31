@@ -167,6 +167,17 @@ final class EmptyUnionType extends UnionType
 
     /**
      * @return bool
+     * True if this union type has any types that have generic
+     * types
+     * @override
+     */
+    public function hasTemplateParameterTypes() : bool
+    {
+        return false;
+    }
+
+    /**
+     * @return bool
      * True if this type has a type referencing the
      * class context 'static'.
      * @override
@@ -979,6 +990,11 @@ final class EmptyUnionType extends UnionType
     }
 
     public function hasArray() : bool
+    {
+        return false;
+    }
+
+    public function hasClassWithToStringMethod(CodeBase $code_base, Context $context) : bool
     {
         return false;
     }

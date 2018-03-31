@@ -114,6 +114,7 @@ class ASTSimplifier
     /**
      * @param array<int,?Node|?float|?int|?string|?float|?bool> $statements
      * @return array{0:array<int,\ast\Node>,1:bool} - [New/old list, bool $modified] An equivalent list after simplifying (or the original list)
+     * @suppress PhanPartialTypeMismatchReturn
      */
     private function normalizeStatementList(array $statements) : array
     {
@@ -280,6 +281,7 @@ class ASTSimplifier
     private function applyAssignInLeftSideOfBinaryOpReduction(Node $node) : array
     {
         $inner_assign_statement = $node->children[0]->children['cond']->children['left'];
+        \assert($inner_assign_statement instanceof Node);  // already checked
         $inner_assign_var = $inner_assign_statement->children['var'];
 
         \assert($inner_assign_var->kind === \ast\AST_VAR);
@@ -304,6 +306,7 @@ class ASTSimplifier
         $inner_assign_statement = $node->children[0]->children['cond']->children['right'];
         $inner_assign_var = $inner_assign_statement->children['var'];
 
+        \assert($inner_assign_statement instanceof Node);
         \assert($inner_assign_var->kind === \ast\AST_VAR);
 
         $new_node_elem = clone($node->children[0]);
@@ -404,6 +407,7 @@ class ASTSimplifier
     private function applyIfAssignReduction(Node $node) : array
     {
         $outer_assign_statement = $node->children[0]->children['cond'];
+        \assert($outer_assign_statement instanceof Node);
         $new_node_elem = clone($node->children[0]);
         $new_node_elem->children['cond'] = $new_node_elem->children['cond']->children['var'];
         $new_node_elem->flags = 0;

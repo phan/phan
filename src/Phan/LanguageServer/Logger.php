@@ -12,7 +12,7 @@ use Phan\Config;
 class Logger
 {
     /** @var resource|false */
-    public static $file;
+    public static $file = false;
 
     public static function shouldLog() : bool
     {
@@ -52,10 +52,11 @@ class Logger
      */
     private static function getLogFile()
     {
-        if (self::$file === null) {
-            self::$file = STDERR;
+        $file = self::$file;
+        if (!$file) {
+            self::$file = $file = STDERR;
         }
-        return self::$file;
+        return $file;
     }
 
     /**

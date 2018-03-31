@@ -113,6 +113,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
 
     /**
      * @return ?ClosureDeclarationParameter
+     * @suppress PhanPossiblyFalseTypeReturn is_variadic implies at least one parameter exists.
      */
     public function getClosureParameterForArgument(int $i)
     {

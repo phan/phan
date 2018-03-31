@@ -143,6 +143,7 @@ class UndoTracker
     /**
      * @param CodeBase $code_base - code base owning this tracker
      * @param array<int,string> $new_file_list
+     * @param array<string,string> $file_mapping_contents
      * @return array<int,string> - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
      */
     public function updateFileList(CodeBase $code_base, array $new_file_list, array $file_mapping_contents)

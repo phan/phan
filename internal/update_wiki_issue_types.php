@@ -153,9 +153,13 @@ EOT;
                 $writer->append($placeholder);
             }
         }
+
+        // Get the new file contents, and normalize the whitespace at the end of the file.
+        $contents = rtrim($writer->getContents()) . "\n";
+
         $wiki_filename_new = $wiki_filename . '.new';
         fwrite(STDERR, str_repeat('-', 80) . "\nSaving to '$wiki_filename_new'\n");
-        file_put_contents($wiki_filename_new, $writer->getContents());
+        file_put_contents($wiki_filename_new, $contents);
     }
 }
 WikiIssueTypeUpdater::main();

@@ -46,7 +46,8 @@ class Map extends \SplObjectStorage
     {
         $map = new Map;
         foreach ($this as $key => $value) {
-            $map[$key_closure($key)] = $value_closure($value);
+            // TODO: Don't infer $map[$key] = ...; as making $map possibly an array
+            $map->offsetSet($key_closure($key), $value_closure($value));
         }
         return $map;
     }
@@ -72,7 +73,7 @@ class Map extends \SplObjectStorage
     {
         $map = new Map;
         foreach ($this as $key => $value) {
-            $map[$key] = clone($value);
+            $map->offsetSet($key, clone($value));
         }
         return $map;
     }

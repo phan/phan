@@ -19,10 +19,13 @@ use Phan\Language\Element\Parameter;
 use Phan\Language\Element\PassByReferenceVariable;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\NullType;
+use Phan\Language\Type\StringType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use ast\Node;
@@ -775,22 +778,24 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitReturn(Node $node) : Context
     {
+        $context = $this->context;
         // Make sure we're actually returning from a method.
-        if (!$this->context->isInFunctionLikeScope()) {
-            return $this->context;
+        if (!$context->isInFunctionLikeScope()) {
+            return $context;
         }
+        $code_base = $this->code_base;
 
         // Check real return types instead of phpdoc return types in traits for #800
         // TODO: Why did Phan originally not analyze return types of traits at all in 4c6956c05222e093b29393ceaa389ffb91041bdc
         $is_trait = false;
-        if ($this->context->isInClassScope()) {
-            $clazz = $this->context->getClassInScope($this->code_base);
+        if ($context->isInClassScope()) {
+            $clazz = $context->getClassInScope($code_base);
             $is_trait = $clazz->isTrait();
         }
 
 
         // Get the method/function/closure we're in
-        $method = $this->context->getFunctionLikeInScope($this->code_base);
+        $method = $context->getFunctionLikeInScope($code_base);
 
         \assert(
             !empty($method),
@@ -801,13 +806,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // (For traits, lower the false positive rate by comparing against the real return type instead of the phpdoc type (#800))
         $method_return_type = $is_trait ? $method->getRealReturnType() : $method->getUnionType();
 
-        // Figure out what is actually being returned
-        foreach ($this->getReturnTypes($this->context, $node->children['expr']) as $expression_type) {
-            if ($method->getHasYield()) {  // Function that is syntactically a Generator.
-                continue;  // Analysis was completed in PreOrderAnalysisVisitor
-            }
-            // This leaves functions which aren't syntactically generators.
+        if ($method->getHasYield()) {  // Function that is syntactically a Generator.
+            return $context;  // Analysis was completed in PreOrderAnalysisVisitor
+        }
+        // This leaves functions which aren't syntactically generators.
 
+        // Figure out what is actually being returned
+        // TODO: Properly check return values of array shapes
+        foreach ($this->getReturnTypes($context, $node->children['expr']) as $expression_type) {
             // If there is no declared type, see if we can deduce
             // what it should be based on the return type
             if ($method_return_type->isEmpty()
@@ -826,20 +832,21 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 continue;
             }
 
-            // C
-            if (!$method->isReturnTypeUndefined()
-                && !$expression_type->canCastToExpandedUnionType(
-                    $method_return_type,
-                    $this->code_base
-                )
-            ) {
-                $this->emitIssue(
-                    Issue::TypeMismatchReturn,
-                    $node->lineno ?? 0,
-                    (string)$expression_type,
-                    $method->getName(),
-                    (string)$method_return_type
-                );
+            // Check if the return type is compatible with the declared return type.
+            if (!$method->isReturnTypeUndefined()) {
+                // We allow base classes to cast to subclasses, and subclasses to cast to baseclasses,
+                // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
+                if (!$this->checkCanCastToReturnType($code_base, $expression_type, $method_return_type)) {
+                    $this->emitIssue(
+                        Issue::TypeMismatchReturn,
+                        $node->lineno,
+                        (string)$expression_type,
+                        $method->getName(),
+                        (string)$method_return_type
+                    );
+                } elseif (Config::get_strict_return_checking() && $expression_type->typeCount() > 1) {
+                    self::analyzeReturnStrict($code_base, $method, $expression_type, $method_return_type, $node);
+                }
             }
             // For functions that aren't syntactically Generators,
             // update the set/existence of return values.
@@ -856,7 +863,97 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
         }
 
-        return $this->context;
+        return $context;
+    }
+
+    private function checkCanCastToReturnType(CodeBase $code_base, UnionType $expression_type, UnionType $method_return_type)
+    {
+        if ($method_return_type->hasTemplateParameterTypes()) {
+            // TODO: Better casting logic for template types (E.g. should be able to cast None to Option<MyClass>, but not Some<int> to Option<MyClass>
+            return $expression_type->canCastToExpandedUnionType($method_return_type, $code_base);
+        }
+        // We allow base classes to cast to subclasses, and subclasses to cast to baseclasses,
+        // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
+        return $expression_type->asExpandedTypes($code_base)->canCastToUnionType($method_return_type) ||
+            $expression_type->canCastToUnionType($method_return_type->asExpandedTypes($code_base));
+    }
+
+    /**
+     * @return void
+     */
+    private function analyzeReturnStrict(
+        CodeBase $code_base,
+        FunctionInterface $method,
+        UnionType $expression_type,
+        UnionType $method_return_type,
+        $node
+    ) {
+        $type_set = $expression_type->getTypeSet();
+        $context = $this->context;
+        \assert(\count($type_set) >= 2);
+
+        $mismatch_type_set = UnionType::empty();
+        $mismatch_expanded_types = null;
+
+        // For the strict
+        foreach ($type_set as $type) {
+            // Expand it to include all parent types up the chain
+            $individual_type_expanded = $type->asExpandedTypes($code_base);
+
+            // See if the argument can be cast to the
+            // parameter
+            if (!$individual_type_expanded->canCastToUnionType(
+                $method_return_type
+            )) {
+                if ($method->isPHPInternal()) {
+                    // If we are not in strict mode and we accept a string parameter
+                    // and the argument we are passing has a __toString method then it is ok
+                    if (!$context->getIsStrictTypes() && $method_return_type->hasType(StringType::instance(false))) {
+                        if ($individual_type_expanded->hasClassWithToStringMethod($code_base, $context)) {
+                            continue;
+                        }
+                    }
+                }
+                $mismatch_type_set = $mismatch_type_set->withType($type);
+                if ($mismatch_expanded_types === null) {
+                    // Warn about the first type
+                    $mismatch_expanded_types = $individual_type_expanded;
+                }
+            }
+        }
+
+
+        if ($mismatch_expanded_types === null) {
+            // No mismatches
+            return;
+        }
+
+        // If we have TypeMismatchReturn already, then also suppress the partial mismatch warnings as well.
+        if ($this->context->hasSuppressIssue($code_base, Issue::TypeMismatchReturn)) {
+            return;
+        }
+        $this->emitIssue(
+            self::getStrictIssueType($mismatch_type_set),
+            $node->lineno ?? 0,
+            (string)$expression_type,
+            $method->getName(),
+            (string)$method_return_type,
+            $mismatch_expanded_types
+        );
+    }
+
+    private static function getStrictIssueType(UnionType $union_type) : string
+    {
+        if ($union_type->typeCount() === 1) {
+            $type = $union_type->getTypeSet()[0];
+            if ($type instanceof NullType) {
+                return Issue::PossiblyNullTypeReturn;
+            }
+            if ($type instanceof FalseType) {
+                return Issue::PossiblyFalseTypeReturn;
+            }
+        }
+        return Issue::PartialTypeMismatchReturn;
     }
 
     /**
@@ -957,7 +1054,22 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         // Allow nested ternary operators, or arrays within ternary operators
-        yield from $this->getReturnTypes($true_context, $true_node);
+        if (($node->children['true'] ?? null) !== null) {
+            yield from $this->getReturnTypes($true_context, $true_node);
+        } else {
+            // E.g. From the left hand side of yield (int|false) ?: default,
+            // yielding false is impossible.
+            foreach ($this->getReturnTypes($true_context, $true_node) as $raw_union_type) {
+                if ($raw_union_type->isEmpty() || !$raw_union_type->containsFalsey()) {
+                    yield $raw_union_type;
+                } else {
+                    $raw_union_type = $raw_union_type->nonFalseyClone();
+                    if (!$raw_union_type->isEmpty()) {
+                        yield $raw_union_type;
+                    }
+                }
+            }
+        }
 
         yield from $this->getReturnTypes($false_context, $node->children['false']);
     }
@@ -1937,8 +2049,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // Create variables for any pass-by-reference
         // parameters
-        $argument_list = $node->children['args'];
-        foreach ($argument_list->children as $i => $argument) {
+        $argument_list = $node->children['args']->children;
+        foreach ($argument_list as $i => $argument) {
             if (!$argument instanceof \ast\Node) {
                 continue;
             }
@@ -1953,9 +2065,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($parameter->isPassByReference()) {
                 if ($argument->kind == \ast\AST_VAR) {
                     try {
-                        // We don't do anything with it; just create it
+                        // We don't do anything with the new variable; just create it
                         // if it doesn't exist
-                        $variable = (new ContextNode(
+                        (new ContextNode(
                             $code_base,
                             $context,
                             $argument
@@ -2006,7 +2118,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // Take another pass over pass-by-reference parameters
         // and assign types to passed in variables
-        foreach ($argument_list->children as $i => $argument) {
+        foreach ($argument_list as $i => $argument) {
             if (!$argument instanceof \ast\Node) {
                 continue;
             }
@@ -2026,90 +2138,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // If the parameter is pass-by-reference and we're
             // passing a variable in, see if we should pass
             // the parameter and variable types to eachother
-            $variable = null;
             if ($parameter->isPassByReference()) {
-                if ($kind === \ast\AST_VAR) {
-                    try {
-                        $variable = (new ContextNode(
-                            $code_base,
-                            $context,
-                            $argument
-                        ))->getOrCreateVariable();
-                    } catch (NodeException $e) {
-                        // E.g. `function_accepting_reference(${$varName})` - Phan can't analyze outer type of ${$varName}
-                        continue;
-                    }
-                } elseif ($kind === \ast\AST_STATIC_PROP
-                    || $kind === \ast\AST_PROP
-                ) {
-                    $property_name = $argument->children['prop'];
-
-                    if (\is_string($property_name)) {
-                        // We don't do anything with it; just create it
-                        // if it doesn't exist
-                        try {
-                            $variable = (new ContextNode(
-                                $code_base,
-                                $context,
-                                $argument
-                            ))->getOrCreateProperty($argument->children['prop'], $argument->kind == \ast\AST_STATIC_PROP);
-                            $variable->addReference($context);
-                        } catch (IssueException $exception) {
-                            Issue::maybeEmitInstance(
-                                $code_base,
-                                $context,
-                                $exception->getIssueInstance()
-                            );
-                        } catch (\Exception $exception) {
-                            // If we can't figure out what kind of a call
-                            // this is, don't worry about it
-                        }
-                    } else {
-                        // This is stuff like `Class->$foo`. I'm ignoring
-                        // it.
-                    }
-                }
-
-                if ($variable) {
-                    $reference_parameter_type = $parameter->getNonVariadicUnionType();
-                    switch ($parameter->getReferenceType()) {
-                        case Parameter::REFERENCE_WRITE_ONLY:
-                            // The previous value is being ignored, and being replaced.
-                            $variable->setUnionType(
-                                $reference_parameter_type
-                            );
-                            break;
-                        case Parameter::REFERENCE_READ_WRITE:
-                            $variable_type = $variable->getUnionType();
-                            if ($variable_type->isEmpty()) {
-                                // if Phan doesn't know the variable type,
-                                // then guess that the variable is the type of the reference
-                                // when analyzing the following statements.
-                                $variable->setUnionType(
-                                    $reference_parameter_type
-                                );
-                            } elseif (!$variable_type->canCastToUnionType($reference_parameter_type)) {
-                                // Phan already warned about incompatible types.
-                                // But analyze the following statements as if it could have been the type expected,
-                                // to reduce false positives.
-                                $variable->setUnionType($variable->getUnionType()->withUnionType(
-                                    $reference_parameter_type
-                                ));
-                            }
-                            // don't modify - assume the function takes the same type in that it returns,
-                            // and we want to preserve generic array types for sorting functions (May change later on)
-                            // TODO: Check type compatibility earlier, and don't modify?
-                            break;
-                        case Parameter::REFERENCE_DEFAULT:
-                        default:
-                            // We have no idea what type of reference this is.
-                            // Probably user defined code.
-                            $variable->setUnionType($variable->getUnionType()->withUnionType(
-                                $reference_parameter_type
-                            ));
-                            break;
-                    }
-                }
+                $this->analyzePassByReferenceArgument(
+                    $code_base,
+                    $context,
+                    $argument,
+                    $argument_list,
+                    $method,
+                    $parameter
+                );
             }
         }
 
@@ -2129,6 +2166,141 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $node->children['args'],
             $method
         );
+    }
+
+    /**
+     * @return void
+     */
+    private function analyzePassByReferenceArgument(
+        CodeBase $code_base,
+        Context $context,
+        Node $argument,
+        array $argument_list,
+        FunctionInterface $method,
+        Parameter $parameter
+    ) {
+        $variable = null;
+        $kind = $argument->kind;
+        if ($kind === \ast\AST_VAR) {
+            try {
+                $variable = (new ContextNode(
+                    $code_base,
+                    $context,
+                    $argument
+                ))->getOrCreateVariable();
+            } catch (NodeException $e) {
+                // E.g. `function_accepting_reference(${$varName})` - Phan can't analyze outer type of ${$varName}
+                return;
+            }
+        } elseif ($kind === \ast\AST_STATIC_PROP
+            || $kind === \ast\AST_PROP
+        ) {
+            $property_name = $argument->children['prop'];
+
+            if (\is_string($property_name)) {
+                // We don't do anything with it; just create it
+                // if it doesn't exist
+                try {
+                    $variable = (new ContextNode(
+                        $code_base,
+                        $context,
+                        $argument
+                    ))->getOrCreateProperty($argument->children['prop'], $argument->kind == \ast\AST_STATIC_PROP);
+                    $variable->addReference($context);
+                } catch (IssueException $exception) {
+                    Issue::maybeEmitInstance(
+                        $code_base,
+                        $context,
+                        $exception->getIssueInstance()
+                    );
+                } catch (\Exception $exception) {
+                    // If we can't figure out what kind of a call
+                    // this is, don't worry about it
+                }
+            } else {
+                // This is stuff like `Class->$foo`. I'm ignoring
+                // it.
+            }
+        }
+
+        if ($variable) {
+            $reference_parameter_type = $parameter->getNonVariadicUnionType();
+            switch ($parameter->getReferenceType()) {
+                case Parameter::REFERENCE_WRITE_ONLY:
+                    static $preg_match_fqsen = null;
+                    if ($preg_match_fqsen === null) {
+                        $preg_match_fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString('preg_match');
+                    }
+                    // TODO: Make this configurable with a plugin
+                    if ($method->getFQSEN() === $preg_match_fqsen) {
+                        $this->analyzePregMatch($argument_list, $variable);
+                    } else {
+                        // The previous value is being ignored, and being replaced.
+                        $variable->setUnionType(
+                            $reference_parameter_type
+                        );
+                    }
+                    break;
+                case Parameter::REFERENCE_READ_WRITE:
+                    $variable_type = $variable->getUnionType();
+                    if ($variable_type->isEmpty()) {
+                        // if Phan doesn't know the variable type,
+                        // then guess that the variable is the type of the reference
+                        // when analyzing the following statements.
+                        $variable->setUnionType(
+                            $reference_parameter_type
+                        );
+                    } elseif (!$variable_type->canCastToUnionType($reference_parameter_type)) {
+                        // Phan already warned about incompatible types.
+                        // But analyze the following statements as if it could have been the type expected,
+                        // to reduce false positives.
+                        $variable->setUnionType($variable->getUnionType()->withUnionType(
+                            $reference_parameter_type
+                        ));
+                    }
+                    // don't modify - assume the function takes the same type in that it returns,
+                    // and we want to preserve generic array types for sorting functions (May change later on)
+                    // TODO: Check type compatibility earlier, and don't modify?
+                    break;
+                case Parameter::REFERENCE_DEFAULT:
+                default:
+                    // We have no idea what type of reference this is.
+                    // Probably user defined code.
+                    $variable->setUnionType($variable->getUnionType()->withUnionType(
+                        $reference_parameter_type
+                    ));
+                    break;
+            }
+        }
+    }
+
+    /**
+     * @param Variable|Property $variable
+     */
+    private function analyzePregMatch(array $argument_list, $variable)
+    {
+        $string_array_type = null;
+        $array_type = null;
+        $shape_array_type = null;
+        if ($string_array_type === null) {
+            // Note: Patterns **can** have named subpatterns
+            $string_array_type = UnionType::fromFullyQualifiedString('string[]');
+            $array_type        = UnionType::fromFullyQualifiedString('array');
+            $shape_array_type  = UnionType::fromFullyQualifiedString('array{0:string,1:int}[]');
+        }
+        if (\count($argument_list) <= 3) {
+            $variable->setUnionType($string_array_type);
+            return;
+        }
+        $offset_flags_node = $argument_list[3];
+        $bit = (new ContextNode($this->code_base, $this->context, $offset_flags_node))->getEquivalentPHPScalarValue();
+        if (!\is_int($bit)) {
+            return $array_type;
+        }
+        if ($bit & PREG_OFFSET_CAPTURE) {
+            return $shape_array_type;
+        }
+        return $string_array_type;
     }
 
     /**

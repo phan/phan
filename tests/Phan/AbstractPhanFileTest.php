@@ -67,6 +67,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      */
     protected function scanSourceFilesDir(string $sourceDir, string $expectedDir)
     {
+        // TODO: Make Phan know that array_filter with a single argument implies elements aren't falsey
         $files = array_filter(
             array_filter(
                 scandir($sourceDir),

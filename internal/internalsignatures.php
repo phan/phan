@@ -707,7 +707,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     }
 
     /**
-     * @return array<int,string>
+     * @return array<string,string>
      */
     private function extractMethodParams(SimpleXMLElement $param)
     {
@@ -727,7 +727,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 $param_name .= '=';
             }
 
-            $result[$param_name] = static::toTypeString($part->type);
+            $result[$param_name] = self::toTypeString($part->type);
         }
         return $result;
     }

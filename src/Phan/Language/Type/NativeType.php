@@ -196,6 +196,11 @@ abstract class NativeType extends Type
     ) : UnionType {
         return $this->asUnionType();
     }
+
+    public function hasTemplateParameterTypes() : bool
+    {
+        return false;
+    }
 }
 \class_exists(ArrayType::class);
 \class_exists(ScalarType::class);

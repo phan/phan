@@ -686,7 +686,7 @@ class UnionType implements \Serializable
             }
         }
 
-        return $has_template ? new UnionType($concrete_type_list) : $this;
+        return $has_template ? UnionType::of($concrete_type_list) : $this;
     }
 
     /**
@@ -698,6 +698,18 @@ class UnionType implements \Serializable
     {
         return $this->hasTypeMatchingCallback(function (Type $type) : bool {
             return ($type instanceof TemplateType);
+        });
+    }
+
+    /**
+     * @return bool
+     * True if this union type has any types that have generic
+     * types
+     */
+    public function hasTemplateParameterTypes() : bool
+    {
+        return $this->hasTypeMatchingCallback(function (Type $type) : bool {
+            return $type->hasTemplateParameterTypes();
         });
     }
 
@@ -2457,6 +2469,21 @@ class UnionType implements \Serializable
      */
     public function getIsPossiblyUndefined() : bool
     {
+        return false;
+    }
+
+    // Assumes this was already expanded
+    public function hasClassWithToStringMethod(CodeBase $code_base, Context $context) : bool
+    {
+        try {
+            foreach ($this->asClassList($code_base, $context) as $clazz) {
+                if ($clazz->hasMethodWithName($code_base, "__toString")) {
+                    return true;
+                }
+            }
+        } catch (CodeBaseException $e) {
+            // Swallow "Cannot find class", go on to emit issue
+        }
         return false;
     }
 }

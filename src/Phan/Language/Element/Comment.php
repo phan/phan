@@ -769,7 +769,6 @@ class Comment
     private static function templateTypeFromCommentLine(
         string $line
     ) {
-        $match = [];
         // TODO: Just use WORD_REGEX? Backslashes or nested templates wouldn't make sense.
         if (preg_match('/@template\s+(' . Type::simple_type_regex. ')/', $line, $match)) {
             $template_type_identifier = $match[1];
@@ -1145,6 +1144,8 @@ class Comment
      * @return Option<Type>
      * An optional Type defined by a (at)PhanClosureScope
      * directive specifying a single type.
+     *
+     * @suppress PhanPartialTypeMismatchReturn (Null)
      */
     public function getClosureScopeOption() : Option
     {
@@ -1165,6 +1166,7 @@ class Comment
      * @return array<string,CommentParameter> (maps the names of parameters to their values. Does not include parameters which didn't provide names)
      *
      * @suppress PhanUnreferencedPublicMethod
+     * @suppress PhanPartialTypeMismatchReturn (Null)
      */
     public function getParameterMap() : array
     {
@@ -1183,6 +1185,7 @@ class Comment
     /**
      * @return Option<Type>
      * An optional type declaring what a class extends.
+     * @suppress PhanPartialTypeMismatchReturn (Null)
      */
     public function getInheritedTypeOption() : Option
     {

@@ -56,6 +56,12 @@ return [
     // (For self-analysis, Phan has a large number of suppressions and file-level suppressions, due to \ast\Node being difficult to type check)
     'strict_param_checking' => true,
 
+    // If enabled, Phan will warn if **any** type in the argument's type
+    // cannot be cast to a type in the parameter's expected type.
+    // Setting this to true will introduce a large number of false positives (and some bugs).
+    // (For self-analysis, Phan has a large number of suppressions and file-level suppressions, due to \ast\Node being difficult to type check)
+    'strict_return_checking' => true,
+
     // If enabled, scalars (int, float, bool, string, null)
     // are treated as if they can cast to each other.
     // This does not affect checks of array keys. See scalar_array_key_cast.
@@ -207,6 +213,7 @@ return [
         'PhanPossiblyFalseTypeArgumentInternal',
         'PhanPossiblyNullTypeArgument',
         'PhanPossiblyNullTypeArgumentInternal',
+        'PhanPossiblyNullTypeReturn',
         // 'PhanUndeclaredMethod',
     ],
 
