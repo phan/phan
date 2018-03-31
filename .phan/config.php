@@ -136,6 +136,13 @@ return [
     // This is false by default. (Will warn if real parameter types are omitted in an override)
     'allow_method_param_type_widening' => false,
 
+    // Set this to true to make Phan guess that undocumented parameter types
+    // (for optional parameters) have the same type as default values
+    // (Instead of combining that type with `mixed`).
+    // E.g. `function($x = 'val')` would make Phan infer that $x had a type of `string`, not `string|mixed`.
+    // Phan will not assume it knows specific types if the default value is false or null.
+    'guess_unknown_parameter_type_using_default' => false,
+
     // This setting maps case insensitive strings to union types.
     // This is useful if a project uses phpdoc that differs from the phpdoc2 standard.
     // If the corresponding value is the empty string, Phan will ignore that union type (E.g. can ignore 'the' in `@return the value`)
