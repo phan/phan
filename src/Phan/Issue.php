@@ -287,6 +287,8 @@ class Issue
     const MisspelledAnnotation             = 'PhanMisspelledAnnotation';
     const UnextractableAnnotation          = 'PhanUnextractableAnnotation';
     const UnextractableAnnotationPart      = 'PhanUnextractableAnnotationPart';
+    const UnextractableAnnotationSuffix    = 'PhanUnextractableAnnotationSuffix';
+    const UnextractableAnnotationElementName = 'PhanUnextractableAnnotationElementName';
     const CommentParamWithoutRealParam     = 'PhanCommentParamWithoutRealParam';
     const CommentParamOnEmptyParamList     = 'PhanCommentParamOnEmptyParamList';
     const CommentOverrideOnNonOverrideMethod = 'PhanCommentOverrideOnNonOverrideMethod';
@@ -2406,7 +2408,7 @@ class Issue
                 self::UnextractableAnnotation,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "Saw unextractable annotation for comment {COMMENT}",
+                "Saw unextractable annotation for comment '{COMMENT}'",
                 self::REMEDIATION_B,
                 16002
             ),
@@ -2414,9 +2416,25 @@ class Issue
                 self::UnextractableAnnotationPart,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "Saw unextractable annotation for a fragment of comment {COMMENT}: {COMMENT}",
+                "Saw unextractable annotation for a fragment of comment '{COMMENT}': '{COMMENT}'",
                 self::REMEDIATION_B,
                 16003
+            ),
+            new Issue(
+                self::UnextractableAnnotationSuffix,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw a token Phan may have failed to parse after '{COMMENT}': after {TYPE}, saw '{COMMENT}'",
+                self::REMEDIATION_B,
+                16009
+            ),
+            new Issue(
+                self::UnextractableAnnotationElementName,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw possibly unextractable annotation for a fragment of comment '{COMMENT}': after {TYPE}, did not see an element name (will guess based on comment order)",
+                self::REMEDIATION_B,
+                16010
             ),
             new Issue(
                 self::CommentParamWithoutRealParam,
