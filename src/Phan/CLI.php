@@ -128,6 +128,7 @@ class CLI
                 'require-config-exists',
                 'signature-compatibility',
                 'strict-param-checking',
+                'strict-return-checking',
                 'target-php-version',
                 'use-fallback-parser',
                 'version',
@@ -363,6 +364,9 @@ class CLI
                     break;
                 case 'strict-param-checking':
                     Config::setValue('strict_param_checking', true);
+                    break;
+                case 'strict-return-checking':
+                    Config::setValue('strict_return_checking', true);
                     break;
                 case 's':
                 case 'daemonize-socket':
@@ -719,6 +723,9 @@ Usage: {$argv[0]} [options] [files...]
 
  --strict-param-checking
   Enables the config option `strict_param_checking`.
+
+ --strict-return-checking
+  Enables the config option `strict_return_checking`.
 
  --use-fallback-parser
   If a file to be analyzed is syntactically invalid
