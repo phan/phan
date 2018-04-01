@@ -524,6 +524,8 @@ class Analysis
 
         $context = (new BlockAnalysisVisitor($code_base, $context))($node);
         $context->warnAboutUnusedUseElements($code_base);
+
+        ConfigPluginSet::instance()->afterAnalyzeFile($code_base, $context, $file_contents, $node);
         return $context;
     }
 }

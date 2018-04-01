@@ -705,6 +705,10 @@ class Config
         // Alternately, you can pass in the full path to a PHP file with the plugin's implementation (e.g. 'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php')
         'plugins' => [
         ],
+
+        // E.g. this is used by InvokePHPNativeSyntaxCheckPlugin
+        'plugin_config' => [
+        ],
     ];
 
     /**

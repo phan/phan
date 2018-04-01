@@ -25,6 +25,7 @@ use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeNodeCapability;
 use Phan\PluginV2\PreAnalyzeNodeCapability;
 use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV2\AfterAnalyzeFileCapability;
 use Phan\PluginV2\AnalyzeClassCapability;
 use Phan\PluginV2\AnalyzeFunctionCapability;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
@@ -39,6 +40,7 @@ use Phan\PluginV2\PluginAwarePreAnalysisVisitor;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
 
+use ast\Closure;
 use ast\Node;
 use ReflectionException;
 use ReflectionProperty;
@@ -51,6 +53,7 @@ use ReflectionProperty;
  * Speed is preferred over using Phan\Memoize.)
  */
 final class ConfigPluginSet extends PluginV2 implements
+    AfterAnalyzeFileCapability,
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
     AnalyzeFunctionCallCapability,
@@ -72,10 +75,15 @@ final class ConfigPluginSet extends PluginV2 implements
     private $preAnalyzeNodePluginSet;
 
     /**
-     * @var array<int,Closure> - plugins to analyze nodes in post order.
-     * @phan-var array<int,Closure(CodeBase,Context,Node,array<int,Node>):void>|null
+     * @var array<int,Closure> - plugins to analyze files
+     * @phan-var array<int,Closure(string,Node):void>|null
      */
     private $postAnalyzeNodePluginSet;
+
+    /**
+     * @var array<int,AfterAnalyzeFileCapability> - plugins to analyze files after phan's analysis of that file is completed.
+     */
+    private $afterAnalyzeFilePluginSet;
 
     /** @var array<int,AnalyzeClassCapability>|null - plugins to analyze class declarations. */
     private $analyzeClassPluginSet;
@@ -181,6 +189,34 @@ final class ConfigPluginSet extends PluginV2 implements
                 $context,
                 $node,
                 $parent_node_list
+            );
+        }
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base in which the node exists
+     *
+     * @param Context $context
+     * A context with the file name for $file_contents and the scope after analyzing $node.
+     *
+     * @param string $file_contents
+     * @param Node $node
+     * @return void
+     * @override
+     */
+    public function afterAnalyzeFile(
+        CodeBase $code_base,
+        Context $context,
+        string $file_contents,
+        Node $node
+    ) {
+        foreach ($this->afterAnalyzeFilePluginSet as $plugin) {
+            $plugin->afterAnalyzeFile(
+                $code_base,
+                $context,
+                $file_contents,
+                $node
             );
         }
     }
@@ -424,6 +460,8 @@ final class ConfigPluginSet extends PluginV2 implements
 
         $this->preAnalyzeNodePluginSet      = self::filterPreAnalysisPlugins($plugin_set);
         $this->postAnalyzeNodePluginSet     = self::filterPostAnalysisPlugins($plugin_set);
+        $this->afterAnalyzeFilePluginSet    = self::filterByClass($plugin_set, AfterAnalyzeFileCapability::class);
+;
         $this->analyzeMethodPluginSet       = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeMethodCapability::class), 'analyzeMethod');
         $this->analyzeFunctionPluginSet     = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeFunctionCapability::class), 'analyzeFunction');
         $this->analyzePropertyPluginSet     = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzePropertyCapability::class), 'analyzeProperty');

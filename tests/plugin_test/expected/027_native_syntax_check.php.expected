@@ -1,0 +1,4 @@
+src/027_native_syntax_check.php:2 PhanUnreferencedClass Possibly zero references to class \X
+src/027_native_syntax_check.php:3 PhanUnreferencedPublicProperty Possibly zero references to public property \X::y
+src/027_native_syntax_check.php:4 PhanUndeclaredVariable Variable $y is undeclared
+src/027_native_syntax_check.php:4 PhanUnreferencedPublicProperty Possibly zero references to public property \X::x

@@ -1,0 +1,1 @@
+src/028_parse_failure.php:2 PhanSyntaxError Fallback parser diagnostic error: 'Expression' expected.

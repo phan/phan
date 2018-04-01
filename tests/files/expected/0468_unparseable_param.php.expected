@@ -1,0 +1,4 @@
+%s:4 PhanUnextractableAnnotationElementName Saw possibly unextractable annotation for a fragment of comment '* @param int? $x': after int, did not see an element name (will guess based on comment order)
+%s:4 PhanUnextractableAnnotationSuffix Saw a token Phan may have failed to parse after '* @param int? $x': after int, saw '?'
+%s:5 PhanUnextractableAnnotationElementName Saw possibly unextractable annotation for a fragment of comment '* @param int': after int, did not see an element name (will guess based on comment order)
+%s:6 PhanUnextractableAnnotationSuffix Saw a token Phan may have failed to parse after '* @return int?': after int, saw '?'

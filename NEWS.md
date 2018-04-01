@@ -33,6 +33,11 @@ New Features(CLI, Configs)
   from the parameter's default value.
   E.g. `function($x = 'val')` would make Phan infer that the function expects $x to have a type of `string`, not `string|mixed`.
 
+Plugins
++ Add a new plugin `InvokePHPNativeSyntaxCheckPlugin` on all analyzed files (but not files excluded from analysis) (#629)
++ Add a new plugin capability `AfterAnalyzeFileCapability` that runs after a given file is analyzed.
+  This does not get invoked for files that are excluded from analysis, or for empty files.
+
 New Features(Analysis)
 + Detect unreachable catch statements (#112)
   (Check if an earlier catch statement caught an ancestor of a given catch statement)
