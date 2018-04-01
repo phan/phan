@@ -169,7 +169,7 @@ EOT;
     {
         $issue_map = Issue::issueMap();
         $issue_name = preg_replace('@^[# ]*@', '', $header);
-        $issue = $issue_map[$issue_name];
+        $issue = $issue_map[$issue_name] ?? null;
 
         if ($issue instanceof Issue) {
             fwrite(STDERR, "Found $issue_name\n");
