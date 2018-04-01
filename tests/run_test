@@ -30,6 +30,7 @@ case "$TEST_SUITE" in
 			ARGS="--plugin $PLUGIN_PATH"
 		fi
 		./phan --plugin PHPUnitNotDeadCodePlugin \
+			--plugin InvokePHPNativeSyntaxCheckPlugin \
 			$ARGS \
 			--dead-code-detection \
 			--polyfill-parse-all-element-doc-comments \

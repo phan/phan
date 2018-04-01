@@ -88,13 +88,6 @@ Subclassing this plugin (and overriding `gettextForAllLocales`) will allow you t
 This will require extra work to set up.
 See [PrintfCheckerPlugin's source](./PrintfCheckerPlugin.php) for details.
 
-                        'PhanPluginPrintfNotPercent',
-                        'PhanPluginPrintfTranslatedWidthNotPosition',
-                    'PhanPluginPrintfIncompatibleSpecifier',
-                        'PhanPluginPrintfIncompatibleArgumentTypeWeak',
-                        'PhanPluginPrintfIncompatibleArgumentType',
-                            $issue_type = 'PhanPluginPrintfTranslatedIncompatible';
-                            $issue_type = 'PhanPluginPrintfTranslatedHasMoreArgs';
 #### UnreachableCodePlugin.php
 
 Checks for syntactically unreachable statements in the global scope or function bodies.
@@ -105,6 +98,19 @@ Checks for syntactically unreachable statements in the global scope or function 
 #### Unused variable detection
 
 See https://github.com/etsy/phan/issues/345
+
+#### InvokePHPNativeSyntaxCheckPlugin.php
+
+This invokes `php --no-php-ini --syntax-check $analyzed_file_path` for you. (See
+This is useful for cases Phan doesn't cover (e.g. [Issue #449](https://github.com/phan/phan/issues/449) or [Issue #277](https://github.com/phan/phan/issues/277)).
+
+Note: This may double the time Phan takes to analyze a project. This plugin can be safely used along with `--processes N`.
+
+This does not run on files that are parsed but not analyzed.
+
+An example: the config setting `'plugin_config' => ['php_native_syntax_check_binaries' => ['php72', 'php70', 'php56']]` can be added to `.phan/config.php`
+if you wish to make sure that analyzed files would be accepted by those PHP versions
+(Requires that php72, php70, and php56 be locatable with the `$PATH` environment variable)
 
 ### 3. Plugins Specific to Code Styles
 
