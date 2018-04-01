@@ -679,7 +679,7 @@ Declaration of real/@method {METHOD} should be compatible with real/@method {MET
 ## PhanParamSignaturePHPDocMismatchHasParamType
 
 ```
-Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} of has type '{TYPE}' cannot replace original parameter with no type) defined in {FILE}:{LINE}
+Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} has type '{TYPE}' cannot replace original parameter with no type) defined in {FILE}:{LINE}
 ```
 
 ## PhanParamSignaturePHPDocMismatchParamIsNotReference
@@ -751,7 +751,7 @@ Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} h
 ## PhanParamSignatureRealMismatchHasParamTypeInternal
 
 ```
-Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} of has type '{TYPE}' cannot replace original parameter with no type)
+Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} has type '{TYPE}' cannot replace original parameter with no type)
 ```
 
 ## PhanParamSignatureRealMismatchParamIsNotReference
@@ -1184,7 +1184,7 @@ Returning type {TYPE} but {FUNCTIONLIKE}() is declared to return {TYPE} ({TYPE} 
 ## PhanTypeArrayOperator
 
 ```
-Invalid array operator
+Invalid array operator between types {TYPE} and {TYPE}
 ```
 
 ## PhanTypeArraySuspicious
@@ -2098,7 +2098,7 @@ Saw misspelled annotation {COMMENT}, should be one of {COMMENT}
 ## PhanUnextractableAnnotation
 
 ```
-Saw unextractable annotation for comment {COMMENT}
+Saw unextractable annotation for comment '{COMMENT}'
 ```
 
 ## PhanUnextractableAnnotationElementName
@@ -2110,7 +2110,7 @@ Saw possibly unextractable annotation for a fragment of comment '{COMMENT}': aft
 ## PhanUnextractableAnnotationPart
 
 ```
-Saw unextractable annotation for a fragment of comment {COMMENT}: {COMMENT}
+Saw unextractable annotation for a fragment of comment '{COMMENT}': '{COMMENT}'
 ```
 
 ## PhanUnextractableAnnotationSuffix

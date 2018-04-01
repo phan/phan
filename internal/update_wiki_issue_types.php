@@ -139,7 +139,7 @@ EOT;
                 $writer->append($header . "\n");
 
                 // Fill this in with the prior contents of the header
-                $writer->append($old_text_for_section[$header]);
+                $writer->append(self::updateTextForSection($old_text_for_section[$header], $header));
             } else {
                 $message = $issue->getTemplateRaw();
                 $placeholder = <<<EOT
@@ -163,6 +163,21 @@ EOT;
         $wiki_filename_new = $wiki_filename . '.new';
         fwrite(STDERR, str_repeat('-', 80) . "\nSaving to '$wiki_filename_new'\n");
         file_put_contents($wiki_filename_new, $contents);
+    }
+
+    private static function updateTextForSection(string $text, string $header)
+    {
+        $issue_map = Issue::issueMap();
+        $issue_name = preg_replace('@^[# ]*@', '', $header);
+        $issue = $issue_map[$issue_name];
+
+        if ($issue instanceof Issue) {
+            fwrite(STDERR, "Found $issue_name\n");
+            $text = preg_replace_callback('@\n```\n[^\n]*\n```@', function ($match) use ($issue) {
+                return "\n```\n{$issue->getTemplateRaw()}\n```";
+            }, $text);
+        }
+        return $text;
     }
 }
 WikiIssueTypeUpdater::main();
