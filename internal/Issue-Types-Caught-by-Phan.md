@@ -2101,10 +2101,22 @@ Saw misspelled annotation {COMMENT}, should be one of {COMMENT}
 Saw unextractable annotation for comment {COMMENT}
 ```
 
+## PhanUnextractableAnnotationElementName
+
+```
+Saw possibly unextractable annotation for a fragment of comment '{COMMENT}': after {TYPE}, did not see an element name (will guess based on comment order)
+```
+
 ## PhanUnextractableAnnotationPart
 
 ```
 Saw unextractable annotation for a fragment of comment {COMMENT}: {COMMENT}
+```
+
+## PhanUnextractableAnnotationSuffix
+
+```
+Saw a token Phan may have failed to parse after '{COMMENT}': after {TYPE}, saw '{COMMENT}'
 ```
 
 # Syntax

@@ -461,7 +461,6 @@ final class ConfigPluginSet extends PluginV2 implements
         $this->preAnalyzeNodePluginSet      = self::filterPreAnalysisPlugins($plugin_set);
         $this->postAnalyzeNodePluginSet     = self::filterPostAnalysisPlugins($plugin_set);
         $this->afterAnalyzeFilePluginSet    = self::filterByClass($plugin_set, AfterAnalyzeFileCapability::class);
-;
         $this->analyzeMethodPluginSet       = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeMethodCapability::class), 'analyzeMethod');
         $this->analyzeFunctionPluginSet     = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeFunctionCapability::class), 'analyzeFunction');
         $this->analyzePropertyPluginSet     = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzePropertyCapability::class), 'analyzeProperty');
