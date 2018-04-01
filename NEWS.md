@@ -1,5 +1,8 @@
 Phan NEWS
 
+?? ??? 2018, Phan 0.12.5 (dev)
+------------------------
+
 31 Mar 2018, Phan 0.12.4
 ------------------------
 
@@ -46,7 +49,7 @@ New Features(Analysis)
 + Improve analysis of return statements with ternary conditionals (e.g. `return $a ?: $b`).
 + Start analyzing negated `instanceof` conditionals such as `assert(!($x instanceof MyClass))`.
 + Infer that the reference parameter's resulting type for `preg_match` is a `string[]`, not `array` (when possible)
-  (And that the type is `array{0:string,1:int}` when `PREG_OFFSET_CAPTURE` is passed as a flag)
+  (And that the type is `array{0:string,1:int}[]` when `PREG_OFFSET_CAPTURE` is passed as a flag)
 + Warn in more places when Phan can't extract union types or element identifiers from a doc comment.
   New issue types: `UnextractableAnnotationElementName`, `UnextractableAnnotationSuffix`.
   (E.g. warn about `@param int description` (ideally has param name) and `@return int?` (Phan doesn't parse the `?`, should be `@return ?int`))
