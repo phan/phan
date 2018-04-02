@@ -407,6 +407,7 @@ class Comment
             if (\strpos($line, '@') === false) {
                 continue;
             }
+            $line = \trim($line);
             // https://secure.php.net/manual/en/regexp.reference.internal-options.php
             // (?i) makes this case sensitive, (?-1) makes it case insensitive
             if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|suppress|phan-[a-z0-9_-]*(?-i)|method|property|template|PhanClosureScope)\b/', $line, $matches)) {
