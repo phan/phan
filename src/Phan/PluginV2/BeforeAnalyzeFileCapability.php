@@ -6,23 +6,23 @@ use Phan\Language\Context;
 use ast\Node;
 
 /**
- * AfterAnalyzeFileCapability is used when you want to perform checks after analyzing a file
+ * BeforeAnalyzeFileCapability is used when you want to perform checks before analyzing a file
  * NOTE: This does not run on empty files.
  */
-interface AfterAnalyzeFileCapability
+interface BeforeAnalyzeFileCapability
 {
     /**
      * @param CodeBase $code_base
      * The code base in which the node exists
      *
      * @param Context $context
-     * A context with the file name for $file_contents and the scope after analyzing $node.
+     * A context with the file name for $file_contents and the scope before analyzing $node.
      *
      * @param string $file_contents the unmodified file contents
      * @param Node $node the node parsed from $file_contents
      * @return void
      */
-    public function afterAnalyzeFile(
+    public function beforeAnalyzeFile(
         CodeBase $code_base,
         Context $context,
         string $file_contents,

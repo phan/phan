@@ -25,10 +25,11 @@ echo
 echo "Comparing the output:"
 
 if [[ "$(php -r 'echo PHP_VERSION_ID;')" < 70100 ]]; then
-    echo "Skipping test cases that rely on Closure::fromCallable(), the current php version is php 7.0";
+    echo "Skipping test cases that rely on Closure::fromCallable() or native syntax checks, the current php version is php 7.0";
     # Ignore results of a subset of tests in php 7.0
     # TODO: If we imitate the reflection of php 7.1 in php 7.0, we can restore this.
     sed -i '/^\S*dead_code_fromCallable\.php/d' $ACTUAL_PATH
+    sed -i "/^.*PhanNativePHPSyntaxCheckPlugin.*unexpected '\\?'/d" $ACTUAL_PATH
     sed -i '/^\S*dead_code_fromCallable\.php/d' $EXPECTED_PATH
 fi
 

@@ -489,6 +489,12 @@ return [
     // Also see 'autoload_internal_extension_signatures' for an alternative way to fix this type of issue.
     'ignore_undeclared_functions_with_known_signatures' => false,
 
+    'plugin_config' => [
+        // Config for InvokePHPNativeSyntaxCheckPlugin (Disabled for self-analysis except in one travis test)
+        // 'php_native_syntax_check_binaries' => [PHP_BINARY],
+        'php_native_syntax_check_max_processes' => 4,
+    ],
+
     // A list of plugin files to execute
     // NOTE: values can be the base name without the extension for plugins bundled with Phan (E.g. 'AlwaysReturnPlugin')
     // or relative/absolute paths to the plugin (Relative to the project root).
@@ -503,7 +509,6 @@ return [
         'PrintfCheckerPlugin',
         // InvokePHPNativeSyntaxCheckPlugin invokes 'php --no-php-ini --syntax-check ${abs_path_to_analyzed_file}.php' and reports any error messages.
         // Using this can cause phan's overall analysis time to more than double.
-        // This is best used along with `--processes N`
         // 'InvokePHPNativeSyntaxCheckPlugin',
 
         // 'PHPUnitNotDeadCodePlugin',  // Marks phpunit test case subclasses and test cases as refernced code. only useful for runs when dead code detection is enabled

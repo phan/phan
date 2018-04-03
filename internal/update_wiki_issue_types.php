@@ -173,7 +173,7 @@ EOT;
 
         if ($issue instanceof Issue) {
             fwrite(STDERR, "Found $issue_name\n");
-            $text = preg_replace_callback('@\n```\n[^\n]*\n```@', function ($match) use ($issue) {
+            $text = preg_replace_callback('@\n```\n[^\n]*\n```@', function ($unused_match) use ($issue) {
                 return "\n```\n{$issue->getTemplateRaw()}\n```";
             }, $text);
         }

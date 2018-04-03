@@ -78,6 +78,10 @@ return [
 
     'analyzed_file_extensions' => ['php'],
 
+    'plugin_config' => [
+        'php_native_syntax_check_max_processes' => 4,
+    ],
+
     // A list of plugin files to execute
     // (Execute all of them.)
     // FooName is shorthand for /path/to/phan/.phan/plugins/FooName.php.
@@ -87,6 +91,7 @@ return [
         'DollarDollarPlugin',
         'DuplicateArrayKeyPlugin',
         'InvalidVariableIssetPlugin',
+        'InvokePHPNativeSyntaxCheckPlugin',
         'NonBoolBranchPlugin',
         'NonBoolInLogicalArithPlugin',
         'NumericalComparisonPlugin',

@@ -522,6 +522,8 @@ class Analysis
         }
         PhanAnnotationAdder::applyFull($node);
 
+        ConfigPluginSet::instance()->beforeAnalyzeFile($code_base, $context, $file_contents, $node);
+
         $context = (new BlockAnalysisVisitor($code_base, $context))($node);
         $context->warnAboutUnusedUseElements($code_base);
 
