@@ -22,22 +22,23 @@ use Phan\Plugin\Internal\MiscParamPlugin;
 use Phan\Plugin\Internal\StringFunctionPlugin;
 use Phan\Plugin\PluginImplementation;
 use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeNodeCapability;
-use Phan\PluginV2\PreAnalyzeNodeCapability;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\AfterAnalyzeFileCapability;
 use Phan\PluginV2\AnalyzeClassCapability;
-use Phan\PluginV2\AnalyzeFunctionCapability;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
-use Phan\PluginV2\AnalyzePropertyCapability;
+use Phan\PluginV2\AnalyzeFunctionCapability;
 use Phan\PluginV2\AnalyzeMethodCapability;
+use Phan\PluginV2\AnalyzeNodeCapability;
+use Phan\PluginV2\AnalyzePropertyCapability;
+use Phan\PluginV2\BeforeAnalyzeFileCapability;
 use Phan\PluginV2\FinalizeProcessCapability;
 use Phan\PluginV2\LegacyAnalyzeNodeCapability;
-use Phan\PluginV2\LegacyPreAnalyzeNodeCapability;
 use Phan\PluginV2\LegacyPostAnalyzeNodeCapability;
+use Phan\PluginV2\LegacyPreAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwareAnalysisVisitor;
-use Phan\PluginV2\PluginAwarePreAnalysisVisitor;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV2\PluginAwarePreAnalysisVisitor;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV2\PreAnalyzeNodeCapability;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
 
 use ast\Closure;
@@ -59,6 +60,7 @@ final class ConfigPluginSet extends PluginV2 implements
     AnalyzeFunctionCallCapability,
     AnalyzeMethodCapability,
     AnalyzePropertyCapability,
+    BeforeAnalyzeFileCapability,
     FinalizeProcessCapability,
     LegacyPreAnalyzeNodeCapability,
     LegacyPostAnalyzeNodeCapability,
@@ -79,6 +81,11 @@ final class ConfigPluginSet extends PluginV2 implements
      * @phan-var array<int,Closure(string,Node):void>|null
      */
     private $postAnalyzeNodePluginSet;
+
+    /**
+     * @var array<int,BeforeAnalyzeFileCapability> - plugins to analyze files before phan's analysis of that file is completed.
+     */
+    private $beforeAnalyzeFilePluginSet;
 
     /**
      * @var array<int,AfterAnalyzeFileCapability> - plugins to analyze files after phan's analysis of that file is completed.
@@ -189,6 +196,34 @@ final class ConfigPluginSet extends PluginV2 implements
                 $context,
                 $node,
                 $parent_node_list
+            );
+        }
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base in which the node exists
+     *
+     * @param Context $context
+     * A context with the file name for $file_contents and the scope before analyzing $node.
+     *
+     * @param string $file_contents
+     * @param Node $node
+     * @return void
+     * @override
+     */
+    public function beforeAnalyzeFile(
+        CodeBase $code_base,
+        Context $context,
+        string $file_contents,
+        Node $node
+    ) {
+        foreach ($this->beforeAnalyzeFilePluginSet as $plugin) {
+            $plugin->beforeAnalyzeFile(
+                $code_base,
+                $context,
+                $file_contents,
+                $node
             );
         }
     }
@@ -460,6 +495,7 @@ final class ConfigPluginSet extends PluginV2 implements
 
         $this->preAnalyzeNodePluginSet      = self::filterPreAnalysisPlugins($plugin_set);
         $this->postAnalyzeNodePluginSet     = self::filterPostAnalysisPlugins($plugin_set);
+        $this->beforeAnalyzeFilePluginSet   = self::filterByClass($plugin_set, BeforeAnalyzeFileCapability::class);
         $this->afterAnalyzeFilePluginSet    = self::filterByClass($plugin_set, AfterAnalyzeFileCapability::class);
         $this->analyzeMethodPluginSet       = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeMethodCapability::class), 'analyzeMethod');
         $this->analyzeFunctionPluginSet     = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeFunctionCapability::class), 'analyzeFunction');

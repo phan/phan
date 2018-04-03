@@ -90,7 +90,7 @@ build_script:
 test_script:
 - cmd: cd C:\projects\phan
 - cmd: php C:\projects\composer\composer.phar install --classmap-authoritative --prefer-dist
-- cmd: php phan
+- cmd: php phan --plugin InvokePHPNativeSyntaxCheckPlugin
 - cmd: .\vendor\bin\phpunit --verbose
 # Verify that a phar can be built and executed under windows
 - cmd: mkdir build
