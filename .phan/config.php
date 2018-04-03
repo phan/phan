@@ -490,8 +490,17 @@ return [
     'ignore_undeclared_functions_with_known_signatures' => false,
 
     'plugin_config' => [
-        // Config for InvokePHPNativeSyntaxCheckPlugin (Disabled for self-analysis except in one travis test)
+        // A list of 1 or more PHP binaries (Absolute path or program name found in $PATH)
+        // to use to analyze your files with PHP's native `--syntax-check`.
+        //
+        // This can be used to simultaneously run PHP's syntax checks with multiple PHP versions.
+        // e.g. `'plugin_config' => ['php_native_syntax_check_binaries' => ['php72', 'php70', 'php56']]`
+        // if all of those programs can be found in $PATH
+
         // 'php_native_syntax_check_binaries' => [PHP_BINARY],
+
+        // The maximum number of `php --syntax-check` processes to run at any point in time (Minimum: 1).
+        // This may be temporarily higher if php_native_syntax_check_binaries has more elements than this process count.
         'php_native_syntax_check_max_processes' => 4,
     ],
 

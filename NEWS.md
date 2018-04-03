@@ -1,7 +1,13 @@
 Phan NEWS
 
-?? ??? 2018, Phan 0.12.5 (dev)
+03 Apr 2018, Phan 0.12.5
 ------------------------
+Plugins
++ Add an option `'php_native_syntax_check_max_processes'` to `'plugin_config'` for `InvokePHPNativeSyntaxCheckPlugin`.
+
+Bug Fixes
++ Remove extra whitespace from messages of comment text in `UnextractableAnnotationElementName` (e.g. `"\r"`)
++ Fix bugs in `InvokePHPNativeSyntaxCheckPlugin`
 
 31 Mar 2018, Phan 0.12.4
 ------------------------

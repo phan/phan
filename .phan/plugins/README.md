@@ -108,8 +108,26 @@ Note: This may double the time Phan takes to analyze a project. This plugin can 
 
 This does not run on files that are parsed but not analyzed.
 
-An example: the config setting `'plugin_config' => ['php_native_syntax_check_binaries' => ['php72', 'php70', 'php56']]` can be added to `.phan/config.php`
-if you wish to make sure that analyzed files would be accepted by those PHP versions
+Configuration settings can be added to `.phan/config.php`:
+
+```php
+    'plugin_config' => [
+        // A list of 1 or more PHP binaries (Absolute path or program name found in $PATH)
+        // to use to analyze your files with PHP's native `--syntax-check`.
+        //
+        // This can be used to simultaneously run PHP's syntax checks with multiple PHP versions.
+        // e.g. `'plugin_config' => ['php_native_syntax_check_binaries' => ['php72', 'php70', 'php56']]`
+        // if all of those programs can be found in $PATH
+
+        // 'php_native_syntax_check_binaries' => [PHP_BINARY],
+
+        // The maximum number of `php --syntax-check` processes to run at any point in time (Minimum: 1. Default: 1).
+        // This may be temporarily higher if php_native_syntax_check_binaries has more elements than this process count.
+        'php_native_syntax_check_max_processes' => 4,
+    ],
+```
+
+If you wish to make sure that analyzed files would be accepted by those PHP versions
 (Requires that php72, php70, and php56 be locatable with the `$PATH` environment variable)
 
 ### 3. Plugins Specific to Code Styles
