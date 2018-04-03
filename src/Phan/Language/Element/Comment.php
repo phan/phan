@@ -653,7 +653,7 @@ class Comment
             $return_union_type_string = $match[2];
             $raw_match = $match[0];
             $char_at_end_offset = $line[\strpos($line, $raw_match) + \strlen($raw_match)] ?? ' ';
-            if (strstr(' \t', $char_at_end_offset) === false) {
+            if (\ord($char_at_end_offset) > 32) {  // Not a control character or space
                 Issue::maybeEmit(
                     $code_base,
                     $context,
@@ -816,7 +816,7 @@ class Comment
 
         $char_at_end_offset = $line[$end_offset] ?? ' ';
         $issue_line = self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line);
-        if (strstr(" \t\n", $char_at_end_offset) === false) {
+        if (\ord($char_at_end_offset) > 32) {  // Not a control character or space
             Issue::maybeEmit(
                 $code_base,
                 $context,
