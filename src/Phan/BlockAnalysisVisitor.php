@@ -174,9 +174,27 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         foreach ($node->children as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
-                if (\is_string($child_node) && \strpos($child_node, '@phan-') !== false) {
-                    // Add @phan-var and @phan-suppress annotations in string literals to the local scope
-                    $this->analyzeSubstituteVarAssert($this->code_base, $context, $child_node);
+                if (\is_string($child_node)) {
+                    if (\strpos($child_node, '@phan-') !== false) {
+                        // Add @phan-var and @phan-suppress annotations in string literals to the local scope
+                        $this->analyzeSubstituteVarAssert($this->code_base, $context, $child_node);
+                    } else {
+                        Issue::maybeEmit(
+                            $this->code_base,
+                            $context,
+                            Issue::NoopStringLiteral,
+                            $context->getLineNumberStart(),
+                            json_encode($child_node, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)
+                        );
+                    }
+                } elseif (\is_scalar($child_node)) {
+                    Issue::maybeEmit(
+                        $this->code_base,
+                        $context,
+                        Issue::NoopNumericLiteral,
+                        $context->getLineNumberStart(),
+                        var_export($child_node, true)
+                    );
                 }
                 continue;
             }
