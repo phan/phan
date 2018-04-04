@@ -443,6 +443,18 @@ const C = 42;
 C;
 ```
 
+## PhanNoopEncapsulatedStringLiteral
+
+```
+Unused result of an encapsulated string literal
+```
+
+## PhanNoopNumericLiteral
+
+```
+Unused result of a numeric literal {STRING_LITERAL} near this line
+```
+
 ## PhanNoopProperty
 
 Emitted when you have a refence to a property that is unused.
@@ -460,6 +472,12 @@ class C {
         $this->p;
     }
 }
+```
+
+## PhanNoopStringLiteral
+
+```
+Unused result of a string literal {STRING_LITERAL} near this line
 ```
 
 ## PhanNoopUnaryOperator
@@ -1567,6 +1585,12 @@ Suspicious argument {TYPE} for an echo/print statement
 
 ```
 Indirect variable ${(expr)} has invalid inner expression type {TYPE}, expected string/integer
+```
+
+## PhanTypeSuspiciousStringExpression
+
+```
+Suspicious type {TYPE} of a variable or expression encapsulated within a string. (Expected this to be able to cast to a string)
 ```
 
 ## PhanTypeVoidAssignment

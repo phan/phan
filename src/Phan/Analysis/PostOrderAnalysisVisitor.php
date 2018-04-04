@@ -317,15 +317,62 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitEncapsList(Node $node) : Context
     {
-        foreach ((array)$node->children as $child_node) {
+        $this->analyzeNoOp($node, Issue::NoopEncapsulatedStringLiteral);
+
+        foreach ($node->children as $child_node) {
             // Confirm that variables exists
-            if ($child_node instanceof Node
-                && $child_node->kind == \ast\AST_VAR
-            ) {
+            if (!($child_node instanceof Node)) {
+                continue;
             }
+            $this->checkEncapsulatedStringArgument($child_node);
         }
 
         return $this->context;
+    }
+
+    /**
+     * @return void
+     * @suppress PhanAccessMethodInternal
+     */
+    private function checkEncapsulatedStringArgument(Node $expr_node)
+    {
+        $code_base = $this->code_base;
+        $context = $this->context;
+        $type = UnionTypeVisitor::unionTypeFromNode(
+            $code_base,
+            $context,
+            $expr_node,
+            true
+        );
+
+        if (!$type->hasPrintableScalar()) {
+            if ($type->isType(ArrayType::instance(false))
+                || $type->isType(ArrayType::instance(true))
+                || $type->isGenericArray()
+            ) {
+                $this->emitIssue(
+                    Issue::TypeConversionFromArray,
+                    $expr_node->lineno,
+                    'string'
+                );
+                return;
+            }
+            // Check for __toString(), stringable variables/expressions in encapsulated strings work whether or not strict_types is set
+            try {
+                foreach ($type->asExpandedTypes($code_base)->asClassList($code_base, $context) as $clazz) {
+                    if ($clazz->hasMethodWithName($code_base, "__toString")) {
+                        return;
+                    }
+                }
+            } catch (CodeBaseException $e) {
+                // Swallow "Cannot find class", go on to emit issue
+            }
+            $this->emitIssue(
+                Issue::TypeSuspiciousStringExpression,
+                $expr_node->lineno,
+                (string)$type
+            );
+        }
     }
 
     /**

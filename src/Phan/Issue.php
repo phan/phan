@@ -116,6 +116,7 @@ class Issue
     const TypeNonVarPassByRef       = 'PhanTypeNonVarPassByRef';
     const TypeParentConstructorCalled = 'PhanTypeParentConstructorCalled';
     const TypeSuspiciousEcho        = 'PhanTypeSuspiciousEcho';
+    const TypeSuspiciousStringExpression = 'PhanTypeSuspiciousStringExpression';
     const TypeVoidAssignment        = 'PhanTypeVoidAssignment';
     const TypeInvalidCallableArraySize = 'PhanTypeInvalidCallableArraySize';
     const TypeInvalidCallableArrayKey = 'PhanTypeInvalidCallableArrayKey';
@@ -205,6 +206,9 @@ class Issue
     const NoopVariable                  = 'PhanNoopVariable';
     const NoopUnaryOperator             = 'PhanNoopUnaryOperator';
     const NoopBinaryOperator            = 'PhanNoopBinaryOperator';
+    const NoopStringLiteral             = 'PhanNoopStringLiteral';
+    const NoopEncapsulatedStringLiteral = 'PhanNoopEncapsulatedStringLiteral';
+    const NoopNumericLiteral            = 'PhanNoopNumericLiteral';
     const UnreachableCatch              = 'PhanUnreachableCatch';
     const UnreferencedClass             = 'PhanUnreferencedClass';
     const UnreferencedFunction          = 'PhanUnreferencedFunction';
@@ -1290,6 +1294,7 @@ class Issue
                 self::REMEDIATION_B,
                 10049
             ),
+
             new Issue(
                 self::TypeInvalidThrowsNonObject,
                 self::CATEGORY_TYPE,
@@ -1321,6 +1326,14 @@ class Issue
                 "@throws annotation of {FUNCTIONLIKE} has suspicious class type {TYPE}, which does not extend Error/Exception",
                 self::REMEDIATION_B,
                 10053
+            ),
+            new Issue(
+                self::TypeSuspiciousStringExpression,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Suspicious type {TYPE} of a variable or expression encapsulated within a string. (Expected this to be able to cast to a string)",
+                self::REMEDIATION_B,
+                10066
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
@@ -1839,6 +1852,30 @@ class Issue
                 "Unused result of a binary '{OPERATOR}' operator",
                 self::REMEDIATION_B,
                 6021
+            ),
+            new Issue(
+                self::NoopStringLiteral,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused result of a string literal {STRING_LITERAL} near this line",
+                self::REMEDIATION_B,
+                6029
+            ),
+            new Issue(
+                self::NoopEncapsulatedStringLiteral,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused result of an encapsulated string literal",
+                self::REMEDIATION_B,
+                6030
+            ),
+            new Issue(
+                self::NoopNumericLiteral,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused result of a numeric literal {STRING_LITERAL} near this line",
+                self::REMEDIATION_B,
+                6031
             ),
             new Issue(
                 self::UnreferencedClass,
@@ -2503,7 +2540,9 @@ class Issue
             \assert(\strncmp($error_type, 'Phan', 4) === 0, "Issue of type $error_type should begin with 'Phan'");
 
             $error_type_id = $error->getTypeId();
-            \assert(!\array_key_exists($error_type_id, $unique_type_id_set), "Multiple issues exist with pylint error id $error_type_id");
+            if (\array_key_exists($error_type_id, $unique_type_id_set)) {
+                throw new \AssertionError("Multiple issues exist with pylint error id $error_type_id");
+            }
             $unique_type_id_set[$error_type_id] = $error;
             $category = $error->getCategory();
             $expected_category_for_type_id_bitpos = (int)floor($error_type_id / 1000);

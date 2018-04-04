@@ -1,0 +1,12 @@
+%s:4 PhanNoopEncapsulatedStringLiteral Unused result of an encapsulated string literal
+%s:4 PhanNoopNumericLiteral Unused result of a numeric literal 0.5 near this line
+%s:4 PhanNoopNumericLiteral Unused result of a numeric literal 2 near this line
+%s:4 PhanNoopStringLiteral Unused result of a string literal "x == $x" near this line
+%s:4 PhanTypeConversionFromArray array to string conversion
+%s:10 PhanNoopEncapsulatedStringLiteral Unused result of an encapsulated string literal
+%s:11 PhanTypeConversionFromArray array to string conversion
+%s:15 PhanNoopNumericLiteral Unused result of a numeric literal 1.0 near this line
+%s:15 PhanNoopStringLiteral Unused result of a string literal "\n    x is $x\n" near this line
+%s:21 PhanNoopEncapsulatedStringLiteral Unused result of an encapsulated string literal
+%s:21 PhanNoopNumericLiteral Unused result of a numeric literal 0.75 near this line
+%s:21 PhanTypeSuspiciousStringExpression Suspicious type \stdClass of a variable or expression encapsulated within a string. (Expected this to be able to cast to a string)

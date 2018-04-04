@@ -66,6 +66,9 @@ class ParallelParentCollector implements IssueCollectorInterface
         });
     }
 
+    /**
+     * @suppress PhanTypeSuspiciousStringExpression we're deliberately converting the resource to a string
+     */
     public function __destruct()
     {
         // Shut down and remove the queue
