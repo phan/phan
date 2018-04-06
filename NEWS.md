@@ -1,7 +1,8 @@
 Phan NEWS
 
-03 Apr 2018, Phan 0.12.5
+?? ??? 2018, Phan 0.12.6 (dev)
 ------------------------
+
 New Features(CLI, Configs)
 + Warn about string and numeric literals that are no-ops. (E.g. `<?php 'notEchoedStr'; "notEchoed $x"; ?>`)
   New issue types: `PhanNoopStringLiteral`, `PhanNoopEncapsulatedStringLiteral`, `PhanNoopNumericLiteral`.
@@ -9,6 +10,9 @@ New Features(CLI, Configs)
   Note: This will not warn about Phan's [inline type checks via string literals](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code#inline-type-checks-via-string-literals)
 + Warn about invalid expressions/variables encapsulated within double-quoted strings or within heredoc strings.
   New issue type: `TypeSuspicioousStringExpression` (May also emit `TypeConversionFromArray`)
+
+03 Apr 2018, Phan 0.12.5
+------------------------
 
 Plugins
 + Add an option `'php_native_syntax_check_max_processes'` to `'plugin_config'` for `InvokePHPNativeSyntaxCheckPlugin`.
