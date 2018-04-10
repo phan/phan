@@ -15,6 +15,7 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
+use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\ScalarType;
@@ -741,8 +742,11 @@ class NegatedConditionVisitor extends KindVisitorImplementation
     {
         $context = $this->context;
         $var_node = $node->children['expr'];
-        // if (!empty($x))
-        if ($var_node instanceof Node && $var_node->kind === \ast\AST_VAR) {
+        if (!($var_node instanceof Node)) {
+            return $context;
+        }
+        // e.g. if (!empty($x))
+        if ($var_node->kind === \ast\AST_VAR) {
             // Don't check if variables are defined - don't emit notices for if (!empty($x)) {}, etc.
             $var_name = $var_node->children['name'];
             if (is_string($var_name)) {
@@ -764,8 +768,109 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                 )));
                 return $this->removeFalseyFromVariable($var_node, $context, true);
             }
+        } else {
+            $context = $this->checkComplexNegatedEmpty($var_node);
         }
         $this->checkVariablesDefined($node);
+        return $context;
+    }
+
+    /**
+     * @return Context
+     */
+    private function checkComplexNegatedEmpty(Node $var_node)
+    {
+        $context = $this->context;
+        // TODO: !empty($obj->prop['offset']) should imply $obj is not null (removeNullFromVariable)
+        if ($var_node->kind === \ast\AST_DIM) {
+            $expr_node = $var_node;
+            do {
+                $parent_node = $expr_node;
+                $expr_node = $expr_node->children['expr'];
+                if (!($expr_node instanceof Node)) {
+                    return $context;
+                }
+            } while ($expr_node->kind === \ast\AST_DIM);
+
+            if ($expr_node->kind === \ast\AST_VAR) {
+                $var_name = $expr_node->children['name'];
+                if (!\is_string($var_name)) {
+                    return $context;
+                }
+                if (!$context->getScope()->hasVariableWithName($var_name)) {
+                    // Support analyzing cases such as `if (!empty($x['key'])) { use($x); }`, or `assert(!empty($x['key']))`
+                    // (Assume that this is an array, not ArrayAccess, as a heuristic)
+                    $context->setScope($context->getScope()->withVariable(new Variable(
+                        $context->withLineNumberStart($expr_node->lineno ?? 0),
+                        $var_name,
+                        ArrayType::instance(false)->asUnionType(),
+                        $expr_node->flags
+                    )));
+                    return $context;
+                }
+                $context = $this->removeFalseyFromVariable($expr_node, $context, true);
+
+                $variable = $context->getScope()->getVariableByName($var_name);
+                $var_node_union_type = $variable->getUnionType();
+
+                if ($var_node_union_type->hasTopLevelArrayShapeTypeInstances()) {
+                    $context = $this->withNonFalseyArrayShapeTypes($variable, $parent_node->children['dim'], $context, true);
+                }
+                $this->context = $context;
+            }
+        }
+        return $this->context;
+    }
+
+    /**
+     * @param Variable $variable the variable being modified by inferences from !empty
+     * @param Node|string|float|int|bool $dim_node represents the dimension being accessed. (E.g. can be a literal or an AST_CONST, etc.
+     * @param Context $context the context with inferences made prior to this condition
+     *
+     * @param bool $non_nullable if an offset is created, will it be non-nullable?
+     */
+    private function withNonFalseyArrayShapeTypes(Variable $variable, $dim_node, Context $context, bool $non_nullable) : Context
+    {
+        $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $this->context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
+        // TODO: detect and warn about null
+        if (!\is_scalar($dim_value)) {
+            return $context;
+        }
+
+        $union_type = $variable->getUnionType();
+        $dim_union_type = UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($union_type, $dim_value);
+        if (!$dim_union_type) {
+            // There are other types, this dimension does not exist yet
+            if (!$union_type->hasTopLevelArrayShapeTypeInstances()) {
+                return $context;
+            }
+            $new_union_type = ArrayType::combineArrayShapeTypesWithField($union_type, $dim_value, MixedType::instance(false)->asUnionType());
+            $variable = clone($variable);
+            $variable->setUnionType($new_union_type);
+            return $context->withScopeVariable(
+                $variable
+            );
+            // TODO finish
+        } elseif ($dim_union_type->containsNullableOrUndefined()) {
+            if (!$non_nullable) {
+                // The offset in question already exists in the array shape type, and we won't be changing it.
+                // (E.g. array_key_exists('key', $x) where $x is array{key:?int,other:string})
+                return $context;
+            }
+
+            $variable = clone($variable);
+
+            $variable->setUnionType(
+                ArrayType::combineArrayShapeTypesWithField($union_type, $dim_value, $dim_union_type->nonFalseyClone())
+            );
+
+            // Overwrite the variable with its new type in this
+            // scope without overwriting other scopes
+            return $context->withScopeVariable(
+                $variable
+            );
+            // TODO finish
+        }
         return $context;
     }
 

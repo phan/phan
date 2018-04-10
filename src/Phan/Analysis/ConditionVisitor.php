@@ -393,8 +393,8 @@ class ConditionVisitor extends KindVisitorImplementation
 
                 if ($var_node_union_type->hasTopLevelArrayShapeTypeInstances()) {
                     $context = $this->withSetArrayShapeTypes($variable, $parent_node->children['dim'], $context, true);
-                    $this->context = $context;
                 }
+                $this->context = $context;
             }
         }
         return $context;
