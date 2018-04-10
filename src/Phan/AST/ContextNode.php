@@ -1423,6 +1423,9 @@ class ContextNode
         );
 
         $constant_name = $this->node->children['const'];
+        if (!\strcasecmp($constant_name, 'class')) {
+            $constant_name = 'class';
+        }
 
         $class_fqsen = null;
 
