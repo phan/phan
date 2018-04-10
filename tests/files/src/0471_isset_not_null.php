@@ -5,7 +5,7 @@
  * @param array{key:?string} $a2
  * @param string $offset
  */
-function example471Isset(?array $a, array $a2, string $offset) {
+function example471Isset($a, array $a2, string $offset) {
     if (isset($a[$offset])) {
         echo intdiv($a, 2);  // Expect array (not null)
     }
