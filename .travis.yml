@@ -36,5 +36,6 @@ install:
 # This was moved into a separate script to stop cluttering up .travis.yml
 script:
   # Previously - for TEST_SUITE in $TEST_SUITES; do echo "Running $TEST_SUITE"; tests/run_test "$TEST_SUITE" || exit $?; done
+  # NOTE: GNU parallel is not available on travis, and because we don't have sudo, it's inconvenient to install
   - tests/run_all_tests
   - php internal/package.php
