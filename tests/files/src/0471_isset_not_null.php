@@ -19,7 +19,7 @@ function example471Isset($a, array $a2, string $offset) {
  * @param array{key:?bool} $a3
  * @param string $offset
  */
-function example471NotEmpty(?array $a, array $a2, array $a3, string $offset) {
+function example471NotEmpty($a, array $a2, array $a3, string $offset) {
     if (!empty($a[$offset])) {
         echo intdiv($a, 2);
     }
