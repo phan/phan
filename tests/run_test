@@ -7,12 +7,17 @@ function print_all_tests {
 	grep --only -E '^\s*\w+\)' < $SCRIPT_PATH| sed 's,\s*\|),,g' |sort 1>&2
 	grep --only -E '<testsuite name="\w+"' < "$SCRIPT_DIR/../phpunit.xml" | sed 's,.*name="\(\w\+\)".*,\1,g' | sort 1>&2
 }
-if [ "$#" != 1 ]; then
-	echo "Usage: $0 \$TEST_SUITE" 1>&2
-	print_all_tests
-	exit 1
-fi
 TEST_SUITE="$1"
+if [ "$#" != 1 ]; then
+	if [[ "$#" == 2 && "$1" == "--print-test-suite" ]]; then
+		TEST_SUITE="$2"
+		echo "Running test suite: $TEST_SUITE"
+	else
+		echo "Usage: $0 [--print-test-suite] \$TEST_SUITE " 1>&2
+		print_all_tests
+		exit 1
+	fi
+fi
 if [ "x$TEST_SUITE" == "x" ]; then
 	echo "Provided TEST_SUITE param was empty" 1>&2
 	exit 1
@@ -62,6 +67,10 @@ case "$TEST_SUITE" in
 	__FakeToolTest)
 		cd tests/tool_test
 		./test.sh
+		exit $?
+		;;
+	__FakeAllPHPUnitTests)
+		vendor/bin/phpunit
 		exit $?
 		;;
 	__FakeConfigOverrideTest)
