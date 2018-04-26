@@ -14,6 +14,10 @@ New Features(CLI, Configs)
 + Warn about invalid expressions/variables encapsulated within double-quoted strings or within heredoc strings.
   New issue type: `TypeSuspicioousStringExpression` (May also emit `TypeConversionFromArray`)
 
+Bug Fixes
++ Consistently warn about unreferenced declared properties (i.e. properties that are not magic or dynamically added).
+  Previously, Phan would just never warn if the class had a `__get()` method (as a heuristic).
+
 03 Apr 2018, Phan 0.12.5
 ------------------------
 
