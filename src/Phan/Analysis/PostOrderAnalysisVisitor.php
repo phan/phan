@@ -1855,9 +1855,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * Precondition: $parent_node->kind === \ast\AST_DIM && $parent_node->children['expr'] is $node
      */
-    private function shouldSkipNestedAssignDim() : bool
+    private static function shouldSkipNestedAssignDim(array $parent_node_list) : bool
     {
-        $parent_node_list = $this->parent_node_list;
         $cur_parent_node = \end($parent_node_list);
         for (;; $cur_parent_node = $prev_parent_node) {
             $prev_parent_node = \prev($parent_node_list);
@@ -1992,18 +1991,67 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (!$property->hasReadReference() && !$this->isAssignmentOrNestedAssignment($node)) {
             $property->setHasReadReference();
         }
+        if (!$property->hasWriteReference() && $this->isAssignmentOrNestedAssignmentOrModification($node)) {
+            $property->setHasWriteReference();
+        }
     }
 
     private function isAssignmentOrNestedAssignment(Node $node) : bool
     {
-        $parent_node = \end($this->parent_node_list);
+        $parent_node_list = $this->parent_node_list;
+        $parent_node = \end($parent_node_list);
         $parent_kind = $parent_node->kind;
+        // E.g. analyzing [$x] in [$x] = expr()
+        while ($parent_kind === \ast\AST_ARRAY_ELEM) {
+            if ($parent_node->children['value'] !== $node) {
+                // e.g. analyzing `$v = [$x => $y];` for $x
+                return false;
+            }
+            \array_pop($parent_node_list);  // pop AST_ARRAY_ELEM
+            $node = \array_pop($parent_node_list);  // AST_ARRAY
+            $parent_node = \array_pop($parent_node_list);
+            $parent_kind = $parent_node->kind;
+        }
         if ($parent_kind === \ast\AST_DIM) {
-            return $parent_node->children['expr'] === $node && $this->shouldSkipNestedAssignDim();
-        } elseif ($parent_kind === \ast\AST_ASSIGN || $parent_kind === \ast\AST_ASSIGN_REF) {
+            return $parent_node->children['expr'] === $node && $this->shouldSkipNestedAssignDim($parent_node_list);
+        } elseif ($parent_kind === \ast\AST_ASSIGN || $parent_kind === \ast\AST_ASSIGN_REF || $parent_kind === \ast\AST_ASSIGN_OP) {
             return $parent_node->children['var'] === $node;
         }
         return false;
+    }
+
+    // An incomplete list of known parent node kinds that simultaneously read and write the given expression
+    // TODO: ASSIGN_OP?
+    const _READ_AND_WRITE_KINDS = [
+        \ast\AST_PRE_INC,
+        \ast\AST_PRE_DEC,
+        \ast\AST_POST_INC,
+        \ast\AST_POST_DEC,
+    ];
+
+    private function isAssignmentOrNestedAssignmentOrModification(Node $node) : bool
+    {
+        $parent_node_list = $this->parent_node_list;
+        $parent_node = \end($parent_node_list);
+        $parent_kind = $parent_node->kind;
+        // E.g. analyzing [$x] in [$x] = expr()
+        while ($parent_kind === \ast\AST_ARRAY_ELEM) {
+            if ($parent_node->children['value'] !== $node) {
+                // e.g. analyzing `$v = [$x => $y];` for $x
+                return false;
+            }
+            \array_pop($parent_node_list);  // pop AST_ARRAY_ELEM
+            $node = \array_pop($parent_node_list);  // AST_ARRAY
+            $parent_node = \array_pop($parent_node_list);
+            $parent_kind = $parent_node->kind;
+        }
+        if ($parent_kind === \ast\AST_DIM) {
+            return $parent_node->children['expr'] === $node && self::shouldSkipNestedAssignDim($parent_node_list);
+        } elseif ($parent_kind === \ast\AST_ASSIGN || $parent_kind === \ast\AST_ASSIGN_REF || $parent_kind === \ast\AST_ASSIGN_OP) {
+            return $parent_node->children['var'] === $node;
+        } else {
+            return \in_array($parent_kind, self::_READ_AND_WRITE_KINDS, true);
+        }
     }
 
     /**

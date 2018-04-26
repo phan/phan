@@ -1,5 +1,7 @@
 src/001_dead_code.php:8 PhanUnreferencedFunction Possibly zero references to function \duplicateFnB
+src/001_dead_code.php:18 PhanReadOnlyPublicProperty Possibly zero write references to public property \DuplicateClass001::static_prop1
 src/001_dead_code.php:19 PhanUnreferencedPublicProperty Possibly zero references to public property \DuplicateClass001::static_prop2
+src/001_dead_code.php:21 PhanReadOnlyPublicProperty Possibly zero write references to public property \DuplicateClass001::instance_prop1
 src/001_dead_code.php:22 PhanUnreferencedPublicProperty Possibly zero references to public property \DuplicateClass001::instance_prop2
 src/001_dead_code.php:25 PhanUnreferencedPublicMethod Possibly zero references to public method \DuplicateClass001::f2
 src/001_dead_code.php:26 PhanUnreferencedPublicMethod Possibly zero references to public method \DuplicateClass001::f3

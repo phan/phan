@@ -703,6 +703,7 @@ class Clazz extends AddressableElement
                 $flags,
                 $property_fqsen
             );
+            $property->setIsFromPHPDoc(true);
 
             $this->addProperty($code_base, $property, new None);
         }
@@ -922,6 +923,7 @@ class Clazz extends AddressableElement
         }
 
         // Check to see if we can use a __get magic method
+        // TODO: What about __set?
         if (!$is_static && $this->hasMethodWithName($code_base, '__get')) {
             $method = $this->getMethodByName($code_base, '__get');
 
@@ -952,6 +954,7 @@ class Clazz extends AddressableElement
                 0,
                 $property_fqsen
             );
+            $property->setIsDynamicProperty(true);
 
             $this->addProperty($code_base, $property, new None);
 
@@ -993,6 +996,7 @@ class Clazz extends AddressableElement
                 0,
                 $property_fqsen
             );
+            $property->setIsDynamicProperty(true);
 
             $this->addProperty($code_base, $property, new None);
 
@@ -1527,6 +1531,7 @@ class Clazz extends AddressableElement
      * @return bool
      * True if this class has a magic '__get' or '__set'
      * method
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function hasGetOrSetMethod(CodeBase $code_base)
     {

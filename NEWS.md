@@ -4,12 +4,19 @@ Phan NEWS
 ------------------------
 
 New Features(CLI, Configs)
++ Warn about properties that are read but not written to when dead code detection is enabled
+  (Similar to existing warnings about properties that are written to but never read)
+  New issue types: `PhanReadOnlyPrivateProperty`, `PhanReadOnlyProtectedProperty`, `PhanReadOnlyPublicProperty`
 + Warn about string and numeric literals that are no-ops. (E.g. `<?php 'notEchoedStr'; "notEchoed $x"; ?>`)
   New issue types: `PhanNoopStringLiteral`, `PhanNoopEncapsulatedStringLiteral`, `PhanNoopNumericLiteral`.
 
   Note: This will not warn about Phan's [inline type checks via string literals](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code#inline-type-checks-via-string-literals)
 + Warn about invalid expressions/variables encapsulated within double-quoted strings or within heredoc strings.
   New issue type: `TypeSuspicioousStringExpression` (May also emit `TypeConversionFromArray`)
+
+Bug Fixes
++ Consistently warn about unreferenced declared properties (i.e. properties that are not magic or dynamically added).
+  Previously, Phan would just never warn if the class had a `__get()` method (as a heuristic).
 
 03 Apr 2018, Phan 0.12.5
 ------------------------

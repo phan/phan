@@ -194,6 +194,24 @@ class Property extends ClassElement
     }
 
     /**
+     * Returns true if at least one of the references to this property was **writing** the property
+     *
+     * Precondition: Config::get_track_references() === true
+     */
+    public function hasWriteReference() : bool
+    {
+        return $this->getPhanFlagsHasState(Flags::WAS_PROPERTY_WRITTEN);
+    }
+
+    /**
+     * @return void
+     */
+    public function setHasWriteReference()
+    {
+        $this->enablePhanFlagBits(Flags::WAS_PROPERTY_WRITTEN);
+    }
+
+    /**
      * Copy addressable references from an element of the same subclass
      * @override
      * @return void
@@ -211,5 +229,48 @@ class Property extends ClassElement
         if ($element->hasReadReference()) {
             $this->setHasReadReference();
         }
+        if ($element->hasWriteReference()) {
+            $this->setHasWriteReference();
+        }
+    }
+
+    /**
+     * @return bool
+     * True if this is a magic phpdoc property (declared via (at)property (-read,-write,) on class declaration phpdoc)
+     */
+    public function isFromPHPDoc() : bool
+    {
+        return $this->getPhanFlagsHasState(Flags::IS_FROM_PHPDOC);
+    }
+
+    /**
+     * @param bool $from_phpdoc - True if this is a magic phpdoc property (declared via (at)property (-read,-write,) on class declaration phpdoc)
+     * @return void
+     */
+    public function setIsFromPHPDoc(bool $from_phpdoc)
+    {
+        $this->setPhanFlags(
+            Flags::bitVectorWithState(
+                $this->getPhanFlags(),
+                Flags::IS_FROM_PHPDOC,
+                $from_phpdoc
+            )
+        );
+    }
+
+    public function isDynamicProperty() : bool
+    {
+        return $this->getPhanFlagsHasState(Flags::IS_DYNAMIC_PROPERTY);
+    }
+
+    public function setIsDynamicProperty(bool $is_dynamic)
+    {
+        $this->setPhanFlags(
+            Flags::bitVectorWithState(
+                $this->getPhanFlags(),
+                Flags::IS_DYNAMIC_PROPERTY,
+                $is_dynamic
+            )
+        );
     }
 }

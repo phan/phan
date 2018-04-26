@@ -501,6 +501,29 @@ $a = 42;
 $a;
 ```
 
+## PhanReadOnlyPrivateProperty
+
+These issues are emitted when the analyzed file list contains at least one read operation
+for a given declared property, but no write operations on that property.
+
+There may be false positives if dynamic property accesses are performed, or if the code is a library that is used elsewhere.
+
+```
+Possibly zero write references to private property {PROPERTY}
+```
+
+## PhanReadOnlyProtectedProperty
+
+```
+Possibly zero write references to protected property {PROPERTY}
+```
+
+## PhanReadOnlyPublicProperty
+
+```
+Possibly zero write references to public property {PROPERTY}
+```
+
 ## PhanUnreachableCatch
 
 ```

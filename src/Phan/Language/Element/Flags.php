@@ -32,7 +32,10 @@ class Flags
     const IS_PARAM_USING_NULLABLE_SYNTAX = (1 << 17);
 
     // For dead code detection
-    const WAS_PROPERTY_READ = (1 << 17);
+    const WAS_PROPERTY_READ = (1 << 18);
+    const WAS_PROPERTY_WRITTEN = (1 << 19);
+
+    const IS_DYNAMIC_PROPERTY = (1 << 20);
 
     /**
      * Either enable or disable the given flag on

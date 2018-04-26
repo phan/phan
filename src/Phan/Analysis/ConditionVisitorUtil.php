@@ -26,6 +26,9 @@ trait ConditionVisitorUtil
      * @var Context
      * The context in which the node we're going to be looking
      * at exits.
+     *
+     * @suppress PhanReadOnlyProtectedProperty the subclasses using the trait inherit $context from base contexts.
+     *  Phan can't analyze that.
      */
     protected $context;
 
