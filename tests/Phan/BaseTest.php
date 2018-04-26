@@ -10,8 +10,12 @@ use PHPUnit\Framework\TestCase;
  */
 abstract class BaseTest extends TestCase
 {
-    // Needed to prevent phpunit from backing up these private static variables.
-    // See https://phpunit.de/manual/current/en/fixtures.html#fixtures.global-state
+    /**
+     * Needed to prevent phpunit from backing up these private static variables.
+     * See https://phpunit.de/manual/current/en/fixtures.html#fixtures.global-state
+     *
+     * @suppress PhanReadOnlyProtectedProperty read by phpunit framework
+     */
     protected $backupStaticAttributesBlacklist = [
         'Phan\AST\PhanAnnotationAdder' => [
             'closures_for_kind',

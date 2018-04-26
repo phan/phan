@@ -218,6 +218,9 @@ class Issue
     const UnreferencedPublicProperty    = 'PhanUnreferencedPublicProperty';
     const UnreferencedProtectedProperty = 'PhanUnreferencedProtectedProperty';
     const UnreferencedPrivateProperty   = 'PhanUnreferencedPrivateProperty';
+    const ReadOnlyPublicProperty        = 'PhanReadOnlyPublicProperty';
+    const ReadOnlyProtectedProperty     = 'PhanReadOnlyProtectedProperty';
+    const ReadOnlyPrivateProperty       = 'PhanReadOnlyPrivateProperty';
     const WriteOnlyPublicProperty       = 'PhanWriteOnlyPublicProperty';
     const WriteOnlyProtectedProperty    = 'PhanWriteOnlyProtectedProperty';
     const WriteOnlyPrivateProperty      = 'PhanWriteOnlyPrivateProperty';
@@ -1956,6 +1959,30 @@ class Issue
                 "Possibly zero references to private property {PROPERTY}",
                 self::REMEDIATION_B,
                 6016
+            ),
+            new Issue(
+                self::ReadOnlyPublicProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero write references to public property {PROPERTY}",
+                self::REMEDIATION_B,
+                6032
+            ),
+            new Issue(
+                self::ReadOnlyProtectedProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero write references to protected property {PROPERTY}",
+                self::REMEDIATION_B,
+                6033
+            ),
+            new Issue(
+                self::ReadOnlyPrivateProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero write references to private property {PROPERTY}",
+                self::REMEDIATION_B,
+                6034
             ),
             new Issue(
                 self::WriteOnlyPublicProperty,

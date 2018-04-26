@@ -14,6 +14,7 @@ class TextDocumentItem
      * The text document's URI.
      *
      * @var string
+     * @suppress PhanReadOnlyPublicProperty
      */
     public $uri;
 
@@ -38,6 +39,7 @@ class TextDocumentItem
      * The content of the opened text document.
      *
      * @var string
+     * @suppress PhanReadOnlyPublicProperty
      */
     public $text;
 }

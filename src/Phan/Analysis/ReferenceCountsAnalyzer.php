@@ -247,14 +247,15 @@ class ReferenceCountsAnalyzer
                     continue;
                 }
             } elseif ($element instanceof Property) {
-                // Skip properties on classes that have a magic
-                // __get or __set method given that we can't track
-                // their access
-                $defining_class = $element->getClass($code_base);
-
-                if ($defining_class->hasGetOrSetMethod($code_base)) {
+                // Skip properties on classes that were derived from (at)property annotations on classes
+                // or were automatically generated for classes with __get or __set methods
+                // (or undeclared properties that were automatically added depending on configs)
+                if ($element->isDynamicProperty() || $element->isFromPHPDoc()) {
                     continue;
                 }
+                // TODO: may want to continue to skip `if ($defining_class->hasGetOrSetMethod($code_base)) {`
+                // E.g. a __get() method that is implemented as `return $this->"_$name"`.
+                // (at)phan-file-suppress is an easy enough workaround, though
             }
             yield $element;
         }
@@ -326,8 +327,12 @@ class ReferenceCountsAnalyzer
         }
 
         if ($element->getReferenceCount($code_base) >= 1) {
-            if ($element instanceof Property && !($element->hasReadReference())) {
-                self::maybeWarnWriteOnlyProperty($code_base, $element);
+            if ($element instanceof Property) {
+                if (!$element->hasReadReference()) {
+                    self::maybeWarnWriteOnlyProperty($code_base, $element);
+                } elseif (!$element->hasWriteReference()) {
+                    self::maybeWarnReadOnlyProperty($code_base, $element);
+                }
             }
             return;
         }
@@ -336,8 +341,12 @@ class ReferenceCountsAnalyzer
         $element_alt = self::findAlternateReferencedElementDeclaration($code_base, $element);
         if (!\is_null($element_alt)) {
             if ($element_alt->getReferenceCount($code_base) >= 1) {
-                if ($element_alt instanceof Property && !($element_alt->hasReadReference())) {
-                    self::maybeWarnWriteOnlyProperty($code_base, $element_alt);
+                if ($element_alt instanceof Property) {
+                    if (!$element_alt->hasReadReference()) {
+                        self::maybeWarnWriteOnlyProperty($code_base, $element_alt);
+                    } elseif (!($element_alt->hasWriteReference())) {
+                        self::maybeWarnReadOnlyProperty($code_base, $element_alt);
+                    }
                 }
                 // If there is a reference to the "canonical" declaration (the one which was parsed first),
                 // then also treat it as a reference to the duplicate.
@@ -378,6 +387,36 @@ class ReferenceCountsAnalyzer
                 return;
             }
         }
+        Issue::maybeEmit(
+            $code_base,
+            $property->getContext(),
+            $issue_type,
+            $property->getFileRef()->getLineNumberStart(),
+            (string)$property->getFQSEN()
+        );
+    }
+
+    private static function maybeWarnReadOnlyProperty(CodeBase $code_base, Property $property)
+    {
+        // TODO: Should this handle annotations such as property-read?
+        if ($property->isPrivate()) {
+            $issue_type = Issue::ReadOnlyPrivateProperty;
+        } elseif ($property->isProtected()) {
+            $issue_type = Issue::ReadOnlyProtectedProperty;
+        } else {
+            $issue_type = Issue::ReadOnlyPublicProperty;
+        }
+        if ($property->hasSuppressIssue($issue_type)) {
+            $property->incrementSuppressIssueCount($issue_type);
+            return;
+        }
+        $property_alt = self::findAlternateReferencedElementDeclaration($code_base, $property);
+        if ($property_alt instanceof Property) {
+            if ($property_alt->hasWriteReference()) {
+                return;
+            }
+        }
+        // echo "known references to $property: " . implode(array_map('strval', $property->getReferenceList())) . "\n";
         Issue::maybeEmit(
             $code_base,
             $property->getContext(),

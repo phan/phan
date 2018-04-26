@@ -9,8 +9,8 @@ class A3 {
         'key' => 'otherValue',
         'key' => 'redundant',
     ];
-
     /**
+     * @suppress PhanReadOnlyPublicProperty
      * @suppress PhanPluginMixedKeyNoKey
      */
     public $y = [

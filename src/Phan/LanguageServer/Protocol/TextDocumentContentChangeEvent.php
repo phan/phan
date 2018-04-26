@@ -31,6 +31,7 @@ class TextDocumentContentChangeEvent
      * The new text of the document.
      *
      * @var string
+     * @suppress PhanReadOnlyPublicProperty (we don't have tests setting this, yet)
      */
     public $text;
 }
