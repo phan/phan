@@ -46,7 +46,7 @@ Phan is able to perform the following kinds of analysis.
 * Check for valid and type safe return values on methods, functions, and closures.
 * Check for No-Ops on arrays, closures, constants, properties, variables, unary operators, and binary operators.
 * Check for unused/dead/[unreachable](https://github.com/phan/phan/tree/master/.phan/plugins#unreachablecodepluginphp) code. (Pass in `--dead-code-detection`)
-+ Check for unused `use` statements.
+* Check for unused `use` statements.
 * Check for classes, functions and methods being redefined.
 * Check for sanity with class inheritance (e.g. checks method signature compatibility).
   Phan also checks for final classes/methods being overridden, that abstract methods are implemented, and that the implemented interface is really a interface (and so on).
