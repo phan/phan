@@ -30,6 +30,8 @@ class FileCacheEntry
             return $lines;
         }
         $lines = \preg_split("/^/m", $this->contents);
+        // TODO: Use a better way to not warn about false when arguments are both valid
+        \assert(\is_array($lines));
         unset($lines[0]);
         $this->lines = $lines;
         return $lines;
