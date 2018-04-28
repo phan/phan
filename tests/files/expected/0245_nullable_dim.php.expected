@@ -1,1 +1,1 @@
-%s:4 PhanTypeMismatchReturn Returning type array<int,string> but f() is declared to return ?int[]
+%s:4 PhanTypeMismatchReturn Returning type array{0:string} but f() is declared to return ?int[]

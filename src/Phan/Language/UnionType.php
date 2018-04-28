@@ -141,7 +141,7 @@ class UnionType implements \Serializable
         $union_type = $memoize_map[$fully_qualified_string] ?? null;
 
         if (is_null($union_type)) {
-            $types = \array_map(function (string $type_name) {
+            $types = \array_map(function (string $type_name) : Type {
                 return Type::fromFullyQualifiedString($type_name);
             }, self::extractTypeParts($fully_qualified_string));
 
@@ -262,6 +262,7 @@ class UnionType implements \Serializable
      *
      * @param array<int,Type> $types
      * @return array<int,Type>
+     * @suppress PhanPartialTypeMismatchReturn TODO: why?
      */
     public static function normalizeMultiTypes(array $types) : array
     {
@@ -1269,10 +1270,8 @@ class UnionType implements \Serializable
         // type combinations and see if any can cast to
         // any.
         foreach ($type_set as $source_type) {
-            foreach ($target_type_set as $target_type) {
-                if ($source_type->canCastToType($target_type)) {
-                    return true;
-                }
+            if ($source_type->canCastToAnyTypeInSet($target_type_set)) {
+                return true;
             }
         }
 
@@ -1281,12 +1280,7 @@ class UnionType implements \Serializable
             foreach ($type_set as $source_type) {
                 // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
                 if ($source_type->getIsNullable()) {
-                    $non_null_source_type = $source_type->withIsNullable(false);
-                    foreach ($target_type_set as $target_type) {
-                        if ($non_null_source_type->canCastToType($target_type)) {
-                            return true;
-                        }
-                    }
+                    return $source_type->withIsNullable(false)->canCastToAnyTypeInSet($target_type_set);
                 }
             }
         }
@@ -1343,11 +1337,9 @@ class UnionType implements \Serializable
         // any.
         $matches = true;
         foreach ($type_set as $source_type) {
-            foreach ($target_type_set as $target_type) {
-                if (!$source_type->canCastToType($target_type)) {
-                    $matches = false;
-                    break;
-                }
+            if (!$source_type->canCastToAnyTypeInSet($target_type_set)) {
+                $matches = false;
+                break;
             }
         }
         if ($matches) {
@@ -1358,15 +1350,7 @@ class UnionType implements \Serializable
         if (\in_array($null_type, $target_type_set, true)) {
             foreach ($type_set as $source_type) {
                 // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
-                $matches = false;
-                $non_null_source_type = $source_type->withIsNullable(false);
-                foreach ($target_type_set as $target_type) {
-                    if (!$non_null_source_type->canCastToType($target_type)) {
-                        $matches = true;
-                        break;
-                    }
-                }
-                if (!$matches) {
+                if (!$source_type->withIsNullable(false)->canCastToAnyTypeInSet($target_type_set)) {
                     return false;
                 }
             }
