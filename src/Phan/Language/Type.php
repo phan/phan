@@ -1772,6 +1772,22 @@ class Type
     }
 
     /**
+     * @param Type[] $target_type_set 1 or more types
+     * @return bool
+     * True if this Type can be cast to the given Type cleanly.
+     * This is overridden by ArrayShapeType to allow array{a:string,b:stdClass} to cast to string[]|stdClass[]
+     */
+    public function canCastToAnyTypeInSet(array $target_type_set) : bool
+    {
+        foreach ($target_type_set as $target_type) {
+            if ($this->canCastToType($target_type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly

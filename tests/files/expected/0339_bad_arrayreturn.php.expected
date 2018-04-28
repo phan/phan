@@ -1,2 +1,1 @@
-%s:6 PhanTypeMismatchReturn Returning type array<int,array{0:int}> but testarrayreturn() is declared to return int[]
-%s:6 PhanTypeMismatchReturn Returning type array<int,string> but testarrayreturn() is declared to return int[]
+%s:6 PhanTypeMismatchReturn Returning type array{0:int,1:string,2:array{0:int}} but testarrayreturn() is declared to return int[]

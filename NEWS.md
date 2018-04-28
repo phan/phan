@@ -3,7 +3,7 @@ Phan NEWS
 ?? ??? 2018, Phan 0.12.6 (dev)
 ------------------------
 
-New Features(CLI, Configs)
+New features(Analysis)
 + Warn about properties that are read but not written to when dead code detection is enabled
   (Similar to existing warnings about properties that are written to but never read)
   New issue types: `PhanReadOnlyPrivateProperty`, `PhanReadOnlyProtectedProperty`, `PhanReadOnlyPublicProperty`
@@ -11,8 +11,14 @@ New Features(CLI, Configs)
   New issue types: `PhanNoopStringLiteral`, `PhanNoopEncapsulatedStringLiteral`, `PhanNoopNumericLiteral`.
 
   Note: This will not warn about Phan's [inline type checks via string literals](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code#inline-type-checks-via-string-literals)
++ When returning an array literal (with known keys) directly,
+  make Phan infer the array literal's array shape type instead of a combination of generic array types.
++ Make type casting rules stricter when checking if an array shape can cast to a given generic array type.
+  (E.g. `array{a:string,b:int}` can no longer cast to `array<string,int>`, but can cast to `array<string,int>|array<string,string>`).
+
+  E.g. Phan will now warn about `/** @return array<string,int> */ function example() { $result = ['a' => 'x', 'b' => 2]; return $result; }`
 + Warn about invalid expressions/variables encapsulated within double-quoted strings or within heredoc strings.
-  New issue type: `TypeSuspicioousStringExpression` (May also emit `TypeConversionFromArray`)
+  New issue type: `TypeSuspiciousStringExpression` (May also emit `TypeConversionFromArray`)
 
 Bug Fixes
 + Consistently warn about unreferenced declared properties (i.e. properties that are not magic or dynamically added).

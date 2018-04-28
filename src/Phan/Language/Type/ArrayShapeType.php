@@ -37,6 +37,9 @@ final class ArrayShapeType extends ArrayType
      */
     private $generic_array_element_union_type = null;
 
+    /** @var ?array<int,UnionType> */
+    private $unique_value_union_types;
+
     /**
      * @param array<string|int,UnionType|AnnotatedUnionType> $types
      * Maps 0 or more field names to the corresponding types
@@ -145,6 +148,37 @@ final class ArrayShapeType extends ArrayType
     }
 
     /**
+     * @override
+     * @param Type[] $target_type_set
+     */
+    public function canCastToAnyTypeInSet(array $target_type_set) : bool
+    {
+        $element_union_types = null;
+        foreach ($target_type_set as $target_type) {
+            if ($target_type instanceof GenericArrayType) {
+                if (($this->getKeyType() & ($target_type->getKeyType() ?: GenericArrayType::KEY_MIXED)) === 0 && !Config::getValue('scalar_array_key_cast')) {
+                    // Attempting to cast an int key to a string key (or vice versa) is normally invalid, so skip it.
+                    // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
+                    continue;
+                }
+                if ($element_union_types) {
+                    $element_union_types = $element_union_types->withType($target_type->genericArrayElementType());
+                } else {
+                    $element_union_types = $target_type->genericArrayElementUnionType();
+                }
+                continue;
+            }
+            if ($this->canCastToType($target_type)) {
+                return true;
+            }
+        }
+        if ($element_union_types) {
+            return $this->canEachFieldTypeCastToExpectedUnionType($element_union_types);
+        }
+        return false;
+    }
+
+    /**
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly
@@ -158,7 +192,7 @@ final class ArrayShapeType extends ArrayType
                     // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
                     return false;
                 }
-                return $this->genericArrayElementUnionType()->canCastToUnionType($type->genericArrayElementUnionType());
+                return $this->canEachFieldTypeCastToExpectedUnionType($type->genericArrayElementUnionType());
             } elseif ($type instanceof ArrayShapeType) {
                 foreach ($type->field_types as $key => $field_type) {
                     $this_field_type = $this->field_types[$key] ?? null;
@@ -199,6 +233,48 @@ final class ArrayShapeType extends ArrayType
         }
 
         return parent::canCastToNonNullableType($type);
+    }
+
+    /** @return array<int,UnionType> */
+    private function getUniqueValueUnionTypes() : array
+    {
+        return $this->unique_value_union_types ?? ($this->unique_value_union_types = $this->calculateUniqueValueUnionTypes());
+    }
+
+    /** @return array<int,UnionType> */
+    private function calculateUniqueValueUnionTypes() : array
+    {
+        $field_types = $this->field_types;
+        $unique = [];
+        foreach ($field_types as $value_union_type) {
+            if ($value_union_type->getIsPossiblyUndefined()) {
+                continue;
+            }
+
+            $value_union_type = $value_union_type->withIsPossiblyUndefined(false);
+            $unique[$value_union_type->generateUniqueId()] = $value_union_type;
+        }
+        return \array_values($unique);
+    }
+
+    /**
+     * This implements a type casting check for casting array shape values to element type of generic arrays.
+     *
+     * We reject casts of array{key:string,otherKey:int} to string[] because otherKey is there and incompatible
+     *
+     * We accept casts of array{key:string,otherKey:?int} to string[] because otherKey is possibly absent (to reduce
+     *
+     * TODO: Consider ways to implement a strict mode
+     *
+     */
+    private function canEachFieldTypeCastToExpectedUnionType(UnionType $expected_type) : bool
+    {
+        foreach ($this->getUniqueValueUnionTypes() as $value_union_type) {
+            if (!$value_union_type->canCastToUnionType($expected_type)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

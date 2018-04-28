@@ -39,7 +39,7 @@ FAILURES=""
 if [[ "$PHAN_TEST_PARALLEL" == 1 ]]; then
 	# Note: Must install GNU parallel for this to work.
 	if ! echo "$TEST_SUITES" | tr ' ' '\n' | parallel --jobs 4 --no-notice --joblog tests/.run_all_tests.joblog --arg-sep ' ' tests/run_test --print-test-suite; then
-		FAILURES=" $(awk '$7 >= 1 && $10 { print $10}' < tests/.run_all_tests.joblog | tr '\n' ' ')"
+		FAILURES=" $(awk '$7 >= 1 && $11 { print $11}' < tests/.run_all_tests.joblog | tr '\n' ' ')"
 	fi
 else
 	for TEST_SUITE in $TEST_SUITES; do

@@ -1,0 +1,8 @@
+%s:12 PhanTypeMismatchReturn Returning type array{key:int,other:string} but test_return472() is declared to return array{key:string}
+%s:15 PhanTypeMismatchReturn Returning type array{key:\stdClass} but test_return472() is declared to return array{key:string}
+%s:18 PhanTypeMismatchReturn Returning type array{key:null} but test_return472() is declared to return array{key:string}
+%s:21 PhanTypeMismatchReturn Returning type array{} but test_return472() is declared to return array{key:string}
+%s:32 PhanTypeMismatchReturn Returning type array{key:string,other:int} but test_return_generic_array_472() is declared to return array<string,bool>|array<string,string>
+%s:36 PhanTypeMismatchReturn Returning type array{key:string,other:null} but test_return_generic_array_472() is declared to return array<string,bool>|array<string,string>
+%s:43 PhanTypeMismatchReturn Returning type array<string,\stdClass> but test_return_generic_array_472() is declared to return array<string,bool>|array<string,string>
+%s:44 PhanTypeMismatchReturn Returning type array<string,null> but test_return_generic_array_472() is declared to return array<string,bool>|array<string,string>

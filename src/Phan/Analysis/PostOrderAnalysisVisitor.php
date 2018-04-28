@@ -24,6 +24,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\VoidType;
@@ -860,7 +861,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // Figure out what is actually being returned
         // TODO: Properly check return values of array shapes
-        foreach ($this->getReturnTypes($context, $node->children['expr']) as $expression_type) {
+        foreach ($this->getReturnTypes($context, $node->children['expr'], $node->lineno) as $lineno => $expression_type) {
             // If there is no declared type, see if we can deduce
             // what it should be based on the return type
             if ($method_return_type->isEmpty()
@@ -886,13 +887,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 if (!$this->checkCanCastToReturnType($code_base, $expression_type, $method_return_type)) {
                     $this->emitIssue(
                         Issue::TypeMismatchReturn,
-                        $node->lineno,
+                        $lineno,
                         (string)$expression_type,
                         $method->getName(),
                         (string)$method_return_type
                     );
                 } elseif (Config::get_strict_return_checking() && $expression_type->typeCount() > 1) {
-                    self::analyzeReturnStrict($code_base, $method, $expression_type, $method_return_type, $node);
+                    self::analyzeReturnStrict($code_base, $method, $expression_type, $method_return_type, $lineno);
                 }
             }
             // For functions that aren't syntactically Generators,
@@ -933,7 +934,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         FunctionInterface $method,
         UnionType $expression_type,
         UnionType $method_return_type,
-        $node
+        int $lineno
     ) {
         $type_set = $expression_type->getTypeSet();
         $context = $this->context;
@@ -981,7 +982,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         $this->emitIssue(
             self::getStrictIssueType($mismatch_type_set),
-            $node->lineno ?? 0,
+            $lineno,
             (string)$expression_type,
             $method->getName(),
             (string)$method_return_type,
@@ -1006,14 +1007,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * @return \Generator|UnionType[]
      */
-    private function getReturnTypes(Context $context, $node)
+    private function getReturnTypes(Context $context, $node, int $return_lineno)
     {
         if (!($node instanceof Node)) {
             if (null === $node) {
-                yield VoidType::instance(false)->asUnionType();
+                yield $return_lineno => VoidType::instance(false)->asUnionType();
                 return;
             }
-            yield UnionTypeVisitor::unionTypeFromNode(
+            yield $return_lineno => UnionTypeVisitor::unionTypeFromNode(
                 $this->code_base,
                 $context,
                 $node,
@@ -1026,9 +1027,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             yield from self::deduplicateUnionTypes($this->getReturnTypesOfConditional($context, $node));
             return;
         } elseif ($kind === \ast\AST_ARRAY) {
+            $expression_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $node, true);
+            if ($expression_type->hasTopLevelArrayShapeTypeInstances()) {
+                yield $return_lineno => $expression_type;
+                return;
+            }
+
             $key_type_enum = GenericArrayType::getKeyTypeOfArrayNode($this->code_base, $context, $node);
-            foreach (self::deduplicateUnionTypes($this->getReturnTypesOfArray($context, $node)) as $elem_type) {
-                yield $elem_type->asGenericArrayTypes($key_type_enum);  // TODO: Infer corresponding key types
+            foreach (self::deduplicateUnionTypes($this->getReturnTypesOfArray($context, $node)) as $lineno => $elem_type) {
+                yield $lineno => $elem_type->asGenericArrayTypes($key_type_enum);  // TODO: Infer corresponding key types
             }
             return;
         }
@@ -1046,7 +1053,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $context
                 );
         }
-        yield $expression_type;
+        yield $return_lineno => $expression_type;
     }
 
     /**
@@ -1065,13 +1072,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // TODO: Add no-op checks in another PR, if they don't already exist for conditional.
             if ($cond_truthiness === true) {
                 // The condition is unconditionally true
-                yield from $this->getReturnTypes($context, $true_node);
+                yield from $this->getReturnTypes($context, $true_node, $node->lineno);
                 return;
             } else {
                 // The condition is unconditionally false
 
                 // Add the type for the 'false' side
-                yield from $this->getReturnTypes($context, $node->children['false']);
+                yield from $this->getReturnTypes($context, $node->children['false'], $node->lineno);
                 return;
             }
         }
@@ -1102,23 +1109,24 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // Allow nested ternary operators, or arrays within ternary operators
         if (($node->children['true'] ?? null) !== null) {
-            yield from $this->getReturnTypes($true_context, $true_node);
+            yield from $this->getReturnTypes($true_context, $true_node, $true_node->lineno ?? $node->lineno);
         } else {
             // E.g. From the left hand side of yield (int|false) ?: default,
             // yielding false is impossible.
-            foreach ($this->getReturnTypes($true_context, $true_node) as $raw_union_type) {
+            foreach ($this->getReturnTypes($true_context, $true_node, $true_node->lineno ?? $node->lineno) as $lineno => $raw_union_type) {
                 if ($raw_union_type->isEmpty() || !$raw_union_type->containsFalsey()) {
-                    yield $raw_union_type;
+                    yield $lineno => $raw_union_type;
                 } else {
                     $raw_union_type = $raw_union_type->nonFalseyClone();
                     if (!$raw_union_type->isEmpty()) {
-                        yield $raw_union_type;
+                        yield $lineno => $raw_union_type;
                     }
                 }
             }
         }
 
-        yield from $this->getReturnTypes($false_context, $node->children['false']);
+        $false_node = $node->children['false'];
+        yield from $this->getReturnTypes($false_context, $false_node, $false_node->lineno ?? $node->lineno);
     }
 
     /**
@@ -1129,13 +1137,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private static function deduplicateUnionTypes($types)
     {
         $unique_types = [];
-        foreach ($types as $type) {
+        foreach ($types as $lineno => $type) {
             foreach ($unique_types as $old_type) {
                 if ($type->isEqualTo($old_type)) {
                     break;
                 }
             }
-            yield $type;
+            yield $lineno => $type;
             $unique_types[] = $type;
         }
     }
@@ -1145,36 +1153,27 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function getReturnTypesOfArray(Context $context, Node $node)
     {
-        if (!empty($node->children)
-            && $node->children[0] instanceof Node
-            && $node->children[0]->kind == \ast\AST_ARRAY_ELEM
-        ) {
-            // Check the first 5 (completely arbitrary) elements
-            // and assume the rest are the same type
-            for ($i=0; $i<5; $i++) {
-                // Check to see if we're out of elements
-                if (empty($node->children[$i])) {
-                    return;
-                }
-
-                // Don't bother recursing more than one level to iterate over possible types.
-                $value_node = $node->children[$i]->children['value'];
-                if ($value_node instanceof Node) {
-                    yield UnionTypeVisitor::unionTypeFromNode(
-                        $this->code_base,
-                        $context,
-                        $value_node,
-                        true
-                    );
-                } else {
-                    yield Type::fromObject(
-                        $value_node
-                    )->asUnionType();
-                }
-            }
+        if (count($node->children) === 0) {
+            // Possibly unreachable (array shape would be returned instead)
+            yield $node->lineno => MixedType::instance(false)->asUnionType();
             return;
         }
-        yield ArrayType::instance(false)->asUnionType();
+        foreach ($node->children as $elem) {
+            // Don't bother recursing more than one level to iterate over possible types.
+            $value_node = $elem->children['value'];
+            if ($value_node instanceof Node) {
+                yield $elem->lineno => UnionTypeVisitor::unionTypeFromNode(
+                    $this->code_base,
+                    $context,
+                    $value_node,
+                    true
+                );
+            } else {
+                yield $elem->lineno => Type::fromObject(
+                    $value_node
+                )->asUnionType();
+            }
+        }
     }
 
     /**
