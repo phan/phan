@@ -236,7 +236,10 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }
 
-    /** @override */
+    /**
+     * @phan-return \Generator<FunctionLikeDeclarationType>
+     * @override
+     */
     public function alternateGenerator(CodeBase $_) : \Generator
     {
         yield $this;
@@ -626,6 +629,12 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
             $stub[$name] = $type_string;
         }
         return $stub;
+    }
+
+    public function getReturnTypeAsGeneratorTemplateType() : Type
+    {
+        // Probably unused
+        return Type::fromFullyQualifiedString('\Generator');
     }
 
     ////////////////////////////////////////////////////////////////////////////////

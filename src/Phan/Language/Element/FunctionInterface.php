@@ -3,6 +3,7 @@ namespace Phan\Language\Element;
 
 use Phan\CodeBase;
 use Phan\Language\Context;
+use Phan\Language\Type;
 use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\UnionType;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -369,4 +370,11 @@ interface FunctionInterface extends AddressableElementInterface
      * @return array<mixed,string> in the same format as FunctionSignatureMap.php
      */
     public function toFunctionSignatureArray() : array;
+
+    /**
+     * Precondition: This function is a generator type
+     * Converts Generator|T[] to Generator<T>
+     * Converts Generator|array<int,stdClass> to Generator<int,stdClass>, etc.
+     */
+    public function getReturnTypeAsGeneratorTemplateType() : Type;
 }

@@ -109,6 +109,7 @@ class ReferenceCountsAnalyzer
      * @param int $i
      *
      * @return \Generator|ClassElement[]
+     * @phan-return \Generator<ClassElement>
      */
     private static function getElementsFromClassMapForDeferredAnalysis(
         CodeBase $code_base,
@@ -174,6 +175,7 @@ class ReferenceCountsAnalyzer
      * @param int $i
      *
      * @return \Generator|ClassElement[]
+     * @phan-return \Generator<ClassElement>
      */
     private static function getElementsFromElementListForDeferredAnalysis(
         CodeBase $code_base,

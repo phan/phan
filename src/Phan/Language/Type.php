@@ -18,6 +18,7 @@ use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\GenericIterableType;
 use Phan\Language\Type\GenericMultiArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
@@ -37,6 +38,7 @@ use Phan\Library\Option;
 use Phan\Library\Some;
 use Phan\Library\Tuple5;
 
+use AssertionError;
 use InvalidArgumentException;
 
 /**
@@ -335,9 +337,7 @@ class Type
 
         // If this looks like a generic type string, explicitly
         // make it as such
-        if (self::isGenericArrayString($type_name)
-            && ($pos = \strrpos($type_name, '[]')) !== false
-        ) {
+        if (($pos = \strrpos($type_name, '[]')) > 0) {
             return GenericArrayType::fromElementType(Type::make(
                 $namespace,
                 \substr($type_name, 0, $pos),
@@ -347,28 +347,24 @@ class Type
             ), $is_nullable, GenericArrayType::KEY_MIXED);
         }
 
-        \assert(
-            !empty($namespace),
-            "Namespace cannot be empty"
-        );
+        if ($namespace === '') {
+            throw new AssertionError("Namespace cannot be empty");
+        }
 
-        \assert(
-            '\\' === $namespace[0],
-            "Namespace must be fully qualified"
-        );
+        if ('\\' !== $namespace[0]) {
+            throw new AssertionError("Namespace must be fully qualified");
+        }
 
-        \assert(
-            !empty($type_name),
-            "Type name cannot be empty"
-        );
+        if ($type_name === '') {
+            throw new AssertionError("Type name cannot be empty");
+        }
 
         if (\strpos($type_name, '|') !== false) {
-            throw new \AssertionError("Type name '$type_name' may not contain a pipe");
+            throw new AssertionError("Type name '$type_name' may not contain a pipe");
         }
 
         // Create a canonical representation of the
         // namespace and name
-        $namespace = $namespace ?: '\\';
         if ('\\' === $namespace && $source === Type::FROM_PHPDOC) {
             $type_name = self::canonicalNameFromName($type_name);
         }
@@ -387,8 +383,15 @@ class Type
 
         $value = self::$canonical_object_map[$key] ?? null;
         if (!$value) {
-            if ($type_name === 'Closure' && $namespace === '\\') {
+            if ($namespace === '\\' && $type_name === 'Closure') {
                 $value = new ClosureType(
+                    $namespace,
+                    $type_name,
+                    $template_parameter_type_list,
+                    $is_nullable
+                );
+            } elseif ($namespace === '\\' && $type_name === 'callable') {
+                $value = new CallableType(
                     $namespace,
                     $type_name,
                     $template_parameter_type_list,
@@ -646,7 +649,7 @@ class Type
         if (\substr($type_name, 0, 1) === '?') {
             return self::fromInternalTypeName(\substr($type_name, 1), true, $source);
         }
-        throw new \AssertionError("No internal type with name $type_name");
+        throw new AssertionError("No internal type with name $type_name");
     }
 
     /**
@@ -695,7 +698,6 @@ class Type
         static $type_cache = [];
         return $type_cache[$fully_qualified_string] ?? ($type_cache[$fully_qualified_string] = self::fromFullyQualifiedStringInner($fully_qualified_string));
     }
-
 
     public static function fromFullyQualifiedStringInner(
         string $fully_qualified_string
@@ -746,12 +748,16 @@ class Type
         }
 
         if (empty($namespace)) {
-            if (\strcasecmp($type_name, 'array') === 0 && !empty($template_parameter_type_name_list)) {
-                // template parameter type list
-                $template_parameter_type_list = \array_map(function (string $type_name) {
-                    return UnionType::fromFullyQualifiedString($type_name);
-                }, $template_parameter_type_name_list);
-                return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
+            if (\count($template_parameter_type_name_list) > 0) {
+                if (\strcasecmp($type_name, 'array') === 0) {
+                    // template parameter type list
+                    $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
+                    return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
+                } elseif (\strcasecmp($type_name, 'iterable') === 0) {
+                    // template parameter type list
+                    $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
+                    return self::parseGenericIterableTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
+                }
             }
             return self::fromInternalTypeName(
                 $fully_qualified_string,
@@ -762,9 +768,7 @@ class Type
 
         // Map the names of the types to actual types in the
         // template parameter type list
-        $template_parameter_type_list = \array_map(function (string $type_name) {
-            return UnionType::fromFullyQualifiedString($type_name);
-        }, $template_parameter_type_name_list);
+        $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
 
         if (0 !== \strpos($namespace, '\\')) {
             $namespace = '\\' . $namespace;
@@ -787,6 +791,17 @@ class Type
     }
 
     /**
+     * @param array<int,string> $template_parameter_type_name_list
+     * @return array<int,UnionType>
+     */
+    private static function createTemplateParameterTypeList(array $template_parameter_type_name_list)
+    {
+        return \array_map(function (string $type_name) : UnionType {
+            return UnionType::fromFullyQualifiedString($type_name);
+        }, $template_parameter_type_name_list);
+    }
+
+    /**
      * @param bool $is_closure_type
      * @param array<int,string> $shape_components
      * @param bool $is_nullable
@@ -799,7 +814,7 @@ class Type
         $return_type = \array_pop($shape_components);
         if (!$return_type) {
             // shouldn't happen
-            throw new \AssertionError("Expected at least one component of a closure phpdoc type");
+            throw new AssertionError("Expected at least one component of a closure phpdoc type");
         }
         if ($return_type[0] === '(' && \substr($return_type, -1) === ')') {
             // TODO: Maybe catch that in UnionType parsing instead
@@ -821,12 +836,13 @@ class Type
     private static function parseGenericArrayTypeFromTemplateParameterList(
         array $template_parameter_type_list,
         bool $is_nullable
-    ) : Type {
+    ) : ArrayType {
         $template_count = \count($template_parameter_type_list);
         if ($template_count <= 2) {  // array<T> or array<key, T>
             $key_type = ($template_count === 2)
                 ? GenericArrayType::keyTypeFromUnionTypeValues($template_parameter_type_list[0])
                 : GenericArrayType::KEY_MIXED;
+
             $types = $template_parameter_type_list[$template_count - 1]->getTypeSet();
             if (\count($types) === 1) {
                 return GenericArrayType::fromElementType(
@@ -843,6 +859,25 @@ class Type
             }
         }
         return ArrayType::instance($is_nullable);
+    }
+
+    /**
+     * @param array<int,UnionType> $template_parameter_type_list
+     * @param bool $is_nullable
+     */
+    private static function parseGenericIterableTypeFromTemplateParameterList(
+        array $template_parameter_type_list,
+        bool $is_nullable
+    ) : Type {
+        $template_count = \count($template_parameter_type_list);
+        if ($template_count <= 2) {  // iterable<T> or iterable<key, T>
+            $key_union_type = ($template_count === 2)
+                ? $template_parameter_type_list[0]
+                : UnionType::empty();
+            $value_union_type = $template_parameter_type_list[$template_count - 1];
+            return GenericIterableType::fromKeyAndValueTypes($key_union_type, $value_union_type, $is_nullable);
+        }
+        return IterableType::instance($is_nullable);
     }
 
     /**
@@ -1018,6 +1053,9 @@ class Type
                 if (\strtolower($type_name) === 'array') {
                     return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
                 }
+                if (\strtolower($type_name) === 'iterable') {
+                    return self::parseGenericIterableTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
+                }
                 // TODO: Warn about unrecognized types.
             }
             return self::fromInternalTypeName($type_name, $is_nullable, $source);
@@ -1101,7 +1139,7 @@ class Type
     ) : FunctionLikeDeclarationType {
         $return_type = \array_pop($shape_components);
         if (!$return_type) {
-            throw new \AssertionError("Expected a return type");
+            throw new AssertionError("Expected a return type");
         }
         if ($return_type[0] === '(' && \substr($return_type, -1) === ')') {
             $return_type = \substr($return_type, 1, -1);
@@ -1547,6 +1585,16 @@ class Type
     }
 
     /**
+     * @return bool - Returns true if this is \Generator (nullable or not)
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function isGenerator() : bool
+    {
+        return (\strcasecmp($this->getName(), 'Generator') === 0
+            && $this->getNamespace() === '\\');
+    }
+
+    /**
      * @param string $type_name
      * A non-namespaced type name like 'int[]'
      *
@@ -1851,23 +1899,73 @@ class Type
             return true;
         }
 
+        if (!($type instanceof NativeType)) {
+            return false;
+        }
+
         if ($type instanceof MixedType) {
             return true;
         }
-        // A matrix of allowable type conversions
-        static $matrix = [
-            '\Generator' => [
-                'iterable' => true,
-            ],
-            '\Traversable' => [
-                'iterable' => true,
-            ],
-            '\Closure' => [
-                'callable' => true,
-            ],
-        ];
 
-        return $matrix[$this->__toString()][$type->__toString()] ?? false;
+        // Check for allowable type conversions from object types to native types
+        if ($type::NAME === 'iterable') {
+            if ($this->namespace === '\\' && \in_array($this->name, ['\Generator', '\Traversable', '\Iterator'], true)) {
+                if (\count($this->template_parameter_type_list) === 0 || !($type instanceof GenericIterableType)) {
+                    return true;
+                }
+                return $this->canCastTraversableToIterable($type);
+            }
+        } elseif (\get_class($type) === CallableType::class) {
+            return $this->namespace === '\\' && $this->name === 'Closure';
+        }
+        return false;
+    }
+
+    private function canCastTraversableToIterable(GenericIterableType $type) : bool
+    {
+        $template_types = $this->template_parameter_type_list;
+        $N = \count($template_types);
+        $name = $this->name;
+        if ($name === 'Traversable' || $name === 'Iterator') {
+            // Phan supports Traversable<TValue> and Traversable<TKey, TValue>
+            if ($N > 2 || $N < 1) {
+                // No idea what this means, assume it passes.
+                return true;
+            }
+            if (!$this->template_parameter_type_list[$N - 1]->canCastToUnionType($type->getElementUnionType())) {
+                return false;
+            }
+            if ($N === 2) {
+                if (!$this->template_parameter_type_list[0]->canCastToUnionType($type->getKeyUnionType())) {
+                    return false;
+                }
+            }
+            return true;
+        } elseif ($name === 'Generator') {
+            // Phan partially supports the following syntaxes for PHP doc comments
+            // 1. Generator<TValue>
+            // 2. Generator<TKey, TValue>
+            // 3. Generator<TKey, TValue, TYield>
+            // 4. Generator<TKey, TValue, TYield, TReturn> (PHP generators can return a final value, but HHVM cannot)
+
+            // TODO: Handle casting Generator to a Generator with a different number of template parameters
+            if ($N > 4 || $N < 1) {
+                // No idea what this means, assume it passes
+                return true;
+            }
+
+            if (!$this->template_parameter_type_list[\min(1, $N - 1)]->canCastToUnionType($type->getElementUnionType())) {
+                return false;
+            }
+            if ($N >= 2) {
+                if (!$this->template_parameter_type_list[0]->canCastToUnionType($type->getKeyUnionType())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        // TODO: Check for template parameters, cast those
+        return true;
     }
 
     /**
@@ -2142,9 +2240,9 @@ class Type
 
         return new Tuple5(
             '\\',
-            \strncmp($type_string, 'callable', 8) === 0 ? 'callable' : 'Closure',
+            preg_match('/^\??callable/i', $type_string) > 0 ? 'callable' : 'Closure',
             [],
-            false,
+            $type_string[0] === '?',
             $parts
         );
     }

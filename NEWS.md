@@ -20,6 +20,28 @@ New features(Analysis)
 + Warn about invalid expressions/variables encapsulated within double-quoted strings or within heredoc strings.
   New issue type: `TypeSuspiciousStringExpression` (May also emit `TypeConversionFromArray`)
 
++ Add incomplete support for template params in iterable types in phpdoc. (#824)
+  Phan supports `iterable<TValue>` and `iterable<TKey, TValue>` syntaxes. (Where TKey and TValue are union types)
+  Phan will check that generic arrays and array shapes can cast to iterable template types.
++ Add incomplete support for template params in Generator types in phpdoc. (#824)
+
+  1. `\Generator<TValue>`
+  2. `\Generator<TKey,TValue>`
+  3. `\Generator<TKey,TValue,TSend>` (TSend can be parsed, but is not analyzed yet)
+  4. `\Generator<TKey,TValue,TSend,TReturn>` (TReturn can be parsed, but is not analyzed yet)
+
+  New issue types: `PhanTypeMismatchGeneratorYieldValue`, `PhanTypeMismatchGeneratorYieldKey` (For comparing yield statements against the declared `TValue` and `TKey`)
+
+  Additionally, Phan will use `@return Generator|TValue[]` to analyze the yield statements
+  within a function/method body the same way as it would analyze `@return Generator<TValue>`.
+  (Analysis outside the method would not change)
+
++ Analyze `yield from` statements.
+
+  New issue types: `PhanTypeInvalidYieldFrom` (Emitted when the expression passed to `yield from` is not a Traversable or an array)
+
+  Warnings about the inferred keys/values of `yield from` being invalid reuse `PhanTypeMismatchGeneratorYieldValue` and `PhanTypeMismatchGeneratorYieldKey`
+
 Bug Fixes
 + Consistently warn about unreferenced declared properties (i.e. properties that are not magic or dynamically added).
   Previously, Phan would just never warn if the class had a `__get()` method (as a heuristic).

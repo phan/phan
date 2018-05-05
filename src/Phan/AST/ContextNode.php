@@ -674,6 +674,7 @@ class ContextNode
     /**
      * Yields a list of FunctionInterface objects for the 'expr' of an AST_CALL.
      * @return \Generator
+     * @phan-return \Generator<FunctionInterface>
      */
     public function getFunctionFromNode()
     {

@@ -8,6 +8,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\Comment;
 use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
+use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\ClosureDeclarationParameter;
@@ -177,6 +178,11 @@ trait FunctionTrait
      * @var FunctionLikeDeclarationType|null (Lazily generated)
      */
     private $as_closure_declaration_type;
+
+    /**
+     * @var Type|null (Lazily generated)
+     */
+    private $as_generator_template_type;
 
     /**
      * @return int
@@ -1106,5 +1112,15 @@ trait FunctionTrait
             $stub[$name] = $type_string;
         }
         return $stub;
+    }
+
+    /**
+     * Precondition: This function is a generator type
+     * Converts Generator|T[] to Generator<T>
+     * Converts Generator|array<int,stdClass> to Generator<int,stdClass>, etc.
+     */
+    public function getReturnTypeAsGeneratorTemplateType() : Type
+    {
+        return $this->as_generator_template_type ?? ($this->as_generator_template_type = $this->getUnionType()->asGeneratorTemplateType());
     }
 }

@@ -139,7 +139,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         /** @suppress PhanUndeclaredClassMethod https://github.com/fruux/sabre-event/pull/52 */
         $reader->on('message', function (Message $msg) {
             /** @suppress PhanUndeclaredProperty Request->body->id is a request with an id */
-            coroutine(function () use ($msg) {
+            coroutine(function () use ($msg) : \Generator {
                 // Ignore responses, this is the handler for requests and notifications
                 if (AdvancedJsonRpc\Response::isResponse($msg->body)) {
                     return;
@@ -679,7 +679,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         return coroutine(function () : \Generator {
             // Eventually, this might block on something. Leave it as a generator.
             if (false) {
-                yield null;
+                yield;
             }
 
             // There would be an asynchronous indexing step, but the startup already did the indexing.
