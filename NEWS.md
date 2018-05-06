@@ -20,15 +20,16 @@ New features(Analysis)
 + Warn about invalid expressions/variables encapsulated within double-quoted strings or within heredoc strings.
   New issue type: `TypeSuspiciousStringExpression` (May also emit `TypeConversionFromArray`)
 
-+ Add incomplete support for template params in iterable types in phpdoc. (#824)
++ Add support for template params in iterable types in phpdoc. (#824)
   Phan supports `iterable<TValue>` and `iterable<TKey, TValue>` syntaxes. (Where TKey and TValue are union types)
   Phan will check that generic arrays and array shapes can cast to iterable template types.
-+ Add incomplete support for template params in Generator types in phpdoc. (#824)
++ Add support for template syntax of Generator types in phpdoc. (#824)
+  Supported syntaxes are:
 
   1. `\Generator<TValue>`
   2. `\Generator<TKey,TValue>`
-  3. `\Generator<TKey,TValue,TSend>` (TSend can be parsed, but is not analyzed yet)
-  4. `\Generator<TKey,TValue,TSend,TReturn>` (TReturn can be parsed, but is not analyzed yet)
+  3. `\Generator<TKey,TValue,TSend>` (TSend is the expected type of `$x` in `$x = yield;`)
+  4. `\Generator<TKey,TValue,TSend,TReturn>` (TReturn is the expected type of `expr` in `return expr`)
 
   New issue types: `PhanTypeMismatchGeneratorYieldValue`, `PhanTypeMismatchGeneratorYieldKey` (For comparing yield statements against the declared `TValue` and `TKey`)
 
@@ -36,11 +37,22 @@ New features(Analysis)
   within a function/method body the same way as it would analyze `@return Generator<TValue>`.
   (Analysis outside the method would not change)
 
++ Add support for template params in Iterator and Traversable types in phpdoc. (#824)
+  NOTE: Internal subtypes of those classes (e.g. ArrayObject) are not supported yet.
+  Supported syntaxes are:
+
+  1. `Traversable<TValue>`/`Iterator<TValue>`
+  2. `Traversable<TKey,TValue>`/`Iterator<TKey,TValue>`
+
 + Analyze `yield from` statements.
 
   New issue types: `PhanTypeInvalidYieldFrom` (Emitted when the expression passed to `yield from` is not a Traversable or an array)
 
   Warnings about the inferred keys/values of `yield from` being invalid reuse `PhanTypeMismatchGeneratorYieldValue` and `PhanTypeMismatchGeneratorYieldKey`
++ Make the union types within the phpdoc template syntax of `iterator`/`Traversable`/`Iterator`/`Generator` affect analysis of the keys/values of `foreach` statements
+
+Misc
++ Infer that a falsey array is the empty array shape.
 
 Bug Fixes
 + Consistently warn about unreferenced declared properties (i.e. properties that are not magic or dynamically added).

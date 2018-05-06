@@ -349,6 +349,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             'array_uintersect_assoc'    => $merge_array_types_callback,
             'array_uintersect_uassoc'   => $merge_array_types_callback,
             'array_unique'              => $get_first_array_arg,
+            // TODO: iterator_to_array
         ];
     }
 

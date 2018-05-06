@@ -67,6 +67,9 @@ class CodeBase
     /**
      * @var Map
      * A map from FQSEN to an internal or user defined class
+     *
+     * TODO: Improve phan's self analysis, allow the shorthand array access set syntax to be used without making bad inferences
+     * (e.g. $this->fqsen_class_map[$fqsen] = $clazz;
      */
     private $fqsen_class_map;
 
@@ -440,9 +443,9 @@ class CodeBase
 
         foreach ($this->fqsen_class_map as $fqsen => $clazz) {
             if ($clazz->isPHPInternal()) {
-                $this->fqsen_class_map_internal[$fqsen] = $clazz;
+                $this->fqsen_class_map_internal->offsetSet($fqsen, $clazz);
             } else {
-                $this->fqsen_class_map_user_defined[$fqsen] = $clazz;
+                $this->fqsen_class_map_user_defined->offsetSet($fqsen, $clazz);
             }
         }
 
@@ -604,8 +607,8 @@ class CodeBase
     {
         // Map the FQSEN to the class
         $fqsen = $class->getFQSEN();
-        $this->fqsen_class_map[$fqsen] = $class;
-        $this->fqsen_class_map_user_defined[$fqsen] = $class;
+        $this->fqsen_class_map->offsetSet($fqsen, $class);
+        $this->fqsen_class_map_user_defined->offsetSet($fqsen, $class);
         if ($this->undo_tracker) {
             $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($fqsen) {
                 Daemon::debugf("Undoing addClass %s\n", $fqsen);
@@ -671,7 +674,7 @@ class CodeBase
     {
         // Map the FQSEN to the class
         $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class->getName());
-        $this->fqsen_class_map_reflection[$class_fqsen] = $class;
+        $this->fqsen_class_map_reflection->offsetSet($class_fqsen, $class);
     }
 
     /**
@@ -694,11 +697,11 @@ class CodeBase
         Context $context,
         int $lineno
     ) {
-        if (!isset($this->fqsen_alias_map[$original])) {
-            $this->fqsen_alias_map[$original] = new Set();
+        if (!$this->fqsen_alias_map->offsetExists($original)) {
+            $this->fqsen_alias_map->offsetSet($original, new Set());
         }
         $alias_record = new ClassAliasRecord($alias, $context, $lineno);
-        $this->fqsen_alias_map[$original]->attach($alias_record);
+        $this->fqsen_alias_map->offsetGet($original)->attach($alias_record);
 
         if ($this->undo_tracker) {
             // TODO: Track a count of aliases instead? This doesn't work in daemon mode if multiple files add the same alias to the same class.
@@ -770,7 +773,7 @@ class CodeBase
                     $clazz->getFileRef()->getLineNumberStart()
                 );
             } else {
-                $this->fqsen_class_map[$alias_fqsen] = $class;
+                $this->fqsen_class_map->offsetSet($alias_fqsen, $class);
             }
         }
     }
@@ -795,8 +798,8 @@ class CodeBase
     private function lazyLoadPHPInternalClassWithFQSEN(
         FullyQualifiedClassName $fqsen
     ) : bool {
-        $reflection_class = $this->fqsen_class_map_reflection[$fqsen] ?? null;
-        if ($reflection_class !== null) {
+        if ($this->fqsen_class_map_reflection->offsetExists($fqsen)) {
+            $reflection_class = $this->fqsen_class_map_reflection->offsetGet($fqsen);
             $this->loadPHPInternalClassWithFQSEN($fqsen, $reflection_class);
             return true;
         }
@@ -809,9 +812,9 @@ class CodeBase
         ReflectionClass $reflection_class
     ) {
         $class = Clazz::fromReflectionClass($this, $reflection_class);
-        $this->fqsen_class_map[$fqsen] = $class;
-        $this->fqsen_class_map_internal[$fqsen] = $class;
-        unset($this->fqsen_class_map_reflection[$fqsen]);
+        $this->fqsen_class_map->offsetSet($fqsen, $class);
+        $this->fqsen_class_map_internal->offsetSet($fqsen, $class);
+        $this->fqsen_class_map_reflection->offsetUnset($fqsen);
     }
 
     /**
@@ -824,7 +827,7 @@ class CodeBase
     public function getClassByFQSEN(
         FullyQualifiedClassName $fqsen
     ) : Clazz {
-        $clazz = $this->fqsen_class_map[$fqsen];
+        $clazz = $this->fqsen_class_map->offsetGet($fqsen);
 
         // This is an optimization that saves us a few minutes
         // on very large code bases.
@@ -852,7 +855,7 @@ class CodeBase
     public function getClassByFQSENWithoutHydrating(
         FullyQualifiedClassName $fqsen
     ) : Clazz {
-        return $this->fqsen_class_map[$fqsen];
+        return $this->fqsen_class_map->offsetGet($fqsen);
     }
 
     /**
@@ -865,8 +868,8 @@ class CodeBase
     public function getClassAliasesByFQSEN(
         FullyQualifiedClassName $original
     ) : array {
-        if (isset($this->fqsen_alias_map[$original])) {
-            return $this->fqsen_alias_map[$original]->toArray();
+        if ($this->fqsen_alias_map->offsetExists($original)) {
+            return $this->fqsen_alias_map->offsetGet($original)->toArray();
         }
 
         return [];

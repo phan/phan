@@ -845,14 +845,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Get the method/function/closure we're in
         $method = $context->getFunctionLikeInScope($code_base);
 
+        if ($method->getHasYield()) {  // Function that is syntactically a Generator.
+            $this->analyzeReturnInGenerator($method, $node);
+            // TODO: Compare against TReturn of Generator<TKey,TValue,TSend,TReturn>
+            return $context;  // Analysis was completed in PreOrderAnalysisVisitor
+        }
+
         // Figure out what we intend to return
         // (For traits, lower the false positive rate by comparing against the real return type instead of the phpdoc type (#800))
         $method_return_type = $is_trait ? $method->getRealReturnType() : $method->getUnionType();
 
-        if ($method->getHasYield()) {  // Function that is syntactically a Generator.
-            // TODO: Compare against TReturn of Generator<TKey,TValue,TSend,TReturn>
-            return $context;  // Analysis was completed in PreOrderAnalysisVisitor
-        }
         // This leaves functions which aren't syntactically generators.
 
         // Figure out what is actually being returned
@@ -908,6 +910,44 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         return $context;
+    }
+
+    /**
+     * @return void
+     */
+    private function analyzeReturnInGenerator(
+        FunctionInterface $method,
+        Node $node
+    ) {
+        $method_generator_type = $method->getReturnTypeAsGeneratorTemplateType();
+        $type_list = $method_generator_type->getTemplateParameterTypeList();
+        // Generator<TKey,TValue,TSend,TReturn>
+        if (\count($type_list) !== 4) {
+            return;
+        }
+        $expected_return_type = $type_list[3];
+        if ($expected_return_type->isEmpty()) {
+            return;
+        }
+
+        $context = $this->context;
+        $code_base = $this->code_base;
+
+        foreach ($this->getReturnTypes($context, $node->children['expr'], $node->lineno) as $lineno => $expression_type) {
+            // We allow base classes to cast to subclasses, and subclasses to cast to baseclasses,
+            // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
+            if (!$this->checkCanCastToReturnType($code_base, $expression_type, $expected_return_type)) {
+                $this->emitIssue(
+                    Issue::TypeMismatchReturn,
+                    $lineno,
+                    (string)$expression_type,
+                    $method->getName(),
+                    (string)$expected_return_type
+                );
+            } elseif (Config::get_strict_return_checking() && $expression_type->typeCount() > 1) {
+                self::analyzeReturnStrict($code_base, $method, $expression_type, $expected_return_type, $lineno);
+            }
+        }
     }
 
     /**

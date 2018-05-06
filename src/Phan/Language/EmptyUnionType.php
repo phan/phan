@@ -1006,4 +1006,14 @@ final class EmptyUnionType extends UnionType
     {
         return Type::fromFullyQualifiedString('\Generator');
     }
+
+    public function iterableKeyUnionType(CodeBase $unused_code_base) : UnionType
+    {
+        return $this;
+    }
+
+    public function iterableValueUnionType(CodeBase $unused_code_base) : UnionType
+    {
+        return $this;
+    }
 }

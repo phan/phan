@@ -1621,6 +1621,94 @@ class Type
     }
 
     /**
+     * @return ?UnionType returns the iterable key's union type, if this is a subtype of iterable. null otherwise.
+     */
+    public function iterableKeyUnionType(CodeBase $unused_code_base)
+    {
+        if ($this->namespace === '\\') {
+            $name = \strtolower($this->name);
+            if ($name === 'traversable' || $name === 'iterator') {
+                return $this->keyTypeOfTraversable();
+            }
+            // TODO: Abstract this out for all internal classes
+            if ($name === 'generator') {
+                return $this->keyTypeOfGenerator();
+            }
+            // TODO: If this is a subclass of iterator, look up the signature of MyClass->key()
+        }
+
+        /*
+        if ($this->namespace !== '\\') {
+            return null;
+        }
+        // TODO: check for traversable and generator and other subclasses of traversable
+        */
+        return null;
+    }
+
+    /**
+     * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
+     */
+    public function iterableValueUnionType(CodeBase $unused_code_base)
+    {
+        if ($this->namespace === '\\') {
+            $name = \strtolower($this->name);
+            if ($name === 'traversable' || $name === 'iterator') {
+                return $this->valueTypeOfTraversable();
+            }
+            // TODO: Abstract this out for all internal classes
+            if ($name === 'generator') {
+                return $this->valueTypeOfGenerator();
+            }
+            // TODO: If this is a subclass of iterator, look up the signature of MyClass->current()
+        }
+        return null;
+    }
+
+    // TODO: Use a template-based abstraction so that this boilerplate can be removed
+    /** @return ?UnionType */
+    private function keyTypeOfTraversable()
+    {
+        $template_type_list = $this->template_parameter_type_list;
+        if (\count($template_type_list) === 2) {
+            return $template_type_list[0];
+        }
+        return null;
+    }
+
+    /** @return ?UnionType */
+    private function valueTypeOfTraversable()
+    {
+        $template_type_list = $this->template_parameter_type_list;
+        $N = \count($template_type_list);
+        if ($N >= 1 && $N <= 2) {
+            return $template_type_list[$N - 1];
+        }
+        return null;
+    }
+
+
+    /** @return ?UnionType */
+    private function keyTypeOfGenerator()
+    {
+        $template_type_list = $this->template_parameter_type_list;
+        if (\count($template_type_list) >= 2 && \count($template_type_list) <= 4) {
+            return $template_type_list[0];
+        }
+        return null;
+    }
+
+    /** @return ?UnionType */
+    private function valueTypeOfGenerator()
+    {
+        $template_type_list = $this->template_parameter_type_list;
+        if (\count($template_type_list) >= 2 && \count($template_type_list) <= 4) {
+            return $template_type_list[1];
+        }
+        return null;
+    }
+
+    /**
      * @return UnionType
      * A variation of this type that is not generic.
      * i.e. 'int[]' becomes 'int'.
@@ -1909,7 +1997,7 @@ class Type
 
         // Check for allowable type conversions from object types to native types
         if ($type::NAME === 'iterable') {
-            if ($this->namespace === '\\' && \in_array($this->name, ['\Generator', '\Traversable', '\Iterator'], true)) {
+            if ($this->namespace === '\\' && \in_array($this->name, ['Generator', 'Traversable', 'Iterator'], true)) {
                 if (\count($this->template_parameter_type_list) === 0 || !($type instanceof GenericIterableType)) {
                     return true;
                 }
@@ -1921,6 +2009,9 @@ class Type
         return false;
     }
 
+    /**
+     * Precondition: $this represents \Traversable, \Iterator, or \Generator
+     */
     private function canCastTraversableToIterable(GenericIterableType $type) : bool
     {
         $template_types = $this->template_parameter_type_list;

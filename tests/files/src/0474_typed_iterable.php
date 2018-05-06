@@ -5,8 +5,8 @@
  */
 function expect_iterable_string_int($isi) {
     foreach ($isi as $k => $v) {
-        echo strlen($v);
-        echo intdiv($k, $v);
+        echo strlen($v);  // should warn
+        echo intdiv($k, 2);  // should also warn
     }
 }
 
@@ -15,8 +15,8 @@ function expect_iterable_string_int($isi) {
  */
 function expect_traversable_string_int(Traversable $tsi) {
     foreach ($tsi as $k => $v) {
-        echo strlen($v);
-        echo intdiv($k, $v);
+        echo strlen($v);  // warn ($v is string)
+        echo intdiv($k, 2);  // warn ($k is int)
     }
 }
 /**
@@ -42,3 +42,13 @@ function test_iterable(string $s, int $i) {
     expect_traversable_string_int([$s => $i]);  // should warn
 }
 // TODO: Add tests of casting generators and subclasses of Traversable to iterable (and implement the functionality)
+
+/**
+ * @param Generator<string, int> $gsi
+ */
+function expect_generator_string_int(Generator $gsi) {
+    foreach ($gsi as $k => $v) {
+        echo strlen($v);  // warn ($v is string)
+        echo intdiv($k, 2);  // warn ($k is int)
+    }
+}

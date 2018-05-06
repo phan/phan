@@ -777,6 +777,33 @@ class UnionTypeVisitor extends AnalysisVisitor
         return ArrayShapeType::empty(false)->asUnionType();
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_YIELD`
+     *
+     * @param Node $unused_node
+     * A yield node. Does not affect the union type
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     */
+    public function visitYield(Node $unused_node) : UnionType
+    {
+        $context = $this->context;
+        if (!$context->isInFunctionLikeScope()) {
+            return UnionType::empty();
+        }
+
+        // Get the method/function/closure we're in
+        $method = $context->getFunctionLikeInScope($this->code_base);
+        $method_generator_type = $method->getReturnTypeAsGeneratorTemplateType();
+        $type_list = $method_generator_type->getTemplateParameterTypeList();
+        if (\count($type_list) < 3 || \count($type_list) > 4) {
+            return UnionType::empty();
+        }
+        // Return TSend of Generator<TKey,TValue,TSend[,TReturn]>
+        return $type_list[2];
+    }
 
     /**
      * @return ?array<int|string,true>
@@ -2601,9 +2628,9 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     *
      * @return ?UnionType (Returns null when mixed)
      * TODO: Add an equivalent for Traversable and subclasses, once we have template support for Traversable<Key,T>
+     * TODO: Move into UnionType?
      */
     public static function arrayKeyUnionTypeOfUnionType(UnionType $union_type)
     {
