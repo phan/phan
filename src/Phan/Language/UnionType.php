@@ -1892,11 +1892,84 @@ class UnionType implements \Serializable
     }
 
     /**
+     * Takes "a|b[]|c|d[]|e|Traversable<f,g>" and returns "int|string|f"
+     *
+     * Takes "array{field:int,other:stdClass}" and returns "string"
+     *
+     * @param CodeBase $code_base (for detecting the iterable value types of `class MyIterator extends Iterator`)
+     *
+     * @return UnionType
+     */
+    public function iterableKeyUnionType(CodeBase $code_base) : UnionType
+    {
+        // This is frequently called, and has been optimized
+        $builder = new UnionTypeBuilder();
+        $type_set = $this->type_set;
+        foreach ($type_set as $type) {
+            $element_type = $type->iterableKeyUnionType($code_base);
+            if ($element_type === null) {
+                // Does not have iterable values
+                continue;
+            }
+            $builder->addUnionType($element_type);
+        }
+
+        return $builder->getUnionType();
+    }
+
+    /**
+     * Takes "a|b[]|c|d[]|e|Traversable<f,g>" and returns "b|d|g"
+     *
+     * Takes "array{field:int,other:string}" and returns "int|string"
+     *
+     * @param CodeBase $code_base (for detecting the iterable value types of `class MyIterator extends Iterator`)
+     *
+     * @return UnionType
+     */
+    public function iterableValueUnionType(CodeBase $code_base) : UnionType
+    {
+        // This is frequently called, and has been optimized
+        $builder = new UnionTypeBuilder();
+        $type_set = $this->type_set;
+        foreach ($type_set as $type) {
+            $element_type = $type->iterableValueUnionType($code_base);
+            if ($element_type === null) {
+                // Does not have iterable values
+                continue;
+            }
+            $builder->addUnionType($element_type);
+        }
+
+        static $array_type_nonnull = null;
+        static $array_type_nullable = null;
+        static $mixed_type = null;
+        static $null_type = null;
+        if ($array_type_nonnull === null) {
+            $array_type_nonnull = ArrayType::instance(false);
+            $array_type_nullable = ArrayType::instance(true);
+            $mixed_type = MixedType::instance(false);
+            $null_type = NullType::instance(false);
+        }
+
+        // If array is in there, then it can be any type
+        if (\in_array($array_type_nonnull, $type_set, true)) {
+            $builder->addType($mixed_type);
+            $builder->addType($null_type);
+        } elseif (\in_array($mixed_type, $type_set, true)
+            || \in_array($array_type_nullable, $type_set, true)
+        ) {
+            // Same for mixed
+            $builder->addType($mixed_type);
+        }
+
+        return $builder->getUnionType();
+    }
+
+    /**
      * Takes "a|b[]|c|d[]|e" and returns "b|d"
      * Takes "array{field:int,other:string}" and returns "int|string"
      *
      * @return UnionType
-     * The subset of types in this
      */
     public function genericArrayElementTypes() : UnionType
     {
@@ -2254,6 +2327,7 @@ class UnionType implements \Serializable
                 self::convertToTypeSetWithNormalizedNonNullableBools($builder);
             }
         }
+        // TODO: Convert array|array{} to array?
         return $builder->getUnionType();
     }
 

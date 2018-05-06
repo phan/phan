@@ -136,6 +136,32 @@ final class ArrayShapeType extends ArrayType
         return $this->key_type ?? ($this->key_type = GenericArrayType::getKeyTypeForArrayLiteral($this->field_types));
     }
 
+    /**
+     * @return UnionType
+     * @phan-override
+     */
+    public function iterableKeyUnionType(CodeBase $unused_code_base)
+    {
+        return $this->getKeyUnionType();
+    }
+
+    // TODO: Refactor other code calling unionTypeForKeyType to use this?
+    public function getKeyUnionType() : UnionType
+    {
+        if (\count($this->field_types) === 0) {
+            return UnionType::empty();
+        }
+        return GenericArrayType::unionTypeForKeyType($this->getKeyType());
+    }
+
+    /**
+     * @return UnionType
+     */
+    public function iterableValueUnionType(CodeBase $unused_code_base)
+    {
+        return $this->genericArrayElementUnionType();
+    }
+
     public function genericArrayElementUnionType() : UnionType
     {
         return $this->generic_array_element_union_type ?? ($this->generic_array_element_union_type = UnionType::merge($this->field_types));
@@ -219,6 +245,9 @@ final class ArrayShapeType extends ArrayType
             // can cast to Iterable but not Traversable
             return true;
         }
+        if ($type instanceof GenericIterableType) {
+            return $this->canCastToGenericIterableType($type);
+        }
 
         $d = \strtolower((string)$type);
         if ($d[0] == '\\') {
@@ -233,6 +262,15 @@ final class ArrayShapeType extends ArrayType
         }
 
         return parent::canCastToNonNullableType($type);
+    }
+
+    private function canCastToGenericIterableType(GenericIterableType $iterable_type) : bool
+    {
+        if (!$this->getKeyUnionType()->canCastToUnionType($iterable_type->getKeyUnionType())) {
+            // TODO: Use the scalar_array_key_cast config
+            return false;
+        }
+        return $this->canEachFieldTypeCastToExpectedUnionType($iterable_type->getElementUnionType());
     }
 
     /** @return array<int,UnionType> */
@@ -446,10 +484,27 @@ final class ArrayShapeType extends ArrayType
     }
 
     /**
-     * @override
+     * @phan-override
      */
     public function shouldBeReplacedBySpecificTypes() : bool
     {
+        return false;
+    }
+
+    /**
+     * @return bool true if there is guaranteed to be at least one property
+     * @phan-override
+     */
+    public function getIsAlwaysTruthy() : bool
+    {
+        if ($this->is_nullable) {
+            return false;
+        }
+        foreach ($this->field_types as $field) {
+            if (!$field->getIsPossiblyUndefined()) {
+                return true;
+            }
+        }
         return false;
     }
 }

@@ -148,9 +148,9 @@ final class GenericArrayType extends ArrayType
         return parent::canCastToNonNullableType($type);
     }
 
-    // TODO: Implement equivalent logic for ArrayShapeType
-    private function canCastToGenericIterableType(GenericIterableType $iterable_type) : bool
-    {
+    private function canCastToGenericIterableType(
+        GenericIterableType $iterable_type
+    ) : bool {
         if (!$this->element_type->asUnionType()->canCastToUnionType($iterable_type->getElementUnionType())) {
             return false;
         }
@@ -218,6 +218,24 @@ final class GenericArrayType extends ArrayType
     public function genericArrayElementType() : Type
     {
         return $this->element_type;
+    }
+
+    /**
+     * @return UnionType returns the array value's union type
+     * @phan-override
+     */
+    public function iterableValueUnionType(CodeBase $unused_codebase)
+    {
+        return $this->element_type->asUnionType();
+    }
+
+    /**
+     * @return UnionType the array key's union type
+     * @phan-override
+     */
+    public function iterableKeyUnionType(CodeBase $unused_codebase)
+    {
+        return self::unionTypeForKeyType($this->key_type);
     }
 
     /**

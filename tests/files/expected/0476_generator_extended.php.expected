@@ -1,0 +1,8 @@
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 (string) is array but \strlen() takes string
+%s:12 PhanTypeMismatchGeneratorYieldKey Yield statement has a key with type void but generator_4() is declared to yield keys of type int in \Generator<int,string,array,bool>
+%s:12 PhanTypeMismatchGeneratorYieldValue Yield statement has a value with type false but generator_4() is declared to yield values of type string in \Generator<int,string,array,bool>
+%s:17 PhanTypeMismatchReturn Returning type string but generator_4() is declared to return bool
+%s:26 PhanTypeMismatchArgumentInternal Argument 1 (string) is bool but \strlen() takes string
+%s:28 PhanTypeMismatchGeneratorYieldKey Yield statement has a key with type void but generator_3() is declared to yield keys of type int in \Generator<int,string,bool>
+%s:28 PhanTypeMismatchGeneratorYieldValue Yield statement has a value with type false but generator_3() is declared to yield values of type string in \Generator<int,string,bool>
+%s:45 PhanTypeMismatchReturn Returning type string but generator_void() is declared to return void

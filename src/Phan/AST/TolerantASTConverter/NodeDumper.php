@@ -107,7 +107,7 @@ class NodeDumper
 
             $result = $first_part;
             foreach ($ast_node->getChildNodesAndTokens() as $name => $child) {
-                $result .= $this->dumpTreeAsString($child, $name, $padding . $this->indent);
+                $result .= $this->dumpTreeAsString($child, (string) $name, $padding . $this->indent);
             }
             return $result;
         } elseif ($ast_node instanceof Token) {

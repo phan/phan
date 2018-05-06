@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use Phan\CodeBase;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
@@ -28,12 +29,37 @@ final class GenericIterableType extends IterableType
         $this->element_union_type = $element_union_type;
     }
 
+    /**
+     * @return ?UnionType returns the iterable key's union type, if this is a subtype of iterable. null otherwise.
+     */
     public function getKeyUnionType() : UnionType
     {
         return $this->key_union_type;
     }
 
     public function getElementUnionType() : UnionType
+    {
+        return $this->element_union_type;
+    }
+
+    /**
+     * @return UnionType returns the iterable key's union type
+     * @phan-override
+     *
+     * @see $this->getKeyUnionType()
+     */
+    public function iterableKeyUnionType(CodeBase $unused_code_base)
+    {
+        return $this->key_union_type;
+    }
+
+    /**
+     * @return UnionType returns the iterable value's union type
+     * @phan-override
+     *
+     * @see $this->getElementUnionType()
+     */
+    public function iterableValueUnionType(CodeBase $unused_code_base)
     {
         return $this->element_union_type;
     }
