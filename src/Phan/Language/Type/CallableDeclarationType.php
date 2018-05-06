@@ -16,9 +16,6 @@ final class CallableDeclarationType extends FunctionLikeDeclarationType
     public function canCastToNonNullableType(Type $type) : bool
     {
         if ($type->isCallable()) {
-            if ($this->getIsNullable()) {
-                return false;
-            }
             if ($type instanceof FunctionLikeDeclarationType) {
                 // TODO: Weaker mode to allow callable to cast to Closure
                 return $type instanceof CallableDeclarationType && $this->canCastToNonNullableFunctionLikeDeclarationType($type);

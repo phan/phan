@@ -5,6 +5,7 @@ use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 
 /**
  * NOTE: there may also be instances of UnionType that are empty, due to the constructor being public
@@ -578,6 +579,8 @@ final class EmptyUnionType extends UnionType
      * type.
      *
      * @return \Generator
+     * @phan-return \Generator<FullyQualifiedClassName>
+     * @suppress PhanTypeMismatchGeneratorYieldValue (deliberate empty stub code)
      *
      * A list of class FQSENs representing the non-native types
      * associated with this UnionType
@@ -596,7 +599,7 @@ final class EmptyUnionType extends UnionType
         Context $context
     ) {
         if (false) {
-            yield null;
+            yield;
         }
     }
 
@@ -626,7 +629,7 @@ final class EmptyUnionType extends UnionType
         Context $context
     ) {
         if (false) {
-            yield null;  // This is a generator yielding 0 results. This works around a bug in tolerant-php-parser 0.0.9
+            yield;
         }
     }
 
@@ -997,5 +1000,10 @@ final class EmptyUnionType extends UnionType
     public function hasClassWithToStringMethod(CodeBase $code_base, Context $context) : bool
     {
         return false;
+    }
+
+    public function asGeneratorTemplateType() : Type
+    {
+        return Type::fromFullyQualifiedString('\Generator');
     }
 }

@@ -161,7 +161,7 @@ class ArrayType extends IterableType
     protected function canCastToNonNullableType(Type $type) : bool
     {
         // CallableDeclarationType is not a native type, we check separately here
-        return parent::canCastToNonNullableType($type) || $type instanceof CallableDeclarationType;
+        return parent::canCastToNonNullableType($type) || $type instanceof ArrayType || $type instanceof CallableDeclarationType;
     }
 }
 // Trigger the autoloader for GenericArrayType so that it won't be called

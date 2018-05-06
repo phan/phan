@@ -1420,6 +1420,12 @@ Invalid operator: left operand is array and right is not
 @throws annotation of {FUNCTIONLIKE} has suspicious class type {TYPE}, which does not extend Error/Exception
 ```
 
+## PhanTypeInvalidYieldFrom
+
+```
+Yield from statement was passed an invalid expression of type {TYPE} (expected Traversable/array)
+```
+
 ## PhanTypeMagicVoidWithReturn
 
 ```
@@ -1530,6 +1536,18 @@ This will be emitted for the code
 
 ```php
 foreach (null as $i) {}
+```
+
+## PhanTypeMismatchGeneratorYieldKey
+
+```
+Yield statement has a key with type {TYPE} but {FUNCTIONLIKE}() is declared to yield keys of type {TYPE} in {TYPE}
+```
+
+## PhanTypeMismatchGeneratorYieldValue
+
+```
+Yield statement has a value with type {TYPE} but {FUNCTIONLIKE}() is declared to yield values of type {TYPE} in {TYPE}
 ```
 
 ## PhanTypeMismatchProperty

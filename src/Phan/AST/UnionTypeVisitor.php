@@ -2174,6 +2174,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
+     * @phan-return \Generator<Clazz>
      * @return \Generator|Clazz[]
      * A list of classes associated with the given node
      *

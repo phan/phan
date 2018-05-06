@@ -60,6 +60,11 @@ abstract class NativeType extends Type
         return false;
     }
 
+    public function isGenerator() : bool
+    {
+        return false;
+    }
+
     public function isObject() : bool
     {
         return false;

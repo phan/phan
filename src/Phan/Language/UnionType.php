@@ -22,6 +22,7 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\MultiType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StaticType;
+use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use ast\Node;
@@ -1523,6 +1524,7 @@ class UnionType implements \Serializable
      * type.
      *
      * @return \Generator
+     * @phan-return \Generator<FullyQualifiedClassName>
      *
      * A list of class FQSENs representing the non-native types
      * associated with this UnionType
@@ -1548,6 +1550,10 @@ class UnionType implements \Serializable
             }
             // Get the class FQSEN
             $class_fqsen = $class_type->asFQSEN();
+            if (!($class_fqsen instanceof FullyQualifiedClassName)) {
+                // Should be impossible, but skip to satisfy the type checker
+                continue;
+            }
 
             if ($class_type->isStaticType()) {
                 if (!$context->isInClassScope()) {
@@ -2469,6 +2475,40 @@ class UnionType implements \Serializable
             // Swallow "Cannot find class", go on to emit issue
         }
         return false;
+    }
+
+    public function asGeneratorTemplateType() : Type
+    {
+        $fallback_values = UnionType::empty();
+        $fallback_keys = UnionType::empty();
+
+        foreach ($this->getTypeSet() as $type) {
+            if ($type->isGenerator()) {
+                if ($type->hasTemplateParameterTypes()) {
+                    return $type;
+                }
+            }
+            // TODO: support Iterator<T> or Traversable<T> or iterable<T>
+            if ($type instanceof GenericArrayType) {
+                $fallback_values = $fallback_values->withType($type->genericArrayElementType());
+                $key_type = $type->getKeyType();
+                if ($key_type === GenericArrayType::KEY_INT) {
+                    $fallback_keys = $fallback_keys->withType(IntType::instance(false));
+                } elseif ($key_type === GenericArrayType::KEY_STRING) {
+                    $fallback_keys = $fallback_keys->withType(StringType::instance(false));
+                }
+            } elseif ($type instanceof ArrayShapeType && $type->isNotEmptyArrayShape()) {
+                $fallback_values = $fallback_values->withUnionType($type->genericArrayElementUnionType());
+                $fallback_keys = $fallback_keys->withUnionType(GenericArrayType::unionTypeForKeyType($type->getKeyType()));
+            }
+        }
+
+        $result = Type::fromFullyQualifiedString('\Generator');
+        if ($fallback_keys->typeCount() > 0 || $fallback_values->typeCount() > 0) {
+            $template_types = $fallback_keys->typeCount() > 0 ? [$fallback_keys, $fallback_values] : [$fallback_values];
+            $result = $result->fromType($result, $template_types);
+        }
+        return $result;
     }
 }
 

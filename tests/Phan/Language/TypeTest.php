@@ -16,6 +16,7 @@ use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\GenericIterableType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
@@ -176,6 +177,25 @@ class TypeTest extends BaseTest
         $this->assertSameType($expectedGenericArrayArrayType, $genericArrayArrayType);
     }
 
+    public function testIterable()
+    {
+        $stringIterableType = self::makePHPDocType('iterable<string>');
+        $expectedStringIterableType = GenericIterableType::fromKeyAndValueTypes(
+            UnionType::empty(),
+            StringType::instance(false)->asUnionType(),
+            false
+        );
+        $this->assertSameType($expectedStringIterableType, $stringIterableType);
+
+        $stringToStdClassArrayType = self::makePHPDocType('iterable<string,stdClass>');
+        $expectedStringToStdClassArrayType = GenericIterableType::fromKeyAndValueTypes(
+            StringType::instance(false)->asUnionType(),
+            UnionType::fromFullyQualifiedString('\stdClass'),
+            false
+        );
+        $this->assertSameType($expectedStringToStdClassArrayType, $stringToStdClassArrayType);
+    }
+
     public function testArrayAlternate()
     {
         $stringArrayType = self::makePHPDocType('array<string>');
@@ -270,7 +290,7 @@ class TypeTest extends BaseTest
     {
         $this->assertTrue(\preg_match(self::delimited_type_regex_or_this, $union_type_string) > 0, "Failed to parse '$union_type_string'");
         $parsed_closure_type = self::makePHPDocType($union_type_string);
-        $this->assertSame(get_class($expected_closure_type), get_class($parsed_closure_type));
+        $this->assertSame(get_class($expected_closure_type), get_class($parsed_closure_type), "expected closure/callable class for $normalized_type_string");
         $this->assertSame($normalized_type_string, (string)$parsed_closure_type, "failed parsing $union_type_string");
         $this->assertSame($normalized_type_string, (string)$expected_closure_type, "Bad precondition for $expected_closure_type");
         $this->assertTrue($expected_closure_type->canCastToType($parsed_closure_type), "failed casting $union_type_string");
@@ -302,6 +322,20 @@ class TypeTest extends BaseTest
         );
         foreach (['callable(string):int', 'callable(string $x):int'] as $union_type_string) {
             $this->verifyClosureParam($expected_closure_void_type, $union_type_string, 'callable(string):int');
+        }
+    }
+
+    public function testNullableCallableAnnotation()
+    {
+        $expected_closure_void_type = new CallableDeclarationType(
+            new Context(),
+            [self::makeBasicClosureParam('string')],
+            VoidType::instance(false)->asUnionType(),
+            false,
+            true
+        );
+        foreach (['?callable(string):void', '?callable(string $x)'] as $union_type_string) {
+            $this->verifyClosureParam($expected_closure_void_type, $union_type_string, '?callable(string):void');
         }
     }
 

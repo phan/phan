@@ -845,16 +845,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Get the method/function/closure we're in
         $method = $context->getFunctionLikeInScope($code_base);
 
-        \assert(
-            !empty($method),
-            "We're supposed to be in either method or closure scope."
-        );
-
         // Figure out what we intend to return
         // (For traits, lower the false positive rate by comparing against the real return type instead of the phpdoc type (#800))
         $method_return_type = $is_trait ? $method->getRealReturnType() : $method->getUnionType();
 
         if ($method->getHasYield()) {  // Function that is syntactically a Generator.
+            // TODO: Compare against TReturn of Generator<TKey,TValue,TSend,TReturn>
             return $context;  // Analysis was completed in PreOrderAnalysisVisitor
         }
         // This leaves functions which aren't syntactically generators.
@@ -902,7 +898,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($method->isReturnTypeUndefined()) {
                 // Add the new type to the set of values returned by the
                 // method
-                $method->getUnionType()->addUnionType($expression_type);
+                $method->setUnionType($method->getUnionType()->withUnionType($expression_type));
             }
 
             // Mark the method as returning something (even if void)
@@ -911,6 +907,179 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
         }
 
+        return $context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitYield(Node $node) : Context
+    {
+        $context = $this->context;
+        // Make sure we're actually returning from a method.
+        if (!$context->isInFunctionLikeScope()) {
+            return $context;
+        }
+
+        // Get the method/function/closure we're in
+        $method = $context->getFunctionLikeInScope($this->code_base);
+
+        // Figure out what we intend to return
+        $method_generator_type = $method->getReturnTypeAsGeneratorTemplateType();
+        $type_list = $method_generator_type->getTemplateParameterTypeList();
+        if (\count($type_list) === 0) {
+            return $context;
+        }
+        return $this->compareYieldAgainstDeclaredType($node, $method, $context, $type_list);
+    }
+
+    /**
+     * @param array<int,UnionType> $template_type_list
+     */
+    private function compareYieldAgainstDeclaredType(Node $node, FunctionInterface $method, Context $context, array $template_type_list) : Context
+    {
+        $code_base = $this->code_base;
+
+        $type_list_count = \count($template_type_list);
+
+        $yield_value_node = $node->children['value'];
+        if ($yield_value_node === null) {
+            $yield_value_type = VoidType::instance(false)->asUnionType();
+        } else {
+            $yield_value_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $yield_value_node);
+        }
+        $expected_value_type = $template_type_list[\min(1, $type_list_count - 1)];
+        if (!$yield_value_type->asExpandedTypes($code_base)->canCastToUnionType($expected_value_type)) {
+            $this->emitIssue(
+                Issue::TypeMismatchGeneratorYieldValue,
+                $node->lineno,
+                (string)$yield_value_type,
+                $method->getName(),
+                (string)$expected_value_type,
+                '\Generator<' . implode(',', $template_type_list) . '>'
+            );
+        }
+
+        if ($type_list_count > 1) {
+            $yield_key_node = $node->children['key'];
+            if ($yield_key_node === null) {
+                $yield_key_type = VoidType::instance(false)->asUnionType();
+            } else {
+                $yield_key_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $yield_key_node);
+            }
+            // TODO: finalize syntax to indicate the absense of a key or value (e.g. use void instead?)
+            $expected_key_type = $template_type_list[0];
+            if (!$yield_key_type->asExpandedTypes($code_base)->canCastToUnionType($expected_key_type)) {
+                $this->emitIssue(
+                    Issue::TypeMismatchGeneratorYieldKey,
+                    $node->lineno,
+                    (string)$yield_key_type,
+                    $method->getName(),
+                    (string)$expected_key_type,
+                    '\Generator<' . implode(',', $template_type_list) . '>'
+                );
+            }
+        }
+        return $context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitYieldFrom(Node $node) : Context
+    {
+        $context = $this->context;
+        // Make sure we're actually returning from a method.
+        if (!$context->isInFunctionLikeScope()) {
+            return $context;
+        }
+
+        // Get the method/function/closure we're in
+        $method = $context->getFunctionLikeInScope($this->code_base);
+        $code_base = $this->code_base;
+
+        $yield_from_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node->children['expr']);
+        if ($yield_from_type->isEmpty()) {
+            return $context;
+        }
+        $yield_from_expanded_type = $yield_from_type->asExpandedTypes($code_base);
+        if (!$yield_from_expanded_type->hasIterable() && !$yield_from_expanded_type->hasTraversable()) {
+            $this->emitIssue(
+                Issue::TypeInvalidYieldFrom,
+                $node->lineno,
+                (string)$yield_from_type
+            );
+            return $context;
+        }
+
+
+        // Figure out what we intend to return
+        $method_generator_type = $method->getReturnTypeAsGeneratorTemplateType();
+        $type_list = $method_generator_type->getTemplateParameterTypeList();
+        if (\count($type_list) === 0) {
+            return $context;
+        }
+        return $this->compareYieldFromAgainstDeclaredType($node, $method, $context, $type_list, $yield_from_type);
+    }
+
+    /**
+     * @param array<int,UnionType> $template_type_list
+     */
+    private function compareYieldFromAgainstDeclaredType(Node $node, FunctionInterface $method, Context $context, array $template_type_list, UnionType $yield_from_type) : Context
+    {
+        $code_base = $this->code_base;
+
+        $type_list_count = \count($template_type_list);
+
+        // TODO: Can do a better job of analyzing expressions that are just arrays or subclasses of Traversable.
+        //
+        // A solution would need to check for (at)return Generator|T[]
+        $yield_from_generator_type = $yield_from_type->asGeneratorTemplateType();
+
+        $actual_template_type_list = $yield_from_generator_type->getTemplateParameterTypeList();
+        $actual_type_list_count = \count($actual_template_type_list);
+        if ($actual_type_list_count === 0) {
+            return $context;
+        }
+
+        $yield_value_type = $actual_template_type_list[\min(1, $actual_type_list_count - 1)];
+        $expected_value_type = $template_type_list[\min(1, $type_list_count - 1)];
+        if (!$yield_value_type->asExpandedTypes($code_base)->canCastToUnionType($expected_value_type)) {
+            $this->emitIssue(
+                Issue::TypeMismatchGeneratorYieldValue,
+                $node->lineno,
+                (string)$yield_value_type,
+                $method->getName(),
+                (string)$expected_value_type,
+                '\Generator<' . implode(',', $template_type_list) . '>'
+            );
+        }
+
+        if ($type_list_count > 1 && $actual_type_list_count > 1) {
+            // TODO: finalize syntax to indicate the absense of a key or value (e.g. use void instead?)
+            $yield_key_type = $actual_template_type_list[0];
+            $expected_key_type = $template_type_list[0];
+            if (!$yield_key_type->asExpandedTypes($code_base)->canCastToUnionType($expected_key_type)) {
+                $this->emitIssue(
+                    Issue::TypeMismatchGeneratorYieldKey,
+                    $node->lineno,
+                    (string)$yield_key_type,
+                    $method->getName(),
+                    (string)$expected_key_type,
+                    '\Generator<' . implode(',', $template_type_list) . '>'
+                );
+            }
+        }
         return $context;
     }
 
@@ -1005,7 +1174,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @return \Generator|UnionType[]
+     * @return \Generator|array<int,UnionType>
+     * @phan-return \Generator<int,UnionType>
      */
     private function getReturnTypes(Context $context, $node, int $return_lineno)
     {
@@ -1058,6 +1228,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @return \Generator|UnionType[]
+     * @phan-return \Generator<int,UnionType>
      */
     private function getReturnTypesOfConditional(Context $context, Node $node)
     {
@@ -1131,7 +1302,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param \Generator|UnionType[] $types
-     * @return \Generator|UnionType[]
+     * @return \Generator|array<int,UnionType>
+     * @phan-return \Generator<int,UnionType>
      * @suppress PhanPluginUnusedVariable
      */
     private static function deduplicateUnionTypes($types)
@@ -1150,6 +1322,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @return \Generator|UnionType[]
+     * @phan-return \Generator<int,UnionType>
      */
     private function getReturnTypesOfArray(Context $context, Node $node)
     {

@@ -127,6 +127,10 @@ class Issue
     const TypeExpectedObjectPropAccessButGotNull = 'PhanTypeExpectedObjectPropAccessButGotNull';
     const TypeExpectedObjectStaticPropAccess = 'PhanTypeExpectedObjectStaticPropAccess';
 
+    const TypeMismatchGeneratorYieldValue = 'PhanTypeMismatchGeneratorYieldValue';
+    const TypeMismatchGeneratorYieldKey = 'PhanTypeMismatchGeneratorYieldKey';
+    const TypeInvalidYieldFrom      = 'PhanTypeInvalidYieldFrom';
+
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
     const UnanalyzableInheritance   = 'PhanUnanalyzableInheritance';
@@ -872,6 +876,30 @@ class Issue
                 "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE}",
                 self::REMEDIATION_B,
                 10004
+            ),
+            new Issue(
+                self::TypeMismatchGeneratorYieldValue,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Yield statement has a value with type {TYPE} but {FUNCTIONLIKE}() is declared to yield values of type {TYPE} in {TYPE}",
+                self::REMEDIATION_B,
+                10067
+            ),
+            new Issue(
+                self::TypeMismatchGeneratorYieldKey,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Yield statement has a key with type {TYPE} but {FUNCTIONLIKE}() is declared to yield keys of type {TYPE} in {TYPE}",
+                self::REMEDIATION_B,
+                10068
+            ),
+            new Issue(
+                self::TypeInvalidYieldFrom,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Yield from statement was passed an invalid expression of type {TYPE} (expected Traversable/array)",
+                self::REMEDIATION_B,
+                10069
             ),
             new Issue(
                 self::PartialTypeMismatchArgument,
