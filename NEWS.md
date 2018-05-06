@@ -50,6 +50,8 @@ New features(Analysis)
 
   Warnings about the inferred keys/values of `yield from` being invalid reuse `PhanTypeMismatchGeneratorYieldValue` and `PhanTypeMismatchGeneratorYieldKey`
 + Make the union types within the phpdoc template syntax of `iterator`/`Traversable`/`Iterator`/`Generator` affect analysis of the keys/values of `foreach` statements
++ Improve phan's analysis of array functions modifying arguments by reference, reducing false positives. (#1662)
+  Affects `array_shift`/`array_unshift`/`array_push`/`array_pop`/`array_splice`.
 
 Misc
 + Infer that a falsey array is the empty array shape.
