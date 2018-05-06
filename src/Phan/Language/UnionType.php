@@ -2019,6 +2019,8 @@ class UnionType implements \Serializable
      *
      * @return UnionType
      * The subset of types in this
+     *
+     * TODO: Add a variant that will convert mixed to array<int,mixed> instead of array?
      */
     public function elementTypesToGenericArray(int $key_type) : UnionType
     {
