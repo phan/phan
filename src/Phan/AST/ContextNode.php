@@ -916,7 +916,7 @@ class ContextNode
         // Get the name of the variable
         $variable_name = $this->getVariableName();
 
-        if (empty($variable_name)) {
+        if ($variable_name === '') {
             throw new NodeException(
                 $this->node,
                 "Variable name not found"
@@ -929,7 +929,8 @@ class ContextNode
                 Issue::fromType(Issue::UndeclaredVariable)(
                     $this->context->getFile(),
                     $this->node->lineno ?? 0,
-                    [ $variable_name ]
+                    [ $variable_name ],
+                    Issue::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
                 )
             );
         }

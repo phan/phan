@@ -271,12 +271,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 return;
             }
             if (!$create_variable && !($context->isInGlobalScope() && Config::getValue('ignore_undeclared_variables_in_global_scope'))) {
-                Issue::maybeEmit(
+                Issue::maybeEmitWithParameters(
                     $code_base,
                     $context,
                     Issue::UndeclaredVariable,
                     $context->getLineNumberStart(),
-                    $var_name
+                    [$var_name],
+                    Issue::suggestVariableTypoFix($code_base, $context, $var_name)
                 );
                 return;
             }

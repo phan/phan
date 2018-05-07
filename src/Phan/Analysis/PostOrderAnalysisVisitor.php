@@ -401,10 +401,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (!$this->context->getScope()->hasVariableWithName($variable_name)
             && !Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())
         ) {
-            $this->emitIssue(
+            $this->emitIssueWithSuggestion(
                 Issue::UndeclaredVariable,
                 $node->lineno ?? 0,
-                $variable_name
+                [$variable_name],
+                Issue::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
             );
         }
     }

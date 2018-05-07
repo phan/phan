@@ -416,7 +416,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                             clone($context)->withLineNumberStart($use->lineno),
                             Issue::UndeclaredVariable,
                             $node->lineno ?? 0,
-                            [$variable_name]
+                            [$variable_name],
+                            Issue::suggestVariableTypoFix($this->code_base, $context, $variable_name)
                         );
                         continue;
                     } else {
