@@ -1,0 +1,7 @@
+%s:5 PhanUndeclaredVariable Variable $Param2 is undeclared (Did you mean $param2)
+%s:7 PhanUndeclaredVariable Variable $my_value is undeclared (Did you mean $myValue)
+%s:9 PhanUndeclaredVariable Variable $notDeclaredAnywhere is undeclared
+%s:11 PhanUndeclaredVariable Variable $PARAM is undeclared (Did you mean $param1 or $param2)
+%s:17 PhanUndeclaredVariable Variable $_prop is undeclared (Did you mean $this->_prop)
+%s:19 PhanUndeclaredVariable Variable $_prop is undeclared (Did you mean $prop or $this->_prop)
+%s:21 PhanUndeclaredVariable Variable $myReallyLongname is undeclared (Did you mean $my_really_longname)

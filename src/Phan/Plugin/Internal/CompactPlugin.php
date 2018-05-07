@@ -43,12 +43,13 @@ final class CompactPlugin extends PluginV2 implements
         ) {
             $maybe_emit_issue = function (string $variable_name, $arg = null) use ($code_base, $context) {
                 if (!$context->getScope()->hasVariableWithName($variable_name)) {
-                    Issue::maybeEmit(
+                    Issue::maybeEmitWithParameters(
                         $code_base,
                         $context,
                         Issue::UndeclaredVariable,
                         $arg->lineno ?? $context->getLineNumberStart(),
-                        $variable_name
+                        [$variable_name],
+                        Issue::suggestVariableTypoFix($code_base, $context, $variable_name)
                     );
                 }
             };

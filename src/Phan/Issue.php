@@ -5,6 +5,7 @@ use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\UnaddressableTypedElement;
+use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
@@ -2993,5 +2994,71 @@ class Issue
             return null;
         }
         return self::suggestSimilarClass($code_base, $context, $fqsen, $filter, $prefix);
+    }
+
+    public static function suggestVariableTypoFix(CodeBase $code_base, Context $context, string $variable_name, string $prefix = 'Did you mean')
+    {
+        if ($variable_name === '') {
+            return null;
+        }
+        if (!$context->isInFunctionLikeScope()) {
+            // Don't bother suggesting globals for now
+            return null;
+        }
+        $suggestions = [];
+        if (strlen($variable_name) > 1) {
+            $variable_candidates = $context->getScope()->getVariableMap();
+            if (count($variable_candidates) < 50) {
+                $variable_candidates = array_merge($variable_candidates, Variable::_BUILTIN_SUPERGLOBAL_TYPES);
+                $variable_suggestions = self::getSuggestionsForVariables($variable_name, $variable_candidates);
+
+                foreach ($variable_suggestions as $suggested_variable_name) {
+                    $suggestions[] = '$' . $suggested_variable_name;
+                }
+            }
+        }
+        if ($context->isInClassScope()) {
+            // TODO: Does this need to check for static closures
+            $class_in_scope = $context->getClassInScope($code_base);
+            if ($class_in_scope->hasPropertyWithName($code_base, $variable_name)) {
+                $property = $class_in_scope->getPropertyByName($code_base, $variable_name);
+                if (!$property->isDynamicProperty()) {
+                    $suggestions[] = '$this->' . $variable_name;
+                }
+            }
+        }
+        if (count($suggestions) === 0) {
+            return null;
+        }
+        sort($suggestions);
+
+        return $prefix . ' ' . implode(' or ', $suggestions);
+    }
+
+    /**
+     * @param array<string,mixed> $variable_candidates
+     * @return array<int,string>
+     */
+    private static function getSuggestionsForVariables(string $variable_name, array $variable_candidates)
+    {
+        $search_name = strtolower($variable_name);
+        $N = strlen($search_name);
+        $maxLevenshteinDistance = (int)(1 + strlen($search_name) / 6);
+        $candidates = [];
+        $minFoundDistance = $maxLevenshteinDistance;
+
+        foreach ($variable_candidates as $name => $_) {
+            if (\abs(\strlen($name) - $N) > $maxLevenshteinDistance) {
+                continue;
+            }
+            $distance = levenshtein(strtolower($name), $search_name);
+            if ($distance <= $minFoundDistance) {
+                if ($distance < $minFoundDistance) {
+                    $candidates = [];
+                }
+                $candidates[] = $name;
+            }
+        }
+        return $candidates;
     }
 }

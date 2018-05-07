@@ -10,6 +10,9 @@ New features(Analysis)
 + When warning about undeclared classes, mention any classes that have the same name (but a different namespace) as suggestions.
 
   E.g. `test.php:26 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \MyNS\InvalidArgumentException (Did you mean class \InvalidArgumentException)`
++ When warning about undeclared variables (outside of the global scope), mention any variables that have similar names (based on case-insensitive levenstein distance) as suggestions.
+
+  In method scopes: If `$myName` is undeclared, but `$this->myName` is declared (or inherited), `$this->myName` will be one of the suggestions.
 + Warn about string and numeric literals that are no-ops. (E.g. `<?php 'notEchoedStr'; "notEchoed $x"; ?>`)
   New issue types: `PhanNoopStringLiteral`, `PhanNoopEncapsulatedStringLiteral`, `PhanNoopNumericLiteral`.
 

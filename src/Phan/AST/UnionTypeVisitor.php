@@ -1495,7 +1495,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                     Issue::fromType(Issue::UndeclaredVariable)(
                         $this->context->getFile(),
                         $node->lineno ?? 0,
-                        [$variable_name]
+                        [$variable_name],
+                        Issue::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
                     )
                 );
             }

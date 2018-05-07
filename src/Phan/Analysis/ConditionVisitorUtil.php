@@ -418,7 +418,8 @@ trait ConditionVisitorUtil
                     Issue::fromType(Issue::UndeclaredVariable)(
                         $context->getFile(),
                         $var_node->lineno ?? 0,
-                        [$var_name]
+                        [$var_name],
+                        Issue::suggestVariableTypoFix($this->code_base, $context, $var_name)
                     )
                 );
             }
