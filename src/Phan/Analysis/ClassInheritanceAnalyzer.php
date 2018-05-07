@@ -96,7 +96,6 @@ class ClassInheritanceAnalyzer
                 };
             };
             $filter = null;
-            $prefix = 'Did you mean class';
             switch($issue_type) {
             case Issue::UndeclaredExtendedClass:
                 $filter = $generate_filter(function(Clazz $class) : bool {
@@ -107,16 +106,14 @@ class ClassInheritanceAnalyzer
                 $filter = $generate_filter(function(Clazz $class) : bool {
                     return $class->isTrait();
                 });
-                $prefix = 'Did you mean trait';
                 break;
             case Issue::UndeclaredInterface:
                 $filter = $generate_filter(function(Clazz $class) : bool {
                     return $class->isInterface();
                 });
-                $prefix = 'Did you mean interface';
                 break;
             }
-            $suggestion = Issue::suggestSimilarClass($code_base, $clazz->getContext(), $fqsen, $filter, $prefix);
+            $suggestion = Issue::suggestSimilarClass($code_base, $clazz->getContext(), $fqsen, $filter);
 
             Issue::maybeEmitWithParameters(
                 $code_base,
