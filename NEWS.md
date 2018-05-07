@@ -1,5 +1,11 @@
 Phan NEWS
 
+?? ??? 2018, Phan 0.12.7 (dev)
+------------------------
+
+Bug fixes
++ Include text from suggestions in Language Server Protocol output
+
 06 May 2018, Phan 0.12.6
 ------------------------
 
