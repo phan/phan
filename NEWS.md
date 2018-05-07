@@ -5,6 +5,7 @@ Phan NEWS
 
 Bug fixes
 + Include text from suggestions in Language Server Protocol output
++ Fix a crash in the tolerant-php-parser polyfill seen when typing out an echo statement
 
 06 May 2018, Phan 0.12.6
 ------------------------
