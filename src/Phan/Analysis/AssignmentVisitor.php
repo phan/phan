@@ -1079,12 +1079,16 @@ class AssignmentVisitor extends AnalysisVisitor
         static $string_type = null;
         static $mixed_type = null;
         static $string_array_type = null;
+        static $simple_xml_element_type = null;
+
         if ($int_or_string_type === null) {
             $int_or_string_type = UnionType::fromFullyQualifiedString('int|string');
             $int_type = IntType::instance(false);
             $string_type = StringType::instance(false);
             $mixed_type = MixedType::instance(false);
             $string_array_type = UnionType::fromFullyQualifiedString('string[]');
+            $simple_xml_element_type =
+                Type::fromNamespaceAndName('\\', 'SimpleXMLElement', false);
         }
         $dim_type = $this->dim_type;
         $right_type = $this->right_type;
@@ -1101,7 +1105,16 @@ class AssignmentVisitor extends AnalysisVisitor
             }
             return $right_type;
         }
-        if (!$assign_type->asExpandedTypes($this->code_base)->hasArrayLike()) {
+        $assign_type_expanded = $assign_type->asExpandedTypes($this->code_base);
+        //echo "$assign_type_expanded : " . json_encode($assign_type_expanded->hasArrayLike()) . "\n";
+
+        // TODO: Better heuristic to deal with false positives on ArrayAccess subclasses
+        if ($assign_type_expanded->hasArrayAccess() && !$assign_type_expanded->hasGenericArray()) {
+            return UnionType::empty();
+        }
+
+        if (!$assign_type_expanded->hasArrayLike()) {
+
             if ($assign_type->hasType($string_type)) {
                 // Are we assigning to a variable/property of type 'string' (with no ArrayAccess or array types)?
                 if (\is_null($dim_type)) {
@@ -1126,7 +1139,7 @@ class AssignmentVisitor extends AnalysisVisitor
                         return StringType::instance(false)->asUnionType();
                     }
                 }
-            } elseif (!$assign_type->hasType($mixed_type)) {
+            } elseif (!$assign_type->hasType($mixed_type) && !$assign_type->hasType($simple_xml_element_type)) {
                 // Imitate the check in UnionTypeVisitor, don't warn for mixed, etc.
                 $this->emitIssue(
                     Issue::TypeArraySuspicious,

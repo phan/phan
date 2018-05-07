@@ -1,0 +1,2 @@
+%s:12 PhanTypeMismatchArgumentInternal Argument 1 (string) is \ArrayAccess|\Countable|\Iterator|\Serializable|\SplObjectStorage|\Traversable|iterable but \strlen() takes string
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 (string) is \ArrayAccess|\Countable|\Iterator|\Serializable|\SplObjectStorage|\Traversable|iterable but \strlen() takes string
