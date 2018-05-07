@@ -1548,12 +1548,9 @@ class Type
      */
     public function isArrayLike() : bool
     {
-        // includes both nullable and non-nullable ArrayAccess/array/iterable
-        return (
-            $this->isIterable()
-            || $this->isGenericArray()
-            || $this->isArrayAccess()
-        );
+        // includes both nullable and non-nullable ArrayAccess/array
+        // (Overridden by ArrayType)
+        return $this->isArrayAccess();
     }
 
     /**

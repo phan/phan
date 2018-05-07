@@ -27,6 +27,11 @@ class ArrayType extends IterableType
         return false;  // Overrides IterableType returning true
     }
 
+    public function isArrayLike() : bool
+    {
+        return true;  // Overrides Type
+    }
+
     /**
      * @return UnionType with ArrayType subclass(es)
      * @suppress PhanUnreferencedPublicMethod may be used in the future or for plugins as array shape support improves.
