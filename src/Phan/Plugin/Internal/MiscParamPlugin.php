@@ -421,6 +421,8 @@ final class MiscParamPlugin extends PluginV2 implements
 
             'min' => $min_max_callback,
             'max' => $min_max_callback,
+
+            // TODO: sort and usort should convert array<string,T> to array<int,T> (same for array shapes)
         ];
     }
 

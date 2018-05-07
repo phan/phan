@@ -124,6 +124,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return $result;
     }
 
+    // TODO: Figure out why ?Closure():bool can't cast to ?Closure(): bool
     public function canCastToNonNullableFunctionLikeDeclarationType(FunctionLikeDeclarationType $type) : bool
     {
         if ($this->required_param_count > $type->required_param_count) {

@@ -583,11 +583,13 @@ class ContextNode
                     ?? $this->node->children['class']
             ))->getClassList(false, self::CLASS_LIST_ACCEPT_ANY);
         } catch (CodeBaseException $exception) {
+            $exception_fqsen = $exception->getFQSEN();
             throw new IssueException(
                 Issue::fromType(Issue::UndeclaredClassMethod)(
                     $this->context->getFile(),
                     $this->node->lineno ?? 0,
-                    [ $method_name, (string)$exception->getFQSEN() ]
+                    [$method_name, (string)$exception_fqsen],
+                    Issue::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception_fqsen)
                 )
             );
         }
@@ -1437,11 +1439,13 @@ class ContextNode
                 $this->node->children['class']
             ))->getClassList(false, self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
         } catch (CodeBaseException $exception) {
+            $exception_fqsen = $exception->getFQSEN();
             throw new IssueException(
                 Issue::fromType(Issue::UndeclaredClassConstant)(
                     $this->context->getFile(),
                     $this->node->lineno ?? 0,
-                    [ $constant_name, $exception->getFQSEN() ]
+                    [$constant_name, (string)$exception_fqsen],
+                    Issue::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception_fqsen)
                 )
             );
         }

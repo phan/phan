@@ -1864,11 +1864,11 @@ class UnionTypeVisitor extends AnalysisVisitor
         } catch (IssueException $exception) {
             // Swallow it
         } catch (CodeBaseException $exception) {
-            $this->emitIssue(
+            $this->emitIssueWithSuggestion(
                 Issue::UndeclaredClassMethod,
                 $node->lineno ?? 0,
-                $method_name,
-                (string)$exception->getFQSEN()
+                [$method_name, (string)$exception->getFQSEN()],
+                Issue::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception->getFQSEN())
             );
         }
 
@@ -2147,7 +2147,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                     Issue::fromType(Issue::UndeclaredClass)(
                         $context->getFile(),
                         $node->lineno ?? 0,
-                        [ (string)$parent_class_fqsen ]
+                        [ (string)$parent_class_fqsen ],
+                        Issue::suggestSimilarClass($code_base, $context, $parent_class_fqsen)
                     )
                 );
             } else {

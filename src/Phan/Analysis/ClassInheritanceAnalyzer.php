@@ -6,6 +6,8 @@ use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
+use Closure;
+
 class ClassInheritanceAnalyzer
 {
     /**
@@ -84,14 +86,45 @@ class ClassInheritanceAnalyzer
         Clazz $clazz,
         string $issue_type
     ) : bool {
-
         if (!$code_base->hasClassWithFQSEN($fqsen)) {
-            Issue::maybeEmit(
+            $generate_filter = function($class_closure) use ($code_base) : Closure {
+                return function(FullyQualifiedClassName $alternate_fqsen) use ($code_base, $class_closure) : bool {
+                    if (!$code_base->hasClassWithFQSEN($alternate_fqsen)) {
+                        return false;
+                    }
+                    return $class_closure($code_base->getClassByFQSEN($alternate_fqsen));
+                };
+            };
+            $filter = null;
+            $prefix = 'Did you mean class';
+            switch($issue_type) {
+            case Issue::UndeclaredExtendedClass:
+                $filter = $generate_filter(function(Clazz $class) : bool {
+                    return !$class->isInterface() && !$class->isTrait();
+                });
+                break;
+            case Issue::UndeclaredTrait:
+                $filter = $generate_filter(function(Clazz $class) : bool {
+                    return $class->isTrait();
+                });
+                $prefix = 'Did you mean trait';
+                break;
+            case Issue::UndeclaredInterface:
+                $filter = $generate_filter(function(Clazz $class) : bool {
+                    return $class->isInterface();
+                });
+                $prefix = 'Did you mean interface';
+                break;
+            }
+            $suggestion = Issue::suggestSimilarClass($code_base, $clazz->getContext(), $fqsen, $filter, $prefix);
+
+            Issue::maybeEmitWithParameters(
                 $code_base,
                 $clazz->getContext(),
                 $issue_type,
                 $clazz->getFileRef()->getLineNumberStart(),
-                (string)$fqsen
+                [(string)$fqsen],
+                $suggestion
             );
 
             return false;
