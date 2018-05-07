@@ -2972,7 +2972,7 @@ class Issue
     /**
      * @param ?Closure(FullyQualifiedClassName):bool $filter
      */
-    public static function suggestSimilarClass(CodeBase $code_base, Context $context, FullyQualifiedClassName $class_fqsen, $filter = null, string $prefix = 'Did you mean class')
+    public static function suggestSimilarClass(CodeBase $code_base, Context $context, FullyQualifiedClassName $class_fqsen, $filter = null, string $prefix = 'Did you mean')
     {
         $suggested_fqsens = $code_base->suggestSimilarClass($class_fqsen, $context);
         if ($filter) {
@@ -2981,14 +2981,27 @@ class Issue
         if (count($suggested_fqsens) === 0) {
             return null;
         }
-        return $prefix . ' ' . implode(' or ', array_map('strval', $suggested_fqsens));
+        return $prefix . ' ' . implode(' or ', array_map(function (FullyQualifiedClassName $fqsen) use ($code_base) : string {
+            $category = 'classlike';
+            if ($code_base->hasClassWithFQSEN($fqsen)) {
+                $class = $code_base->getClassByFQSEN($fqsen);
+                if ($class->isInterface()) {
+                    $category = 'interface';
+                } elseif ($class->isTrait()) {
+                    $category = 'trait';
+                } else {
+                    $category = 'class';
+                }
+            }
+            return $category . ' ' . $fqsen->__toString();
+        }, $suggested_fqsens));
     }
 
     /**
      * @param ?\Closure $filter
      * TODO: Figure out why ?Closure(NS\X):bool can't cast to ?Closure(NS\X):bool
      */
-    public static function suggestSimilarClassForGenericFQSEN(CodeBase $code_base, Context $context, FQSEN $fqsen, $filter = null, string $prefix = 'Did you mean class')
+    public static function suggestSimilarClassForGenericFQSEN(CodeBase $code_base, Context $context, FQSEN $fqsen, $filter = null, string $prefix = 'Did you mean')
     {
         if (!($fqsen instanceof FullyQualifiedClassName)) {
             return null;
