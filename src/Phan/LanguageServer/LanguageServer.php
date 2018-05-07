@@ -595,6 +595,10 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         }
         //$check_name = $issue['check_name'];
         $description = $issue['description'];
+        if (isset($issue['suggestion'])) {
+            $description .= ' (' . $issue['suggestion'] . ')';
+        }
+
         $severity = $issue['severity'];
         $path = Config::projectPath($issue['location']['path']);
         $issue_uri = Utils::pathToUri($path);
