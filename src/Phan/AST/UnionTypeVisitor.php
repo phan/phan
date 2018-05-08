@@ -1686,11 +1686,19 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $exception->getIssueInstance()
             );
         } catch (CodeBaseException $exception) {
+
+            $exception_fqsen = $exception->getFQSEN();
+            $suggestion = null;
             $property_name = $node->children['prop'];
-            $this->emitIssue(
+            if ($exception_fqsen instanceof FullyQualifiedClassName && $this->code_base->hasClassWithFQSEN($exception_fqsen)) {
+                $suggestion_class = $this->code_base->getClassByFQSEN($exception_fqsen);
+                $suggestion = IssueFixSuggester::suggestSimilarProperty($this->code_base, $suggestion_class, $property_name, false);
+            }
+            $this->emitIssueWithSuggestion(
                 Issue::UndeclaredProperty,
                 $node->lineno ?? 0,
-                "{$exception->getFQSEN()}->{$property_name}"
+                ["{$exception_fqsen}->{$property_name}"],
+                $suggestion
             );
         } catch (UnanalyzableException $exception) {
             // Swallow it. There are some constructs that we

@@ -5,6 +5,7 @@ use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Method;
+use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -21,7 +22,8 @@ use function strtolower;
  *
  * self::suggestSimilarClass(CodeBase, Context, FullyQualifiedClassName, Closure $filter = null, string $prefix = 'Did you mean')
  * self::suggestVariableTypoFix(CodeBase, Context, string $variable_name, string $prefix = 'Did you mean')
- * self::suggestSimilarMethod
+ * self::suggestSimilarMethod(CodeBase, Clazz, string $wanted_method_name, bool $is_static)
+ * self::suggestSimilarProperty(CodeBase, Clazz, string $wanted_property_name, bool $is_static)
  */
 class IssueFixSuggester {
     /**
@@ -172,6 +174,64 @@ class IssueFixSuggester {
             return null;
         }
         return self::suggestSimilarClass($code_base, $context, $fqsen, $filter, $prefix);
+    }
+
+    /**
+     * @return ?string
+     */
+    public static function suggestSimilarProperty(CodeBase $code_base, Clazz $class, string $wanted_property_name, bool $is_static)
+    {
+        if (Config::getValue('disable_suggestions')) {
+            return null;
+        }
+        $property_set = self::suggestSimilarPropertyMap($code_base, $class, $wanted_property_name, $is_static);
+        if (count($property_set) === 0) {
+            return null;
+        }
+        uksort($property_set, 'strcmp');
+        $suggestions = [];
+        foreach ($property_set as $property_name => $_) {
+            $prefix = $is_static ? 'expr::$' : 'expr->' ;
+            $suggestions[] = $prefix . $property_name;
+        }
+        return 'Did you mean ' . implode(' or ', $suggestions);
+    }
+
+    /**
+     * @return array<string,Property>
+     */
+    public static function suggestSimilarPropertyMap(CodeBase $code_base, Clazz $class, string $wanted_property_name, bool $is_static) : array
+    {
+        $property_map = $class->getPropertyMap($code_base);
+        if (count($property_map) > Config::getValue('suggestion_check_limit')) {
+            return [];
+        }
+        $usable_property_map = self::filterSimilarProperties($property_map, $class, $is_static);
+        return self::getSuggestionsForStringSet($wanted_property_name, $usable_property_map);
+    }
+
+    /**
+     * @param array<string,Property> $property_map
+     * @return array<string,Property> a subset of those methods
+     */
+    private static function filterSimilarProperties(array $property_map, Clazz $class, bool $is_static) {
+        $candidates = [];
+        foreach ($property_map as $property_name => $property) {
+            if ($is_static !== $property->isStatic()) {
+                // Don't suggest instance properties to replace static properties
+                continue;
+            }
+            if ($property->isPrivate() && $property->getDefiningClassFQSEN() !== $class->getFQSEN()) {
+                // Don't suggest inherited private properties
+                continue;
+            }
+            if ($property->isDynamicProperty()) {
+                // Skip dynamically added properties
+                continue;
+            }
+            $candidates[$property_name] = $property;
+        }
+        return $candidates;
     }
 
     /**

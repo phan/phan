@@ -1009,7 +1009,8 @@ class Clazz extends AddressableElement
             Issue::fromType(Issue::UndeclaredProperty)(
                 $context->getFile(),
                 $context->getLineNumberStart(),
-                [ "{$this->getFQSEN()}::\$$name}" ]
+                [ "{$this->getFQSEN()}::\$$name}" ],
+                IssueFixSuggester::suggestSimilarProperty($code_base, $this, $name, $is_static)
             )
         );
     }

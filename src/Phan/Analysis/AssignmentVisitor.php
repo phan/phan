@@ -12,6 +12,7 @@ use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\PassByReferenceVariable;
@@ -685,10 +686,12 @@ class AssignmentVisitor extends AnalysisVisitor
                 // swallow it
             }
         } elseif (!empty($class_list)) {
-            $this->emitIssue(
+            $first_class = $class_list[0];
+            $this->emitIssueWithSuggestion(
                 Issue::UndeclaredProperty,
                 $node->lineno ?? 0,
-                "{$class_list[0]->getFQSEN()}->$property_name"
+                ["{$first_class->getFQSEN()}->$property_name"],
+                IssueFixSuggester::suggestSimilarProperty($this->code_base, $first_class, $property_name, false)
             );
         } else {
             // If we hit this part, we couldn't figure out

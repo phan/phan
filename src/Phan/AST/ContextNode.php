@@ -1041,6 +1041,7 @@ class ContextNode
                     $node->children['class']
             ))->getClassList(true, $expected_type_categories, $expected_issue);
         } catch (CodeBaseException $exception) {
+            // TODO: Is this ever used? The undeclared property issues should instead be caused by the hasPropertyWithFQSEN checks below.
             if ($is_static) {
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredStaticProperty)(
@@ -1169,12 +1170,18 @@ class ContextNode
 
         // If the class isn't found, we'll get the message elsewhere
         if ($class_fqsen) {
+            $suggestion = null;
+            if ($class) {
+                $suggestion = IssueFixSuggester::suggestSimilarProperty($this->code_base, $class, $property_name, $is_static);
+            }
+
             if ($is_static) {
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredStaticProperty)(
                         $this->context->getFile(),
                         $node->lineno ?? 0,
-                        [ $property_name, (string)$class_fqsen ]
+                        [ $property_name, (string)$class_fqsen ],
+                        $suggestion
                     )
                 );
             } else {
@@ -1182,7 +1189,8 @@ class ContextNode
                     Issue::fromType(Issue::UndeclaredProperty)(
                         $this->context->getFile(),
                         $node->lineno ?? 0,
-                        [ "$class_fqsen->$property_name" ]
+                        [ "$class_fqsen->$property_name" ],
+                        $suggestion
                     )
                 );
             }

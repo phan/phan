@@ -4,7 +4,8 @@ Phan NEWS
 ------------------------
 
 New features:
-+ For PhanUndeclaredMethod and PhanUndeclaredStaticMethod, suggest visible methods with similar names
++ For `PhanUndeclaredMethod` and `PhanUndeclaredStaticMethod` issues, suggest visible methods with similar names.
++ For `PhanUndeclaredProperty` and `PhanUndeclaredStaticProperty` issues, suggest visible properties with similar names.
 + When suggesting alternatives to undeclared classes,
   also include suggestions for similar class names within the same namespace as the undeclared class.
   (Comparing Levenshtein distance)
