@@ -3035,8 +3035,13 @@ class Issue
             $class_in_scope = $context->getClassInScope($code_base);
             if ($class_in_scope->hasPropertyWithName($code_base, $variable_name)) {
                 $property = $class_in_scope->getPropertyByName($code_base, $variable_name);
+
                 if (!$property->isDynamicProperty()) {
-                    $suggestions[] = '$this->' . $variable_name;
+                    // Don't suggest inherited private properties that can't be accessed
+                    if (!$property->isPrivate() || $property->getDefiningClassFQSEN() === $class_in_scope->getFQSEN()) {
+                        $suggestion_prefix = $property->isStatic() ? 'self::$' : '$this->';
+                        $suggestions[] = $suggestion_prefix . $variable_name;
+                    }
                 }
             }
         }
