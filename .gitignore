@@ -5,6 +5,7 @@ composer.phar
 /report
 samples
 all_output.*
+.vscode/
 *.joblog
 *.swo
 *.swp

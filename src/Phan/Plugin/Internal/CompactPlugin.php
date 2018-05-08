@@ -4,6 +4,7 @@ namespace Phan\Plugin\Internal;
 use Phan\AST\ContextNode;
 use Phan\CodeBase;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\PluginV2;
@@ -49,7 +50,7 @@ final class CompactPlugin extends PluginV2 implements
                         Issue::UndeclaredVariable,
                         $arg->lineno ?? $context->getLineNumberStart(),
                         [$variable_name],
-                        Issue::suggestVariableTypoFix($code_base, $context, $variable_name)
+                        IssueFixSuggester::suggestVariableTypoFix($code_base, $context, $variable_name)
                     );
                 }
             };

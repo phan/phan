@@ -3,9 +3,19 @@ Phan NEWS
 ?? ??? 2018, Phan 0.12.7 (dev)
 ------------------------
 
+New features:
++ For PhanUndeclaredMethod and PhanUndeclaredStaticMethod, suggest visible methods with similar names
++ When suggesting alternatives to undeclared classes,
+  also include suggestions for similar class names within the same namespace as the undeclared class.
+  (Comparing Levenshtein distance)
+
 Bug fixes
 + Include text from suggestions in Language Server Protocol output
 + Fix a crash in the tolerant-php-parser polyfill seen when typing out an echo statement
++ Fix incorrect suggestions to use properties (of the same name) instead of undeclared variables.
+  (Refer to static properties as `self::$name` and don't suggest inaccessible inherited private properties)
++ Don't suggest obviously invalid alternatives to undeclared classes.
+  (E.g. don't suggest traits or interfaces for `new MisspelledClass`, don't suggest interfaces for static method invocations)
 
 06 May 2018, Phan 0.12.6
 ------------------------
@@ -17,7 +27,7 @@ New features(Analysis)
 + When warning about undeclared classes, mention any classes that have the same name (but a different namespace) as suggestions.
 
   E.g. `test.php:26 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \MyNS\InvalidArgumentException (Did you mean class \InvalidArgumentException)`
-+ When warning about undeclared variables (outside of the global scope), mention any variables that have similar names (based on case-insensitive levenstein distance) as suggestions.
++ When warning about undeclared variables (outside of the global scope), mention any variables that have similar names (based on case-insensitive Levenshtein distance) as suggestions.
 
   In method scopes: If `$myName` is undeclared, but `$this->myName` is declared (or inherited), `$this->myName` will be one of the suggestions.
 + Warn about string and numeric literals that are no-ops. (E.g. `<?php 'notEchoedStr'; "notEchoed $x"; ?>`)

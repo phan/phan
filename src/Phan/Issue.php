@@ -5,9 +5,7 @@ use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\UnaddressableTypedElement;
-use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN;
-use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
@@ -2967,116 +2965,5 @@ class Issue
             $parameters,
             $suggestion
         );
-    }
-
-    /**
-     * @param ?Closure(FullyQualifiedClassName):bool $filter
-     */
-    public static function suggestSimilarClass(CodeBase $code_base, Context $context, FullyQualifiedClassName $class_fqsen, $filter = null, string $prefix = 'Did you mean')
-    {
-        $suggested_fqsens = $code_base->suggestSimilarClass($class_fqsen, $context);
-        if ($filter) {
-            $suggested_fqsens = array_filter($suggested_fqsens, $filter);
-        }
-        if (count($suggested_fqsens) === 0) {
-            return null;
-        }
-        return $prefix . ' ' . implode(' or ', array_map(function (FullyQualifiedClassName $fqsen) use ($code_base) : string {
-            $category = 'classlike';
-            if ($code_base->hasClassWithFQSEN($fqsen)) {
-                $class = $code_base->getClassByFQSEN($fqsen);
-                if ($class->isInterface()) {
-                    $category = 'interface';
-                } elseif ($class->isTrait()) {
-                    $category = 'trait';
-                } else {
-                    $category = 'class';
-                }
-            }
-            return $category . ' ' . $fqsen->__toString();
-        }, $suggested_fqsens));
-    }
-
-    /**
-     * @param ?\Closure $filter
-     * TODO: Figure out why ?Closure(NS\X):bool can't cast to ?Closure(NS\X):bool
-     */
-    public static function suggestSimilarClassForGenericFQSEN(CodeBase $code_base, Context $context, FQSEN $fqsen, $filter = null, string $prefix = 'Did you mean')
-    {
-        if (!($fqsen instanceof FullyQualifiedClassName)) {
-            return null;
-        }
-        return self::suggestSimilarClass($code_base, $context, $fqsen, $filter, $prefix);
-    }
-
-    public static function suggestVariableTypoFix(CodeBase $code_base, Context $context, string $variable_name, string $prefix = 'Did you mean')
-    {
-        if ($variable_name === '') {
-            return null;
-        }
-        if (!$context->isInFunctionLikeScope()) {
-            // Don't bother suggesting globals for now
-            return null;
-        }
-        $suggestions = [];
-        if (strlen($variable_name) > 1) {
-            $variable_candidates = $context->getScope()->getVariableMap();
-            if (count($variable_candidates) < 50) {
-                $variable_candidates = array_merge($variable_candidates, Variable::_BUILTIN_SUPERGLOBAL_TYPES);
-                $variable_suggestions = self::getSuggestionsForVariables($variable_name, $variable_candidates);
-
-                foreach ($variable_suggestions as $suggested_variable_name) {
-                    $suggestions[] = '$' . $suggested_variable_name;
-                }
-            }
-        }
-        if ($context->isInClassScope()) {
-            // TODO: Does this need to check for static closures
-            $class_in_scope = $context->getClassInScope($code_base);
-            if ($class_in_scope->hasPropertyWithName($code_base, $variable_name)) {
-                $property = $class_in_scope->getPropertyByName($code_base, $variable_name);
-
-                if (!$property->isDynamicProperty()) {
-                    // Don't suggest inherited private properties that can't be accessed
-                    if (!$property->isPrivate() || $property->getDefiningClassFQSEN() === $class_in_scope->getFQSEN()) {
-                        $suggestion_prefix = $property->isStatic() ? 'self::$' : '$this->';
-                        $suggestions[] = $suggestion_prefix . $variable_name;
-                    }
-                }
-            }
-        }
-        if (count($suggestions) === 0) {
-            return null;
-        }
-        sort($suggestions);
-
-        return $prefix . ' ' . implode(' or ', $suggestions);
-    }
-
-    /**
-     * @param array<string,mixed> $variable_candidates
-     * @return array<int,string>
-     */
-    private static function getSuggestionsForVariables(string $variable_name, array $variable_candidates)
-    {
-        $search_name = strtolower($variable_name);
-        $N = strlen($search_name);
-        $maxLevenshteinDistance = (int)(1 + strlen($search_name) / 6);
-        $candidates = [];
-        $minFoundDistance = $maxLevenshteinDistance;
-
-        foreach ($variable_candidates as $name => $_) {
-            if (\abs(\strlen($name) - $N) > $maxLevenshteinDistance) {
-                continue;
-            }
-            $distance = levenshtein(strtolower($name), $search_name);
-            if ($distance <= $minFoundDistance) {
-                if ($distance < $minFoundDistance) {
-                    $candidates = [];
-                }
-                $candidates[] = $name;
-            }
-        }
-        return $candidates;
     }
 }

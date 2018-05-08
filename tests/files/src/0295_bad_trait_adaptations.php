@@ -19,6 +19,6 @@ class A295 {
 function test295() {
     $x = new A295();
     $x->baz();
-    $x->bar();
+    $x->bar();  // TODO: Maybe add a placeholder for bar() instead of emitting PhanUndeclaredMethod
     $x->foo();
 }

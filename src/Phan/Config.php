@@ -413,6 +413,16 @@ class Config
         // this.
         'profiler_enabled' => false,
 
+        // Phan will give up on suggesting a different name in issue messages
+        // if the number of candidates (for a given suggestion category) is greater than suggestion_check_limit
+        // Set this to 0 to disable most suggestions for similar names, to other namespaces.
+        // Set this to INT_MAX (or other large value) to always suggesting similar names to other namespaces.
+        // (Phan will be a bit slower with larger values)
+        'suggestion_check_limit' => 50,
+
+        // Set this to true to disable suggestions for what to use instead of undeclared variables/classes/etc.
+        'disable_suggestions' => false,
+
         // Add any issue types (such as 'PhanUndeclaredMethod')
         // to this black-list to inhibit them from being reported.
         'suppress_issue_types' => [

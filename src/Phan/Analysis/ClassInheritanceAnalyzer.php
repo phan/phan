@@ -3,10 +3,9 @@ namespace Phan\Analysis;
 
 use Phan\CodeBase;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
-
-use Closure;
 
 class ClassInheritanceAnalyzer
 {
@@ -87,33 +86,19 @@ class ClassInheritanceAnalyzer
         string $issue_type
     ) : bool {
         if (!$code_base->hasClassWithFQSEN($fqsen)) {
-            $generate_filter = function($class_closure) use ($code_base) : Closure {
-                return function(FullyQualifiedClassName $alternate_fqsen) use ($code_base, $class_closure) : bool {
-                    if (!$code_base->hasClassWithFQSEN($alternate_fqsen)) {
-                        return false;
-                    }
-                    return $class_closure($code_base->getClassByFQSEN($alternate_fqsen));
-                };
-            };
             $filter = null;
             switch($issue_type) {
             case Issue::UndeclaredExtendedClass:
-                $filter = $generate_filter(function(Clazz $class) : bool {
-                    return !$class->isInterface() && !$class->isTrait();
-                });
+                $filter = IssueFixSuggester::createFQSENFilterForClasslikeCategories($code_base, true, false, false);
                 break;
             case Issue::UndeclaredTrait:
-                $filter = $generate_filter(function(Clazz $class) : bool {
-                    return $class->isTrait();
-                });
+                $filter = IssueFixSuggester::createFQSENFilterForClasslikeCategories($code_base, false, true, false);
                 break;
             case Issue::UndeclaredInterface:
-                $filter = $generate_filter(function(Clazz $class) : bool {
-                    return $class->isInterface();
-                });
+                $filter = IssueFixSuggester::createFQSENFilterForClasslikeCategories($code_base, false, false, true);
                 break;
             }
-            $suggestion = Issue::suggestSimilarClass($code_base, $clazz->getContext(), $fqsen, $filter);
+            $suggestion = IssueFixSuggester::suggestSimilarClass($code_base, $clazz->getContext(), $fqsen, $filter);
 
             Issue::maybeEmitWithParameters(
                 $code_base,

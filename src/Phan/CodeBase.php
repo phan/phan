@@ -745,7 +745,7 @@ class CodeBase
             // The original class does not exist.
             // Emit issues at the point of every single class_alias call with that original class.
             foreach ($alias_set as $alias_record) {
-                $suggestion = Issue::suggestSimilarClass($this, $alias_record->context, $original_fqsen);
+                $suggestion = IssueFixSuggester::suggestSimilarClass($this, $alias_record->context, $original_fqsen);
                 \assert($alias_record instanceof ClassAliasRecord);
                 Issue::maybeEmitWithParameters(
                     $this,
@@ -1498,23 +1498,33 @@ class CodeBase
         return false;
     }
 
-    /** @var array<string,array<string,string>>|null */
-    private $suggested_class_names = null;
+    /**
+     * @var array<string,array<string,string>>|null
+     * Maps lowercase class name to (lowercase namespace => namespace)
+     */
+    private $namespaces_for_class_names = null;
+
+    /**
+     * @var array<string,array<string,string>>|null
+     * Maps lowercase class name to (lowercase class => class)
+     */
+    private $class_names_in_namespace = null;
 
     private function invalidateDependentCacheEntries()
     {
-        $this->suggested_class_names = null;
+        $this->namespaces_for_class_names = null;
+        $this->class_names_in_namespace = null;
     }
 
-    private function getSuggestedClassNames()
+    private function getNamespacesForClassNames()
     {
-        return $this->suggested_class_names ?? ($this->suggested_class_names = $this->computeSuggestedClassNames());
+        return $this->namespaces_for_class_names ?? ($this->namespaces_for_class_names = $this->computeNamespacesForClassNames());
     }
 
     /**
      * @return array<string,array<string,string>> a list of namespaces which have each class name
      */
-    private function computeSuggestedClassNames() : array
+    private function computeNamespacesForClassNames() : array
     {
         $class_fqsen_list = [];
         // NOTE: This helper performs shallow clones to avoid interfering with the iteration pointer
@@ -1540,21 +1550,106 @@ class CodeBase
     }
 
     /**
+     * @return array<int,FullyQualifiedClassName> (Don't rely on unique names)
+     */
+    private function getClassFQSENList() {
+        $class_fqsen_list = [];
+        // NOTE: This helper performs shallow clones to avoid interfering with the iteration pointer
+        // in other iterations over these class maps
+        foreach (clone($this->fqsen_class_map_user_defined) as $class_fqsen => $_) {
+            $class_fqsen_list[] = $class_fqsen;
+        }
+        foreach (clone($this->fqsen_class_map_internal) as $class_fqsen => $_) {
+            $class_fqsen_list[] = $class_fqsen;
+        }
+        return $class_fqsen_list;
+    }
+
+    /**
+     * @return array<string,array<string,string>> a list of namespaces which have each class name
+     */
+    private function getClassNamesInNamespace() : array
+    {
+        return $this->class_names_in_namespace ?? ($this->class_names_in_namespace = $this->computeClassNamesInNamespace());
+    }
+
+    /**
+     * @return array<string,array<string,string>> maps namespace name to unique classes in that namespace.
+     */
+    private function computeClassNamesInNamespace() : array
+    {
+        $class_fqsen_list = $this->getClassFQSENList();
+
+        $suggestion_set = [];
+        foreach ($class_fqsen_list as $class_fqsen) {
+            $namespace = $class_fqsen->getNamespace();
+            $name = $class_fqsen->getName();
+            $suggestion_set[strtolower($namespace)][strtolower($name)] = $name;
+        }
+        foreach (clone($this->fqsen_class_map_reflection) as $reflection_class) {
+            $namespace = '\\' . $reflection_class->getNamespaceName();
+            $name = '\\' . $reflection_class->getName();
+            // https://secure.php.net/manual/en/reflectionclass.getnamespacename.php
+            $suggestion_set[\strtolower($namespace)][strtolower($name)] = $name;
+        }
+        return $suggestion_set;
+    }
+
+    /**
      * @return array<int,FullyQualifiedClassName> 0 or more namespaced class names found in this code base
      */
-    public function suggestSimilarClass(
+    public function suggestSimilarClassInOtherNamespace(
         FullyQualifiedClassName $missing_class,
         Context $unused_context
-    ) {
+    ) : array {
         $class_name = $missing_class->getName();
         $class_name_lower = \strtolower($class_name);
-        $suggestions = $this->getSuggestedClassNames();
+        $namespaces_for_class_names = $this->getNamespacesForClassNames();
 
-        $namespaces_for_class = array_values($suggestions[$class_name_lower] ?? []);
+        $namespaces_for_class = $namespaces_for_class_names[$class_name_lower] ?? [];
+        if (count($namespaces_for_class) === 0)  {
+            return [];
+        }
+        // We're looking for similar names, not identical ones
+        unset($namespaces_for_class[strtolower($missing_class->getNamespace())]);
+        $namespaces_for_class = array_values($namespaces_for_class);
+
         usort($namespaces_for_class, 'strcmp');
 
         return array_map(function(string $namespace_name) use ($class_name) : FullyQualifiedClassName {
             return FullyQualifiedClassName::make($namespace_name, $class_name);
         }, $namespaces_for_class);
+    }
+
+    /**
+     * @return array<int,FullyQualifiedClassName> 0 or more namespaced class names found in this code base
+     */
+    public function suggestSimilarClassInSameNamespace(
+        FullyQualifiedClassName $missing_class,
+        Context $unused_context
+    ) : array {
+        $namespace = $missing_class->getNamespace();
+        $namespace_lower = strtolower($namespace);
+        $class_name_lower = strtolower($missing_class->getName());
+
+        $class_names_in_namespace = $this->getClassNamesInNamespace()[$namespace_lower] ?? [];
+        unset($class_names_in_namespace[$class_name_lower]);
+
+        if (count($class_names_in_namespace) === 0 || count($class_names_in_namespace) > Config::getValue('suggestion_check_limit')) {
+            return [];
+        }
+
+        // We're looking for similar names, not identical names
+        $suggested_class_names = array_keys(IssueFixSuggester::getSuggestionsForStringSet($class_name_lower, $class_names_in_namespace));
+
+        if (count($suggested_class_names) === 0) {
+            return [];
+        }
+        usort($suggested_class_names, 'strcmp');
+
+        return array_map(function(string $class_name_lower) use ($namespace, $class_names_in_namespace) : FullyQualifiedClassName {
+            $class_name = $class_names_in_namespace[$class_name_lower];
+            return FullyQualifiedClassName::make($namespace, $class_name);;
+        }, $suggested_class_names);
     }
 }

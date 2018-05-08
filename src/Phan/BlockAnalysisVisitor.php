@@ -277,7 +277,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     Issue::UndeclaredVariable,
                     $context->getLineNumberStart(),
                     [$var_name],
-                    Issue::suggestVariableTypoFix($code_base, $context, $var_name)
+                    IssueFixSuggester::suggestVariableTypoFix($code_base, $context, $var_name)
                 );
                 return;
             }

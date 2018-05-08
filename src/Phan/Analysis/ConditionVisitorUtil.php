@@ -6,6 +6,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\IssueException;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\NullType;
@@ -419,7 +420,7 @@ trait ConditionVisitorUtil
                         $context->getFile(),
                         $var_node->lineno ?? 0,
                         [$var_name],
-                        Issue::suggestVariableTypoFix($this->code_base, $context, $var_name)
+                        IssueFixSuggester::suggestVariableTypoFix($this->code_base, $context, $var_name)
                     )
                 );
             }

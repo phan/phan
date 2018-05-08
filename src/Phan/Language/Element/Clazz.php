@@ -12,6 +12,7 @@ use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
@@ -1146,7 +1147,7 @@ class Clazz extends AddressableElement
                         (string)$constant_fqsen,
                         (string)$this->getFQSEN()
                     ],
-                    Issue::suggestSimilarClass($code_base, $context, $this->getFQSEN())
+                    IssueFixSuggester::suggestSimilarClass($code_base, $context, $this->getFQSEN())
                 )
             );
         }

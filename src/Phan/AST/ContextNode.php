@@ -10,6 +10,7 @@ use Phan\Exception\NodeException;
 use Phan\Exception\TypeException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
@@ -589,7 +590,9 @@ class ContextNode
                     $this->context->getFile(),
                     $this->node->lineno ?? 0,
                     [$method_name, (string)$exception_fqsen],
-                    Issue::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception_fqsen)
+                    ($exception_fqsen instanceof FullyQualifiedClassName
+                        ? IssueFixSuggester::suggestSimilarClassForMethod($this->code_base, $this->context, $exception_fqsen, $method_name, $is_static)
+                        : null)
                 )
             );
         }
@@ -648,9 +651,11 @@ class ContextNode
             }
         }
 
+        $first_class = $class_list[0];
+
         // Figure out an FQSEN for the method we couldn't find
         $method_fqsen = FullyQualifiedMethodName::make(
-            $class_list[0]->getFQSEN(),
+            $first_class->getFQSEN(),
             $method_name
         );
 
@@ -659,7 +664,8 @@ class ContextNode
                 Issue::fromType(Issue::UndeclaredStaticMethod)(
                     $this->context->getFile(),
                     $this->node->lineno ?? 0,
-                    [ (string)$method_fqsen ]
+                    [ (string)$method_fqsen ],
+                    IssueFixSuggester::suggestSimilarMethod($this->code_base, $first_class, $method_name, $is_static)
                 )
             );
         }
@@ -668,7 +674,8 @@ class ContextNode
             Issue::fromType(Issue::UndeclaredMethod)(
                 $this->context->getFile(),
                 $this->node->lineno ?? 0,
-                [ (string)$method_fqsen ]
+                [ (string)$method_fqsen ],
+                IssueFixSuggester::suggestSimilarMethod($this->code_base, $first_class, $method_name, $is_static)
             )
         );
     }
@@ -930,7 +937,7 @@ class ContextNode
                     $this->context->getFile(),
                     $this->node->lineno ?? 0,
                     [ $variable_name ],
-                    Issue::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
+                    IssueFixSuggester::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
                 )
             );
         }
@@ -1446,7 +1453,7 @@ class ContextNode
                     $this->context->getFile(),
                     $this->node->lineno ?? 0,
                     [$constant_name, (string)$exception_fqsen],
-                    Issue::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception_fqsen)
+                    IssueFixSuggester::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception_fqsen)
                 )
             );
         }

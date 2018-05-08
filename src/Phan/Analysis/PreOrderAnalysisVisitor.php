@@ -8,6 +8,7 @@ use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\NodeException;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
@@ -417,7 +418,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                             Issue::UndeclaredVariable,
                             $node->lineno ?? 0,
                             [$variable_name],
-                            Issue::suggestVariableTypoFix($this->code_base, $context, $variable_name)
+                            IssueFixSuggester::suggestVariableTypoFix($this->code_base, $context, $variable_name)
                         );
                         continue;
                     } else {
@@ -910,7 +911,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 Issue::UndeclaredClassCatch,
                 $node->lineno ?? 0,
                 [(string)$exception->getFQSEN()],
-                Issue::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception->getFQSEN())
+                IssueFixSuggester::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception->getFQSEN())
             );
 
             $union_type = $union_type->withType(Type::fromFullyQualifiedString('\Throwable'));

@@ -12,6 +12,7 @@ use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
@@ -405,7 +406,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 Issue::UndeclaredVariable,
                 $node->lineno ?? 0,
                 [$variable_name],
-                Issue::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
+                IssueFixSuggester::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
             );
         }
     }
@@ -1571,7 +1572,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 Issue::UndeclaredClassInstanceof,
                 $node->lineno ?? 0,
                 [(string)$exception->getFQSEN()],
-                Issue::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception->getFQSEN())
+                IssueFixSuggester::suggestSimilarClassForGenericFQSEN(
+                    $this->code_base,
+                    $this->context,
+                    $exception->getFQSEN(),
+                    // Only suggest classes/interfaces for alternatives to instanceof checks. Don't suggest traits.
+                    IssueFixSuggester::createFQSENFilterForClasslikeCategories($this->code_base, true, false, true)
+                )
             );
         }
 
