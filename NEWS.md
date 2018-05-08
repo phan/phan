@@ -12,7 +12,7 @@ New features:
 Bug fixes
 + Include text from suggestions in Language Server Protocol output
 + Fix a crash in the tolerant-php-parser polyfill seen when typing out an echo statement
-+ Fix incorrect suggestions to use properties (of the same name) instead of undeclared variables.
++ Fix incorrect suggestions to use properties (of the same name) instead of undeclared variables in class scopes.
   (Refer to static properties as `self::$name` and don't suggest inaccessible inherited private properties)
 + Don't suggest obviously invalid alternatives to undeclared classes.
   (E.g. don't suggest traits or interfaces for `new MisspelledClass`, don't suggest interfaces for static method invocations)

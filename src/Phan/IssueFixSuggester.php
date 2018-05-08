@@ -119,7 +119,7 @@ class IssueFixSuggester {
         $suggestions = [];
         foreach ($method_set as $method) {
             // We lose the original casing of the method name in the array keys, so use $method->getName()
-            $prefix = $method->isStatic() ? 'self::' : '$this->' ;
+            $prefix = $method->isStatic() ? 'expr::' : 'expr->' ;
             $suggestions[] = $prefix . $method->getName() . '()';
         }
         return 'Did you mean ' . implode(' or ', $suggestions);
