@@ -253,6 +253,9 @@ class PhanPHPLinter
             if (count($parts) === 3 && $parts[1] === $issue['check_name']) {
                 $description = implode(': ', $parts);
             }
+            if (isset($issue['suggestion'])) {
+                $description .= ' (' . $issue['suggestion'] . ')';
+            }
             $lines[] = sprintf("Phan error: %s in %s on line %d\n", $description, $file_mapping[$pathInProject], $line);
         }
         // https://github.com/neomake/neomake/issues/153

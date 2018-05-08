@@ -9,6 +9,7 @@ New features:
 + When suggesting alternatives to undeclared classes,
   also include suggestions for similar class names within the same namespace as the undeclared class.
   (Comparing Levenshtein distance)
++ Make `phan_client` include any suggestion alongside the issue message (for daemon mode).
 
 Bug fixes
 + Include text from suggestions in Language Server Protocol output
