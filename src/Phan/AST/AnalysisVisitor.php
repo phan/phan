@@ -8,6 +8,7 @@ use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\UnionType;
 use Phan\Language\Type;
+use Phan\Suggestion;
 
 // TODO: Move to AST\Visitor?
 abstract class AnalysisVisitor extends KindVisitorImplementation
@@ -77,7 +78,7 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
      * @param array<int,int|string|FQSEN|UnionType|Type> $parameters
      * Template parameters for the issue's error message
      *
-     * @param ?string $suggestion
+     * @param ?Suggestion $suggestion
      * A suggestion (may be null)
      *
      * @return void

@@ -2709,7 +2709,7 @@ class Issue
         string $file,
         int $line,
         array $template_parameters = [],
-        string $suggestion = null
+        Suggestion $suggestion = null
     ) : IssueInstance {
         // TODO: Add callable to expanded union types instead
         return new IssueInstance(
@@ -2781,7 +2781,7 @@ class Issue
      * Any template parameters required for the issue
      * message
      *
-     * @param ?string $suggestion (optional details on fixing this)
+     * @param ?Suggestion $suggestion (optional details on fixing this)
      *
      * @return void
      */
@@ -2790,7 +2790,7 @@ class Issue
         string $file,
         int $line,
         array $template_parameters,
-        string $suggestion = null
+        Suggestion $suggestion = null
     ) {
         $issue = self::fromType($type);
 
@@ -2916,7 +2916,7 @@ class Issue
      * The line number where the issue was found
      *
      * @param array<int,string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $parameters
-     * @param ?string $suggestion (optional)
+     * @param ?Suggestion $suggestion (optional)
      *
      * Template parameters for the issue's error message
      *
@@ -2928,7 +2928,7 @@ class Issue
         string $issue_type,
         int $lineno,
         array $parameters,
-        string $suggestion = null
+        Suggestion $suggestion = null
     ) {
         // If this issue type has been suppressed in
         // the config, ignore it

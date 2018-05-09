@@ -26,7 +26,7 @@ final class JSONPrinter implements BufferedPrinterInterface
             'description' =>
                 Issue::getNameForCategory($issue->getCategory()) . ' ' .
                 $issue->getType() . ' ' .
-                $instance->getMessage(),
+                $instance->getMessage(),  // suggestion included separately
             'severity' => $issue->getSeverity(),
             'location' => [
                 'path' => preg_replace('/^\/code\//', '', $instance->getFile()),
@@ -36,7 +36,7 @@ final class JSONPrinter implements BufferedPrinterInterface
                 ],
             ],
         ];
-        $suggestion = $instance->getSuggestion();
+        $suggestion = $instance->getSuggestionMessage();
         if ($suggestion) {
             $message['suggestion'] = $suggestion;
         }

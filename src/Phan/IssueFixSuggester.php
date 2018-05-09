@@ -59,7 +59,7 @@ class IssueFixSuggester {
     }
 
     /**
-     * @return ?string
+     * @return ?Suggestion
      */
     public static function suggestSimilarClassForMethod(CodeBase $code_base, Context $context, FullyQualifiedClassName $class_fqsen, string $method_name, bool $is_static)
     {
@@ -78,7 +78,7 @@ class IssueFixSuggester {
      * Returns a message suggesting a class name that is similar to the provided undeclared class
      *
      * @param null|Closure(FullyQualifiedClassName):bool $filter
-     * @return ?string
+     * @return ?Suggestion
      */
     public static function suggestSimilarClass(CodeBase $code_base, Context $context, FullyQualifiedClassName $class_fqsen, $filter = null, string $prefix = 'Did you mean')
     {
@@ -92,7 +92,7 @@ class IssueFixSuggester {
         if (count($suggested_fqsens) === 0) {
             return null;
         }
-        return $prefix . ' ' . implode(' or ', array_map(function (FullyQualifiedClassName $fqsen) use ($code_base) : string {
+        $suggestion_text = $prefix . ' ' . implode(' or ', array_map(function (FullyQualifiedClassName $fqsen) use ($code_base) : string {
             $category = 'classlike';
             if ($code_base->hasClassWithFQSEN($fqsen)) {
                 $class = $code_base->getClassByFQSEN($fqsen);
@@ -106,10 +106,12 @@ class IssueFixSuggester {
             }
             return $category . ' ' . $fqsen->__toString();
         }, $suggested_fqsens));
+
+        return Suggestion::fromString($suggestion_text);
     }
 
     /**
-     * @return ?string
+     * @return ?Suggestion
      */
     public static function suggestSimilarMethod(CodeBase $code_base, Context $context, Clazz $class, string $wanted_method_name, bool $is_static)
     {
@@ -127,7 +129,9 @@ class IssueFixSuggester {
             $prefix = $method->isStatic() ? 'expr::' : 'expr->' ;
             $suggestions[] = $prefix . $method->getName() . '()';
         }
-        return 'Did you mean ' . implode(' or ', $suggestions);
+        return Suggestion::fromString(
+            'Did you mean ' . implode(' or ', $suggestions)
+        );
     }
 
     /**
@@ -179,7 +183,7 @@ class IssueFixSuggester {
 
     /**
      * @param ?\Closure $filter
-     * @return ?string
+     * @return ?Suggestion
      * TODO: Figure out why ?Closure(NS\X):bool can't cast to ?Closure(NS\X):bool
      */
     public static function suggestSimilarClassForGenericFQSEN(CodeBase $code_base, Context $context, FQSEN $fqsen, $filter = null, string $prefix = 'Did you mean')
@@ -194,7 +198,7 @@ class IssueFixSuggester {
     }
 
     /**
-     * @return ?string
+     * @return ?Suggestion
      */
     public static function suggestSimilarProperty(CodeBase $code_base, Context $context, Clazz $class, string $wanted_property_name, bool $is_static)
     {
@@ -214,7 +218,9 @@ class IssueFixSuggester {
             $prefix = $is_static ? 'expr::$' : 'expr->' ;
             $suggestions[] = $prefix . $property_name;
         }
-        return 'Did you mean ' . implode(' or ', $suggestions);
+        return Suggestion::fromString(
+            'Did you mean ' . implode(' or ', $suggestions)
+        );
     }
 
     /**
@@ -258,7 +264,7 @@ class IssueFixSuggester {
     }
 
     /**
-     * @return ?string
+     * @return ?Suggestion
      */
     public static function suggestSimilarClassConstant(CodeBase $code_base, Context $context, FullyQualifiedClassConstantName $class_constant_fqsen)
     {
@@ -283,7 +289,9 @@ class IssueFixSuggester {
         foreach ($class_constant_map as $constant_name => $_) {
             $suggestions[] = $class_fqsen . '::' . $constant_name;
         }
-        return 'Did you mean ' . implode(' or ', $suggestions);
+        return Suggestion::fromString(
+            'Did you mean ' . implode(' or ', $suggestions)
+        );
     }
 
     /**
@@ -320,7 +328,7 @@ class IssueFixSuggester {
     }
 
     /**
-     * @return ?string
+     * @return ?Suggestion
      */
     public static function suggestVariableTypoFix(CodeBase $code_base, Context $context, string $variable_name, string $prefix = 'Did you mean')
     {
@@ -368,7 +376,9 @@ class IssueFixSuggester {
         }
         sort($suggestions);
 
-        return $prefix . ' ' . implode(' or ', $suggestions);
+        return Suggestion::fromString(
+            $prefix . ' ' . implode(' or ', $suggestions)
+        );
     }
 
     /**

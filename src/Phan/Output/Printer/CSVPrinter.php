@@ -25,7 +25,7 @@ final class CSVPrinter implements BufferedPrinterInterface
             $instance->getIssue()->getSeverityName(),
             Issue::getNameForCategory($instance->getIssue()->getCategory()),
             $instance->getIssue()->getType(),
-            $instance->getMessage(),
+            $instance->getMessageAndMaybeSuggestion(),
         ]);
     }
 

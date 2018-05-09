@@ -20,7 +20,7 @@ class IssueInstance
     /** @var string the issue message */
     private $message;
 
-    /** @var ?string If this is non-null, this contains suggestions on how to resolve the error. */
+    /** @var ?Suggestion If this is non-null, this contains suggestions on how to resolve the error. */
     private $suggestion;
 
     /**
@@ -28,13 +28,14 @@ class IssueInstance
      * @param string $file
      * @param int $line
      * @param array<int,string|int|float|FQSEN|Type|UnionType> $template_parameters
+     * @param ?Suggestion $suggestion
      */
     public function __construct(
         Issue $issue,
         string $file,
         int $line,
         array $template_parameters,
-        string $suggestion = null
+        Suggestion $suggestion = null
     ) {
         $this->issue = $issue;
         $this->file = $file;
@@ -90,11 +91,23 @@ class IssueInstance
         return $result;
     }
 
-    /** @return ?string */
+    /**
+     * @return ?Suggestion
+     * @suppress PhanUnreferencedPublicMethod will be used in the future
+     */
     public function getSuggestion()
     {
-        // TODO: Create Phan\Issue\Suggestion, which has a similiar template string syntax?
         return $this->suggestion;
+    }
+
+    /** @return ?string */
+    public function getSuggestionMessage()
+    {
+        $suggestion = $this->suggestion;
+        if (!$suggestion) {
+            return null;
+        }
+        return $suggestion->getMessage() ?: null;
     }
 
     /**
@@ -129,8 +142,21 @@ class IssueInstance
         return $this->message;
     }
 
+    /**
+     * @return string
+     */
+    public function getMessageAndMaybeSuggestion() : string
+    {
+        $message = $this->getMessage();
+        $suggestion = $this->getSuggestionMessage();
+        if ($suggestion) {
+            return $message . ' (' . $suggestion . ')';
+        }
+        return $message;
+    }
+
     public function __toString() : string
     {
-        return "{$this->getFile()}:{$this->getLine()} {$this->getMessage()}";
+        return "{$this->getFile()}:{$this->getLine()} {$this->getMessageAndMaybeSuggestion()}";
     }
 }
