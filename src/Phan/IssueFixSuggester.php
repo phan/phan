@@ -4,10 +4,12 @@ namespace Phan;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
 use Closure;
@@ -22,8 +24,9 @@ use function strtolower;
  *
  * self::suggestSimilarClass(CodeBase, Context, FullyQualifiedClassName, Closure $filter = null, string $prefix = 'Did you mean')
  * self::suggestVariableTypoFix(CodeBase, Context, string $variable_name, string $prefix = 'Did you mean')
- * self::suggestSimilarMethod(CodeBase, Clazz, string $wanted_method_name, bool $is_static)
- * self::suggestSimilarProperty(CodeBase, Clazz, string $wanted_property_name, bool $is_static)
+ * self::suggestSimilarMethod(CodeBase, Context, Clazz, string $wanted_method_name, bool $is_static)
+ * self::suggestSimilarProperty(CodeBase, Context, Clazz, string $wanted_property_name, bool $is_static)
+ * self::suggestSimilarClassConstant(CodeBase, Context, FullyQualifiedClassConstantName)
  */
 class IssueFixSuggester {
     /**
@@ -108,12 +111,12 @@ class IssueFixSuggester {
     /**
      * @return ?string
      */
-    public static function suggestSimilarMethod(CodeBase $code_base, Clazz $class, string $wanted_method_name, bool $is_static)
+    public static function suggestSimilarMethod(CodeBase $code_base, Context $context, Clazz $class, string $wanted_method_name, bool $is_static)
     {
         if (Config::getValue('disable_suggestions')) {
             return null;
         }
-        $method_set = self::suggestSimilarMethodMap($code_base, $class, $wanted_method_name, $is_static);
+        $method_set = self::suggestSimilarMethodMap($code_base, $context, $class, $wanted_method_name, $is_static);
         if (count($method_set) === 0) {
             return null;
         }
@@ -130,29 +133,43 @@ class IssueFixSuggester {
     /**
      * @return array<string,Method>
      */
-    public static function suggestSimilarMethodMap(CodeBase $code_base, Clazz $class, string $wanted_method_name, bool $is_static) : array
+    public static function suggestSimilarMethodMap(CodeBase $code_base, Context $context, Clazz $class, string $wanted_method_name, bool $is_static) : array
     {
         $methods = $class->getMethodMap($code_base);
         if (count($methods) > Config::getValue('suggestion_check_limit')) {
             return [];
         }
-        $usable_methods = self::filterSimilarMethods($methods, $class, $is_static);
+        $usable_methods = self::filterSimilarMethods($code_base, $context, $methods, $is_static);
         return self::getSuggestionsForStringSet($wanted_method_name, $usable_methods);
+    }
+
+    /**
+     * @return ?FullyQualifiedClassName
+     */
+    private static function maybeGetClassInCurrentScope(Context $context)
+    {
+        if ($context->isInClassScope()) {
+            return $context->getClassFQSEN();
+        }
+        return null;
     }
 
     /**
      * @param array<string,Method> $methods
      * @return array<string,Method> a subset of those methods
      */
-    private static function filterSimilarMethods(array $methods, Clazz $class, bool $is_static) {
+    private static function filterSimilarMethods(CodeBase $code_base, Context $context, array $methods, bool $is_static)
+    {
+        $class_fqsen_in_current_scope = self::maybeGetClassInCurrentScope($context);
+
         $candidates = [];
         foreach ($methods as $method_name => $method) {
             if ($is_static && !$method->isStatic()) {
                 // Don't suggest instance methods to replace static methods
                 continue;
             }
-            if ($method->isPrivate() && $method->getDefiningClassFQSEN() !== $class->getFQSEN()) {
-                // Don't suggest inherited private methods
+            if (!$method->isAccessibleFromClass($code_base, $class_fqsen_in_current_scope)) {
+                // Don't suggest inaccessible private or protected methods.
                 continue;
             }
             $candidates[$method_name] = $method;
@@ -179,12 +196,15 @@ class IssueFixSuggester {
     /**
      * @return ?string
      */
-    public static function suggestSimilarProperty(CodeBase $code_base, Clazz $class, string $wanted_property_name, bool $is_static)
+    public static function suggestSimilarProperty(CodeBase $code_base, Context $context, Clazz $class, string $wanted_property_name, bool $is_static)
     {
         if (Config::getValue('disable_suggestions')) {
             return null;
         }
-        $property_set = self::suggestSimilarPropertyMap($code_base, $class, $wanted_property_name, $is_static);
+        if (strlen($wanted_property_name) <= 1) {
+            return null;
+        }
+        $property_set = self::suggestSimilarPropertyMap($code_base, $context, $class, $wanted_property_name, $is_static);
         if (count($property_set) === 0) {
             return null;
         }
@@ -200,13 +220,13 @@ class IssueFixSuggester {
     /**
      * @return array<string,Property>
      */
-    public static function suggestSimilarPropertyMap(CodeBase $code_base, Clazz $class, string $wanted_property_name, bool $is_static) : array
+    public static function suggestSimilarPropertyMap(CodeBase $code_base, Context $context, Clazz $class, string $wanted_property_name, bool $is_static) : array
     {
         $property_map = $class->getPropertyMap($code_base);
         if (count($property_map) > Config::getValue('suggestion_check_limit')) {
             return [];
         }
-        $usable_property_map = self::filterSimilarProperties($property_map, $class, $is_static);
+        $usable_property_map = self::filterSimilarProperties($code_base, $context, $property_map, $is_static);
         return self::getSuggestionsForStringSet($wanted_property_name, $usable_property_map);
     }
 
@@ -214,22 +234,87 @@ class IssueFixSuggester {
      * @param array<string,Property> $property_map
      * @return array<string,Property> a subset of those methods
      */
-    private static function filterSimilarProperties(array $property_map, Clazz $class, bool $is_static) {
+    private static function filterSimilarProperties(CodeBase $code_base, Context $context, array $property_map, bool $is_static)
+    {
+        $class_fqsen_in_current_scope = self::maybeGetClassInCurrentScope($context);
         $candidates = [];
         foreach ($property_map as $property_name => $property) {
             if ($is_static !== $property->isStatic()) {
                 // Don't suggest instance properties to replace static properties
                 continue;
             }
-            if ($property->isPrivate() && $property->getDefiningClassFQSEN() !== $class->getFQSEN()) {
-                // Don't suggest inherited private properties
+            if (!$property->isAccessibleFromClass($code_base, $class_fqsen_in_current_scope)) {
+                // Don't suggest inaccessible private or protected properties.
                 continue;
             }
+            // TODO: Check for access to protected outside of a class
             if ($property->isDynamicProperty()) {
                 // Skip dynamically added properties
                 continue;
             }
             $candidates[$property_name] = $property;
+        }
+        return $candidates;
+    }
+
+    /**
+     * @return ?string
+     */
+    public static function suggestSimilarClassConstant(CodeBase $code_base, Context $context, FullyQualifiedClassConstantName $class_constant_fqsen)
+    {
+        if (Config::getValue('disable_suggestions')) {
+            return null;
+        }
+        $constant_name = $class_constant_fqsen->getName();
+        if (strlen($constant_name) <= 1) {
+            return null;
+        }
+        $class_fqsen = $class_constant_fqsen->getFullyQualifiedClassName();
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return null;
+        }
+        $class = $code_base->getClassByFQSEN($class_fqsen);
+        $class_constant_map = self::suggestSimilarClassConstantMap($code_base, $context, $class, $constant_name);
+        if (count($class_constant_map) === 0) {
+            return null;
+        }
+        uksort($class_constant_map, 'strcmp');
+        $suggestions = [];
+        foreach ($class_constant_map as $constant_name => $_) {
+            $suggestions[] = $class_fqsen . '::' . $constant_name;
+        }
+        return 'Did you mean ' . implode(' or ', $suggestions);
+    }
+
+    /**
+     * @return array<string,ClassConstant>
+     */
+    private static function suggestSimilarClassConstantMap(CodeBase $code_base, Context $context, Clazz $class, string $constant_name) : array
+    {
+        $constant_map = $class->getConstantMap($code_base);
+        if (count($constant_map) > Config::getValue('suggestion_check_limit')) {
+            return [];
+        }
+        $usable_constant_map = self::filterSimilarConstants($code_base, $context, $constant_map);
+        $result = self::getSuggestionsForStringSet($constant_name, $usable_constant_map);
+        return $result;
+    }
+
+    /**
+     * @param array<string,ClassConstant> $constant_map
+     * @return array<string,ClassConstant> a subset of those methods
+     */
+    private static function filterSimilarConstants(CodeBase $code_base, Context $context, array $constant_map) : array {
+        $class_fqsen_in_current_scope = self::maybeGetClassInCurrentScope($context);
+
+        $candidates = [];
+        foreach ($constant_map as $constant_name => $constant) {
+            if (!$constant->isAccessibleFromClass($code_base, $class_fqsen_in_current_scope)) {
+                // Don't suggest inherited private properties
+                continue;
+            }
+            // TODO: Check for access to protected outside of a class
+            $candidates[$constant_name] = $constant;
         }
         return $candidates;
     }
@@ -269,6 +354,8 @@ class IssueFixSuggester {
 
                 if (!$property->isDynamicProperty()) {
                     // Don't suggest inherited private properties that can't be accessed
+                    // - This doesn't need to be checking if the visibility is protected,
+                    //   because it's looking for properties of the current class
                     if (!$property->isPrivate() || $property->getDefiningClassFQSEN() === $class_in_scope->getFQSEN()) {
                         $suggestion_prefix = $property->isStatic() ? 'self::$' : '$this->';
                         $suggestions[] = $suggestion_prefix . $variable_name;
@@ -289,6 +376,7 @@ class IssueFixSuggester {
      *
      * @param array<string,mixed> $potential_candidates
      * @return array<string,mixed> a subset of $potential_candidates
+     * @suppress PhanPluginUnusedVariable false positive in loop
      */
     public static function getSuggestionsForStringSet(string $target, array $potential_candidates)
     {
@@ -310,6 +398,7 @@ class IssueFixSuggester {
             $distance = levenshtein(strtolower($name), $search_name);
             if ($distance <= $min_found_distance) {
                 if ($distance < $min_found_distance) {
+                    $min_found_distance = $distance;
                     $best_matches = [];
                 }
                 $best_matches[$name] = $_;

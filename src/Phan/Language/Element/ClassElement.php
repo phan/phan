@@ -200,4 +200,53 @@ abstract class ClassElement extends AddressableElement
         // Get the namespace that the class is within
         return $this->getClassFQSEN()->getNamespace() ?: '\\';
     }
+
+    /**
+     * @param CodeBase $code_base used for access checks to protected properties
+     * @param ?FullyQualifiedClassName $accessing_class_fqsen the class FQSEN of the current scope.
+     *                                    null if in the global scope.
+     */
+    public function isAccessibleFromClass(CodeBase $code_base, $accessing_class_fqsen) : bool
+    {
+        if ($this->isPublic()) {
+            return true;
+        }
+        if (!$accessing_class_fqsen) {
+            // Accesses from outside class scopes can only access public fqsens
+            return false;
+        }
+        $defining_fqsen = $this->getDefiningClassFQSEN();
+        if ($defining_fqsen === $accessing_class_fqsen) {
+            return true;
+        }
+        if ($this->isPrivate()) {
+            return false;
+        }
+        return $this->checkCanAccessProtectedElement($code_base, $defining_fqsen, $accessing_class_fqsen);
+    }
+
+    /**
+     * Check if a class can access a protected property defined in another class.
+     *
+     * Precondition: The property in $defining_fqsen is protected.
+     */
+    private function checkCanAccessProtectedElement(CodeBase $code_base, FullyQualifiedClassName $defining_fqsen, FullyQualifiedClassName $accessing_class_fqsen) : bool {
+        $accessing_class_type = $accessing_class_fqsen->asType();
+        $type_of_class_of_property = $defining_fqsen->asType();
+
+        // If the definition of the property is protected,
+        // then the subclasses of the defining class can access it.
+        foreach ($accessing_class_type->asExpandedTypes($code_base)->getTypeSet() as $type) {
+            if ($type->canCastToType($type_of_class_of_property)) {
+                return true;
+            }
+        }
+        // and base classes of the defining class can access it
+        foreach ($type_of_class_of_property->asExpandedTypes($code_base)->getTypeSet() as $type) {
+            if ($type->canCastToType($accessing_class_type)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

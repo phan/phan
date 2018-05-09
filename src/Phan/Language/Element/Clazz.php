@@ -807,6 +807,8 @@ class Clazz extends AddressableElement
      * The context of the caller requesting the property
      *
      * @return bool - is $property accessible from $context
+     *
+     * TODO: this can probably be replaced with ClassElement->isAccessibleFromClass()
      */
     private function isPropertyAccessible(
         CodeBase $code_base,
@@ -1010,7 +1012,7 @@ class Clazz extends AddressableElement
                 $context->getFile(),
                 $context->getLineNumberStart(),
                 [ "{$this->getFQSEN()}::\$$name}" ],
-                IssueFixSuggester::suggestSimilarProperty($code_base, $this, $name, $is_static)
+                IssueFixSuggester::suggestSimilarProperty($code_base, $context, $this, $name, $is_static)
             )
         );
     }
@@ -1148,7 +1150,7 @@ class Clazz extends AddressableElement
                         (string)$constant_fqsen,
                         (string)$this->getFQSEN()
                     ],
-                    IssueFixSuggester::suggestSimilarClass($code_base, $context, $this->getFQSEN())
+                    IssueFixSuggester::suggestSimilarClassConstant($code_base, $context, $constant_fqsen)
                 )
             );
         }

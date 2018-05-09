@@ -4,14 +4,17 @@ Phan NEWS
 ------------------------
 
 New features:
-+ For `PhanUndeclaredMethod` and `PhanUndeclaredStaticMethod` issues, suggest visible methods with similar names.
-+ For `PhanUndeclaredProperty` and `PhanUndeclaredStaticProperty` issues, suggest visible properties with similar names.
++ For `PhanUndeclaredMethod` and `PhanUndeclaredStaticMethod` issues, suggest visible methods (in the same class) with similar names.
++ For `PhanUndeclaredConstant` issues (for class constants), suggest visible constants (in the same class) with similar names.
++ For `PhanUndeclaredProperty` and `PhanUndeclaredStaticProperty` issues, suggest visible properties (in the same class) with similar names.
 + When suggesting alternatives to undeclared classes,
   also include suggestions for similar class names within the same namespace as the undeclared class.
   (Comparing Levenshtein distance)
 + Make `phan_client` include any suggestion alongside the issue message (for daemon mode).
 
 Bug fixes
++ Fix a bug generating variable suggestions when there were multiple similar variable names
+  (The suggestions that would show up might not be the best set of suggestions)
 + Include text from suggestions in Language Server Protocol output
 + Fix a crash in the tolerant-php-parser polyfill seen when typing out an echo statement
 + Fix incorrect suggestions to use properties (of the same name) instead of undeclared variables in class scopes.

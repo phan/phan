@@ -23,6 +23,7 @@ use Phan\Language\Element\TraitAdaptations;
 use Phan\Language\Element\TraitAliasSource;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
@@ -665,7 +666,7 @@ class ContextNode
                     $this->context->getFile(),
                     $this->node->lineno ?? 0,
                     [ (string)$method_fqsen ],
-                    IssueFixSuggester::suggestSimilarMethod($this->code_base, $first_class, $method_name, $is_static)
+                    IssueFixSuggester::suggestSimilarMethod($this->code_base, $this->context, $first_class, $method_name, $is_static)
                 )
             );
         }
@@ -675,7 +676,7 @@ class ContextNode
                 $this->context->getFile(),
                 $this->node->lineno ?? 0,
                 [ (string)$method_fqsen ],
-                IssueFixSuggester::suggestSimilarMethod($this->code_base, $first_class, $method_name, $is_static)
+                IssueFixSuggester::suggestSimilarMethod($this->code_base, $this->context, $first_class, $method_name, $is_static)
             )
         );
     }
@@ -1172,7 +1173,7 @@ class ContextNode
         if ($class_fqsen) {
             $suggestion = null;
             if ($class) {
-                $suggestion = IssueFixSuggester::suggestSimilarProperty($this->code_base, $class, $property_name, $is_static);
+                $suggestion = IssueFixSuggester::suggestSimilarProperty($this->code_base, $this->context, $class, $property_name, $is_static);
             }
 
             if ($is_static) {
@@ -1508,11 +1509,13 @@ class ContextNode
 
         // If no class is found, we'll emit the error elsewhere
         if ($class_fqsen) {
+            $class_constant_fqsen = FullyQualifiedClassConstantName::make($class_fqsen, $constant_name);
             throw new IssueException(
                 Issue::fromType(Issue::UndeclaredConstant)(
                     $this->context->getFile(),
                     $this->node->lineno ?? 0,
-                    [ "$class_fqsen::$constant_name" ]
+                    [ "$class_fqsen::$constant_name" ],
+                    IssueFixSuggester::suggestSimilarClassConstant($this->code_base, $this->context, $class_constant_fqsen)
                 )
             );
         }

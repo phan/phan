@@ -1,2 +1,2 @@
-%s:18 PhanUndeclaredProperty Reference to undeclared property \B->x (Did you mean expr->p)
+%s:18 PhanUndeclaredProperty Reference to undeclared property \B->x
 %s:19 PhanUndeclaredConstant Reference to undeclared constant \A::y

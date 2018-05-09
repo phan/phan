@@ -1,0 +1,9 @@
+%s:16 PhanUndeclaredConstant Reference to undeclared constant \SubClass485::base_const (Did you mean \SubClass485::base__const)
+%s:17 PhanUndeclaredConstant Reference to undeclared constant \SubClass485::casesensitive (Did you mean \SubClass485::CASESENSITIVE or \SubClass485::CaseSensitive)
+%s:18 PhanUndeclaredConstant Reference to undeclared constant \SubClass485::_casesensitive (Did you mean \SubClass485::CASESENSITIVE or \SubClass485::CaseSensitive)
+%s:20 PhanUndeclaredConstant Reference to undeclared constant \SubClass485::private_const_in_same_class (Did you mean \SubClass485::PrivateConstInSameClass)
+%s:21 PhanUndeclaredConstant Reference to undeclared constant \SubClass485::privateConstInSameClass (Did you mean \SubClass485::PrivateConstInSameClass)
+%s:22 PhanUndeclaredConstant Reference to undeclared constant \SubClass485::otherconst (Did you mean \SubClass485::other_const)
+%s:25 PhanUndeclaredConstant Reference to undeclared constant \SubClass485::base_const
+%s:28 PhanUndeclaredConstant Reference to undeclared constant \SubClass485::base_const
+%s:29 PhanUndeclaredConstant Reference to undeclared constant \SubClass485::casesensitive (Did you mean \SubClass485::CASESENSITIVE or \SubClass485::CaseSensitive)

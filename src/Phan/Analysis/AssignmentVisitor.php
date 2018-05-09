@@ -691,7 +691,13 @@ class AssignmentVisitor extends AnalysisVisitor
                 Issue::UndeclaredProperty,
                 $node->lineno ?? 0,
                 ["{$first_class->getFQSEN()}->$property_name"],
-                IssueFixSuggester::suggestSimilarProperty($this->code_base, $first_class, $property_name, false)
+                IssueFixSuggester::suggestSimilarProperty(
+                    $this->code_base,
+                    $this->context,
+                    $first_class,
+                    $property_name,
+                    false
+                )
             );
         } else {
             // If we hit this part, we couldn't figure out
