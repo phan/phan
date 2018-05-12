@@ -83,7 +83,7 @@ final class GenericIterableType extends IterableType
             }
             return true;
         }
-        return parent::canCastToType($type);
+        return parent::canCastToNonNullableType($type);
     }
 
     public function __toString() : string

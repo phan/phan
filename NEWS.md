@@ -1,5 +1,11 @@
 Phan NEWS
 
+12 May 2018, Phan 0.12.8
+------------------------
+
+Bug fixes
++ Fix a crash that occurs when the `iterable<[KeyType,]ValueType>` annotation is used in phpdoc. (#1685)
+
 08 May 2018, Phan 0.12.7
 ------------------------
 
