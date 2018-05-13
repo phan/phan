@@ -28,6 +28,7 @@ use Phan\Library\Set;
 use ReflectionClass;
 
 use function strtolower;
+use function strlen;
 
 /**
  * A CodeBase represents the known state of a code base
@@ -1510,10 +1511,17 @@ class CodeBase
      */
     private $class_names_in_namespace = null;
 
+    /**
+     * @var array<string,array<int,array<string,string>>>|null
+     * Maps lowercase class name to (requested approximate length to (lowercase class => class))
+     */
+    private $class_names_near_strlen_in_namespace = null;
+
     private function invalidateDependentCacheEntries()
     {
         $this->namespaces_for_class_names = null;
         $this->class_names_in_namespace = null;
+        $this->class_names_near_strlen_in_namespace = null;
     }
 
     private function getNamespacesForClassNames()
@@ -1552,7 +1560,8 @@ class CodeBase
     /**
      * @return array<int,FullyQualifiedClassName> (Don't rely on unique names)
      */
-    private function getClassFQSENList() {
+    private function getClassFQSENList()
+    {
         $class_fqsen_list = [];
         // NOTE: This helper performs shallow clones to avoid interfering with the iteration pointer
         // in other iterations over these class maps
@@ -1571,6 +1580,38 @@ class CodeBase
     private function getClassNamesInNamespace() : array
     {
         return $this->class_names_in_namespace ?? ($this->class_names_in_namespace = $this->computeClassNamesInNamespace());
+    }
+
+    /**
+     * This limits the suggested class names from getClassNamesInNamespace for $namespace_lower to
+     * the names which are similar enough in length to be a potential suggestion
+     */
+    private function getSimilarLengthClassNamesForNamespace(string $namespace, int $strlen) : array
+    {
+        $namespace = \strtolower($namespace);
+        $class_names = $this->getClassNamesInNamespace()[$namespace] ?? [];
+        if (count($class_names) === 0) {
+            return $class_names;
+        }
+        return $this->class_names_near_strlen_in_namespace[$namespace][$strlen]
+            ?? ($this->class_names_near_strlen_in_namespace[$namespace][$strlen] = $this->computeSimilarLengthClassNamesForNamespace($class_names, $strlen));
+    }
+
+    /**
+     * For use with IssueFixSuggester::getSuggestionsForStringSet
+     * @param array<string,string> $class_names
+     */
+    private function computeSimilarLengthClassNamesForNamespace(array $class_names, int $strlen)
+    {
+        $max_levenshtein_distance = (int)(1 + $strlen / 6);
+        $results = [];
+
+        foreach ($class_names as $name_lower => $name) {
+            if (\abs(strlen($name) - $strlen) <= $max_levenshtein_distance) {
+                $results[$name_lower] = $name;
+            }
+        }
+        return $results;
     }
 
     /**
@@ -1607,7 +1648,7 @@ class CodeBase
         $namespaces_for_class_names = $this->getNamespacesForClassNames();
 
         $namespaces_for_class = $namespaces_for_class_names[$class_name_lower] ?? [];
-        if (count($namespaces_for_class) === 0)  {
+        if (count($namespaces_for_class) === 0) {
             return [];
         }
         // We're looking for similar names, not identical ones
@@ -1616,40 +1657,90 @@ class CodeBase
 
         usort($namespaces_for_class, 'strcmp');
 
-        return array_map(function(string $namespace_name) use ($class_name) : FullyQualifiedClassName {
+        return array_map(function (string $namespace_name) use ($class_name) : FullyQualifiedClassName {
             return FullyQualifiedClassName::make($namespace_name, $class_name);
         }, $namespaces_for_class);
     }
 
     /**
-     * @return array<int,FullyQualifiedClassName> 0 or more namespaced class names found in this code base
+     * @internal
+     */
+    const _NON_CLASS_TYPE_SUGGESTION_SET = [
+        'array'     => 'array',
+        'bool'      => 'bool',
+        'callable'  => 'callable',
+        'false'     => 'false',
+        'float'     => 'float',
+        'int'       => 'int',
+        'iterable'  => 'iterable',
+        'mixed'     => 'mixed',
+        'null'      => 'null',
+        'object'    => 'object',
+        'resource'  => 'resource',
+        'scalar'    => 'scalar',
+        'self'      => 'self',
+        'static'    => 'static',
+        'string'    => 'string',
+        'true'      => 'true',
+        // 'void' only makes sense for return type suggestions
+    ];
+
+    /**
+     * @param int $class_suggest_type value from IssueFixSuggester::CLASS_SUGGEST_*
+     *
+     * @return array<int,FullyQualifiedClassName|string> 0 or more namespaced class names found in this code base
+     *
+     *  NOTE: Non-classes are always represented as strings (and will be suggested even if there is a namespace),
+     *  classes are always represented as FullyQualifiedClassName
      */
     public function suggestSimilarClassInSameNamespace(
         FullyQualifiedClassName $missing_class,
-        Context $unused_context
+        Context $unused_context,
+        int $class_suggest_type = IssueFixSuggester::CLASS_SUGGEST_ONLY_CLASSES
     ) : array {
         $namespace = $missing_class->getNamespace();
-        $namespace_lower = strtolower($namespace);
         $class_name_lower = strtolower($missing_class->getName());
 
-        $class_names_in_namespace = $this->getClassNamesInNamespace()[$namespace_lower] ?? [];
-        unset($class_names_in_namespace[$class_name_lower]);
+        $class_names_in_namespace = $this->getSimilarLengthClassNamesForNamespace($namespace, strlen($class_name_lower));
 
-        if (count($class_names_in_namespace) === 0 || count($class_names_in_namespace) > Config::getValue('suggestion_check_limit')) {
+        if (count($class_names_in_namespace) > Config::getValue('suggestion_check_limit')) {
+            return [];
+        }
+
+        $suggestion_set = $class_names_in_namespace;
+        if ($class_suggest_type !== IssueFixSuggester::CLASS_SUGGEST_ONLY_CLASSES) {
+            // TODO: Could limit earlier here and precompute (based on similar string length)
+            $suggestion_set += self::_NON_CLASS_TYPE_SUGGESTION_SET;
+            if ($class_suggest_type === IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES_AND_VOID) {
+                $suggestion_set['void'] = 'void';
+            }
+        }
+        unset($suggestion_set[$class_name_lower]);
+        if (count($suggestion_set) === 0) {
             return [];
         }
 
         // We're looking for similar names, not identical names
-        $suggested_class_names = array_keys(IssueFixSuggester::getSuggestionsForStringSet($class_name_lower, $class_names_in_namespace));
+        $suggested_class_names = \array_keys(
+            IssueFixSuggester::getSuggestionsForStringSet($class_name_lower, $suggestion_set)
+        );
 
-        if (count($suggested_class_names) === 0) {
+        if (\count($suggested_class_names) === 0) {
             return [];
         }
         usort($suggested_class_names, 'strcmp');
 
-        return array_map(function(string $class_name_lower) use ($namespace, $class_names_in_namespace) : FullyQualifiedClassName {
+        /**
+         * @return string|FullyQualifiedClassName
+         */
+        return array_map(function (string $class_name_lower) use ($namespace, $class_names_in_namespace) {
+            if (!\array_key_exists($class_name_lower, $class_names_in_namespace)) {
+                // This is a builtin type
+                return $class_name_lower;
+            }
             $class_name = $class_names_in_namespace[$class_name_lower];
-            return FullyQualifiedClassName::make($namespace, $class_name);;
+            return FullyQualifiedClassName::make($namespace, $class_name);
+            ;
         }, $suggested_class_names);
     }
 }

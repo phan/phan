@@ -18,4 +18,6 @@ class MyClass {
     public static $y;
     /** @var \Closure[][] should not warn */
     public static $z;
+    /** @var strong should warn and suggest */
+    public static $str;
 }
