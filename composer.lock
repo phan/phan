@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "b0ad41119a7116c67bec971d6e77cc62",
+    "content-hash": "e444e3a5bc2e1812654d9c74f6f05e5c",
     "packages": [
         {
             "name": "composer/semver",
@@ -155,16 +155,16 @@
         },
         {
             "name": "microsoft/tolerant-php-parser",
-            "version": "v0.0.10",
+            "version": "v0.0.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Microsoft/tolerant-php-parser.git",
-                "reference": "694b1538bb73fdcf1b8ea8e20f5acd03aae594e9"
+                "reference": "7647b60b13afd7e929aeef3de2c35696266c4da5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Microsoft/tolerant-php-parser/zipball/694b1538bb73fdcf1b8ea8e20f5acd03aae594e9",
-                "reference": "694b1538bb73fdcf1b8ea8e20f5acd03aae594e9",
+                "url": "https://api.github.com/repos/Microsoft/tolerant-php-parser/zipball/7647b60b13afd7e929aeef3de2c35696266c4da5",
+                "reference": "7647b60b13afd7e929aeef3de2c35696266c4da5",
                 "shasum": ""
             },
             "require": {
@@ -192,7 +192,7 @@
                 }
             ],
             "description": "Tolerant PHP-to-AST parser designed for IDE usage scenarios",
-            "time": "2018-03-18T03:12:58+00:00"
+            "time": "2018-05-12T19:12:14+00:00"
         },
         {
             "name": "netresearch/jsonmapper",

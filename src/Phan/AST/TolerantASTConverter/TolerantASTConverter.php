@@ -1292,8 +1292,8 @@ final class TolerantASTConverter
             'Microsoft\PhpParser\Node\TraitSelectOrAliasClause' => function (PhpParser\Node\TraitSelectOrAliasClause $n, int $start_line) : ast\Node {
                 // FIXME targetName phpdoc is wrong.
                 $name = $n->name;
-                $target_name = $n->targetName;
                 if ($n->asOrInsteadOfKeyword->kind === TokenKind::InsteadOfKeyword) {
+                    $target_name_list = array_merge([$n->targetName], $n->remainingTargetNames ?? []);
                     $member_name_list = $name->memberName;
                     if (\is_object($member_name_list)) {
                         $member_name_list = [$member_name_list];
@@ -1301,12 +1301,11 @@ final class TolerantASTConverter
                     // Trait::y insteadof OtherTrait
                     $trait_node = self::phpParserNonValueNodeToAstNode($name->scopeResolutionQualifier);
                     $method_node = self::phpParserNameListToAstNameList($member_name_list, $start_line);
-                    $target_node = self::phpParserNonValueNodeToAstNode($target_name);
+                    $target_node = self::phpParserNameListToAstNameList($target_name_list, $start_line);
                     $outer_method_node = new ast\Node(ast\AST_METHOD_REFERENCE, 0, [
                         'class' => $trait_node,
                         'method' => $method_node->children[0]
                     ], $start_line);
-                    $target_node = new ast\Node(ast\AST_NAME_LIST, 0, [$target_node], $start_line);
 
                     assert(\count($member_name_list) === 1);  // TODO: can this be simplified?
                     $children = [
@@ -1323,6 +1322,7 @@ final class TolerantASTConverter
                         $method_node = self::phpParserNameToString($name);
                     }
                     $flags = self::phpParserVisibilityToAstVisibility($n->modifiers, false);
+                    $target_name = $n->targetName;
                     $target_name = $target_name !== null ? self::phpParserNameToString($target_name) : null;
                     $children = [
                         'method' => new ast\Node(ast\AST_METHOD_REFERENCE, 0, [
