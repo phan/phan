@@ -28,13 +28,18 @@ use function strtolower;
  * self::suggestSimilarProperty(CodeBase, Context, Clazz, string $wanted_property_name, bool $is_static)
  * self::suggestSimilarClassConstant(CodeBase, Context, FullyQualifiedClassConstantName)
  */
-class IssueFixSuggester {
+class IssueFixSuggester
+{
     /**
      * @param Closure(Clazz):bool $class_closure
      * @return Closure(FullyQualifiedClassName):bool
      */
-    public static function createFQSENFilterFromClassFilter(CodeBase $code_base, Closure $class_closure) {
-        return function(FullyQualifiedClassName $alternate_fqsen) use ($code_base, $class_closure) : bool {
+    public static function createFQSENFilterFromClassFilter(CodeBase $code_base, Closure $class_closure)
+    {
+        return function ($alternate_fqsen) use ($code_base, $class_closure) : bool {
+            if (!($alternate_fqsen instanceof FullyQualifiedClassName)) {
+                return false;
+            }
             if (!$code_base->hasClassWithFQSEN($alternate_fqsen)) {
                 return false;
             }
@@ -47,7 +52,7 @@ class IssueFixSuggester {
      */
     public static function createFQSENFilterForClasslikeCategories(CodeBase $code_base, bool $allow_class, bool $allow_trait, bool $allow_interface)
     {
-        return self::createFQSENFilterFromClassFilter($code_base, function(Clazz $class) use ($allow_class, $allow_trait, $allow_interface) : bool {
+        return self::createFQSENFilterFromClassFilter($code_base, function (Clazz $class) use ($allow_class, $allow_trait, $allow_interface) : bool {
             if ($class->isTrait()) {
                 return $allow_trait;
             } elseif ($class->isInterface()) {
@@ -74,17 +79,33 @@ class IssueFixSuggester {
         return self::suggestSimilarClass($code_base, $context, $class_fqsen, $filter);
     }
 
+    const DEFAULT_CLASS_SUGGESTION_PREFIX = 'Did you mean';
+
+    const CLASS_SUGGEST_ONLY_CLASSES = 0;
+    const CLASS_SUGGEST_CLASSES_AND_TYPES = 1;
+    const CLASS_SUGGEST_CLASSES_AND_TYPES_AND_VOID = 2;
+
     /**
      * Returns a message suggesting a class name that is similar to the provided undeclared class
      *
-     * @param null|Closure(FullyQualifiedClassName):bool $filter
+     * @param null|Closure(FullyQualifiedClassName|string):bool $filter
+     * @param int $class_suggest_type whether to include non-classes such as 'int', 'callable', etc.
      * @return ?Suggestion
      */
-    public static function suggestSimilarClass(CodeBase $code_base, Context $context, FullyQualifiedClassName $class_fqsen, $filter = null, string $prefix = 'Did you mean')
-    {
+    public static function suggestSimilarClass(
+        CodeBase $code_base,
+        Context $context,
+        FullyQualifiedClassName $class_fqsen,
+        $filter = null,
+        string $prefix = null,
+        int $class_suggest_type = self::CLASS_SUGGEST_ONLY_CLASSES
+    ) {
+        if (!$prefix) {
+            $prefix = self::DEFAULT_CLASS_SUGGESTION_PREFIX;
+        }
         $suggested_fqsens = array_merge(
             $code_base->suggestSimilarClassInOtherNamespace($class_fqsen, $context),
-            $code_base->suggestSimilarClassInSameNamespace($class_fqsen, $context)
+            $code_base->suggestSimilarClassInSameNamespace($class_fqsen, $context, $class_suggest_type)
         );
         if ($filter) {
             $suggested_fqsens = array_filter($suggested_fqsens, $filter);
@@ -92,7 +113,14 @@ class IssueFixSuggester {
         if (count($suggested_fqsens) === 0) {
             return null;
         }
-        $suggestion_text = $prefix . ' ' . implode(' or ', array_map(function (FullyQualifiedClassName $fqsen) use ($code_base) : string {
+
+        /**
+         * @param FullyQualifiedClassName|string $fqsen
+         */
+        $generate_type_representation = function ($fqsen) use ($code_base) : string {
+            if (\is_string($fqsen)) {
+                return $fqsen;  // Not a class name, e.g. 'int', 'callable', etc.
+            }
             $category = 'classlike';
             if ($code_base->hasClassWithFQSEN($fqsen)) {
                 $class = $code_base->getClassByFQSEN($fqsen);
@@ -105,7 +133,8 @@ class IssueFixSuggester {
                 }
             }
             return $category . ' ' . $fqsen->__toString();
-        }, $suggested_fqsens));
+        };
+        $suggestion_text = $prefix . ' ' . implode(' or ', array_map($generate_type_representation, $suggested_fqsens));
 
         return Suggestion::fromString($suggestion_text);
     }
@@ -312,7 +341,8 @@ class IssueFixSuggester {
      * @param array<string,ClassConstant> $constant_map
      * @return array<string,ClassConstant> a subset of those methods
      */
-    private static function filterSimilarConstants(CodeBase $code_base, Context $context, array $constant_map) : array {
+    private static function filterSimilarConstants(CodeBase $code_base, Context $context, array $constant_map) : array
+    {
         $class_fqsen_in_current_scope = self::maybeGetClassInCurrentScope($context);
 
         $candidates = [];

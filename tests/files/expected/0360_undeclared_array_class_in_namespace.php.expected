@@ -1,3 +1,4 @@
 %s:12 PhanUndeclaredTypeParameter Parameter of undeclared type \Foo\Baz\MissingClass[][][]
 %s:12 PhanUndeclaredTypeReturnType Return type of myMethod is undeclared type \Foo\Bat\OtherMissingClass[][]
-%s:18 PhanUndeclaredTypeProperty Property \Foo\Bar\MyClass::y has undeclared type \Foo\Bar\Closure[][]
+%s:18 PhanUndeclaredTypeProperty Property \Foo\Bar\MyClass::y has undeclared type \Foo\Bar\Closure[][] (Did you mean class \Closure)
+%s:22 PhanUndeclaredTypeProperty Property \Foo\Bar\MyClass::str has undeclared type \Foo\Bar\strong (Did you mean string)

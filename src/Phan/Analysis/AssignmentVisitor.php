@@ -1123,7 +1123,6 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         if (!$assign_type_expanded->hasArrayLike()) {
-
             if ($assign_type->hasType($string_type)) {
                 // Are we assigning to a variable/property of type 'string' (with no ArrayAccess or array types)?
                 if (\is_null($dim_type)) {

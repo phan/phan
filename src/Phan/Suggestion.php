@@ -10,7 +10,8 @@ final class Suggestion
     /** @var string the text of the suggestion */
     private $message;
 
-    private function __construct(string $message) {
+    private function __construct(string $message)
+    {
         $this->message = $message;
     }
 

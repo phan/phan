@@ -87,16 +87,16 @@ class ClassInheritanceAnalyzer
     ) : bool {
         if (!$code_base->hasClassWithFQSEN($fqsen)) {
             $filter = null;
-            switch($issue_type) {
-            case Issue::UndeclaredExtendedClass:
-                $filter = IssueFixSuggester::createFQSENFilterForClasslikeCategories($code_base, true, false, false);
-                break;
-            case Issue::UndeclaredTrait:
-                $filter = IssueFixSuggester::createFQSENFilterForClasslikeCategories($code_base, false, true, false);
-                break;
-            case Issue::UndeclaredInterface:
-                $filter = IssueFixSuggester::createFQSENFilterForClasslikeCategories($code_base, false, false, true);
-                break;
+            switch ($issue_type) {
+                case Issue::UndeclaredExtendedClass:
+                    $filter = IssueFixSuggester::createFQSENFilterForClasslikeCategories($code_base, true, false, false);
+                    break;
+                case Issue::UndeclaredTrait:
+                    $filter = IssueFixSuggester::createFQSENFilterForClasslikeCategories($code_base, false, true, false);
+                    break;
+                case Issue::UndeclaredInterface:
+                    $filter = IssueFixSuggester::createFQSENFilterForClasslikeCategories($code_base, false, false, true);
+                    break;
             }
             $suggestion = IssueFixSuggester::suggestSimilarClass($code_base, $clazz->getContext(), $fqsen, $filter);
 

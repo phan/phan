@@ -27,7 +27,7 @@ final class CallableDeclarationType extends FunctionLikeDeclarationType
     }
 
     /**
-     * @override to stop PhanUndeclaredTypeParameter
+     * @override to prevent Phan from emitting PhanUndeclaredTypeParameter when using this in phpdoc
      */
     public function isNativeType() : bool
     {

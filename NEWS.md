@@ -3,6 +3,15 @@ Phan NEWS
 ?? ??? 2018, Phan 0.12.9 (dev)
 ------------------------
 
+New features:
++ Emit class name suggestions for undeclared types in param, property, return type, and thrown type declarations. (#1689)
+
+  Affects `PhanUndeclaredTypeParameter`, `PhanUndeclaredTypeProperty`, `PhanUndeclaredTypeReturnType`,
+  `PhanUndeclaredTypeThrowsType`, and `PhanInvalidThrowsIs*`
+
+Bug fixes
++ Be more consistent about emitting `PhanUndeclaredType*` for invalid types within array shapes.
+
 12 May 2018, Phan 0.12.8
 ------------------------
 
