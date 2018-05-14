@@ -406,8 +406,10 @@ class AssignmentVisitor extends AnalysisVisitor
             }
 
             $value_node = $child_node->children['value'];
-
-            if ($value_node->kind == \ast\AST_VAR) {
+            if (!($value_node instanceof Node)) {
+                // Skip non-nodes to avoid crash
+                // TODO: Emit a new issue type for https://github.com/phan/phan/issues/1693
+            } elseif ($value_node->kind === \ast\AST_VAR) {
                 $variable = Variable::fromNodeInContext(
                     $value_node,
                     $this->context,
@@ -422,7 +424,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 // Note that we're not creating a new scope, just
                 // adding variables to the existing scope
                 $this->context->addScopeVariable($variable);
-            } elseif ($value_node->kind == \ast\AST_PROP) {
+            } elseif ($value_node->kind === \ast\AST_PROP) {
                 try {
                     $property = (new ContextNode(
                         $this->code_base,

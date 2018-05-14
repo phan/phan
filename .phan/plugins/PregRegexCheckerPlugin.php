@@ -38,6 +38,8 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
             \ob_start();
             \error_clear_last();
             try {
+                // Annoyingly, preg_match would not warn about the `/e` modifier, removed in php 7.
+                // Use `preg_replace` instead (The eval body is empty and phan requires 7.0+ to run)
                 $result = @\preg_replace($pattern, '', '');
                 if ($result === false || $result === null) {
                     $err = \error_get_last() ?? [];

@@ -14,6 +14,7 @@ Plugins
 
 Bug fixes
 + Be more consistent about emitting `PhanUndeclaredType*` for invalid types within array shapes.
++ Avoid a crash when the left hand side of an assignment is invalid. (#1693)
 
 12 May 2018, Phan 0.12.8
 ------------------------
