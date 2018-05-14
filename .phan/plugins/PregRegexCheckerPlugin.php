@@ -38,8 +38,8 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
             \ob_start();
             \error_clear_last();
             try {
-                $result = @\preg_match($pattern, '');
-                if ($result === false) {
+                $result = @\preg_replace($pattern, '', '');
+                if ($result === false || $result === null) {
                     $err = \error_get_last() ?? [];
                     var_export($err);
                     return $err;
@@ -57,7 +57,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
                 $context,
                 'PhanPluginInvalidPregRegex',
                 'Call to {FUNCTION} was passed an invalid regex {STRING_LITERAL}: {DETAILS}',
-                [(string)$function->getFQSEN(), \var_export($pattern, true), \preg_replace('@^preg_match\(\): @', '', $err['message'] ?? 'unknown error')]
+                [(string)$function->getFQSEN(), \var_export($pattern, true), \preg_replace('@^preg_replace\(\): @', '', $err['message'] ?? 'unknown error')]
             );
             return;
         }

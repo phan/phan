@@ -1,0 +1,1 @@
+src/030_preg_replace_flag.php:4 PhanPluginInvalidPregRegex Call to \preg_replace was passed an invalid regex '/(functionName)(arg)/e': The /e modifier is no longer supported, use preg_replace_callback instead

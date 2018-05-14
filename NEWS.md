@@ -9,6 +9,9 @@ New features:
   Affects `PhanUndeclaredTypeParameter`, `PhanUndeclaredTypeProperty`, `PhanUndeclaredTypeReturnType`,
   `PhanUndeclaredTypeThrowsType`, and `PhanInvalidThrowsIs*`
 
+Plugins
++ Make `PhanPregRegexCheckerPlugin` warn about the `/e` modifier on regexes (#1692)
+
 Bug fixes
 + Be more consistent about emitting `PhanUndeclaredType*` for invalid types within array shapes.
 
