@@ -67,9 +67,13 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
         try {
             $parser_node = static::phpParserParse($file_contents, $errors);
             self::findNodeAtOffset($parser_node, $byte_offset);
+            fwrite(STDERR, "Seeking node: " . json_encode(self::$closest_node_or_token). "\n");
             $result = $this->phpParserToPhpast($parser_node, $version, $file_contents);
             $original_node = $parser_node;
             return $result;
+        } catch (\Throwable $e) {
+            fwrite(STDERR, "saw exception: " . $e->getMessage());
+            throw $e;
         } finally {
             self::$closest_node_or_token = null;
         }
@@ -89,31 +93,54 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
         self::findNodeAtOffsetRecursive($parser_node, $offset);
     }
 
-    private static function findNodeAtOffsetRecursive($parser_node, int $offset) : bool
+    const _KINDS_TO_RETURN_PARENT = [TokenKind::Name, TokenKind::VariableName];
+
+    /**
+     * @return bool|PhpParser\Node|PhpParser\Token (Returns $parser_node if that node was what the cursor is pointing directly to)
+     */
+    private static function findNodeAtOffsetRecursive($parser_node, int $offset)
     {
-        foreach ($parser_node->getChildNodesAndTokens() as $node_or_token) {
+        foreach ($parser_node->getChildNodesAndTokens() as $key => $node_or_token) {
             if ($node_or_token instanceof Token) {
                 if ($node_or_token->getEndPosition() > $offset) {
-                    if ($node_or_token->kind === TokenKind::Name) {
+                    if (\in_array($node_or_token->kind, self::_KINDS_TO_RETURN_PARENT, true)) {
                         // We want the parent of a Name, e.g. a class
                         self::$closest_node_or_token = $parser_node;
                         fwrite(STDERR, "Found node: " . json_encode($parser_node) . "\n");
-                        return true;
+                        return $parser_node;
                     }
-                    fwrite(STDERR, "Found token: " . json_encode($node_or_token));
+                    fwrite(STDERR, "Found token: " . json_encode($parser_node));
                     self::$closest_node_or_token = $node_or_token;
                     // TODO: Handle other cases
-                    return true;
+                    return $node_or_token;
                 }
             }
             if ($node_or_token instanceof PhpParser\Node) {
-                if (self::findNodeAtOffsetRecursive($node_or_token, $offset)) {
-                    // fwrite(STDERR, "Found parent node: " . json_encode($parser_node) . "\n");
+                $state = self::findNodeAtOffsetRecursive($node_or_token, $offset);
+                if ($state) {
+                    fwrite(STDERR, "Found parent node for $key: " . get_class($parser_node) . "\n");
+                    // fwrite(STDERR, "Found parent node for $key: " . json_encode($parser_node) . "\n");
+                    if ($state instanceof PhpParser\Node) {
+                        return self::adjustClosestNodeOrToken($parser_node, $key);
+                    }
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    /**
+     * @return PhpParser\Node|true
+     */
+    private static function adjustClosestNodeOrToken(PhpParser\Node $node, $key) {
+        // TODO: Better heuristic
+        if ($key === 'memberName' || $key === 'callableExpression') {
+            fwrite(STDERR, "Adjusted node: " . json_encode($node) . "\n");
+            self::$closest_node_or_token = $node;
+            return $node;
+        }
+        return true;
     }
 
     /**
@@ -126,7 +153,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
         // fprintf(STDERR, "Comparing %s to %s\n", get_class($n), get_class(self::$closest_node_or_token));
         $ast_node = parent::phpParserNodeToAstNodeOrPlaceholderExpr($n);
         if ($n === self::$closest_node_or_token) {
-            fwrite(STDERR, "Marking corresponding node as flagged: " . \Phan\Debug::nodeToString($ast_node) . "\n");
+            fwrite(STDERR, "Marking corresponding node as flagged: " . json_encode($n) . "\n");
             // fflush(STDERR);
             if ($ast_node instanceof ast\Node) {
                 $ast_node->isSelected = true;
@@ -143,7 +170,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
     {
         $ast_node = parent::phpParserNodeToAstNode($n);
         if ($n === self::$closest_node_or_token) {
-            fwrite(STDERR, "Marking corresponding node as flagged: " . \Phan\Debug::nodeToString($ast_node) . "\n");
+            fwrite(STDERR, "Marking corresponding node as flagged: " . json_encode($n) . "\n");
             if ($ast_node instanceof ast\Node) {
                 $ast_node->isSelected = true;
             }
@@ -161,7 +188,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
         // fprintf(STDERR, "Comparing %s to %s\n", get_class($n), get_class(self::$closest_node_or_token));
         $ast_node = parent::phpParserNonValueNodeToAstNode($n);
         if ($n === self::$closest_node_or_token) {
-            fwrite(STDERR, "Marking corresponding node as flagged: " . \Phan\Debug::nodeToString($ast_node) . "\n");
+            fwrite(STDERR, "Marking corresponding node as flagged: " . json_encode($n) . "\n");
             if ($ast_node instanceof ast\Node) {
                 // Create a dynamic property
                 $ast_node->isSelected = true;
@@ -181,6 +208,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      */
     protected static function linkNode($n, $ast_node)
     {
+        fwrite(STDERR, "Marking corresponding node as flagged: " . json_encode($n) . "\n");
         if ($n === self::$closest_node_or_token && $ast_node instanceof ast\Node) {
             $ast_node->isSelected = true;
         }

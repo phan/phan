@@ -567,6 +567,7 @@ class TolerantASTConverter
             },
             /** @return ?ast\Node */
             'Microsoft\PhpParser\Node\Expression\ScopedPropertyAccessExpression' => function (PhpParser\Node\Expression\ScopedPropertyAccessExpression $n, int $start_line) {
+                fwrite(STDERR, "Processing " . json_encode($n) . "\n");
                 $member_name = $n->memberName;
                 if ($member_name instanceof PhpParser\Node\Expression\Variable) {
                     return new ast\Node(

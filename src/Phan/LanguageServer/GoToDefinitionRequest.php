@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\LanguageServer;
 
+use Phan\Language\FileRef;
+use Phan\Language\Element\AddressableElementInterface;
 use Phan\LanguageServer\Protocol\Location;
 use Phan\LanguageServer\Protocol\Position;
 
@@ -28,6 +30,23 @@ final class GoToDefinitionRequest
         $this->position = $position;
         $this->promise = new Promise();
     }
+
+    /**
+     * @return void
+     */
+    public function recordDefinitionElement(AddressableElementInterface $element)
+    {
+        $this->recordDefinitionContext($element->getContext());
+    }
+
+    public function recordDefinitionContext(FileRef $context) {
+        if ($context->isPHPInternal()) {
+            // We don't have complete stubs to show the user for internal functions such as is_string(), etc.
+            return;
+        }
+        $this->recordDefinitionLocation(Location::fromContext($context));
+    }
+
 
     /**
      * @return void

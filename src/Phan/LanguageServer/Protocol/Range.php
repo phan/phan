@@ -2,7 +2,7 @@
 
 namespace Phan\LanguageServer\Protocol;
 
-use Phan\Language\Context;
+use Phan\Language\FileRef;
 
 /**
  * A range in a text document expressed as (zero-based) start and end positions.
@@ -44,7 +44,7 @@ class Range
         return $this->start->compare($position) <= 0 && $this->end->compare($position) >= 0;
     }
 
-    public static function fromContextOnSingleLine(Context $context) : Range
+    public static function fromContextOnSingleLine(FileRef $context) : Range
     {
         $lineno = $context->getLineNumberStart();
         return new Range(new Position($lineno - 1, 0), new Position($lineno, 0));

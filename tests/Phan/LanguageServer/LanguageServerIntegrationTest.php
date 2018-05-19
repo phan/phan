@@ -146,7 +146,7 @@ EOT;
         }
     }
 
-    public function testDefinition()
+    public function testDefinitionInSameFile()
     {
         // TODO: Move this into an OOP abstraction, add time limits, etc.
         list($proc, $proc_in, $proc_out) = $this->createPhanDaemon(true);
@@ -191,6 +191,90 @@ EOT;
             fclose($proc_out);
             proc_close($proc);
         }
+    }
+
+    /**
+     * @param int $expected_definition_line 0-based line number
+     *
+     * @dataProvider definitionInOtherFileProvider
+     */
+    public function testDefinitionInOtherFile(string $new_file_contents, Position $position, string $expected_definition_uri, int $expected_definition_line)
+    {
+        // TODO: Move this into an OOP abstraction, add time limits, etc.
+        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon(true);
+        try {
+            $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
+            $this->writeInitializedNotification($proc_in);
+            $this->writeDidChangeNotificationToDefaultFile($proc_in, $new_file_contents);
+            $this->assertHasEmptyPublishDiagnosticsResponse($proc_out);
+
+            // Request the definition of the class "MyExample" with the cursor in the middle of that word
+            // NOTE: Line numbers are 0-based for Position
+            $definition_response = $this->writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, $position);
+
+            $this->assertSame([
+                'result' => [
+                    [
+                        'uri' => $expected_definition_uri,
+                        'range' => [
+                            'start' => ['line' => $expected_definition_line, 'character' => 0],
+                            'end'   => ['line' => $expected_definition_line + 1, 'character' => 0],
+                        ],
+                    ],
+                ],
+                'id' => 2,
+                'jsonrpc' => '2.0',
+            ], $definition_response);
+
+            $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
+            $this->writeExitNotification($proc_in);
+        } finally {
+            fclose($proc_in);
+            // TODO: Make these pipes async if they aren't already
+            $unread_contents = fread($proc_out, 10000);
+            $this->assertSame('', $unread_contents);
+            fclose($proc_out);
+            proc_close($proc);
+        }
+    }
+
+    public function definitionInOtherFileProvider() : array {
+        $example_file = <<<'EOT'
+<?php
+function example() {
+    echo MyClass::$my_static_property;
+    echo MyClass::MyClassConst;
+    echo MyClass::myMethod();
+    my_global_function();
+}
+EOT;
+        $definitions_file_uri = Utils::pathToUri(self::getLSPFolder() . '/src/definitions.php');
+        return [
+            [
+                $example_file,
+                new Position(2, 21),  // my_static_property
+                $definitions_file_uri,
+                4,
+            ],
+            [
+                $example_file,
+                new Position(3, 21),  // MyClassConst
+                $definitions_file_uri,
+                3,
+            ],
+            [
+                $example_file,
+                new Position(4, 21),  // myMethod
+                $definitions_file_uri,
+                6,
+            ],
+            [
+                $example_file,
+                new Position(5, 10),  // my_global_function
+                $definitions_file_uri,
+                10,
+            ],
+        ];
     }
 
     /**

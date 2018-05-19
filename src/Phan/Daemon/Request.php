@@ -88,7 +88,6 @@ class Request
     {
         $most_recent_definition_request = $this->most_recent_definition_request;
         if ($most_recent_definition_request) {
-            fprintf(STDERR, "Comparing: %s to %s\n", $most_recent_definition_request->getPath(), Config::projectPath($file_path));
             return $most_recent_definition_request->getPath() === Config::projectPath($file_path);
         }
         return false;
