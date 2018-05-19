@@ -516,6 +516,9 @@ return [
         'DuplicateArrayKeyPlugin',
         'PregRegexCheckerPlugin',
         'PrintfCheckerPlugin',
+
+        // 'SleepCheckerPlugin' is useful for projects which heavily use the __sleep() method. Phan doesn't use __sleep().
+
         // InvokePHPNativeSyntaxCheckPlugin invokes 'php --no-php-ini --syntax-check ${abs_path_to_analyzed_file}.php' and reports any error messages.
         // Using this can cause phan's overall analysis time to more than double.
         // 'InvokePHPNativeSyntaxCheckPlugin',

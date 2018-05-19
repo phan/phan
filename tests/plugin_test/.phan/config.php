@@ -99,5 +99,6 @@ return [
         'PrintfCheckerPlugin',
         'UnreachableCodePlugin',
         'UnusedSuppressionPlugin',
+        'SleepCheckerPlugin',
     ],
 ];

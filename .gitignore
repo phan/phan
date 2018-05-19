@@ -1,6 +1,7 @@
 vendor
 .phan/data
 composer.phar
+\#*#
 /build
 /report
 samples
@@ -13,3 +14,4 @@ all_output.*
 /tags
 .phan/config.local.php
 nohup.out
+*.md.new

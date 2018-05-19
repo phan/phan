@@ -1902,7 +1902,7 @@ class ContextNode
         switch ($node->flags) {
             case ast\flags\MAGIC_CLASS:
                 if ($context->isInClassScope()) {
-                    return (string)$context->getClassFQSEN();
+                    return \ltrim($context->getClassFQSEN()->__toString(), '\\');
                 }
                 return $node;
             case ast\flags\MAGIC_FUNCTION:
@@ -1914,7 +1914,7 @@ class ContextNode
             case ast\flags\MAGIC_METHOD:
                 // TODO: Is this right?
                 if ($context->isInMethodScope()) {
-                    return \ltrim((string)$context->getFunctionLikeFQSEN(), '\\');
+                    return \ltrim($context->getFunctionLikeFQSEN()->__toString(), '\\');
                 }
                 return $node;
             case ast\flags\MAGIC_DIR:

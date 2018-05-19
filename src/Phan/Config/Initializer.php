@@ -265,6 +265,7 @@ EOT;
                 'DuplicateArrayKeyPlugin',
                 'PregRegexCheckerPlugin',
                 'PrintfCheckerPlugin',
+                'SleepCheckerPlugin',
                 'UnreachableCodePlugin',
             ];
         }

@@ -10,6 +10,12 @@ New features:
   `PhanUndeclaredTypeThrowsType`, and `PhanInvalidThrowsIs*`
 
 Plugins
++ Add a new plugin `SleepCheckerPlugin`. (PR #1696)
+  Warn about returning non-arrays in sleep,
+  as well as about returning array values with invalid property names.
+
+  Issue types: `SleepCheckerInvalidReturnStatement`, `SleepCheckerInvalidPropNameType`, `SleepCheckerInvalidPropName`,
+  `SleepCheckerMagicPropName`, and `SleepCheckerDynamicPropName`
 + Make `PhanPregRegexCheckerPlugin` warn about the `/e` modifier on regexes (#1692)
 
 Bug fixes

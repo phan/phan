@@ -171,6 +171,18 @@ Avoids false positives when `--dead-code-detection` is enabled.
 
 (Does not emit any issue types)
 
+#### SleepCheckerPlugin.php
+
+Warn about returning non-arrays in [`__sleep`](https://secure.php.net/__sleep),
+as well as about returning array values with invalid property names in `__sleep`.
+
+- **SleepCheckerInvalidReturnStatement`**: `__sleep must return an array of strings. This is definitely not an array.`
+- **SleepCheckerInvalidReturnType**: `__sleep is returning {TYPE}, expected string[]`
+- **SleepCheckerInvalidPropNameType**: `__sleep is returning an array with a value of type {TYPE}, expected string`
+- **SleepCheckerInvalidPropName**: `__sleep is returning an array that includes {PROPERTY}, which cannot be found`
+- **SleepCheckerMagicPropName**: `__sleep is returning an array that includes {PROPERTY}, which is a magic property`
+- **SleepCheckerDynamicPropName**: `__sleep is returning an array that includes {PROPERTY}, which is a dynamically added property (but not a declared property)`
+
 ### 4. Demo plugins:
 
 These files demonstrate plugins for Phan.
