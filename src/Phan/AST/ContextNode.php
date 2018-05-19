@@ -1312,7 +1312,7 @@ class ContextNode
      *
      * @throws CodeBaseException
      * An exception is thrown if we can't find the given
-     * class
+     * global constant
      */
     public function getConst() : GlobalConstant
     {

@@ -93,7 +93,11 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
         self::findNodeAtOffsetRecursive($parser_node, $offset);
     }
 
-    const _KINDS_TO_RETURN_PARENT = [TokenKind::Name, TokenKind::VariableName];
+    const _KINDS_TO_RETURN_PARENT = [
+        TokenKind::Name,
+        TokenKind::VariableName,
+        TokenKind::StringLiteralToken,  // TODO: Make this depend on context
+    ];
 
     /**
      * @return bool|PhpParser\Node|PhpParser\Token (Returns $parser_node if that node was what the cursor is pointing directly to)
@@ -103,6 +107,11 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
         foreach ($parser_node->getChildNodesAndTokens() as $key => $node_or_token) {
             if ($node_or_token instanceof Token) {
                 if ($node_or_token->getEndPosition() > $offset) {
+                    if ($node_or_token->start > $offset) {
+                        // The cursor is hovering over whitespace.
+                        // Give up
+                        return true;
+                    }
                     if (\in_array($node_or_token->kind, self::_KINDS_TO_RETURN_PARENT, true)) {
                         // We want the parent of a Name, e.g. a class
                         self::$closest_node_or_token = $parser_node;
@@ -136,6 +145,11 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
     private static function adjustClosestNodeOrToken(PhpParser\Node $node, $key) {
         // TODO: Better heuristic
         if ($key === 'memberName' || $key === 'callableExpression') {
+            fwrite(STDERR, "Adjusted node: " . json_encode($node) . "\n");
+            self::$closest_node_or_token = $node;
+            return $node;
+        }
+        if ($key === 'callableExpression') {
             fwrite(STDERR, "Adjusted node: " . json_encode($node) . "\n");
             self::$closest_node_or_token = $node;
             return $node;

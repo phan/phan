@@ -195,10 +195,11 @@ EOT;
 
     /**
      * @param int $expected_definition_line 0-based line number
+     * @param ?int $expected_definition_line null for nothing
      *
      * @dataProvider definitionInOtherFileProvider
      */
-    public function testDefinitionInOtherFile(string $new_file_contents, Position $position, string $expected_definition_uri, int $expected_definition_line)
+    public function testDefinitionInOtherFile(string $new_file_contents, Position $position, string $expected_definition_uri, $expected_definition_line)
     {
         // TODO: Move this into an OOP abstraction, add time limits, etc.
         list($proc, $proc_in, $proc_out) = $this->createPhanDaemon(true);
@@ -212,8 +213,8 @@ EOT;
             // NOTE: Line numbers are 0-based for Position
             $definition_response = $this->writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, $position);
 
-            $this->assertSame([
-                'result' => [
+            if ($expected_definition_line !== null) {
+                $expected_definitions = [
                     [
                         'uri' => $expected_definition_uri,
                         'range' => [
@@ -221,10 +222,22 @@ EOT;
                             'end'   => ['line' => $expected_definition_line + 1, 'character' => 0],
                         ],
                     ],
-                ],
+                ];
+            } else {
+                $expected_definitions = null;
+            }
+
+            $expected_definition_response = [
+                'result' => $expected_definitions,
                 'id' => 2,
                 'jsonrpc' => '2.0',
-            ], $definition_response);
+            ];
+
+            $cur_line = explode("\n", $new_file_contents)[$position->line] ?? '';
+
+            $message = "Unexpected definition for {$position->line}:{$position->character} (0-based) on line " . json_encode($cur_line);
+            $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
+            $this->assertSame($expected_definition_response, $definition_response, $message);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
@@ -239,13 +252,20 @@ EOT;
     }
 
     public function definitionInOtherFileProvider() : array {
+        // Refers to elements defined in ../../misc/lsp/src/definitions.php
         $example_file = <<<'EOT'
-<?php
+<?php  // line 0
 function example() {
     echo MyClass::$my_static_property;
     echo MyClass::MyClassConst;
     echo MyClass::myMethod();
-    my_global_function();
+    my_global_function();  // line 5
+    $v = new MyClass();
+    $v->myInstanceMethod();
+    $a = $v->other_class;
+    echo MY_GLOBAL_CONST;
+    'my_global_function'();  // line 10
+    echo MyClass::class;
 }
 EOT;
         $definitions_file_uri = Utils::pathToUri(self::getLSPFolder() . '/src/definitions.php');
@@ -254,25 +274,67 @@ EOT;
                 $example_file,
                 new Position(2, 21),  // my_static_property
                 $definitions_file_uri,
-                4,
+                11,
             ],
             [
                 $example_file,
                 new Position(3, 21),  // MyClassConst
                 $definitions_file_uri,
-                3,
+                10,
             ],
             [
                 $example_file,
                 new Position(4, 21),  // myMethod
                 $definitions_file_uri,
-                6,
+                13,
             ],
             [
                 $example_file,
-                new Position(5, 10),  // my_global_function
+                new Position(5, 21),  // my_global_function
                 $definitions_file_uri,
-                10,
+                2,
+            ],
+            [
+                $example_file,
+                new Position(5, 4),  // my_global_function
+                $definitions_file_uri,
+                2,
+            ],
+            [
+                $example_file,
+                new Position(5, 3),  // my_global_function
+                $definitions_file_uri,
+                null,
+            ],
+            [
+                $example_file,
+                new Position(6, 15),  // MyClass or the constructor
+                $definitions_file_uri,
+                9,
+            ],
+            [
+                $example_file,
+                new Position(7, 9),  // myInstanceMethod
+                $definitions_file_uri,
+                16,
+            ],
+            [
+                $example_file,
+                new Position(9, 10),  // MY_GLOBAL_CONST
+                $definitions_file_uri,
+                24,  // Place where the global constant was defined (Currently the class definition)
+            ],
+            [
+                $example_file,
+                new Position(10, 6),  // my_global_function (alternative syntax)
+                $definitions_file_uri,
+                2,
+            ],
+            [
+                $example_file,
+                new Position(11, 20),  // MyClass::class (Points to MyClass)
+                $definitions_file_uri,
+                9,
             ],
         ];
     }

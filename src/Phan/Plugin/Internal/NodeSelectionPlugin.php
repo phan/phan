@@ -83,6 +83,7 @@ class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
         visitCommonImplementation as visitProp;
         visitCommonImplementation as visitStaticProp;
         visitCommonImplementation as visitClassConst;
+        visitCommonImplementation as visitConst;
         // TODO: VisitNew
         // TODO: implement, extend, use trait, etc.
     }

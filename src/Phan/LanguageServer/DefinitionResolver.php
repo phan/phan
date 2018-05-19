@@ -5,10 +5,12 @@ namespace Phan\LanguageServer;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
+use Phan\Exception\CodeBaseException;
 use Phan\Exception\NodeException;
 use Phan\Exception\IssueException;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use ast;
 use ast\Node;
 
 class DefinitionResolver
@@ -26,20 +28,25 @@ class DefinitionResolver
             // $location = new Location($go_to_definition_request->getUri(), $node->lineno);
             fwrite(STDERR, "Saw a node: " . \Phan\Debug::nodeToString($node) . "\n");
             switch ($node->kind) {
-                case \ast\AST_NAME:
+                case ast\AST_NAME:
                     self::locateClassDefinition($request, $code_base, $context, $node);
                     return;
-                case \ast\AST_STATIC_PROP:
+                case ast\AST_STATIC_PROP:
+                case ast\AST_PROP:
                     self::locatePropDefinition($request, $code_base, $context, $node);
                     return;
-                case \ast\AST_STATIC_CALL:
+                case ast\AST_STATIC_CALL:
+                case ast\AST_METHOD_CALL:
                     self::locateMethodDefinition($request, $code_base, $context, $node);
                     return;
-                case \ast\AST_CALL:
+                case ast\AST_CALL:
                     self::locateFuncDefinition($request, $code_base, $context, $node);
                     return;
-                case \ast\AST_CLASS_CONST:
+                case ast\AST_CLASS_CONST:
                     self::locateClassConstDefinition($request, $code_base, $context, $node);
+                    return;
+                case ast\AST_CONST:
+                    self::locateGlobalConstDefinition($request, $code_base, $context, $node);
                     return;
             }
             // $go_to_definition_request->recordDefinitionLocation(...)
@@ -73,32 +80,59 @@ class DefinitionResolver
      */
     public static function locatePropDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
     {
-        $is_static = $node->kind === \ast\AST_STATIC_PROP;
+        $is_static = $node->kind === ast\AST_STATIC_PROP;
         try {
             $property = (new ContextNode($code_base, $context, $node))->getProperty($is_static);
         } catch (NodeException $e) {
-            // ignore
-            return;
+            return; // ignore
         } catch (IssueException $e) {
-            // ignore
-            return;
+            return; // ignore
+        } catch (CodeBaseException $e) {
+            return; // ignore
         }
         $request->recordDefinitionElement($property);
     }
 
     /**
+     * @param Node $node a node of type AST_CLASS_CONST
      * @return void
      */
     public static function locateClassConstDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
     {
+        $name = $node->children['const'];
+        if (!is_string($name)) {
+            return;
+        }
+        if (strtolower($name) === 'class') {
+            self::locateClassDefinition($request, $code_base, $context, $node->children['class']);
+            return;
+        }
         try {
             $class_const = (new ContextNode($code_base, $context, $node))->getClassConst();
         } catch (NodeException $e) {
-            // ignore
-            return;
+            return; // ignore
         } catch (IssueException $e) {
-            // ignore
-            return;
+            return; // ignore
+        } catch (CodeBaseException $e) {
+            return; // ignore
+        }
+        // TODO: Location::fromElement
+        $request->recordDefinitionElement($class_const);
+    }
+
+    /**
+     * @return void
+     */
+    public static function locateGlobalConstDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
+    {
+        try {
+            $class_const = (new ContextNode($code_base, $context, $node))->getConst();
+        } catch (NodeException $e) {
+            return; // ignore
+        } catch (IssueException $e) {
+            return; // ignore
+        } catch (CodeBaseException $e) {
+            return; // ignore
         }
         // TODO: Location::fromElement
         $request->recordDefinitionElement($class_const);
@@ -110,7 +144,7 @@ class DefinitionResolver
      */
     public static function locateMethodDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
     {
-        $is_static = $node->kind === \ast\AST_STATIC_CALL;
+        $is_static = $node->kind === ast\AST_STATIC_CALL;
         $method_name = $node->children['method'];
         if (!is_string($method_name)) {
             return;

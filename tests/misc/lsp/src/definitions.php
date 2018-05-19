@@ -1,13 +1,25 @@
 <?php
 
+function my_global_function() {
+    echo "Called global function\n";
+}
+
+/**
+ * @property-read MyOtherClass $other_class
+ */
 class MyClass {
     const MyClassConst = 2;
     public static $my_static_property = 2;
 
     public static function myMethod() {
     }
+
+    public function myInstanceMethod() {
+        echo "In instance method\n";
+    }
 }
 
-function my_global_function() {
-    echo "Called global function\n";
+class MyOtherClass {
 }
+
+const MY_GLOBAL_CONST = 2;
