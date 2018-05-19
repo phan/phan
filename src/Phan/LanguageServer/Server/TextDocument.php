@@ -162,7 +162,6 @@ class TextDocument
     public function definition(TextDocumentIdentifier $textDocument, Position $position): Promise
     {
         Logger::logInfo("Called textDocument/definition, uri={$textDocument->uri} position={$position->line}:{$position->character}");
-        fwrite(STDERR, "looking for position: " . json_encode($position) . "\n");
         $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
         // TODO: Remove unused boilerplate from alternate approach
         return $this->server->awaitDefinition($uri, $position);

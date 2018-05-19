@@ -26,7 +26,10 @@ class DefinitionResolver
 
 
             // $location = new Location($go_to_definition_request->getUri(), $node->lineno);
-            fwrite(STDERR, "Saw a node: " . \Phan\Debug::nodeToString($node) . "\n");
+
+            // Log as strings in case TolerantASTConverter generates the wrong type
+            Logger::logInfo(sprintf("Saw a node of kind %s at line %s", (string)$node->kind, (string)$node->lineno));
+
             switch ($node->kind) {
                 case ast\AST_NAME:
                     self::locateClassDefinition($request, $code_base, $context, $node);

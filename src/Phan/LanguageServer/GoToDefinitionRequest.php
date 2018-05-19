@@ -53,7 +53,6 @@ final class GoToDefinitionRequest
      */
     public function recordDefinitionLocation(Location $location)
     {
-        fwrite(STDERR, "Recording definition location: " . json_encode($location) . "\n");
         $this->locations[$location->uri . ':' . \json_encode($location->range)] = $location;
     }
 
@@ -86,7 +85,6 @@ final class GoToDefinitionRequest
     {
         $promise = $this->promise;
         if ($promise) {
-            fwrite(STDERR, "In finalize: " . json_encode(array_values($this->locations)) . "\n");
             $promise->fulfill($this->locations ? array_values($this->locations) : null);
             $this->promise = null;
         }

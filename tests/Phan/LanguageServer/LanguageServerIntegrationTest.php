@@ -201,8 +201,17 @@ EOT;
      */
     public function testDefinitionInOtherFile(string $new_file_contents, Position $position, string $expected_definition_uri, $expected_definition_line)
     {
+        if (function_exists('pcntl_fork')) {
+            $this->_testDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, true);
+        }
+        $this->_testDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, false);
+    }
+
+    public function _testDefinitionInOtherFileWithPcntlSetting(string $new_file_contents, Position $position, string $expected_definition_uri, $expected_definition_line, bool $pcntl_enabled)
+    {
+        $this->messageId = 0;
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon(true);
+        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon($pcntl_enabled);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
@@ -236,6 +245,15 @@ EOT;
             $cur_line = explode("\n", $new_file_contents)[$position->line] ?? '';
 
             $message = "Unexpected definition for {$position->line}:{$position->character} (0-based) on line " . json_encode($cur_line);
+            $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
+            $this->assertSame($expected_definition_response, $definition_response, $message);
+
+            // This operation should be idempotent.
+            // If it's repeated, it should give the same response
+            // (and it shouldn't crash the server)
+            $expected_definition_response['id'] = 3;
+
+            $definition_response = $this->writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, $position);
             $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_definition_response, $definition_response, $message);
 
