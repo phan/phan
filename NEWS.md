@@ -18,6 +18,9 @@ Plugins
   `SleepCheckerMagicPropName`, and `SleepCheckerDynamicPropName`
 + Make `PhanPregRegexCheckerPlugin` warn about the `/e` modifier on regexes (#1692)
 
+Misc
++ Add simple integration test for the language server mode.
+
 Bug fixes
 + Be more consistent about emitting `PhanUndeclaredType*` for invalid types within array shapes.
 + Avoid a crash when the left hand side of an assignment is invalid. (#1693)
