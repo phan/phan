@@ -25,7 +25,13 @@ class LanguageServerIntegrationTest extends BaseTest
     // There are separate config settings to make the language server emit debug messages.
     const DEBUG_ENABLED = false;
 
-    const DEFAULT_PATH = __DIR__ . '/integration/src/example.php';
+    public static function getLSPFolder() : string {
+        return dirname(dirname(__DIR__)) . '/misc/lsp';
+    }
+
+    public static function getLSPPath() : string {
+        return self::getLSPFolder() . '/src/example.php';
+    }
 
     // Incrementing message id for language client requests.
     // Each test case has its own instance property $this->messageId
@@ -49,7 +55,7 @@ class LanguageServerIntegrationTest extends BaseTest
         $command = sprintf(
             '%s -d %s --quick --language-server-on-stdin --language-server-enable-go-to-definition %s',
             escapeshellarg(__DIR__ . '/../../../phan'),
-            escapeshellarg(__DIR__ . '/integration'),
+            escapeshellarg(self::getLSPFolder()),
             ($pcntlEnabled ? '' : '--language-server-force-missing-pcntl')
         );
         $proc = proc_open(
@@ -363,9 +369,9 @@ EOT;
         $this->writeNotification($proc_in, 'textDocument/didChange', $params);
     }
 
-    private function getDefaultFileURI()
+    private function getDefaultFileURI() : string
     {
-        return Utils::pathToUri(self::DEFAULT_PATH);
+        return Utils::pathToUri(self::getLSPPath());
     }
 
     /**
@@ -375,7 +381,7 @@ EOT;
      * @suppress PhanPluginUnusedVariable $parsing_mode
      * @return array
      */
-    private function awaitResponse($proc_out)
+    private function awaitResponse($proc_out) : array
     {
         $buffer = '';
         $content_length = 0;
