@@ -12,7 +12,7 @@ Tests of error-tolerant PHP AST parser (`--use-fallback-parser`)
 
 ### files
 
-General tests. 
+General tests.
 
 - Note: If 70/71/72 is appended to a file,
   then the test case chooses that file instead for php 7.0/7.1/7.2
@@ -60,3 +60,10 @@ Scripts
 -------
 
 `run_test` can be run from the root folder to run individual test suites
+
+Language Server Tests
+---------------------
+
+There are integration tests of the language server(both with and without pcntl) in `tests/Phan/LanguageServer/LanguageServerIntegrationTest.php`
+
+`PHAN_RUN_INTEGRATION_TEST=1` must be set in your environment variables in order to run this test (Otherwise, these tests are skipped)

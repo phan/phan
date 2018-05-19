@@ -609,20 +609,24 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         // $end_line = max($end_line, 1);
         // Language server has 0 based lines and columns, phan has 1-based lines and columns.
         $range = new Range(new Position($start_line - 1, 0), new Position($start_line, 0));
-        switch ($severity) {
-            case Issue::SEVERITY_LOW:
-                $diagnostic_severity = DiagnosticSeverity::INFORMATION;
-                break;
-            case Issue::SEVERITY_NORMAL:
-                $diagnostic_severity = DiagnosticSeverity::WARNING;
-                break;
-            case Issue::SEVERITY_CRITICAL:
-            default:
-                $diagnostic_severity = DiagnosticSeverity::ERROR;
-                break;
-        }
+        $diagnostic_severity = self::diagnosticSeverityFromPhanSeverity($severity);
         // TODO: copy issue code in 'json' format
         return [$issue_uri, new Diagnostic($description, $range, $issue['type_id'], $diagnostic_severity, 'Phan')];
+    }
+
+    /**
+     * @param int $severity
+     * @return int
+     */
+    public static function diagnosticSeverityFromPhanSeverity($severity) : int {
+        switch ($severity) {
+            case Issue::SEVERITY_LOW:
+                return DiagnosticSeverity::INFORMATION;
+            case Issue::SEVERITY_NORMAL:
+                return DiagnosticSeverity::WARNING;
+            default:
+                return DiagnosticSeverity::ERROR;
+        }
     }
 
     /**

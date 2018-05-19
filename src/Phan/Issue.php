@@ -2644,6 +2644,15 @@ class Issue
 
     /**
      * @return string
+     * The name of this issue's category
+     */
+    public function getCategoryName() : string
+    {
+        return self::getNameForCategory($this->getCategory());
+    }
+
+    /**
+     * @return string
      * The name of the category
      */
     public static function getNameForCategory(int $category) : string
