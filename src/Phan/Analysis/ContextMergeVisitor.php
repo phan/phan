@@ -321,6 +321,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         $scope = clone($this->context->getScope());
 
         foreach ($variable_map as $name => $variable) {
+            $name = (string)$name;
             // Skip variables that are only partially defined
             if (!$is_defined_on_all_branches($name)) {
                 if ($this->context->getIsStrictTypes()) {

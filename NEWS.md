@@ -31,6 +31,7 @@ Misc:
 Bug fixes:
 + Be more consistent about emitting `PhanUndeclaredType*` for invalid types within array shapes.
 + Avoid a crash when the left hand side of an assignment is invalid. (#1693)
++ Prevent an uncaught `TypeError` when integer variable names (e.g. `${42}`) are used in branches (Issue #1699)
 
 12 May 2018, Phan 0.12.8
 ------------------------
