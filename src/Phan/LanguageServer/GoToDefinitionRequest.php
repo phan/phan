@@ -39,7 +39,8 @@ final class GoToDefinitionRequest
         $this->recordDefinitionContext($element->getContext());
     }
 
-    public function recordDefinitionContext(FileRef $context) {
+    public function recordDefinitionContext(FileRef $context)
+    {
         if ($context->isPHPInternal()) {
             // We don't have complete stubs to show the user for internal functions such as is_string(), etc.
             return;
@@ -90,6 +91,9 @@ final class GoToDefinitionRequest
         }
     }
 
+    /**
+     * @suppress PhanUnreferencedPublicMethod TODO: Compare against the context->getPath() to be sure we're looking up the right node
+     */
     public function getUrl() : string
     {
         return $this->uri;

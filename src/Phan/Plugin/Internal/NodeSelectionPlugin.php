@@ -34,7 +34,8 @@ class NodeSelectionPlugin extends PluginV2 implements PostAnalyzeNodeCapability
 trait NodeSelectionTrait
 {
     /**
-     * @var Context $context (part of PluginAwarePostAnalysisVisitor)
+     * @var Context $context
+     * @suppress PhanReadOnlyProtectedProperty (shared with PluginAwarePostAnalysisVisitor)
      */
     protected $context;
 
@@ -43,6 +44,7 @@ trait NodeSelectionTrait
      * A node to check
      *
      * @return void
+     * @suppress PhanUnreferencedPublicMethod (TODO: Fix false positive. The aliases are used)
      */
     public function visitCommonImplementation(Node $node)
     {
@@ -68,9 +70,6 @@ trait NodeSelectionTrait
 class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
 {
     public static $closure = null;
-    public static $desired_node = null;
-
-    const STATUS_NODE_SELECTED = 1;
 
     // A plugin's visitors should not override visit() unless they need to.
 

@@ -380,20 +380,6 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         }
     }
 
-
-    /**
-     * Callers are responsible for calling this (after getting files to analyze)
-     * and implementing the appropriate logic.
-     *
-     * TODO: Implement code in callers
-     *
-     * @return ?GoToDefinitionRequest
-     */
-    public function getMostRecentDefinitionRequest()
-    {
-        return $this->most_recent_definition_request;
-    }
-
     /**
      * Asynchronously analyze the given URI.
      * @return void

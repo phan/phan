@@ -173,7 +173,6 @@ class DefinitionResolver
     {
         try {
             foreach ((new ContextNode($code_base, $context, $node->children['expr']))->getFunctionFromNode() as $function_interface) {
-
                 // TODO: Location::fromElement
                 $request->recordDefinitionElement($function_interface);
             }

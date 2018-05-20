@@ -57,7 +57,6 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      */
     public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = [])
     {
-        $found = false;
         // Force the byte offset to be within the
         $byte_offset = \max(0, \min(\strlen($file_contents), $this->expected_byte_offset));
 
@@ -70,9 +69,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
             $parser_node = static::phpParserParse($file_contents, $errors);
             self::findNodeAtOffset($parser_node, $byte_offset);
             // fwrite(STDERR, "Seeking node: " . json_encode(self::$closest_node_or_token). "\n");
-            $result = $this->phpParserToPhpast($parser_node, $version, $file_contents);
-            $original_node = $parser_node;
-            return $result;
+            return $this->phpParserToPhpast($parser_node, $version, $file_contents);
         } catch (\Throwable $e) {
             // fwrite(STDERR, "saw exception: " . $e->getMessage());
             throw $e;
@@ -143,7 +140,8 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
     /**
      * @return PhpParser\Node|true
      */
-    private static function adjustClosestNodeOrToken(PhpParser\Node $node, $key) {
+    private static function adjustClosestNodeOrToken(PhpParser\Node $node, $key)
+    {
         // TODO: Better heuristic
         if ($key === 'memberName' || $key === 'callableExpression') {
             // fwrite(STDERR, "Adjusted node: " . json_encode($node) . "\n");
@@ -210,22 +208,5 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
             }
         }
         return $ast_node;
-    }
-
-    /**
-     * TODO: Call this for property name accesses, etc.
-     *
-     * Use in the base class if a node is created without calling phpParserNodeToAstNode
-     *
-     * @param PhpParser\Node|PhpParser\Token $n
-     * @param ast\Node $ast_node
-     * @return void
-     */
-    protected static function linkNode($n, $ast_node)
-    {
-        // fwrite(STDERR, "Marking corresponding node as flagged: " . json_encode($n) . "\n");
-        if ($n === self::$closest_node_or_token && $ast_node instanceof ast\Node) {
-            $ast_node->isSelected = true;
-        }
     }
 }

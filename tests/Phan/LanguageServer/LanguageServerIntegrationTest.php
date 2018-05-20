@@ -25,11 +25,13 @@ class LanguageServerIntegrationTest extends BaseTest
     // There are separate config settings to make the language server emit debug messages.
     const DEBUG_ENABLED = false;
 
-    public static function getLSPFolder() : string {
+    public static function getLSPFolder() : string
+    {
         return dirname(dirname(__DIR__)) . '/misc/lsp';
     }
 
-    public static function getLSPPath() : string {
+    public static function getLSPPath() : string
+    {
         return self::getLSPFolder() . '/src/example.php';
     }
 
@@ -269,7 +271,8 @@ EOT;
         }
     }
 
-    public function definitionInOtherFileProvider() : array {
+    public function definitionInOtherFileProvider() : array
+    {
         // Refers to elements defined in ../../misc/lsp/src/definitions.php
         $example_file = <<<'EOT'
 <?php  // line 0

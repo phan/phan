@@ -32,9 +32,10 @@ class Parser
      */
     public static function parseCode(CodeBase $code_base, Context $context, $request, string $file_path, string $file_contents, bool $suppress_parse_errors)
     {
-        // TODO: Choose the parser to use based on $file_path (For implementing "Go To Definition")
-
         try {
+            // This will choose the parser to use based on the config and $file_path
+            // (For "Go To Definition", one of the files will have a slower parser which records the requested AST node)
+
             if (self::shouldUsePolyfill($file_path, $request)) {
                 // This helper method has its own exception handling.
                 // It may throw a ParseException, which is unintentionally not caught here.

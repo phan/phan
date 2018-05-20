@@ -158,8 +158,9 @@ class TextDocument
      * @param TextDocumentIdentifier $textDocument The text document
      * @param Position $position The position inside the text document
      * @return Promise <Location|Location[]|null>
+     * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function definition(TextDocumentIdentifier $textDocument, Position $position): Promise
+    public function definition(TextDocumentIdentifier $textDocument, Position $position) : Promise
     {
         Logger::logInfo("Called textDocument/definition, uri={$textDocument->uri} position={$position->line}:{$position->character}");
         $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));

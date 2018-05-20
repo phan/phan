@@ -190,7 +190,6 @@ class Request
         ];
         if ($this->most_recent_definition_request) {
             $response['definitions'] = $this->most_recent_definition_request->getDefinitionLocations();
-            $promise = $this->most_recent_definition_request->getPromise();
         }
         $this->sendJSONResponse($response);
     }

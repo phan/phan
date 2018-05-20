@@ -2,7 +2,6 @@
 
 namespace Phan\LanguageServer\Protocol;
 
-use Phan\Language\Element\AddressableElementInterface;
 use Phan\Config;
 use Phan\Language\FileRef;
 use Phan\LanguageServer\Utils;
@@ -31,17 +30,15 @@ class Location
         $this->range = $range;
     }
 
+    /**
+     * Callers should check $context->isPHPInternal() first
+     */
     public static function fromContext(FileRef $context) : Location
     {
         $path = Config::projectPath($context->getFile());
         $uri = Utils::pathToUri($path);
         $range = Range::fromContextOnSingleLine($context);
         return new self($uri, $range);
-    }
-
-    public static function fromElement(AddressableElementInterface $element) : Location
-    {
-        return self::fromContext($element->getContext());
     }
 
     public static function fromArray(array $data) : Location
