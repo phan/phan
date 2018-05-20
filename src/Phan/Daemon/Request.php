@@ -257,6 +257,15 @@ class Request
         return $this->most_recent_definition_request;
     }
 
+    public function rejectLanguageServerRequestsRequiringAnalysis()
+    {
+        $most_recent_definition_request = $this->most_recent_definition_request;
+        if ($most_recent_definition_request) {
+            $most_recent_definition_request->finalize();
+            $this->most_recent_definition_request = null;
+        }
+    }
+
     /**
      * Send a response and close the connection, for the given socket's protocol.
      * Currently supports only JSON.

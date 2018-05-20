@@ -134,7 +134,7 @@ function example(int $x) : int {
 }
 EOT;
             $this->writeDidChangeNotificationToDefaultFile($proc_in, $good_file_contents);
-            $this->assertHasEmptyPublishDiagnosticsResponse($proc_out);
+            $this->assertHasEmptyPublishDiagnosticsNotification($proc_out);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
@@ -163,7 +163,7 @@ class MyExample {
 echo MyExample::MyConst;  // line 4
 EOT;
             $this->writeDidChangeNotificationToDefaultFile($proc_in, $new_file_contents);
-            $this->assertHasEmptyPublishDiagnosticsResponse($proc_out);
+            $this->assertHasEmptyPublishDiagnosticsNotification($proc_out);
 
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
             // NOTE: Line numbers are 0-based for Position
@@ -201,28 +201,56 @@ EOT;
      *
      * @dataProvider definitionInOtherFileProvider
      */
-    public function testDefinitionInOtherFile(string $new_file_contents, Position $position, string $expected_definition_uri, $expected_definition_line)
+    public function testDefinitionInOtherFile(string $new_file_contents, Position $position, string $expected_definition_uri, $expected_definition_line, string $requested_uri = null)
     {
         if (function_exists('pcntl_fork')) {
-            $this->_testDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, true);
+            $this->_testDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, true);
         }
-        $this->_testDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, false);
+        $this->_testDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, false);
     }
 
-    public function _testDefinitionInOtherFileWithPcntlSetting(string $new_file_contents, Position $position, string $expected_definition_uri, $expected_definition_line, bool $pcntl_enabled)
+    /**
+     * @param ?string $requested_uri
+     */
+    private static function shouldExpectDiagnosticNotificationForURI($requested_uri) : bool
     {
+        if ($requested_uri && basename(dirname($requested_uri)) !== 'src') {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @param ?int $expected_definition_line
+     * @param ?string $requested_uri
+     */
+    public function _testDefinitionInOtherFileWithPcntlSetting(
+        string $new_file_contents,
+        Position $position,
+        string $expected_definition_uri,
+        $expected_definition_line,
+        $requested_uri,
+        bool $pcntl_enabled
+    ) {
+        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
+
         $this->messageId = 0;
         // TODO: Move this into an OOP abstraction, add time limits, etc.
         list($proc, $proc_in, $proc_out) = $this->createPhanDaemon($pcntl_enabled);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
-            $this->writeDidChangeNotificationToDefaultFile($proc_in, $new_file_contents);
-            $this->assertHasEmptyPublishDiagnosticsResponse($proc_out);
+            $this->writeDidChangeNotificationToFile($proc_in, $requested_uri, $new_file_contents);
+            if (self::shouldExpectDiagnosticNotificationForURI($requested_uri)) {
+                $this->assertHasEmptyPublishDiagnosticsNotification($proc_out, $requested_uri);
+            }
 
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
             // NOTE: Line numbers are 0-based for Position
-            $definition_response = $this->writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, $position);
+            $perform_definition_request = function () use ($proc_in, $proc_out, $position, $requested_uri) {
+                return $this->writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, $position, $requested_uri);
+            };
+            $definition_response = $perform_definition_request();
 
             if ($expected_definition_line !== null) {
                 $expected_definitions = [
@@ -247,6 +275,9 @@ EOT;
             $cur_line = explode("\n", $new_file_contents)[$position->line] ?? '';
 
             $message = "Unexpected definition for {$position->line}:{$position->character} (0-based) on line " . json_encode($cur_line);
+            if ($expected_definition_response != $definition_response) {
+                var_export($definition_response);
+            }
             $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_definition_response, $definition_response, $message);
 
@@ -255,12 +286,15 @@ EOT;
             // (and it shouldn't crash the server)
             $expected_definition_response['id'] = 3;
 
-            $definition_response = $this->writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, $position);
+            $definition_response = $perform_definition_request();
             $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_definition_response, $definition_response, $message);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
+        } catch (\Throwable $e) {
+            fwrite(STDERR, "Unexpected exception in " . __METHOD__ . ": " . $e->getMessage());
+            throw $e;
         } finally {
             fclose($proc_in);
             // TODO: Make these pipes async if they aren't already
@@ -271,10 +305,13 @@ EOT;
         }
     }
 
+    /**
+     * @return array<int,array{0:string,1:Position,2:string,3:?int,4?:string}>
+     */
     public function definitionInOtherFileProvider() : array
     {
         // Refers to elements defined in ../../misc/lsp/src/definitions.php
-        $example_file = <<<'EOT'
+        $example_file_contents = <<<'EOT'
 <?php  // line 0
 function example() {
     echo MyClass::$my_static_property;
@@ -292,70 +329,77 @@ EOT;
         $definitions_file_uri = Utils::pathToUri(self::getLSPFolder() . '/src/definitions.php');
         return [
             [
-                $example_file,
+                $example_file_contents,
                 new Position(2, 21),  // my_static_property
                 $definitions_file_uri,
                 11,
             ],
             [
-                $example_file,
+                $example_file_contents,
                 new Position(3, 21),  // MyClassConst
                 $definitions_file_uri,
                 10,
             ],
             [
-                $example_file,
+                $example_file_contents,
                 new Position(4, 21),  // myMethod
                 $definitions_file_uri,
                 13,
             ],
             [
-                $example_file,
+                $example_file_contents,
                 new Position(5, 21),  // my_global_function
                 $definitions_file_uri,
                 2,
             ],
             [
-                $example_file,
+                $example_file_contents,
                 new Position(5, 4),  // my_global_function
                 $definitions_file_uri,
                 2,
             ],
             [
-                $example_file,
+                $example_file_contents,
                 new Position(5, 3),  // my_global_function
                 $definitions_file_uri,
                 null,
             ],
             [
-                $example_file,
+                $example_file_contents,
                 new Position(6, 15),  // MyClass or the constructor
                 $definitions_file_uri,
                 9,
             ],
             [
-                $example_file,
+                $example_file_contents,
                 new Position(7, 9),  // myInstanceMethod
                 $definitions_file_uri,
                 16,
             ],
             [
-                $example_file,
+                $example_file_contents,
                 new Position(9, 10),  // MY_GLOBAL_CONST
                 $definitions_file_uri,
                 24,  // Place where the global constant was defined (Currently the class definition)
             ],
             [
-                $example_file,
+                $example_file_contents,
                 new Position(10, 6),  // my_global_function (alternative syntax)
                 $definitions_file_uri,
                 2,
             ],
             [
-                $example_file,
+                $example_file_contents,
                 new Position(11, 20),  // MyClass::class (Points to MyClass)
                 $definitions_file_uri,
                 9,
+            ],
+            [
+                $example_file_contents,
+                new Position(11, 21),  // MyClass::class (Points to MyClass)
+                $definitions_file_uri,
+                null,
+                Utils::pathToUri(self::getLSPFolder() . '/unanalyzed_directory/definitions.php'),
             ],
         ];
     }
@@ -364,12 +408,13 @@ EOT;
      * @param resource $proc_out
      * @return void
      */
-    private function assertHasEmptyPublishDiagnosticsResponse($proc_out)
+    private function assertHasEmptyPublishDiagnosticsNotification($proc_out, string $requested_uri = null)
     {
+        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
         $diagnostics_response = $this->awaitResponse($proc_out);
         $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method']);
         $uri = $diagnostics_response['params']['uri'];
-        $this->assertSame($uri, $this->getDefaultFileURI());
+        $this->assertSame($uri, $requested_uri);
         $diagnostics = $diagnostics_response['params']['diagnostics'];
         $this->assertSame([], $diagnostics);
     }
@@ -456,18 +501,21 @@ EOT;
      * @return array the response
      * @throws InvalidArgumentException
      */
-    private function writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, Position $position)
+    private function writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null)
     {
+        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
         // Implementation detail: We simultaneously emit a notification with new diagnostics
         // and the response for the definition request at the same time, even if files didn't change.
 
         // NOTE: That could probably be refactored, but there's not much benefit to doing that.
         $params = [
-            'textDocument' => new TextDocumentIdentifier($this->getDefaultFileURI()),
+            'textDocument' => new TextDocumentIdentifier($requested_uri),
             'position' => $position,
         ];
         $this->writeMessage($proc_in, 'textDocument/definition', $params);
-        $this->assertHasEmptyPublishDiagnosticsResponse($proc_out);
+        if (self::shouldExpectDiagnosticNotificationForURI($requested_uri)) {
+            $this->assertHasEmptyPublishDiagnosticsNotification($proc_out, $requested_uri);
+        }
 
         $response = $this->awaitResponse($proc_out);
 
@@ -525,8 +573,18 @@ EOT;
      */
     private function writeDidChangeNotificationToDefaultFile($proc_in, string $new_contents)
     {
+        $this->writeDidChangeNotificationToFile($proc_in, $this->getDefaultFileURI(), $new_contents);
+    }
+
+    /**
+     * @param resource $proc_in
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    private function writeDidChangeNotificationToFile($proc_in, string $requested_uri, string $new_contents)
+    {
         $params = [
-            'textDocument' => ['uri' => $this->getDefaultFileURI()],
+            'textDocument' => ['uri' => $requested_uri],
             'contentChanges' => [
                 [
                     'text' => $new_contents,

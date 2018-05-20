@@ -401,6 +401,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     {
         // TODO: Add a way to "go to definition" without emitting analysis results as a side effect
         $path_to_analyze = Utils::uriToPath($uri);
+        Logger::logInfo("Called textDocument/awaitDefinition, uri=$uri, position=" . json_encode($position));
         $prev_definition_request = $this->most_recent_definition_request;
         if ($prev_definition_request) {
             // Discard the previous request silently
@@ -455,7 +456,14 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     private function finalizeAnalyzingURIs()
     {
         $uris_to_analyze = $this->getFilteredURIsToAnalyze();
+        // TODO: Add a better abstraction of
         if (\count($uris_to_analyze) === 0) {
+            // Do the same thing as Request->rejectLanguageServerRequestsRequiringAnalysis(), we haven't created a request yet.
+            $most_recent_definition_request = $this->most_recent_definition_request;
+            if ($most_recent_definition_request) {
+                $most_recent_definition_request->finalize();
+                $this->most_recent_definition_request = null;
+            }
             return;
         }
 
@@ -537,6 +545,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     private function finishAnalyzingURIsWithoutPcntl(array $uris_to_analyze)
     {
         $paths_to_analyze = array_keys($uris_to_analyze);
+        Logger::logInfo('in ' . __METHOD__ . ' paths: ' . json_encode($paths_to_analyze));
         // When there is no pcntl:
         // Create a fake request object.
         // Instead of stopping the loop, keep going with the loop and keep accepting the requests
@@ -556,6 +565,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $analyze_file_path_list = $analysis_request->filterFilesToAnalyze($this->code_base->getParsedFilePathList());
         if (count($analyze_file_path_list) === 0) {
             // Nothing to do, don't start analysis
+            $analysis_request->rejectLanguageServerRequestsRequiringAnalysis();
             return;
         }
 
