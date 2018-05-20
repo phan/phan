@@ -834,7 +834,7 @@ Extended help:
   This significantly reduces CPU usage, but clients won't get notifications about issues immediately.
 
  --language-server-enable-go-to-definition
-  Enables/Disables support for "Go To Definition" in the Phan Language Server.
+  Enables support for "Go To Definition" and "Go To Type Definition" in the Phan Language Server.
   Disabled by default.
 
  --language-server-verbose

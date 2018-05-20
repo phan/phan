@@ -14,7 +14,10 @@ New features(Analysis):
 
 Language Server/Daemon mode:
 + Support "Go to definition" for properties, classes, global/class constants, and methods/global functions (Issue #1483)
-  (Must be enabled via the CLI option `--language-server-enable-go-to-definition`)
+  (Must pass the CLI option `--language-server-enable-go-to-definition` when starting the server to enable this)
++ Support "Go to type definition" for variables, properties, classes, and methods/global functions (Issue #1702)
+  (Must pass the CLI option `--language-server-enable-go-to-definition` when starting the server to enable this)
+  Note that constants can't have object types in PHP, so there's no implementation of "Go To Type Definition" for those.
 
 Plugins:
 + Add a new plugin `SleepCheckerPlugin`. (PR #1696)

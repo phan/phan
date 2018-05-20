@@ -6,6 +6,7 @@ use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Generator;
 
 /**
  * NOTE: there may also be instances of UnionType that are empty, due to the constructor being public
@@ -1015,5 +1016,17 @@ final class EmptyUnionType extends UnionType
     public function iterableValueUnionType(CodeBase $unused_code_base) : UnionType
     {
         return $this;
+    }
+
+    /**
+     * @return Generator<Type,Type>
+     * @suppress PhanTypeMismatchGeneratorYieldValue (deliberate empty stub code)
+     * @suppress PhanTypeMismatchGeneratorYieldKey (deliberate empty stub code)
+     */
+    public function getReferencedClasses() : Generator
+    {
+        if (false) {
+            yield;
+        }
     }
 }

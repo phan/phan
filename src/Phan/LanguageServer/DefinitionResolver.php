@@ -17,6 +17,9 @@ class DefinitionResolver
 {
     /**
      * @return Closure(Context,Node):void
+     * NOTE: The helper methods distinguish between "Go to definition"
+     * and "go to type definition" in their implementations,
+     * based on $request->getIsTypeDefinitionRequest()
      */
     public static function createGoToDefinitionClosure(GoToDefinitionRequest $request, CodeBase $code_base)
     {
@@ -51,6 +54,11 @@ class DefinitionResolver
                 case ast\AST_CONST:
                     self::locateGlobalConstDefinition($request, $code_base, $context, $node);
                     return;
+                case ast\AST_VAR:
+                    // NOTE: Only implemented for "go to type definition" right now.
+                    // TODO: Add simple heuristics to check for assignments and references within the function/global scope?
+                    self::locateVariableDefinition($request, $code_base, $context, $node);
+                    return;
             }
             // $go_to_definition_request->recordDefinitionLocation(...)
         };
@@ -74,7 +82,9 @@ class DefinitionResolver
                 continue;
             }
             $class = $code_base->getClassByFQSEN($class_fqsen);
-            $request->recordDefinitionElement($class);
+            // Note: Does the same thing (Return the class)
+            // both for "Go To Definition" and "Go To Type Definition"
+            $request->recordDefinitionElement($code_base, $class, false);
         }
     }
 
@@ -93,7 +103,7 @@ class DefinitionResolver
         } catch (CodeBaseException $e) {
             return; // ignore
         }
-        $request->recordDefinitionElement($property);
+        $request->recordDefinitionElement($code_base, $property, true);
     }
 
     /**
@@ -119,8 +129,9 @@ class DefinitionResolver
         } catch (CodeBaseException $e) {
             return; // ignore
         }
-        // TODO: Location::fromElement
-        $request->recordDefinitionElement($class_const);
+        // Class constants can't be objects, so there's no point in "Go To Type Definition" for now.
+        // TODO: There's a rare case of callable strings or `const HANDLER = MyClass::class`.
+        $request->recordDefinitionElement($code_base, $class_const, false);
     }
 
     /**
@@ -129,7 +140,7 @@ class DefinitionResolver
     public static function locateGlobalConstDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
     {
         try {
-            $class_const = (new ContextNode($code_base, $context, $node))->getConst();
+            $global_const = (new ContextNode($code_base, $context, $node))->getConst();
         } catch (NodeException $e) {
             return; // ignore
         } catch (IssueException $e) {
@@ -137,8 +148,28 @@ class DefinitionResolver
         } catch (CodeBaseException $e) {
             return; // ignore
         }
-        // TODO: Location::fromElement
-        $request->recordDefinitionElement($class_const);
+        $request->recordDefinitionElement($code_base, $global_const, false);
+    }
+
+    /**
+     * @return void
+     */
+    public static function locateVariableDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
+    {
+        $name = $node->children['name'];
+        if (!is_string($name)) {
+            return;
+        }
+        if (!$context->getScope()->hasVariableWithName($name)) {
+            return;
+        }
+        if (!$request->getIsTypeDefinitionRequest()) {
+            // TODO: Implement "Go To Definition" for variables with heuristics or create a new plugin
+            return;
+        }
+        $variable = $context->getScope()->getVariableByName($name);
+
+        $request->recordDefinitionOfVariableType($code_base, $context, $variable);
     }
 
     /**
@@ -161,8 +192,7 @@ class DefinitionResolver
             // ignore
             return;
         }
-        // TODO: Location::fromElement
-        $request->recordDefinitionElement($method);
+        $request->recordDefinitionElement($code_base, $method, true);
     }
 
     /**
@@ -173,8 +203,7 @@ class DefinitionResolver
     {
         try {
             foreach ((new ContextNode($code_base, $context, $node->children['expr']))->getFunctionFromNode() as $function_interface) {
-                // TODO: Location::fromElement
-                $request->recordDefinitionElement($function_interface);
+                $request->recordDefinitionElement($code_base, $function_interface, true);
             }
         } catch (NodeException $e) {
             // ignore

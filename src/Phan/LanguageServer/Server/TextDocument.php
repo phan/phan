@@ -164,7 +164,22 @@ class TextDocument
     {
         Logger::logInfo("Called textDocument/definition, uri={$textDocument->uri} position={$position->line}:{$position->character}");
         $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
-        // TODO: Remove unused boilerplate from alternate approach
-        return $this->server->awaitDefinition($uri, $position);
+        return $this->server->awaitDefinition($uri, $position, false);
+    }
+
+    /**
+     * The goto definition request is sent from the client to the server to resolve the definition location of a symbol
+     * at a given text document position.
+     *
+     * @param TextDocumentIdentifier $textDocument The text document
+     * @param Position $position The position inside the text document
+     * @return Promise <Location|Location[]|null>
+     * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
+     */
+    public function typeDefinition(TextDocumentIdentifier $textDocument, Position $position) : Promise
+    {
+        Logger::logInfo("Called textDocument/typeDefinition, uri={$textDocument->uri} position={$position->line}:{$position->character}");
+        $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
+        return $this->server->awaitDefinition($uri, $position, true);
     }
 }
