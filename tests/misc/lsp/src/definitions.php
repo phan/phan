@@ -11,8 +11,8 @@ class MyClass {
     const MyClassConst = 2;
     public static $my_static_property = 2;
 
-    public static function myMethod() {
-    }
+    public static function myMethod() : MyOtherClass { return new MyOtherClass(); }
+
 
     public function myInstanceMethod() {
         echo "In instance method\n";
@@ -32,5 +32,4 @@ const MY_NAMESPACED_CONST = 2;
 class MyNamespacedClass {
     const MyOtherClassConst = [2];
 }
-
 }  // end MyNS\SubNS

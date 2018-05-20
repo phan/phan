@@ -707,6 +707,7 @@ class Config
         'language_server_use_pcntl_fallback' => false,
 
         // This should only be set via CLI (--language-server-enable-go-to-definition)
+        // Affects "go to definition" and "go to type definition"
         'language_server_enable_go_to_definition' => false,
 
         // Can be set to false to disable the plugins Phan uses to infer more accurate return types of array_map, array_filter, etc.

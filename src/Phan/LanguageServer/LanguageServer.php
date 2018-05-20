@@ -397,17 +397,21 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * Asynchronously generates the definition for a given URL
      * @return Promise <Location|Location[]|null>
      */
-    public function awaitDefinition(string $uri, Position $position) : Promise
-    {
+    public function awaitDefinition(
+        string $uri,
+        Position $position,
+        bool $is_type_definition_request
+    ) : Promise {
         // TODO: Add a way to "go to definition" without emitting analysis results as a side effect
         $path_to_analyze = Utils::uriToPath($uri);
-        Logger::logInfo("Called textDocument/awaitDefinition, uri=$uri, position=" . json_encode($position));
+        $logType = $is_type_definition_request ? 'awaitTypeDefinition' : 'awaitDefinition';
+        Logger::logInfo("Called LanguageServer->$logType, uri=$uri, position=" . json_encode($position));
         $prev_definition_request = $this->most_recent_definition_request;
         if ($prev_definition_request) {
             // Discard the previous request silently
             $prev_definition_request->finalize();
         }
-        $request = new GoToDefinitionRequest($uri, $position);
+        $request = new GoToDefinitionRequest($uri, $position, $is_type_definition_request);
         $this->most_recent_definition_request = $request;
 
         // We analyze this url so that Phan is aware enough of the types and namespace maps to trigger "Go to definition"

@@ -26,6 +26,7 @@ use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use ast\Node;
+use Generator;
 
 if (!\function_exists('spl_object_id')) {
     require_once __DIR__ . '/../../spl_object_id.php';
@@ -1523,8 +1524,8 @@ class UnionType implements \Serializable
      * The context in which we're resolving this union
      * type.
      *
-     * @return \Generator
-     * @phan-return \Generator<FullyQualifiedClassName>
+     * @return Generator
+     * @phan-return Generator<FullyQualifiedClassName>
      *
      * A list of class FQSENs representing the non-native types
      * associated with this UnionType
@@ -1582,7 +1583,7 @@ class UnionType implements \Serializable
      * The context in which we're resolving this union
      * type.
      *
-     * @return \Generator
+     * @return Generator
      *
      * A list of classes representing the non-native types
      * associated with this UnionType
@@ -2585,6 +2586,30 @@ class UnionType implements \Serializable
             $result = $result->fromType($result, $template_types);
         }
         return $result;
+    }
+
+    /**
+     * @return Generator<Type,Type> ($outer_type => $inner_type)
+     *
+     * This includes classes, StaticType (and "self"), and TemplateType.
+     * This includes duplicate definitions
+     * TODO: Warn about Closure Declarations with invalid parameters...
+     *
+     * TODO: Use different helper for GoToDefinitionRequest
+     */
+    public function getReferencedClasses() : Generator
+    {
+        foreach ($this->withFlattenedArrayShapeTypeInstances()->getTypeSet() as $outer_type) {
+            $type = $outer_type;
+
+            while ($type instanceof GenericArrayType) {
+                $type = $type->genericArrayElementType();
+            }
+            if ($type->isNativeType()) {
+                continue;
+            }
+            yield $outer_type => $type;
+        }
     }
 }
 
