@@ -5,6 +5,8 @@ use Phan\Exception\EmptyFQSENException;
 use Phan\Language\Context;
 use Phan\Language\Type;
 
+use AssertionError;
+
 /**
  * A Fully-Qualified Global Structural Element
  */
@@ -116,6 +118,8 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      * An fully qualified string like '\Namespace\Class'
      *
      * @return static
+     *
+     * @throws AssertionError on failure. TODO: More consistently throw AssertionError
      */
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
@@ -133,16 +137,19 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             $parts = \explode('\\', $fqsen_string);
             $name = \array_pop($parts);
 
-            \assert(!empty($name), "The name cannot be empty");
+            if ($name === '') {
+                throw new AssertionError("The name cannot be empty");
+            }
 
             $namespace = '\\' . \implode('\\', \array_filter($parts));
 
-            \assert(!empty($namespace), "The namespace cannot be empty");
+            if ($namespace === '') {
+                throw new AssertionError("The namespace cannot be empty");
+            }
 
-            \assert(
-                $namespace[0] === '\\',
-                "The first character of the namespace must be \\"
-            );
+            if ($namespace[0] !== '\\') {
+                throw new AssertionError("The first character of the namespace must be \\");
+            }
 
             return static::make(
                 $namespace,

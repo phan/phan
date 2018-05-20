@@ -2,6 +2,7 @@
 
 namespace Phan\LanguageServer;
 
+use Phan\Analysis\ScopeVisitor;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -10,8 +11,11 @@ use Phan\Exception\NodeException;
 use Phan\Exception\IssueException;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use ast;
 use ast\Node;
+use AssertionError;
 
 class DefinitionResolver
 {
@@ -58,6 +62,9 @@ class DefinitionResolver
                     // NOTE: Only implemented for "go to type definition" right now.
                     // TODO: Add simple heuristics to check for assignments and references within the function/global scope?
                     self::locateVariableDefinition($request, $code_base, $context, $node);
+                    return;
+                case ast\AST_USE:
+                    self::locateNamespaceUseDefinition($request, $code_base, $node);
                     return;
             }
             // $go_to_definition_request->recordDefinitionLocation(...)
@@ -210,6 +217,57 @@ class DefinitionResolver
             return;
         } catch (IssueException $e) {
             // ignore
+            return;
+        }
+    }
+
+    /**
+     * @param Node $node a node of type AST_USE to find the definition of
+     * @return void
+     */
+    public static function locateNamespaceUseDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Node $node)
+    {
+        // TODO: Support GroupUse (See ScopeVisitor->visitGroupUse)
+        $targets = ScopeVisitor::aliasTargetMapFromUseNode($node);
+        if (count($targets) !== 1) {
+            // TODO: Support group use
+            return;
+        }
+        $use_elem = $node->children[0];
+        foreach ($targets as $target_array) {
+            $target_fqsen = $target_array[1];
+            if ($target_fqsen instanceof FullyQualifiedClassName) {
+                // This **could** be a namespace or a class name.
+                // If we see the class for that name in the code base, treat that as the definition
+                if ($code_base->hasClassWithFQSEN($target_fqsen)) {
+                    $class = $code_base->getClassByFQSEN($target_fqsen);
+                    $request->recordDefinitionElement($code_base, $class, false);
+                }
+            } elseif ($target_fqsen instanceof FullyQualifiedFunctionName) {
+                if ($code_base->hasFunctionWithFQSEN($target_fqsen)) {
+                    $func = $code_base->getFunctionByFQSEN($target_fqsen);
+                    $request->recordDefinitionElement($code_base, $func, false);
+                }
+            } elseif ($target_fqsen instanceof FullyQualifiedGlobalConstantName) {
+                if ($code_base->hasGlobalConstantWithFQSEN($target_fqsen)) {
+                    $global_constant = $code_base->getGlobalConstantByFQSEN($target_fqsen);
+                    $request->recordDefinitionElement($code_base, $global_constant, false);
+                }
+            }
+        }
+        if ($node->flags === \ast\flags\USE_NORMAL) {
+            $name = $use_elem->children['name'];
+            if (is_string($name)) {
+                try {
+                    $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\' . ltrim($name, '\\'));
+                } catch (AssertionError $e) {
+                    return;  // ignore, probably still typing it
+                }
+                if ($code_base->hasClassWithFQSEN($class_fqsen)) {
+                    $class = $code_base->getClassByFQSEN($class_fqsen);
+                    $request->recordDefinitionElement($code_base, $class, false);
+                }
+            }
             return;
         }
     }

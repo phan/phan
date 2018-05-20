@@ -11,6 +11,13 @@ New features(Analysis):
 
   Affects `PhanUndeclaredTypeParameter`, `PhanUndeclaredTypeProperty`, `PhanUndeclaredTypeReturnType`,
   `PhanUndeclaredTypeThrowsType`, and `PhanInvalidThrowsIs*`
++ Add `pretend_newer_core_methods_exist` config setting.
+  If this is set to true (the default),
+  and `target_php_version` is newer than the version used to run Phan,
+  Phan will act as though functions added in newer PHP versions exist.
+
+  Note: Currently only affects `Closure::fromCallable()`, which was added in PHP 7.1.
+  This will affect more functions and methods in the future.
 
 Language Server/Daemon mode:
 + Support "Go to definition" for properties, classes, global/class constants, and methods/global functions (Issue #1483)
