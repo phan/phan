@@ -95,6 +95,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
         TokenKind::Name,
         TokenKind::VariableName,
         TokenKind::StringLiteralToken,  // TODO: Make this depend on context
+        TokenKind::BackslashToken,
     ];
 
     /**
@@ -116,7 +117,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
                         // fwrite(STDERR, "Found node: " . json_encode($parser_node) . "\n");
                         return $parser_node;
                     }
-                    // fwrite(STDERR, "Found token: " . json_encode($parser_node));
+                    // fwrite(STDERR, "Found token (parent " . get_class($parser_node) . "): " . json_encode($node_or_token));
                     self::$closest_node_or_token = $node_or_token;
                     // TODO: Handle other cases
                     return $node_or_token;
@@ -126,7 +127,6 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
                 $state = self::findNodeAtOffsetRecursive($node_or_token, $offset);
                 if ($state) {
                     // fwrite(STDERR, "Found parent node for $key: " . get_class($parser_node) . "\n");
-                    // fwrite(STDERR, "Found parent node for $key: " . json_encode($parser_node) . "\n");
                     if ($state instanceof PhpParser\Node) {
                         return self::adjustClosestNodeOrToken($parser_node, $key);
                     }
@@ -166,7 +166,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
         // fprintf(STDERR, "Comparing %s to %s\n", get_class($n), get_class(self::$closest_node_or_token));
         $ast_node = parent::phpParserNodeToAstNodeOrPlaceholderExpr($n);
         if ($n === self::$closest_node_or_token) {
-            // fwrite(STDERR, "Marking corresponding node as flagged: " . json_encode($n) . "\n");
+            // fwrite(STDERR, "Marking corresponding node as flagged: " . json_encode($n) . "\n" . json_encode($ast_node) . "\n");
             // fflush(STDERR);
             if ($ast_node instanceof ast\Node) {
                 $ast_node->isSelected = true;
@@ -183,7 +183,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
     {
         $ast_node = parent::phpParserNodeToAstNode($n);
         if ($n === self::$closest_node_or_token) {
-            // fwrite(STDERR, "Marking corresponding node as flagged: " . json_encode($n) . "\n");
+            // fwrite(STDERR, "Marking corresponding node as flagged: " . json_encode($n) . "\n" . json_encode($ast_node) . "\n");
             if ($ast_node instanceof ast\Node) {
                 $ast_node->isSelected = true;
             }
@@ -201,7 +201,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
         // fprintf(STDERR, "Comparing %s to %s\n", get_class($n), get_class(self::$closest_node_or_token));
         $ast_node = parent::phpParserNonValueNodeToAstNode($n);
         if ($n === self::$closest_node_or_token) {
-            // fwrite(STDERR, "Marking corresponding node as flagged: " . json_encode($n) . "\n");
+            // fwrite(STDERR, "Marking corresponding node as flagged: " . json_encode($n) . "\n" . json_encode($ast_node) . "\n");
             if ($ast_node instanceof ast\Node) {
                 // Create a dynamic property
                 $ast_node->isSelected = true;

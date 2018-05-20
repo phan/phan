@@ -53,7 +53,7 @@ trait NodeSelectionTrait
         }
         if (!NodeSelectionVisitor::$closure) {
             // This should not be possible.
-            fwrite(STDERR, "Calling NodeSelectionVisitor without a closure\n");
+            // fwrite(STDERR, "Calling NodeSelectionVisitor without a closure\n");
             return;
         }
         (NodeSelectionVisitor::$closure)($this->context, $node);

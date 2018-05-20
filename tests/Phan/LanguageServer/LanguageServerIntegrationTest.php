@@ -312,7 +312,7 @@ EOT;
     {
         // Refers to elements defined in ../../misc/lsp/src/definitions.php
         $example_file_contents = <<<'EOT'
-<?php  // line 0
+<?php use MyNS\SubNS; // line 0
 function example() {
     echo MyClass::$my_static_property;
     echo MyClass::MyClassConst;
@@ -324,6 +324,10 @@ function example() {
     echo MY_GLOBAL_CONST;
     'my_global_function'();  // line 10
     echo MyClass::class;
+    echo \MyNS\SubNS\MyNamespacedClass::class;
+    echo SubNS\MyNamespacedClass::class;
+    echo SubNS\MY_NAMESPACED_CONST;
+    echo count(SubNS\MyNamespacedClass::MyOtherClassConst);  // line 15
 }
 EOT;
         $definitions_file_uri = Utils::pathToUri(self::getLSPFolder() . '/src/definitions.php');
@@ -393,6 +397,36 @@ EOT;
                 new Position(11, 20),  // MyClass::class (Points to MyClass)
                 $definitions_file_uri,
                 9,
+            ],
+            [
+                $example_file_contents,
+                new Position(12, 20),  // MyNS\SubNS\MyNamespacedClass (Points to a backslash)
+                $definitions_file_uri,
+                31,
+            ],
+            [
+                $example_file_contents,
+                new Position(12, 19),  // MyNS\SubNS\MyNamespacedClass (Points to a backslash)
+                $definitions_file_uri,
+                31,
+            ],
+            [
+                $example_file_contents,
+                new Position(13, 36),  // 'class' of SubNS\MyNamespacedClass::class
+                $definitions_file_uri,
+                31,
+            ],
+            [
+                $example_file_contents,
+                new Position(14, 16),  // MY_NAMESPACED_CONST
+                $definitions_file_uri,
+                29,
+            ],
+            [
+                $example_file_contents,
+                new Position(15, 45),  // MyOtherClassConst
+                $definitions_file_uri,
+                32,
             ],
             [
                 $example_file_contents,
