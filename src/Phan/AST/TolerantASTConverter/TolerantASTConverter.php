@@ -200,7 +200,7 @@ class TolerantASTConverter
     }
 
     /** @return void */
-    private function startParsing(string $file_contents)
+    protected function startParsing(string $file_contents)
     {
         self::$decl_id = 0;
         self::$should_add_placeholders = $this->instance_should_add_placeholders;
@@ -213,7 +213,7 @@ class TolerantASTConverter
     }
 
     /** @param null|bool|int|string|PhpParser\Node|Token|array $n */
-    private static function debugDumpNodeOrToken($n) : string
+    protected static function debugDumpNodeOrToken($n) : string
     {
         if (\is_scalar($n)) {
             return var_export($n, true);
@@ -393,13 +393,13 @@ class TolerantASTConverter
     /**
      * @param PhpParser\Node|Token $n
      */
-    private static function getStartLine($n) : int
+    final protected static function getStartLine($n) : int
     {
         return self::$file_position_map->getStartLine($n);
     }
 
     /** @param ?PhpParser\Node|?Token $n */
-    private static function getEndLine($n) : int
+    final protected static function getEndLine($n) : int
     {
         if (!\is_object($n)) {
             if (\is_null($n)) {
@@ -420,7 +420,7 @@ class TolerantASTConverter
      *
      * @return \Closure[]
      */
-    private static function initHandleMap() : array
+    protected static function initHandleMap() : array
     {
         $closures = [
             /** @return ?ast\Node */
@@ -1195,24 +1195,14 @@ class TolerantASTConverter
             },
             /** @return ast\Node[] */
             'Microsoft\PhpParser\Node\Statement\NamespaceUseDeclaration' => function (PhpParser\Node\Statement\NamespaceUseDeclaration $n, int $start_line) {
-                $useClauses = $n->useClauses;
+                $use_clauses = $n->useClauses;
                 $results = [];
-                $parserUseKind = $n->functionOrConst->kind ?? null;
-                foreach ($useClauses->children as $useClause) {
-                    \assert($useClause instanceof PhpParser\Node\NamespaceUseClause);
-                    $namespace_name = \rtrim(static::phpParserNameToString($useClause->namespaceName), '\\');
-                    if ($useClause->groupClauses !== null) {
-                        $results[] = static::astStmtGroupUse(
-                            $parserUseKind,  // E.g. kind is FunctionKeyword or ConstKeyword or null
-                            $namespace_name,
-                            static::phpParserNamespaceUseListToAstUseList($useClause->groupClauses->children ?? []),
-                            $start_line
-                        );
-                    } else {
-                        $alias_token = $useClause->namespaceAliasingClause->name ?? null;
-                        $alias = $alias_token !== null ? static::tokenToString($alias_token) : null;
-                        $results[] = static::astStmtUse($parserUseKind, $namespace_name, $alias, $start_line);
+                $parser_use_kind = $n->functionOrConst->kind ?? null;
+                foreach ($use_clauses->children as $use_clause) {
+                    if (!($use_clause instanceof PhpParser\Node\NamespaceUseClause)) {
+                        continue;
                     }
+                    $results[] = static::astStmtUseOrGroupUseFromUseClause($use_clause, $parser_use_kind, $start_line);
                 }
                 return $results;
             },
@@ -1394,6 +1384,31 @@ class TolerantASTConverter
         return $closures;
     }
 
+    /**
+     * Overridden in TolerantASTConverterWithNodeMapping
+     *
+     * @param PhpParser\Node\NamespaceUseClause $use_clause
+     * @param ?int $parser_use_kind
+     * @param int $start_line
+     * @return ast\Node
+     */
+    protected static function astStmtUseOrGroupUseFromUseClause(PhpParser\Node\NamespaceUseClause $use_clause, $parser_use_kind, int $start_line) : ast\Node
+    {
+        $namespace_name = \rtrim(static::phpParserNameToString($use_clause->namespaceName), '\\');
+        if ($use_clause->groupClauses !== null) {
+            return static::astStmtGroupUse(
+                $parser_use_kind,  // E.g. kind is FunctionKeyword or ConstKeyword or null
+                $namespace_name,
+                static::phpParserNamespaceUseListToAstUseList($use_clause->groupClauses->children ?? []),
+                $start_line
+            );
+        } else {
+            $alias_token = $use_clause->namespaceAliasingClause->name ?? null;
+            $alias = $alias_token !== null ? static::tokenToString($alias_token) : null;
+            return static::astStmtUse($parser_use_kind, $namespace_name, $alias, $start_line);
+        }
+    }
+
     private static function astNodeTry(
         $try_node,
         $catches_node,
@@ -1513,7 +1528,7 @@ class TolerantASTConverter
      * @param PhpParser\Node\QualifiedName|Token|null $type
      * @return ?ast\Node
      */
-    private static function phpParserTypeToAstNode($type, int $line)
+    protected static function phpParserTypeToAstNode($type, int $line)
     {
         if (\is_null($type)) {
             return null;
@@ -1625,7 +1640,7 @@ class TolerantASTConverter
     /**
      * @suppress PhanTypeMismatchProperty - Deliberately setting $node->kind to a string instead of an integer.
      */
-    private static function astStub($parser_node) : ast\Node
+    protected static function astStub($parser_node) : ast\Node
     {
         // Debugging code.
         if (\getenv(self::ENV_AST_THROW_INVALID)) {
@@ -2574,3 +2589,4 @@ class TolerantASTConverter
         return new ast\Node(ast\AST_CONST, 0, ['name' => $name_node], $start_line);
     }
 }
+class_exists(TolerantASTConverterWithNodeMapping::class);

@@ -315,8 +315,48 @@ class Clazz extends AddressableElement
                 $clazz->addMethod($code_base, $method, new None);
             }
         }
+        self::addTargetedPHPVersionMethodsToInternalClass($code_base, $clazz);
 
         return $clazz;
+    }
+
+    private static function addTargetedPHPVersionMethodsToInternalClass(CodeBase $code_base, Clazz $clazz)
+    {
+        if (Config::get_closest_target_php_version_id() >= 70100 && PHP_VERSION_ID < 70100) {
+            self::addPHP71MethodsToInternalClass($code_base, $clazz);
+        }
+    }
+
+    /**
+     * TODO: Store all of the classes and methods to modify in a config. Maybe reuse the delta files
+     * @return void
+     */
+    private static function addPHP71MethodsToInternalClass(CodeBase $code_base, Clazz $clazz)
+    {
+        if (!Config::getValue('pretend_newer_core_methods_exist')) {
+            return;
+        }
+        $class_fqsen = $clazz->getFQSEN();
+        $class_fqsen_string = strtolower($class_fqsen->__toString());
+        ;
+        if ($class_fqsen_string === '\closure') {
+            $parameter_list = [
+                new Parameter($clazz->getContext(), 'callable', UnionType::fromFullyQualifiedString('callable'), 0)
+            ];
+            $method = new Method(
+                $clazz->getContext(),
+                'fromCallable',
+                UnionType::fromFullyQualifiedString('\Closure'),
+                \ast\flags\MODIFIER_STATIC,
+                FullyQualifiedMethodName::make($class_fqsen, 'fromCallable'),
+                $parameter_list
+            );
+            $method->setNumberOfRequiredParameters(1);
+            $method->setNumberOfOptionalParameters(0);
+            $method->setRealParameterList($parameter_list);
+            $method->setUnionType(UnionType::fromFullyQualifiedString('\Closure'));
+            $clazz->addMethod($code_base, $method, new None());
+        }
     }
 
     /**

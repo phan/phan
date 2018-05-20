@@ -413,7 +413,7 @@ EOT;
         // Refers to elements defined in ../../misc/lsp/src/definitions.php
         $example_file_contents = <<<'EOT'
 <?php use MyNS\SubNS; // line 0
-function example() {
+function example(MyClass $param_clss) {
     echo MyClass::$my_static_property;
     echo MyClass::MyClassConst;
     var_export(MyClass::myMethod());
@@ -429,9 +429,26 @@ function example() {
     echo SubNS\MY_NAMESPACED_CONST;
     echo count(SubNS\MyNamespacedClass::MyOtherClassConst);  // line 15
 }
+use MyNS\SubNS\MyNamespacedClass;
+echo MyNamespacedClass::class;
 EOT;
         $definitions_file_uri = Utils::pathToUri(self::getLSPFolder() . '/src/definitions.php');
         return [
+            // Failure tests
+            [
+                $example_file_contents,
+                new Position(11, 21),  // MyClass::class (Points to MyClass)
+                $definitions_file_uri,
+                null,
+                Utils::pathToUri(self::getLSPFolder() . '/unanalyzed_directory/definitions.php'),
+            ],
+            // Success tests
+            [
+                $example_file_contents,
+                new Position(17, 5),  // MyNamespacedClass
+                $definitions_file_uri,
+                31,
+            ],
             [
                 $example_file_contents,
                 new Position(2, 21),  // my_static_property
@@ -530,10 +547,15 @@ EOT;
             ],
             [
                 $example_file_contents,
-                new Position(11, 21),  // MyClass::class (Points to MyClass)
+                new Position(1, 19),  // MyNamespacedClass as a signature param type
                 $definitions_file_uri,
-                null,
-                Utils::pathToUri(self::getLSPFolder() . '/unanalyzed_directory/definitions.php'),
+                9,
+            ],
+            [
+                $example_file_contents,
+                new Position(17, 5),  // MyNamespacedClass
+                $definitions_file_uri,
+                31,
             ],
         ];
     }

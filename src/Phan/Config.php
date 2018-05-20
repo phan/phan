@@ -80,10 +80,15 @@ class Config
         // of the php executable used to execute phan.
         'target_php_version' => null,
 
-        // Supported values: '7.0', '7.1', '7.2', null.
-        // If this is set to null,
-        // then Phan assumes the PHP version which is closest to the minor version
-        // of the php executable used to execute phan.
+        // Default: true. If this is set to true,
+        // and target_php_version is newer than the version used to run Phan,
+        // Phan will act as though functions added in newer PHP versions exist.
+        //
+        // NOTE: Currently, this only affects Closure::fromCallable
+        'pretend_newer_core_methods_exist' => true,
+
+        // Make the tolerant-php-parser polyfill generate doc comments
+        // for all types of elements, even if php-ast wouldn't (for an older PHP version)
         'polyfill_parse_all_element_doc_comments' => true,
 
         // A list of individual files to include in analysis
@@ -788,7 +793,7 @@ class Config
      * @return array<string,mixed>
      * A map of configuration keys and their values
      */
-    public function toArray() : array
+    public static function toArray() : array
     {
         return self::$configuration;
     }
@@ -861,6 +866,13 @@ class Config
     public static function getValue(string $name)
     {
         return self::$configuration[$name];
+    }
+
+    public static function reset()
+    {
+        self::$configuration = self::DEFAULT_CONFIGURATION;
+        // Trigger magic behavior
+        self::get();
     }
 
     /**

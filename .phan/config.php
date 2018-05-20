@@ -31,6 +31,13 @@ return [
     // of the php executable used to execute phan.
     "target_php_version" => null,
 
+    // Default: true. If this is set to true,
+    // and target_php_version is newer than the version used to run Phan,
+    // Phan will act as though functions added in newer PHP versions exist.
+    //
+    // NOTE: Currently, this only affects Closure::fromCallable
+    'pretend_newer_core_functions_exist' => true,
+
     // If true, missing properties will be created when
     // they are first seen. If false, we'll report an
     // error message.

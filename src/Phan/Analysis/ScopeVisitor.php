@@ -108,7 +108,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
 
         $context = $this->context;
 
-        $alias_target_map = $this->aliasTargetMapFromUseNode(
+        $alias_target_map = self::aliasTargetMapFromUseNode(
             $children['uses'],
             $prefix,
             $node->flags ?? 0
@@ -140,7 +140,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
     {
         $context = $this->context;
 
-        foreach ($this->aliasTargetMapFromUseNode($node) as $alias => list($flags, $target, $lineno)) {
+        foreach (self::aliasTargetMapFromUseNode($node) as $alias => list($flags, $target, $lineno)) {
             $context = $context->withNamespaceMap(
                 $node->flags ?: $flags,
                 $alias,
@@ -165,7 +165,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
      *
      * @suppress PhanPartialTypeMismatchReturn TODO: investigate
      */
-    private function aliasTargetMapFromUseNode(
+    public static function aliasTargetMapFromUseNode(
         Node $node,
         string $prefix = '',
         int $flags = 0
