@@ -616,6 +616,13 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     private function handleJSONResponseFromWorker(array $uris_to_analyze, array $response_data)
     {
+        $most_recent_definition_request = $this->most_recent_definition_request;
+        if ($most_recent_definition_request) {
+            $most_recent_definition_request->recordDefinitionLocationList($response_data['definitions'] ?? null);
+            $most_recent_definition_request->finalize();
+        }
+
+        $this->most_recent_definition_request = null;
         if (!\array_key_exists('issues', $response_data)) {
             Logger::logInfo("Failed to fetch 'issues' from JSON:" . json_encode($response_data));
             return;
@@ -634,13 +641,6 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                 $diagnostics[$issue_uri][] = $diagnostic;
             }
         }
-
-        $most_recent_definition_request = $this->most_recent_definition_request;
-        if ($most_recent_definition_request) {
-            $most_recent_definition_request->recordDefinitionLocationList($response_data['definitions']);
-            $most_recent_definition_request->finalize();
-        }
-        $this->most_recent_definition_request = null;
 
         foreach ($diagnostics as $diagnostics_uri => $diagnostics_list) {
             $this->client->textDocument->publishDiagnostics($diagnostics_uri, $diagnostics_list);
@@ -775,7 +775,10 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             // XXX do this next?
             // TODO: Support "Go to definition" (reasonably practical, should be able to infer types in many cases)
             // TODO: Support "Goto type definition" (e.g. for variables, properties) (since LSP 3.6.0)
-            $serverCapabilities->definitionProvider = (bool)Config::getValue('language_server_enable_go_to_definition');
+
+            $supports_go_to_definition = (bool)Config::getValue('language_server_enable_go_to_definition');
+            $serverCapabilities->definitionProvider = $supports_go_to_definition;
+            $serverCapabilities->typeDefinitionProvider = $supports_go_to_definition;
             // TODO: (probably impractical, slow) Support "Find all references"? (We don't track this, except when checking for dead code elimination possibilities.
             // $serverCapabilities->referencesProvider = false;
             // Can't support "Hover" without phpdoc for internal functions, such as those from phpstorm
