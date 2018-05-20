@@ -329,7 +329,7 @@ class AssignmentVisitor extends AnalysisVisitor
                         $this->code_base,
                         $this->context,
                         $value_node
-                    ))->getProperty($value_node->children['prop'], false);
+                    ))->getProperty(false);
 
                     // Set the element type on each element of
                     // the list
@@ -430,7 +430,7 @@ class AssignmentVisitor extends AnalysisVisitor
                         $this->code_base,
                         $this->context,
                         $value_node
-                    ))->getProperty($value_node->children['prop'], false);
+                    ))->getProperty(false);
 
                     // Set the element type on each element of
                     // the list

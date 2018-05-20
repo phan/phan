@@ -982,9 +982,6 @@ class ContextNode
     }
 
     /**
-     * @param string|Node $property_name
-     * The name of the property we're looking up
-     *
      * @param bool $is_static
      * True if we're looking for a static property,
      * false if we're looking for an instance property.
@@ -1010,7 +1007,6 @@ class ContextNode
      * we can't determine if the property exists or not
      */
     public function getProperty(
-        $property_name,
         bool $is_static
     ) : Property {
         $node = $this->node;
@@ -1231,7 +1227,7 @@ class ContextNode
     ) : Property {
 
         try {
-            return $this->getProperty($property_name, $is_static);
+            return $this->getProperty($is_static);
         } catch (IssueException $exception) {
             if ($is_static) {
                 throw $exception;
@@ -1316,7 +1312,7 @@ class ContextNode
      *
      * @throws CodeBaseException
      * An exception is thrown if we can't find the given
-     * class
+     * global constant
      */
     public function getConst() : GlobalConstant
     {

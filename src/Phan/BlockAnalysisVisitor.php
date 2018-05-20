@@ -154,12 +154,21 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @suppress PhanPluginUnusedPublicMethodArgument
+     * Analyzes a node with type AST_NAME (Relative or fully qualified name)
      */
     public function visitName(Node $node) : Context
     {
-        // Could invoke plugins, but not right now
-        return $this->context;
+        $context = $this->context;
+        // Only invoke post-order plugins, needed for NodeSelectionPlugin.
+        // PostOrderAnalysisVisitor and PreOrderAnalysisVisitor don't do anything.
+        // Optimized beause this is frequently called
+        ConfigPluginSet::instance()->postAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node,
+            $this->parent_node_list
+        );
+        return $context;
     }
 
     public function visitStmtList(Node $node) : Context

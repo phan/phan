@@ -1660,7 +1660,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getProperty($node->children['prop'], $is_static);
+            ))->getProperty($is_static);
 
             // Map template types to concrete types
             if ($property->getUnionType()->hasTemplateType()) {

@@ -112,6 +112,8 @@ class CLI
                 'language-server-verbose',
                 'language-server-allow-missing-pcntl',
                 'language-server-force-missing-pcntl',
+                'language-server-enable',
+                'language-server-enable-go-to-definition',
                 'markdown-issue-messages',
                 'memory-limit:',
                 'minimum-severity:',
@@ -415,6 +417,9 @@ class CLI
                     break;
                 case 'language-server-analyze-only-on-save':
                     Config::setValue('language_server_analyze_only_on_save', true);
+                    break;
+                case 'language-server-enable-go-to-definition':
+                    Config::setValue('language_server_enable_go_to_definition', true);
                     break;
                 case 'language-server-verbose':
                     Config::setValue('language_server_debug_level', 'info');
@@ -827,6 +832,10 @@ Extended help:
  --language-server-analyze-only-on-save
   Prevent the client from sending change notifications (Only notify the language server when the user saves a document)
   This significantly reduces CPU usage, but clients won't get notifications about issues immediately.
+
+ --language-server-enable-go-to-definition
+  Enables/Disables support for "Go To Definition" in the Phan Language Server.
+  Disabled by default.
 
  --language-server-verbose
   Emit verbose logging messages related to the language server implementation to stderr.

@@ -3,9 +3,11 @@
 namespace Phan\AST;
 
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
+use Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping;
 use Phan\AST\TolerantASTConverter\ParseException;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Daemon\Request;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Phan;
@@ -20,6 +22,7 @@ class Parser
      *
      * @param CodeBase $code_base
      * @param Context $context
+     * @param ?Request $request (A daemon mode request if in daemon mode. May affect the parser used for $file_path)
      * @param string $file_path file path for error reporting
      * @param string $file_contents file contents to pass to parser. May be overridden to ignore what is currently on disk.
      * @param bool $suppress_parse_errors (If true, don't emit SyntaxError)
@@ -27,13 +30,16 @@ class Parser
      * @throws ParseError
      * @throws ParseException
      */
-    public static function parseCode(CodeBase $code_base, Context $context, string $file_path, string $file_contents, bool $suppress_parse_errors)
+    public static function parseCode(CodeBase $code_base, Context $context, $request, string $file_path, string $file_contents, bool $suppress_parse_errors)
     {
         try {
-            if (Config::getValue('use_polyfill_parser')) {
+            // This will choose the parser to use based on the config and $file_path
+            // (For "Go To Definition", one of the files will have a slower parser which records the requested AST node)
+
+            if (self::shouldUsePolyfill($file_path, $request)) {
                 // This helper method has its own exception handling.
                 // It may throw a ParseException, which is unintentionally not caught here.
-                return self::parseCodePolyfill($code_base, $context, $file_path, $file_contents, $suppress_parse_errors);
+                return self::parseCodePolyfill($code_base, $context, $file_path, $file_contents, $suppress_parse_errors, $request);
             }
             return \ast\parse_code(
                 $file_contents,
@@ -88,12 +94,13 @@ class Parser
      * @param string $file_path file path for error reporting
      * @param string $file_contents file contents to pass to parser. May be overridden to ignore what is currently on disk.
      * @param bool $suppress_parse_errors (If true, don't emit SyntaxError)
+     * @param ?Request $request - May affect the parser used for $file_path
      * @return ?Node
      * @throws ParseException
      */
-    public static function parseCodePolyfill(CodeBase $code_base, Context $context, string $file_path, string $file_contents, bool $suppress_parse_errors)
+    public static function parseCodePolyfill(CodeBase $code_base, Context $context, string $file_path, string $file_contents, bool $suppress_parse_errors, $request)
     {
-        $converter = new TolerantASTConverter();
+        $converter = self::createConverter($file_path, $file_contents, $request);
         $converter->setShouldAddPlaceholders(false);
         $converter->setPHPVersionId(Config::get_closest_target_php_version_id());
         $converter->setParseAllDocComments(Config::getValue('polyfill_parse_all_element_doc_comments'));
@@ -132,5 +139,27 @@ class Parser
             }
         }
         return $node;
+    }
+
+    private static function shouldUsePolyfill(string $file_path, Request $request = null)
+    {
+        if (Config::getValue('use_polyfill_parser')) {
+            return true;
+        }
+        if ($request) {
+            return $request->shouldUseMappingPolyfill($file_path);
+        }
+        return false;
+    }
+
+
+    private static function createConverter(string $file_path, string $file_contents, Request $request = null) : TolerantASTConverter
+    {
+        if ($request && $request->shouldUseMappingPolyfill($file_path)) {
+            // TODO: Rename to something better
+            return new TolerantASTConverterWithNodeMapping($request->getTargetByteOffset($file_contents));
+        }
+
+        return new TolerantASTConverter();
     }
 }

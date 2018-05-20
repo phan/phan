@@ -3,13 +3,20 @@ Phan NEWS
 ?? ??? 2018, Phan 0.12.9 (dev)
 ------------------------
 
-New features:
+New features(CLI, Configs):
++ Add `--language-server-enable-go-to-definition`. See the section "Language Server/Daemon mode".
+
+New features(Analysis):
 + Emit class name suggestions for undeclared types in param, property, return type, and thrown type declarations. (#1689)
 
   Affects `PhanUndeclaredTypeParameter`, `PhanUndeclaredTypeProperty`, `PhanUndeclaredTypeReturnType`,
   `PhanUndeclaredTypeThrowsType`, and `PhanInvalidThrowsIs*`
 
-Plugins
+Language Server/Daemon mode:
++ Support "Go to definition" for properties, classes, global/class constants, and methods/global functions (Issue #1483)
+  (Must be enabled via the CLI option `--language-server-enable-go-to-definition`)
+
+Plugins:
 + Add a new plugin `SleepCheckerPlugin`. (PR #1696)
   Warn about returning non-arrays in sleep,
   as well as about returning array values with invalid property names.
@@ -18,10 +25,10 @@ Plugins
   `SleepCheckerMagicPropName`, and `SleepCheckerDynamicPropName`
 + Make `PhanPregRegexCheckerPlugin` warn about the `/e` modifier on regexes (#1692)
 
-Misc
+Misc:
 + Add simple integration test for the language server mode.
 
-Bug fixes
+Bug fixes:
 + Be more consistent about emitting `PhanUndeclaredType*` for invalid types within array shapes.
 + Avoid a crash when the left hand side of an assignment is invalid. (#1693)
 

@@ -10,6 +10,7 @@ use Phan\Daemon\Transport\Responder;
 use Phan\Language\FileRef;
 use Phan\Language\Type;
 use Phan\LanguageServer\FileMapping;
+use Phan\LanguageServer\GoToDefinitionRequest;
 use Phan\Library\FileCache;
 use Phan\Output\IssuePrinterInterface;
 use Phan\Output\PrinterFactory;
@@ -57,13 +58,17 @@ class Request
 
     private static $exited_pid_status = [];
 
+
+    /** @var ?GoToDefinitionRequest */
+    private $most_recent_definition_request;
     /** @var bool */
     private $should_exit;
 
     /**
      * @param array{method:string,files:array<int,string>,format:string,temporary_file_mapping_contents:array<string,string>} $config
+     * @param ?GoToDefinitionRequest $most_recent_definition_request
      */
-    private function __construct(Responder $responder, array $config, bool $should_exit)
+    private function __construct(Responder $responder, array $config, $most_recent_definition_request, bool $should_exit)
     {
         $this->responder = $responder;
         $this->config = $config;
@@ -72,7 +77,33 @@ class Request
         if ($this->method === self::METHOD_ANALYZE_FILES) {
             $this->files = $config[self::PARAM_FILES];
         }
+        $this->most_recent_definition_request = $most_recent_definition_request;
         $this->should_exit = $should_exit;
+    }
+
+    /**
+     * @param string $file_path an absolute or relative path to be analyzed
+     */
+    public function shouldUseMappingPolyfill(string $file_path) : bool
+    {
+        $most_recent_definition_request = $this->most_recent_definition_request;
+        if ($most_recent_definition_request) {
+            return $most_recent_definition_request->getPath() === Config::projectPath($file_path);
+        }
+        return false;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTargetByteOffset(string $file_contents) : int
+    {
+        $most_recent_definition_request = $this->most_recent_definition_request;
+        if ($most_recent_definition_request) {
+            $position = $most_recent_definition_request->getPosition();
+            return $position->toOffset($file_contents);
+        }
+        return -1;
     }
 
     public function exit(int $exit_code)
@@ -90,6 +121,7 @@ class Request
      * @param CodeBase $code_base (for refreshing parse state)
      * @param Closure $file_path_lister (for refreshing parse state)
      * @param FileMapping $file_mapping object tracking the overrides made by a client.
+     * @param ?GoToDefinitionRequest $most_recent_definition_request contains a promise that we want the resolution of
      * @param bool $should_exit - If this is true, calling $this->exit() will terminate the program. If false, ExitException will be thrown.
      */
     public static function makeLanguageServerAnalysisRequest(
@@ -98,6 +130,7 @@ class Request
         CodeBase $code_base,
         Closure $file_path_lister,
         FileMapping $file_mapping,
+        $most_recent_definition_request,
         bool $should_exit
     ) : Request {
         FileCache::clear();
@@ -115,6 +148,7 @@ class Request
                 self::PARAM_FILES => $filenames,
                 self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS => $file_mapping_contents,
             ],
+            $most_recent_definition_request,
             $should_exit
         );
         return $result;
@@ -149,11 +183,15 @@ class Request
         } else {
             $issues = $raw_issues;
         }
-        $this->sendJSONResponse([
+        $response = [
             "status" => self::STATUS_OK,
             "issue_count" => $issueCount,
             "issues" => $issues,
-        ]);
+        ];
+        if ($this->most_recent_definition_request) {
+            $response['definitions'] = $this->most_recent_definition_request->getDefinitionLocations();
+        }
+        $this->sendJSONResponse($response);
     }
 
     /**
@@ -166,7 +204,6 @@ class Request
             "status" => self::STATUS_NO_FILES,
         ]);
     }
-
 
     /**
      * @param array<int,string> $analyze_file_path_list
@@ -210,6 +247,14 @@ class Request
         }
         Daemon::debugf("Have the following files in mapping: %s", json_encode(array_keys($mapping)));
         return $mapping;
+    }
+
+    /**
+     * @return ?GoToDefinitionRequest
+     */
+    public function getMostRecentGoToDefinitionRequest()
+    {
+        return $this->most_recent_definition_request;
     }
 
     /**
@@ -386,7 +431,7 @@ class Request
             Daemon::debugf("This is the main process pretending to be the fork");
             self::$child_pids = [];
             // This is running on the only thread, so configure $request_obj to throw ExitException instead of calling exit()
-            $request_obj = new self($responder, $request, false);
+            $request_obj = new self($responder, $request, null, false);
             $temporary_file_mapping = $request_obj->getTemporaryFileMapping();
             if (count($temporary_file_mapping) > 0) {
                 self::applyTemporaryFileMappingForParsePhase($code_base, $temporary_file_mapping);
@@ -400,7 +445,7 @@ class Request
         } elseif ($fork_result == 0) {
             Daemon::debugf("This is the fork");
             self::$child_pids = [];
-            $request_obj = new self($responder, $request, true);
+            $request_obj = new self($responder, $request, null, true);
             $temporary_file_mapping = $request_obj->getTemporaryFileMapping();
             if (count($temporary_file_mapping) > 0) {
                 self::applyTemporaryFileMappingForParsePhase($code_base, $temporary_file_mapping);

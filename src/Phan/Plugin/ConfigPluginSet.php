@@ -4,6 +4,7 @@ namespace Phan\Plugin;
 use Phan\AST\Visitor\Element;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Daemon\Request;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -12,6 +13,8 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
+use Phan\LanguageServer\DefinitionResolver;
+use Phan\Library\RAII;
 use Phan\Plugin;
 use Phan\Plugin\Internal\ArrayReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\CallableParamPlugin;
@@ -19,6 +22,7 @@ use Phan\Plugin\Internal\CompactPlugin;
 use Phan\Plugin\Internal\ClosureReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\DependentReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\MiscParamPlugin;
+use Phan\Plugin\Internal\NodeSelectionPlugin;
 use Phan\Plugin\Internal\StringFunctionPlugin;
 use Phan\Plugin\PluginImplementation;
 use Phan\PluginV2;
@@ -429,6 +433,48 @@ final class ConfigPluginSet extends PluginV2 implements
             $result += $plugin->getReturnTypeOverrides($code_base);
         }
         return $result;
+    }
+
+    /**
+     * @param ?Request $request
+     * @return ?RAII
+     */
+    public function addTemporaryAnalysisPlugin(CodeBase $code_base, $request)
+    {
+        if (!$request) {
+            return null;
+        }
+        $go_to_definition_request = $request->getMostRecentGoToDefinitionRequest();
+        if (!$go_to_definition_request) {
+            return null;
+        }
+        $completion_plugin = new NodeSelectionPlugin();
+        /**
+         * @return void
+         */
+        $completion_plugin->setNodeSelectorClosure(DefinitionResolver::createGoToDefinitionClosure($go_to_definition_request, $code_base));
+        $new_post_analyze_node_plugins = self::filterPostAnalysisPlugins([$completion_plugin]);
+        if (!$new_post_analyze_node_plugins) {
+            throw new \RuntimeException("Invalid NodeSelectionPlugin");
+        }
+        $old_post_analyze_node_plugin_set = $this->postAnalyzeNodePluginSet;
+        foreach ($new_post_analyze_node_plugins as $kind => $new_plugin) {
+            $old_plugin_for_kind = $this->postAnalyzeNodePluginSet[$kind] ?? null;
+            if ($old_plugin_for_kind) {
+                $this->postAnalyzeNodePluginSet[$kind] = static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) use ($old_plugin_for_kind, $new_plugin) {
+                    $old_plugin_for_kind($code_base, $context, $node, $parent_node_list);
+                    $new_plugin($code_base, $context, $node, $parent_node_list);
+                };
+            } else {
+                $this->postAnalyzeNodePluginSet[$kind] = $new_plugin;
+            }
+        }
+
+        // TODO: Add plugins
+        return new RAII(function () use ($old_post_analyze_node_plugin_set) {
+            $this->postAnalyzeNodePluginSet = $old_post_analyze_node_plugin_set;
+            // TODO: Clean up all of the plugins that were added
+        });
     }
 
     /**

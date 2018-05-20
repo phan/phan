@@ -16,6 +16,7 @@ use Phan\LanguageServer\Protocol\ClientCapabilities;
 use Phan\LanguageServer\Protocol\Diagnostic;
 use Phan\LanguageServer\Protocol\DiagnosticSeverity;
 use Phan\LanguageServer\Protocol\InitializeResult;
+use Phan\LanguageServer\Protocol\Location;
 use Phan\LanguageServer\Protocol\Message;
 use Phan\LanguageServer\Protocol\Position;
 use Phan\LanguageServer\Protocol\Range;
@@ -122,6 +123,19 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     protected $analyze_request_set = [];
 
+    /**
+     * @var ?GoToDefinitionRequest
+     *
+     * Contains the promise for the most recent "Go to definition" request
+     * If more than one such request exists, the earlier requests will be discarded.
+     *
+     * TODO: Will need to Resolve(null) for the older requests.
+     */
+    protected $most_recent_definition_request = null;
+
+    /**
+     * Constructs the only instance of the language server
+     */
     public function __construct(ProtocolReader $reader, ProtocolWriter $writer, CodeBase $code_base, Closure $file_path_lister)
     {
         parent::__construct($this, '/');
@@ -380,6 +394,30 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     }
 
     /**
+     * Asynchronously generates the definition for a given URL
+     * @return Promise <Location|Location[]|null>
+     */
+    public function awaitDefinition(string $uri, Position $position) : Promise
+    {
+        // TODO: Add a way to "go to definition" without emitting analysis results as a side effect
+        $path_to_analyze = Utils::uriToPath($uri);
+        $prev_definition_request = $this->most_recent_definition_request;
+        if ($prev_definition_request) {
+            // Discard the previous request silently
+            $prev_definition_request->finalize();
+        }
+        $request = new GoToDefinitionRequest($uri, $position);
+        $this->most_recent_definition_request = $request;
+
+        // We analyze this url so that Phan is aware enough of the types and namespace maps to trigger "Go to definition"
+        // E.g. going to the definition of `Bar` in `use Foo as Bar; Bar::method();` requires parsing other statements in this file, not just the name in question.
+        //
+        // NOTE: This also ensures that we will run analysis, because of the check for analyze_request_set being non-empty
+        $this->analyze_request_set[$path_to_analyze] = $uri;
+        return $request->getPromise();
+    }
+
+    /**
      * Gets URIs (and corresponding paths) which the language server client needs Phan to re-analyze.
      * This excludes any files that aren't in files and directories of .phan/config.php
      *
@@ -468,6 +506,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $this->handleJSONResponseFromWorker($uris_to_analyze, $json_contents);
             return;
         }
+        // This is the worker process.
 
         $child_stream = self::streamForChild($sockets);
         $paths_to_analyze = array_keys($uris_to_analyze);
@@ -477,6 +516,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $this->code_base,
             $this->file_path_lister,
             $this->file_mapping,
+            $this->most_recent_definition_request,
             true  // We are the fork. Call exit() instead of throwing ExitException
         );
         // FIXME update the parsed file lists before and after (e.g. add to analyzeURI). See Daemon\Request::accept()
@@ -509,6 +549,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $code_base,
             $this->file_path_lister,
             $this->file_mapping,
+            $this->most_recent_definition_request,
             false  // We aren't forking. Throw ExitException instead of calling exit()
         );
 
@@ -556,7 +597,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
     /**
      * @param array<string,string> $uris_to_analyze
-     * @param array{issues:array} $response_data
+     * @param array{issues:array,definitions?:?Location|?(Location[])} $response_data
      * @return void
      */
     private function handleJSONResponseFromWorker(array $uris_to_analyze, array $response_data)
@@ -579,6 +620,14 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                 $diagnostics[$issue_uri][] = $diagnostic;
             }
         }
+
+        $most_recent_definition_request = $this->most_recent_definition_request;
+        if ($most_recent_definition_request) {
+            $most_recent_definition_request->recordDefinitionLocationList($response_data['definitions']);
+            $most_recent_definition_request->finalize();
+        }
+        $this->most_recent_definition_request = null;
+
         foreach ($diagnostics as $diagnostics_uri => $diagnostics_list) {
             $this->client->textDocument->publishDiagnostics($diagnostics_uri, $diagnostics_list);
         }
@@ -618,7 +667,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * @param int $severity
      * @return int
      */
-    public static function diagnosticSeverityFromPhanSeverity($severity) : int {
+    public static function diagnosticSeverityFromPhanSeverity($severity) : int
+    {
         switch ($severity) {
             case Issue::SEVERITY_LOW:
                 return DiagnosticSeverity::INFORMATION;
@@ -710,7 +760,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             //$serverCapabilities->workspaceSymbolProvider = true;
             // XXX do this next?
             // TODO: Support "Go to definition" (reasonably practical, should be able to infer types in many cases)
-            // $serverCapabilities->definitionProvider = false;
+            // TODO: Support "Goto type definition" (e.g. for variables, properties) (since LSP 3.6.0)
+            $serverCapabilities->definitionProvider = (bool)Config::getValue('language_server_enable_go_to_definition');
             // TODO: (probably impractical, slow) Support "Find all references"? (We don't track this, except when checking for dead code elimination possibilities.
             // $serverCapabilities->referencesProvider = false;
             // Can't support "Hover" without phpdoc for internal functions, such as those from phpstorm

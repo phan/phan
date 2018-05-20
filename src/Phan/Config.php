@@ -706,6 +706,9 @@ class Config
         // Use the command line option instead
         'language_server_use_pcntl_fallback' => false,
 
+        // This should only be set via CLI (--language-server-enable-go-to-definition)
+        'language_server_enable_go_to_definition' => false,
+
         // Can be set to false to disable the plugins Phan uses to infer more accurate return types of array_map, array_filter, etc.
         // Phan is slightly faster when these are disabled.
         'enable_internal_return_type_plugins' => true,
@@ -939,11 +942,11 @@ class Config
 
     /**
      * @return string
-     * The relative path appended to the project root directory.
+     * The relative path appended to the project root directory. (i.e. the absolute path)
      *
      * @suppress PhanUnreferencedPublicMethod
      */
-    public static function projectPath(string $relative_path)
+    public static function projectPath(string $relative_path) : string
     {
         // Make sure its actually relative
         if (\DIRECTORY_SEPARATOR === \substr($relative_path, 0, 1)) {

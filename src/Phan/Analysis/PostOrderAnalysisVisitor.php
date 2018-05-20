@@ -2134,7 +2134,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getProperty($node->children['prop'], $is_static);
+            ))->getProperty($is_static);
 
             // Mark that this property has been referenced from
             // this context

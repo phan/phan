@@ -70,4 +70,12 @@ class Position
         // TODO: array_sum should infer sum of ints is typically an int
         return ((int)array_sum(array_map('strlen', $slice))) + count($slice) + $this->character;
     }
+
+    public static function fromArray(array $data)
+    {
+        return new self(
+            $data['line'],
+            $data['character'] ?? null
+        );
+    }
 }
