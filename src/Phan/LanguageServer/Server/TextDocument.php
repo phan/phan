@@ -182,4 +182,9 @@ class TextDocument
         $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
         return $this->server->awaitDefinition($uri, $position, true);
     }
+
+    // Placeholder to avoid a crash on malformed clients
+    public function hover(TextDocumentIdentifier $textDocument, Position $position) {
+        return null;
+    }
 }
