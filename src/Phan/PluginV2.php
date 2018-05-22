@@ -55,6 +55,15 @@ use Phan\PluginV2\IssueEmitter;
  *     See \Phan\Plugin\Internal\ArrayReturnTypeOverridePlugin as an example (That is automatically loaded by phan)
  *
  *     Closure type: function(CodeBase $code_base, Context $context, Func|Method $function, array $args) : UnionType {...}
+ * 10. public function shouldSuppress(CodeBase $code_base, IssueInstance $instance, string $file_contents) : bool
+ *
+ *     Called in every phase when Phan is emitting an issue(parse, method, analysis, etc)
+ *
+ *     public function getIssueSuppressionList(CodeBase $code_base, string $file_path) : array<string,array<int,int>>
+ *
+ *     Called by UnusedSuppressionPlugin to check if the plugin's suppressions are no longer needed.
+ *
+ *     (implement \Phan\PluginV2\FinalizeProcessCapability)
  *
  * List of deprecated legacy capabilities
  *

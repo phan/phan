@@ -73,6 +73,7 @@ class Analysis
 
         $real_file_path = Config::projectPath($original_file_path);
         if (\is_string($override_contents)) {
+            // TODO: Make $override_contents a persistent entry in FileCache, make Request and language server manage this
             $cache_entry = FileCache::addEntry($real_file_path, $override_contents);
         } else {
             $cache_entry = FileCache::getOrReadEntry($real_file_path);

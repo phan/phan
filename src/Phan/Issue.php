@@ -8,6 +8,7 @@ use Phan\Language\Element\UnaddressableTypedElement;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Phan\Plugin\ConfigPluginSet;
 
 /**
  * An issue emitted during the course of analysis
@@ -2840,35 +2841,16 @@ class Issue
         // If this issue type has been suppressed in
         // the config, ignore it
 
-        if (!Config::getValue('disable_suppression')) {
-            if (in_array(
-                $issue_instance->getIssue()->getType(),
-                Config::getValue('suppress_issue_types') ?? []
-            )
-            ) {
-                return;
-            }
-
-            // If a white-list of allowed issue types is defined,
-            // only emit issues on the white-list
-            $whitelist_issue_types = Config::getValue('whitelist_issue_types') ?? [];
-            if (count($whitelist_issue_types) > 0
-                && !in_array(
-                    $issue_instance->getIssue()->getType(),
-                    $whitelist_issue_types
-                )
-            ) {
-                return;
-            }
-
-            // If this issue type has been suppressed in
-            // this scope from a doc block, ignore it.
-            if ($context->hasSuppressIssue(
-                $code_base,
-                $issue_instance->getIssue()->getType()
-            )) {
-                return;
-            }
+        $issue = $issue_instance->getIssue();
+        if (self::shouldSuppressIssue(
+            $code_base,
+            $context,
+            $issue->getType(),
+            $issue_instance->getLine(),
+            $issue_instance->getTemplateParameters(),
+            $issue_instance->getSuggestion()
+        )) {
+            return;
         }
 
         self::emitInstance($issue_instance);
@@ -2939,37 +2921,58 @@ class Issue
         array $parameters,
         Suggestion $suggestion = null
     ) {
-        // If this issue type has been suppressed in
-        // the config, ignore it
-        if (!Config::getValue('disable_suppression')
-            && in_array(
-                $issue_type,
-                Config::getValue('suppress_issue_types') ?? []
-            )
-        ) {
-            return;
-        }
-        // If a white-list of allowed issue types is defined,
-        // only emit issues on the white-list
-        if (!Config::getValue('disable_suppression')
-            && count(Config::getValue('whitelist_issue_types')) > 0
-            && !in_array(
-                $issue_type,
-                Config::getValue('whitelist_issue_types') ?? []
-            )
-        ) {
-            return;
-        }
-
-        if (!Config::getValue('disable_suppression')
-            && $context->hasSuppressIssue($code_base, $issue_type)
-        ) {
+        if (self::shouldSuppressIssue(
+            $code_base,
+            $context,
+            $issue_type,
+            $lineno,
+            $parameters,
+            $suggestion
+        )) {
             return;
         }
 
         Issue::emitWithParameters(
             $issue_type,
             $context->getFile(),
+            $lineno,
+            $parameters,
+            $suggestion
+        );
+    }
+
+    private static function shouldSuppressIssue(
+        CodeBase $code_base,
+        Context $context,
+        string $issue_type,
+        int $lineno,
+        array $parameters,
+        Suggestion $suggestion = null
+    ) : bool {
+        if (Config::getValue('disable_suppression')) {
+            return false;
+        }
+        // If this issue type has been suppressed in
+        // the config, ignore it
+        if (in_array($issue_type, Config::getValue('suppress_issue_types') ?? [])) {
+            return true;
+        }
+        // If a white-list of allowed issue types is defined,
+        // only emit issues on the white-list
+        $whitelist_issue_types = Config::getValue('whitelist_issue_types') ?? [];
+        if (count($whitelist_issue_types) > 0 &&
+            !in_array($issue_type, $whitelist_issue_types)) {
+            return true;
+        }
+
+        if ($context->hasSuppressIssue($code_base, $issue_type)) {
+            return true;
+        }
+
+        return ConfigPluginSet::instance()->shouldSuppressIssue(
+            $code_base,
+            $context,
+            $issue_type,
             $lineno,
             $parameters,
             $suggestion
