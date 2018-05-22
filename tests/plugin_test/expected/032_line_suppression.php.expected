@@ -1,0 +1,8 @@
+src/032_line_suppression.php:3 PhanInvalidCommentForDeclarationType The phpdoc comment for @property cannot occur on a function
+src/032_line_suppression.php:5 PhanInvalidCommentForDeclarationType The phpdoc comment for @property cannot occur on a function
+src/032_line_suppression.php:8 PhanInvalidCommentForDeclarationType The phpdoc comment for @property cannot occur on a function
+src/032_line_suppression.php:10 PhanUnreferencedFunction Possibly zero references to function \test_line_suppression
+src/032_line_suppression.php:12 PhanUndeclaredVariable Variable $x is undeclared
+src/032_line_suppression.php:14 PhanUndeclaredVariable Variable $z is undeclared
+src/032_line_suppression.php:17 PhanUndeclaredFunction Call to undeclared function \call_undeclared_function_not_suppressed()
+src/032_line_suppression.php:19 UnusedPluginSuppression Plugin Phan\Plugin\Internal\LineSuppressionPlugin suppresses issue PhanUndeclaredVariable but this suppression is unused or suppressed elsewhere

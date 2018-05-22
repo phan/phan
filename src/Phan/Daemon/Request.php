@@ -235,7 +235,7 @@ class Request
     }
 
     /**
-     * TODO: convert absolute path to relative paths.
+     * TODO: convert absolute path to file contents
      * @return array<string,string> - Maps original relative file paths to contents.
      * @suppress PhanPartialTypeMismatchArgumentInternal
      */

@@ -183,8 +183,13 @@ class TextDocument
         return $this->server->awaitDefinition($uri, $position, true);
     }
 
-    // Placeholder to avoid a crash on malformed clients
-    public function hover(TextDocumentIdentifier $textDocument, Position $position) {
+    /**
+     * Placeholder to avoid a crash on malformed clients
+     * @suppress PhanPluginUnusedPublicMethodArgument
+     * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
+     */
+    public function hover(TextDocumentIdentifier $unusedTtextDocument, Position $position)
+    {
         return null;
     }
 }

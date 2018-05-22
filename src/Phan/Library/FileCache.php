@@ -6,7 +6,7 @@ namespace Phan\Library;
  */
 final class FileCache
 {
-    const MINIMUM_CACHE_SIZE = 5;
+    const MINIMUM_CACHE_SIZE = 20;
     /**
      * @var int - Maximum cache size
      */

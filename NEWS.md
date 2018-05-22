@@ -4,9 +4,42 @@ Phan NEWS
 ------------------------
 
 New features(CLI, Configs):
-+ Add `--language-server-enable-go-to-definition`. See the section "Language Server/Daemon mode".
++ Add CLI flag `--language-server-enable-go-to-definition`. See the section "Language Server/Daemon mode".
++ Add Config setting `disable_line_based_suppression` to disable line-based suppression from internal comments. See the section "New Features"
 
 New features(Analysis):
++ Support `@phan-suppress-current-line` and `@phan-suppress-next-line` to suppress issues on the current or next line.
+
+  These can occur within any comment or doc comment (i.e. the comment types for `/*`, `//`, and `/**`)
+
+  These suppressions accept a comma separated list of issue type names.
+  Commas must be immediately after the previous issue type.
+
+  - Note that other suppression methods such as `@suppress` on elements currently accept only one issue type name.
+
+  Note: Phan currently does not support inline comments anywhere else.
+  Phan also does not associate these inline comments with any information about the current scope.
+  This suppression is based on tokenizing the PHP file and determining the line based on that comment line.
+
+  Examples:
+
+  ```php
+  // @phan-suppress-next-line PhanUndeclaredVariable, PhanUndeclaredFunction optional reason goes here
+  $result = call_undefined_function() + $undefined_variable;
+
+  $closure();  /* @phan-suppress-current-line PhanParamTooFew optional reason for suppression */
+
+  /**
+   * This can also be used within doc comments:
+
+   * @phan-suppress-next-line PhanInvalidCommentForDeclarationType optional reason for suppression
+   * @property int $x
+   */
+  function my_example() {
+  }
+  ```
+
+  `PhanUnusedSuppressionPlugin` is capable of detecting if line-based suppressions are unused.
 + Emit class name suggestions for undeclared types in param, property, return type, and thrown type declarations. (#1689)
 
   Affects `PhanUndeclaredTypeParameter`, `PhanUndeclaredTypeProperty`, `PhanUndeclaredTypeReturnType`,
@@ -27,6 +60,8 @@ Language Server/Daemon mode:
   Note that constants can't have object types in PHP, so there's no implementation of "Go To Type Definition" for those.
 
 Plugins:
++ Add a new plugin capability `SuppressionCapability`
+  that allows users to suppress issues in additional ways. (#1070)
 + Add a new plugin `SleepCheckerPlugin`. (PR #1696)
   Warn about returning non-arrays in sleep,
   as well as about returning array values with invalid property names.

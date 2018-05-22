@@ -411,7 +411,8 @@ class Comment
             // https://secure.php.net/manual/en/regexp.reference.internal-options.php
             // (?i) makes this case sensitive, (?-1) makes it case insensitive
             if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|suppress|phan-[a-z0-9_-]*(?-i)|method|property|template|PhanClosureScope)\b/', $line, $matches)) {
-                $type = \strtolower($matches[1]);
+                $case_sensitive_type = $matches[1];
+                $type = \strtolower($case_sensitive_type);
 
                 if ($type === 'param') {
                     $check_compatible('@param', Comment::FUNCTION_LIKE, $i, $line);
@@ -555,6 +556,8 @@ class Comment
                                 $phan_overrides['method'][] = $magic_method;
                             }
                         }
+                    } elseif ($case_sensitive_type === 'phan-suppress-next-line' || $case_sensitive_type === 'phan-suppress-current-line') {
+                        // Do nothing, see LineSuppressionPlugin
                     } else {
                         Issue::maybeEmit(
                             $code_base,

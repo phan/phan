@@ -12057,7 +12057,7 @@ return [
 'timezone_transitions_get' => ['array|false', 'object'=>'DateTimeZone', 'timestamp_begin='=>'int', 'timestamp_end='=>'int'],
 'timezone_version_get' => ['string'],
 'tmpfile' => ['resource'],
-'token_get_all' => ['array', 'source'=>'string', 'flags='=>'int'],
+'token_get_all' => ['array<int,string|array{0:int,1:string,2:int}>', 'source'=>'string', 'flags='=>'int'],
 'token_name' => ['string', 'type'=>'int'],
 'TokyoTyrant::__construct' => ['void', 'host='=>'string', 'port='=>'int', 'options='=>'array'],
 'TokyoTyrant::add' => ['int|float', 'key'=>'string', 'increment'=>'float', 'type='=>'int'],

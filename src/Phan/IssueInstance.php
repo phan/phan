@@ -23,6 +23,9 @@ class IssueInstance
     /** @var ?Suggestion If this is non-null, this contains suggestions on how to resolve the error. */
     private $suggestion;
 
+    /** @var array<int,string|int|float|FQSEN|Type|UnionType> $template_parameters If this is non-null, this contains suggestions on how to resolve the error. */
+    private $template_parameters;
+
     /**
      * @param Issue $issue
      * @param string $file
@@ -41,6 +44,7 @@ class IssueInstance
         $this->file = $file;
         $this->line = $line;
         $this->suggestion = $suggestion;
+        $this->template_parameters = $template_parameters;
 
         // color_issue_message will interfere with some formatters, such as xml.
         if (Config::getValue('color_issue_messages')) {
@@ -93,11 +97,16 @@ class IssueInstance
 
     /**
      * @return ?Suggestion
-     * @suppress PhanUnreferencedPublicMethod will be used in the future
      */
     public function getSuggestion()
     {
         return $this->suggestion;
+    }
+
+    /** @var array<int,string|int|float|FQSEN|Type|UnionType> $template_parameters If this is non-null, this contains suggestions on how to resolve the error. */
+    public function getTemplateParameters() : array
+    {
+        return $this->template_parameters;
     }
 
     /** @return ?string */

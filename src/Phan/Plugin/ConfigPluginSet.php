@@ -13,14 +13,20 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
+use Phan\Language\Element\TypedElement;
+use Phan\Language\Element\UnaddressableTypedElement;
+use Phan\Language\FQSEN;
 use Phan\LanguageServer\DefinitionResolver;
+use Phan\Language\Type;
+use Phan\Language\UnionType;
 use Phan\Library\RAII;
 use Phan\Plugin;
 use Phan\Plugin\Internal\ArrayReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\CallableParamPlugin;
-use Phan\Plugin\Internal\CompactPlugin;
 use Phan\Plugin\Internal\ClosureReturnTypeOverridePlugin;
+use Phan\Plugin\Internal\CompactPlugin;
 use Phan\Plugin\Internal\DependentReturnTypeOverridePlugin;
+use Phan\Plugin\Internal\LineSuppressionPlugin;
 use Phan\Plugin\Internal\MiscParamPlugin;
 use Phan\Plugin\Internal\NodeSelectionPlugin;
 use Phan\Plugin\Internal\StringFunctionPlugin;
@@ -44,11 +50,14 @@ use Phan\PluginV2\PluginAwarePreAnalysisVisitor;
 use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PreAnalyzeNodeCapability;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
+use Phan\PluginV2\SuppressionCapability;
+use Phan\Suggestion;
 
 use ast\Closure;
 use ast\Node;
 use ReflectionException;
 use ReflectionProperty;
+use UnusedSuppressionPlugin;
 
 /**
  * The root plugin that calls out each hook
@@ -68,7 +77,8 @@ final class ConfigPluginSet extends PluginV2 implements
     FinalizeProcessCapability,
     LegacyPreAnalyzeNodeCapability,
     LegacyPostAnalyzeNodeCapability,
-    ReturnTypeOverrideCapability
+    ReturnTypeOverrideCapability,
+    SuppressionCapability
 {
 
     /** @var array<int,Plugin>|null - Cached plugin set for this instance. Lazily generated. */
@@ -116,6 +126,12 @@ final class ConfigPluginSet extends PluginV2 implements
 
     /** @var array<int,ReturnTypeOverrideCapability>|null - plugins which generate return UnionTypes of functions based on arguments. */
     private $returnTypeOverridePluginSet;
+
+    /** @var array<int,SuppressionCapability>|null - plugins which generate return UnionTypes of functions based on arguments. */
+    private $suppressionPluginSet;
+
+    /** @var ?UnusedSuppressionPlugin - TODO: Refactor*/
+    private $unused_suppression_plugin = null;
 
     /**
      * Call `ConfigPluginSet::instance()` instead.
@@ -307,6 +323,77 @@ final class ConfigPluginSet extends PluginV2 implements
                 $method
             );
         }
+    }
+
+    /**
+     * This will be called if phan's file and element-based suppressions did not suppress the issue.
+     *
+     * @param CodeBase $code_base
+     *
+     * @param Context $context context near where the issue occurred
+     *
+     * @param string $issue_type
+     * The type of issue to emit such as Issue::ParentlessClass
+     *
+     * @param int $lineno
+     * The line number where the issue was found
+     *
+     * @param array<int,string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $parameters
+     *
+     * @param ?Suggestion $suggestion Phan's suggestion for how to fix the issue, if any.
+     *
+     * @return bool true if the given issue instance should be suppressed, given the current file contents.
+     *
+     * @suppress PhanAccessMethodInternal
+     */
+    public function shouldSuppressIssue(
+        CodeBase $code_base,
+        Context $context,
+        string $issue_type,
+        int $lineno,
+        array $parameters,
+        $suggestion
+    ) : bool {
+        foreach ($this->suppressionPluginSet as $plugin) {
+            if ($plugin->shouldSuppressIssue(
+                $code_base,
+                $context,
+                $issue_type,
+                $lineno,
+                $parameters,
+                $suggestion
+            )) {
+                $unused_suppression_plugin = $this->unused_suppression_plugin;
+                if ($unused_suppression_plugin) {
+                    $unused_suppression_plugin->recordPluginSuppression($plugin, $context->getFile(), $issue_type, $lineno);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return array<string,array<int,int>> Maps 0 or more issue types to a *list* of lines that this plugin set is going to suppress.
+     */
+    public function getIssueSuppressionList(
+        CodeBase $code_base,
+        string $file_path
+    ) : array {
+        $result = [];
+        foreach ($this->suppressionPluginSet as $plugin) {
+            $result += $plugin->getIssueSuppressionList(
+                $code_base,
+                $file_path
+            );
+        }
+        return $result;
+    }
+
+    /** @return array<int,SuppressionCapability> */
+    public function getSuppressionPluginSet() : array
+    {
+        return $this->suppressionPluginSet;
     }
 
     /**
@@ -535,6 +622,9 @@ final class ConfigPluginSet extends PluginV2 implements
             ];
             $plugin_set = array_merge($internal_return_type_plugins, $plugin_set);
         }
+        if (!(Config::getValue('disable_line_based_suppression') || Config::getValue('disable_suppression'))) {
+            $plugin_set[] = new LineSuppressionPlugin();
+        }
 
         // Register the entire set.
         $this->pluginSet = $plugin_set;
@@ -549,7 +639,9 @@ final class ConfigPluginSet extends PluginV2 implements
         $this->analyzeClassPluginSet        = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeClassCapability::class), 'analyzeClass');
         $this->finalizeProcessPluginSet     = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, FinalizeProcessCapability::class), 'finalizeProcess');
         $this->returnTypeOverridePluginSet  = self::filterByClass($plugin_set, ReturnTypeOverrideCapability::class);
+        $this->suppressionPluginSet         = self::filterByClass($plugin_set, SuppressionCapability::class);
         $this->analyzeFunctionCallPluginSet = self::filterByClass($plugin_set, AnalyzeFunctionCallCapability::class);
+        $this->unused_suppression_plugin    = self::findUnusedSuppressionPlugin($plugin_set);
     }
 
     /**
@@ -799,5 +891,20 @@ final class ConfigPluginSet extends PluginV2 implements
             }
         }
         return $result;
+    }
+
+    /**
+     * @return ?UnusedSuppressionPlugin
+     */
+    private static function findUnusedSuppressionPlugin(array $plugin_set)
+    {
+        foreach ($plugin_set as $plugin) {
+            // Don't use instanceof, avoid triggering class autoloader unnecessarily.
+            // (load one less file)
+            if (get_class($plugin) === 'UnusedSuppressionPlugin') {
+                return $plugin;
+            }
+        }
+        return null;
     }
 }

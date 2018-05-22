@@ -381,6 +381,10 @@ class Config
         // unlikely to be useful outside of that.
         'disable_suppression' => false,
 
+        // Set to true in order to ignore line-based issue suppressions.
+        // This is mildly faster.
+        'disable_line_based_suppression' => false,
+
         // If set to true, we'll dump the AST instead of
         // analyzing files
         'dump_ast' => false,
@@ -958,6 +962,7 @@ class Config
      * The relative path appended to the project root directory. (i.e. the absolute path)
      *
      * @suppress PhanUnreferencedPublicMethod
+     * @see FileRef::getProjectRelativePathForPath() for converting to relative paths
      */
     public static function projectPath(string $relative_path) : string
     {
