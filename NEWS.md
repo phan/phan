@@ -6,16 +6,17 @@ Phan NEWS
 New features(CLI, Configs):
 + Add CLI flag `--language-server-enable-go-to-definition`. See the section "Language Server/Daemon mode".
 + Add Config setting `disable_line_based_suppression` to disable line-based suppression from internal comments. See the section "New Features"
++ Add Config setting `disable_line_based_suppression` to disable file-based issue suppressions.
 
 New features(Analysis):
-+ Support `@phan-suppress-current-line` and `@phan-suppress-next-line` to suppress issues on the current or next line.
++ Make `@suppress`, `@phan-suppress`, `@phan-file-suppress` accept a comma separated issue list of issue types to suppress. (#1715)
+  Spaces aren't allowed before the commas.
++ Implement `@phan-suppress-current-line` and `@phan-suppress-next-line` to suppress issues on the current or next line.
 
   These can occur within any comment or doc comment (i.e. the comment types for `/*`, `//`, and `/**`)
 
   These suppressions accept a comma separated list of issue type names.
   Commas must be immediately after the previous issue type.
-
-  - Note that other suppression methods such as `@suppress` on elements currently accept only one issue type name.
 
   Note: Phan currently does not support inline comments anywhere else.
   Phan also does not associate these inline comments with any information about the current scope.
@@ -40,6 +41,10 @@ New features(Analysis):
   ```
 
   `PhanUnusedSuppressionPlugin` is capable of detecting if line-based suppressions are unused.
++ Allow using `@phan-file-suppress` as a regular comment anywhere within a file (`//`, `/*`, or `/**` comments).
+  Previously, `@phan-file-suppress` could only be used with a doc comment of an element.
+
+  `@phan-file-suppress` in no-op string literals will be deprecated in a future Phan release.
 + Emit class name suggestions for undeclared types in param, property, return type, and thrown type declarations. (#1689)
 
   Affects `PhanUndeclaredTypeParameter`, `PhanUndeclaredTypeProperty`, `PhanUndeclaredTypeReturnType`,

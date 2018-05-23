@@ -12,7 +12,7 @@ use Phan\PluginV2\SuppressionCapability;
 use Phan\Suggestion;
 
 /**
- * @see \Phan\Plugin\Internal\LineSuppressionPlugin for an example of how to implement a plugin with this functionality
+ * @see \Phan\Plugin\Internal\BuiltinSuppressionPlugin for an example of how to implement a plugin with this functionality
  */
 interface SuppressionCapability
 {

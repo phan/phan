@@ -206,6 +206,12 @@ class UnusedSuppressionPlugin extends PluginV2 implements
     {
         $absolute_file_path = Config::projectPath($relative_file_path);
         $plugin_class = \get_class($plugin);
+        $name_pos = \strrpos($plugin_class, '\\');
+        if ($name_pos !== false) {
+            $plugin_name = \substr($plugin_class, $name_pos + 1);
+        } else {
+            $plugin_name = $plugin_class;
+        }
         $plugin_suppressions = $plugin->getIssueSuppressionList($code_base, $absolute_file_path);
         $plugin_successful_suppressions = $this->plugin_active_suppression_list[$plugin_class][$absolute_file_path] ?? null;
 
@@ -218,12 +224,19 @@ class UnusedSuppressionPlugin extends PluginV2 implements
                 if (isset($plugin_suppressions['UnusedSuppression'][$lineno])) {
                     continue;
                 }
+                $issue_kind = 'UnusedPluginSuppression';
+                $message = 'Plugin {STRING_LITERAL} suppresses issue {ISSUETYPE} on this line but this suppression is unused or suppressed elsewhere';
+                if ($lineno === 0) {
+                    $lineno = 1;
+                    $issue_kind = 'UnusedPluginFileSuppression';
+                    $message = 'Plugin {STRING_LITERAL} suppresses issue {ISSUETYPE} in this file but this suppression is unused or suppressed elsewhere';
+                }
                 $this->emitIssue(
                     $code_base,
                     (new Context())->withFile($relative_file_path)->withLineNumberStart($lineno),
-                    'UnusedPluginSuppression',
-                    "Plugin {STRING_LITERAL} suppresses issue {ISSUETYPE} but this suppression is unused or suppressed elsewhere",
-                    [$plugin_class, $issue_type]
+                    $issue_kind,
+                    $message,
+                    [$plugin_name, $issue_type]
                 );
             }
         }

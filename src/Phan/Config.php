@@ -382,8 +382,11 @@ class Config
         'disable_suppression' => false,
 
         // Set to true in order to ignore line-based issue suppressions.
-        // This is mildly faster.
+        // Disabling both line and file-based suppressions is mildly faster.
         'disable_line_based_suppression' => false,
+
+        // Set to true in order to ignore file-based issue suppressions.
+        'disable_file_based_suppression' => false,
 
         // If set to true, we'll dump the AST instead of
         // analyzing files

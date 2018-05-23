@@ -22,11 +22,11 @@ use Phan\Language\UnionType;
 use Phan\Library\RAII;
 use Phan\Plugin;
 use Phan\Plugin\Internal\ArrayReturnTypeOverridePlugin;
+use Phan\Plugin\Internal\BuiltinSuppressionPlugin;
 use Phan\Plugin\Internal\CallableParamPlugin;
 use Phan\Plugin\Internal\ClosureReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\CompactPlugin;
 use Phan\Plugin\Internal\DependentReturnTypeOverridePlugin;
-use Phan\Plugin\Internal\LineSuppressionPlugin;
 use Phan\Plugin\Internal\MiscParamPlugin;
 use Phan\Plugin\Internal\NodeSelectionPlugin;
 use Phan\Plugin\Internal\StringFunctionPlugin;
@@ -622,8 +622,8 @@ final class ConfigPluginSet extends PluginV2 implements
             ];
             $plugin_set = array_merge($internal_return_type_plugins, $plugin_set);
         }
-        if (!(Config::getValue('disable_line_based_suppression') || Config::getValue('disable_suppression'))) {
-            $plugin_set[] = new LineSuppressionPlugin();
+        if (self::requiresPluginBasedBuiltinSuppressions()) {
+            $plugin_set[] = new BuiltinSuppressionPlugin();
         }
 
         // Register the entire set.
@@ -642,6 +642,17 @@ final class ConfigPluginSet extends PluginV2 implements
         $this->suppressionPluginSet         = self::filterByClass($plugin_set, SuppressionCapability::class);
         $this->analyzeFunctionCallPluginSet = self::filterByClass($plugin_set, AnalyzeFunctionCallCapability::class);
         $this->unused_suppression_plugin    = self::findUnusedSuppressionPlugin($plugin_set);
+    }
+
+    private static function requiresPluginBasedBuiltinSuppressions() : bool
+    {
+        if (Config::getValue('disable_suppression')) {
+            return false;
+        }
+        if (Config::getValue('disable_line_based_suppression') && Config::getValue('disable_file_based_suppression')) {
+            return false;
+        }
+        return true;
     }
 
     /**
