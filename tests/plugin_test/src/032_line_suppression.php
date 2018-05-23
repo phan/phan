@@ -6,6 +6,7 @@
  * @phan-suppress-next-line PhanInvalidCommentForDeclarationType
  * @property int $prop4
  * @property int $prop5
+ * @phan-file-suppress MissingIssueType,PhanParamTooMany
  */
 function test_line_suppression() {
     echo $w; /** @phan-suppress-current-line PhanUndeclaredVariable */
@@ -18,3 +19,9 @@ function test_line_suppression() {
 
     // @phan-suppress-current-line PhanUndeclaredVariable should warn about being unused
 }
+
+class C1 { private static $p = 42; }
+print C1::$p;
+// These issues might change later on.
+// This is an example of phan-file-suppress working as a line comment anywhere in this file.
+// @phan-file-suppress PhanAccessPropertyPrivate, PhanUnreferencedClass, PhanUnreferencedPrivateProperty

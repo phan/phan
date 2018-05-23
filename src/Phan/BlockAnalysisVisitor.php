@@ -222,11 +222,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         return $context;
     }
 
+    const PHAN_FILE_SUPPRESS_REGEX =
+        '/@phan-file-suppress\s+' . Comment::SUPPRESS_ISSUE_LIST . '/';
+
+
     const PHAN_VAR_REGEX =
         '/@(phan-var(?:-force)?)\b\s*(' . UnionType::union_type_regex . ')\s*&?\\$' . Comment::WORD_REGEX . '/';
-
-    const PHAN_SUPPRESS_REGEX =
-        '/@phan-file-suppress\s+' . Comment::WORD_REGEX . '/';
 
     /**
      * Parses annotations such as "(at)phan-var int $myVar" and "(at)phan-var-force ?MyClass $varName" annotations from inline string literals.
@@ -249,11 +250,15 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             }
         }
 
-        if (\preg_match_all(self::PHAN_SUPPRESS_REGEX, $text, $matches, PREG_SET_ORDER) > 0) {
+        if (\preg_match_all(self::PHAN_FILE_SUPPRESS_REGEX, $text, $matches, PREG_SET_ORDER) > 0) {
             $has_known_annotations = true;
-            foreach ($matches as $group) {
-                $issue_name = $group[1];
-                $code_base->addFileLevelSuppression($context->getFile(), $issue_name);
+            if (!Config::getValue('disable_file_based_suppression')) {
+                foreach ($matches as $group) {
+                    $issue_name_list = $group[1];
+                    foreach (array_map('trim', explode(',', $issue_name_list)) as $issue_name) {
+                        $code_base->addFileLevelSuppression($context->getFile(), $issue_name);
+                    }
+                }
             }
         }
 

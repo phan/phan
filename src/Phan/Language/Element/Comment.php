@@ -468,9 +468,9 @@ class Comment
                         '@throws'
                     );
                 } elseif ($type === 'suppress') {
-                    $suppress_issue_type = self::suppressIssueFromCommentLine($line);
-                    if ($suppress_issue_type !== '') {
-                        $suppress_issue_list[] = $suppress_issue_type;
+                    $suppress_issue_types = self::suppressIssuesFromCommentLine($line);
+                    if (count($suppress_issue_types) > 0) {
+                        array_push($suppress_issue_list, ...$suppress_issue_types);
                     } else {
                         Issue::maybeEmit(
                             $code_base,
@@ -529,14 +529,20 @@ class Comment
                             $phan_overrides['var'][] = $comment_var;
                         }
                     } elseif ($type === 'phan-file-suppress') {
-                        $suppress_issue_type = self::fileSuppressIssueFromCommentLine($line);
-                        if ($suppress_issue_type) {
-                            $code_base->addFileLevelSuppression($context->getFile(), $suppress_issue_type);
-                        }
+                        // See BuiltinSuppressionPlugin
+                        continue;
                     } elseif ($type === 'phan-suppress') {
-                        $suppress_issue_type = self::suppressIssueFromCommentLine($line);
-                        if ($suppress_issue_type !== '') {
-                            $suppress_issue_list[] = $suppress_issue_type;
+                        $suppress_issue_types = self::suppressIssuesFromCommentLine($line);
+                        if (count($suppress_issue_types) > 0) {
+                            array_push($suppress_issue_list, ...$suppress_issue_types);
+                        } else {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $context,
+                                Issue::UnextractableAnnotation,
+                                self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line),
+                                trim($line)
+                            );
                         }
                     } elseif ($type === 'phan-property' || $type === 'phan-property-read' || $type === 'phan-property-write') {
                         $check_compatible('@phan-property', [Comment::ON_CLASS], $i, $line);
@@ -557,7 +563,7 @@ class Comment
                             }
                         }
                     } elseif ($case_sensitive_type === 'phan-suppress-next-line' || $case_sensitive_type === 'phan-suppress-current-line') {
-                        // Do nothing, see LineSuppressionPlugin
+                        // Do nothing, see BuiltinSuppressionPlugin
                     } else {
                         Issue::maybeEmit(
                             $code_base,
@@ -891,34 +897,25 @@ class Comment
         return new None();
     }
 
+    const SUPPRESS_ISSUE_LIST = '(' . self::WORD_REGEX . '(,\s*' . self::WORD_REGEX . ')*)';
+
+    const PHAN_SUPPRESS_REGEX = '/@(?:phan-)?suppress\s+' . self::SUPPRESS_ISSUE_LIST . '/';
+
     /**
      * @param string $line
      * An individual line of a comment
      *
-     * @return string
-     * An issue name to suppress
+     * @return array<int,string>
+     * 0 or more issue names to suppress
      */
-    private static function suppressIssueFromCommentLine(
+    private static function suppressIssuesFromCommentLine(
         string $line
-    ) : string {
-        if (preg_match('/@(?:phan-)?suppress\s+' . self::WORD_REGEX . '/', $line, $match)) {
-            return $match[1];
+    ) : array {
+        if (preg_match(self::PHAN_SUPPRESS_REGEX, $line, $match)) {
+            return array_map('trim', explode(',', $match[1]));
         }
 
-        return '';
-    }
-
-    const PHAN_FILE_SUPPRESS_REGEX =
-        '/@phan-file-suppress\s+' . self::WORD_REGEX . '/';
-
-    private static function fileSuppressIssueFromCommentLine(
-        string $line
-    ) : string {
-        if (preg_match(self::PHAN_FILE_SUPPRESS_REGEX, $line, $match)) {
-            return $match[1];
-        }
-
-        return '';
+        return [];
     }
 
     /** @internal */
