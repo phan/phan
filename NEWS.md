@@ -42,7 +42,7 @@ New features(Analysis):
 
   `PhanUnusedSuppressionPlugin` is capable of detecting if line-based suppressions are unused.
 + Allow using `@phan-file-suppress` as a regular comment anywhere within a file (`//`, `/*`, or `/**` comments).
-  Previously, `@phan-file-suppress` could only be used with a doc comment of an element.
+  Previously, `@phan-file-suppress` could only be used inside the doc comment of an element.
 
   `@phan-file-suppress` in no-op string literals will be deprecated in a future Phan release.
 + Emit class name suggestions for undeclared types in param, property, return type, and thrown type declarations. (#1689)

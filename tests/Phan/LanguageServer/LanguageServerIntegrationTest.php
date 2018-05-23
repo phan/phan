@@ -688,6 +688,7 @@ EOT;
                         'save' => ['includeText' => true],
                     ],
                     'definitionProvider' => true,
+                    'typeDefinitionProvider' => true,
                 ]
             ],
             'id' => 1,
