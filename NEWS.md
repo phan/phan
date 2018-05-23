@@ -1,12 +1,15 @@
 Phan NEWS
 
+?? ??? 2018, Phan 0.12.10 (dev)
+-------------------------
+
 22 May 2018, Phan 0.12.9
 ------------------------
 
 New features(CLI, Configs):
 + Add CLI flag `--language-server-enable-go-to-definition`. See the section "Language Server/Daemon mode".
 + Add Config setting `disable_line_based_suppression` to disable line-based suppression from internal comments. See the section "New Features"
-+ Add Config setting `disable_line_based_suppression` to disable file-based issue suppressions.
++ Add Config setting `disable_file_based_suppression` to disable file-based issue suppressions.
 
 New features(Analysis):
 + Make `@suppress`, `@phan-suppress`, `@phan-file-suppress` accept a comma separated issue list of issue types to suppress. (#1715)
