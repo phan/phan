@@ -66,9 +66,14 @@ class CompositionAnalyzer
 
                 // Figure out if this property type can cast to the
                 // inherited definition's type.
+                try {
+                    $inherited_property_union_type = $inherited_property->getUnionType();
+                } catch (IssueException $exception) {
+                    $inherited_property_union_type = UnionType::empty();
+                }
                 $can_cast =
                     $property_union_type->canCastToExpandedUnionType(
-                        $inherited_property->getUnionType(),
+                        $inherited_property_union_type,
                         $code_base
                     );
 
