@@ -49,7 +49,8 @@ class Initializer
                 return 1;
             }
 
-            $vendor_path = "$cwd/vendor";
+            $vendor_path = $composer_settings['config']['vendor-dir'] ?? "$cwd/vendor";
+
             if (!is_dir($vendor_path)) {
                 printf("phan --init assumes that 'composer.phar install' was run already (expected to find '$vendor_path')\n");
                 return 1;
