@@ -112,6 +112,7 @@ class Property extends ClassElement
     /**
      * Override the default getter to fill in a future
      * union type if available.
+     * @throws IssueException if getFutureUnionType fails.
      */
     public function getUnionType() : UnionType
     {
