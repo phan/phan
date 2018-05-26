@@ -48,8 +48,8 @@ class VariableTrackingScope
     public function recordUsage(string $variable_name, Node $node)
     {
         $node_id = spl_object_id($node);
-        // Create a new definition for variable_name.
-        // Replace the definitions for $variable_name.
+        // Create a new usage for variable_name.
+
         if (($this->defs[$variable_name][$node_id] ?? false) !== true) {
             $this->uses[$variable_name][$node_id] = true;
         }
@@ -57,8 +57,7 @@ class VariableTrackingScope
 
     public function recordUsageById(string $variable_name, int $node_id)
     {
-        // Create a new definition for variable_name.
-        // Replace the definitions for $variable_name.
+        // Create a new usage for variable_name.
         if (($this->defs[$variable_name][$node_id] ?? false) !== true) {
             $this->uses[$variable_name][$node_id] = true;
         }
@@ -96,7 +95,22 @@ class VariableTrackingScope
             }
             $result->defs[$variable_name] = $defs_for_variable;
         }
+        $result->mergeUses($scope->uses);
         return $result;
+    }
+
+    /**
+     * @param array<string,array<int,bool>> $uses
+     */
+    private function mergeUses(array $uses)
+    {
+        foreach ($uses as $variable_name => $def_id_set) {
+            if (!isset($this->uses[$variable_name])) {
+                $this->uses[$variable_name] = $def_id_set;
+                continue;
+            }
+            $this->uses[$variable_name] += $def_id_set;
+        }
     }
 
     /**
@@ -116,7 +130,7 @@ class VariableTrackingScope
                 $def_key_set[$variable_name] = true;
             }
             // Anything which is used within a branch is used within the parent
-            $result->uses += $scope->uses;
+            $result->mergeUses($scope->uses);
         }
         if ($merge_parent_scope) {
             $is_redefined_in_all_scopes = function(string $variable_name) use ($branch_scopes) : bool {

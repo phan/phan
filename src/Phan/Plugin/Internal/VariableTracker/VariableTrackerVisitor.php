@@ -264,8 +264,8 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         $inner_scope = $this->analyze($this->scope, $node->children['stmts']);
 
         // Merge inner scope into outer scope
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
-        return $outer_scope->mergeInnerLoopScope($this->scope, self::$variable_graph);
+        // @phan-suppress-next-line PhanTypeMismatchArgument
+        return $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
     }
 
     /**
@@ -274,6 +274,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @return VariableTrackingScope
      *
      * @see BlockAnalysisVisitor->visitIf (TODO: Use BlockExitStatusChecker)
+     * @override
      */
     public function visitIf(Node $node) {
         $outer_scope = $this->scope;
