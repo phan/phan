@@ -49,7 +49,7 @@ final class VariableGraph
 
     public function recordVariableUsage(string $name, Node $node, VariableTrackingScope $scope)
     {
-        $defs_for_variable = $scope->defs[$name] ?? null;
+        $defs_for_variable = $scope->getDefinition($name);
         if (!$defs_for_variable) {
             return;
         }

@@ -9,7 +9,7 @@ use function spl_object_id;
  * This will represent a variable scope, similar to \Phan\Language\Scope.
  * Instead of tracking the union types for variable names, this will instead track definitions of variable names.
  */
-final class VariableTrackingScope
+class VariableTrackingScope
 {
     /**
      * @var array<string,array<int,bool>>
@@ -18,13 +18,13 @@ final class VariableTrackingScope
      * This is true if 100% of the definitions are made within the scope,
      * false if a fraction of the definitions could be from preceding scopes.
      */
-    public $defs = [];
+    protected $defs = [];
 
     /**
      * @var array<string,int>
      * Maps a variable id to a list of uses which occurred before that scope begins.
      */
-    public $uses = [];
+    protected $uses = [];
 
     public function recordDefinition(string $variable_name, Node $node)
     {
@@ -38,5 +38,14 @@ final class VariableTrackingScope
         // Create a new definition for variable_name.
         // Replace the definitions for $variable_name.
         $this->defs[$variable_name] = [$node_id => true];
+    }
+
+    /**
+     * Overridden by subclasses
+     * @return ?array<int,true>
+     */
+    public function getDefinition(string $variable_name)
+    {
+        return $this->defs[$variable_name] ?? null;
     }
 }

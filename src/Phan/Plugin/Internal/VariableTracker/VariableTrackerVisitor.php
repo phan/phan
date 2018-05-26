@@ -114,6 +114,9 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                 if (!is_string($name)) {
                     break;
                 }
+                if ($is_ref) {
+                    self::$variable_graph->markAsReference($name);
+                }
                 self::$variable_graph->recordVariableDefinition($name, $node, $this->scope);
                 $this->scope->recordDefinition($name, $node);
                 break;

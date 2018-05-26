@@ -2173,7 +2173,7 @@ class Issue
                 self::UnusedClosureParameter,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
-                'Closure parameter ${PARAMETER} is never used',
+                'Parameter ${PARAMETER} is never used',
                 self::REMEDIATION_B,
                 6043
             ),
@@ -2181,7 +2181,7 @@ class Issue
                 self::UnusedGlobalFunctionParameter,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
-                'Global function parameter ${PARAMETER} is never used',
+                'Parameter ${PARAMETER} is never used',
                 self::REMEDIATION_B,
                 6044
             ),
