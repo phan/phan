@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Plugin\Internal;
 
+use Phan\Exception\CodeBaseException;
+use Phan\Issue;
 use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV2;
@@ -65,7 +67,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         }
         $variable_graph = new VariableGraph();
         $scope = new VariableTrackingScope();
-        $this->addParametersAndUseVariablesToGraph($node, $variable_graph, $scope);
+        $issue_categories = $this->addParametersAndUseVariablesToGraph($node, $variable_graph, $scope);
 
         try {
             VariableTrackerVisitor::$variable_graph = $variable_graph;
@@ -76,14 +78,18 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             // @phan-suppress-next-line PhanTypeMismatchProperty
             VariableTrackerVisitor::$variable_graph = null;
         }
-        $this->warnAboutVariableGraph($node, $variable_graph);
+        $this->warnAboutVariableGraph($node, $variable_graph, $issue_categories);
     }
 
+    /**
+     * @return array<int,string> maps unique definition ids to issue types
+     */
     private function addParametersAndUseVariablesToGraph(
         Node $node,
         VariableGraph $graph,
         VariableTrackingScope $scope
-    ) {
+    ) : array {
+        $result = [];
         // AST_PARAM_LIST of AST_PARAM
         foreach ($node->children['params']->children as $parameter) {
             \assert($parameter instanceof Node);
@@ -91,6 +97,9 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             if (!is_string($parameter_name)) {
                 continue;
             }
+            // We narrow this down to the specific category if we need to warn.
+            $result[\spl_object_id($parameter)] = Issue::UnusedPublicMethodParameter;
+
             $graph->recordVariableDefinition($parameter_name, $parameter, $scope);
             if ($parameter->flags & ast\flags\PARAM_REF) {
                 $graph->markAsReference($parameter_name);
@@ -102,15 +111,60 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             if (!is_string($name)) {
                 continue;
             }
+            $result[\spl_object_id($closure_use)] = Issue::UnusedClosureUseVariable;
+
             $graph->recordVariableDefinition($parameter_name, $closure_use, $scope);
             if ($closure_use->flags & ast\flags\PARAM_REF) {
                 $graph->markAsReference($name);
             }
         }
+        return $result;
     }
 
-    private function warnAboutVariableGraph(Node $node, VariableGraph $graph)
-    {
+    private function getParameterCategory(Node $method_node) {
+        $kind = $method_node->kind;
+        if ($kind === ast\AST_CLOSURE) {
+            return Issue::UnusedClosureParameter;
+        } elseif ($kind === ast\AST_FUNC_DECL) {
+            return Issue::UnusedGlobalFunctionParameter;
+        }
+
+        $flags = $method_node->flags;
+        $final = $this->isParameterFinal($flags);
+
+        if ($flags & ast\flags\MODIFIER_PRIVATE) {
+            return $final ? Issue::UnusedPrivateFinalMethodParameter : Issue::UnusedPrivateMethodParameter;
+        } elseif ($flags & ast\flags\MODIFIER_PROTECTED) {
+            return $final ? Issue::UnusedProtectedFinalMethodParameter : Issue::UnusedProtectedMethodParameter;
+        }
+        return $final ? Issue::UnusedPublicFinalMethodParameter : Issue::UnusedPublicMethodParameter;
+    }
+
+    private function isParameterFinal(int $flags) : bool {
+        if (($flags & ast\flags\MODIFIER_FINAL) !== 0) {
+            return true;
+        }
+        $context = $this->context;
+        if ($context->isInClassScope()) {
+            try {
+                $class = $context->getClassInScope($this->code_base);
+                return $class->isFinal();
+            } catch (CodeBaseException $e) {
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param array<int,string> $issue_overrides_for_definition_ids maps definition ids to issue types
+     * @return void
+     */
+    private function warnAboutVariableGraph(
+        Node $node,
+        VariableGraph $graph,
+        $issue_overrides_for_definition_ids
+    ) {
+        $result = [];
         foreach ($graph->def_uses as $variable_name => $def_uses_for_variable) {
             if (preg_match('/^(_$|(unused|raii))/i', $variable_name) > 0) {
                 // Skip over $_, $unused*, and $raii*
@@ -127,13 +181,17 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                     continue;
                 }
                 $line = $graph->def_lines[$variable_name][$definition_id] ?? 1;
-                // TODO: Emit a different issue type for parameters
-                $this->emitPluginIssue(
+                $issue_type = $issue_overrides_for_definition_ids[$definition_id] ?? Issue::UnusedVariable;
+                if ($issue_type === Issue::UnusedPublicMethodParameter) {
+                    // Narrow down issues about parameters into more specific issues
+                    $issue_type = $this->getParameterCategory($node);
+                }
+                Issue::maybeEmit(
                     $this->code_base,
-                    clone($this->context)->withLineNumberStart($line),
-                    'PhanUnusedVariable',
-                    'Unused definition of variable ${VARIABLE}',
-                    [$variable_name]
+                    $this->context,
+                    $issue_type,
+                    $line,
+                    $variable_name
                 );
             }
         }
