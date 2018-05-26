@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Plugin\Internal\VariableTracker;
 
+use Phan\Analysis\BlockExitStatusChecker;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\Visitor\Element;
 use ast\Node;
@@ -407,6 +408,45 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             $cond_node = $if_node->children['cond'];
             if ($cond_node === null || (\is_scalar($cond_node) && $cond_node)) {
                 $merge_parent_scope = false;
+            }
+        }
+
+        // Merge inner scope into outer scope
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+        return $outer_scope->mergeBranchScopeList($inner_scope_list, $merge_parent_scope, self::$variable_graph);
+    }
+
+    /**
+     * @param Node $node a node of kind AST_SWITCH
+     * Analyzes switch statements.
+     * @return VariableTrackingScope
+     *
+     * @see BlockAnalysisVisitor->visitSwitchList (TODO: Use BlockExitStatusChecker)
+     * @override
+     */
+    public function visitSwitchList(Node $node)
+    {
+        $outer_scope = $this->scope;
+
+        $inner_scope_list = [];
+        $merge_parent_scope = true;
+        $has_default = false;
+        foreach ($node->children as $i => $case_node) {
+            \assert($case_node instanceof Node);
+            // Replace the scope with the inner scope
+            // TODO: Analyzing if_node->children['cond'] should affect $outer_scope?
+            $inner_scope = new VariableTrackingBranchScope($outer_scope);
+            $inner_scope = $this->analyze($inner_scope, $case_node);
+            if ($case_node->children['cond'] === null) {
+                // this has a default, the case statements are comprehensive
+                $merge_parent_scope = false;
+            }
+            $stmts_node = $case_node->children['stmts'];
+            if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node)) {
+                // Skip over empty case statements (incomplete heuristic), TODO: test
+                if (\count($stmts_node->children ?? []) !== 0 || $i === \count($node->children) - 1) {
+                    $inner_scope_list[] = $inner_scope;
+                }
             }
         }
 

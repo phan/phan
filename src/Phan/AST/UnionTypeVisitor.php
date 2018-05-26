@@ -1958,7 +1958,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * `print($str)` always returns 1.
      * See https://secure.php.net/manual/en/function.print.php#refsect1-function.print-returnvalues
-     * @suppress PhanPluginUnusedPublicMethodArgument
+     * @param Node $node @phan-unused-param
      */
     public function visitPrint(Node $node) : UnionType
     {
@@ -2262,9 +2262,9 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param CodeBase $code_base
      * @param Context $context
      * @param string|Node $node the node to fetch CallableType instances for.
-     * @param bool $log_error whether or not to log errors while searching
+     * @param bool $log_error whether or not to log errors while searching @phan-unused-param
      * @return array<int,FunctionInterface>
-     * @suppress PhanPluginUnusedPublicMethodArgument (TODO: Implement $log_error)
+     * TODO: use log_error
      */
     public static function functionLikeListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $log_error) : array
     {
