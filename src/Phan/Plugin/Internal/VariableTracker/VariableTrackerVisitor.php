@@ -98,10 +98,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         return $this->analyzeAssignmentTarget($node->children['var'], $is_ref);
     }
 
-    /**
-     * @return VariableTrackingScope
-     */
-    private function analyzeAssignmentTarget($node, bool $is_ref)
+    private function analyzeAssignmentTarget($node, bool $is_ref) : VariableTrackingScope
     {
         // TODO: Push onto the node list?
         if (!($node instanceof Node)) {
@@ -123,9 +120,27 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             case ast\AST_REF:
                 $this->scope = $this->analyzeAssignmentTarget($node->children['var'], true);
                 break;
-            // TODO: Analyze properties, array access, and function calls.
+            case ast\AST_PROP:
+                return $this->analyzePropAssignment($node);
+                // TODO: Analyze array access and param/return references of function/method calls.
         }
         return $this->scope;
+    }
+
+    private function analyzePropAssignment(Node $node) : VariableTrackingScope
+    {
+        // Treat $y in `$x->$y = $z;` as a usage of $y
+        $this->scope = $this->analyzeWhenValidNode($this->scope, $node->children['prop']);
+        $expr = $node->children['expr'];
+        if ($expr instanceof Node && $expr->kind === \ast\AST_VAR) {
+            $name = $expr->children['name'];
+            if (is_string($name)) {
+                // treat $x->prop = 2 like a usage of $x
+                self::$variable_graph->recordVariableUsage($name, $expr, $this->scope);
+            }
+        }
+        // treat $x->prop = 2 like a definition to $x (in addition to having treated this as a usage)
+        return $this->analyzeAssignmentTarget($expr, false);
     }
 
     /**
@@ -221,27 +236,35 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             self::$variable_graph->recordVariableUsage($name, $node, $this->scope);
             // TODO: Determine if the given usage is an assignment, a definition, or both (modifying by reference, $x++, etc.
             // See the way this is done in BlockAnalysisVisitor
+        } elseif ($name instanceof Node) {
+            return $this->analyze($this->scope, $name);
         }
         return $this->scope;
     }
 
     /**
+     * Analyzes `foreach ($expr as $key => $value) { stmts }
      * @return VariableTrackingScope
      */
     public function visitForeach(Node $node) {
-        // foreach ($expr as $key => $value) { stmts }
         $expr_node = $node->children['expr'];
-        $this->analyzeWhenValidNode($this->scope, $expr_node);
+        $outer_scope = $this->analyzeWhenValidNode($this->scope, $expr_node);
+
+        // Replace the scope with the inner scope
+        $this->scope = new VariableTrackingBranchScope($outer_scope);
 
         $key_node = $node->children['key'];
-        $this->analyzeAssignmentTarget($key_node, false);
+        $this->scope = $this->analyzeAssignmentTarget($key_node, false);
 
         $value_node = $node->children['value'];
-        $this->analyzeAssignmentTarget($value_node, false);  // analyzeAssignmentTarget checks for AST_REF
+        $this->scope = $this->analyzeAssignmentTarget($value_node, false);  // analyzeAssignmentTarget checks for AST_REF
 
         // TODO: Update graph: inner loop definitions can be used inside the loop.
         // TODO: Create a branchScope? - Loop iterations can run 0 times.
-        $inner_scope = $this->visitStmtList($node->children['stmts']);
-        return $this->scope;
+        $inner_scope = $this->analyze($this->scope, $node->children['stmts']);
+
+        // Merge inner scope into outer scope
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+        return $outer_scope->mergeInnerLoopScope($this->scope, self::$variable_graph);
     }
 }

@@ -166,6 +166,9 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     ) {
         $result = [];
         foreach ($graph->def_uses as $variable_name => $def_uses_for_variable) {
+            if ($variable_name === 'this') {
+                continue;
+            }
             if (preg_match('/^(_$|(unused|raii))/i', $variable_name) > 0) {
                 // Skip over $_, $unused*, and $raii*
                 continue;

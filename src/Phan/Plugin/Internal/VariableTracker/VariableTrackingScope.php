@@ -17,12 +17,15 @@ class VariableTrackingScope
      *
      * This is true if 100% of the definitions are made within the scope,
      * false if a fraction of the definitions could be from preceding scopes.
+     *
+     * TODO: Actually set the inner value to false appropriately.
      */
     protected $defs = [];
 
     /**
-     * @var array<string,int>
-     * Maps a variable id to a list of uses which occurred before that scope begins.
+     * @var array<string,array<int,true>>
+     * Maps a variable id to a list of uses which occurred within that scope.
+     * (of definitions that might have occurred before this scope)
      */
     protected $uses = [];
 
@@ -40,6 +43,25 @@ class VariableTrackingScope
         $this->defs[$variable_name] = [$node_id => true];
     }
 
+    public function recordUsage(string $variable_name, Node $node)
+    {
+        $node_id = spl_object_id($node);
+        // Create a new definition for variable_name.
+        // Replace the definitions for $variable_name.
+        if (($this->defs[$variable_name][$node_id] ?? false) !== true) {
+            $this->uses[$variable_name][$node_id] = true;
+        }
+    }
+
+    public function recordUsageById(string $variable_name, int $node_id)
+    {
+        // Create a new definition for variable_name.
+        // Replace the definitions for $variable_name.
+        if (($this->defs[$variable_name][$node_id] ?? false) !== true) {
+            $this->uses[$variable_name][$node_id] = true;
+        }
+    }
+
     /**
      * Overridden by subclasses
      * @return ?array<int,true>
@@ -47,5 +69,31 @@ class VariableTrackingScope
     public function getDefinition(string $variable_name)
     {
         return $this->defs[$variable_name] ?? null;
+    }
+
+    public function mergeInnerLoopScope(
+        VariableTrackingBranchScope $scope,
+        VariableGraph $graph
+    ) : VariableTrackingScope {
+        /**
+         * @param string $variable_name
+         * @param array<int,true> $result_defs
+         * @param array<int,true> $defs being merged into $result_defs
+         * @return array<int,true> the definitions afterwards
+         */
+        $result = clone($this);
+        foreach ($scope->defs as $variable_name => $defs) {
+            $defs_for_variable = $result->defs[$variable_name] ?? [];
+            $loop_uses_of_own_variable = $scope->uses[$variable_name] ?? null;
+
+            foreach ($defs as $def_id => $use_set) {
+                if ($loop_uses_of_own_variable) {
+                    $graph->recordLoopSelfUsage($variable_name, $def_id, $loop_uses_of_own_variable);
+                }
+                $defs_for_variable[$def_id] = true;
+            }
+            $result->defs[$variable_name] = $defs_for_variable;
+        }
+        return $result;
     }
 }

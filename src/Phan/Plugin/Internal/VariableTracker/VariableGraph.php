@@ -36,6 +36,9 @@ final class VariableGraph
     {
     }
 
+    /**
+     * @return void
+     */
     public function recordVariableDefinition(string $name, Node $node, VariableTrackingScope $scope)
     {
         // TODO: Measure performance against SplObjectHash
@@ -47,6 +50,9 @@ final class VariableGraph
         $scope->recordDefinitionById($name, $id);
     }
 
+    /**
+     * @return void
+     */
     public function recordVariableUsage(string $name, Node $node, VariableTrackingScope $scope)
     {
         $defs_for_variable = $scope->getDefinition($name);
@@ -54,11 +60,27 @@ final class VariableGraph
             return;
         }
         $node_id = \spl_object_id($node);
+        $scope->recordUsageById($name, $node_id);
         foreach ($defs_for_variable as $def_id => $_) {
+            if ($def_id !== $node_id)  {
+                $this->def_uses[$name][$def_id][$node_id] = true;
+            }
+        }
+    }
+
+    /**
+     * @return void
+     */
+    public function recordLoopSelfUsage(string $name, int $def_id, array $loop_uses_of_own_variable)
+    {
+        foreach ($loop_uses_of_own_variable as $node_id => $_) {
             $this->def_uses[$name][$def_id][$node_id] = true;
         }
     }
 
+    /**
+     * @return void
+     */
     public function markAsReference(string $name)
     {
         $this->variable_types[$name] = (($this->variable_types[$name] ?? 0) | self::IS_REFERENCE);
