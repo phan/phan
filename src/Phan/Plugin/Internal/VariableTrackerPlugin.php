@@ -121,7 +121,8 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         return $result;
     }
 
-    private function getParameterCategory(Node $method_node) {
+    private function getParameterCategory(Node $method_node)
+    {
         $kind = $method_node->kind;
         if ($kind === ast\AST_CLOSURE) {
             return Issue::UnusedClosureParameter;
@@ -140,7 +141,8 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         return $final ? Issue::UnusedPublicFinalMethodParameter : Issue::UnusedPublicMethodParameter;
     }
 
-    private function isParameterFinal(int $flags) : bool {
+    private function isParameterFinal(int $flags) : bool
+    {
         if (($flags & ast\flags\MODIFIER_FINAL) !== 0) {
             return true;
         }

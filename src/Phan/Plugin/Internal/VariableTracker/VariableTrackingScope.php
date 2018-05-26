@@ -133,7 +133,7 @@ class VariableTrackingScope
             $result->mergeUses($scope->uses);
         }
         if ($merge_parent_scope) {
-            $is_redefined_in_all_scopes = function(string $variable_name) use ($branch_scopes) : bool {
+            $is_redefined_in_all_scopes = function (string $variable_name) use ($branch_scopes) : bool {
                 foreach ($branch_scopes as $scope) {
                     if (isset($scope->defs[$variable_name])) {
                         return false;
@@ -142,7 +142,7 @@ class VariableTrackingScope
                 return true;
             };
         } else {
-            $is_redefined_in_all_scopes = function(string $variable_name) : bool {
+            $is_redefined_in_all_scopes = function (string $variable_name) : bool {
                 return false;
             };
         }

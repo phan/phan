@@ -15,7 +15,8 @@ final class VariableTrackingBranchScope extends VariableTrackingScope
 
     // inherits defs, uses
 
-    public function __construct(VariableTrackingScope $parent_scope) {
+    public function __construct(VariableTrackingScope $parent_scope)
+    {
         $this->parent_scope = $parent_scope;
     }
 

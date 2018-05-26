@@ -62,7 +62,7 @@ final class VariableGraph
         $node_id = \spl_object_id($node);
         $scope->recordUsageById($name, $node_id);
         foreach ($defs_for_variable as $def_id => $_) {
-            if ($def_id !== $node_id)  {
+            if ($def_id !== $node_id) {
                 $this->def_uses[$name][$def_id][$node_id] = true;
             }
         }
