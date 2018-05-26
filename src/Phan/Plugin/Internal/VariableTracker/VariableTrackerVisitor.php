@@ -267,4 +267,37 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         return $outer_scope->mergeInnerLoopScope($this->scope, self::$variable_graph);
     }
+
+    /**
+     * @param Node $node a node of kind AST_IF
+     * Analyzes if statements.
+     * @return VariableTrackingScope
+     *
+     * @see BlockAnalysisVisitor->visitIf (TODO: Use BlockExitStatusChecker)
+     */
+    public function visitIf(Node $node) {
+        $outer_scope = $this->scope;
+
+        $inner_scope_list = [];
+        $merge_parent_scope = true;
+        foreach ($node->children as $if_node) {
+            if (!($if_node instanceof Node)) {
+                // impossible
+                continue;
+            }
+            // Replace the scope with the inner scope
+            // TODO: Analyzing if_node->children['cond'] should affect $outer_scope?
+            $inner_scope = new VariableTrackingBranchScope($outer_scope);
+            $inner_scope = $this->analyze($inner_scope, $if_node);
+            $inner_scope_list[] = $inner_scope;
+            $cond_node = $if_node->children['cond'];
+            if ($cond_node === null || (\is_scalar($cond_node) && $cond_node)) {
+                $merge_parent_scope = false;
+            }
+        }
+
+        // Merge inner scope into outer scope
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+        return $outer_scope->mergeBranchScopeList($inner_scope_list, $merge_parent_scope, self::$variable_graph);
+    }
 }

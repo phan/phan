@@ -113,7 +113,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             }
             $result[\spl_object_id($closure_use)] = Issue::UnusedClosureUseVariable;
 
-            $graph->recordVariableDefinition($parameter_name, $closure_use, $scope);
+            $graph->recordVariableDefinition($name, $closure_use, $scope);
             if ($closure_use->flags & ast\flags\PARAM_REF) {
                 $graph->markAsReference($name);
             }
