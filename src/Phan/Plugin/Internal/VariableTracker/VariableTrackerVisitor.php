@@ -16,6 +16,8 @@ use function is_string;
  * 2. Use visit*() overrides for individual element types.
  * 3. Split tracking variables into pre-analysis, recursive, and post-analysis steps
  * 4. Track based on an identifier corresponding to the \ast\Node of the assignment (e.g. using \spl_object_id())
+ *
+ * TODO: Improve analysis within the ternary operator (cond() ? ($x = 2) : ($x = 3);
  */
 final class VariableTrackerVisitor extends AnalysisVisitor
 {

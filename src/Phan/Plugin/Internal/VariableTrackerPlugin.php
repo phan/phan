@@ -3,6 +3,7 @@ namespace Phan\Plugin\Internal;
 
 use Phan\Exception\CodeBaseException;
 use Phan\Issue;
+use Phan\Language\Element\Variable;
 use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV2;
@@ -173,6 +174,9 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             }
             if (preg_match('/^(_$|(unused|raii))/i', $variable_name) > 0) {
                 // Skip over $_, $unused*, and $raii*
+                continue;
+            }
+            if (Variable::isSuperglobalVariableWithName($variable_name)) {
                 continue;
             }
             $type_bitmask = $graph->variable_types[$variable_name] ?? 0;
