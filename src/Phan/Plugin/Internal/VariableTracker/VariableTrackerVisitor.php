@@ -269,6 +269,58 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     }
 
     /**
+     * Analyzes `while (cond) { stmts }`
+     * @return VariableTrackingScope
+     * @override
+     */
+    public function visitWhile(Node $node) {
+        $outer_scope = $this->scope;
+
+        $inner_scope = new VariableTrackingBranchScope($outer_scope);
+        $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['cond']);
+        $inner_scope = $this->analyze($inner_scope, $node->children['stmts']);
+
+        // Merge inner scope into outer scope
+        // @phan-suppress-next-line PhanTypeMismatchArgument
+        return $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
+    }
+
+    /**
+     * Analyzes `do { stmts } while (cond);`
+     * @return VariableTrackingScope
+     * @override
+     */
+    public function visitDoWhile(Node $node) {
+        $outer_scope = $this->scope;
+
+        $inner_scope = new VariableTrackingBranchScope($outer_scope);
+        $inner_scope = $this->analyze($inner_scope, $node->children['stmts']);
+        $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['cond']);
+
+        // Merge inner scope into outer scope
+        // @phan-suppress-next-line PhanTypeMismatchArgument
+        return $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
+    }
+
+    /**
+     * Analyzes `for (init; cond; loop) { stmts }`
+     * @return VariableTrackingScope
+     * @override
+     */
+    public function visitFor(Node $node) {
+        $outer_scope = $this->analyzeWhenValidNode($this->scope, $node->children['init']);
+
+        $inner_scope = new VariableTrackingBranchScope($outer_scope);
+        $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['cond']);
+        $inner_scope = $this->analyze($inner_scope, $node->children['stmts']);
+        $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['loop']);
+
+        // Merge inner scope into outer scope
+        // @phan-suppress-next-line PhanTypeMismatchArgument
+        return $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
+    }
+
+    /**
      * @param Node $node a node of kind AST_IF
      * Analyzes if statements.
      * @return VariableTrackingScope
