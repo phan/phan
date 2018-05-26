@@ -8,6 +8,7 @@ use Phan\Plugin\Internal\VariableTracker\VariableGraph;
 use Phan\Plugin\Internal\VariableTracker\VariableTrackingScope;
 use Phan\Plugin\Internal\VariableTracker\VariableTrackerVisitor;
 use ast\Node;
+use ast;
 
 /**
  * NOTE: This is automatically loaded by phan based on config settings.
@@ -80,6 +81,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     private function addParametersAndUseVariablesToGraph(Node $node, VariableGraph $graph) {
+        // AST_PARAM_LIST of AST_PARAM
         foreach ($node->children['params']->children as $parameter) {
             $parameter_name = $parameter->children['name'];
             if (!is_string($parameter_name)) {
@@ -88,6 +90,15 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             $graph->recordVariableDefinition($parameter_name, $node);
             if ($parameter->flags & ast\flags\PARAM_REF) {
                 $graph->markAsReference($parameter_name);
+            }
+        }
+        foreach ($node->children['uses']->children ?? [] as $closure_use) {
+            $name = $closure_use->children['name'];
+            if (!is_string($name)) {
+                continue;
+            }
+            if ($closure_use->flags & ast\flags\PARAM_REF) {
+                $graph->markAsReference($name);
             }
         }
     }
