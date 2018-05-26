@@ -134,8 +134,13 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
         string $file_contents
     ) : array {
         $suggestion_list = [];
-        foreach (self::yieldSuppressionComments($file_contents)
-                 as list($comment_text, $comment_start_line, $comment_start_offset, $comment_name, $kind_list_text)) {
+        foreach (self::yieldSuppressionComments($file_contents) as list(
+            $comment_text,
+            $comment_start_line,
+            $comment_start_offset,
+            $comment_name,
+            $kind_list_text
+        )) {
             $kind_list = array_map('trim', explode(',', $kind_list_text));
             foreach ($kind_list as $issue_kind) {
                 if ($comment_name === 'file-suppress') {

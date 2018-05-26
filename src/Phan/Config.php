@@ -311,6 +311,10 @@ class Config
         // to make sense of.
         'dead_code_detection' => false,
 
+        // Set to true in order to attempt to detect unused variables.
+        // dead_code_detection will also enable this.
+        'unused_variable_detection' => false,
+
         // Set to true in order to force tracking references to elements
         // (functions/methods/consts/protected).
         // dead_code_detection is another option which also causes references

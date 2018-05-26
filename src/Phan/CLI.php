@@ -134,6 +134,7 @@ class CLI
                 'strict-return-checking',
                 'strict-type-checking',
                 'target-php-version',
+                'unused-variable-detection',
                 'use-fallback-parser',
                 'version',
             ]
@@ -427,6 +428,9 @@ class CLI
                 case 'x':
                 case 'dead-code-detection':
                     Config::setValue('dead_code_detection', true);
+                    break;
+                case 'unused-variable-detection':
+                    Config::setValue('unused_variable_detection', true);
                     break;
                 case 'allow-polyfill-parser':
                     // Just check if it's installed and of a new enough version.
