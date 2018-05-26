@@ -158,8 +158,9 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                 self::$variable_graph->recordVariableUsage($name, $expr, $this->scope);
             }
         }
-        // treat $x->prop = 2 like a definition to $x (in addition to having treated this as a usage)
-        return $this->analyzeAssignmentTarget($expr, false);
+        return $this->analyzeWhenValidNode($this->scope, $expr);  // lower false positives by not treating this as a definition
+        // // treat $x->prop = 2 like a definition to $x (in addition to having treated this as a usage)
+        // return $this->analyzeAssignmentTarget($expr, false);
     }
 
     private function analyzeDimAssignmentTarget(Node $node) : VariableTrackingScope
@@ -176,8 +177,9 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                 self::$variable_graph->recordVariableUsage($name, $expr, $this->scope);
             }
         }
-        // treat $x['dim_name'] = 2 like a definition to $x (in addition to having treated this as a usage)
-        return $this->analyzeAssignmentTarget($expr, false);
+        return $this->analyzeWhenValidNode($this->scope, $expr);  // lower false positives by not treating this as a definition
+        // // treat $x['dim_name'] = 2 like a definition to $x (in addition to having treated this as a usage)
+        // return $this->analyzeAssignmentTarget($expr, false);
     }
 
     /**
@@ -411,5 +413,68 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         // Merge inner scope into outer scope
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         return $outer_scope->mergeBranchScopeList($inner_scope_list, $merge_parent_scope, self::$variable_graph);
+    }
+
+    /**
+     * @param Node $node a node of kind AST_CATCH_LIST
+     * Analyzes catch statement lists.
+     * @return VariableTrackingScope
+     *
+     * @see BlockAnalysisVisitor->visitTry (TODO: Use BlockExitStatusChecker)
+     * @override
+     */
+    public function visitTry(Node $node)
+    {
+        $outer_scope = $this->scope;
+
+        $try_scope = new VariableTrackingBranchScope($outer_scope);
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+        $try_scope = $this->analyze($try_scope, $node->children['try']);
+
+        // TODO: Use BlockExitStatusChecker, like BlockAnalysisVisitor
+        // TODO: Optimize
+        $main_scope = $outer_scope->mergeBranchScopeList([$try_scope], true, self::$variable_graph);
+
+        $catch_node_list = $node->children['catches']->children;
+        if (count($catch_node_list) > 0) {
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument TODO: undo
+            $main_scope = $this->analyze($main_scope, $node->children['catches']);
+        }
+        $finally_node = $node->children['finally'];
+        if ($finally_node !== null) {
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument TODO: undo
+            return $this->analyze($main_scope, $finally_node);
+        }
+        return $main_scope;
+    }
+
+    /**
+     * @param Node $node a node of kind AST_CATCH_LIST
+     * Analyzes catch statement lists.
+     * @return VariableTrackingScope
+     *
+     * @see BlockAnalysisVisitor->visitTry (TODO: Use BlockExitStatusChecker)
+     * @override
+     */
+    public function visitCatchList(Node $node)
+    {
+        $outer_scope = $this->scope;
+
+        $inner_scope_list = [];
+        foreach ($node->children as $catch_node) {
+            if (!($catch_node instanceof Node)) {
+                // impossible
+                continue;
+            }
+            // Replace the scope with the inner scope
+            // TODO: Analyzing if_node->children['cond'] should affect $outer_scope?
+            $inner_scope = new VariableTrackingBranchScope($outer_scope);
+            $inner_scope = $this->analyze($inner_scope, $catch_node);
+            $inner_scope_list[] = $inner_scope;
+        }
+
+        // Merge inner scope into outer scope
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+        return $outer_scope->mergeBranchScopeList($inner_scope_list, false, self::$variable_graph);
     }
 }

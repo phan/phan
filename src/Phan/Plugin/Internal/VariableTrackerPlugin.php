@@ -163,7 +163,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      */
     private function warnAboutVariableGraph(
-        Node $node,
+        Node $method_node,
         VariableGraph $graph,
         $issue_overrides_for_definition_ids
     ) {
@@ -193,7 +193,12 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                 $issue_type = $issue_overrides_for_definition_ids[$definition_id] ?? Issue::UnusedVariable;
                 if ($issue_type === Issue::UnusedPublicMethodParameter) {
                     // Narrow down issues about parameters into more specific issues
-                    $issue_type = $this->getParameterCategory($node);
+                    $docComment = $method_node->children['docComment'] ?? null;
+                    if ($docComment && preg_match('/@param[^$]*\$' . preg_quote($variable_name) . '\b.*@phan-unused-param\b/', $docComment)) {
+                        // Don't warn about parameters marked with phan-unused-param
+                        break;
+                    }
+                    $issue_type = $this->getParameterCategory($method_node);
                 }
                 Issue::maybeEmit(
                     $this->code_base,
