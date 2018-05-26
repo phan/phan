@@ -3,8 +3,9 @@ namespace Phan\Plugin\Internal\VariableTracker;
 
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\Visitor\Element;
-use Phan\Language\Context;
 use ast\Node;
+
+use function is_string;
 
 /**
  * The planned design for this is similar to the way BlockAnalysisVisitor tracks union types of variables
@@ -17,6 +18,9 @@ use ast\Node;
  */
 final class VariableTrackerVisitor extends AnalysisVisitor
 {
+    /**
+     * @var VariableGraph
+     */
     public static $variable_graph;
 
     /** @var VariableTrackingScope */
@@ -33,6 +37,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * This is the default implementation for node types which don't have any overrides
      * @return void
+     * @override
      */
     public function visit(Node $node)
     {
@@ -45,6 +50,49 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         }
     }
 
+    /**
+     * @override
+     */
+    public function visitAssignRef(Node $node)
+    {
+        $this->analyzeAssign($node, true);
+    }
+
+
+    /**
+     * @override
+     */
+    public function visitAssign(Node $node)
+    {
+        $this->analyzeAssign($node, false);
+    }
+
+    private function analyzeAssign(Node $node, bool $is_ref)
+    {
+        $expr = $node->children['expr'];
+        if ($expr instanceof Node) {
+            $this->analyze($this->scope, $node, $expr);
+        }
+        $this->analyzeAssignmentTarget($node->children['var'], $is_ref);
+    }
+
+    private function analyzeAssignmentTarget($node, bool $is_ref)
+    {
+        if (!($node instanceof Node)) {
+            return;
+        }
+        $kind = $node->kind;
+        if ($kind === \ast\AST_VAR) {
+            $name = $node->children['name'];
+            if (!is_string($name)) {
+                return;
+            }
+            self::$variable_graph->recordVariableDefinition($name, $node, $this->scope);
+            $this->scope->recordDefinition($name, $node);
+        }
+        // TODO: Analyze properties, array access, and function calls.
+    }
+
     public function handleMissingNodeKind(Node $node)
     {
         // do nothing
@@ -54,10 +102,8 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * This is an abstraction for getting a new, updated context for a child node.
      *
      * @param Node $child_node - The node which will be analyzed to create the updated context.
-     *
-     * @return Context (The unmodified $context, or a different Context instance with modifications)
      */
-    private function analyze(VariableTrackingScope $scope, Node $node, Node $child_node) : Context
+    private function analyze(VariableTrackingScope $scope, Node $node, Node $child_node)
     {
         // Modify the original object instead of creating a new BlockAnalysisVisitor.
         // this is slightly more efficient, especially if a large number of unchanged parameters would exist.
@@ -74,6 +120,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
     /**
      * Do not recurse into function declarations within a scope
+     * @override
      */
     public function visitFuncDecl(Node $unused_node)
     {
@@ -82,6 +129,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
     /**
      * Do not recurse into class declarations within a scope
+     * @override
      */
     public function visitClass(Node $unused_node)
     {
@@ -92,17 +140,31 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * Do not recurse into closure declarations within a scope.
      *
      * FIXME: Check closure use variables without checking statements
+     * @override
      */
     public function visitClosure(Node $unused_node)
     {
         return;
     }
 
-    // TODO: public function visitAssignment()
-    public function visitVariable(Node $node)
+    /**
+     * @override
+     * Common no-op
+     */
+    public function visitName(Node $unused_node)
+    {
+        return;
+    }
+
+    /**
+     * TODO: Check if the current context is a function call passing an argument by reference
+     * @override
+     */
+    public function visitVar(Node $node)
     {
         $name = $node->children['name'];
         if (\is_string($name)) {
+            self::$variable_graph->recordVariableUsage($name, $node, $this->scope);
             // TODO: Determine if the given usage is an assignment, a definition, or both (modifying by reference, $x++, etc.
             // See the way this is done in BlockAnalysisVisitor
         }

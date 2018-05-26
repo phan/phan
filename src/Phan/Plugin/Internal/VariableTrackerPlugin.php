@@ -64,13 +64,12 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
         $variable_graph = new VariableGraph();
-        $this->addParametersAndUseVariablesToGraph($node, $variable_graph);
+        $scope = new VariableTrackingScope();
+        $this->addParametersAndUseVariablesToGraph($node, $variable_graph, $scope);
 
         try {
             VariableTrackerVisitor::$variable_graph = $variable_graph;
-            $variable_tracker_visitor = new VariableTrackerVisitor(
-                new VariableTrackingScope()
-            );
+            $variable_tracker_visitor = new VariableTrackerVisitor($scope);
             // TODO: Add params and use variables.
             $variable_tracker_visitor->__invoke($stmts_node);
         } finally {
@@ -80,23 +79,30 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         $this->warnAboutVariableGraph($node, $variable_graph);
     }
 
-    private function addParametersAndUseVariablesToGraph(Node $node, VariableGraph $graph) {
+    private function addParametersAndUseVariablesToGraph(
+        Node $node,
+        VariableGraph $graph,
+        VariableTrackingScope $scope
+    ) {
         // AST_PARAM_LIST of AST_PARAM
         foreach ($node->children['params']->children as $parameter) {
+            \assert($parameter instanceof Node);
             $parameter_name = $parameter->children['name'];
             if (!is_string($parameter_name)) {
                 continue;
             }
-            $graph->recordVariableDefinition($parameter_name, $node);
+            $graph->recordVariableDefinition($parameter_name, $parameter, $scope);
             if ($parameter->flags & ast\flags\PARAM_REF) {
                 $graph->markAsReference($parameter_name);
             }
         }
         foreach ($node->children['uses']->children ?? [] as $closure_use) {
+            \assert($closure_use instanceof Node);
             $name = $closure_use->children['name'];
             if (!is_string($name)) {
                 continue;
             }
+            $graph->recordVariableDefinition($parameter_name, $closure_use, $scope);
             if ($closure_use->flags & ast\flags\PARAM_REF) {
                 $graph->markAsReference($name);
             }
@@ -105,24 +111,28 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
 
     private function warnAboutVariableGraph(Node $node, VariableGraph $graph)
     {
-        foreach ($graph->defs_uses as $variable_name => $defs_uses) {
+        foreach ($graph->def_uses as $variable_name => $def_uses_for_variable) {
+            if (preg_match('/^(_$|(unused|raii))/i', $variable_name) > 0) {
+                // Skip over $_, $unused*, and $raii*
+                continue;
+            }
             $type_bitmask = $graph->variable_types[$variable_name] ?? 0;
             if ($type_bitmask > 0) {
                 // don't warn about static/global/references
                 continue;
             }
-            foreach ($defs_uses as $definition_id => $use_list) {
+            foreach ($def_uses_for_variable as $definition_id => $use_list) {
                 if (\count($use_list) > 0) {
                     // Don't warn if there's at least one usage of that definition
                     continue;
                 }
                 $line = $graph->def_lines[$variable_name][$definition_id] ?? 1;
-                // TODO: Emit a different issue type for plugins.
+                // TODO: Emit a different issue type for parameters
                 $this->emitPluginIssue(
                     $this->code_base,
                     clone($this->context)->withLineNumberStart($line),
                     'PhanUnusedVariable',
-                    'Unused definition of variable {VARIABLE}',
+                    'Unused definition of variable ${VARIABLE}',
                     [$variable_name]
                 );
             }

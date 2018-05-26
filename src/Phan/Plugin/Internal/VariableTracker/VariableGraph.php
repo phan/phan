@@ -13,7 +13,7 @@ final class VariableGraph
      *
      * Maps variable name to (definition id to (list of uses of that given definition))
      */
-    public $defs_uses = [];
+    public $def_uses = [];
 
     /**
      * @var array<string,array<int,int>>
@@ -22,28 +22,41 @@ final class VariableGraph
      */
     public $def_lines = [];
 
-    const IS_REFERENCE = 1<<0;
-    const IS_GLOBAL    = 1<<1;
-    const IS_STATIC    = 1<<2;
-
     /**
      * @var array<string,int> maps variable names to whether
      *    they have ever occurred as a given self::IS_* category in the current scope
      */
     public $variable_types = [];
 
+    const IS_REFERENCE = 1<<0;
+    const IS_GLOBAL    = 1<<1;
+    const IS_STATIC    = 1<<2;
+
     public function __construct()
     {
     }
 
-    public function recordVariableDefinition(string $name, Node $node)
+    public function recordVariableDefinition(string $name, Node $node, VariableTrackingScope $scope)
     {
         // TODO: Measure performance against SplObjectHash
         $id = \spl_object_id($node);
-        if (!isset($this->defs_uses[$name][$id])) {
-            $this->defs_uses[$name][$id] = [];
+        if (!isset($this->def_uses[$name][$id])) {
+            $this->def_uses[$name][$id] = [];
         }
         $this->def_lines[$name][$id] = $node->lineno;
+        $scope->recordDefinitionById($name, $id);
+    }
+
+    public function recordVariableUsage(string $name, Node $node, VariableTrackingScope $scope)
+    {
+        $defs_for_variable = $scope->defs[$name] ?? null;
+        if (!$defs_for_variable) {
+            return;
+        }
+        $node_id = \spl_object_id($node);
+        foreach ($defs_for_variable as $def_id => $_) {
+            $this->def_uses[$name][$def_id][$node_id] = true;
+        }
     }
 
     public function markAsReference(string $name)
