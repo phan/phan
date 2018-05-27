@@ -157,6 +157,19 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
+     * @suppress PhanDeprecatedInterface
+     * @internal - Used only for testing
+     */
+    public static function reset() {
+        $instance = self::instance();
+        // Set all of the private properties to their uninitialized default values
+        foreach (new self() as $k => $v) {
+            $instance->{$k} = $v;
+        }
+        $instance->ensurePluginsExist();
+    }
+
+    /**
      * @param CodeBase $code_base
      * The code base in which the node exists
      *

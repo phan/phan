@@ -3,6 +3,7 @@
 namespace Phan\Tests;
 
 use Phan\Config;
+use Phan\Plugin\ConfigPluginSet;
 
 class PhanTest extends AbstractPhanFileTest
 {
@@ -15,6 +16,7 @@ class PhanTest extends AbstractPhanFileTest
         foreach (require($test_config_file_name) as $key => $value) {
             Config::setValue($key, $value);
         }
+        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
     }
 
     /**
