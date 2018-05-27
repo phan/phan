@@ -20,6 +20,7 @@ use function is_string;
  *
  * TODO: Improve analysis within the ternary operator (cond() ? ($x = 2) : ($x = 3);
  * TODO: Support unset
+ * TODO: Fix tests/files/src/0426_inline_var_force.php
  */
 final class VariableTrackerVisitor extends AnalysisVisitor
 {
@@ -139,7 +140,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                 }
                 self::$variable_graph->recordVariableDefinition($name, $node, $this->scope);
                 $this->scope->recordDefinition($name, $node);
-                break;
+                return $this->scope;
             case ast\AST_ARRAY:
                 return $this->analyzeArrayAssignmentTarget($node);
 
@@ -150,6 +151,10 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             case ast\AST_DIM:
                 return $this->analyzeDimAssignmentTarget($node);
                 // TODO: Analyze array access and param/return references of function/method calls.
+            default:
+                // Static property or an unexpected target.
+                // Analyze this normally.
+                return $this->analyze($this->scope, $node);
         }
         return $this->scope;
     }

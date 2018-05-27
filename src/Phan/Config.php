@@ -312,7 +312,7 @@ class Config
         'dead_code_detection' => false,
 
         // Set to true in order to attempt to detect unused variables.
-        // dead_code_detection will also enable this.
+        // dead_code_detection will also enable unused variable detection.
         'unused_variable_detection' => false,
 
         // Set to true in order to force tracking references to elements

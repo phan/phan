@@ -14,6 +14,7 @@
 %s:48 PhanTypeMismatchArgument Argument 1 (fn) is Closure():array but \expects_cb_int_return() takes callable():int defined at %s:40
 %s:49 PhanTypeMismatchArgument Argument 1 (fn) is Closure(array):int but \expects_cb_int_return() takes callable():int defined at %s:40
 %s:55 PhanTypeVoidAssignment Cannot assign void return value
+%s:55 PhanUnusedVariable Unused definition of variable $result
 %s:56 PhanTypeMismatchArgument Argument 1 (fn) is callable():void but \expects_cb_int_param() takes callable(int):void defined at %s:6
 %s:57 PhanTypeMismatchArgument Argument 1 (fn) is callable():void but \expects_cb_int_return() takes callable():int defined at %s:40
 %s:65 PhanTypeMismatchArgument Argument 1 (fn) is Closure(mixed):void but \expects_cb_void() takes callable():void defined at %s:54

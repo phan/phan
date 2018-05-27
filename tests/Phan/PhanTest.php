@@ -6,11 +6,8 @@ use Phan\Config;
 
 class PhanTest extends AbstractPhanFileTest
 {
-    /**
-     * @suppress PhanUndeclaredConstant
-     */
-    public function getTestFiles()
-    {
+    public static function setUpBeforeClass() {
+        parent::setUpBeforeClass();
 
         // Read and apply any custom configuration
         // overrides for the tests.
@@ -18,6 +15,13 @@ class PhanTest extends AbstractPhanFileTest
         foreach (require($test_config_file_name) as $key => $value) {
             Config::setValue($key, $value);
         }
+    }
+
+    /**
+     * @suppress PhanUndeclaredConstant
+     */
+    public function getTestFiles()
+    {
 
         return $this->scanSourceFilesDir(TEST_FILE_DIR, EXPECTED_DIR);
     }
