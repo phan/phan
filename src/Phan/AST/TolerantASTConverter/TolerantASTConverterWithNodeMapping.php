@@ -172,8 +172,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
     }
 
     /**
-     * @suppress PhanPluginUnusedPrivateMethodArgument $n (code can be uncommented for debugging)
-     * @param PhpParser\Node|Token $n
+     * @param PhpParser\Node|Token $n @phan-unused-param
      * @param mixed $ast_node
      */
     private static function markNodeAsSelected($n, $ast_node)

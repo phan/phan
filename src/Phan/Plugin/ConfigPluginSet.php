@@ -30,6 +30,7 @@ use Phan\Plugin\Internal\DependentReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\MiscParamPlugin;
 use Phan\Plugin\Internal\NodeSelectionPlugin;
 use Phan\Plugin\Internal\StringFunctionPlugin;
+use Phan\Plugin\Internal\VariableTrackerPlugin;
 use Phan\Plugin\PluginImplementation;
 use Phan\PluginV2;
 use Phan\PluginV2\AfterAnalyzeFileCapability;
@@ -153,6 +154,19 @@ final class ConfigPluginSet extends PluginV2 implements
             $instance->ensurePluginsExist();
         }
         return $instance;
+    }
+
+    /**
+     * @suppress PhanDeprecatedInterface
+     * @internal - Used only for testing
+     */
+    public static function reset() {
+        $instance = self::instance();
+        // Set all of the private properties to their uninitialized default values
+        foreach (new self() as $k => $v) {
+            $instance->{$k} = $v;
+        }
+        $instance->ensurePluginsExist();
     }
 
     /**
@@ -621,6 +635,9 @@ final class ConfigPluginSet extends PluginV2 implements
                 new MiscParamPlugin(),
             ];
             $plugin_set = array_merge($internal_return_type_plugins, $plugin_set);
+        }
+        if (Config::getValue('unused_variable_detection') || Config::getValue('dead_code_detection')) {
+            $plugin_set[] = new VariableTrackerPlugin();
         }
         if (self::requiresPluginBasedBuiltinSuppressions()) {
             $plugin_set[] = new BuiltinSuppressionPlugin();

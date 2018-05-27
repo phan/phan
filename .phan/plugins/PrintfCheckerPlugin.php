@@ -56,8 +56,8 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
 
     /**
      * People who have translations may subclass this plugin and return a mapping from other locales to those locales translations of $fmt_str.
+     * @param string $fmt_str @phan-unused-param
      * @return string[] mapping locale to the translation (e.g. ['fr_FR' => 'Bonjour'] for $fmt_str == 'Hello')
-     * @suppress PhanPluginUnusedProtectedMethodArgument
      */
     protected static function gettextForAllLocales(string $fmt_str)
     {
@@ -170,6 +170,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
     }
 
     /**
+     * @param CodeBase $code_base @phan-unused-param
      * @return \Closure[]
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array

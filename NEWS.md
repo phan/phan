@@ -3,6 +3,46 @@ Phan NEWS
 ?? ??? 2018, Phan 0.12.10 (dev)
 -------------------------
 
+New features(CLI, Configs)
++ Add CLI flag `--unused-variable-detection`.
++ Add config setting `unused_variable_detection` (disabled by default).
+  Unused variable detection can be enabled by `--unused-variable-detection`, `--dead-code-detection`, or the config.
+
+New features(Analysis):
++ Add built-in support for unused variable detection. (#345)
+  Currently, this is limited to analyzing inside of functions, methods, and closures.
+  This has some minor false positives with loops and conditional branches.
+
+  Warnings about unused parameters can be suppressed by adding `@phan-unused-param` on the same line as `@param`,
+  e.g. `@param MyClass $x @phan-unused-param`.
+  (as well as via standard issue suppression methods.)
+
+  The built in unused variable detection support will currently not warn about any of the following issue types, to reduce false positives.
+
+  - Variables beginning with `$unused` or `$raii` (case insensitive)
+  - `$_` (the exact variable name)
+  - Superglobals, used globals (`global $myGlobal;`), and static variables within function scopes.
+  - Any references, globals, or static variables in a function scope.
+
+  New Issue types:
+  - `PhanUnusedVariable`,
+  - `PhanUnusedPublicMethodParameter`, `PhanUnusedPublicFinalMethodParameter`,
+  - `PhanUnusedProtectedMethodParameter`, `PhanUnusedProtectedFinalMethodParameter`,
+  - `PhanUnusedPrivateMethodParameter`, `PhanUnusedProtectedFinalMethodParameter`,
+  - `PhanUnusedClosureUseVariable`, `PhanUnusedClosureParameter`,
+  - `PhanUnusedGlobalFunctionParameter`
+
+  This is similar to the third party plugin `PhanUnusedVariable`.
+  The built-in support has the following changes:
+
+  - Emits fewer/different false positives (e.g. when analyzing loops), but also detects fewer potential issues.
+  - Reimplemented using visitors extensively (Similar to the code for `BlockAnalysisVisitor`)
+  - Uses a different data structure from `PhanUnusedVariable`.
+    This represent all definitions of a variable, instead of just the most recent one.
+    This approximately tracks the full graph of definitions and uses of variables within a function body.
+    (This allows warning about all unused definitions, or about definitions that are hidden by subsequent definitions)
+  - Integration: This is planned to be integrated with other features of Phan, e.g. "Go to Definition" for variables. (Planned for #1211 and #1705)
+
 22 May 2018, Phan 0.12.9
 ------------------------
 

@@ -2067,7 +2067,6 @@ class TolerantASTConverter
 
     private static function phpParserIfStmtToAstIfStmt(PhpParser\Node\Statement\IfStatementNode $node, int $start_line) : ast\Node
     {
-        $start_line = self::getStartLine($node);
         $if_elem = static::astIfElem(
             static::phpParserNodeToAstNode($node->expression),
             static::phpParserStmtlistToAstNode($node->statements, self::getStartLine($node->statements), true),

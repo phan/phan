@@ -1,5 +1,5 @@
 <?php
-
+/** @phan-file-suppress PhanUnusedVariable this does not account for compact */
 class C380 {
     const C = ['varName', 'otherVarName'];
     const V1 = 'v1';

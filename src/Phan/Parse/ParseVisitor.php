@@ -43,7 +43,7 @@ use ast\Node;
  *
  * @property-read CodeBase $code_base
  *
- * @phan-file-suppress PhanPluginUnusedPublicMethodArgument implementing faster no-op methods for common visit*
+ * @phan-file-suppress PhanPluginUnusedPublicMethodArgument, PhanUnusedPublicMethodParameter implementing faster no-op methods for common visit*
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  */

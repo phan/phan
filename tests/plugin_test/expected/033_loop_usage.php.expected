@@ -1,0 +1,3 @@
+src/033_loop_usage.php:4 PhanUnusedVariable Unused definition of variable $b
+src/033_loop_usage.php:10 PhanUnusedVariable Unused definition of variable $b
+src/033_loop_usage.php:15 PhanUnusedVariable Unused definition of variable $a

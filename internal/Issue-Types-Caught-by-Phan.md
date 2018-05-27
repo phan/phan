@@ -649,6 +649,72 @@ Possibly zero references to use statement for function {FUNCTION} ({FUNCTION})
 Possibly zero references to use statement for classlike/namespace {CLASSLIKE} ({CLASSLIKE})
 ```
 
+## PhanUnusedClosureParameter
+
+Phan has various checks (See the `unused_variable_detection` config)
+to detect if a variable or parameter is unused.
+
+```
+Parameter ${PARAMETER} is never used
+```
+
+## PhanUnusedClosureUseVariable
+
+```
+Closure use variable ${VARIABLE} is never used
+```
+
+## PhanUnusedGlobalFunctionParameter
+
+```
+Parameter ${PARAMETER} is never used
+```
+
+## PhanUnusedPrivateFinalMethodParameter
+
+```
+Parameter ${PARAMETER} is never used
+```
+
+## PhanUnusedPrivateMethodParameter
+
+```
+Parameter ${PARAMETER} is never used
+```
+
+## PhanUnusedProtectedFinalMethodParameter
+
+```
+Parameter ${PARAMETER} is never used
+```
+
+## PhanUnusedProtectedMethodParameter
+
+```
+Parameter ${PARAMETER} is never used
+```
+
+## PhanUnusedPublicFinalMethodParameter
+
+```
+Parameter ${PARAMETER} is never used
+```
+
+## PhanUnusedPublicMethodParameter
+
+```
+Parameter ${PARAMETER} is never used
+```
+
+## PhanUnusedVariable
+
+Phan has various checks (See the `unused_variable_detection` config)
+to detect if a variable or parameter is unused.
+
+```
+Unused definition of variable ${VARIABLE}
+```
+
 ## PhanWriteOnlyPrivateProperty
 
 ```

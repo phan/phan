@@ -1,5 +1,6 @@
 src/000_plugins.php:4 PhanPluginInstanceOfObject Cannot call instanceof against `object`
 src/000_plugins.php:4 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \object
+src/000_plugins.php:9 PhanUnusedGlobalFunctionParameter Parameter $a is never used
 src/000_plugins.php:10 PhanPluginDollarDollar $$ Variables are not allowed.
 src/000_plugins.php:18 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value(0) detected in array - the earlier entry will be ignored.
 src/000_plugins.php:21 PhanPluginMixedKeyNoKey Should not mix array entries of the form [key => value,] with entries of the form [value,].
@@ -12,10 +13,12 @@ src/000_plugins.php:47 PhanPluginNumericalComparison non numerical values compar
 src/000_plugins.php:49 PhanPluginNumericalComparison numerical values compared by the operators '===' or '!=='
 src/000_plugins.php:55 UnusedSuppression Element \testUnusedSuppressionPlugin suppresses issue PhanParamTooFew but does not use it
 src/000_plugins.php:61 PhanUnreferencedFunction Possibly zero references to function \testUnreferencedFunction
+src/000_plugins.php:64 PhanUnusedGlobalFunctionParameter Parameter $className is never used
 src/000_plugins.php:66 PhanUnreferencedClass Possibly zero references to class \__autoload
 src/000_plugins.php:67 PhanUnreferencedConstant Possibly zero references to global constant \__autoload
 src/000_plugins.php:69 PhanPluginAlwaysReturnFunction Function \missingReturnType has a return type of int, but may fail to return a value
 src/000_plugins.php:77 PhanPluginAlwaysReturnMethod Method \ReturnChecks::missingReturnTypeSwitch has a return type of int, but may fail to return a value
+src/000_plugins.php:114 PhanUnusedVariable Unused definition of variable $x
 src/000_plugins.php:127 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
 src/000_plugins.php:138 DemoPluginMethodName Method \TestDemoPlugin::function cannot be called `function`
 src/000_plugins.php:139 DemoPluginPropertyName Property \TestDemoPlugin::property should not be called `property`

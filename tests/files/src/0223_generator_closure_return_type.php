@@ -1,5 +1,5 @@
 <?php
-
+/** @phan-file-suppress PhanUnusedVariable */
 function closure_generator_tests() {
     $bad_generator = function() : Generator {
         return 1;  // Should print an error

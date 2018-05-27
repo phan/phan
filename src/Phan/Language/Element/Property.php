@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\Exception\IssueException;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\PropertyScope;

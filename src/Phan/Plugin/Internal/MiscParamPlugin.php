@@ -33,7 +33,7 @@ final class MiscParamPlugin extends PluginV2 implements
      * @return array<string,Closure>
      * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
      */
-    private function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
+    private function getAnalyzeFunctionCallClosuresStatic() : array
     {
         $stop_exception = new StopParamAnalysisException();
 
@@ -427,6 +427,7 @@ final class MiscParamPlugin extends PluginV2 implements
     }
 
     /**
+     * @param Codebase $code_base @phan-unused-param
      * @return array<string,Closure>
      * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
      */
@@ -435,7 +436,7 @@ final class MiscParamPlugin extends PluginV2 implements
         // Unit tests invoke this repeatedly. Cache it.
         static $analyzers = null;
         if ($analyzers === null) {
-            $analyzers = self::getAnalyzeFunctionCallClosuresStatic($code_base);
+            $analyzers = self::getAnalyzeFunctionCallClosuresStatic();
         }
         return $analyzers;
     }

@@ -158,7 +158,7 @@ function f4(Undef $p) {}
 class C11 { /** @var Undef */ public $p; }
 
 // Issue::PhanParentlessClass
-class C12 { function f() { $v = parent::f(); } }
+class C12 { function f() { parent::f(); } }
 
 // Issue::PhanTraitParentReference
 trait T1 { function f() { return parent::f(); } }

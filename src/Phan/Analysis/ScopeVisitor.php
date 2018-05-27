@@ -37,13 +37,12 @@ abstract class ScopeVisitor extends AnalysisVisitor
      * Default visitor for node kinds that do not have
      * an overriding method
      *
-     * @param Node $node
+     * @param Node $node @phan-unused-param
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
-     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function visit(Node $node) : Context
     {

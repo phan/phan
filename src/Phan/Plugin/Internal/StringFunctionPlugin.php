@@ -196,9 +196,9 @@ final class StringFunctionPlugin extends PluginV2 implements
     }
 
     /**
+     * @param CodeBase $code_base @phan-unused-param
      * @return array<string,\Closure>
      * @override
-     * @suppress PhanPluginUnusedPublicFinalMethodArgument
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
     {

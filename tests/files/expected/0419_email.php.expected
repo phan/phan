@@ -1,2 +1,3 @@
+%s:11 PhanUnusedProtectedMethodParameter Parameter $uid is never used
 %s:29 PhanParamTooMany Call with 2 arg(s) to \VerificationEmail419::__construct() which only takes 1 arg(s) defined at %s:4
 %s:30 PhanTypeMismatchReturn Returning type string but _getMethod() is declared to return int

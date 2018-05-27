@@ -228,10 +228,8 @@ class Daemon
      * Debug (non-error) statement related to the daemon.
      * Uncomment this when debugging issues (E.g. changes not being picked up)
      *
-     * @param string $format - printf style format string
-     * @param mixed ...$args - printf args
-     *
-     * @suppress PhanPluginUnusedPublicMethodArgument (Currently commented out)
+     * @param string $format - printf style format string @phan-unused-param
+     * @param mixed ...$args - printf args @phan-unused-param
      */
     public static function debugf(string $format, ...$args)
     {

@@ -46,6 +46,7 @@ Phan is able to perform the following kinds of analysis.
 * Check for valid and type safe return values on methods, functions, and closures.
 * Check for No-Ops on arrays, closures, constants, properties, variables, unary operators, and binary operators.
 * Check for unused/dead/[unreachable](https://github.com/phan/phan/tree/master/.phan/plugins#unreachablecodepluginphp) code. (Pass in `--dead-code-detection`)
+* Check for unused variables and parameters. (Pass in `--unused-variable-detection`)
 * Check for unused `use` statements.
 * Check for classes, functions and methods being redefined.
 * Check for sanity with class inheritance (e.g. checks method signature compatibility).
@@ -292,7 +293,12 @@ Usage: ./phan [options] [files...]
  -x, --dead-code-detection
   Emit issues for classes, methods, functions, constants and
   properties that are probably never referenced and can
-  possibly be removed.
+  possibly be removed. This implies `--unused-variable-detection`.
+
+ --unused-variable-detection
+  Emit issues for variables, parameters and closure use variables
+  that are probably never referenced.
+  This has a few known false positives, e.g. for loops or branches.
 
  -j, --processes <int>
   The number of parallel processes to run during the analysis

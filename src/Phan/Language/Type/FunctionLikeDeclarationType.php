@@ -16,7 +16,7 @@ use Closure;
 use ast\Node;
 
 /**
- * @phan-file-suppress PhanPluginUnusedPublicMethodArgument
+ * @phan-file-suppress PhanPluginUnusedPublicMethodArgument, PhanUnusedPublicMethodParameter
  */
 abstract class FunctionLikeDeclarationType extends Type implements FunctionInterface
 {

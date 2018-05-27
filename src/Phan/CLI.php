@@ -134,6 +134,7 @@ class CLI
                 'strict-return-checking',
                 'strict-type-checking',
                 'target-php-version',
+                'unused-variable-detection',
                 'use-fallback-parser',
                 'version',
             ]
@@ -428,6 +429,9 @@ class CLI
                 case 'dead-code-detection':
                     Config::setValue('dead_code_detection', true);
                     break;
+                case 'unused-variable-detection':
+                    Config::setValue('unused_variable_detection', true);
+                    break;
                 case 'allow-polyfill-parser':
                     // Just check if it's installed and of a new enough version.
                     // Assume that if there is an installation, it works, and warn later in ensureASTParserExists()
@@ -719,7 +723,12 @@ Usage: {$argv[0]} [options] [files...]
  -x, --dead-code-detection
   Emit issues for classes, methods, functions, constants and
   properties that are probably never referenced and can
-  possibly be removed.
+  possibly be removed. This implies `--unused-variable-detection`.
+
+ --unused-variable-detection
+  Emit issues for variables, parameters and closure use variables
+  that are probably never referenced.
+  This has a few known false positives, e.g. for loops or branches.
 
  -j, --processes <int>
   The number of parallel processes to run during the analysis

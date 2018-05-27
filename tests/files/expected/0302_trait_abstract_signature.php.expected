@@ -1,1 +1,3 @@
+%s:13 PhanUnusedVariable Unused definition of variable $args
+%s:18 PhanUnusedVariable Unused definition of variable $args
 %s:28 PhanTypeMismatchArgument Argument 1 (x) is string but \C::fn2() takes int defined at %s:17
