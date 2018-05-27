@@ -39,7 +39,7 @@ class DuplicateClassAnalyzer
         // Check to see if the original definition was from
         // an internal class
         if ($original_class->isPHPInternal()) {
-            if (!$clazz->hasSuppressIssue(Issue::RedefineClassInternal)) {
+            if (!$clazz->checkHasSuppressIssueAndIncrementCount(Issue::RedefineClassInternal)) {
                 Issue::maybeEmit(
                     $code_base,
                     $clazz->getContext(),
@@ -55,7 +55,7 @@ class DuplicateClassAnalyzer
         // Otherwise, print the coordinates of the original
         // definition
         } else {
-            if (!$clazz->hasSuppressIssue(Issue::RedefineClass)) {
+            if (!$clazz->checkHasSuppressIssueAndIncrementCount(Issue::RedefineClass)) {
                 Issue::maybeEmit(
                     $code_base,
                     $clazz->getContext(),

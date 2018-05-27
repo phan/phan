@@ -8,9 +8,6 @@ use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use ast\Node;
 
-/**
- * @phan-file-suppress PhanPartialTypeMismatchArgument
- */
 class ContextMergeVisitor extends KindVisitorImplementation
 {
     /**

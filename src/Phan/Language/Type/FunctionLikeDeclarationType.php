@@ -565,6 +565,16 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return in_array($issue_type, $this->getSuppressIssueList());
     }
 
+    public function checkHasSuppressIssueAndIncrementCount(string $issue_type) : bool
+    {
+        // helpers are no-ops right now
+        if ($this->hasSuppressIssue($issue_type)) {
+            $this->incrementSuppressIssueCount($issue_type);
+            return true;
+        }
+        return false;
+    }
+
     public function hydrate(CodeBase $_)
     {
     }

@@ -19,9 +19,9 @@ call_user_func(function () {
          *
          * @param object $object
          * @return int The object id
-         * @suppress PhanRedefineFunctionInternal
-         * @suppress PhanRedefineFunction
+         * @suppress PhanRedefineFunctionInternal, PhanRedefineFunction
          * @suppress PhanUndeclaredFunction
+         * @suppress UnusedSuppression
          */
         function spl_object_id($object)
         {
@@ -35,8 +35,8 @@ call_user_func(function () {
          *
          * @param object $object
          * @return int (The object id, XORed with a random number)
-         * @suppress PhanRedefineFunctionInternal
-         * @suppress PhanRedefineFunction
+         * @suppress PhanRedefineFunctionInternal, PhanRedefineFunction
+         * @suppress UnusedSuppression
          */
         function spl_object_id($object)
         {
@@ -54,8 +54,8 @@ call_user_func(function () {
          *
          * @param object $object
          * @return int (The object id, XORed with a random number)
-         * @suppress PhanRedefineFunctionInternal
-         * @suppress PhanRedefineFunction
+         * @suppress PhanRedefineFunctionInternal, PhanRedefineFunction
+         * @suppress UnusedSuppression
          */
         function spl_object_id($object)
         {

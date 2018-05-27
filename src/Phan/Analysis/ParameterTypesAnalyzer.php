@@ -295,7 +295,7 @@ class ParameterTypesAnalyzer
         if ($method->getDefiningFQSEN() !== $method->getFQSEN()) {
             return;
         }
-        if ($method->hasSuppressIssue(Issue::CommentOverrideOnNonOverrideMethod)) {
+        if ($method->checkHasSuppressIssueAndIncrementCount(Issue::CommentOverrideOnNonOverrideMethod)) {
             return;
         }
         Issue::maybeEmit(
@@ -564,7 +564,7 @@ class ParameterTypesAnalyzer
 
         if (!$signatures_match) {
             if ($o_method->isPHPInternal()) {
-                if (!$method->hasSuppressIssue(Issue::ParamSignatureMismatchInternal)) {
+                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::ParamSignatureMismatchInternal)) {
                     Issue::maybeEmit(
                         $code_base,
                         $method->getContext(),
@@ -575,7 +575,7 @@ class ParameterTypesAnalyzer
                     );
                 }
             } else {
-                if (!$method->hasSuppressIssue(Issue::ParamSignatureMismatch)) {
+                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::ParamSignatureMismatch)) {
                     Issue::maybeEmit(
                         $code_base,
                         $method->getContext(),
@@ -595,7 +595,7 @@ class ParameterTypesAnalyzer
             || $o_method->isPublic() && !$method->isPublic()
         ) {
             if ($o_method->isPHPInternal()) {
-                if (!$method->hasSuppressIssue(Issue::AccessSignatureMismatchInternal)) {
+                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::AccessSignatureMismatchInternal)) {
                     Issue::maybeEmit(
                         $code_base,
                         $method->getContext(),
@@ -606,7 +606,7 @@ class ParameterTypesAnalyzer
                     );
                 }
             } else {
-                if (!$method->hasSuppressIssue(Issue::AccessSignatureMismatch)) {
+                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::AccessSignatureMismatch)) {
                     Issue::maybeEmit(
                         $code_base,
                         $method->getContext(),
@@ -877,8 +877,7 @@ class ParameterTypesAnalyzer
     private static function emitSignatureRealMismatchIssue(CodeBase $code_base, Method $method, Method $o_method, string $issue_type, string $internal_issue_type, string $phpdoc_issue_type, ...$args)
     {
         if ($method->isFromPHPDoc() || $o_method->isFromPHPDoc()) {
-            // TODO: for overriding methods defined in phpdoc, going to need to add issue suppressions from the class phpdoc?
-            if ($method->hasSuppressIssue($phpdoc_issue_type)) {
+            if ($method->checkHasSuppressIssueAndIncrementCount($phpdoc_issue_type)) {
                 return;
             }
             Issue::maybeEmit(
@@ -894,7 +893,7 @@ class ParameterTypesAnalyzer
                 ])
             );
         } elseif ($o_method->isPHPInternal()) {
-            if ($method->hasSuppressIssue($internal_issue_type)) {
+            if ($method->checkHasSuppressIssueAndIncrementCount($internal_issue_type)) {
                 return;
             }
             Issue::maybeEmit(
@@ -907,7 +906,7 @@ class ParameterTypesAnalyzer
                 ...$args
             );
         } else {
-            if ($method->hasSuppressIssue($issue_type)) {
+            if ($method->checkHasSuppressIssueAndIncrementCount($issue_type)) {
                 return;
             }
             Issue::maybeEmit(
@@ -976,7 +975,7 @@ class ParameterTypesAnalyzer
             )
             ) {
                 $is_exclusively_narrowed = false;
-                if (!$method->hasSuppressIssue(Issue::TypeMismatchDeclaredParam)) {
+                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchDeclaredParam)) {
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -1002,7 +1001,7 @@ class ParameterTypesAnalyzer
             } else {
                 // This check isn't urgent to fix, and is specific to nullable casting rules,
                 // so use a different issue type.
-                if (!$method->hasSuppressIssue(Issue::TypeMismatchDeclaredParamNullable)) {
+                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchDeclaredParamNullable)) {
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -1076,7 +1075,8 @@ class ParameterTypesAnalyzer
     {
         if ($method->isFromPHPDoc()) {
             // TODO: Track phpdoc methods separately from real methods
-            if ($method->hasSuppressIssue(Issue::AccessOverridesFinalMethodPHPDoc) || $class->hasSuppressIssue(Issue::AccessOverridesFinalMethodPHPDoc)) {
+            if ($method->checkHasSuppressIssueAndIncrementCount(Issue::AccessOverridesFinalMethodPHPDoc) ||
+                $class->checkHasSuppressIssueAndIncrementCount(Issue::AccessOverridesFinalMethodPHPDoc)) {
                 return;
             }
             Issue::maybeEmit(

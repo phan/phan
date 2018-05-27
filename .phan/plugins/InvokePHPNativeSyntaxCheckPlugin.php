@@ -233,7 +233,6 @@ class InvokeExecutionPromise
      * @param string $file_contents
      * @return void
      * See https://bugs.php.net/bug.php?id=39598
-     * @suppress PhanPluginUnusedVariable loop variable
      */
     private static function streamPutContents($stream, string $file_contents)
     {

@@ -486,7 +486,7 @@ class ParseVisitor extends ScopeVisitor
 
                 if (!$original_union_type->isType(NullType::instance(false))
                     && !$original_union_type->canCastToUnionType($variable->getUnionType())
-                    && !$property->hasSuppressIssue(Issue::TypeMismatchProperty)
+                    && !$property->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchProperty)
                 ) {
                     $this->emitIssue(
                         Issue::TypeMismatchProperty,

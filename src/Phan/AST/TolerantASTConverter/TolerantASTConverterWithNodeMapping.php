@@ -28,7 +28,6 @@ use Microsoft\PhpParser\TokenKind;
  *    then walking back up to the parent
  * 3. Then, Phan will use $node_mapping to update the corresponding AST node
  *
- * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanUndeclaredProperty deliberately adding dynamic property
  *
  * The logging to STDERR can be uncommented if you have issues debugging why

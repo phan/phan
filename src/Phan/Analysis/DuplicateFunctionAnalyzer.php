@@ -35,19 +35,19 @@ class DuplicateFunctionAnalyzer
                 $original_fqsen
             );
         } else {
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument
             if (!$code_base->hasMethodWithFQSEN($original_fqsen)) {
                 return;
             }
 
-            $original_method = $code_base->getMethodByFQSEN(
-                $original_fqsen
-            );
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+            $original_method = $code_base->getMethodByFQSEN($original_fqsen);
         }
 
         $method_name = $method->getName();
 
         if ($original_method->isPHPInternal()) {
-            if (!$method->hasSuppressIssue(Issue::RedefineFunctionInternal)) {
+            if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::RedefineFunctionInternal)) {
                 Issue::maybeEmit(
                     $code_base,
                     $method->getContext(),
@@ -59,7 +59,7 @@ class DuplicateFunctionAnalyzer
                 );
             }
         } else {
-            if (!$method->hasSuppressIssue(Issue::RedefineFunction)) {
+            if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::RedefineFunction)) {
                 Issue::maybeEmit(
                     $code_base,
                     $method->getContext(),

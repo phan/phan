@@ -67,7 +67,6 @@ if (!class_exists('\ast\Node')) {
  * SOFTWARE.
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
- * @phan-file-suppress PhanPossiblyNullTypeReturn
  * @phan-file-suppress PhanPartialTypeMismatchReturn
  */
 class TolerantASTConverter
@@ -1640,7 +1639,7 @@ class TolerantASTConverter
         }
 
         $node = new ast\Node();
-        // @phan-suppress-next-line PhanTypeMismatchProperty - Deliberately setting $node->kind to a string instead of an integer.
+        // @phan-suppress-next-line PhanTypeMismatchProperty, UnusedPluginSuppression - Deliberately setting $node->kind to a string instead of an integer.
         $node->kind = "TODO:" . get_class($parser_node);
         $node->flags = 0;
         $node->lineno = self::getStartLine($parser_node);

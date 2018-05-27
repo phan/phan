@@ -2041,7 +2041,7 @@ class Clazz extends AddressableElement
     ) {
         $context = $this->getContext();
         if ($ancestor->isPHPInternal()) {
-            if (!$this->hasSuppressIssue(Issue::AccessWrongInheritanceCategoryInternal)) {
+            if (!$this->checkHasSuppressIssueAndIncrementCount(Issue::AccessWrongInheritanceCategoryInternal)) {
                 Issue::maybeEmit(
                     $code_base,
                     $context,
@@ -2052,7 +2052,7 @@ class Clazz extends AddressableElement
                 );
             }
         } else {
-            if (!$this->hasSuppressIssue(Issue::AccessWrongInheritanceCategory)) {
+            if (!$this->checkHasSuppressIssueAndIncrementCount(Issue::AccessWrongInheritanceCategory)) {
                 Issue::maybeEmit(
                     $code_base,
                     $context,
@@ -2076,7 +2076,7 @@ class Clazz extends AddressableElement
     ) {
         $context = $this->getContext();
         if ($ancestor->isPHPInternal()) {
-            if (!$this->hasSuppressIssue(Issue::AccessExtendsFinalClassInternal)) {
+            if (!$this->checkHasSuppressIssueAndIncrementCount(Issue::AccessExtendsFinalClassInternal)) {
                 Issue::maybeEmit(
                     $code_base,
                     $context,
@@ -2086,7 +2086,7 @@ class Clazz extends AddressableElement
                 );
             }
         } else {
-            if (!$this->hasSuppressIssue(Issue::AccessExtendsFinalClass)) {
+            if (!$this->checkHasSuppressIssueAndIncrementCount(Issue::AccessExtendsFinalClass)) {
                 Issue::maybeEmit(
                     $code_base,
                     $context,
@@ -2528,7 +2528,7 @@ class Clazz extends AddressableElement
     {
         foreach ($original_declared_class_constants as $constant) {
             if ($constant->isOverrideIntended() && !$constant->getIsOverride()) {
-                if ($constant->hasSuppressIssue(Issue::CommentOverrideOnNonOverrideConstant)) {
+                if ($constant->checkHasSuppressIssueAndIncrementCount(Issue::CommentOverrideOnNonOverrideConstant)) {
                     continue;
                 }
                 $context = $constant->getContext();

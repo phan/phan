@@ -25,3 +25,5 @@ print C1::$p;
 // These issues might change later on.
 // This is an example of phan-file-suppress working as a line comment anywhere in this file.
 // @phan-file-suppress PhanAccessPropertyPrivate, PhanUnreferencedClass, PhanUnreferencedPrivateProperty
+
+// @phan-suppress-next-line PhanUndeclaredVariable should warn about being unused

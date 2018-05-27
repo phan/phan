@@ -35,7 +35,7 @@ trait NodeSelectionTrait
 {
     /**
      * @var Context $context
-     * @suppress PhanReadOnlyProtectedProperty (shared with PluginAwarePostAnalysisVisitor)
+     * @suppress PhanReadOnlyProtectedProperty
      */
     protected $context;
 

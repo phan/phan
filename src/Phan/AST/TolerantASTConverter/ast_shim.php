@@ -219,7 +219,7 @@ namespace ast;
 if (!class_exists('\ast\Node')) {
     /**
      * This class describes a single node in a PHP AST.
-     * @suppress PhanRedefineClassInternal
+     * @suppress PhanRedefineClassInternal TODO: why isn't this warning?
      */
     class Node
     {
