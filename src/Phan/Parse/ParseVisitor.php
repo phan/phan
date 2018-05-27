@@ -486,7 +486,7 @@ class ParseVisitor extends ScopeVisitor
 
                 if (!$original_union_type->isType(NullType::instance(false))
                     && !$original_union_type->canCastToUnionType($variable->getUnionType())
-                    && !$property->hasSuppressIssue(Issue::TypeMismatchProperty)
+                    && !$property->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchProperty)
                 ) {
                     $this->emitIssue(
                         Issue::TypeMismatchProperty,
@@ -1223,12 +1223,11 @@ class ParseVisitor extends ScopeVisitor
      *
      * @return Context
      * A new context resulting from parsing the node
-     *
-     * @suppress PhanAccessMethodInternal
      */
     public function visitNamespace(Node $node) : Context
     {
         $context = $this->context;
+        // @phan-suppress-next-line PhanAccessMethodInternal addParsedNamespaceMap and getNamespaceMap
         $this->code_base->addParsedNamespaceMap($context->getFile(), $context->getNamespace(), $context->getNamespaceId(), $context->getNamespaceMap());
         return parent::visitNamespace($node);
     }

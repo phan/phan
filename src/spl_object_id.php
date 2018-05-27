@@ -9,9 +9,9 @@ if (function_exists('spl_object_id')) {
     return;
 }
 // Workaround for global suppression
-call_user_func(/** @suppress PhanUndeclaredFunctionInCallable for ReflectionFunction */ function () {
+call_user_func(function () {
     if (function_exists('runkit_object_id') &&
-        !(new ReflectionFunction('runkit_object_id'))->isUserDefined()) {
+        !(new ReflectionFunction('runkit_object_id'))->isUserDefined()) {  // @phan-suppress-current-line PhanUndeclaredFunctionInCallable
         /**
          * See https://github.com/runkit7/runkit_object_id for a faster native version (Improves phan's speed by 10% or so).
          * runkit_object_id 1.1.0+ provides a fast native implementation spl_object_id() for php <= 7.1,
@@ -19,9 +19,9 @@ call_user_func(/** @suppress PhanUndeclaredFunctionInCallable for ReflectionFunc
          *
          * @param object $object
          * @return int The object id
-         * @suppress PhanRedefineFunctionInternal
-         * @suppress PhanRedefineFunction
+         * @suppress PhanRedefineFunctionInternal, PhanRedefineFunction
          * @suppress PhanUndeclaredFunction
+         * @suppress UnusedSuppression
          */
         function spl_object_id($object)
         {
@@ -35,8 +35,8 @@ call_user_func(/** @suppress PhanUndeclaredFunctionInCallable for ReflectionFunc
          *
          * @param object $object
          * @return int (The object id, XORed with a random number)
-         * @suppress PhanRedefineFunctionInternal
-         * @suppress PhanRedefineFunction
+         * @suppress PhanRedefineFunctionInternal, PhanRedefineFunction
+         * @suppress UnusedSuppression
          */
         function spl_object_id($object)
         {
@@ -54,8 +54,8 @@ call_user_func(/** @suppress PhanUndeclaredFunctionInCallable for ReflectionFunc
          *
          * @param object $object
          * @return int (The object id, XORed with a random number)
-         * @suppress PhanRedefineFunctionInternal
-         * @suppress PhanRedefineFunction
+         * @suppress PhanRedefineFunctionInternal, PhanRedefineFunction
+         * @suppress UnusedSuppression
          */
         function spl_object_id($object)
         {

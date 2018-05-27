@@ -77,7 +77,6 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      * @return static
      * Get the canonical (non-alternate) FQSEN associated
      * with this FQSEN
-     * @suppress PhanPartialTypeMismatchArgument
      */
     public function getCanonicalFQSEN() : FQSEN
     {
@@ -87,7 +86,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
             return $this;
         }
         return static::make(
-            $fully_qualified_class_name,
+            $fully_qualified_class_name,  // @phan-suppress-current-line PhanPartialTypeMismatchArgument
             $this->getName(),
             0
         );

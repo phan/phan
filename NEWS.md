@@ -43,6 +43,12 @@ New features(Analysis):
     (This allows warning about all unused definitions, or about definitions that are hidden by subsequent definitions)
   - Integration: This is planned to be integrated with other features of Phan, e.g. "Go to Definition" for variables. (Planned for #1211 and #1705)
 
+Bug fixes:
++ Minor improvements to `UnusedSuppressionPlugin`
+
+Misc:
++ Support  `composer.json`'s `vendor-dir` for `phan --init`
+
 22 May 2018, Phan 0.12.9
 ------------------------
 

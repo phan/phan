@@ -416,7 +416,6 @@ class IssueFixSuggester
      *
      * @param array<string,mixed> $potential_candidates
      * @return array<string,mixed> a subset of $potential_candidates
-     * @suppress PhanPluginUnusedVariable false positive in loop
      */
     public static function getSuggestionsForStringSet(string $target, array $potential_candidates)
     {
@@ -438,6 +437,7 @@ class IssueFixSuggester
             $distance = levenshtein(strtolower($name), $search_name);
             if ($distance <= $min_found_distance) {
                 if ($distance < $min_found_distance) {
+                    // @phan-suppress-next-line PhanPluginUnusedVariable false positive in loop
                     $min_found_distance = $distance;
                     $best_matches = [];
                 }

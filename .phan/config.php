@@ -175,7 +175,7 @@ return [
 
     // Set to true in order to attempt to detect unused variables.
     // dead_code_detection will also enable unused variable detection.
-    'unused_variable_detection' => false,
+    'unused_variable_detection' => true,
 
     // Set to true in order to force tracking references to elements
     // (functions/methods/consts/protected).

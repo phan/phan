@@ -102,7 +102,6 @@ class Parameter extends Variable
      * @return UnionType
      * The type of the default value for this parameter
      * if it exists
-     * @suppress PhanAccessMethodInternal
      */
     public function getDefaultValueType() : UnionType
     {
@@ -114,8 +113,8 @@ class Parameter extends Variable
             } catch (IssueException $exception) {
                 // Ignore exceptions
                 Issue::maybeEmitInstance(
-                    $future_type->getCodebase(),
-                    $future_type->getContext(),
+                    $future_type->getCodebase(),  // @phan-suppress-current-line PhanAccessMethodInternal
+                    $future_type->getContext(),  // @phan-suppress-current-line PhanAccessMethodInternal
                     $exception->getIssueInstance()
                 );
             } finally {
@@ -163,7 +162,6 @@ class Parameter extends Variable
     /**
      * @return array<int,Parameter>
      * A list of parameters from an AST node.
-     * @suppress PhanPluginUnusedVariable
      */
     public static function listFromNode(
         Context $context,
@@ -187,6 +185,7 @@ class Parameter extends Variable
                 && !$is_optional_seen
                 && $parameter->getNonVariadicUnionType()->isEmpty()
             ) {
+                // @phan-suppress-next-line PhanPluginUnusedVariable
                 $is_optional_seen = true;
             }
 

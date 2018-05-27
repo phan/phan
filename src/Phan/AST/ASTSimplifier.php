@@ -114,7 +114,6 @@ class ASTSimplifier
     /**
      * @param array<int,?Node|?float|?int|?string|?float|?bool> $statements
      * @return array{0:array<int,\ast\Node>,1:bool} - [New/old list, bool $modified] An equivalent list after simplifying (or the original list)
-     * @suppress PhanPartialTypeMismatchReturn
      */
     private function normalizeStatementList(array $statements) : array
     {

@@ -18,7 +18,6 @@ if (!class_exists('\ast\Node')) {
     require_once __DIR__ . '/ast_shim.php';
 }
 
-
 /**
  * Source: https://github.com/TysonAndre/tolerant-php-parser-to-php-ast
  *
@@ -38,7 +37,7 @@ if (!class_exists('\ast\Node')) {
  * each time they are invoked,
  * so it's possible to have multiple callers use this without affecting each other.
  *
- * Compatibility: PHP 7.1
+ * Compatibility: PHP 7.0
  *
  * ----------------------------------------------------------------------------
  *
@@ -68,7 +67,6 @@ if (!class_exists('\ast\Node')) {
  * SOFTWARE.
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
- * @phan-file-suppress PhanPossiblyNullTypeReturn
  * @phan-file-suppress PhanPartialTypeMismatchReturn
  */
 class TolerantASTConverter
@@ -186,7 +184,6 @@ class TolerantASTConverter
      * @param int $ast_version
      * @param string $file_contents
      * @return ast\Node
-     * @suppress PhanPartialTypeMismatchReturn this should always be passed a statement list
      */
     public function phpParserToPhpast(PhpParser\Node $parser_node, int $ast_version, string $file_contents)
     {
@@ -963,9 +960,6 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Statement\ExpressionStatement' => function (PhpParser\Node\Statement\ExpressionStatement $n, int $_) {
                 return static::phpParserNodeToAstNode($n->expression);
             },
-            /**
-             * @suppress PhanTypeMismatchArgument incorrect phpdoc for breakoutLevel
-             */
             'Microsoft\PhpParser\Node\Statement\BreakOrContinueStatement' => function (PhpParser\Node\Statement\BreakOrContinueStatement $n, int $start_line) : ast\Node {
                 $raw_kind = $n->breakOrContinueKeyword->kind;
                 switch ($raw_kind) {
@@ -1637,9 +1631,6 @@ class TolerantASTConverter
         );
     }
 
-    /**
-     * @suppress PhanTypeMismatchProperty - Deliberately setting $node->kind to a string instead of an integer.
-     */
     protected static function astStub($parser_node) : ast\Node
     {
         // Debugging code.
@@ -1648,6 +1639,7 @@ class TolerantASTConverter
         }
 
         $node = new ast\Node();
+        // @phan-suppress-next-line PhanTypeMismatchProperty, UnusedPluginSuppression - Deliberately setting $node->kind to a string instead of an integer.
         $node->kind = "TODO:" . get_class($parser_node);
         $node->flags = 0;
         $node->lineno = self::getStartLine($parser_node);
@@ -2234,9 +2226,6 @@ class TolerantASTConverter
         return $ast_visibility;
     }
 
-    /**
-     * @suppress PhanTypeMismatchArgument casting to a more specific node
-     */
     private static function phpParserPropertyToAstNode(PhpParser\Node\PropertyDeclaration $n, int $start_line) : ast\Node
     {
         $prop_elems = [];
@@ -2246,6 +2235,7 @@ class TolerantASTConverter
             if ($prop instanceof Token) {
                 continue;
             }
+            // @phan-suppress-next-line PhanTypeMismatchArgument casting to a more specific node
             $prop_elems[] = static::phpParserPropelemToAstPropelem($prop, $i === 0 ? $doc_comment : null);
         }
         $flags = static::phpParserVisibilityToAstVisibility($n->modifiers, false);
@@ -2253,9 +2243,6 @@ class TolerantASTConverter
         return new ast\Node(ast\AST_PROP_DECL, $flags, $prop_elems, $prop_elems[0]->lineno ?? (self::getStartLine($n) ?: $start_line));
     }
 
-    /**
-     * @suppress PhanTypeMismatchArgument casting to something more specific
-     */
     private static function phpParserClassConstToAstNode(PhpParser\Node\ClassConstDeclaration $n, int $start_line) : ast\Node
     {
         $const_elems = [];
@@ -2264,6 +2251,7 @@ class TolerantASTConverter
             if ($const_elem instanceof Token) {
                 continue;
             }
+            // @phan-suppress-next-line PhanTypeMismatchArgument casting to something more specific
             $const_elems[] = static::phpParserConstelemToAstConstelem($const_elem, $i === 0 ? $doc_comment : null);
         }
         $flags = static::phpParserVisibilityToAstVisibility($n->modifiers);
@@ -2376,9 +2364,6 @@ class TolerantASTConverter
         }
     }
 
-    /**
-     * @suppress PhanPluginUnusedVariable $prev_was_element
-     */
     private static function phpParserListToAstList(PhpParser\Node\Expression\ListIntrinsicExpression $n, int $start_line) : ast\Node
     {
         $ast_items = [];
@@ -2392,6 +2377,7 @@ class TolerantASTConverter
                 $prev_was_element = false;
                 continue;
             } else {
+                // @phan-suppress-next-line PhanPluginUnusedVariable
                 $prev_was_element = true;
             }
             assert($item instanceof PhpParser\Node\ArrayElement);
@@ -2406,9 +2392,6 @@ class TolerantASTConverter
         return new ast\Node(ast\AST_ARRAY, ast\flags\ARRAY_SYNTAX_LIST, $ast_items, $start_line);
     }
 
-    /**
-     * @suppress PhanPluginUnusedVariable $prev_was_element
-     */
     private static function phpParserArrayToAstArray(PhpParser\Node\Expression\ArrayCreationExpression $n, int $start_line) : ast\Node
     {
         $ast_items = [];
@@ -2422,6 +2405,7 @@ class TolerantASTConverter
                 $prev_was_element = false;
                 continue;
             } else {
+                // @phan-suppress-next-line PhanPluginUnusedVariable
                 $prev_was_element = true;
             }
             assert($item instanceof PhpParser\Node\ArrayElement);

@@ -192,9 +192,6 @@ abstract class ClassElement extends AddressableElement
         );
     }
 
-    /**
-     * @suppress PhanPluginUnusedMethodArgument
-     */
     public function getElementNamespace() : string
     {
         // Get the namespace that the class is within

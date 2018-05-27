@@ -520,22 +520,19 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         $outer_scope = $this->scope;
 
         $try_scope = new VariableTrackingBranchScope($outer_scope);
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         $try_scope = $this->analyze($try_scope, $node->children['try']);
+        '@phan-var VariableTrackingBranchScope $try_scope';
 
         // TODO: Use BlockExitStatusChecker, like BlockAnalysisVisitor
         // TODO: Optimize
-        // @phan-suppress-next-line PhanTypeMismatchArgument
         $main_scope = $outer_scope->mergeBranchScopeList([$try_scope], true);
 
         $catch_node_list = $node->children['catches']->children;
         if (count($catch_node_list) > 0) {
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument TODO: undo
             $main_scope = $this->analyze($main_scope, $node->children['catches']);
         }
         $finally_node = $node->children['finally'];
         if ($finally_node !== null) {
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument TODO: undo
             return $this->analyze($main_scope, $finally_node);
         }
         return $main_scope;

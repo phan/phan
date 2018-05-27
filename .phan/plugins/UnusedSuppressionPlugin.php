@@ -220,16 +220,19 @@ class UnusedSuppressionPlugin extends PluginV2 implements
                 if (isset($plugin_successful_suppressions[$issue_type][$lineno])) {
                     continue;
                 }
-                // TODO: let plugins suppress UnusedSuppression on other plugins
-                if (isset($plugin_suppressions['UnusedSuppression'][$lineno])) {
-                    continue;
-                }
+                // TODO: finish letting plugins suppress UnusedSuppression on other plugins
                 $issue_kind = 'UnusedPluginSuppression';
                 $message = 'Plugin {STRING_LITERAL} suppresses issue {ISSUETYPE} on this line but this suppression is unused or suppressed elsewhere';
                 if ($lineno === 0) {
                     $lineno = 1;
                     $issue_kind = 'UnusedPluginFileSuppression';
                     $message = 'Plugin {STRING_LITERAL} suppresses issue {ISSUETYPE} in this file but this suppression is unused or suppressed elsewhere';
+                }
+                if (isset($plugin_suppressions['UnusedSuppression'][$lineno])) {
+                    continue;
+                }
+                if (isset($plugin_suppressions[$issue_kind][$lineno])) {
+                    continue;
                 }
                 $this->emitIssue(
                     $code_base,

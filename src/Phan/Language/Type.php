@@ -1273,16 +1273,6 @@ class Type
     }
 
     /**
-     * @return bool
-     * True if this namespace is defined
-     * @suppress PhanUnreferencedPublicMethod (TODO: remove?)
-     */
-    public function hasNamespace() : bool
-    {
-        return !empty($this->namespace);
-    }
-
-    /**
      * @return string
      * The namespace associated with this type
      */

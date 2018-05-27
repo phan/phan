@@ -66,20 +66,14 @@ class ParallelParentCollector implements IssueCollectorInterface
         });
     }
 
-    /**
-     * @suppress PhanTypeSuspiciousStringExpression we're deliberately converting the resource to a string
-     */
     public function __destruct()
     {
         // Shut down and remove the queue
         $success = msg_remove_queue(
             $this->message_queue_resource
         );
-
-        \assert(
-            $success,
-            "Failed to remove queue with ID {$this->message_queue_resource}"
-        );
+        // @phan-suppress-next-line PhanTypeSuspiciousStringExpression we're deliberately converting the resource to a string
+        \assert($success, "Failed to remove queue with ID {$this->message_queue_resource}");
     }
 
     /**

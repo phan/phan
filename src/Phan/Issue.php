@@ -2677,7 +2677,6 @@ class Issue
     /**
      * @param array<int,Issue> $error_list
      * @return void
-     * @suppress PhanPluginUnusedVariable (error_map and unique_type_id_set)
      */
     private static function sanityCheckErrorList(array $error_list)
     {
@@ -2706,6 +2705,7 @@ class Issue
                     $expected_category_for_type_id_bitpos
                 ));
             }
+            // @phan-suppress-next-line PhanPluginUnusedVariable
             $error_map[$error_type] = $error;
         }
     }

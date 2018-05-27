@@ -113,12 +113,12 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
 
     /**
      * @return ?ClosureDeclarationParameter
-     * @suppress PhanPossiblyFalseTypeReturn is_variadic implies at least one parameter exists.
      */
     public function getClosureParameterForArgument(int $i)
     {
         $result = $this->params[$i] ?? null;
         if (!$result) {
+            // @phan-suppress-next-line PhanPossiblyFalseTypeReturn is_variadic implies at least one parameter exists.
             return $this->is_variadic ? end($this->params) : null;
         }
         return $result;
@@ -563,6 +563,16 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function hasSuppressIssue(string $issue_type) : bool
     {
         return in_array($issue_type, $this->getSuppressIssueList());
+    }
+
+    public function checkHasSuppressIssueAndIncrementCount(string $issue_type) : bool
+    {
+        // helpers are no-ops right now
+        if ($this->hasSuppressIssue($issue_type)) {
+            $this->incrementSuppressIssueCount($issue_type);
+            return true;
+        }
+        return false;
     }
 
     public function hydrate(CodeBase $_)

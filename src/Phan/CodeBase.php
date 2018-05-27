@@ -1043,11 +1043,11 @@ class CodeBase
      * Excludes internal functions and methods.
      *
      * This can be used for debugging Phan's inference
-     * @suppress PhanDeprecatedFunction
      */
     public function exportFunctionAndMethodSet() : array
     {
         $result = [];
+        // @phan-suppress-next-line PhanDeprecatedFunction
         foreach ($this->getFunctionAndMethodSet() as $function_or_method) {
             if ($function_or_method->isPHPInternal()) {
                 continue;

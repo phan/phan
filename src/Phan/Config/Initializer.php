@@ -14,7 +14,6 @@ use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * This class is used by 'phan --init' to generate a phan config for a composer project.
- * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  */
 class Initializer
 {
@@ -78,7 +77,6 @@ class Initializer
 
     /**
      * @return array<string,string[]> maps a config name to a list of comment lines about that config
-     * @suppress PhanPluginUnusedVariable used in loop
      */
     private static function computeCommentNameDocumentationMap() : array
     {
@@ -98,6 +96,7 @@ class Initializer
             if (preg_match('@^\s*//@', $line)) {
                 $prev_lines[] = trim($line);
             } else {
+                // @phan-suppress-next-line PhanPluginUnusedVariable (used in loop)
                 $prev_lines = [];
             }
         }

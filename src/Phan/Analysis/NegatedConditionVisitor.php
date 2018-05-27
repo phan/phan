@@ -690,7 +690,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
      * @param Variable $variable the variable being modified by inferences from isset or array_key_exists
      * @param Node|string|float|int|bool $dim_node represents the dimension being accessed. (E.g. can be a literal or an AST_CONST, etc.
      * @param Context $context the context with inferences made prior to this condition
-     * @suppress PhanPartialTypeMismatchArgument
      */
     private function withNullOrUnsetArrayShapeTypes(Variable $variable, $dim_node, Context $context, bool $remove_offset) : Context
     {

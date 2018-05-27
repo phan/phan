@@ -51,7 +51,6 @@ class Consistent implements Hasher
     /**
      * Do a binary search in the consistent hashing ring to find the group.
      * @return int - an integer between 0 and $this->groupCount - 1, inclusive
-     * @suppress PhanPartialTypeMismatchReturn
      */
     public function getGroup(string $key) : int
     {

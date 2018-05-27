@@ -237,7 +237,6 @@ class Request
     /**
      * TODO: convert absolute path to file contents
      * @return array<string,string> - Maps original relative file paths to contents.
-     * @suppress PhanPartialTypeMismatchArgumentInternal
      */
     public function getTemporaryFileMapping() : array
     {
@@ -357,7 +356,6 @@ class Request
      * @param \Closure $file_path_lister
      * @param Responder $responder
      * @return ?Request - non-null if this is a worker process with work to do. null if request failed or this is the master.
-     * @suppress PhanPartialTypeMismatchArgument pre-existing
      */
     public static function accept(CodeBase $code_base, \Closure $file_path_lister, Responder $responder, bool $fork)
     {
@@ -440,6 +438,7 @@ class Request
             Daemon::debugf("This is the main process pretending to be the fork");
             self::$child_pids = [];
             // This is running on the only thread, so configure $request_obj to throw ExitException instead of calling exit()
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument pre-existing
             $request_obj = new self($responder, $request, null, false);
             $temporary_file_mapping = $request_obj->getTemporaryFileMapping();
             if (count($temporary_file_mapping) > 0) {
@@ -454,6 +453,7 @@ class Request
         } elseif ($fork_result == 0) {
             Daemon::debugf("This is the fork");
             self::$child_pids = [];
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument pre-existing
             $request_obj = new self($responder, $request, null, true);
             $temporary_file_mapping = $request_obj->getTemporaryFileMapping();
             if (count($temporary_file_mapping) > 0) {
