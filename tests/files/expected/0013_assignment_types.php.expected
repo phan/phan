@@ -1,2 +1,6 @@
+%s:28 PhanUnusedVariable Unused definition of variable $str
+%s:31 PhanUnusedVariable Unused definition of variable $str
 %s:34 PhanTypeVoidAssignment Cannot assign void return value
+%s:34 PhanUnusedVariable Unused definition of variable $str
+%s:35 PhanUnusedVariable Unused definition of variable $str
 %s:36 PhanTypeVoidAssignment Cannot assign void return value

@@ -883,7 +883,7 @@ class Config
     {
         self::$configuration = self::DEFAULT_CONFIGURATION;
         // Trigger magic behavior
-        self::get();
+        self::get()->init();
     }
 
     /**

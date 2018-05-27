@@ -4,7 +4,7 @@ class C {
 
     /**
      * @suppress PhanCompatiblePHP7
-     * @suppress PhanNonClassMethodCall
+     * @suppress PhanNonClassMethodCall, PhanUnusedVariable testing CSV
      * @suppress PhanNoopArray
      * @suppress PhanNoopVariable
      * @suppress PhanParamTooFew

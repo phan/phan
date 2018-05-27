@@ -15,3 +15,4 @@
 %s:37 PhanTypeMismatchArgument Argument 1 (var) is bool|float|int|string but \emitType() takes resource defined at %s:3
 %s:39 PhanTypeMismatchArgument Argument 1 (var) is string but \emitType() takes resource defined at %s:3
 %s:41 PhanTypeMismatchArgument Argument 1 (var) is iterable but \emitType() takes resource defined at %s:3
+%s:42 PhanUnusedVariable Unused definition of variable $v

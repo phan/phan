@@ -1,2 +1,2 @@
 %s:13 PhanUndeclaredVariable Variable $c is undeclared
-
+%s:13 PhanUnusedClosureUseVariable Closure use variable $c is never used

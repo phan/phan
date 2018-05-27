@@ -18,7 +18,6 @@ class PHP72Test extends AbstractPhanFileTest
     {
         parent::setUp();
         foreach (self::overrides as $key => $value) {
-            $this->old_values[$key] = Config::getValue($key);
             Config::setValue($key, $value);
         }
     }
@@ -26,9 +25,7 @@ class PHP72Test extends AbstractPhanFileTest
     public function tearDown()
     {
         parent::tearDown();
-        foreach ($this->old_values as $key => $value) {
-            Config::setValue($key, $value);
-        }
+        Config::reset();
     }
 
     /**
