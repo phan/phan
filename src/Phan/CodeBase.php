@@ -1436,8 +1436,8 @@ class CodeBase
     }
 
     /**
+     * @param string $file_path @phan-unused-param
      * @return void
-     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function flushDependenciesForFile(string $file_path)
     {
@@ -1445,10 +1445,10 @@ class CodeBase
     }
 
     /**
+     * @param string $file_path @phan-unused-param
      * @return string[]
      * The list of files that depend on the code in the given
      * file path
-     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function dependencyListForFile(string $file_path) : array
     {

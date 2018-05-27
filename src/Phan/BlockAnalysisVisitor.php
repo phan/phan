@@ -99,7 +99,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @suppress PhanPluginUnusedPublicMethodArgument
+     * @param Node $node @phan-unused-param this was analyzed in visitUse
      */
     public function visitUseElem(Node $node) : Context
     {

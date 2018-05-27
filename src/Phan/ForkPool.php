@@ -66,8 +66,8 @@ class ForkPool
             }
 
             // Fork
-            $pid = 0;
-            if (($pid = pcntl_fork()) < 0) {
+            $pid = pcntl_fork();
+            if ($pid < 0) {
                 error_log(posix_strerror(posix_get_last_error()));
                 exit(EXIT_FAILURE);
             }

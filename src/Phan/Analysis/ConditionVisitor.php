@@ -28,7 +28,7 @@ use Closure;
  * TODO: Make $x > 0, $x < 0, $x >= 50, etc.  remove FalseType and NullType from $x
  * TODO: if (a || b || c || d) might get really slow, due to creating both ConditionVisitor and NegatedConditionVisitor
  *
- * @phan-file-suppress PhanPluginUnusedClosureArgument
+ * @phan-file-suppress PhanPluginUnusedClosureArgument, PhanUnusedClosureParameter
  */
 class ConditionVisitor extends KindVisitorImplementation
 {

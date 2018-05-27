@@ -84,10 +84,8 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         $pos = \strrpos($fqsen, '\\');
         if ($pos !== false) {
             $name = \substr($fqsen, $pos + 1);
-            $namespace = \substr($fqsen, 0, $pos);
         } else {
             $name = $fqsen;
-            $namespace = '';
         }
 
         $is_defined = \defined($fqsen);
