@@ -459,11 +459,20 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                 continue;
             }
             // Replace the scope with the inner scope
-            // TODO: Analyzing if_node->children['cond'] should affect $outer_scope?
-            $inner_scope = new VariableTrackingBranchScope($outer_scope);
-            $inner_scope = $this->analyze($inner_scope, $if_node);
+            // Analyzing if_node->children['cond'] should affect $outer_scope.
+            // This isn't precise, and doesn't fully understand assignments within conditions.
             $cond_node = $if_node->children['cond'];
             $stmts_node = $if_node->children['stmts'];
+
+            if ($cond_node instanceof Node) {
+                $inner_cond_scope = new VariableTrackingBranchScope($outer_scope);
+                $inner_cond_scope = $this->analyze($inner_cond_scope, $cond_node);
+                '@phan-var VariableTrackingBranchScope $inner_cond_scope';
+                $outer_scope = $outer_scope->mergeBranchScopeList([$inner_cond_scope], $merge_parent_scope, []);
+            }
+
+            $inner_scope = new VariableTrackingBranchScope($outer_scope);
+            $inner_scope = $this->analyze($inner_scope, $stmts_node);
 
             '@phan-var VariableTrackingBranchScope $inner_scope';
 
@@ -480,7 +489,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
         // Merge inner scope into outer scope
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument
-        return $outer_scope->mergeBranchScopeList($inner_scope_list, $merge_parent_scope);
+        return $outer_scope->mergeBranchScopeList($inner_scope_list, $merge_parent_scope, []);
     }
 
     /**
@@ -496,6 +505,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         $outer_scope = $this->scope;
 
         $inner_scope_list = [];
+        $inner_exiting_scope_list = [];
         $merge_parent_scope = true;
         foreach ($node->children as $i => $case_node) {
             \assert($case_node instanceof Node);
@@ -511,27 +521,25 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                 $merge_parent_scope = false;
             }
 
-            // Replace the scope with the inner scope
-            //
-            // NOTE: This is a loop scope because it is what would be reached by break/continue
-            if ($cond_node === null) {
-            }
-
             // Skip over empty case statements (incomplete heuristic), TODO: test
             if (\count($stmts_node->children ?? []) !== 0 || $i === \count($node->children) - 1) {
                 $inner_scope = new VariableTrackingLoopScope($outer_scope);
                 $inner_scope = $this->analyze($inner_scope, $stmts_node);
+                // Merge $inner_scope->skipped_loop_scopes
+                '@phan-var VariableTrackingLoopScope $inner_scope';
+                $inner_scope->flattenSwitchCaseScopes(self::$variable_graph);
 
-                if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node)) {
+                if (BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node)) {
+                    $inner_exiting_scope_list[] = $inner_scope;
+                } else {
                     $inner_scope_list[] = $inner_scope;
                 }
-                // TODO: Merge $inner_scope->skipped_loop_scopes
             }
         }
 
         // Merge inner scope into outer scope
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument
-        return $outer_scope->mergeBranchScopeList($inner_scope_list, $merge_parent_scope);
+        return $outer_scope->mergeBranchScopeList($inner_scope_list, $merge_parent_scope, $inner_exiting_scope_list);
     }
 
     /**
@@ -552,7 +560,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
         // TODO: Use BlockExitStatusChecker, like BlockAnalysisVisitor
         // TODO: Optimize
-        $main_scope = $outer_scope->mergeBranchScopeList([$try_scope], true);
+        $main_scope = $outer_scope->mergeBranchScopeList([$try_scope], true, []);
 
         $catch_node_list = $node->children['catches']->children;
         if (count($catch_node_list) > 0) {
@@ -592,6 +600,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
         // Merge inner scope into outer scope
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument
-        return $outer_scope->mergeBranchScopeList($inner_scope_list, false);
+        return $outer_scope->mergeBranchScopeList($inner_scope_list, false, []);
     }
 }

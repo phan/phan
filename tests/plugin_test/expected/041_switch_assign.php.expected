@@ -1,0 +1,5 @@
+src/041_switch_assign.php:7 PhanUnusedVariable Unused definition of variable $result
+src/041_switch_assign.php:12 PhanUnusedVariable Unused definition of variable $myUnused
+src/041_switch_assign.php:16 PhanUnusedVariable Unused definition of variable $myUnused
+src/041_switch_assign.php:29 PhanUnusedVariable Unused definition of variable $myUnused
+src/041_switch_assign.php:33 PhanUnusedVariable Unused definition of variable $myUnused
