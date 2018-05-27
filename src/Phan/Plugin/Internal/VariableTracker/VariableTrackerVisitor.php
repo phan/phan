@@ -341,7 +341,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     {
         $name = $node->children['var']->children['name'] ?? null;
         if (\is_string($name)) {
-            self::$variable_graph->markAsStaticVariable($name);
+            self::$variable_graph->markAsGlobalVariable($name);
         }
         return $this->scope;
     }
@@ -519,6 +519,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
         // TODO: Use BlockExitStatusChecker, like BlockAnalysisVisitor
         // TODO: Optimize
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         $main_scope = $outer_scope->mergeBranchScopeList([$try_scope], true);
 
         $catch_node_list = $node->children['catches']->children;
