@@ -19,6 +19,7 @@ use function is_string;
  * 4. Track based on an identifier corresponding to the \ast\Node of the assignment (e.g. using \spl_object_id())
  *
  * TODO: Improve analysis within the ternary operator (cond() ? ($x = 2) : ($x = 3);
+ * TODO: Support unset
  */
 final class VariableTrackerVisitor extends AnalysisVisitor
 {

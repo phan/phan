@@ -3,6 +3,32 @@ Phan NEWS
 ?? ??? 2018, Phan 0.12.10 (dev)
 -------------------------
 
+New features(CLI, Configs)
++ Add CLI flag `--unused-variable-detection`.
++ Add config setting `unused_variable_detection`.
+  Unused variable detection can be enabled by `--unused-variable-detection`, `--dead-code-detection`, or the config.
+
+New features(Analysis):
++ Add built-in support for unused variable detection.
+  Currently, this is limited to analyzing inside of functions, methods, and closures.
+
+  Warnings about unused parameters can be suppressed via `@param MyClass $x @phan-unused-param`.
+
+  The built in unused variable detection support will not warn about the following
+  - variables beginning with $raii (case insensitive)
+  - variables beginning with $unused (case insensitive)
+  - `$_`
+  - Superglobals, used globals, and static variables within function scopes.
+  - Any references
+
+  New Issue types:
+  - `PhanUnusedVariable`,
+  - `PhanUnusedPublicMethodParameter`, `PhanUnusedPublicFinalMethodParameter`,
+  - `PhanUnusedProtectedMethodParameter`, `PhanUnusedProtectedFinalMethodParameter`,
+  - `PhanUnusedPrivateMethodParameter`, `PhanUnusedProtectedFinalMethodParameter`,
+  - `PhanUnusedClosureUseVariable`, `PhanUnusedClosureParameter`,
+  - `PhanUnusedGlobalFunctionParameter`
+
 22 May 2018, Phan 0.12.9
 ------------------------
 
