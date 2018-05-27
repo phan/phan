@@ -76,9 +76,28 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      */
     public function visitAssignRef(Node $node)
     {
-        return $this->analyzeAssign($node, true);
+        $expr = $node->children['expr'];
+        if ($expr instanceof Node) {
+            $this->scope = $this->analyze($this->scope, $expr);
+        }
+        $var_node = $node->children['var'];
+        if ($var_node->kind === \ast\AST_VAR) {
+            $name = $var_node->children['name'];
+            if (is_string($name)) {
+                self::$variable_graph->recordVariableUsage($name, $var_node, $this->scope);
+            }
+        }
+        return $this->analyzeAssignmentTarget($var_node, false);
     }
 
+    /**
+     * @return VariableTrackingScope
+     * @override
+     */
+    public function visitAssignOp(Node $node)
+    {
+        return $this->analyzeAssign($node, true);
+    }
 
     /**
      * @return VariableTrackingScope
@@ -186,7 +205,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     /**
      * @return VariableTrackingScope
      */
-    public function handleMissingNodeKind(Node $node)
+    public function handleMissingNodeKind(Node $unused_node)
     {
         // do nothing
         return $this->scope;
@@ -458,7 +477,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
         $inner_scope_list = [];
         $merge_parent_scope = true;
-        $has_default = false;
         foreach ($node->children as $i => $case_node) {
             \assert($case_node instanceof Node);
             // Replace the scope with the inner scope
