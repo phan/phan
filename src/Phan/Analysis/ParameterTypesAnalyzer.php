@@ -190,7 +190,6 @@ class ParameterTypesAnalyzer
 
     /**
      * @return void
-     * @suppress PhanPluginUnusedVariable
      */
     private static function checkCommentParametersAreInOrder(CodeBase $code_base, FunctionInterface $method)
     {
@@ -224,6 +223,7 @@ class ParameterTypesAnalyzer
                 return;
             }
             $prev_name = $parameter_name;
+            // @phan-suppress-next-line PhanPluginUnusedVariable
             $prev_index = $parameter_index_in_comment;
         }
     }

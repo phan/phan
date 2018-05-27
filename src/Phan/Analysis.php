@@ -54,8 +54,6 @@ class Analysis
      * See autoload_internal_extension_signatures.
      *
      * @return Context
-     *
-     * @suppress PhanAccessMethodInternal
      */
     public static function parseFile(CodeBase $code_base, string $file_path, bool $suppress_parse_errors = false, string $override_contents = null, bool $is_php_internal_stub = false) : Context
     {
@@ -144,6 +142,7 @@ class Analysis
             $context,
             $node
         );
+        // @phan-suppress-next-line PhanAccessMethodInternal
         $code_base->addParsedNamespaceMap($context->getFile(), $context->getNamespace(), $context->getNamespaceId(), $context->getNamespaceMap());
         return $context;
     }
@@ -232,9 +231,7 @@ class Analysis
     }
 
     /**
-     * Take a pass over all functions verifying various
-     * states.
-     * @suppress PhanTypeArraySuspicious https://github.com/phan/phan/issues/642
+     * Take a pass over all functions verifying various states.
      *
      * @return void
      */
@@ -441,7 +438,6 @@ class Analysis
      * were $override_contents
      *
      * @return Context
-     * @suppress PhanAccessMethodInternal
      */
     public static function analyzeFile(
         CodeBase $code_base,
@@ -451,6 +447,7 @@ class Analysis
     ) : Context {
         // Set the file on the context
         $context = (new Context)->withFile($file_path);
+        // @phan-suppress-next-line PhanAccessMethodInternal
         $context->importNamespaceMapFromParsePhase($code_base);
 
         $code_base->setCurrentAnalyzedFile($file_path);

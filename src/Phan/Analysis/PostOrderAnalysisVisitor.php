@@ -329,7 +329,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @return void
-     * @suppress PhanAccessMethodInternal
      */
     private function checkEncapsulatedStringArgument(Node $expr_node)
     {
@@ -342,6 +341,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             true
         );
 
+        // @phan-suppress-next-line PhanAccessMethodInternal
         if (!$type->hasPrintableScalar()) {
             if ($type->isType(ArrayType::instance(false))
                 || $type->isType(ArrayType::instance(true))

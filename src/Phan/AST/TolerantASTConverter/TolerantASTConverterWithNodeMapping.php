@@ -274,7 +274,6 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      * @param PhpParser\Node\QualifiedName|Token|null $type
      * @return ?ast\Node
      * @override
-     * @suppress PhanUndeclaredProperty
      */
     protected static function phpParserTypeToAstNode($type, int $line)
     {

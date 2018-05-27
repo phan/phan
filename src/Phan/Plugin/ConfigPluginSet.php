@@ -357,8 +357,6 @@ final class ConfigPluginSet extends PluginV2 implements
      * @param ?Suggestion $suggestion Phan's suggestion for how to fix the issue, if any.
      *
      * @return bool true if the given issue instance should be suppressed, given the current file contents.
-     *
-     * @suppress PhanAccessMethodInternal
      */
     public function shouldSuppressIssue(
         CodeBase $code_base,
@@ -379,6 +377,7 @@ final class ConfigPluginSet extends PluginV2 implements
             )) {
                 $unused_suppression_plugin = $this->unused_suppression_plugin;
                 if ($unused_suppression_plugin) {
+                    // @phan-suppress-next-line PhanAccessMethodInternal
                     $unused_suppression_plugin->recordPluginSuppression($plugin, $context->getFile(), $issue_type, $lineno);
                 }
                 return true;
@@ -815,9 +814,7 @@ final class ConfigPluginSet extends PluginV2 implements
                 /**
                  * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
                  *
-                 * @suppress PhanParamTooMany
-                 * @suppress PhanUndeclaredProperty
-                 * @suppress PhanDeprecatedInterface (TODO: Fix bugs in PhanClosureScope)
+                 * @phan-closure-scope PluginAwareAnalysisVisitor
                  */
                 $closure = (static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) {
                     $visitor = new static($code_base, $context);
@@ -862,12 +859,11 @@ final class ConfigPluginSet extends PluginV2 implements
                     /**
                      * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
                      *
-                     * @suppress PhanParamTooMany
-                     * @suppress PhanUndeclaredProperty
-                     * @suppress PhanDeprecatedInterface (TODO: Fix bugs in PhanClosureScope)
+                     * @phan-closure-scope PluginAwarePostAnalysisVisitor
                      */
                     $closure = (static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) {
                         $visitor = new static($code_base, $context);
+                        // @phan-suppress-next-line PhanUndeclaredProperty checked via $has_parent_node_list
                         $visitor->parent_node_list = $parent_node_list;
                         $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
                         $visitor->{$fn_name}($node);
@@ -876,10 +872,7 @@ final class ConfigPluginSet extends PluginV2 implements
                     /**
                      * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
                      *
-                     * @suppress PhanParamTooMany
-                     * @suppress PhanTypeInstantiateInterface
-                     * @suppress PhanDeprecatedInterface (TODO: Fix bugs in PhanClosureScope)
-                     * @phan-closure-scope PostAnalyzeNodeCapability
+                     * @phan-closure-scope PluginAwarePostAnalysisVisitor
                      */
                     $closure = (static function (CodeBase $code_base, Context $context, Node $node, array $unused_parent_node_list = []) {
                         $visitor = new static($code_base, $context);

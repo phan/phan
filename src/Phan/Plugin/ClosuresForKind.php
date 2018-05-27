@@ -60,7 +60,6 @@ class ClosuresForKind
     /**
      * @param \Closure $flattener
      * @return array<int,\Closure> (Maps a subset of node kinds to a closure to execute for that node kind.)
-     * @suppress PhanPartialTypeMismatchReturn TODO: investigate
      */
     public function getFlattenedClosures(\Closure $flattener)
     {
@@ -78,6 +77,7 @@ class ClosuresForKind
                 $merged_closures[$kind] = $closure;
             }
         }
+        // @phan-suppress-next-line PhanPartialTypeMismatchReturn TODO: investigate
         return $merged_closures;
     }
 }

@@ -646,7 +646,6 @@ class Comment
      *
      * @return UnionType
      * The declared return type
-     * @suppress PhanParamSuspiciousOrder strstr
      */
     private static function returnTypeFromCommentLine(
         CodeBase $code_base,

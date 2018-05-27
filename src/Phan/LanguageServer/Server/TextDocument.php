@@ -106,7 +106,6 @@ class TextDocument
      * @param VersionedTextDocumentIdentifier $textDocument
      * @param string|null $text (NOTE: can't use ?T here)
      * @return void
-     * @suppress PhanTypeMismatchArgument
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
     public function didSave(TextDocumentIdentifier $textDocument, string $text = null)

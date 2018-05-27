@@ -182,10 +182,6 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             return $types;
         };
 
-        /**
-         * @suppress PhanPartialTypeMismatchArgumentInternal TODO: better inference of array_slice return type keys/values
-         * @suppress PhanPartialTypeMismatchArgument TODO: better inference of array_slice return type keys/values
-         */
         $array_map_callback = static function (
             CodeBase $code_base,
             Context $context,

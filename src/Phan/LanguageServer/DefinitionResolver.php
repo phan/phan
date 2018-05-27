@@ -181,7 +181,6 @@ class DefinitionResolver
 
     /**
      * @return void
-     * @suppress PhanPartialTypeMismatchReturn
      */
     public static function locateMethodDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
     {
@@ -204,7 +203,6 @@ class DefinitionResolver
 
     /**
      * @return void
-     * @suppress PhanPartialTypeMismatchReturn
      */
     public static function locateFuncDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
     {

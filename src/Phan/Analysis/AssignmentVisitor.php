@@ -226,7 +226,6 @@ class AssignmentVisitor extends AnalysisVisitor
      * Analyzes code such as list($a) = [1, 2, 3];
      * @return void
      * @see $this->visitArray
-     * @suppress PhanTypeMismatchDimAssignment deliberate for $key_set
      */
     private function analyzeShapedArrayAssignment(Node $node)
     {

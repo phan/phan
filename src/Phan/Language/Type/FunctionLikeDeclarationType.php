@@ -113,12 +113,12 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
 
     /**
      * @return ?ClosureDeclarationParameter
-     * @suppress PhanPossiblyFalseTypeReturn is_variadic implies at least one parameter exists.
      */
     public function getClosureParameterForArgument(int $i)
     {
         $result = $this->params[$i] ?? null;
         if (!$result) {
+            // @phan-suppress-next-line PhanPossiblyFalseTypeReturn is_variadic implies at least one parameter exists.
             return $this->is_variadic ? end($this->params) : null;
         }
         return $result;
