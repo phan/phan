@@ -2,6 +2,7 @@
 namespace Phan\Plugin\Internal\VariableTracker;
 
 use ast\Node;
+use function spl_object_id;
 
 /**
  * This represents a summary of all of the definitions and uses of all variable within a scope.
@@ -23,14 +24,24 @@ final class VariableGraph
     public $def_lines = [];
 
     /**
+     * @var array<int,true>
+     *
+     * The set of definition ids that are possibly placeholder loop values
+     * in foreach over keys.
+     */
+    public $loop_def_ids = [];
+
+    /**
      * @var array<string,int> maps variable names to whether
      *    they have ever occurred as a given self::IS_* category in the current scope
      */
     public $variable_types = [];
 
-    const IS_REFERENCE = 1<<0;
-    const IS_GLOBAL    = 1<<1;
-    const IS_STATIC    = 1<<2;
+    const IS_REFERENCE      = 1<<0;
+    const IS_GLOBAL         = 1<<1;
+    const IS_STATIC         = 1<<2;
+
+    const IS_REFERENCE_OR_GLOBAL_OR_STATIC = self::IS_REFERENCE | self::IS_GLOBAL | self::IS_STATIC;
 
     public function __construct()
     {
@@ -100,6 +111,27 @@ final class VariableGraph
     public function markAsGlobalVariable(string $name)
     {
         $this->markBitForVariableName($name, self::IS_GLOBAL);
+    }
+
+    /**
+     * Marks something as being a loop variable `$v` in `foreach ($arr as $k => $v)`
+     * (Common false positive, since there's no way to avoid setting the value)
+     *
+     * @return void
+     */
+    public function markAsLoopValueNode($node)
+    {
+        if ($node instanceof Node) {
+            $this->loop_def_ids[spl_object_id($node)] = true;
+        }
+    }
+
+    /**
+     * Checks if the node for this id is defined as the value in a foreach over keys of an array.
+     */
+    public function isLoopValueDefinitionId(int $definition_id) : bool
+    {
+        return \array_key_exists($definition_id, $this->loop_def_ids);
     }
 
     /**
