@@ -723,7 +723,12 @@ Usage: {$argv[0]} [options] [files...]
  -x, --dead-code-detection
   Emit issues for classes, methods, functions, constants and
   properties that are probably never referenced and can
-  possibly be removed.
+  possibly be removed. This implies `--unused-variable-detection`.
+
+ --unused-variable-detection
+  Emit issues for variables, parameters and closure use variables
+  that are probably never referenced.
+  This has a few known false positives, e.g. for loops or branches.
 
  -j, --processes <int>
   The number of parallel processes to run during the analysis
