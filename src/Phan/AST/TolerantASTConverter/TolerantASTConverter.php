@@ -18,7 +18,6 @@ if (!class_exists('\ast\Node')) {
     require_once __DIR__ . '/ast_shim.php';
 }
 
-
 /**
  * Source: https://github.com/TysonAndre/tolerant-php-parser-to-php-ast
  *
@@ -38,7 +37,7 @@ if (!class_exists('\ast\Node')) {
  * each time they are invoked,
  * so it's possible to have multiple callers use this without affecting each other.
  *
- * Compatibility: PHP 7.1
+ * Compatibility: PHP 7.0
  *
  * ----------------------------------------------------------------------------
  *
