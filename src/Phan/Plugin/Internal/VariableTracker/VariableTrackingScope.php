@@ -94,7 +94,7 @@ class VariableTrackingScope
     /**
      * @return void
      */
-    private function flattenScopeToMergedLoopResult(
+    protected function flattenScopeToMergedLoopResult(
         VariableTrackingLoopScope $scope,
         VariableTrackingBranchScope $alternate_scope,
         VariableGraph $graph
@@ -114,7 +114,7 @@ class VariableTrackingScope
     /**
      * @return void
      */
-    private function flattenUsesFromScopeToMergedLoopResult(
+    protected function flattenUsesFromScopeToMergedLoopResult(
         VariableTrackingLoopScope $scope,
         VariableTrackingBranchScope $alternate_scope,
         VariableGraph $graph
@@ -169,10 +169,12 @@ class VariableTrackingScope
 
     /**
      * @param array<int,VariableTrackingBranchScope> $branch_scopes
+     * @param array<int,VariableTrackingBranchScope> $inner_exiting_scope_list
      */
     public function mergeBranchScopeList(
         array $branch_scopes,
-        bool $merge_parent_scope
+        bool $merge_parent_scope,
+        array $inner_exiting_scope_list
     ) : VariableTrackingScope {
         // Compute the keys which were redefined in branch scopes
         // TODO: Optimize
@@ -183,6 +185,10 @@ class VariableTrackingScope
                 $def_key_set[$variable_name] = true;
             }
             // Anything which is used within a branch is used within the parent
+            $result->mergeUses($scope->uses);
+        }
+        foreach ($inner_exiting_scope_list as $scope) {
+            // TODO: Make this properly recurse until it reaches the right depth (unnecessary right now)
             $result->mergeUses($scope->uses);
         }
         if ($merge_parent_scope) {
