@@ -709,7 +709,6 @@ class ParameterTypesAnalyzer
                     ($is_reference ? Issue::ParamSignaturePHPDocMismatchParamIsReference       : Issue::ParamSignaturePHPDocMismatchParamIsNotReference),
                     $offset
                 );
-                $is_possibly_compatible = false;
                 return;
             }
 
@@ -726,7 +725,6 @@ class ParameterTypesAnalyzer
                     ($is_variadic ? Issue::ParamSignaturePHPDocMismatchParamVariadic       : Issue::ParamSignaturePHPDocMismatchParamNotVariadic),
                     $offset
                 );
-                $is_possibly_compatible = false;
                 return;
             }
 
