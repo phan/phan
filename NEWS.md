@@ -26,6 +26,7 @@ New features(Analysis):
 
   New Issue types:
   - `PhanUnusedVariable`,
+  - `PhanUnusedVariableValueOfForeachWithKey`, (has a high false positive rate)
   - `PhanUnusedPublicMethodParameter`, `PhanUnusedPublicFinalMethodParameter`,
   - `PhanUnusedProtectedMethodParameter`, `PhanUnusedProtectedFinalMethodParameter`,
   - `PhanUnusedPrivateMethodParameter`, `PhanUnusedProtectedFinalMethodParameter`,

@@ -248,6 +248,7 @@ class Issue
     const UnusedClosureUseVariable              = 'PhanUnusedClosureUseVariable';
     const UnusedClosureParameter                = 'PhanUnusedClosureParameter';
     const UnusedGlobalFunctionParameter         = 'PhanUnusedGlobalFunctionParameter';
+    const UnusedVariableValueOfForeachWithKey   = 'PhanUnusedVariableValueOfForeachWithKey';  // has higher false positive rates than UnusedVariable
 
     // Issue::CATEGORY_REDEFINE
     const RedefineClass             = 'PhanRedefineClass';
@@ -2184,6 +2185,14 @@ class Issue
                 'Parameter ${PARAMETER} is never used',
                 self::REMEDIATION_B,
                 6044
+            ),
+            new Issue(
+                self::UnusedVariableValueOfForeachWithKey,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Unused definition of variable ${VARIABLE} as the value of a foreach loop that included keys',
+                self::REMEDIATION_B,
+                6045
             ),
 
 

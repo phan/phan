@@ -368,6 +368,9 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         $this->scope = $this->analyzeAssignmentTarget($key_node, false);
 
         $value_node = $node->children['value'];
+        if (isset($key_node)) {
+            self::$variable_graph->markAsLoopValueNode($value_node);
+        }
         $this->scope = $this->analyzeAssignmentTarget($value_node, false);  // analyzeAssignmentTarget checks for AST_REF
 
         // TODO: Update graph: inner loop definitions can be used inside the loop.

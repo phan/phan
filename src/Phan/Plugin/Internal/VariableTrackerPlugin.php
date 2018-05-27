@@ -179,7 +179,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                 continue;
             }
             $type_bitmask = $graph->variable_types[$variable_name] ?? 0;
-            if ($type_bitmask > 0) {
+            if ($type_bitmask & VariableGraph::IS_REFERENCE_OR_GLOBAL_OR_STATIC) {
                 // don't warn about static/global/references
                 continue;
             }
@@ -198,6 +198,10 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                         break;
                     }
                     $issue_type = $this->getParameterCategory($method_node);
+                } else {
+                    if ($graph->isLoopValueDefinitionId($definition_id)) {
+                        $issue_type = Issue::UnusedVariableValueOfForeachWithKey;
+                    }
                 }
                 Issue::maybeEmit(
                     $this->code_base,
