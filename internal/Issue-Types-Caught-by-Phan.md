@@ -715,6 +715,12 @@ to detect if a variable or parameter is unused.
 Unused definition of variable ${VARIABLE}
 ```
 
+## PhanUnusedVariableValueOfForeachWithKey
+
+```
+Unused definition of variable ${VARIABLE} as the value of a foreach loop that included keys
+```
+
 ## PhanWriteOnlyPrivateProperty
 
 ```
