@@ -5,7 +5,7 @@ namespace Phan\Plugin\Internal\VariableTracker;
  * This will represent a variable scope, similar to \Phan\Language\Scope.
  * Instead of tracking the union types for variable names, this will instead track definitions of variable names.
  */
-final class VariableTrackingBranchScope extends VariableTrackingScope
+class VariableTrackingBranchScope extends VariableTrackingScope
 {
     /**
      * @var VariableTrackingScope the parent of this branch scope.
@@ -22,6 +22,7 @@ final class VariableTrackingBranchScope extends VariableTrackingScope
 
     /**
      * @return ?array<int,true>
+     * @override
      */
     public function getDefinition(string $variable_name)
     {
@@ -35,5 +36,20 @@ final class VariableTrackingBranchScope extends VariableTrackingScope
         }
         $definitions += $parent_definitions;
         return $definitions;
+    }
+
+    /**
+     * Record a statement that was unreachable due to break/continue statements.
+     *
+     * @param VariableTrackingBranchScope $inner_scope @phan-unused-param
+     * @param bool $exits true if this branch will exit.
+     *             This would mean that the branch uses variables, but does not define them outside of that scope.
+     *
+     * @return void
+     * @override
+     */
+    public function recordSkippedScope(VariableTrackingBranchScope $inner_scope, bool $exits)
+    {
+        $this->parent_scope->recordSkippedScope($inner_scope, $exits);
     }
 }

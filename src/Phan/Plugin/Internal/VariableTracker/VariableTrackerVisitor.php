@@ -362,7 +362,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         $outer_scope = $this->analyzeWhenValidNode($this->scope, $expr_node);
 
         // Replace the scope with the inner scope
-        $this->scope = new VariableTrackingBranchScope($outer_scope);
+        $this->scope = new VariableTrackingLoopScope($outer_scope);
 
         $key_node = $node->children['key'];
         $this->scope = $this->analyzeAssignmentTarget($key_node, false);
@@ -391,7 +391,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     {
         $outer_scope = $this->scope;
 
-        $inner_scope = new VariableTrackingBranchScope($outer_scope);
+        $inner_scope = new VariableTrackingLoopScope($outer_scope);
         $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['cond']);
         $inner_scope = $this->analyze($inner_scope, $node->children['stmts']);
 
@@ -409,7 +409,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     {
         $outer_scope = $this->scope;
 
-        $inner_scope = new VariableTrackingBranchScope($outer_scope);
+        $inner_scope = new VariableTrackingLoopScope($outer_scope);
         $inner_scope = $this->analyze($inner_scope, $node->children['stmts']);
         $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['cond']);
 
@@ -427,7 +427,9 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     {
         $outer_scope = $this->analyzeWhenValidNode($this->scope, $node->children['init']);
 
-        $inner_scope = new VariableTrackingBranchScope($outer_scope);
+        $inner_scope = new VariableTrackingLoopScope($outer_scope);
+        // TODO: If the graph analysis is removed, look into making this stop analyzing 'loop' twice
+        $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['loop']);
         $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['cond']);
         $inner_scope = $this->analyze($inner_scope, $node->children['stmts']);
         $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['loop']);
@@ -460,8 +462,17 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             // TODO: Analyzing if_node->children['cond'] should affect $outer_scope?
             $inner_scope = new VariableTrackingBranchScope($outer_scope);
             $inner_scope = $this->analyze($inner_scope, $if_node);
-            $inner_scope_list[] = $inner_scope;
             $cond_node = $if_node->children['cond'];
+            $stmts_node = $if_node->children['stmts'];
+
+            '@phan-var VariableTrackingBranchScope $inner_scope';
+
+            if (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($stmts_node)) {
+                $exits = BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node);
+                $outer_scope->recordSkippedScope($inner_scope, $exits);
+            } else {
+                $inner_scope_list[] = $inner_scope;
+            }
             if ($cond_node === null || (\is_scalar($cond_node) && $cond_node)) {
                 $merge_parent_scope = false;
             }
@@ -488,20 +499,33 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         $merge_parent_scope = true;
         foreach ($node->children as $i => $case_node) {
             \assert($case_node instanceof Node);
-            // Replace the scope with the inner scope
-            // TODO: Analyzing if_node->children['cond'] should affect $outer_scope?
-            $inner_scope = new VariableTrackingBranchScope($outer_scope);
-            $inner_scope = $this->analyze($inner_scope, $case_node);
-            if ($case_node->children['cond'] === null) {
+            $cond_node = $case_node->children['cond'];
+            $stmts_node = $case_node->children['stmts'];
+
+            if ($cond_node instanceof Node) {
+                // Analyzing if_node->children['cond'] should affect $outer_scope.
+                // `switch(cond() { case $x = something(): case 3: use($x); }` is valid code.
+                $outer_scope = $this->analyze($outer_scope, $cond_node);
+            } elseif ($cond_node === null){
                 // this has a default, the case statements are comprehensive
                 $merge_parent_scope = false;
             }
-            $stmts_node = $case_node->children['stmts'];
-            if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node)) {
-                // Skip over empty case statements (incomplete heuristic), TODO: test
-                if (\count($stmts_node->children ?? []) !== 0 || $i === \count($node->children) - 1) {
+
+            // Replace the scope with the inner scope
+            //
+            // NOTE: This is a loop scope because it is what would be reached by break/continue
+            if ($cond_node === null) {
+            }
+
+            // Skip over empty case statements (incomplete heuristic), TODO: test
+            if (\count($stmts_node->children ?? []) !== 0 || $i === \count($node->children) - 1) {
+                $inner_scope = new VariableTrackingLoopScope($outer_scope);
+                $inner_scope = $this->analyze($inner_scope, $stmts_node);
+
+                if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node)) {
                     $inner_scope_list[] = $inner_scope;
                 }
+                // TODO: Merge $inner_scope->skipped_loop_scopes
             }
         }
 

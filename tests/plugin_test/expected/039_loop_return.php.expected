@@ -1,0 +1,1 @@
+src/039_loop_return.php:11 PhanUnusedVariable Unused definition of variable $myUnusedVariable

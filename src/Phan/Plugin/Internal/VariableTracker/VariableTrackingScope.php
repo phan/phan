@@ -76,16 +76,68 @@ class VariableTrackingScope
     }
 
     public function mergeInnerLoopScope(
-        VariableTrackingBranchScope $scope,
+        VariableTrackingLoopScope $scope,
         VariableGraph $graph
     ) : VariableTrackingScope {
-        /**
-         * @param string $variable_name
-         * @param array<int,true> $result_defs
-         * @param array<int,true> $defs being merged into $result_defs
-         * @return array<int,true> the definitions afterwards
-         */
         $result = clone($this);
+        // TODO: Can this be optimized for common use cases?
+        foreach ($scope->skipped_loop_scopes as $alternate_scope) {
+            $this->flattenScopeToMergedLoopResult($scope, $alternate_scope, $graph);
+        }
+        foreach ($scope->skipped_exiting_loop_scopes as $alternate_scope) {
+            $this->flattenUsesFromScopeToMergedLoopResult($scope, $alternate_scope, $graph);
+        }
+        $this->addScopeToMergedLoopResult($result, $scope, $graph);
+        return $result;
+    }
+
+    /**
+     * @return void
+     */
+    private function flattenScopeToMergedLoopResult(
+        VariableTrackingLoopScope $scope,
+        VariableTrackingBranchScope $alternate_scope,
+        VariableGraph $graph
+    ) {
+        // Need to flatten these to the same level
+        // The LoopScope might have been cloned, so just keep going until the closest loop scope.
+        // TODO: Look at this, see if this way of merging definitions and usages will miss any false positives
+        $parent_scope = $alternate_scope->parent_scope;
+        if (!($parent_scope instanceof VariableTrackingLoopScope)) {
+            '@phan-var VariableTrackingBranchScope $parent_scope';
+            $this->flattenScopeToMergedLoopResult($scope, $parent_scope, $graph);
+        }
+        $this->addScopeToMergedLoopResult($scope, $alternate_scope, $graph);
+        $scope->mergeUses($alternate_scope->uses);
+    }
+
+    /**
+     * @return void
+     */
+    private function flattenUsesFromScopeToMergedLoopResult(
+        VariableTrackingLoopScope $scope,
+        VariableTrackingBranchScope $alternate_scope,
+        VariableGraph $graph
+    ) {
+        // Need to flatten these to the same level
+        // The LoopScope might have been cloned, so just keep going until the closest loop scope.
+        // TODO: Look at this, see if this way of merging definitions and usages will miss any false positives
+        $parent_scope = $alternate_scope->parent_scope;
+        if (!($parent_scope instanceof VariableTrackingLoopScope)) {
+            '@phan-var VariableTrackingBranchScope $parent_scope';
+            $this->flattenScopeToMergedLoopResult($scope, $parent_scope, $graph);
+        }
+        $scope->mergeUses($alternate_scope->uses);
+    }
+
+    /**
+     * @return void
+     */
+    private function addScopeToMergedLoopResult(
+        VariableTrackingScope $result,
+        VariableTrackingBranchScope $scope,
+        VariableGraph $graph
+    ) {
         foreach ($scope->defs as $variable_name => $defs) {
             $defs_for_variable = $result->defs[$variable_name] ?? [];
             $loop_uses_of_own_variable = $scope->uses[$variable_name] ?? null;
@@ -99,7 +151,6 @@ class VariableTrackingScope
             $result->defs[$variable_name] = $defs_for_variable;
         }
         $result->mergeUses($scope->uses);
-        return $result;
     }
 
     /**
@@ -163,5 +214,18 @@ class VariableTrackingScope
             $result->defs[$variable_name] = $defs_for_variable;
         }
         return $result;
+    }
+
+    /**
+     * Record a statement that was unreachable due to break/continue statements.
+     *
+     * @param VariableTrackingBranchScope $inner_scope @phan-unused-param
+     * @param bool $exits true if the branch of $inner_scope will exit. @phan-unused-param
+     *             This would mean that the branch uses variables, but does not define them outside of that scope.
+     * @return void
+     */
+    public function recordSkippedScope(VariableTrackingBranchScope $inner_scope, bool $exits)
+    {
+        // Subclasses will implement this
     }
 }
