@@ -50,7 +50,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
     /**
      * @return array<string,\Closure>
      */
-    private static function getReturnTypeOverridesStatic(CodeBase $code_base) : array
+    private static function getReturnTypeOverridesStatic() : array
     {
         $call_user_func_callback = static function (
             CodeBase $code_base,
@@ -170,7 +170,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
     /**
      * @return array<string,\Closure>
      */
-    private static function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
+    private static function getAnalyzeFunctionCallClosuresStatic() : array
     {
         /**
          * @return void
@@ -226,6 +226,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
     }
 
     /**
+     * @param $code_base @phan-unused-param
      * @return array<string,\Closure>
      * @override
      */
@@ -234,12 +235,13 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
         // Unit tests invoke this repeatedly. Cache it.
         static $overrides = null;
         if ($overrides === null) {
-            $overrides = self::getReturnTypeOverridesStatic($code_base);
+            $overrides = self::getReturnTypeOverridesStatic();
         }
         return $overrides;
     }
 
     /**
+     * @param CodeBase $code_base @phan-unused-param
      * @return array<string,\Closure>
      * @override
      */
@@ -248,7 +250,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
         // Unit tests invoke this repeatedly. Cache it.
         static $analyzers = null;
         if ($analyzers === null) {
-            $analyzers = self::getAnalyzeFunctionCallClosuresStatic($code_base);
+            $analyzers = self::getAnalyzeFunctionCallClosuresStatic();
         }
         return $analyzers;
     }

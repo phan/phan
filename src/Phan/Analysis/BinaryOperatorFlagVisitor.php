@@ -222,14 +222,12 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     }
 
     /**
-     * @param Node $node
-     * A node to check types on
+     * @param Node $node A node to check types on (@phan-unused-param)
+     *
      * TODO: Check that both types can cast to string or scalars?
      *
      * @return UnionType
      * The resulting type(s) of the binary operation
-     *
-     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function visitBinaryConcat(Node $node) : UnionType
     {

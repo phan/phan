@@ -18,12 +18,15 @@ final class CompactPlugin extends PluginV2 implements
     AnalyzeFunctionCallCapability
 {
 
+    /**
+     * @param CodeBase $code_base @phan-unused-param
+     */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
     {
         // Unit tests invoke this repeatedly. Cache it.
         static $analyzers = null;
         if ($analyzers === null) {
-            $analyzers = self::getAnalyzeFunctionCallClosuresStatic($code_base);
+            $analyzers = self::getAnalyzeFunctionCallClosuresStatic();
         }
         return $analyzers;
     }
@@ -31,7 +34,7 @@ final class CompactPlugin extends PluginV2 implements
     /**
      * @return array<string,\Closure>
      */
-    private static function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
+    private static function getAnalyzeFunctionCallClosuresStatic() : array
     {
         /**
          * @return void

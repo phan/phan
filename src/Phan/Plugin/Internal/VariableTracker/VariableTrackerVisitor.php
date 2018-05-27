@@ -519,7 +519,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
         // TODO: Use BlockExitStatusChecker, like BlockAnalysisVisitor
         // TODO: Optimize
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+        // @phan-suppress-next-line PhanTypeMismatchArgument
         $main_scope = $outer_scope->mergeBranchScopeList([$try_scope], true);
 
         $catch_node_list = $node->children['catches']->children;
