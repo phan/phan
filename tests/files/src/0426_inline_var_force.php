@@ -1,5 +1,5 @@
 <?php
-
+/** @phan-file-suppress PhanUnusedVariable FIXME improve on this */
 function example(int ...$values) {
 
     $first = true;

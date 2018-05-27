@@ -1,3 +1,4 @@
+%s:11 PhanUnusedVariable Unused definition of variable $z
 %s:15 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
 %s:17 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
 %s:23 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is null but \intdiv() takes int
