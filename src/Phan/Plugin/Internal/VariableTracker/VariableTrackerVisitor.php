@@ -218,7 +218,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         try {
             return $this->{Element::VISIT_LOOKUP_TABLE[$child_node->kind] ?? 'handleMissingNodeKind'}($child_node);
         } finally {
-            $this->scope = $scope;
+            $this->scope = $old_scope;
         }
     }
 
@@ -295,6 +295,34 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             // See the way this is done in BlockAnalysisVisitor
         } elseif ($name instanceof Node) {
             return $this->analyze($this->scope, $name);
+        }
+        return $this->scope;
+    }
+
+    /**
+     * TODO: Check if the current context is a function call passing an argument by reference
+     * @return VariableTrackingScope
+     * @override
+     */
+    public function visitStatic(Node $node)
+    {
+        $name = $node->children['var']->children['name'] ?? null;
+        if (\is_string($name)) {
+            self::$variable_graph->markAsStaticVariable($name);
+        }
+        return $this->scope;
+    }
+
+    /**
+     * TODO: Check if the current context is a function call passing an argument by reference
+     * @return VariableTrackingScope
+     * @override
+     */
+    public function visitGlobal(Node $node)
+    {
+        $name = $node->children['var']->children['name'] ?? null;
+        if (\is_string($name)) {
+            self::$variable_graph->markAsStaticVariable($name);
         }
         return $this->scope;
     }
@@ -413,7 +441,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
         // Merge inner scope into outer scope
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument
-        return $outer_scope->mergeBranchScopeList($inner_scope_list, $merge_parent_scope, self::$variable_graph);
+        return $outer_scope->mergeBranchScopeList($inner_scope_list, $merge_parent_scope);
     }
 
     /**
@@ -452,7 +480,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
         // Merge inner scope into outer scope
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument
-        return $outer_scope->mergeBranchScopeList($inner_scope_list, $merge_parent_scope, self::$variable_graph);
+        return $outer_scope->mergeBranchScopeList($inner_scope_list, $merge_parent_scope);
     }
 
     /**
@@ -473,7 +501,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
         // TODO: Use BlockExitStatusChecker, like BlockAnalysisVisitor
         // TODO: Optimize
-        $main_scope = $outer_scope->mergeBranchScopeList([$try_scope], true, self::$variable_graph);
+        $main_scope = $outer_scope->mergeBranchScopeList([$try_scope], true);
 
         $catch_node_list = $node->children['catches']->children;
         if (count($catch_node_list) > 0) {
@@ -515,6 +543,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
         // Merge inner scope into outer scope
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument
-        return $outer_scope->mergeBranchScopeList($inner_scope_list, false, self::$variable_graph);
+        return $outer_scope->mergeBranchScopeList($inner_scope_list, false);
     }
 }

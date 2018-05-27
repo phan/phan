@@ -83,6 +83,30 @@ final class VariableGraph
      */
     public function markAsReference(string $name)
     {
-        $this->variable_types[$name] = (($this->variable_types[$name] ?? 0) | self::IS_REFERENCE);
+        $this->markBitForVariableName($name, self::IS_REFERENCE);
+    }
+
+    /**
+     * @return void
+     */
+    public function markAsStaticVariable(string $name)
+    {
+        $this->markBitForVariableName($name, self::IS_STATIC);
+    }
+
+    /**
+     * @return void
+     */
+    public function markAsGlobalVariable(string $name)
+    {
+        $this->markBitForVariableName($name, self::IS_GLOBAL);
+    }
+
+    /**
+     * @return void
+     */
+    private function markBitForVariableName(string $name, int $bit)
+    {
+        $this->variable_types[$name] = (($this->variable_types[$name] ?? 0) | $bit);
     }
 }

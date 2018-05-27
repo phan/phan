@@ -23,14 +23,13 @@ class AnalyzerTest extends BaseTest
 
     protected function setUp()
     {
-        $this->code_base =
-            $code_base = new CodeBase(
-                [], // $this->class_name_list,
-                [], // $this->interface_name_list,
-                [], // $this->trait_name_list,
-                [], // $this->const_name_list,
-                []  // $this->function_name_list
-            );
+        $this->code_base = new CodeBase(
+            [], // $this->class_name_list,
+            [], // $this->interface_name_list,
+            [], // $this->trait_name_list,
+            [], // $this->const_name_list,
+            []  // $this->function_name_list
+        );
     }
 
     public function testClassInCodeBase()

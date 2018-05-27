@@ -167,7 +167,6 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         VariableGraph $graph,
         $issue_overrides_for_definition_ids
     ) {
-        $result = [];
         foreach ($graph->def_uses as $variable_name => $def_uses_for_variable) {
             if ($variable_name === 'this') {
                 continue;

@@ -45,6 +45,9 @@ class VariableTrackingScope
         $this->defs[$variable_name] = [$node_id => true];
     }
 
+    /**
+     * @suppress PhanUnreferencedPublicMethod used by reference
+     */
     public function recordUsage(string $variable_name, Node $node)
     {
         $node_id = spl_object_id($node);
@@ -87,7 +90,7 @@ class VariableTrackingScope
             $defs_for_variable = $result->defs[$variable_name] ?? [];
             $loop_uses_of_own_variable = $scope->uses[$variable_name] ?? null;
 
-            foreach ($defs as $def_id => $use_set) {
+            foreach ($defs as $def_id => $_) {
                 if ($loop_uses_of_own_variable) {
                     $graph->recordLoopSelfUsage($variable_name, $def_id, $loop_uses_of_own_variable);
                 }
@@ -118,8 +121,7 @@ class VariableTrackingScope
      */
     public function mergeBranchScopeList(
         array $branch_scopes,
-        bool $merge_parent_scope,
-        VariableGraph $graph
+        bool $merge_parent_scope
     ) : VariableTrackingScope {
         // Compute the keys which were redefined in branch scopes
         // TODO: Optimize
@@ -142,7 +144,7 @@ class VariableTrackingScope
                 return true;
             };
         } else {
-            $is_redefined_in_all_scopes = function (string $variable_name) : bool {
+            $is_redefined_in_all_scopes = function (string $unused_variable_name) : bool {
                 return false;
             };
         }
@@ -154,7 +156,7 @@ class VariableTrackingScope
             }
 
             foreach ($branch_scopes as $scope) {
-                foreach ($scope->defs[$variable_name] ?? [] as $def_id => $use_set) {
+                foreach ($scope->defs[$variable_name] ?? [] as $def_id => $_) {
                     $defs_for_variable[$def_id] = true;
                 }
             }
