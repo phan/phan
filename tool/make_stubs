@@ -1,8 +1,7 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
-<<<PHAN
-@phan-file-suppress PhanNativePHPSyntaxCheckPlugin
-PHAN;
+
+/** @phan-file-suppress PhanNativePHPSyntaxCheckPlugin */
 
 use Phan\CodeBase;
 use Phan\Language\Element\Clazz;
@@ -23,6 +22,12 @@ assert(
 );
 
 require_once(dirname(__DIR__) . '/src/Phan/Bootstrap.php');
+
+// If php-ast isn't loaded already, then load this file to generate equivalent
+// class, constant, and function definitions.
+if (!class_exists('\ast\Node')) {
+    require_once __DIR__ . '/../src/Phan/AST/TolerantASTConverter/ast_shim.php';
+}
 
 class StubsGenerator {
 
