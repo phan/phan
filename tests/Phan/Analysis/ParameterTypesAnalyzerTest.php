@@ -8,7 +8,8 @@ use Phan\Language\UnionType;
 
 class ParameterTypesAnalyzerTest extends BaseTest
 {
-    public function setUp() {
+    public function setUp()
+    {
         parent::setUp();
         Config::setValue('prefer_narrowed_phpdoc_return_type', true);
         Config::setValue('check_docblock_signature_return_type_match', true);
@@ -45,7 +46,8 @@ class ParameterTypesAnalyzerTest extends BaseTest
         $this->assertNull($actual_normalized_type, $msg);
     }
 
-    public function testNormalizeNarrowedParamType() {
+    public function testNormalizeNarrowedParamType()
+    {
         $this->assertSameNarrowedType('int', 'int', 'int');
         $this->assertSameNarrowedType('array<int,string>', 'array<int,string>', 'array');
         $this->assertSameNarrowedType('array<int,string>', 'array<int,string>', 'iterable');

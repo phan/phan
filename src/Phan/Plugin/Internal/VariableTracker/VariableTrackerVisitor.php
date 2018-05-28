@@ -516,7 +516,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                 // Analyzing if_node->children['cond'] should affect $outer_scope.
                 // `switch(cond() { case $x = something(): case 3: use($x); }` is valid code.
                 $outer_scope = $this->analyze($outer_scope, $cond_node);
-            } elseif ($cond_node === null){
+            } elseif ($cond_node === null) {
                 // this has a default, the case statements are comprehensive
                 $merge_parent_scope = false;
             }
