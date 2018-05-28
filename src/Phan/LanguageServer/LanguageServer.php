@@ -411,7 +411,35 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             // Discard the previous request silently
             $prev_definition_request->finalize();
         }
-        $request = new GoToDefinitionRequest($uri, $position, $is_type_definition_request);
+        $type = $is_type_definition_request ? GoToDefinitionRequest::REQUEST_TYPE_DEFINITION : GoToDefinitionRequest::REQUEST_DEFINITION;
+        $request = new GoToDefinitionRequest($uri, $position, $type);
+        $this->most_recent_definition_request = $request;
+
+        // We analyze this url so that Phan is aware enough of the types and namespace maps to trigger "Go to definition"
+        // E.g. going to the definition of `Bar` in `use Foo as Bar; Bar::method();` requires parsing other statements in this file, not just the name in question.
+        //
+        // NOTE: This also ensures that we will run analysis, because of the check for analyze_request_set being non-empty
+        $this->analyze_request_set[$path_to_analyze] = $uri;
+        return $request->getPromise();
+    }
+
+    /**
+     * Asynchronously generates the definition for a given URL
+     * @return Promise <Location|Location[]|null>
+     */
+    public function awaitHover(
+        string $uri,
+        Position $position
+    ) : Promise {
+        // TODO: Add a way to "go to definition" without emitting analysis results as a side effect
+        $path_to_analyze = Utils::uriToPath($uri);
+        Logger::logInfo("Called LanguageServer->awaitHover, uri=$uri, position=" . json_encode($position));
+        $prev_definition_request = $this->most_recent_definition_request;
+        if ($prev_definition_request) {
+            // Discard the previous request silently
+            $prev_definition_request->finalize();
+        }
+        $request = new GoToDefinitionRequest($uri, $position, GoToDefinitionRequest::REQUEST_HOVER);
         $this->most_recent_definition_request = $request;
 
         // We analyze this url so that Phan is aware enough of the types and namespace maps to trigger "Go to definition"
@@ -781,17 +809,15 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             // TODO: Support "Find all symbols in workspace"?
             //$serverCapabilities->workspaceSymbolProvider = true;
             // XXX do this next?
-            // TODO: Support "Go to definition" (reasonably practical, should be able to infer types in many cases)
-            // TODO: Support "Goto type definition" (e.g. for variables, properties) (since LSP 3.6.0)
 
             $supports_go_to_definition = (bool)Config::getValue('language_server_enable_go_to_definition');
             $serverCapabilities->definitionProvider = $supports_go_to_definition;
             $serverCapabilities->typeDefinitionProvider = $supports_go_to_definition;
+            $serverCapabilities->hoverProvider = (bool)Config::getValue('language_server_enable_hover');
+
             // TODO: (probably impractical, slow) Support "Find all references"? (We don't track this, except when checking for dead code elimination possibilities.
             // $serverCapabilities->referencesProvider = false;
             // Can't support "Hover" without phpdoc for internal functions, such as those from phpstorm
-            // Also redundant if php.
-            // $serverCapabilities->hoverProvider = false;
             // XXX support completion next?
             // Requires php-parser-to-php-ast (or tolerant php-parser)
             // Support "Completion"

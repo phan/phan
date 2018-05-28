@@ -190,6 +190,7 @@ class TextDocument
      */
     public function hover(TextDocumentIdentifier $textDocument, Position $position)
     {
-        return null;
+        $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
+        return $this->server->awaitHover($uri, $position);
     }
 }

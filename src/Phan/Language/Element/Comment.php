@@ -352,7 +352,8 @@ class Comment
         int $comment_type
     ) : Comment {
 
-        if (!Config::getValue('read_type_annotations')) {
+        // Don't parse the comment if this doesn't need to.
+        if (!$comment || !Config::getValue('read_type_annotations')) {
             return new Comment(
                 0,
                 [],

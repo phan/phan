@@ -28,6 +28,11 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     protected $reference_list = [];
 
     /**
+     * @var ?string
+     */
+    protected $doc_comment;
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -283,4 +288,20 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @return ?Closure
      */
     abstract public function createRestoreCallback();
+
+    /**
+     * @param ?string $doc_comment the 'docComment' for this element, if any exists.
+     */
+    public function setDocComment(string $doc_comment = null)
+    {
+        $this->doc_comment = $doc_comment;
+    }
+
+    /**
+     * @return ?string the 'docComment' for this element, if any exists.
+     */
+    public function getDocComment()
+    {
+        return $this->doc_comment;
+    }
 }

@@ -14,6 +14,17 @@ New features(Analysis)
 
   Previously, this could cause Phan to crash, especially with `--use-fallback-parser` on invalid ASTs.
 
+Language Server/Daemon mode:
++ Implement support for hover requests in the Language Server (#1738)
+
+  This will show a preview of the element definition (showing signature types instead of PHPDoc types)
+  along with the snippet of the element description from the doc comment.
+
+  Clients that use this should pass in the CLI option `--language-server-enable-hover` when starting the language server.
+
+  - Note that this implementation assumes that clients sanitize the mix of markdown and HTML before rendering it.
+  - Note that this may slow down some language server clients if they pause while waiting for the hover request to finish.
+
 Bug fixes:
 + Fix a bug in checking if nullable versions of specialized type were compatible with other nullable types. (#1839, #1852)
   Phan now correctly allows the following type casts:

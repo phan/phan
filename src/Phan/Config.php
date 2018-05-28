@@ -743,8 +743,12 @@ class Config
         'language_server_use_pcntl_fallback' => true,
 
         // This should only be set via CLI (--language-server-enable-go-to-definition)
-        // Affects "go to definition" and "go to type definition"
+        // Affects "go to definition" and "go to type definition" of LSP.
         'language_server_enable_go_to_definition' => false,
+
+        // This should only be set via CLI (--language-server-enable-hover)
+        // Affects "hover" of LSP.
+        'language_server_enable_hover' => false,
 
         // Don't show the category name in issue messages.
         // This makes error messages slightly shorter.

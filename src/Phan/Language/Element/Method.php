@@ -351,11 +351,13 @@ class Method extends ClassElement implements FunctionInterface
             $fqsen,
             $parameter_list
         );
+        $doc_comment = $node->children['docComment'] ?? '';
+        $method->setDocComment($doc_comment);
 
         // Parse the comment above the method to get
         // extra meta information about the method.
         $comment = Comment::fromStringInContext(
-            $node->children['docComment'] ?? '',
+            $doc_comment,
             $code_base,
             $context,
             $node->lineno ?? 0,
@@ -628,6 +630,43 @@ class Method extends ClassElement implements FunctionInterface
         $string .= $this->getName();
 
         $string .= '(' . \implode(', ', $this->getRealParameterList()) . ')';
+
+        if (!$this->getRealReturnType()->isEmpty()) {
+            $string .= ' : ' . (string)$this->getRealReturnType();
+        }
+
+        return $string;
+    }
+
+    public function getMarkupDescription() : string
+    {
+        $string = '';
+        // It's an error to have visibility or abstract in an interface's stub (e.g. JsonSerializable)
+        if ($this->isPrivate()) {
+            $string .= 'private ';
+        } elseif ($this->isProtected()) {
+            $string .= 'protected ';
+        } else {
+            $string .= 'public ';
+        }
+
+        if ($this->isAbstract()) {
+            $string .= 'abstract ';
+        }
+
+        if ($this->isStatic()) {
+            $string .= 'static ';
+        }
+
+        $string .= 'function ';
+        if ($this->returnsRef()) {
+            $string .= '&';
+        }
+        $string .= $this->getName();
+
+        $string .= '(' . implode(', ', array_map(function (Parameter $parameter) : string {
+            return $parameter->toStubString();
+        }, $this->getRealParameterList())) . ')';
 
         if (!$this->getRealReturnType()->isEmpty()) {
             $string .= ' : ' . (string)$this->getRealReturnType();

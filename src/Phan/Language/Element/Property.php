@@ -158,6 +158,12 @@ class Property extends ClassElement
         return $this->fqsen;
     }
 
+    public function getMarkupDescription() : string
+    {
+        return $this->toStub();
+    }
+
+
     public function toStub()
     {
         $string = '    ' . $this->getVisibilityName() . ' ';
