@@ -721,7 +721,7 @@ class Config
         'language_server_debug_level' => null,
 
         // Use the command line option instead
-        'language_server_use_pcntl_fallback' => false,
+        'language_server_use_pcntl_fallback' => true,
 
         // This should only be set via CLI (--language-server-enable-go-to-definition)
         // Affects "go to definition" and "go to type definition"

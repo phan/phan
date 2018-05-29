@@ -492,25 +492,14 @@ class CodeBase
     public function restoreFromRestorePoint(array $restore_point)
     {
         $clone = $restore_point['clone'];
-        $this->undo_tracker             = $clone->undo_tracker;
-        $this->has_enabled_undo_tracker = $clone->has_enabled_undo_tracker;
 
         // TODO: Restore the inner state of Clazz objects as well
         // (e.g. memoizations, types added in method/analysis phases, plugin changes, etc.
         // NOTE: Type::clearAllMemoizations is called elsewhere already.
-        $this->fqsen_class_map              = $clone->fqsen_class_map;
-        $this->fqsen_class_map_user_defined = $clone->fqsen_class_map_user_defined;
-        $this->fqsen_class_map_internal     = $clone->fqsen_class_map_internal;
-        $this->fqsen_class_map_reflection   = $clone->fqsen_class_map_reflection;
-        $this->fqsen_alias_map              = $clone->fqsen_alias_map;
-        $this->fqsen_global_constant_map    = $clone->fqsen_global_constant_map;
-        $this->fqsen_func_map               = $clone->fqsen_func_map;
-        $this->internal_function_fqsen_set  = $clone->internal_function_fqsen_set;
-        $this->method_set                   = $clone->method_set;
-        $this->class_fqsen_class_map_map    = $clone->class_fqsen_class_map_map;
-        $this->name_method_map              = $clone->name_method_map;
+        foreach ($clone as $key => $value) {
+            $this->{$key} = $value;
+        }
 
-        $this->parsed_namespace_maps        = $clone->parsed_namespace_maps;
         foreach ($restore_point['callbacks'] as $callback) {
             if ($callback) {
                 $callback();

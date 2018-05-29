@@ -2683,17 +2683,15 @@ class Clazz extends AddressableElement
     public function createRestoreCallback()
     {
         // NOTE: Properties, Methods, and closures are restored separately.
-        $are_constants_hydrated = $this->are_constants_hydrated;
-        $is_hydrated = $this->is_hydrated;
+        $original_this = clone($this);
         $original_union_type = $this->getUnionType();
-        $additional_union_types = $this->additional_union_types;
 
-        return function () use ($original_union_type, $is_hydrated, $are_constants_hydrated, $additional_union_types) {
-            $this->memoizeFlushAll();
-            $this->are_constants_hydrated = $are_constants_hydrated;
-            $this->is_hydrated = $is_hydrated;
+        return function () use ($original_union_type, $original_this) {
+            foreach ($original_this as $key => $value) {
+                $this->{$key} = $value;
+            }
             $this->setUnionType($original_union_type);
-            $this->additional_union_types = $additional_union_types;
+            $this->memoizeFlushAll();
         };
     }
 

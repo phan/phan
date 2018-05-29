@@ -24,7 +24,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '0.12.10';
+    const PHAN_VERSION = '0.12.11-dev';
 
     /**
      * @var OutputInterface
@@ -112,6 +112,7 @@ class CLI
                 'language-server-verbose',
                 'language-server-allow-missing-pcntl',
                 'language-server-force-missing-pcntl',
+                'language-server-require-pcntl',
                 'language-server-enable',
                 'language-server-enable-go-to-definition',
                 'markdown-issue-messages',
@@ -190,7 +191,8 @@ class CLI
 
         if (isset($opts['language-server-force-missing-pcntl'])) {
             Config::setValue('language_server_use_pcntl_fallback', true);
-        } elseif (isset($opts['language-server-allow-missing-pcntl'])) {
+        } elseif (!isset($opts['language-server-require-pcntl'])) {
+            // --language-server-allow-missing-pcntl is now the default
             if (!extension_loaded('pcntl')) {
                 Config::setValue('language_server_use_pcntl_fallback', true);
             }
@@ -350,6 +352,7 @@ class CLI
                     break;  // handled earlier.
                 case 'language-server-allow-missing-pcntl':
                 case 'language-server-force-missing-pcntl':
+                case 'language-server-require-pcntl':
                     break;  // handled earlier
                 case 'disable-plugins':
                     // Slightly faster, e.g. for daemon mode with lowest latency (along with --quick).
@@ -851,11 +854,15 @@ Extended help:
   This is useful when developing or debugging language server clients.
 
  --language-server-allow-missing-pcntl
+  Noop (This is the default behavior).
   Allow the fallback that doesn't use pcntl (New and experimental) to be used if the pcntl extension is not installed.
   This is useful for running the language server on Windows.
 
  --language-server-force-missing-pcntl
   Force Phan to use the fallback for when pcntl is absent (New and experimental). Useful for debugging that fallback.
+
+ --language-server-require-pcntl
+  Don't start the language server if PCNTL isn't installed (don't use the fallback). Useful for debugging.
 
  --require-config-exists
   Exit immediately with an error code if .phan/config.php does not exist.
