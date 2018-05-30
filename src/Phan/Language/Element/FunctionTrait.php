@@ -1016,24 +1016,21 @@ trait FunctionTrait
      */
     public function createRestoreCallback()
     {
-        // NOTE: Properties, Methods, and closures are restored separately.
-        $parameter_list_hash = $this->parameter_list_hash;
-        $parameter_list = [];
-        foreach ($this->parameter_list as $parameter) {
-            $parameter_list[] = clone($parameter);
+        $clone_this = clone($this);
+        foreach ($clone_this->parameter_list as $i => $parameter) {
+            $clone_this->parameter_list[$i] = clone($parameter);
+        }
+        foreach ($clone_this->real_parameter_list as $i => $parameter) {
+            $clone_this->real_parameter_list[$i] = clone($parameter);
         }
         $union_type = $this->getUnionType();
-        $return_type_callback = $this->return_type_callback;
-        $function_call_analyzer_callback = $this->function_call_analyzer_callback;
 
-        return function () use ($parameter_list, $parameter_list_hash, $union_type, $return_type_callback, $function_call_analyzer_callback) {
+        return function () use ($clone_this, $union_type) {
             $this->memoizeFlushAll();
-            $this->parameter_list_hash = $parameter_list_hash;
-            $this->parameter_list = $parameter_list;
+            foreach ($clone_this as $key => $value) {
+                $this->{$key} = $value;
+            }
             $this->setUnionType($union_type);
-            $this->checked_parameter_list_hashes = [];
-            $this->return_type_callback = $return_type_callback;
-            $this->function_call_analyzer_callback = $function_call_analyzer_callback;
         };
     }
 

@@ -1,5 +1,13 @@
 Phan NEWS
 
+?? ??? 2018, Phan 0.12.11 (dev)
+-------------------------
+
+Language Server/Daemon mode:
++ Make the language server work more reliably when `pcntl` is unavailable. (E.g. on Windows) (#1739)
++ By default, allow the language server and daemon mode to start with the fallback even if `pcntl` is unavailable.
+  (`--language-server-require-pcntl` can be used to make the language server refuse to start without `pcntl`)
+
 27 May 2018, Phan 0.12.10
 -------------------------
 
