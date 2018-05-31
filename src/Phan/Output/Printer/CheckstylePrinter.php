@@ -25,7 +25,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
         $this->files[$instance->getFile()][] = [
             'line' => $instance->getLine(),
             'source' => $instance->getIssue()->getType(),
-            'message' => $instance->getMessage(),
+            'message' => $instance->getMessageAndMaybeSuggestion(),
             'severity' => $instance->getIssue()->getSeverityName(),
         ];
     }

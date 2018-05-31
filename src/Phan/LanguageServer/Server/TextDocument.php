@@ -6,15 +6,17 @@ use Phan\LanguageServer\FileMapping;
 use Phan\LanguageServer\LanguageClient;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Logger;
+use Phan\LanguageServer\Protocol\Position;
 use Phan\LanguageServer\Protocol\TextDocumentContentChangeEvent;
 use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
 use Phan\LanguageServer\Protocol\TextDocumentItem;
 use Phan\LanguageServer\Protocol\VersionedTextDocumentIdentifier;
 use Phan\LanguageServer\Utils;
+use Sabre\Event\Promise;
 
 /**
  * Provides method handlers for all textDocument/* methods
- * Source: https://github.com/felixfbecker/php-language-server/blob/master/src/Server/TextDocument.php
+ * Source: Based on https://github.com/felixfbecker/php-language-server/blob/master/src/Server/TextDocument.php
  */
 class TextDocument
 {
@@ -86,7 +88,7 @@ class TextDocument
     public function didOpen(TextDocumentItem $textDocument)
     {
         $this->file_mapping->addOverrideURI($textDocument->uri, $textDocument->text);
-        Logger::logInfo("Called didOpen, uri={$textDocument->uri}");
+        Logger::logInfo("Called textDocument/didOpen, uri={$textDocument->uri}");
         $this->server->analyzeURIAsync($textDocument->uri);
 
         //$document = $this->documentLoader->open($textDocument->uri, $textDocument->text);
@@ -104,13 +106,12 @@ class TextDocument
      * @param VersionedTextDocumentIdentifier $textDocument
      * @param string|null $text (NOTE: can't use ?T here)
      * @return void
-     * @suppress PhanTypeMismatchArgument
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
     public function didSave(TextDocumentIdentifier $textDocument, string $text = null)
     {
         $this->file_mapping->addOverrideURI($textDocument->uri, $text);
-        Logger::logInfo("Called didSave, uri={$textDocument->uri} len(text)=" . strlen($text ?? ''));
+        Logger::logInfo("Called textDocument/didSave, uri={$textDocument->uri} len(text)=" . strlen($text ?? ''));
         $this->server->analyzeURIAsync($textDocument->uri);
     }
 
@@ -127,7 +128,7 @@ class TextDocument
         foreach ($contentChanges as $change) {
             $this->file_mapping->addOverrideURI($textDocument->uri, $change->text);
         }
-        Logger::logInfo("Called didChange, uri={$textDocument->uri} version={$textDocument->version}");
+        Logger::logInfo("Called textDocument/didChange, uri={$textDocument->uri} version={$textDocument->version}");
         $this->server->analyzeURIAsync($textDocument->uri);
 
         // TODO:   Maybe allow reloading .phan/config, at least the files and directories to parse/analyze
@@ -146,6 +147,49 @@ class TextDocument
     {
         $this->file_mapping->removeOverrideURI($textDocument->uri);
         $this->client->textDocument->publishDiagnostics(Utils::pathToUri(Utils::uriToPath($textDocument->uri)), []);
-        Logger::logInfo("Called didClose, uri={$textDocument->uri}");
+        Logger::logInfo("Called textDocument/didClose, uri={$textDocument->uri}");
+    }
+
+    /**
+     * The goto definition request is sent from the client to the server to resolve the definition location of a symbol
+     * at a given text document position.
+     *
+     * @param TextDocumentIdentifier $textDocument The text document
+     * @param Position $position The position inside the text document
+     * @return Promise <Location|Location[]|null>
+     * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
+     */
+    public function definition(TextDocumentIdentifier $textDocument, Position $position) : Promise
+    {
+        Logger::logInfo("Called textDocument/definition, uri={$textDocument->uri} position={$position->line}:{$position->character}");
+        $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
+        return $this->server->awaitDefinition($uri, $position, false);
+    }
+
+    /**
+     * The goto definition request is sent from the client to the server to resolve the definition location of a symbol
+     * at a given text document position.
+     *
+     * @param TextDocumentIdentifier $textDocument The text document
+     * @param Position $position The position inside the text document
+     * @return Promise <Location|Location[]|null>
+     * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
+     */
+    public function typeDefinition(TextDocumentIdentifier $textDocument, Position $position) : Promise
+    {
+        Logger::logInfo("Called textDocument/typeDefinition, uri={$textDocument->uri} position={$position->line}:{$position->character}");
+        $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
+        return $this->server->awaitDefinition($uri, $position, true);
+    }
+
+    /**
+     * Placeholder to avoid a crash on malformed clients
+     * @param TextDocumentIdentifier $textDocument @phan-unused-param
+     * @param Position $position @phan-unused-param
+     * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
+     */
+    public function hover(TextDocumentIdentifier $textDocument, Position $position)
+    {
+        return null;
     }
 }

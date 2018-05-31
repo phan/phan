@@ -1,0 +1,2 @@
+%s:6 PhanTypeMismatchArgumentInternal Argument 1 (string) is null but \strlen() takes string
+%s:11 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{}|null but \strlen() takes string

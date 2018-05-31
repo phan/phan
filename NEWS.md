@@ -1,6 +1,319 @@
 Phan NEWS
 
-?? ??? 2018, Phan 0.12.3 (dev)
+?? ??? 2018, Phan 0.12.12(dev)
+-------------------------
+
+30 May 2018, Phan 0.12.11
+-------------------------
+
+Language Server/Daemon mode:
++ Make the language server work more reliably when `pcntl` is unavailable. (E.g. on Windows) (#1739)
++ By default, allow the language server and daemon mode to start with the fallback even if `pcntl` is unavailable.
+  (`--language-server-require-pcntl` can be used to make the language server refuse to start without `pcntl`)
+
+Bug fixes:
++ Don't crash if `ext-tokenizer` isn't installed (#1747)
++ Fix invalid output of `tool/make_stubs` for apcu (#1745)
+
+27 May 2018, Phan 0.12.10
+-------------------------
+
+New features(CLI, Configs)
++ Add CLI flag `--unused-variable-detection`.
++ Add config setting `unused_variable_detection` (disabled by default).
+  Unused variable detection can be enabled by `--unused-variable-detection`, `--dead-code-detection`, or the config.
+
+New features(Analysis):
++ Add built-in support for unused variable detection. (#345)
+  Currently, this is limited to analyzing inside of functions, methods, and closures.
+  This has some minor false positives with loops and conditional branches.
+
+  Warnings about unused parameters can be suppressed by adding `@phan-unused-param` on the same line as `@param`,
+  e.g. `@param MyClass $x @phan-unused-param`.
+  (as well as via standard issue suppression methods.)
+
+  The built in unused variable detection support will currently not warn about any of the following issue types, to reduce false positives.
+
+  - Variables beginning with `$unused` or `$raii` (case insensitive)
+  - `$_` (the exact variable name)
+  - Superglobals, used globals (`global $myGlobal;`), and static variables within function scopes.
+  - Any references, globals, or static variables in a function scope.
+
+  New Issue types:
+  - `PhanUnusedVariable`,
+  - `PhanUnusedVariableValueOfForeachWithKey`, (has a high false positive rate)
+  - `PhanUnusedPublicMethodParameter`, `PhanUnusedPublicFinalMethodParameter`,
+  - `PhanUnusedProtectedMethodParameter`, `PhanUnusedProtectedFinalMethodParameter`,
+  - `PhanUnusedPrivateMethodParameter`, `PhanUnusedProtectedFinalMethodParameter`,
+  - `PhanUnusedClosureUseVariable`, `PhanUnusedClosureParameter`,
+  - `PhanUnusedGlobalFunctionParameter`
+
+  This is similar to the third party plugin `PhanUnusedVariable`.
+  The built-in support has the following changes:
+
+  - Emits fewer/different false positives (e.g. when analyzing loops), but also detects fewer potential issues.
+  - Reimplemented using visitors extensively (Similar to the code for `BlockAnalysisVisitor`)
+  - Uses a different data structure from `PhanUnusedVariable`.
+    This represent all definitions of a variable, instead of just the most recent one.
+    This approximately tracks the full graph of definitions and uses of variables within a function body.
+    (This allows warning about all unused definitions, or about definitions that are hidden by subsequent definitions)
+  - Integration: This is planned to be integrated with other features of Phan, e.g. "Go to Definition" for variables. (Planned for #1211 and #1705)
+
+Bug fixes:
++ Minor improvements to `UnusedSuppressionPlugin`
+
+Misc:
++ Support  `composer.json`'s `vendor-dir` for `phan --init`
+
+22 May 2018, Phan 0.12.9
+------------------------
+
+New features(CLI, Configs):
++ Add CLI flag `--language-server-enable-go-to-definition`. See the section "Language Server/Daemon mode".
++ Add Config setting `disable_line_based_suppression` to disable line-based suppression from internal comments. See the section "New Features"
++ Add Config setting `disable_file_based_suppression` to disable file-based issue suppressions.
+
+New features(Analysis):
++ Make `@suppress`, `@phan-suppress`, `@phan-file-suppress` accept a comma separated issue list of issue types to suppress. (#1715)
+  Spaces aren't allowed before the commas.
++ Implement `@phan-suppress-current-line` and `@phan-suppress-next-line` to suppress issues on the current or next line.
+
+  These can occur within any comment or doc comment (i.e. the comment types for `/*`, `//`, and `/**`)
+
+  These suppressions accept a comma separated list of issue type names.
+  Commas must be immediately after the previous issue type.
+
+  Note: Phan currently does not support inline comments anywhere else.
+  Phan also does not associate these inline comments with any information about the current scope.
+  This suppression is based on tokenizing the PHP file and determining the line based on that comment line.
+
+  Examples:
+
+  ```php
+  // @phan-suppress-next-line PhanUndeclaredVariable, PhanUndeclaredFunction optional reason goes here
+  $result = call_undefined_function() + $undefined_variable;
+
+  $closure();  /* @phan-suppress-current-line PhanParamTooFew optional reason for suppression */
+
+  /**
+   * This can also be used within doc comments:
+
+   * @phan-suppress-next-line PhanInvalidCommentForDeclarationType optional reason for suppression
+   * @property int $x
+   */
+  function my_example() {
+  }
+  ```
+
+  `PhanUnusedSuppressionPlugin` is capable of detecting if line-based suppressions are unused.
++ Allow using `@phan-file-suppress` as a regular comment anywhere within a file (`//`, `/*`, or `/**` comments).
+  Previously, `@phan-file-suppress` could only be used inside the doc comment of an element.
+
+  `@phan-file-suppress` in no-op string literals will be deprecated in a future Phan release.
++ Emit class name suggestions for undeclared types in param, property, return type, and thrown type declarations. (#1689)
+
+  Affects `PhanUndeclaredTypeParameter`, `PhanUndeclaredTypeProperty`, `PhanUndeclaredTypeReturnType`,
+  `PhanUndeclaredTypeThrowsType`, and `PhanInvalidThrowsIs*`
++ Add `pretend_newer_core_methods_exist` config setting.
+  If this is set to true (the default),
+  and `target_php_version` is newer than the version used to run Phan,
+  Phan will act as though functions added in newer PHP versions exist.
+
+  Note: Currently only affects `Closure::fromCallable()`, which was added in PHP 7.1.
+  This will affect more functions and methods in the future.
+
+Language Server/Daemon mode:
++ Support "Go to definition" for properties, classes, global/class constants, and methods/global functions (Issue #1483)
+  (Must pass the CLI option `--language-server-enable-go-to-definition` when starting the server to enable this)
++ Support "Go to type definition" for variables, properties, classes, and methods/global functions (Issue #1702)
+  (Must pass the CLI option `--language-server-enable-go-to-definition` when starting the server to enable this)
+  Note that constants can't have object types in PHP, so there's no implementation of "Go To Type Definition" for those.
+
+Plugins:
++ Add a new plugin capability `SuppressionCapability`
+  that allows users to suppress issues in additional ways. (#1070)
++ Add a new plugin `SleepCheckerPlugin`. (PR #1696)
+  Warn about returning non-arrays in sleep,
+  as well as about returning array values with invalid property names.
+
+  Issue types: `SleepCheckerInvalidReturnStatement`, `SleepCheckerInvalidPropNameType`, `SleepCheckerInvalidPropName`,
+  `SleepCheckerMagicPropName`, and `SleepCheckerDynamicPropName`
++ Make `PhanPregRegexCheckerPlugin` warn about the `/e` modifier on regexes (#1692)
+
+Misc:
++ Add simple integration test for the language server mode.
+
+Bug fixes:
++ Be more consistent about emitting `PhanUndeclaredType*` for invalid types within array shapes.
++ Avoid a crash when the left hand side of an assignment is invalid. (#1693)
++ Prevent an uncaught `TypeError` when integer variable names (e.g. `${42}`) are used in branches (Issue #1699)
+
+12 May 2018, Phan 0.12.8
+------------------------
+
+Bug fixes
++ Fix a crash that occurs when the `iterable<[KeyType,]ValueType>` annotation is used in phpdoc. (#1685)
+
+08 May 2018, Phan 0.12.7
+------------------------
+
+New features:
++ For `PhanUndeclaredMethod` and `PhanUndeclaredStaticMethod` issues, suggest visible methods (in the same class) with similar names.
++ For `PhanUndeclaredConstant` issues (for class constants), suggest visible constants (in the same class) with similar names.
++ For `PhanUndeclaredProperty` and `PhanUndeclaredStaticProperty` issues, suggest visible properties (in the same class) with similar names.
++ When suggesting alternatives to undeclared classes,
+  also include suggestions for similar class names within the same namespace as the undeclared class.
+  (Comparing Levenshtein distance)
+
+Language Server/Daemon mode
++ Make the latest version of `phan_client` include any suggestion alongside the issue message (for daemon mode).
++ Include text from suggestions in Language Server Protocol output
+
+Bug fixes
++ Fix a bug generating variable suggestions when there were multiple similar variable names
+  (The suggestions that would show up might not be the best set of suggestions)
++ Fix a crash in the tolerant-php-parser polyfill seen when typing out an echo statement
++ Fix incorrect suggestions to use properties (of the same name) instead of undeclared variables in class scopes.
+  (Refer to static properties as `self::$name` and don't suggest inaccessible inherited private properties)
++ Don't suggest obviously invalid alternatives to undeclared classes.
+  (E.g. don't suggest traits or interfaces for `new MisspelledClass`, don't suggest interfaces for static method invocations)
+
+06 May 2018, Phan 0.12.6
+------------------------
+
+New features(Analysis)
++ Warn about properties that are read but not written to when dead code detection is enabled
+  (Similar to existing warnings about properties that are written to but never read)
+  New issue types: `PhanReadOnlyPrivateProperty`, `PhanReadOnlyProtectedProperty`, `PhanReadOnlyPublicProperty`
++ When warning about undeclared classes, mention any classes that have the same name (but a different namespace) as suggestions.
+
+  E.g. `test.php:26 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \MyNS\InvalidArgumentException (Did you mean class \InvalidArgumentException)`
++ When warning about undeclared variables (outside of the global scope), mention any variables that have similar names (based on case-insensitive Levenshtein distance) as suggestions.
+
+  In method scopes: If `$myName` is undeclared, but `$this->myName` is declared (or inherited), `$this->myName` will be one of the suggestions.
++ Warn about string and numeric literals that are no-ops. (E.g. `<?php 'notEchoedStr'; "notEchoed $x"; ?>`)
+  New issue types: `PhanNoopStringLiteral`, `PhanNoopEncapsulatedStringLiteral`, `PhanNoopNumericLiteral`.
+
+  Note: This will not warn about Phan's [inline type checks via string literals](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code#inline-type-checks-via-string-literals)
++ When returning an array literal (with known keys) directly,
+  make Phan infer the array literal's array shape type instead of a combination of generic array types.
++ Make type casting rules stricter when checking if an array shape can cast to a given generic array type.
+  (E.g. `array{a:string,b:int}` can no longer cast to `array<string,int>`, but can cast to `array<string,int>|array<string,string>`).
+
+  E.g. Phan will now warn about `/** @return array<string,int> */ function example() { $result = ['a' => 'x', 'b' => 2]; return $result; }`
++ Warn about invalid expressions/variables encapsulated within double-quoted strings or within heredoc strings.
+  New issue type: `TypeSuspiciousStringExpression` (May also emit `TypeConversionFromArray`)
+
++ Add support for template params in iterable types in phpdoc. (#824)
+  Phan supports `iterable<TValue>` and `iterable<TKey, TValue>` syntaxes. (Where TKey and TValue are union types)
+  Phan will check that generic arrays and array shapes can cast to iterable template types.
++ Add support for template syntax of Generator types in phpdoc. (#824)
+  Supported syntaxes are:
+
+  1. `\Generator<TValue>`
+  2. `\Generator<TKey,TValue>`
+  3. `\Generator<TKey,TValue,TSend>` (TSend is the expected type of `$x` in `$x = yield;`)
+  4. `\Generator<TKey,TValue,TSend,TReturn>` (TReturn is the expected type of `expr` in `return expr`)
+
+  New issue types: `PhanTypeMismatchGeneratorYieldValue`, `PhanTypeMismatchGeneratorYieldKey` (For comparing yield statements against the declared `TValue` and `TKey`)
+
+  Additionally, Phan will use `@return Generator|TValue[]` to analyze the yield statements
+  within a function/method body the same way as it would analyze `@return Generator<TValue>`.
+  (Analysis outside the method would not change)
+
++ Add support for template params in Iterator and Traversable types in phpdoc. (#824)
+  NOTE: Internal subtypes of those classes (e.g. ArrayObject) are not supported yet.
+  Supported syntaxes are:
+
+  1. `Traversable<TValue>`/`Iterator<TValue>`
+  2. `Traversable<TKey,TValue>`/`Iterator<TKey,TValue>`
+
++ Analyze `yield from` statements.
+
+  New issue types: `PhanTypeInvalidYieldFrom` (Emitted when the expression passed to `yield from` is not a Traversable or an array)
+
+  Warnings about the inferred keys/values of `yield from` being invalid reuse `PhanTypeMismatchGeneratorYieldValue` and `PhanTypeMismatchGeneratorYieldKey`
++ Make the union types within the phpdoc template syntax of `iterator`/`Traversable`/`Iterator`/`Generator` affect analysis of the keys/values of `foreach` statements
++ Improve phan's analysis of array functions modifying arguments by reference, reducing false positives. (#1662)
+  Affects `array_shift`/`array_unshift`/`array_push`/`array_pop`/`array_splice`.
+
+Misc
++ Infer that a falsey array is the empty array shape.
+
+Bug Fixes
++ Consistently warn about unreferenced declared properties (i.e. properties that are not magic or dynamically added).
+  Previously, Phan would just never warn if the class had a `__get()` method (as a heuristic).
+
+03 Apr 2018, Phan 0.12.5
+------------------------
+
+Plugins
++ Add an option `'php_native_syntax_check_max_processes'` to `'plugin_config'` for `InvokePHPNativeSyntaxCheckPlugin`.
+
+Bug Fixes
++ Remove extra whitespace from messages of comment text in `UnextractableAnnotationElementName` (e.g. `"\r"`)
++ Fix bugs in `InvokePHPNativeSyntaxCheckPlugin`
+
+31 Mar 2018, Phan 0.12.4
+------------------------
+
+New Features(CLI, Configs)
++ Add a `strict_param_checking` config setting. (And a `--strict-param-checking` CLI flag)
+  If this is set to true, then Phan will warn if at least one of the types
+  in an argument's union type can't cast to the expected parameter type.
+  New issue types: `PhanPartialTypeMismatchArgument`, `PhanPossiblyNullTypeArgument`, and `PhanPossiblyFalseTypeArgument`
+  (along with equivalents for internal functions and methods)
+
+  Setting this to true will likely introduce large numbers of warnings.
+  Those issue types would need to be suppressed entirely,
+  or with `@phan-file-suppress`, or with `@suppress`.
++ Add a `strict_property_checking` config setting. (And a `--strict-property-checking` CLI flag)
+  If this is set to true, then Phan will warn if at least one of the types
+  in an assignment's union type can't cast to the expected property type.
+  New issue types: `PhanPartialTypeMismatchProperty`, `PhanPossiblyNullTypeProperty`, and `PhanPossiblyFalseTypeProperty`
+
+  NOTE: This option does not make Phan check if all possible expressions have a given property, but may do that in the future.
++ Add a `strict_return_checking` config setting. (And a `--strict-return-checking` CLI flag)
+  If this is set to true, then Phan will warn if at least one of the types
+  in a return statement's union type can't cast to the expected return type type.
+  New issue types: `PhanPartialTypeMismatchReturn`, `PhanPossiblyNullTypeReturn`, and `PhanPossiblyFalseTypeReturn`
+
+  Setting this to true will likely introduce large numbers of warnings.
+  Those issue types would need to be suppressed entirely,
+  or with `@phan-file-suppress`, or with `@suppress`.
++ Add a `--strict-type-checking` CLI flag, to enable all of the new strict property/param/return type checks.
++ Add a `guess_unknown_parameter_type_using_default` config,
+  which can be enabled to make Phan more aggresively infer the types of undocument optional parameters
+  from the parameter's default value.
+  E.g. `function($x = 'val')` would make Phan infer that the function expects $x to have a type of `string`, not `string|mixed`.
+
+Plugins
++ Add a new plugin `InvokePHPNativeSyntaxCheckPlugin` on all analyzed files (but not files excluded from analysis) (#629)
++ Add a new plugin capability `AfterAnalyzeFileCapability` that runs after a given file is analyzed.
+  This does not get invoked for files that are excluded from analysis, or for empty files.
+
+New Features(Analysis)
++ Detect unreachable catch statements (#112)
+  (Check if an earlier catch statement caught an ancestor of a given catch statement)
++ Support phpdoc3's `scalar` type in phpdoc. (#1589)
+  That type is equivalent to `bool|float|int|string`.
++ Improve analysis of return statements with ternary conditionals (e.g. `return $a ?: $b`).
++ Start analyzing negated `instanceof` conditionals such as `assert(!($x instanceof MyClass))`.
++ Infer that the reference parameter's resulting type for `preg_match` is a `string[]`, not `array` (when possible)
+  (And that the type is `array{0:string,1:int}[]` when `PREG_OFFSET_CAPTURE` is passed as a flag)
++ Warn in more places when Phan can't extract union types or element identifiers from a doc comment.
+  New issue types: `UnextractableAnnotationElementName`, `UnextractableAnnotationSuffix`.
+  (E.g. warn about `@param int description` (ideally has param name) and `@return int?` (Phan doesn't parse the `?`, should be `@return ?int`))
+
+Bug Fixes
++ Don't emit false positive `PhanTypeArraySuspiciousNullable`, etc. for complex isset/empty/unset expressions. (#642)
++ Analyze conditionals wrapped by `@(cond)` (e.g. `if (@array_key_exists('key', $array)) {...}`) (#1591)
++ Appending an unknown type to an array shape should update Phan's inferred keys(int) and values(mixed) of an array. (#1560)
++ Make line numbers for arguments more accurate
++ Infer that the result of `|` or `&` on two strings is a string.
++ Fix a crash caused by empty FQSENs for classlike names or function names (#1616)
+
+24 Mar 2018, Phan 0.12.3
 ------------------------
 
 New Features(CLI, Configs)
@@ -13,6 +326,27 @@ New Features(Analysis)
 + Allow phpdoc `@param` array shapes to contain optional fields. (E.g. `array{requiredKey:int,optionalKey?:string}`) (#1382)
   An array shape is now allowed to cast to another array shape, as long as the required fields are compatible with the target type,
   and any optional fields from the target type are absent in the source type or compatible.
++ In issue messages, represent closures by their signatures instead of as `\closure_{hexdigits}`
++ Emit `PhanTypeArrayUnsetSuspicious` when trying to unset the offset of something that isn't an array or array-like.
++ Add limited support for analyzing `unset` on variables and the first dimension of arrays.
+  Unsetting variables does not yet work in conditional branches.
++ Don't emit `PhanTypeInvalidDimOffset` in `isset`/`empty`/`unset`
++ Improve Phan's analysis of loose equality (#1101)
++ Add new issue types `PhanWriteOnlyPublicProperty`, `PhanWriteOnlyProtectedProperty`, and `PhanWriteOnlyPrivateProperty`,
+  which will be emitted on properties that are written to but never read from.
+  (Requires that dead code detection be enabled)
++ Improve Phan's analysis of switch statements and fix bugs. (#1561)
++ Add `PhanTypeSuspiciousEcho` to warn about suspicious types being passed to echo/print statements.
+  This now warns about booleans, arrays, resources, null, non-stringable classes, combinations of those types, etc.
+  (`var_export` or JSON encoding usually makes more sense for a boolean/null)
++ Make Phan infer that top level array keys for expressions such as `if (isset($x['keyName']))` exist and are non-null. (#1514)
++ Make Phan infer that top level array keys for expressions such as `if (array_key_exists('keyName', $x))` exist. (#1514)
++ Make Phan aware of types after negated of `isset`/`array_key_exists` checks for array shapes (E.g. `if (!array_key_exists('keyName', $x)) { var_export($x['keyName']); }`)
+  Note: This will likely fail to warn if the variable is already a mix of generic arrays and array shapes.
++ Make Phan check that types in `@throws` annotations are valid; don't warn about classes in `@throws` being unreferenced. (#1555)
+  New issue types: `PhanUndeclaredTypeThrowsType`, `PhanTypeInvalidThrowsNonObject`, `PhanTypeInvalidThrowsNonThrowable`, `PhanTypeInvalidThrowsIsTrait`, `PhanTypeInvalidThrowsIsInterface`
+
+New types:
 + Add `Closure` and `callable` with annotated param types and return to Phan's type system(#1578, #1581).
   This is not a part of the phpdoc2 standard or any other standard.
   These can be used in any phpdoc tags that Phan is aware of,
@@ -43,25 +377,11 @@ New Features(Analysis)
   - Placeholder variable names can be part of these types,
     similarly to `@method` (`Closure($unknown,int $count=0):T`
     is equivalent to `Closure(mixed,int):T`
-+ In issue messages, represent closures by their signatures instead of as `\closure_{hexdigits}`
-+ Emit `PhanTypeArrayUnsetSuspicious` when trying to unset the offset of something that isn't an array or array-like.
-+ Add limited support for analyzing `unset` on variables and the first dimension of arrays.
-  Unsetting variables does not yet work in branches.
-+ Don't emit `PhanTypeInvalidDimOffset` in `isset`/`empty`/`unset`
-+ Improve Phan's analysis of loose equality (#1101)
-+ Add new issue types `PhanWriteOnlyPublicProperty`, `PhanWriteOnlyProtectedProperty`, and `PhanWriteOnlyPrivateProperty`,
-  which will be emitted on properties that are written to but never read from.
-  (Requires that dead code detection be enabled)
-+ Improve Phan's analysis of switch statements and fix bugs. (#1561)
-+ Add `PhanTypeSuspiciousEcho` to warn about suspicious types being passed to echo/print statements.
-  This now warns about booleans, arrays, resources, null, non-stringable classes, combinations of those types, etc.
-  (`var_export` or JSON encoding usually makes more sense for a boolean/null)
-+ Make Phan check that types in `@throws` annotations are valid; don't warn about classes in `@throws` being unreferenced. (#1555)
-  New issue types: `PhanUndeclaredTypeThrowsType`, `PhanTypeInvalidThrowsNonObject`, `PhanTypeInvalidThrowsNonThrowable`, `PhanTypeInvalidThrowsIsTrait`, `PhanTypeInvalidThrowsIsInterface`
 
 Maintenance
 + Add `--disable-usage-on-error` option to `phan_client` (#1540)
 + Print directory which phan daemon is going to await analysis requests for (#1544)
++ Upgrade the dependency `Microsoft/tolerant-php-parser` to 0.0.10 (includes minor bug fixes)
 
 Bug Fixes
 + Allow phpdoc `@param` array shapes to contain union types (#1382)

@@ -4,6 +4,7 @@ namespace Phan\Analysis;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Issue;
@@ -13,11 +14,16 @@ use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Variable;
 use Phan\Language\Type;
+use Phan\Language\Type\FalseType;
+use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\PluginV2\StopParamAnalysisException;
 use ast\Node;
 
+/**
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ */
 class ArgumentType
 {
 
@@ -207,7 +213,7 @@ class ArgumentType
 
     /**
      * Figure out if any of the arguments are a call to unpack()
-     * @param array<int,Node|string|int|false> $children
+     * @param array $children
      */
     private static function isUnpack(array $children) : bool
     {
@@ -225,7 +231,7 @@ class ArgumentType
      * @param FunctionInterface $method
      * The function/method we're analyzing arguments for
      *
-     * @param array<int,Node|string|int|false> $arg_nodes $node
+     * @param array<int,Node|string|int|float> $arg_nodes $node
      * The node holding the arguments of the call we're looking at
      *
      * @param Context $context
@@ -319,7 +325,7 @@ class ArgumentType
      * @param FunctionInterface $method
      * The method we're analyzing arguments for
      *
-     * @param array<int,Node|string|int> $arg_nodes $node
+     * @param array<int,Node|string|int|float> $arg_nodes $node
      * The node holding the arguments of the call we're looking at
      *
      * @param Context $context
@@ -391,6 +397,8 @@ class ArgumentType
         }
 
         foreach ($node->children as $i => $argument) {
+            \assert(\is_int($i));
+
             // Get the parameter associated with this argument
             $parameter = $method->getParameterForCaller($i);
 
@@ -453,7 +461,7 @@ class ArgumentType
                 $argument,
                 true
             );
-            self::analyzeParameter($code_base, $context, $method, $argument_type, $node->lineno ?? 0, $i);
+            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $node->lineno ?? 0, $i);
         }
     }
 
@@ -492,6 +500,9 @@ class ArgumentType
             if ($argument_type_expanded->canCastToUnionType(
                 $alternate_parameter->getNonVariadicUnionType()
             )) {
+                if (Config::get_strict_param_checking() && $argument_type->typeCount() > 1) {
+                    self::analyzeParameterStrict($code_base, $context, $method, $argument_type, $alternate_parameter, $lineno, $i);
+                }
                 return;
             }
         }
@@ -553,6 +564,94 @@ class ArgumentType
         );
     }
 
+    private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, Variable $alternate_parameter, int $lineno, int $i)
+    {
+        $type_set = $argument_type->getTypeSet();
+        \assert(\count($type_set) >= 2);
+
+        $parameter_type = $alternate_parameter->getNonVariadicUnionType();
+
+        $mismatch_type_set = UnionType::empty();
+        $mismatch_expanded_types = null;
+
+        // For the strict
+        foreach ($type_set as $type) {
+            // Expand it to include all parent types up the chain
+            $individual_type_expanded = $type->asExpandedTypes($code_base);
+
+            // See if the argument can be cast to the
+            // parameter
+            if (!$individual_type_expanded->canCastToUnionType(
+                $parameter_type
+            )) {
+                if ($method->isPHPInternal()) {
+                    // If we are not in strict mode and we accept a string parameter
+                    // and the argument we are passing has a __toString method then it is ok
+                    if (!$context->getIsStrictTypes() && $parameter_type->hasType(StringType::instance(false))) {
+                        if ($individual_type_expanded->hasClassWithToStringMethod($code_base, $context)) {
+                            continue;  // don't warn about $type
+                        }
+                    }
+                }
+                $mismatch_type_set = $mismatch_type_set->withType($type);
+                if ($mismatch_expanded_types === null) {
+                    // Warn about the first type
+                    $mismatch_expanded_types = $individual_type_expanded;
+                }
+            }
+        }
+
+
+        if ($mismatch_expanded_types === null) {
+            // No mismatches
+            return;
+        }
+
+        if ($method->isPHPInternal()) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                self::getStrictIssueType($mismatch_type_set, true),
+                $lineno,
+                ($i+1),
+                $alternate_parameter->getName(),
+                $argument_type,
+                $method->getRepresentationForIssue(),
+                (string)$parameter_type,
+                $mismatch_expanded_types
+            );
+            return;
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            self::getStrictIssueType($mismatch_type_set, false),
+            $lineno,
+            ($i+1),
+            $alternate_parameter->getName(),
+            $argument_type,
+            $method->getRepresentationForIssue(),
+            (string)$parameter_type,
+            $mismatch_expanded_types,
+            $method->getFileRef()->getFile(),
+            $method->getFileRef()->getLineNumberStart()
+        );
+    }
+
+    private static function getStrictIssueType(UnionType $union_type, bool $is_internal) : string
+    {
+        if ($union_type->typeCount() === 1) {
+            $type = $union_type->getTypeSet()[0];
+            if ($type instanceof NullType) {
+                return $is_internal ? Issue::PossiblyNullTypeArgumentInternal : Issue::PossiblyNullTypeArgument;
+            }
+            if ($type instanceof FalseType) {
+                return $is_internal ? Issue::PossiblyFalseTypeArgumentInternal : Issue::PossiblyFalseTypeArgument;
+            }
+        }
+        return $is_internal ? Issue::PartialTypeMismatchArgumentInternal : Issue::PartialTypeMismatchArgument;
+    }
+
     /**
      * Used to check if a place expecting a reference is actually getting a reference from a node.
      * Obvious types which are always references (properties, variables) must be checked for before calling this.
@@ -578,11 +677,15 @@ class ArgumentType
         } elseif ($node_kind === \ast\AST_STATIC_CALL || $node_kind === \ast\AST_METHOD_CALL) {
             $method_name = $node->children['method'] ?? null;
             if (is_string($method_name)) {
+                $class_node = $node->children['class'] ?? $node->children['expr'];
+                if (!($class_node instanceof Node)) {
+                    return false;
+                }
                 try {
                     foreach (UnionTypeVisitor::classListFromNodeAndContext(
                         $code_base,
                         $context,
-                        $node->children['class'] ?? $node->children['expr']
+                        $class_node
                     ) as $class) {
                         if (!$class->hasMethodWithName(
                             $code_base,

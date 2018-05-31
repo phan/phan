@@ -1,2 +1,1 @@
-%s:9 PhanUndeclaredStaticMethod Static call to undeclared method \B::func3
-
+%s:9 PhanUndeclaredStaticMethod Static call to undeclared method \B::func3 (Did you mean expr::func1() or expr::func2())

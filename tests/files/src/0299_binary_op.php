@@ -5,7 +5,7 @@ function expect_int_298(int $x) {}
 
 function test298() {
     expect_string_298("0" + "1");  // warn
-    expect_string_298("0" | "1");  // warn
+    expect_string_298("0" | "1");  // Don't warn - this binary ors the bytes of the two strings into a new string.
     expect_string_298("0" ^ "\x01");  // Becomes a string
     expect_int_298("0" ^ "\x01");  // warn, Becomes a string
     expect_string_298(1 ^ 2);  // warn
@@ -50,4 +50,6 @@ function test298() {
     expect_string_298($intVar -= 5);
     expect_string_298($intVar <<= 1);
     expect_string_298($intVar >>= 1);
+
+    expect_int_298("0" | "1");  // warn - this binary ors the bytes of the two strings into a new string.
 }

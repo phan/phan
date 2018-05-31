@@ -1,0 +1,3 @@
+%s:13 PhanTypeMismatchReturn Returning type null but example_scalar() is declared to return bool|float|int|string
+%s:22 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \example_scalar() takes ?bool|?float|?int|?string defined at %s:9
+%s:23 PhanTypeMismatchArgument Argument 1 (x) is array{} but \example_scalar() takes ?bool|?float|?int|?string defined at %s:9

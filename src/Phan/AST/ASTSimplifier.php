@@ -7,6 +7,9 @@ use ast\Node;
  * This simplifies a PHP AST into a form which is easier to analyze,
  * and returns the new Node.
  * The original \ast\Node objects are not modified.
+ *
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  */
 class ASTSimplifier
 {
@@ -109,8 +112,8 @@ class ASTSimplifier
     }
 
     /**
-     * @param \ast\Node[] $statements
-     * @return \ast\Node[][]|bool[] - [New/old list, bool $modified] An equivalent list after simplifying (or the original list)
+     * @param array<int,?Node|?float|?int|?string|?float|?bool> $statements
+     * @return array{0:array<int,\ast\Node>,1:bool} - [New/old list, bool $modified] An equivalent list after simplifying (or the original list)
      */
     private function normalizeStatementList(array $statements) : array
     {
@@ -165,7 +168,7 @@ class ASTSimplifier
      * If this returns true, the expression has no side effects, and can safely be reordered.
      * (E.g. returns true for `MY_CONST` or `false` in `if (MY_CONST === ($x = y))`
      *
-     * @param Node|string|float|int
+     * @param Node|string|float|int $node
      */
     private static function isExpressionWithoutSideEffects($node) : bool
     {
@@ -277,6 +280,7 @@ class ASTSimplifier
     private function applyAssignInLeftSideOfBinaryOpReduction(Node $node) : array
     {
         $inner_assign_statement = $node->children[0]->children['cond']->children['left'];
+        \assert($inner_assign_statement instanceof Node);  // already checked
         $inner_assign_var = $inner_assign_statement->children['var'];
 
         \assert($inner_assign_var->kind === \ast\AST_VAR);
@@ -301,6 +305,7 @@ class ASTSimplifier
         $inner_assign_statement = $node->children[0]->children['cond']->children['right'];
         $inner_assign_var = $inner_assign_statement->children['var'];
 
+        \assert($inner_assign_statement instanceof Node);
         \assert($inner_assign_var->kind === \ast\AST_VAR);
 
         $new_node_elem = clone($node->children[0]);
@@ -341,6 +346,7 @@ class ASTSimplifier
         while (count($children) > 2) {
             $r = array_pop($children);
             $l = array_pop($children);
+            assert($l instanceof Node && $r instanceof Node);
             $l->children['stmts']->flags = 0;
             $r->children['stmts']->flags = 0;
             $inner_if_node = self::buildIfNode($l, $r);
@@ -400,6 +406,7 @@ class ASTSimplifier
     private function applyIfAssignReduction(Node $node) : array
     {
         $outer_assign_statement = $node->children[0]->children['cond'];
+        \assert($outer_assign_statement instanceof Node);
         $new_node_elem = clone($node->children[0]);
         $new_node_elem->children['cond'] = $new_node_elem->children['cond']->children['var'];
         $new_node_elem->flags = 0;

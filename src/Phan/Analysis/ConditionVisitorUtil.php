@@ -6,6 +6,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\IssueException;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\NullType;
@@ -14,6 +15,9 @@ use Phan\Language\Element\Variable;
 use Phan\Language\UnionType;
 use ast\Node;
 
+/**
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
+ */
 trait ConditionVisitorUtil
 {
     /** @var CodeBase */
@@ -23,6 +27,9 @@ trait ConditionVisitorUtil
      * @var Context
      * The context in which the node we're going to be looking
      * at exits.
+     *
+     * @suppress PhanReadOnlyProtectedProperty the subclasses using the trait inherit $context from base contexts.
+     *  Phan can't analyze that.
      */
     protected $context;
 
@@ -412,7 +419,8 @@ trait ConditionVisitorUtil
                     Issue::fromType(Issue::UndeclaredVariable)(
                         $context->getFile(),
                         $var_node->lineno ?? 0,
-                        [$var_name]
+                        [$var_name],
+                        IssueFixSuggester::suggestVariableTypoFix($this->code_base, $context, $var_name)
                     )
                 );
             }

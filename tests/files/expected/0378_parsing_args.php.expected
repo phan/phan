@@ -1,2 +1,4 @@
+%s:4 PhanUnextractableAnnotationElementName Saw possibly unextractable annotation for a fragment of comment '* @param float[]string $blah this should be parsed as (at)param float[] - The following token `string` is nonsense.': after float[], did not see an element name (will guess based on comment order)
+%s:4 PhanUnextractableAnnotationSuffix Saw a token Phan may have failed to parse after '* @param float[]string $blah this should be parsed as (at)param float[] - The following token `string` is nonsense.': after float[], saw 's'
 %s:10 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \test378() takes float[] defined at %s:7
 %s:10 PhanTypeMismatchArgument Argument 2 (y) is \stdClass but \test378() takes int[] defined at %s:7

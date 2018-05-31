@@ -3,6 +3,7 @@ namespace Phan;
 
 use Phan\AST\ASTSimplifier;
 use Phan\AST\Parser;
+use Phan\AST\PhanAnnotationAdder;
 use Phan\AST\TolerantASTConverter\ParseException;
 use Phan\AST\Visitor\Element;
 use Phan\Analysis\DuplicateFunctionAnalyzer;
@@ -10,6 +11,7 @@ use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\Analysis\ReturnTypesAnalyzer;
 use Phan\Analysis\ReferenceCountsAnalyzer;
 use Phan\Analysis\ThrowsTypesAnalyzer;
+use Phan\Daemon\Request;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
@@ -52,8 +54,6 @@ class Analysis
      * See autoload_internal_extension_signatures.
      *
      * @return Context
-     *
-     * @suppress PhanAccessMethodInternal
      */
     public static function parseFile(CodeBase $code_base, string $file_path, bool $suppress_parse_errors = false, string $override_contents = null, bool $is_php_internal_stub = false) : Context
     {
@@ -71,6 +71,7 @@ class Analysis
 
         $real_file_path = Config::projectPath($original_file_path);
         if (\is_string($override_contents)) {
+            // TODO: Make $override_contents a persistent entry in FileCache, make Request and language server manage this
             $cache_entry = FileCache::addEntry($real_file_path, $override_contents);
         } else {
             $cache_entry = FileCache::getOrReadEntry($real_file_path);
@@ -93,7 +94,7 @@ class Analysis
             return $context;
         }
         try {
-            $node = Parser::parseCode($code_base, $context, $file_path, $file_contents, $suppress_parse_errors);
+            $node = Parser::parseCode($code_base, $context, null, $file_path, $file_contents, $suppress_parse_errors);
         } catch (ParseError $e) {
             return $context;
         } catch (ParseException $e) {
@@ -136,12 +137,12 @@ class Analysis
             }
         }
 
-
         $context = self::parseNodeInContext(
             $code_base,
             $context,
             $node
         );
+        // @phan-suppress-next-line PhanAccessMethodInternal
         $code_base->addParsedNamespaceMap($context->getFile(), $context->getNamespace(), $context->getNamespaceId(), $context->getNamespaceMap());
         return $context;
     }
@@ -230,9 +231,7 @@ class Analysis
     }
 
     /**
-     * Take a pass over all functions verifying various
-     * states.
-     * @suppress PhanTypeArraySuspicious https://github.com/phan/phan/issues/642
+     * Take a pass over all functions verifying various states.
      *
      * @return void
      */
@@ -431,21 +430,27 @@ class Analysis
      * @param CodeBase $code_base
      * The global code base holding all state
      *
+     * @param ?Request $request
+     * A daemon mode request if in daemon mode. May affect the parser used for $file_path
+     *
      * @param ?string $override_contents
      * If this is not null, this function will act as if $file_path's contents
      * were $override_contents
      *
      * @return Context
-     * @suppress PhanAccessMethodInternal
      */
     public static function analyzeFile(
         CodeBase $code_base,
         string $file_path,
+        $request,
         string $override_contents = null
     ) : Context {
         // Set the file on the context
         $context = (new Context)->withFile($file_path);
+        // @phan-suppress-next-line PhanAccessMethodInternal
         $context->importNamespaceMapFromParsePhase($code_base);
+
+        $code_base->setCurrentAnalyzedFile($file_path);
 
         // Convert the file to an Abstract Syntax Tree
         // before passing it on to the recursive version
@@ -471,7 +476,7 @@ class Analysis
 
                 return $context;
             }
-            $node = Parser::parseCode($code_base, $context, $file_path, $file_contents, false);
+            $node = Parser::parseCode($code_base, $context, $request, $file_path, $file_contents, false);
         } catch (ParseException $parse_error) {
             Issue::maybeEmit(
                 $code_base,
@@ -518,9 +523,14 @@ class Analysis
                 );
             }
         }
+        PhanAnnotationAdder::applyFull($node);
+
+        ConfigPluginSet::instance()->beforeAnalyzeFile($code_base, $context, $file_contents, $node);
 
         $context = (new BlockAnalysisVisitor($code_base, $context))($node);
         $context->warnAboutUnusedUseElements($code_base);
+
+        ConfigPluginSet::instance()->afterAnalyzeFile($code_base, $context, $file_contents, $node);
         return $context;
     }
 }

@@ -38,5 +38,20 @@ $iterator = new CallbackFilterIterator(
 );
 $phar->buildFromIterator($iterator, $dir);
 
-$phar->setStub("#!/usr/bin/env php\n" . $phar->createDefaultStub('src/phan.php'));
+// We don't want to use https://secure.php.net/manual/en/phar.interceptfilefuncs.php , which Phar does by default.
+// That causes annoying bugs.
+// Also, phan.phar is has no use cases to use as a web server, so don't include that, either.
+// See https://github.com/composer/xdebug-handler/issues/46 and https://secure.php.net/manual/en/phar.createdefaultstub.php
+$stub = <<<'EOT'
+#!/usr/bin/env php
+<?php
+
+Phar::mapPhar('phan.phar');
+
+require 'phar://phan.phar/src/phan.php';
+
+__HALT_COMPILER();
+EOT;
+$phar->setStub($stub);
+
 echo "Created phar in build/phan.phar\n";

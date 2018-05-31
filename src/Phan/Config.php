@@ -28,7 +28,7 @@ class Config
      * New features increment minor versions, and bug fixes increment patch versions.
      * @suppress PhanUnreferencedPublicClassConstant
      */
-    const PHAN_PLUGIN_VERSION = '2.3.0';
+    const PHAN_PLUGIN_VERSION = '2.4.0';
 
     /**
      * @var string|null
@@ -42,7 +42,7 @@ class Config
      */
     private static $configuration = self::DEFAULT_CONFIGURATION;
 
-    // The 6 most commonly accessed configs:
+    // The most commonly accessed configs:
     /** @var bool */
     private static $null_casts_as_any_type = false;
 
@@ -51,6 +51,15 @@ class Config
 
     /** @var bool */
     private static $array_casts_as_null = false;
+
+    /** @var bool */
+    private static $strict_param_checking = false;
+
+    /** @var bool */
+    private static $strict_property_checking = false;
+
+    /** @var bool */
+    private static $strict_return_checking = false;
 
     /** @var bool */
     private static $track_references = false;
@@ -71,10 +80,15 @@ class Config
         // of the php executable used to execute phan.
         'target_php_version' => null,
 
-        // Supported values: '7.0', '7.1', '7.2', null.
-        // If this is set to null,
-        // then Phan assumes the PHP version which is closest to the minor version
-        // of the php executable used to execute phan.
+        // Default: true. If this is set to true,
+        // and target_php_version is newer than the version used to run Phan,
+        // Phan will act as though functions added in newer PHP versions exist.
+        //
+        // NOTE: Currently, this only affects Closure::fromCallable
+        'pretend_newer_core_methods_exist' => true,
+
+        // Make the tolerant-php-parser polyfill generate doc comments
+        // for all types of elements, even if php-ast wouldn't (for an older PHP version)
         'polyfill_parse_all_element_doc_comments' => true,
 
         // A list of individual files to include in analysis
@@ -184,6 +198,13 @@ class Config
         // If this is null, this will be inferred from target_php_version.
         'allow_method_param_type_widening' => false,
 
+        // Set this to true to make Phan guess that undocumented parameter types
+        // (for optional parameters) have the same type as default values
+        // (Instead of combining that type with `mixed`).
+        // E.g. `function($x = 'val')` would make Phan infer that $x had a type of `string`, not `string|mixed`.
+        // Phan will not assume it knows specific types if the default value is false or null.
+        'guess_unknown_parameter_type_using_default' => false,
+
         // If enabled, inherit any missing phpdoc for types from
         // the parent method if none is provided.
         //
@@ -218,6 +239,18 @@ class Config
         // type can be cast to null. Setting this to true
         // will cut down on false positives.
         'null_casts_as_any_type' => false,
+
+        // If enabled, Phan will warn if **any** type in the argument's type
+        // cannot be cast to a type in the parameter's expected type.
+        // Setting this to true will introduce a large number of false positives
+        // (and reveal some bugs).
+        'strict_param_checking' => false,
+
+        // If enabled, Phan will warn if **any** type in the return value's type
+        // cannot be cast to a type in the declared return type.
+        // Setting this to true will introduce a large number of false positives
+        // (and reveal some bugs).
+        'strict_return_checking' => false,
 
         // If enabled, scalars (int, float, bool, string, null)
         // are treated as if they can cast to each other.
@@ -277,6 +310,11 @@ class Config
         // `$class->$method()`) in ways that we're unable
         // to make sense of.
         'dead_code_detection' => false,
+
+        // Set to true in order to attempt to detect unused variables.
+        // dead_code_detection will also enable unused variable detection.
+        // This has a few known false positives, e.g. for loops or branches.
+        'unused_variable_detection' => false,
 
         // Set to true in order to force tracking references to elements
         // (functions/methods/consts/protected).
@@ -348,6 +386,13 @@ class Config
         // unlikely to be useful outside of that.
         'disable_suppression' => false,
 
+        // Set to true in order to ignore line-based issue suppressions.
+        // Disabling both line and file-based suppressions is mildly faster.
+        'disable_line_based_suppression' => false,
+
+        // Set to true in order to ignore file-based issue suppressions.
+        'disable_file_based_suppression' => false,
+
         // If set to true, we'll dump the AST instead of
         // analyzing files
         'dump_ast' => false,
@@ -384,6 +429,16 @@ class Config
         // parts of Phan took to run. You likely don't care to do
         // this.
         'profiler_enabled' => false,
+
+        // Phan will give up on suggesting a different name in issue messages
+        // if the number of candidates (for a given suggestion category) is greater than suggestion_check_limit
+        // Set this to 0 to disable most suggestions for similar names, to other namespaces.
+        // Set this to INT_MAX (or other large value) to always suggesting similar names to other namespaces.
+        // (Phan will be a bit slower with larger values)
+        'suggestion_check_limit' => 50,
+
+        // Set this to true to disable suggestions for what to use instead of undeclared variables/classes/etc.
+        'disable_suggestions' => false,
 
         // Add any issue types (such as 'PhanUndeclaredMethod')
         // to this black-list to inhibit them from being reported.
@@ -616,6 +671,9 @@ class Config
         // (e.g. PHP is compiled with --enable-debug or when using XDebug)
         'skip_slow_php_options_warning' => false,
 
+        // By default, Phan will warn if 'tokenizer' isn't installed.
+        'skip_missing_tokenizer_warning' => false,
+
         // You can put paths to stubs of internal extensions in this config option.
         // If the corresponding extension is **not** loaded, then phan will use the stubs instead.
         // Phan will continue using its detailed type annotations,
@@ -666,7 +724,11 @@ class Config
         'language_server_debug_level' => null,
 
         // Use the command line option instead
-        'language_server_use_pcntl_fallback' => false,
+        'language_server_use_pcntl_fallback' => true,
+
+        // This should only be set via CLI (--language-server-enable-go-to-definition)
+        // Affects "go to definition" and "go to type definition"
+        'language_server_enable_go_to_definition' => false,
 
         // Can be set to false to disable the plugins Phan uses to infer more accurate return types of array_map, array_filter, etc.
         // Phan is slightly faster when these are disabled.
@@ -676,6 +738,10 @@ class Config
         // Plugins which are bundled with Phan can be added here by providing their name (e.g. 'AlwaysReturnPlugin')
         // Alternately, you can pass in the full path to a PHP file with the plugin's implementation (e.g. 'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php')
         'plugins' => [
+        ],
+
+        // E.g. this is used by InvokePHPNativeSyntaxCheckPlugin
+        'plugin_config' => [
         ],
     ];
 
@@ -690,6 +756,7 @@ class Config
      * @return string
      * Get the root directory of the project that we're
      * scanning
+     * @suppress PhanPossiblyFalseTypeReturn getcwd() can technically be false, but we should have checked earlier
      */
     public static function getProjectRootDirectory() : string
     {
@@ -738,10 +805,10 @@ class Config
     }
 
     /**
-     * @return array
+     * @return array<string,mixed>
      * A map of configuration keys and their values
      */
-    public function toArray() : array
+    public static function toArray() : array
     {
         return self::$configuration;
     }
@@ -751,6 +818,21 @@ class Config
     public static function get_null_casts_as_any_type() : bool
     {
         return self::$null_casts_as_any_type;
+    }
+
+    public static function get_strict_param_checking() : bool
+    {
+        return self::$strict_param_checking;
+    }
+
+    public static function get_strict_property_checking() : bool
+    {
+        return self::$strict_property_checking;
+    }
+
+    public static function get_strict_return_checking() : bool
+    {
+        return self::$strict_return_checking;
     }
 
     public static function get_null_casts_as_array() : bool
@@ -801,6 +883,13 @@ class Config
         return self::$configuration[$name];
     }
 
+    public static function reset()
+    {
+        self::$configuration = self::DEFAULT_CONFIGURATION;
+        // Trigger magic behavior
+        self::get()->init();
+    }
+
     /**
      * @param string $name
      * @param mixed $value
@@ -829,6 +918,15 @@ class Config
                 break;
             case 'array_casts_as_null':
                 self::$array_casts_as_null = $value;
+                break;
+            case 'strict_param_checking':
+                self::$strict_param_checking = $value;
+                break;
+            case 'strict_property_checking':
+                self::$strict_property_checking = $value;
+                break;
+            case 'strict_return_checking':
+                self::$strict_return_checking = $value;
                 break;
             case 'dead_code_detection':
             case 'force_tracking_references':
@@ -872,11 +970,12 @@ class Config
 
     /**
      * @return string
-     * The relative path appended to the project root directory.
+     * The relative path appended to the project root directory. (i.e. the absolute path)
      *
      * @suppress PhanUnreferencedPublicMethod
+     * @see FileRef::getProjectRelativePathForPath() for converting to relative paths
      */
-    public static function projectPath(string $relative_path)
+    public static function projectPath(string $relative_path) : string
     {
         // Make sure its actually relative
         if (\DIRECTORY_SEPARATOR === \substr($relative_path, 0, 1)) {
@@ -891,10 +990,7 @@ class Config
             return $relative_path;
         }
 
-        return \implode(DIRECTORY_SEPARATOR, [
-            Config::getProjectRootDirectory(),
-            $relative_path
-        ]);
+        return Config::getProjectRootDirectory() . DIRECTORY_SEPARATOR .  $relative_path;
     }
 }
 

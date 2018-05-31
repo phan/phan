@@ -1,0 +1,9 @@
+%s:24 PhanUndeclaredProperty Reference to undeclared property \SubClass483->_baseProperty
+%s:25 PhanUndeclaredProperty Reference to undeclared property \SubClass483->_propertyNotResemblingOtherPropertys
+%s:26 PhanUndeclaredStaticProperty Static property '_staticPropertyNotResemblingOtherPropertys' on \SubClass483 is undeclared
+%s:27 PhanUndeclaredProperty Reference to undeclared property \SubClass483->rivatePropertyInSameClass (Did you mean expr->privatePropertyInSameClass)
+%s:28 PhanUndeclaredProperty Reference to undeclared property \SubClass483->crotectedStaticPropertyInSameClass
+%s:29 PhanUndeclaredStaticProperty Static property '_protectedStaticPropertyInSameClass' on \SubClass483 is undeclared (Did you mean expr::$protectedStaticPropertyInSameClass)
+%s:30 PhanUndeclaredStaticProperty Static property 'protected_static_property_insameclass' on \SubClass483 is undeclared (Did you mean expr::$protectedStaticPropertyInSameClass)
+%s:32 PhanUndeclaredStaticProperty Static property '_magicProperty' on \SubClass483 is undeclared
+%s:33 PhanUndeclaredProperty Reference to undeclared property \SubClass483->_magicProperty (Did you mean expr->magicProperty)

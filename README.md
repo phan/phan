@@ -46,7 +46,8 @@ Phan is able to perform the following kinds of analysis.
 * Check for valid and type safe return values on methods, functions, and closures.
 * Check for No-Ops on arrays, closures, constants, properties, variables, unary operators, and binary operators.
 * Check for unused/dead/[unreachable](https://github.com/phan/phan/tree/master/.phan/plugins#unreachablecodepluginphp) code. (Pass in `--dead-code-detection`)
-+ Check for unused `use` statements.
+* Check for unused variables and parameters. (Pass in `--unused-variable-detection`)
+* Check for unused `use` statements.
 * Check for classes, functions and methods being redefined.
 * Check for sanity with class inheritance (e.g. checks method signature compatibility).
   Phan also checks for final classes/methods being overridden, that abstract methods are implemented, and that the implemented interface is really a interface (and so on).
@@ -93,7 +94,6 @@ Phan is imperfect and shouldn't be used to prove that your PHP-based rocket guid
 
 Additional analysis features have been provided by [plugins](https://github.com/phan/phan/tree/master/.phan/plugins#plugins).
 
-- [Unused variable detection](https://github.com/phan/PhanUnusedVariable) (external, see [#345](https://github.com/phan/phan/issues/345))
 - [Checking for syntactically unreachable statements](https://github.com/phan/phan/tree/master/.phan/plugins#unreachablecodepluginphp) (E.g. `{ throw new Exception("Message"); return $value; }`)
 - [Checking `*printf()` format strings against the provided arguments](https://github.com/phan/phan/tree/master/.phan/plugins#printfcheckerplugin) (as well as checking for common errors)
 - [Checking that PCRE regexes passed to `preg_*()` are valid](https://github.com/phan/phan/tree/master/.phan/plugins#pregregexcheckerplugin)
@@ -292,7 +292,12 @@ Usage: ./phan [options] [files...]
  -x, --dead-code-detection
   Emit issues for classes, methods, functions, constants and
   properties that are probably never referenced and can
-  possibly be removed.
+  possibly be removed. This implies `--unused-variable-detection`.
+
+ --unused-variable-detection
+  Emit issues for variables, parameters and closure use variables
+  that are probably never referenced.
+  This has a few known false positives, e.g. for loops or branches.
 
  -j, --processes <int>
   The number of parallel processes to run during the analysis
@@ -308,6 +313,19 @@ Usage: ./phan [options] [files...]
  --plugin <pluginName|path/to/Plugin.php>
   Add an additional plugin to run. This flag can be repeated.
   (Either pass the name of the plugin or a relative/absolute path to the plugin)
+
+ --strict-param-checking
+  Enables the config option `strict_param_checking`.
+
+ --strict-property-checking
+  Enables the config option `strict_property_checking`.
+
+ --strict-return-checking
+  Enables the config option `strict_return_checking`.
+
+ --strict-type-checking
+  Equivalent to
+  `--strict-param-checking --strict-property-checking --strict-return-checking`.
 
  --use-fallback-parser
   If a file to be analyzed is syntactically invalid

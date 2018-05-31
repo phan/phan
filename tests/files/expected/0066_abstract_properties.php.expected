@@ -1,1 +1,1 @@
-%s:7 PhanUndeclaredStaticProperty Static property 'things2' on \AbstractProperties is undeclared
+%s:7 PhanUndeclaredStaticProperty Static property 'things2' on \AbstractProperties is undeclared (Did you mean expr::$things)

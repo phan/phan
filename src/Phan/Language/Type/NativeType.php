@@ -60,7 +60,17 @@ abstract class NativeType extends Type
         return false;
     }
 
+    public function isGenerator() : bool
+    {
+        return false;
+    }
+
     public function isObject() : bool
+    {
+        return false;
+    }
+
+    public function isObjectWithKnownFQSEN() : bool
     {
         return false;
     }
@@ -125,6 +135,7 @@ abstract class NativeType extends Type
                 NullType::NAME     => in_array(NullType::NAME, $permittedCastTypeNames, true),
                 ObjectType::NAME   => in_array(ObjectType::NAME, $permittedCastTypeNames, true),
                 ResourceType::NAME => in_array(ResourceType::NAME, $permittedCastTypeNames, true),
+                ScalarRawType::NAME => in_array(ScalarRawType::NAME, $permittedCastTypeNames, true),
                 StringType::NAME   => in_array(StringType::NAME, $permittedCastTypeNames, true),
                 TrueType::NAME     => in_array(TrueType::NAME, $permittedCastTypeNames, true),
                 VoidType::NAME     => in_array(VoidType::NAME, $permittedCastTypeNames, true),
@@ -137,18 +148,18 @@ abstract class NativeType extends Type
 
         return [
             ArrayType::NAME    => $generateRow(ArrayType::NAME, IterableType::NAME, CallableType::NAME),
-            BoolType::NAME     => $generateRow(BoolType::NAME, FalseType::NAME, TrueType::NAME),
+            BoolType::NAME     => $generateRow(BoolType::NAME, FalseType::NAME, TrueType::NAME, ScalarRawType::NAME),
             CallableType::NAME => $generateRow(CallableType::NAME),
-            FalseType::NAME    => $generateRow(FalseType::NAME, BoolType::NAME),
-            FloatType::NAME    => $generateRow(FloatType::NAME),
-            IntType::NAME      => $generateRow(IntType::NAME, FloatType::NAME),
+            FalseType::NAME    => $generateRow(FalseType::NAME, BoolType::NAME, ScalarRawType::NAME),
+            FloatType::NAME    => $generateRow(FloatType::NAME, ScalarRawType::NAME),
+            IntType::NAME      => $generateRow(IntType::NAME, FloatType::NAME, ScalarRawType::NAME),
             IterableType::NAME => $generateRow(IterableType::NAME),
             MixedType::NAME    => $generateRow(MixedType::NAME),  // MixedType overrides the methods which would use this
             NullType::NAME     => $generateRow(NullType::NAME),
             ObjectType::NAME   => $generateRow(ObjectType::NAME),
             ResourceType::NAME => $generateRow(ResourceType::NAME),
-            StringType::NAME   => $generateRow(StringType::NAME, CallableType::NAME),
-            TrueType::NAME     => $generateRow(TrueType::NAME, BoolType::NAME),
+            StringType::NAME   => $generateRow(StringType::NAME, CallableType::NAME, ScalarRawType::NAME),
+            TrueType::NAME     => $generateRow(TrueType::NAME, BoolType::NAME, ScalarRawType::NAME),
             VoidType::NAME     => $generateRow(VoidType::NAME),
         ];
     }
@@ -189,6 +200,27 @@ abstract class NativeType extends Type
         int $recursion_depth = 0
     ) : UnionType {
         return $this->asUnionType();
+    }
+
+    public function hasTemplateParameterTypes() : bool
+    {
+        return false;
+    }
+
+    /**
+     * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
+     */
+    public function iterableKeyUnionType(CodeBase $unused_code_base)
+    {
+        return null;
+    }
+
+    /**
+     * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
+     */
+    public function iterableValueUnionType(CodeBase $unused_code_base)
+    {
+        return null;
     }
 }
 \class_exists(ArrayType::class);

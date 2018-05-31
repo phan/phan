@@ -66,9 +66,14 @@ class CompositionAnalyzer
 
                 // Figure out if this property type can cast to the
                 // inherited definition's type.
+                try {
+                    $inherited_property_union_type = $inherited_property->getUnionType();
+                } catch (IssueException $exception) {
+                    $inherited_property_union_type = UnionType::empty();
+                }
                 $can_cast =
                     $property_union_type->canCastToExpandedUnionType(
-                        $inherited_property->getUnionType(),
+                        $inherited_property_union_type,
                         $code_base
                     );
 
@@ -78,8 +83,7 @@ class CompositionAnalyzer
 
                 // Don't emit an issue if the property suppresses the issue
                 // NOTE: The current context is the class, not either of the properties.
-                if ($property->hasSuppressIssue(Issue::IncompatibleCompositionProp)) {
-                    $property->incrementSuppressIssueCount(Issue::IncompatibleCompositionProp);
+                if ($property->checkHasSuppressIssueAndIncrementCount(Issue::IncompatibleCompositionProp)) {
                     continue;
                 }
 
@@ -166,7 +170,7 @@ class CompositionAnalyzer
                 }
 
                 // Don't emit an issue if the method suppresses the issue
-                if ($method->hasSuppressIssue(Issue::IncompatibleCompositionMethod)) {
+                if ($method->checkHasSuppressIssueAndIncrementCount(Issue::IncompatibleCompositionMethod)) {
                     continue;
                 }
 

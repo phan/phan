@@ -3,6 +3,7 @@ namespace Phan\Plugin\Internal;
 
 use Phan\CodeBase;
 use Phan\AST\ContextNode;
+use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Type\StringType;
@@ -25,6 +26,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
     ReturnTypeOverrideCapability
 {
     /**
+     * @param CodeBase $code_base @phan-unused-param
      * @return array<string,\Closure>
      * @phan-return array<string, Closure(CodeBase,Context,Func,array):UnionType>
      */
@@ -41,8 +43,8 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
          */
         $make_dependent_type_method = static function (int $expected_bool_pos, $type_if_true, $type_if_false, $type_if_unknown) : Closure {
             /**
+             * @param Func $function @phan-unused-param
              * @return UnionType
-             * @suppress PhanPluginUnusedClosureArgument
              */
             return static function (
                 CodeBase $code_base,
@@ -82,7 +84,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
 
         /**
          * @return UnionType
-         * @suppress PhanPluginUnusedClosureArgument
+         * @param Func $function @phan-unused-param
          */
         $json_decode_return_type_handler = static function (
             CodeBase $code_base,
@@ -122,11 +124,43 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             return ($options_result & JSON_OBJECT_AS_ARRAY) !== 0 ? $json_decode_array_types : $json_decode_object_types;
         };
 
+        $str_replace_types = UnionType::fromFullyQualifiedString('string|string[]');
+        $str_array_type = UnionType::fromFullyQualifiedString('string[]');
+
+        $third_argument_string_or_array_handler = static function (
+            CodeBase $code_base,
+            Context $context,
+            Func $unused_function,
+            array $args
+        ) use (
+            $string_union_type,
+            $str_replace_types,
+            $str_array_type
+        ) : UnionType {
+            //  mixed json_decode ( string $json [, bool $assoc = FALSE [, int $depth = 512 [, int $options = 0 ]]] )
+            //  $options can include JSON_OBJECT_AS_ARRAY in a bitmask
+            // TODO: reject `...` operator? (Low priority)
+            if (\count($args) < 3) {
+                return $str_replace_types;
+            }
+            $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2]);
+            $has_array = $union_type->hasArray();
+            if ($union_type->canCastToUnionType($string_union_type)) {
+                return $has_array ? $str_replace_types : $string_union_type;
+            }
+            return $has_array ? $str_array_type : $str_replace_types;
+        };
+
         return [
             // commonly used functions where the return type depends on a passed in boolean
             'var_export'                => $string_if_2_true,
             'print_r'                   => $string_if_2_true_else_true,
             'json_decode'               => $json_decode_return_type_handler,
+            // Functions with dependent return types
+            'str_replace'                 => $third_argument_string_or_array_handler,
+            'preg_replace'                => $third_argument_string_or_array_handler,
+            'preg_replace_callback'       => $third_argument_string_or_array_handler,
+            'preg_replace_callback_array' => $third_argument_string_or_array_handler,
         ];
     }
 

@@ -10,6 +10,7 @@ use Phan\Daemon\Transport\Responder;
 use Phan\Language\FileRef;
 use Phan\Language\Type;
 use Phan\LanguageServer\FileMapping;
+use Phan\LanguageServer\GoToDefinitionRequest;
 use Phan\Library\FileCache;
 use Phan\Output\IssuePrinterInterface;
 use Phan\Output\PrinterFactory;
@@ -41,7 +42,7 @@ class Request
     /** @var Responder|null - Null after the response is sent. */
     private $responder;
 
-    /** @var array<string,mixed> */
+    /** @var array{method:string,files:array<int,string>,format:string,temporary_file_mapping_contents:array<string,string>} */
     private $config;
 
     /** @var BufferedOutput */
@@ -57,10 +58,17 @@ class Request
 
     private static $exited_pid_status = [];
 
+
+    /** @var ?GoToDefinitionRequest */
+    private $most_recent_definition_request;
     /** @var bool */
     private $should_exit;
 
-    private function __construct(Responder $responder, array $config, bool $should_exit)
+    /**
+     * @param array{method:string,files:array<int,string>,format:string,temporary_file_mapping_contents:array<string,string>} $config
+     * @param ?GoToDefinitionRequest $most_recent_definition_request
+     */
+    private function __construct(Responder $responder, array $config, $most_recent_definition_request, bool $should_exit)
     {
         $this->responder = $responder;
         $this->config = $config;
@@ -69,7 +77,33 @@ class Request
         if ($this->method === self::METHOD_ANALYZE_FILES) {
             $this->files = $config[self::PARAM_FILES];
         }
+        $this->most_recent_definition_request = $most_recent_definition_request;
         $this->should_exit = $should_exit;
+    }
+
+    /**
+     * @param string $file_path an absolute or relative path to be analyzed
+     */
+    public function shouldUseMappingPolyfill(string $file_path) : bool
+    {
+        $most_recent_definition_request = $this->most_recent_definition_request;
+        if ($most_recent_definition_request) {
+            return $most_recent_definition_request->getPath() === Config::projectPath($file_path);
+        }
+        return false;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTargetByteOffset(string $file_contents) : int
+    {
+        $most_recent_definition_request = $this->most_recent_definition_request;
+        if ($most_recent_definition_request) {
+            $position = $most_recent_definition_request->getPosition();
+            return $position->toOffset($file_contents);
+        }
+        return -1;
     }
 
     public function exit(int $exit_code)
@@ -87,6 +121,7 @@ class Request
      * @param CodeBase $code_base (for refreshing parse state)
      * @param Closure $file_path_lister (for refreshing parse state)
      * @param FileMapping $file_mapping object tracking the overrides made by a client.
+     * @param ?GoToDefinitionRequest $most_recent_definition_request contains a promise that we want the resolution of
      * @param bool $should_exit - If this is true, calling $this->exit() will terminate the program. If false, ExitException will be thrown.
      */
     public static function makeLanguageServerAnalysisRequest(
@@ -95,6 +130,7 @@ class Request
         CodeBase $code_base,
         Closure $file_path_lister,
         FileMapping $file_mapping,
+        $most_recent_definition_request,
         bool $should_exit
     ) : Request {
         FileCache::clear();
@@ -112,6 +148,7 @@ class Request
                 self::PARAM_FILES => $filenames,
                 self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS => $file_mapping_contents,
             ],
+            $most_recent_definition_request,
             $should_exit
         );
         return $result;
@@ -146,11 +183,15 @@ class Request
         } else {
             $issues = $raw_issues;
         }
-        $this->sendJSONResponse([
+        $response = [
             "status" => self::STATUS_OK,
             "issue_count" => $issueCount,
             "issues" => $issues,
-        ]);
+        ];
+        if ($this->most_recent_definition_request) {
+            $response['definitions'] = $this->most_recent_definition_request->getDefinitionLocations();
+        }
+        $this->sendJSONResponse($response);
     }
 
     /**
@@ -163,7 +204,6 @@ class Request
             "status" => self::STATUS_NO_FILES,
         ]);
     }
-
 
     /**
      * @param array<int,string> $analyze_file_path_list
@@ -195,14 +235,34 @@ class Request
     }
 
     /**
-     * TODO: convert absolute path to relative paths.
+     * TODO: convert absolute path to file contents
      * @return array<string,string> - Maps original relative file paths to contents.
      */
     public function getTemporaryFileMapping() : array
     {
         $mapping = $this->config[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] ?? [];
+        if (!is_array($mapping)) {
+            $mapping = [];
+        }
         Daemon::debugf("Have the following files in mapping: %s", json_encode(array_keys($mapping)));
         return $mapping;
+    }
+
+    /**
+     * @return ?GoToDefinitionRequest
+     */
+    public function getMostRecentGoToDefinitionRequest()
+    {
+        return $this->most_recent_definition_request;
+    }
+
+    public function rejectLanguageServerRequestsRequiringAnalysis()
+    {
+        $most_recent_definition_request = $this->most_recent_definition_request;
+        if ($most_recent_definition_request) {
+            $most_recent_definition_request->finalize();
+            $this->most_recent_definition_request = null;
+        }
     }
 
     /**
@@ -311,7 +371,7 @@ class Request
             return null;
         }
         $new_file_mapping_contents = [];
-        $method = $request['method'] ?? null;
+        $method = $request['method'] ?? '';
         switch ($method) {
             case 'analyze_all':
                 // Analyze the default list of files. No expected params.
@@ -342,8 +402,12 @@ class Request
                 }
                 if (\is_null($error_message)) {
                     $file_mapping_contents = $request[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] ?? [];
-                    $new_file_mapping_contents = self::normalizeFileMappingContents($file_mapping_contents, $error_message);
-                    $request[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] = $new_file_mapping_contents;
+                    if (is_array($file_mapping_contents)) {
+                        $new_file_mapping_contents = self::normalizeFileMappingContents($file_mapping_contents, $error_message);
+                        $request[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] = $new_file_mapping_contents;
+                    } else {
+                        $error_message = 'Must pass an optional array or null for temporary_file_mapping_contents';
+                    }
                 }
                 if ($error_message !== null) {
                     Daemon::debugf($error_message);
@@ -374,7 +438,8 @@ class Request
             Daemon::debugf("This is the main process pretending to be the fork");
             self::$child_pids = [];
             // This is running on the only thread, so configure $request_obj to throw ExitException instead of calling exit()
-            $request_obj = new self($responder, $request, false);
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument pre-existing
+            $request_obj = new self($responder, $request, null, false);
             $temporary_file_mapping = $request_obj->getTemporaryFileMapping();
             if (count($temporary_file_mapping) > 0) {
                 self::applyTemporaryFileMappingForParsePhase($code_base, $temporary_file_mapping);
@@ -388,7 +453,8 @@ class Request
         } elseif ($fork_result == 0) {
             Daemon::debugf("This is the fork");
             self::$child_pids = [];
-            $request_obj = new self($responder, $request, true);
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument pre-existing
+            $request_obj = new self($responder, $request, null, true);
             $temporary_file_mapping = $request_obj->getTemporaryFileMapping();
             if (count($temporary_file_mapping) > 0) {
                 self::applyTemporaryFileMappingForParsePhase($code_base, $temporary_file_mapping);
@@ -466,6 +532,7 @@ class Request
      * Substitutes files. We assume that the original file path exists already, and reject it if it doesn't.
      * (i.e. it was returned by $file_path_lister in the past)
      *
+     * @param array<string,string> $temporary_file_mapping_contents
      * @return void
      */
     private static function applyTemporaryFileMappingForParsePhase(CodeBase $code_base, array $temporary_file_mapping_contents)

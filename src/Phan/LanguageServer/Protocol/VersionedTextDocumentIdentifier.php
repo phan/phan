@@ -12,6 +12,7 @@ class VersionedTextDocumentIdentifier extends TextDocumentIdentifier
      * The version number of this document.
      *
      * @var int
+     * @suppress PhanReadOnlyPublicProperty
      */
     public $version;
 }

@@ -15,4 +15,5 @@ function unpack_varargs401(array $args, iterable $iterable) {
     test_varargs401(...$int);
     test_varargs401(...$stdClass);
     test_varargs401(...$iterable);
+    test_varargs401(...$arrayObject);
 }

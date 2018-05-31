@@ -48,7 +48,8 @@ class Initializer
                 return 1;
             }
 
-            $vendor_path = "$cwd/vendor";
+            $vendor_path = $composer_settings['config']['vendor-dir'] ?? "$cwd/vendor";
+
             if (!is_dir($vendor_path)) {
                 printf("phan --init assumes that 'composer.phar install' was run already (expected to find '$vendor_path')\n");
                 return 1;
@@ -76,7 +77,6 @@ class Initializer
 
     /**
      * @return array<string,string[]> maps a config name to a list of comment lines about that config
-     * @suppress PhanPluginUnusedVariable used in loop
      */
     private static function computeCommentNameDocumentationMap() : array
     {
@@ -96,6 +96,7 @@ class Initializer
             if (preg_match('@^\s*//@', $line)) {
                 $prev_lines[] = trim($line);
             } else {
+                // @phan-suppress-next-line PhanPluginUnusedVariable (used in loop)
                 $prev_lines = [];
             }
         }
@@ -264,6 +265,7 @@ EOT;
                 'DuplicateArrayKeyPlugin',
                 'PregRegexCheckerPlugin',
                 'PrintfCheckerPlugin',
+                'SleepCheckerPlugin',
                 'UnreachableCodePlugin',
             ];
         }
@@ -290,6 +292,7 @@ EOT;
             'analyze_signature_compatibility' => !$is_weak_level,
             'phpdoc_type_mapping' => [],
             'dead_code_detection' => false,  // this is slow
+            'unused_variable_detection' => !$is_average_level,
             'quick_mode' => $is_weakest_level,
             'simplify_ast' => true,
             'generic_types_enabled' => true,
@@ -469,7 +472,14 @@ EOT;
         try {
             // PHP binaries can have many forms, may begin with #/usr/bin/env php.
             // We assume that if it's parseable and contains at least one PHP executable line, it's valid.
-            $ast = Parser::parseCode(new CodeBase([], [], [], [], []), new Context(), $relative_path, $contents, true);
+            $ast = Parser::parseCode(
+                new CodeBase([], [], [], [], []),
+                new Context(),
+                null,
+                $relative_path,
+                $contents,
+                true
+            );
             if (!($ast instanceof Node)) {
                 return false;
             }

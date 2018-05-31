@@ -1,0 +1,10 @@
+%s:34 PhanUndeclaredMethod Call to undeclared method \SubClass483::_baseMethod
+%s:35 PhanUndeclaredMethod Call to undeclared method \SubClass483::_methodNotResemblingOtherMethods
+%s:36 PhanUndeclaredStaticMethod Static call to undeclared method \SubClass483::_staticMethodNotResemblingOtherMethods
+%s:37 PhanUndeclaredMethod Call to undeclared method \SubClass483::rivateMethodInSameClass (Did you mean expr->privateMethodInSameClass())
+%s:38 PhanUndeclaredMethod Call to undeclared method \SubClass483::crotectedStaticMethodInSameClass (Did you mean expr::protectedStaticMethodInSameClass())
+%s:39 PhanUndeclaredStaticMethod Static call to undeclared method \SubClass483::_protectedStaticMethodInSameClass (Did you mean expr::protectedStaticMethodInSameClass())
+%s:41 PhanUndeclaredStaticMethod Static call to undeclared method \SubClass483::_magicMethod
+%s:42 PhanUndeclaredMethod Call to undeclared method \SubClass483::_magicMethod (Did you mean expr->magicMethod())
+%s:43 PhanUndeclaredStaticMethod Static call to undeclared method \SubClass483::_magicStaticMethod (Did you mean expr::magicStaticMethod())
+%s:44 PhanUndeclaredMethod Call to undeclared method \SubClass483::_magicStaticMethod (Did you mean expr::magicStaticMethod())

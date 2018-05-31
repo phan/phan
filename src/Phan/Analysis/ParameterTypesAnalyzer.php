@@ -5,12 +5,12 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
-use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
@@ -47,17 +47,9 @@ class ParameterTypesAnalyzer
             $union_type = $parameter->getUnionType();
 
             // Look at each type in the parameter's Union Type
-            foreach ($union_type->getTypeSet() as $outer_type) {
-                $type = $outer_type;
-
-                // TODO: Add unit test of `array{key:MissingClazz}`
-                while ($type instanceof GenericArrayType) {
-                    $type = $type->genericArrayElementType();
-                }
-
-                // If its a native type or a reference to
-                // self, its OK
-                if ($type->isNativeType() || ($method instanceof Method && ($type->isSelfType() || $type->isStaticType()))) {
+            foreach ($union_type->getReferencedClasses() as $outer_type => $type) {
+                // If it's a reference to self, its OK
+                if ($method instanceof Method && ($type->isSelfType() || $type->isStaticType())) {
                     continue;
                 }
 
@@ -78,12 +70,20 @@ class ParameterTypesAnalyzer
                     $type_fqsen = $type->asFQSEN();
                     \assert($type_fqsen instanceof FullyQualifiedClassName, 'non-native types must be class names');
                     if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
-                        Issue::maybeEmit(
+                        Issue::maybeEmitWithParameters(
                             $code_base,
                             $method->getContext(),
                             Issue::UndeclaredTypeParameter,
                             $method->getFileRef()->getLineNumberStart(),
-                            (string)$outer_type
+                            [(string)$outer_type],
+                            IssueFixSuggester::suggestSimilarClass(
+                                $code_base,
+                                $method->getContext(),
+                                $type_fqsen,
+                                null,
+                                IssueFixSuggester::DEFAULT_CLASS_SUGGESTION_PREFIX,
+                                IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES
+                            )
                         );
                     }
                 }
@@ -190,7 +190,6 @@ class ParameterTypesAnalyzer
 
     /**
      * @return void
-     * @suppress PhanPluginUnusedVariable
      */
     private static function checkCommentParametersAreInOrder(CodeBase $code_base, FunctionInterface $method)
     {
@@ -224,6 +223,7 @@ class ParameterTypesAnalyzer
                 return;
             }
             $prev_name = $parameter_name;
+            // @phan-suppress-next-line PhanPluginUnusedVariable
             $prev_index = $parameter_index_in_comment;
         }
     }
@@ -295,7 +295,7 @@ class ParameterTypesAnalyzer
         if ($method->getDefiningFQSEN() !== $method->getFQSEN()) {
             return;
         }
-        if ($method->hasSuppressIssue(Issue::CommentOverrideOnNonOverrideMethod)) {
+        if ($method->checkHasSuppressIssueAndIncrementCount(Issue::CommentOverrideOnNonOverrideMethod)) {
             return;
         }
         Issue::maybeEmit(
@@ -564,7 +564,7 @@ class ParameterTypesAnalyzer
 
         if (!$signatures_match) {
             if ($o_method->isPHPInternal()) {
-                if (!$method->hasSuppressIssue(Issue::ParamSignatureMismatchInternal)) {
+                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::ParamSignatureMismatchInternal)) {
                     Issue::maybeEmit(
                         $code_base,
                         $method->getContext(),
@@ -575,7 +575,7 @@ class ParameterTypesAnalyzer
                     );
                 }
             } else {
-                if (!$method->hasSuppressIssue(Issue::ParamSignatureMismatch)) {
+                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::ParamSignatureMismatch)) {
                     Issue::maybeEmit(
                         $code_base,
                         $method->getContext(),
@@ -595,7 +595,7 @@ class ParameterTypesAnalyzer
             || $o_method->isPublic() && !$method->isPublic()
         ) {
             if ($o_method->isPHPInternal()) {
-                if (!$method->hasSuppressIssue(Issue::AccessSignatureMismatchInternal)) {
+                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::AccessSignatureMismatchInternal)) {
                     Issue::maybeEmit(
                         $code_base,
                         $method->getContext(),
@@ -606,7 +606,7 @@ class ParameterTypesAnalyzer
                     );
                 }
             } else {
-                if (!$method->hasSuppressIssue(Issue::AccessSignatureMismatch)) {
+                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::AccessSignatureMismatch)) {
                     Issue::maybeEmit(
                         $code_base,
                         $method->getContext(),
@@ -709,7 +709,6 @@ class ParameterTypesAnalyzer
                     ($is_reference ? Issue::ParamSignaturePHPDocMismatchParamIsReference       : Issue::ParamSignaturePHPDocMismatchParamIsNotReference),
                     $offset
                 );
-                $is_possibly_compatible = false;
                 return;
             }
 
@@ -726,7 +725,6 @@ class ParameterTypesAnalyzer
                     ($is_variadic ? Issue::ParamSignaturePHPDocMismatchParamVariadic       : Issue::ParamSignaturePHPDocMismatchParamNotVariadic),
                     $offset
                 );
-                $is_possibly_compatible = false;
                 return;
             }
 
@@ -877,8 +875,7 @@ class ParameterTypesAnalyzer
     private static function emitSignatureRealMismatchIssue(CodeBase $code_base, Method $method, Method $o_method, string $issue_type, string $internal_issue_type, string $phpdoc_issue_type, ...$args)
     {
         if ($method->isFromPHPDoc() || $o_method->isFromPHPDoc()) {
-            // TODO: for overriding methods defined in phpdoc, going to need to add issue suppressions from the class phpdoc?
-            if ($method->hasSuppressIssue($phpdoc_issue_type)) {
+            if ($method->checkHasSuppressIssueAndIncrementCount($phpdoc_issue_type)) {
                 return;
             }
             Issue::maybeEmit(
@@ -894,7 +891,7 @@ class ParameterTypesAnalyzer
                 ])
             );
         } elseif ($o_method->isPHPInternal()) {
-            if ($method->hasSuppressIssue($internal_issue_type)) {
+            if ($method->checkHasSuppressIssueAndIncrementCount($internal_issue_type)) {
                 return;
             }
             Issue::maybeEmit(
@@ -907,7 +904,7 @@ class ParameterTypesAnalyzer
                 ...$args
             );
         } else {
-            if ($method->hasSuppressIssue($issue_type)) {
+            if ($method->checkHasSuppressIssueAndIncrementCount($issue_type)) {
                 return;
             }
             Issue::maybeEmit(
@@ -976,7 +973,7 @@ class ParameterTypesAnalyzer
             )
             ) {
                 $is_exclusively_narrowed = false;
-                if (!$method->hasSuppressIssue(Issue::TypeMismatchDeclaredParam)) {
+                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchDeclaredParam)) {
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -1002,7 +999,7 @@ class ParameterTypesAnalyzer
             } else {
                 // This check isn't urgent to fix, and is specific to nullable casting rules,
                 // so use a different issue type.
-                if (!$method->hasSuppressIssue(Issue::TypeMismatchDeclaredParamNullable)) {
+                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchDeclaredParamNullable)) {
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -1076,7 +1073,8 @@ class ParameterTypesAnalyzer
     {
         if ($method->isFromPHPDoc()) {
             // TODO: Track phpdoc methods separately from real methods
-            if ($method->hasSuppressIssue(Issue::AccessOverridesFinalMethodPHPDoc) || $class->hasSuppressIssue(Issue::AccessOverridesFinalMethodPHPDoc)) {
+            if ($method->checkHasSuppressIssueAndIncrementCount(Issue::AccessOverridesFinalMethodPHPDoc) ||
+                $class->checkHasSuppressIssueAndIncrementCount(Issue::AccessOverridesFinalMethodPHPDoc)) {
                 return;
             }
             Issue::maybeEmit(

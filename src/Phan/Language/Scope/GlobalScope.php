@@ -51,7 +51,7 @@ class GlobalScope extends Scope
     }
 
     /**
-     * @return array<string,Variable>
+     * @return array<string|int,Variable> (keys are variable names, which are *almost* always strings)
      * A map from name to Variable in this scope
      */
     public function getVariableMap() : array
@@ -63,7 +63,7 @@ class GlobalScope extends Scope
      * @param Variable $variable
      * A variable to add to the local scope
      *
-     * @return Scope;
+     * @return Scope
      */
     public function withVariable(Variable $variable) : Scope
     {

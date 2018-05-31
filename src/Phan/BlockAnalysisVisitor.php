@@ -3,6 +3,7 @@ namespace Phan;
 
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\Visitor\Element;
+use Phan\AST\UnionTypeVisitor;
 use Phan\Analysis\BlockExitStatusChecker;
 use Phan\Analysis\ConditionVisitor;
 use Phan\Analysis\NegatedConditionVisitor;
@@ -30,6 +31,8 @@ use ast\Node;
  * - If there is more than one possible child context, merges state from them (variable types)
  *
  * @see $this->visit
+ *
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 class BlockAnalysisVisitor extends AnalysisVisitor
 {
@@ -96,7 +99,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @suppress PhanPluginUnusedPublicMethodArgument
+     * @param Node $node @phan-unused-param this was analyzed in visitUse
      */
     public function visitUseElem(Node $node) : Context
     {
@@ -105,7 +108,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @suppress PhanAccessMethodInternal
+     * Analyzes a namespace block or statement (e.g. `namespace NS\SubNS;` or `namespace OtherNS { ... }`)
+     * @param Node $node a node of type AST_NAMESPACE
      */
     public function visitNamespace(Node $node) : Context
     {
@@ -115,6 +119,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         // If there are multiple namespaces in the file, have to warn about unused entries in the current namespace first.
         // If this is the first namespace, then there wouldn't be any use statements yet.
+        // @phan-suppress-next-line PhanAccessMethodInternal
         $context->warnAboutUnusedUseElements($this->code_base);
 
         // Visit the given node populating the code base
@@ -151,12 +156,21 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @suppress PhanPluginUnusedPublicMethodArgument
+     * Analyzes a node with type AST_NAME (Relative or fully qualified name)
      */
     public function visitName(Node $node) : Context
     {
-        // Could invoke plugins, but not right now
-        return $this->context;
+        $context = $this->context;
+        // Only invoke post-order plugins, needed for NodeSelectionPlugin.
+        // PostOrderAnalysisVisitor and PreOrderAnalysisVisitor don't do anything.
+        // Optimized beause this is frequently called
+        ConfigPluginSet::instance()->postAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node,
+            $this->parent_node_list
+        );
+        return $context;
     }
 
     public function visitStmtList(Node $node) : Context
@@ -171,9 +185,27 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         foreach ($node->children as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
-                if (\is_string($child_node) && \strpos($child_node, '@phan-') !== false) {
-                    // Add @phan-var and @phan-suppress annotations in string literals to the local scope
-                    $this->analyzeSubstituteVarAssert($this->code_base, $context, $child_node);
+                if (\is_string($child_node)) {
+                    if (\strpos($child_node, '@phan-') !== false) {
+                        // Add @phan-var and @phan-suppress annotations in string literals to the local scope
+                        $this->analyzeSubstituteVarAssert($this->code_base, $context, $child_node);
+                    } else {
+                        Issue::maybeEmit(
+                            $this->code_base,
+                            $context,
+                            Issue::NoopStringLiteral,
+                            $context->getLineNumberStart(),
+                            json_encode($child_node, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)
+                        );
+                    }
+                } elseif (\is_scalar($child_node)) {
+                    Issue::maybeEmit(
+                        $this->code_base,
+                        $context,
+                        Issue::NoopNumericLiteral,
+                        $context->getLineNumberStart(),
+                        var_export($child_node, true)
+                    );
                 }
                 continue;
             }
@@ -192,11 +224,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         return $context;
     }
 
+    const PHAN_FILE_SUPPRESS_REGEX =
+        '/@phan-file-suppress\s+' . Comment::SUPPRESS_ISSUE_LIST . '/';
+
+
     const PHAN_VAR_REGEX =
         '/@(phan-var(?:-force)?)\b\s*(' . UnionType::union_type_regex . ')\s*&?\\$' . Comment::WORD_REGEX . '/';
-
-    const PHAN_SUPPRESS_REGEX =
-        '/@phan-file-suppress\s+' . Comment::WORD_REGEX . '/';
 
     /**
      * Parses annotations such as "(at)phan-var int $myVar" and "(at)phan-var-force ?MyClass $varName" annotations from inline string literals.
@@ -219,11 +252,15 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             }
         }
 
-        if (\preg_match_all(self::PHAN_SUPPRESS_REGEX, $text, $matches, PREG_SET_ORDER) > 0) {
+        if (\preg_match_all(self::PHAN_FILE_SUPPRESS_REGEX, $text, $matches, PREG_SET_ORDER) > 0) {
             $has_known_annotations = true;
-            foreach ($matches as $group) {
-                $issue_name = $group[1];
-                $code_base->addFileLevelSuppression($context->getFile(), $issue_name);
+            if (!Config::getValue('disable_file_based_suppression')) {
+                foreach ($matches as $group) {
+                    $issue_name_list = $group[1];
+                    foreach (array_map('trim', explode(',', $issue_name_list)) as $issue_name) {
+                        $code_base->addFileLevelSuppression($context->getFile(), $issue_name);
+                    }
+                }
             }
         }
 
@@ -250,12 +287,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 return;
             }
             if (!$create_variable && !($context->isInGlobalScope() && Config::getValue('ignore_undeclared_variables_in_global_scope'))) {
-                Issue::maybeEmit(
+                Issue::maybeEmitWithParameters(
                     $code_base,
                     $context,
                     Issue::UndeclaredVariable,
                     $context->getLineNumberStart(),
-                    $var_name
+                    [$var_name],
+                    IssueFixSuggester::suggestVariableTypoFix($code_base, $context, $var_name)
                 );
                 return;
             }
@@ -842,9 +880,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // them
         $catch_context_list = [$try_context];
 
-        foreach ($node->children['catches']->children as $catch_node) {
+        $catch_nodes = $node->children['catches']->children ?? [];
+
+        foreach ($catch_nodes as $catch_node) {
             // Note: ContextMergeVisitor expects to get each individual catch
             assert($catch_node instanceof Node);
+
             // The conditions need to communicate to the outer
             // scope for things like assigning veriables.
             $catch_context = $context->withScope(
@@ -861,6 +902,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // NOTE: We let ContextMergeVisitor->mergeCatchContext decide if the block exit status is valid.
             $catch_context_list[] = $catch_context;
         }
+
+        $this->checkUnreachableCatch($catch_nodes, $context);
 
         // first context is the try. If there's a second context, it's a catch.
         if (count($catch_context_list) >= 2) {
@@ -901,6 +944,55 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // context to be the incoming context. Otherwise,
         // we pass our new context up to our parent
         return $context;
+    }
+
+    /**
+     * @param array<int,Node> $catch_nodes
+     * @param Context $context
+     * @return void
+     */
+    private function checkUnreachableCatch(array $catch_nodes, Context $context)
+    {
+        if (count($catch_nodes) <= 1) {
+            return;
+        }
+        $caught_union_types = [];
+        $code_base = $this->code_base;
+
+        foreach ($catch_nodes as $catch_node) {
+            $union_type = UnionTypeVisitor::unionTypeFromClassNode(
+                $code_base,
+                $context,
+                $catch_node->children['class']
+            )->objectTypesWithKnownFQSENs();
+
+            $catch_line = $catch_node->lineno ?? 0;
+
+            foreach ($union_type->getTypeSet() as $type) {
+                foreach ($type->asExpandedTypes($code_base)->getTypeSet() as $ancestor_type) {
+                    // Check if any of the ancestors were already caught by a previous catch statement
+                    $line = $caught_union_types[\spl_object_id($ancestor_type)] ?? null;
+
+                    if ($line !== null) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::UnreachableCatch,
+                            $catch_line,
+                            (string)$type,
+                            $line,
+                            (string)$ancestor_type
+                        );
+                        break;
+                    }
+                }
+            }
+            foreach ($union_type->getTypeSet() as $type) {
+                // Track where this ancestor type was thrown
+                // @phan-suppress-next-line PhanPluginUnusedVariable
+                $caught_union_types[\spl_object_id($type)] = $catch_line;
+            }
+        }
     }
 
     /**
@@ -1113,10 +1205,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $child_context_list[] = $child_context;
         }
         if (\count($child_context_list) >= 1) {
+            if (\count($child_context_list) < 2) {
+                $child_context_list[] = $context;
+            }
             $context = (new ContextMergeVisitor(
                 $context,
                 $child_context_list
-            ))->__invoke($node);
+            ))->combineChildContextList();
         }
 
         $context = $this->postOrderAnalyze($context, $node);

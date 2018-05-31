@@ -1,8 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\FQSEN;
 
+use Phan\Exception\EmptyFQSENException;
 use Phan\Language\Context;
 use Phan\Language\Type;
+
+use AssertionError;
 
 /**
  * A Fully-Qualified Global Structural Element
@@ -34,9 +37,11 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         string $name,
         int $alternate_id = 0
     ) {
-        \assert(!empty($name), "The name cannot be empty");
+        if ($name === '') {
+            throw new EmptyFQSENException("The name of an FQSEN cannot be empty", rtrim($namespace, '\\') . '\\');
+        }
 
-        \assert(!empty($namespace), "The namespace cannot be empty");
+        \assert($namespace !== '', "The namespace cannot be empty");
 
         \assert(
             $namespace[0] === '\\',
@@ -88,14 +93,14 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         // name to the namespace.
         $name_parts = \explode('\\', $name);
         $name = \array_pop($name_parts);
-        $namespace = \implode('\\', \array_merge([$namespace], $name_parts));
+        foreach ($name_parts as $part) {
+            $namespace .= '\\' . $part;
+        }
         $namespace = self::cleanNamespace($namespace);
 
         // use the canonicalName for $name instead of strtolower - Some subclasses(constants) are case sensitive.
-        $key = implode('|', [
-            static::class,
-            static::toString(\strtolower($namespace), static::canonicalLookupKey($name), $alternate_id)
-        ]);
+        $key = static::class . '|' .
+            static::toString(\strtolower($namespace), static::canonicalLookupKey($name), $alternate_id);
 
         $fqsen = self::memoizeStatic($key, function () use ($namespace, $name, $alternate_id) {
             return new static(
@@ -113,6 +118,8 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      * An fully qualified string like '\Namespace\Class'
      *
      * @return static
+     *
+     * @throws AssertionError on failure. TODO: More consistently throw AssertionError
      */
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
@@ -123,23 +130,26 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         return self::memoizeStatic($key, function () use ($fully_qualified_string) {
 
             // Split off the alternate_id
-            $parts = explode(',', $fully_qualified_string);
+            $parts = \explode(',', $fully_qualified_string);
             $fqsen_string = $parts[0];
             $alternate_id = (int)($parts[1] ?? 0);
 
-            $parts = explode('\\', $fqsen_string);
-            $name = array_pop($parts);
+            $parts = \explode('\\', $fqsen_string);
+            $name = \array_pop($parts);
 
-            \assert(!empty($name), "The name cannot be empty");
+            if ($name === '') {
+                throw new AssertionError("The name cannot be empty");
+            }
 
-            $namespace = '\\' . implode('\\', array_filter($parts));
+            $namespace = '\\' . \implode('\\', \array_filter($parts));
 
-            \assert(!empty($namespace), "The namespace cannot be empty");
+            if ($namespace === '') {
+                throw new AssertionError("The namespace cannot be empty");
+            }
 
-            \assert(
-                $namespace[0] === '\\',
-                "The first character of the namespace must be \\"
-            );
+            if ($namespace[0] !== '\\') {
+                throw new AssertionError("The first character of the namespace must be \\");
+            }
 
             return static::make(
                 $namespace,
@@ -172,13 +182,13 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         }
 
         // Split off the alternate ID
-        $parts = explode(',', $fqsen_string);
+        $parts = \explode(',', $fqsen_string);
         $fqsen_string = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
 
-        $parts = explode('\\', $fqsen_string);
+        $parts = \explode('\\', $fqsen_string);
         // Split the parts into the namespace(0 or more components) and the last name.
-        $name = array_pop($parts);
+        $name = \array_pop($parts);
 
         \assert(!empty($name), "The name cannot be empty");
 
@@ -190,7 +200,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             );
         }
 
-        $namespace = implode('\\', array_filter($parts));
+        $namespace = \implode('\\', \array_filter($parts));
 
         // n.b.: Functions must override this method because
         //       they don't prefix the namespace for naked

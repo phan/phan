@@ -84,10 +84,8 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         $pos = \strrpos($fqsen, '\\');
         if ($pos !== false) {
             $name = \substr($fqsen, $pos + 1);
-            $namespace = \substr($fqsen, 0, $pos);
         } else {
             $name = $fqsen;
-            $namespace = '';
         }
 
         $is_defined = \defined($fqsen);
@@ -99,7 +97,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
             $comment = '  // could not find';
         }
         $namespace = \ltrim($this->getFQSEN()->getNamespace(), '\\');
-        if (\preg_match('@[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*@', $name)) {
+        if (\preg_match('@^[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*$@', $name)) {
             $string = "const $name = $repr;$comment\n";
         } else {
             // Internal extension defined a constant with an invalid identifier.

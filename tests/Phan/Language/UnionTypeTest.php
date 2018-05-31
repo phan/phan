@@ -42,9 +42,15 @@ class UnionTypeTest extends BaseTest
     /** @var CodeBase|null */
     protected static $code_base = null;
 
-    // Based on BaseTest
-    // TODO: Investigate instantiating CodeBase in a cheaper way (lazily?)
+    /**
+     * Based on BaseTest
+     * TODO: Investigate instantiating CodeBase in a cheaper way (lazily?)
+     * @suppress PhanReadOnlyProtectedProperty read by phpunit framework
+     */
     protected $backupStaticAttributesBlacklist = [
+        'Phan\AST\PhanAnnotationAdder' => [
+            'closures_for_kind',
+        ],
         'Phan\Language\Type' => [
             'canonical_object_map',
             'internal_fn_cache',
@@ -199,6 +205,7 @@ class UnionTypeTest extends BaseTest
      * the first statement in the statement list in the given
      * code.
      * @suppress PhanDeprecatedFunction
+     * @suppress PhanPartialTypeMismatchArgument
      */
     private function typeStringFromCode(string $code) : string
     {

@@ -5,11 +5,13 @@ use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Generator;
 
 /**
  * NOTE: there may also be instances of UnionType that are empty, due to the constructor being public
  *
- * @phan-file-suppress PhanPluginUnusedPublicFinalMethodArgument the results don't depend on passed in parameters
+ * @phan-file-suppress PhanPluginUnusedPublicFinalMethodArgument, PhanUnusedPublicFinalMethodParameter the results don't depend on passed in parameters
  */
 final class EmptyUnionType extends UnionType
 {
@@ -167,6 +169,17 @@ final class EmptyUnionType extends UnionType
 
     /**
      * @return bool
+     * True if this union type has any types that have generic
+     * types
+     * @override
+     */
+    public function hasTemplateParameterTypes() : bool
+    {
+        return false;
+    }
+
+    /**
+     * @return bool
      * True if this type has a type referencing the
      * class context 'static'.
      * @override
@@ -234,6 +247,14 @@ final class EmptyUnionType extends UnionType
      * @return bool - True if not empty and at least one type is NullType or nullable.
      */
     public function containsNullable() : bool
+    {
+        return false;
+    }
+
+    /**
+     * @return bool - True if not empty, not possibly undefined, and at least one type is NullType or nullable.
+     */
+    public function containsNullableOrUndefined() : bool
     {
         return false;
     }
@@ -528,7 +549,7 @@ final class EmptyUnionType extends UnionType
      * @return bool
      * True if this union type represents types that are arrays
      * or generic arrays, but nothing else.
-     * @suppress PhanUnreferencedPublicMethod
+     * @override
      */
     public function isExclusivelyArray() : bool
     {
@@ -559,6 +580,8 @@ final class EmptyUnionType extends UnionType
      * type.
      *
      * @return \Generator
+     * @phan-return \Generator<FullyQualifiedClassName>
+     * @suppress PhanTypeMismatchGeneratorYieldValue (deliberate empty stub code)
      *
      * A list of class FQSENs representing the non-native types
      * associated with this UnionType
@@ -577,7 +600,7 @@ final class EmptyUnionType extends UnionType
         Context $context
     ) {
         if (false) {
-            yield null;
+            yield;
         }
     }
 
@@ -607,7 +630,7 @@ final class EmptyUnionType extends UnionType
         Context $context
     ) {
         if (false) {
-            yield null;  // This is a generator yielding 0 results. This works around a bug in tolerant-php-parser 0.0.9
+            yield;
         }
     }
 
@@ -617,7 +640,7 @@ final class EmptyUnionType extends UnionType
      * @return UnionType
      * A UnionType with generic array types filtered out
      *
-     * @suppress PhanUnreferencedPublicMethod
+     * @override
      */
     public function nonGenericArrayTypes() : UnionType
     {
@@ -646,6 +669,19 @@ final class EmptyUnionType extends UnionType
      * @see nonGenericArrayTypes
      */
     public function objectTypes() : UnionType
+    {
+        return $this;
+    }
+
+    /**
+     * Takes "MyClass|int|array|?object" and returns "MyClass|?object"
+     *
+     * @return UnionType
+     * A UnionType with known object types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     */
+    public function objectTypesWithKnownFQSENs() : UnionType
     {
         return $this;
     }
@@ -703,7 +739,7 @@ final class EmptyUnionType extends UnionType
      *
      * @see $this->callableTypes()
      *
-     * @suppress PhanUnreferencedPublicMethod
+     * @override
      */
     public function hasCallableType() : bool
     {
@@ -835,10 +871,10 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
-     * @param CodeBase
+     * @param CodeBase $code_base
      * The code base to use in order to find super classes, etc.
      *
-     * @param $recursion_depth
+     * @param int $recursion_depth
      * This thing has a tendency to run-away on me. This tracks
      * how bad I messed up by seeing how far the expanded types
      * go
@@ -903,6 +939,12 @@ final class EmptyUnionType extends UnionType
     }
 
     /** @override */
+    public function hasMixedType() : bool
+    {
+        return false;
+    }
+
+    /** @override */
     public function withFlattenedArrayShapeTypeInstances() : UnionType
     {
         return $this;
@@ -934,10 +976,57 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
-     * @param int|string $field_key
+     * @param int|string|float|bool $field_key
      */
     public function withoutArrayShapeField($field_key) : UnionType
     {
         return $this;
+    }
+
+    public function withoutSubclassesOf(CodeBase $code_base, Type $object_type) : UnionType
+    {
+        return $this;
+    }
+
+    public function canStrictCastToUnionType(UnionType $target) : bool
+    {
+        return true;
+    }
+
+    public function hasArray() : bool
+    {
+        return false;
+    }
+
+    public function hasClassWithToStringMethod(CodeBase $code_base, Context $context) : bool
+    {
+        return false;
+    }
+
+    public function asGeneratorTemplateType() : Type
+    {
+        return Type::fromFullyQualifiedString('\Generator');
+    }
+
+    public function iterableKeyUnionType(CodeBase $unused_code_base) : UnionType
+    {
+        return $this;
+    }
+
+    public function iterableValueUnionType(CodeBase $unused_code_base) : UnionType
+    {
+        return $this;
+    }
+
+    /**
+     * @return Generator<Type,Type>
+     * @suppress PhanTypeMismatchGeneratorYieldValue (deliberate empty stub code)
+     * @suppress PhanTypeMismatchGeneratorYieldKey (deliberate empty stub code)
+     */
+    public function getReferencedClasses() : Generator
+    {
+        if (false) {
+            yield;
+        }
     }
 }

@@ -24,7 +24,7 @@ use Phan\PluginV2;
  *
  * TODO: Refactor this.
  *
- * @phan-file-suppress PhanPluginUnusedClosureArgument
+ * @phan-file-suppress PhanPluginUnusedClosureArgument, PhanUnusedClosureParameter
  */
 final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
     ReturnTypeOverrideCapability
@@ -33,7 +33,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
     /**
      * @return array<string,\Closure>
      */
-    private static function getReturnTypeOverridesStatic(CodeBase $code_base) : array
+    private static function getReturnTypeOverridesStatic() : array
     {
         $mixed_type  = MixedType::instance(false);
         $false_type  = FalseType::instance(false);
@@ -345,10 +345,12 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             'array_uintersect_assoc'    => $merge_array_types_callback,
             'array_uintersect_uassoc'   => $merge_array_types_callback,
             'array_unique'              => $get_first_array_arg,
+            // TODO: iterator_to_array
         ];
     }
 
     /**
+     * @param CodeBase $code_base @phan-unused-param
      * @return array<string,\Closure>
      */
     public function getReturnTypeOverrides(CodeBase $code_base) : array
@@ -356,7 +358,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
         // Unit tests invoke this repeatedly. Cache it.
         static $overrides = null;
         if ($overrides === null) {
-            $overrides = self::getReturnTypeOverridesStatic($code_base);
+            $overrides = self::getReturnTypeOverridesStatic();
         }
         return $overrides;
     }

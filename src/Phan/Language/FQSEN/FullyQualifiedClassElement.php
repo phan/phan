@@ -21,7 +21,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
 
     /**
      * @param FullyQualifiedClassName $fully_qualified_class_name
-     * The fully qualified class name of the class in whic
+     * The fully qualified class name of the class in which
      * this element exists
      *
      * @param string $name
@@ -45,7 +45,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
 
     /**
      * @param FullyQualifiedClassName $fully_qualified_class_name
-     * The fully qualified class name of the class in whic
+     * The fully qualified class name of the class in which
      * this element exists
      *
      * @param string $name
@@ -86,7 +86,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
             return $this;
         }
         return static::make(
-            $fully_qualified_class_name,
+            $fully_qualified_class_name,  // @phan-suppress-current-line PhanPartialTypeMismatchArgument
             $this->getName(),
             0
         );

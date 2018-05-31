@@ -29,6 +29,24 @@ return [
     // are treated as if they can cast to each other.
     'scalar_implicit_cast' => false,
 
+    // If enabled, Phan will warn if **any** type in the argument's type
+    // cannot be cast to a type in the parameter's expected type.
+    // Setting this to true will introduce a large number of false positives (and some bugs).
+    // (For self-analysis, Phan has a large number of suppressions and file-level suppressions, due to \ast\Node being difficult to type check)
+    'strict_param_checking' => true,
+
+    // If enabled, Phan will warn if **any** type in a property assignment's type
+    // cannot be cast to a type in the property's expected type.
+    // Setting this to true will introduce a large number of false positives (and some bugs).
+    // (For self-analysis, Phan has a large number of suppressions and file-level suppressions, due to \ast\Node being difficult to type check)
+    'strict_property_checking' => true,
+
+    // If enabled, Phan will warn if **any** type in the return statement's type
+    // cannot be cast to a type in the method's declared return type.
+    // Setting this to true will introduce a large number of false positives (and some bugs).
+    // (For self-analysis, Phan has a large number of suppressions and file-level suppressions, due to \ast\Node being difficult to type check)
+    'strict_return_checking' => true,
+
     // If true, seemingly undeclared variables in the global
     // scope will be ignored. This is useful for projects
     // with complicated cross-file globals that you have no
@@ -48,6 +66,9 @@ return [
     // Test dead code detection
     'dead_code_detection' => true,
 
+    // TODO: Test unused variable detection
+    'unused_variable_detection' => true,
+
     'globals_type_map' => ['test_global_exception' => 'Exception', 'test_global_error' => '\\Error'],
 
     "quick_mode" => false,
@@ -60,6 +81,10 @@ return [
 
     'analyzed_file_extensions' => ['php'],
 
+    'plugin_config' => [
+        'php_native_syntax_check_max_processes' => 4,
+    ],
+
     // A list of plugin files to execute
     // (Execute all of them.)
     // FooName is shorthand for /path/to/phan/.phan/plugins/FooName.php.
@@ -69,6 +94,7 @@ return [
         'DollarDollarPlugin',
         'DuplicateArrayKeyPlugin',
         'InvalidVariableIssetPlugin',
+        'InvokePHPNativeSyntaxCheckPlugin',
         'NonBoolBranchPlugin',
         'NonBoolInLogicalArithPlugin',
         'NumericalComparisonPlugin',
@@ -76,5 +102,6 @@ return [
         'PrintfCheckerPlugin',
         'UnreachableCodePlugin',
         'UnusedSuppressionPlugin',
+        'SleepCheckerPlugin',
     ],
 ];

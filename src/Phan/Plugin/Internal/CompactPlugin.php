@@ -4,6 +4,7 @@ namespace Phan\Plugin\Internal;
 use Phan\AST\ContextNode;
 use Phan\CodeBase;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\PluginV2;
@@ -17,12 +18,15 @@ final class CompactPlugin extends PluginV2 implements
     AnalyzeFunctionCallCapability
 {
 
+    /**
+     * @param CodeBase $code_base @phan-unused-param
+     */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
     {
         // Unit tests invoke this repeatedly. Cache it.
         static $analyzers = null;
         if ($analyzers === null) {
-            $analyzers = self::getAnalyzeFunctionCallClosuresStatic($code_base);
+            $analyzers = self::getAnalyzeFunctionCallClosuresStatic();
         }
         return $analyzers;
     }
@@ -30,7 +34,7 @@ final class CompactPlugin extends PluginV2 implements
     /**
      * @return array<string,\Closure>
      */
-    private static function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
+    private static function getAnalyzeFunctionCallClosuresStatic() : array
     {
         /**
          * @return void
@@ -43,12 +47,13 @@ final class CompactPlugin extends PluginV2 implements
         ) {
             $maybe_emit_issue = function (string $variable_name, $arg = null) use ($code_base, $context) {
                 if (!$context->getScope()->hasVariableWithName($variable_name)) {
-                    Issue::maybeEmit(
+                    Issue::maybeEmitWithParameters(
                         $code_base,
                         $context,
                         Issue::UndeclaredVariable,
                         $arg->lineno ?? $context->getLineNumberStart(),
-                        $variable_name
+                        [$variable_name],
+                        IssueFixSuggester::suggestVariableTypoFix($code_base, $context, $variable_name)
                     );
                 }
             };

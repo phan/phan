@@ -19,27 +19,35 @@ class Consistent implements Hasher
 
     public function __construct(int $groupCount)
     {
-        $map = [];
-        for ($group = 0; $group < $groupCount; $group++) {
-            foreach (self::getHashesForGroup($group) as $hash) {
-                $map[$hash] = $group;
-            }
-        }
+        $map = self::generateMap($groupCount);
         $hashRingIds = [];
         $hashRingGroups = [];
-        \ksort($map);
         foreach ($map as $key => $group) {
             $hashRingIds[] = $key;
             $hashRingGroups[] = $group;
         }
         // ... and make the map wrap around.
         $hashRingIds[] = self::MAX - 1;
-        $hashRingGroups[] = \reset($map);
+        $hashRingGroups[] = \reset($map) ?: 0;
 
         $this->hashRingIds = $hashRingIds;
         $this->hashRingGroups = $hashRingGroups;
     }
 
+    /**
+     * @return array<int,int> maps points in the field to the corresponding group (for consistent hashing)
+     */
+    private static function generateMap(int $groupCount)
+    {
+        $map = [];
+        for ($group = 0; $group < $groupCount; $group++) {
+            foreach (self::getHashesForGroup($group) as $hash) {
+                $map[$hash] = $group;
+            }
+        }
+        \ksort($map);
+        return $map;
+    }
     /**
      * Do a binary search in the consistent hashing ring to find the group.
      * @return int - an integer between 0 and $this->groupCount - 1, inclusive

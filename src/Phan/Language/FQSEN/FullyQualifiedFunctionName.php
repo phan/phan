@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\FQSEN;
 
+use Phan\Exception\EmptyFQSENException;
 use Phan\Language\Context;
 use ast\Node;
 
@@ -56,10 +57,9 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
         $parts = \explode('\\', $fqsen_string);
         $name = \array_pop($parts);
 
-        \assert(
-            !empty($name),
-            "The name cannot be empty"
-        );
+        if ($name === '') {
+            throw new EmptyFQSENException("The name cannot be empty", $fqsen_string);
+        }
 
         // Check for a name map
         if ($context->hasNamespaceMapFor(static::getNamespaceMapType(), $fqsen_string)) {
@@ -71,7 +71,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
 
         // For functions we don't use the context's namespace if
         // there is no NS on the call.
-        $namespace = implode('\\', array_filter($parts));
+        $namespace = \implode('\\', array_filter($parts));
 
         return static::make(
             $namespace,
@@ -84,12 +84,11 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
         Context $context,
         Node $node
     ) : FullyQualifiedFunctionName {
-        $hash_material = implode('|', [
-            $context->getFile(),
-            $context->getLineNumberStart(),
-            $node->children['__declId'],
-        ]);
-        // TODO: hash args
+        $hash_material =
+            $context->getFile() . '|' .
+            $context->getLineNumberStart() . '|' .
+            $node->children['__declId'];
+
         $name = 'closure_' . substr(md5($hash_material), 0, 12);
 
         return static::fromStringInContext(

@@ -1,0 +1,11 @@
+%s:8 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:9 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:18 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:19 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:28 PhanTypeMismatchArgument Argument 1 (tsi) is \Traversable|\Traversable<int,int>|iterable but \expect_traversable_string_int() takes \Traversable<string,int> defined at %s:16
+%s:30 PhanTypeMismatchArgument Argument 1 (tsi) is \Traversable|\Traversable<string,string>|iterable but \expect_traversable_string_int() takes \Traversable<string,int> defined at %s:16
+%s:39 PhanTypeMismatchArgument Argument 1 (isi) is array<string,string> but \expect_iterable_string_int() takes iterable<string,int> defined at %s:6
+%s:40 PhanTypeMismatchArgument Argument 1 (isi) is array<int,string> but \expect_iterable_string_int() takes iterable<string,int> defined at %s:6
+%s:42 PhanTypeMismatchArgument Argument 1 (tsi) is array<string,int> but \expect_traversable_string_int() takes \Traversable<string,int> defined at %s:16
+%s:51 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:52 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int

@@ -1,0 +1,2 @@
+src/029_other_parse_failure.php:102 PhanUnreferencedClass Possibly zero references to class \MyClass29
+src/029_other_parse_failure.php:103 PhanNativePHPSyntaxCheckPlugin Saw error or notice for php --syntax-check: "Fatal error: A class constant must not be called 'class'; it is reserved for class name fetching"

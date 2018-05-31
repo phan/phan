@@ -67,9 +67,8 @@ final class GenericArrayType extends ArrayType
         if ($key_type & ~3) {
             throw new \InvalidArgumentException("Invalid key_type $key_type");
         }
-        parent::__construct('\\', self::NAME, [], false);
+        parent::__construct('\\', self::NAME, [], $is_nullable);
         $this->element_type = $type;
-        $this->is_nullable = $is_nullable;
         $this->key_type = $key_type;
     }
 
@@ -134,8 +133,11 @@ final class GenericArrayType extends ArrayType
             // can cast to Iterable but not Traversable
             return true;
         }
+        if ($type instanceof GenericIterableType) {
+            return $this->canCastToGenericIterableType($type);
+        }
 
-        $d = \strtolower((string)$type);
+        $d = \strtolower($type->__toString());
         if ($d[0] == '\\') {
             $d = \substr($d, 1);
         }
@@ -144,6 +146,20 @@ final class GenericArrayType extends ArrayType
         }
 
         return parent::canCastToNonNullableType($type);
+    }
+
+    private function canCastToGenericIterableType(
+        GenericIterableType $iterable_type
+    ) : bool {
+        if (!$this->element_type->asUnionType()->canCastToUnionType($iterable_type->getElementUnionType())) {
+            return false;
+        }
+        // TODO: Account for scalar key casting config
+        $key_union_type = self::unionTypeForKeyType($this->key_type);
+        if (!$key_union_type->canCastToUnionType($iterable_type->getKeyUnionType())) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -205,6 +221,24 @@ final class GenericArrayType extends ArrayType
     }
 
     /**
+     * @return UnionType returns the array value's union type
+     * @phan-override
+     */
+    public function iterableValueUnionType(CodeBase $unused_codebase)
+    {
+        return $this->element_type->asUnionType();
+    }
+
+    /**
+     * @return UnionType the array key's union type
+     * @phan-override
+     */
+    public function iterableKeyUnionType(CodeBase $unused_codebase)
+    {
+        return self::unionTypeForKeyType($this->key_type);
+    }
+
+    /**
      * @return UnionType
      * A variation of this type that is not generic.
      * i.e. 'int[]' becomes 'int'.
@@ -216,7 +250,7 @@ final class GenericArrayType extends ArrayType
 
     public function __toString() : string
     {
-        $string = (string)$this->element_type;
+        $string = $this->element_type->__toString();
         if ($this->key_type === self::KEY_MIXED) {
             // Disambiguation is needed for ?T[] and (?T)[] but not array<int,?T>
             if ($string[0] === '?') {
@@ -239,7 +273,7 @@ final class GenericArrayType extends ArrayType
     }
 
     /**
-     * @param CodeBase
+     * @param CodeBase $code_base
      * The code base to use in order to find super classes, etc.
      *
      * @param $recursion_depth
@@ -264,7 +298,7 @@ final class GenericArrayType extends ArrayType
             "Recursion has gotten out of hand"
         );
 
-        $union_type = $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) {
+        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) {
             $union_type = $this->asUnionType();
 
             $class_fqsen = $this->genericArrayElementType()->asFQSEN();
@@ -281,8 +315,14 @@ final class GenericArrayType extends ArrayType
 
             $clazz = $code_base->getClassByFQSEN($class_fqsen);
 
+            $class_union_type = $clazz->getUnionType();
+            $additional_union_type = $clazz->getAdditionalTypes();
+            if ($additional_union_type !== null) {
+                $class_union_type = $union_type->withUnionType($additional_union_type);
+            }
+
             $union_type = $union_type->withUnionType(
-                $clazz->getUnionType()->asGenericArrayTypes($this->key_type)
+                $class_union_type->asGenericArrayTypes($this->key_type)
             );
 
             // Recurse up the tree to include all types
@@ -312,7 +352,6 @@ final class GenericArrayType extends ArrayType
             }
             return $recursive_union_type_builder->getUnionType();
         });
-        return $union_type;
     }
 
     public static function keyTypeFromUnionTypeKeys(UnionType $union_type) : int
@@ -321,12 +360,12 @@ final class GenericArrayType extends ArrayType
         foreach ($union_type->getTypeSet() as $type) {
             if ($type instanceof GenericArrayType) {
                 $key_types |= $type->key_type;
-                continue;
-                // TODO: support array shape as well?
             } elseif ($type instanceof ArrayShapeType) {
-                $key_types |= $type->getKeyType();
-                continue;
+                if ($type->isNotEmptyArrayShape()) {
+                    $key_types |= $type->getKeyType();
+                }
             }
+            // Treating ArrayType as mixed or excluding ArrayType would both cause false positives. Ignore ArrayType.
         }
         // int|string corresponds to KEY_MIXED (KEY_INT|KEY_STRING)
         // And if we're unable to find any types, return KEY_MIXED.
@@ -342,20 +381,22 @@ final class GenericArrayType extends ArrayType
      */
     public static function unionTypeForKeyType(int $key_type, int $behavior = self::CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE) : UnionType
     {
-        static $int_type = null;
-        static $string_type = null;
-        if ($int_type === null) {
-            $int_type = IntType::instance(false);
-            $string_type = StringType::instance(false);
+        static $int_union_type = null;
+        static $string_union_type = null;
+        static $int_or_string_union_type = null;
+        if ($int_union_type === null) {
+            $int_union_type = UnionType::fromFullyQualifiedString('int');
+            $string_union_type = UnionType::fromFullyQualifiedString('string');
+            $int_or_string_union_type = UnionType::fromFullyQualifiedString('int|string');
         }
         switch ($key_type) {
             case self::KEY_INT:
-                return $int_type->asUnionType();
+                return $int_union_type;
             case self::KEY_STRING:
-                return $string_type->asUnionType();
+                return $string_union_type;
             default:
                 if ($behavior === self::CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE) {
-                    return new UnionType([$int_type, $string_type], true);
+                    return $int_or_string_union_type;
                 }
                 return UnionType::empty();
         }

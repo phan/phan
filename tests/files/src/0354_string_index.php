@@ -1,5 +1,5 @@
 <?php
-
+/** @phan-file-suppress PhanUnusedVariable common here */
 class A354 {
     /** @var string */
     public $foo = 'aaa';

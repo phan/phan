@@ -88,6 +88,16 @@ interface TypedElementInterface
 
     /**
      * @return bool
+     * True if this element would like to suppress the given
+     * issue name.
+     *
+     * If this is true, this automatically calls incrementSuppressIssueCount.
+     * Most callers should use this, except for uses similar to UnusedSuppressionPlugin
+     */
+    public function checkHasSuppressIssueAndIncrementCount(string $issue_name) : bool;
+
+    /**
+     * @return bool
      * True if this was an internal PHP object
      */
     public function isPHPInternal() : bool;

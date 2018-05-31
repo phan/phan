@@ -199,13 +199,11 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
     }
 
     /**
-     * @param Node $node
+     * @param Node $node @phan-unused-param
      * A node to check types on
      *
      * @return UnionType
      * The resulting type(s) of the binary operation
-     *
-     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function visitBinaryConcat(Node $node) : UnionType
     {

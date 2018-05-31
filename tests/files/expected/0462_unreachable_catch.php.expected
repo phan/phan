@@ -1,0 +1,6 @@
+%s:9 PhanUnreachableCatch Catch statement for \Error is unreachable. An earlier catch statement at line 7 caught the ancestor class/interface \Throwable
+%s:11 PhanUnreachableCatch Catch statement for \RuntimeException is unreachable. An earlier catch statement at line 5 caught the ancestor class/interface \Exception
+%s:21 PhanUnreachableCatch Catch statement for \ExceptionB is unreachable. An earlier catch statement at line 19 caught the ancestor class/interface \ExceptionA
+%s:38 PhanUnreachableCatch Catch statement for \ExceptionB is unreachable. An earlier catch statement at line 36 caught the ancestor class/interface \ExceptionB
+%s:40 PhanUnreachableCatch Catch statement for \TypeError is unreachable. An earlier catch statement at line 38 caught the ancestor class/interface \Error
+%s:53 PhanUnreachableCatch Catch statement for \ExceptionC is unreachable. An earlier catch statement at line 49 caught the ancestor class/interface \MyExceptionInterface

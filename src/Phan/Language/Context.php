@@ -510,10 +510,9 @@ class Context extends FileRef
         $fqsen = $this->getFunctionLikeFQSEN();
 
         if ($fqsen instanceof FullyQualifiedFunctionName) {
-            \assert(
-                $code_base->hasFunctionWithFQSEN($fqsen),
-                "The function does not exist"
-            );
+            if (!$code_base->hasFunctionWithFQSEN($fqsen)) {
+                throw new \RuntimeException("The function $fqsen does not exist, but Phan is in that function's scope");
+            }
             return $code_base->getFunctionByFQSEN($fqsen);
         }
 
@@ -671,6 +670,7 @@ class Context extends FileRef
     /**
      * @param int $node_id
      * @return ?array{0:UnionType,1:Clazz[]} $result
+     * @suppress PhanPartialTypeMismatchReturn cache is mixed with other cache objects
      */
     public function getCachedClassListOfNode(int $node_id)
     {

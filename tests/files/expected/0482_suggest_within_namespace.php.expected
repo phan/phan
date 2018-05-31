@@ -1,0 +1,2 @@
+%s:24 PhanUndeclaredClassMethod Call to method method from undeclared class \NS482\X\Typo (Did you mean class \NS482\X\Kypo or class \NS482\X\Type or trait \NS482\X\Typt)
+%s:25 PhanUndeclaredClassMethod Call to method __construct from undeclared class \NS482\X\Typo (Did you mean class \NS482\X\Kypo or class \NS482\X\Type)

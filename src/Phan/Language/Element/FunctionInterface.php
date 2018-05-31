@@ -3,6 +3,7 @@ namespace Phan\Language\Element;
 
 use Phan\CodeBase;
 use Phan\Language\Context;
+use Phan\Language\Type;
 use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\UnionType;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -244,7 +245,7 @@ interface FunctionInterface extends AddressableElementInterface
     public function getRealParameterList();
 
     /**
-     * @param array<string,UnionType> maps a subset of param names to the unmodified phpdoc parameter types.
+     * @param array<string,UnionType> $parameter_map maps a subset of param names to the unmodified phpdoc parameter types.
      * Will differ from real parameter types (ideally narrower)
      * @return void
      */
@@ -256,7 +257,7 @@ interface FunctionInterface extends AddressableElementInterface
     public function getPHPDocParameterTypeMap();
 
     /**
-     * @param ?UnionType the raw phpdoc union type
+     * @param ?UnionType $union_type the raw phpdoc union type
      * @return void
      */
     public function setPHPDocReturnType($union_type);
@@ -364,4 +365,16 @@ interface FunctionInterface extends AddressableElementInterface
      * The return value is used for type casting rule checking.
      */
     public function asFunctionLikeDeclarationType() : FunctionLikeDeclarationType;
+
+    /**
+     * @return array<mixed,string> in the same format as FunctionSignatureMap.php
+     */
+    public function toFunctionSignatureArray() : array;
+
+    /**
+     * Precondition: This function is a generator type
+     * Converts Generator|T[] to Generator<T>
+     * Converts Generator|array<int,stdClass> to Generator<int,stdClass>, etc.
+     */
+    public function getReturnTypeAsGeneratorTemplateType() : Type;
 }

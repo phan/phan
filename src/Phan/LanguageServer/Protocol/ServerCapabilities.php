@@ -5,6 +5,7 @@ namespace Phan\LanguageServer\Protocol;
 /**
  * Based on https://github.com/felixfbecker/php-language-server/tree/master/src/Protocol/ServerCapabilities.php
  * FIXME: Hook up capabilities for
+ * @phan-file-suppress PhanWriteOnlyPublicProperty (used by AdvancedJsonRpc)
  */
 class ServerCapabilities
 {
@@ -12,7 +13,6 @@ class ServerCapabilities
      * Defines how text documents are synced.
      *
      * @var TextDocumentSyncOptions|int|null
-     * @suppress PhanWriteOnlyPublicProperty (used by AdvancedJsonRpc)
      */
     public $textDocumentSync;
 
@@ -22,6 +22,20 @@ class ServerCapabilities
      * @var CompletionOptions|null
      */
     // public $completionProvider;
+
+    /**
+     * The server provides goto definition support.
+     *
+     * @var bool|null
+     */
+    public $definitionProvider;
+
+    /**
+     * The server provides goto definition support.
+     *
+     * @var bool|null
+     */
+    public $typeDefinitionProvider;
 
     /**
      * The server provides find references support.
@@ -105,7 +119,7 @@ class ServerCapabilities
      *
      * @var bool|null
      */
-    //public $xdefinitionProvider;
+    // public $xdefinitionProvider;
 
     /**
      * TODO: implement this?

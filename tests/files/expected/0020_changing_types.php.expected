@@ -1,3 +1,2 @@
-%s:16 PhanUndeclaredMethod Call to undeclared method \A::g
-%s:21 PhanUndeclaredMethod Call to undeclared method \B::f
-
+%s:16 PhanUndeclaredMethod Call to undeclared method \A::g (Did you mean expr->f())
+%s:21 PhanUndeclaredMethod Call to undeclared method \B::f (Did you mean expr->g())

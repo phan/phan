@@ -1,0 +1,8 @@
+src/037_unused_return.php:8 PhanUnusedVariable Unused definition of variable $myVar
+src/037_unused_return.php:9 PhanUnusedVariable Unused definition of variable $myUnusedVar
+src/037_unused_return.php:13 PhanUnusedVariable Unused definition of variable $myUnusedVar
+src/037_unused_return.php:17 PhanUnusedVariable Unused definition of variable $myVar
+src/037_unused_return.php:20 PhanUnusedVariable Unused definition of variable $myVar
+src/037_unused_return.php:21 PhanUnusedVariable Unused definition of variable $myUnusedVar
+src/037_unused_return.php:23 PhanUnusedVariable Unused definition of variable $myVar
+src/037_unused_return.php:24 PhanUnusedVariable Unused definition of variable $myUnusedVar

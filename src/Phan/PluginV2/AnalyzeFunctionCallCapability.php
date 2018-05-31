@@ -7,7 +7,7 @@ use Phan\CodeBase;
  * AnalyzeFunctionCallCapability is used when you want to analyze the parameters passed to a function or method, whether or not the return value is used.
  * (e.g. for analyzing `my_printf($fmtstr, ...$args)`)
  *
- * @see AnalyzeFunctionCallCapability for making the return type depend on the passed in parameters.
+ * @see ReturnTypeOverrideCapability for making the return type depend on the passed in parameters.
  */
 interface AnalyzeFunctionCallCapability
 {

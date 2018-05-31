@@ -13,6 +13,9 @@ use Phan\Language\Type;
 use Phan\Language\UnionType;
 use ast\Node;
 
+/**
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ */
 class Func extends AddressableElement implements FunctionInterface
 {
     use \Phan\Analysis\Analyzable;
@@ -279,6 +282,7 @@ class Func extends AddressableElement implements FunctionInterface
 
     /**
      * @return \Generator
+     * @phan-return \Generator<Func>
      * The set of all alternates to this function
      */
     public function alternateGenerator(CodeBase $code_base) : \Generator

@@ -1,8 +1,19 @@
 #!/usr/bin/env bash
-if [ "$#" != 0 ]; then
-	echo "Usage: $0" 1>&2
-	echo "Runs all unit tests, integration tests, and test scripts" 1>&2
-	exit 1
+
+# PHAN_TEST_PARALLEL can be set to 1 in your .bashrc (or other shell configuration) if you want to test in parallel by default.
+PHAN_TEST_PARALLEL=${PHAN_TEST_PARALLEL:-0}
+if [[ "$#" != 0 ]]; then
+	if [[ "$#" == 1 && "$@" == "--parallel" ]]; then
+		if type parallel >/dev/null; then
+			PHAN_TEST_PARALLEL=1
+		else
+			echo "GNU parallel is not installed, running tests in sequence"
+		fi
+	else
+		echo "Usage: $0 [--parallel]" 1>&2
+		echo "Runs all unit tests, integration tests, and test scripts" 1>&2
+		exit 1
+	fi
 fi
 
 # NOTE: We run these in a single phpunit run. The output is easier to read
@@ -13,7 +24,8 @@ fi
 #TEST_SUITES+=" RasmusTest"
 #TEST_SUITES+=" LanguageTest"
 
-TEST_SUITES="__FakeSelfTest"
+TEST_SUITES="__FakeAllPHPUnitTests"
+TEST_SUITES+=" __FakeSelfTest"
 TEST_SUITES+=" __FakeSelfFallbackTest"
 TEST_SUITES+=" __FakePHP70Test"
 TEST_SUITES+=" __FakeRewritingTest"
@@ -23,17 +35,20 @@ TEST_SUITES+=" __FakeToolTest"
 TEST_SUITES+=" __FakeConfigOverrideTest"
 
 FAILURES=""
-if ! ./vendor/bin/phpunit --colors; then
-	FAILURES="$FAILURES PHPUnit"
-fi
 
-for TEST_SUITE in $TEST_SUITES; do
-	echo "Running test suite: $TEST_SUITE"
-	if ! tests/run_test "$TEST_SUITE"; then
-		FAILURES="$FAILURES $TEST_SUITE"
+if [[ "$PHAN_TEST_PARALLEL" == 1 ]]; then
+	# Note: Must install GNU parallel for this to work.
+	if ! echo "$TEST_SUITES" | tr ' ' '\n' | parallel --jobs 4 --no-notice --joblog tests/.run_all_tests.joblog --arg-sep ' ' tests/run_test --print-test-suite; then
+		FAILURES=" $(awk '$7 >= 1 && $11 { print $11}' < tests/.run_all_tests.joblog | tr '\n' ' ')"
 	fi
-	echo
-done
+else
+	for TEST_SUITE in $TEST_SUITES; do
+		if ! tests/run_test --print-test-suite "$TEST_SUITE"; then
+			FAILURES="$FAILURES $TEST_SUITE"
+		fi
+		echo
+	done
+fi
 if [[ "x$FAILURES" != "x" ]]; then
 	echo "These tests or checks failed (see above output): $FAILURES"
 	exit 1

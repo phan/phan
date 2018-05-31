@@ -60,12 +60,16 @@ final class UnionTypeBuilder
 
     /**
      * @return array<int,Type>
+     * @suppress PhanPartialTypeMismatchReturn additional types were inferred
      */
     public function getTypeSet() : array
     {
         return $this->type_set;
     }
 
+    /**
+     * @suppress PhanPartialTypeMismatchArgument
+     */
     public function getUnionType() : UnionType
     {
         return UnionType::of($this->type_set);

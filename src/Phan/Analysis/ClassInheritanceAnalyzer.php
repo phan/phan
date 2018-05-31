@@ -3,6 +3,7 @@ namespace Phan\Analysis;
 
 use Phan\CodeBase;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
@@ -84,14 +85,28 @@ class ClassInheritanceAnalyzer
         Clazz $clazz,
         string $issue_type
     ) : bool {
-
         if (!$code_base->hasClassWithFQSEN($fqsen)) {
-            Issue::maybeEmit(
+            $filter = null;
+            switch ($issue_type) {
+                case Issue::UndeclaredExtendedClass:
+                    $filter = IssueFixSuggester::createFQSENFilterForClasslikeCategories($code_base, true, false, false);
+                    break;
+                case Issue::UndeclaredTrait:
+                    $filter = IssueFixSuggester::createFQSENFilterForClasslikeCategories($code_base, false, true, false);
+                    break;
+                case Issue::UndeclaredInterface:
+                    $filter = IssueFixSuggester::createFQSENFilterForClasslikeCategories($code_base, false, false, true);
+                    break;
+            }
+            $suggestion = IssueFixSuggester::suggestSimilarClass($code_base, $clazz->getContext(), $fqsen, $filter);
+
+            Issue::maybeEmitWithParameters(
                 $code_base,
                 $clazz->getContext(),
                 $issue_type,
                 $clazz->getFileRef()->getLineNumberStart(),
-                (string)$fqsen
+                [(string)$fqsen],
+                $suggestion
             );
 
             return false;

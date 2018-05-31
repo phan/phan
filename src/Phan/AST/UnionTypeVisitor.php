@@ -10,11 +10,13 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Debug;
 use Phan\Exception\CodeBaseException;
+use Phan\Exception\EmptyFQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
 use Phan\Exception\TypeException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
@@ -49,6 +51,8 @@ use ast\Node;
 /**
  * Determine the UnionType associated with a
  * given node
+ * @phan-file-suppress PhanPartialTypeMismatchArgument node is complicated
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal node is complicated
  */
 class UnionTypeVisitor extends AnalysisVisitor
 {
@@ -774,6 +778,33 @@ class UnionTypeVisitor extends AnalysisVisitor
         return ArrayShapeType::empty(false)->asUnionType();
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_YIELD`
+     *
+     * @param Node $unused_node
+     * A yield node. Does not affect the union type
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     */
+    public function visitYield(Node $unused_node) : UnionType
+    {
+        $context = $this->context;
+        if (!$context->isInFunctionLikeScope()) {
+            return UnionType::empty();
+        }
+
+        // Get the method/function/closure we're in
+        $method = $context->getFunctionLikeInScope($this->code_base);
+        $method_generator_type = $method->getReturnTypeAsGeneratorTemplateType();
+        $type_list = $method_generator_type->getTemplateParameterTypeList();
+        if (\count($type_list) < 3 || \count($type_list) > 4) {
+            return UnionType::empty();
+        }
+        // Return TSend of Generator<TKey,TValue,TSend[,TReturn]>
+        return $type_list[2];
+    }
 
     /**
      * @return ?array<int|string,true>
@@ -1067,6 +1098,9 @@ class UnionTypeVisitor extends AnalysisVisitor
         return BoolType::instance(false)->asUnionType();
     }
 
+    /** @internal - Duplicated for performance. Use PhanAnnotationAdder instead */
+    const FLAG_IGNORE_NULLABLE = 1 << 29;
+
     /**
      * Visit a node with kind `\ast\AST_DIM`
      *
@@ -1126,13 +1160,13 @@ class UnionTypeVisitor extends AnalysisVisitor
         );
 
         // Figure out what the types of accessed array
-        // elements would be
+        // elements would be.
         $generic_types =
             $union_type->genericArrayElementTypes();
 
         // If we have generics, we're all set
         if (!$generic_types->isEmpty()) {
-            if ($this->isSuspiciousNullable($union_type)) {
+            if ($this->isSuspiciousNullable($union_type) && !($node->flags & self::FLAG_IGNORE_NULLABLE)) {
                 $this->emitIssue(
                     Issue::TypeArraySuspiciousNullable,
                     $node->lineno ?? 0,
@@ -1141,7 +1175,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
 
             if (!$dim_type->isEmpty()) {
-                if (!$union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
+                if (!$union_type->asExpandedTypes($this->code_base)->hasArrayAccess() && !$union_type->hasMixedType()) {
                     if (Config::getValue('scalar_array_key_cast')) {
                         $expected_key_type = $int_or_string_union_type;
                     } else {
@@ -1193,7 +1227,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // so we'll add the string type to the result if we're
         // indexing something that could be a string
         if ($union_type->isType($string_type)
-            || $union_type->canCastToUnionType($string_type->asUnionType())
+            || ($union_type->canCastToUnionType($string_type->asUnionType()) && !$union_type->hasMixedType())
         ) {
             if (!$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_union_type)) {
                 // TODO: Efficient implementation of asExpandedTypes()->hasArrayAccess()?
@@ -1462,7 +1496,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                     Issue::fromType(Issue::UndeclaredVariable)(
                         $this->context->getFile(),
                         $node->lineno ?? 0,
-                        [$variable_name]
+                        [$variable_name],
+                        IssueFixSuggester::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
                     )
                 );
             }
@@ -1625,7 +1660,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getProperty($node->children['prop'], $is_static);
+            ))->getProperty($is_static);
 
             // Map template types to concrete types
             if ($property->getUnionType()->hasTemplateType()) {
@@ -1651,11 +1686,24 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $exception->getIssueInstance()
             );
         } catch (CodeBaseException $exception) {
+            $exception_fqsen = $exception->getFQSEN();
+            $suggestion = null;
             $property_name = $node->children['prop'];
-            $this->emitIssue(
+            if ($exception_fqsen instanceof FullyQualifiedClassName && $this->code_base->hasClassWithFQSEN($exception_fqsen)) {
+                $suggestion_class = $this->code_base->getClassByFQSEN($exception_fqsen);
+                $suggestion = IssueFixSuggester::suggestSimilarProperty(
+                    $this->code_base,
+                    $this->context,
+                    $suggestion_class,
+                    $property_name,
+                    false
+                );
+            }
+            $this->emitIssueWithSuggestion(
                 Issue::UndeclaredProperty,
                 $node->lineno ?? 0,
-                "{$exception->getFQSEN()}->{$property_name}"
+                ["{$exception_fqsen}->{$property_name}"],
+                $suggestion
             );
         } catch (UnanalyzableException $exception) {
             // Swallow it. There are some constructs that we
@@ -1831,11 +1879,14 @@ class UnionTypeVisitor extends AnalysisVisitor
         } catch (IssueException $exception) {
             // Swallow it
         } catch (CodeBaseException $exception) {
-            $this->emitIssue(
+            $exception_fqsen = $exception->getFQSEN();
+            $this->emitIssueWithSuggestion(
                 Issue::UndeclaredClassMethod,
                 $node->lineno ?? 0,
-                $method_name,
-                (string)$exception->getFQSEN()
+                [$method_name, (string)$exception->getFQSEN()],
+                ($exception_fqsen instanceof FullyQualifiedClassName
+                    ? IssueFixSuggester::suggestSimilarClassForMethod($this->code_base, $this->context, $exception_fqsen, $method_name, $node->kind === \ast\AST_STATIC_CALL)
+                    : null)
             );
         }
 
@@ -1907,7 +1958,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * `print($str)` always returns 1.
      * See https://secure.php.net/manual/en/function.print.php#refsect1-function.print-returnvalues
-     * @suppress PhanPluginUnusedPublicMethodArgument
+     * @param Node $node @phan-unused-param
      */
     public function visitPrint(Node $node) : UnionType
     {
@@ -2114,7 +2165,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                     Issue::fromType(Issue::UndeclaredClass)(
                         $context->getFile(),
                         $node->lineno ?? 0,
-                        [ (string)$parent_class_fqsen ]
+                        [ (string)$parent_class_fqsen ],
+                        IssueFixSuggester::suggestSimilarClass($code_base, $context, $parent_class_fqsen)
                     )
                 );
             } else {
@@ -2168,6 +2220,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
+     * @phan-return \Generator<Clazz>
      * @return \Generator|Clazz[]
      * A list of classes associated with the given node
      *
@@ -2209,13 +2262,24 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param CodeBase $code_base
      * @param Context $context
      * @param string|Node $node the node to fetch CallableType instances for.
-     * @param bool $log_error whether or not to log errors while searching
+     * @param bool $log_error whether or not to log errors while searching @phan-unused-param
      * @return array<int,FunctionInterface>
-     * @suppress PhanPluginUnusedPublicMethodArgument (TODO: Implement $log_error)
+     * TODO: use log_error
      */
     public static function functionLikeListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $log_error) : array
     {
-        $function_fqsens = (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node);
+        try {
+            $function_fqsens = (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node);
+        } catch (EmptyFQSENException $e) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::EmptyFQSENInCallable,
+                $context->getLineNumberStart(),
+                $e->getFQSEN()
+            );
+            return [];
+        }
         $functions = [];
         foreach ($function_fqsens as $fqsen) {
             if ($fqsen instanceof FullyQualifiedMethodName) {
@@ -2320,6 +2384,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $result_types[] = $method_fqsen;
         }
         if (\count($result_types) === 0 && $class instanceof Clazz) {
+            // TODO: Include suggestion for method name
             $this->emitIssue(
                 Issue::UndeclaredMethodInCallable,
                 $context->getLineNumberStart(),
@@ -2583,9 +2648,9 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     *
      * @return ?UnionType (Returns null when mixed)
      * TODO: Add an equivalent for Traversable and subclasses, once we have template support for Traversable<Key,T>
+     * TODO: Move into UnionType?
      */
     public static function arrayKeyUnionTypeOfUnionType(UnionType $union_type)
     {

@@ -92,7 +92,7 @@ class Debug
      * @param string|int|float|Node|null $node
      * An AST node
      *
-     * @param string|null $name
+     * @param int|float|string|null $name
      * The name of the node (if this node has a parent)
      *
      * @param int $indent
@@ -100,6 +100,8 @@ class Debug
      *
      * @return string
      * A string representation of an AST node
+     *
+     * @phan-suppress PhanPartialTypeMismatchArgument handle impossible arrays?
      */
     public static function nodeToString(
         $node,

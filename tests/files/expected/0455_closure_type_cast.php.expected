@@ -14,6 +14,7 @@
 %s:48 PhanTypeMismatchArgument Argument 1 (fn) is Closure():array but \expects_int_return() takes Closure():int defined at %s:40
 %s:49 PhanTypeMismatchArgument Argument 1 (fn) is Closure(array):int but \expects_int_return() takes Closure():int defined at %s:40
 %s:57 PhanTypeVoidAssignment Cannot assign void return value
+%s:57 PhanUnusedVariable Unused definition of variable $result
 %s:58 PhanTypeMismatchArgument Argument 1 (fn) is Closure():void but \expects_int_param() takes Closure(int):void defined at %s:6
 %s:59 PhanTypeMismatchArgument Argument 1 (fn) is Closure():void but \expects_int_return() takes Closure():int defined at %s:40
 %s:67 PhanTypeMismatchArgument Argument 1 (fn) is Closure(mixed):void but \expects_void() takes Closure():void defined at %s:56

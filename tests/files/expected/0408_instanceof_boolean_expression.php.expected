@@ -1,4 +1,4 @@
-%s:18 PhanUndeclaredMethod Call to undeclared method \A::c
-%s:23 PhanUndeclaredMethod Call to undeclared method \A::d
+%s:18 PhanUndeclaredMethod Call to undeclared method \A::c (Did you mean expr->b())
+%s:23 PhanUndeclaredMethod Call to undeclared method \A::d (Did you mean expr->b())
 %s:33 PhanUndeclaredMethod Call to undeclared method \A::missingMethod
 %s:38 PhanUndeclaredMethod Call to undeclared method \A::otherMissingMethod

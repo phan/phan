@@ -217,10 +217,10 @@ const ARRAY_SYNTAX_SHORT = 3;
 namespace ast;
 
 if (!class_exists('\ast\Node')) {
-/**
- * This class describes a single node in a PHP AST.
- * @suppress PhanRedefineClassInternal
- */
+    /**
+     * This class describes a single node in a PHP AST.
+     * @suppress PhanRedefineClassInternal TODO: why isn't this warning?
+     */
     class Node
     {
         /** @var int AST Node Kind. Values are one of ast\AST_* constants. */
@@ -239,10 +239,10 @@ if (!class_exists('\ast\Node')) {
         /** @var array Child nodes (may be empty) */
         public $children;
         /**
-     * A constructor which validates data types but not the values themselves.
-     * For backwards compatibility reasons, all values are optional and properties default to null
-     * @suppress PhanTypeMismatchProperty
-     */
+         * A constructor which validates data types but not the values themselves.
+         * For backwards compatibility reasons, all values are optional and properties default to null
+         * @suppress PhanTypeMismatchProperty
+         */
         public function __construct(int $kind = null, int $flags = null, array $children = null, int $lineno = null)
         {
             $this->kind = $kind;

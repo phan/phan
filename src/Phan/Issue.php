@@ -1,12 +1,14 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\UnaddressableTypedElement;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Phan\Plugin\ConfigPluginSet;
 
 /**
  * An issue emitted during the course of analysis
@@ -53,6 +55,8 @@ class Issue
     const UndeclaredStaticMethodInCallable = 'PhanUndeclaredStaticMethodInCallable';
     const UndeclaredFunctionInCallable = 'PhanUndeclaredFunctionInCallable';
     const UndeclaredMethodInCallable = 'PhanUndeclaredMethodInCallable';
+    const EmptyFQSENInCallable      = 'PhanEmptyFQSENInCallable';
+    const EmptyFQSENInClasslike     = 'PhanEmptyFQSENInClasslike';
 
     // Issue::CATEGORY_TYPE
     const NonClassMethodCall        = 'PhanNonClassMethodCall';
@@ -79,6 +83,13 @@ class Issue
     const TypeMagicVoidWithReturn   = 'PhanTypeMagicVoidWithReturn';
     const TypeMismatchArgument      = 'PhanTypeMismatchArgument';
     const TypeMismatchArgumentInternal = 'PhanTypeMismatchArgumentInternal';
+    const PartialTypeMismatchArgument = 'PhanPartialTypeMismatchArgument';
+    const PartialTypeMismatchArgumentInternal= 'PhanPartialTypeMismatchArgumentInternal';
+    const PossiblyNullTypeArgument  = 'PhanPossiblyNullTypeArgument';
+    const PossiblyNullTypeArgumentInternal = 'PhanPossiblyNullTypeArgumentInternal';
+    const PossiblyFalseTypeArgument  = 'PhanPossiblyFalseTypeArgument';
+    const PossiblyFalseTypeArgumentInternal = 'PhanPossiblyFalseTypeArgumentInternal';
+
     const TypeMismatchDefault       = 'PhanTypeMismatchDefault';
     const TypeMismatchDimAssignment = 'PhanTypeMismatchDimAssignment';
     const TypeMismatchDimEmpty      = 'PhanTypeMismatchDimEmpty';
@@ -91,7 +102,13 @@ class Issue
     const TypeMismatchVariadicParam = 'PhanMismatchVariadicParam';
     const TypeMismatchForeach       = 'PhanTypeMismatchForeach';
     const TypeMismatchProperty      = 'PhanTypeMismatchProperty';
+    const PossiblyNullTypeMismatchProperty = 'PhanPossiblyNullTypeMismatchProperty';
+    const PossiblyFalseTypeMismatchProperty = 'PhanPossiblyFalseTypeMismatchProperty';
+    const PartialTypeMismatchProperty = 'PhanPartialTypeMismatchProperty';
     const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
+    const PartialTypeMismatchReturn = 'PhanPartialTypeMismatchReturn';
+    const PossiblyNullTypeReturn  = 'PhanPossiblyNullTypeReturn';
+    const PossiblyFalseTypeReturn  = 'PhanPossiblyFalseTypeReturn';
     const TypeMismatchDeclaredReturn = 'PhanTypeMismatchDeclaredReturn';
     const TypeMismatchDeclaredReturnNullable = 'PhanTypeMismatchDeclaredReturnNullable';
     const TypeMismatchDeclaredParam = 'PhanTypeMismatchDeclaredParam';
@@ -100,6 +117,7 @@ class Issue
     const TypeNonVarPassByRef       = 'PhanTypeNonVarPassByRef';
     const TypeParentConstructorCalled = 'PhanTypeParentConstructorCalled';
     const TypeSuspiciousEcho        = 'PhanTypeSuspiciousEcho';
+    const TypeSuspiciousStringExpression = 'PhanTypeSuspiciousStringExpression';
     const TypeVoidAssignment        = 'PhanTypeVoidAssignment';
     const TypeInvalidCallableArraySize = 'PhanTypeInvalidCallableArraySize';
     const TypeInvalidCallableArrayKey = 'PhanTypeInvalidCallableArrayKey';
@@ -109,6 +127,10 @@ class Issue
     const TypeExpectedObjectPropAccess = 'PhanTypeExpectedObjectPropAccess';
     const TypeExpectedObjectPropAccessButGotNull = 'PhanTypeExpectedObjectPropAccessButGotNull';
     const TypeExpectedObjectStaticPropAccess = 'PhanTypeExpectedObjectStaticPropAccess';
+
+    const TypeMismatchGeneratorYieldValue = 'PhanTypeMismatchGeneratorYieldValue';
+    const TypeMismatchGeneratorYieldKey = 'PhanTypeMismatchGeneratorYieldKey';
+    const TypeInvalidYieldFrom      = 'PhanTypeInvalidYieldFrom';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -189,6 +211,10 @@ class Issue
     const NoopVariable                  = 'PhanNoopVariable';
     const NoopUnaryOperator             = 'PhanNoopUnaryOperator';
     const NoopBinaryOperator            = 'PhanNoopBinaryOperator';
+    const NoopStringLiteral             = 'PhanNoopStringLiteral';
+    const NoopEncapsulatedStringLiteral = 'PhanNoopEncapsulatedStringLiteral';
+    const NoopNumericLiteral            = 'PhanNoopNumericLiteral';
+    const UnreachableCatch              = 'PhanUnreachableCatch';
     const UnreferencedClass             = 'PhanUnreferencedClass';
     const UnreferencedFunction          = 'PhanUnreferencedFunction';
     const UnreferencedPublicMethod      = 'PhanUnreferencedPublicMethod';
@@ -197,6 +223,9 @@ class Issue
     const UnreferencedPublicProperty    = 'PhanUnreferencedPublicProperty';
     const UnreferencedProtectedProperty = 'PhanUnreferencedProtectedProperty';
     const UnreferencedPrivateProperty   = 'PhanUnreferencedPrivateProperty';
+    const ReadOnlyPublicProperty        = 'PhanReadOnlyPublicProperty';
+    const ReadOnlyProtectedProperty     = 'PhanReadOnlyProtectedProperty';
+    const ReadOnlyPrivateProperty       = 'PhanReadOnlyPrivateProperty';
     const WriteOnlyPublicProperty       = 'PhanWriteOnlyPublicProperty';
     const WriteOnlyProtectedProperty    = 'PhanWriteOnlyProtectedProperty';
     const WriteOnlyPrivateProperty      = 'PhanWriteOnlyPrivateProperty';
@@ -208,6 +237,18 @@ class Issue
     const UnreferencedUseNormal         = 'PhanUnreferencedUseNormal';
     const UnreferencedUseFunction       = 'PhanUnreferencedUseFunction';
     const UnreferencedUseConstant       = 'PhanUnreferencedUseConstant';
+
+    const UnusedVariable                        = 'PhanUnusedVariable';
+    const UnusedPublicMethodParameter           = 'PhanUnusedPublicMethodParameter';
+    const UnusedPublicFinalMethodParameter      = 'PhanUnusedPublicFinalMethodParameter';
+    const UnusedProtectedMethodParameter        = 'PhanUnusedProtectedMethodParameter';
+    const UnusedProtectedFinalMethodParameter   = 'PhanUnusedProtectedFinalMethodParameter';
+    const UnusedPrivateMethodParameter          = 'PhanUnusedPrivateMethodParameter';
+    const UnusedPrivateFinalMethodParameter     = 'PhanUnusedPrivateFinalMethodParameter';
+    const UnusedClosureUseVariable              = 'PhanUnusedClosureUseVariable';
+    const UnusedClosureParameter                = 'PhanUnusedClosureParameter';
+    const UnusedGlobalFunctionParameter         = 'PhanUnusedGlobalFunctionParameter';
+    const UnusedVariableValueOfForeachWithKey   = 'PhanUnusedVariableValueOfForeachWithKey';  // has higher false positive rates than UnusedVariable
 
     // Issue::CATEGORY_REDEFINE
     const RedefineClass             = 'PhanRedefineClass';
@@ -270,6 +311,8 @@ class Issue
     const MisspelledAnnotation             = 'PhanMisspelledAnnotation';
     const UnextractableAnnotation          = 'PhanUnextractableAnnotation';
     const UnextractableAnnotationPart      = 'PhanUnextractableAnnotationPart';
+    const UnextractableAnnotationSuffix    = 'PhanUnextractableAnnotationSuffix';
+    const UnextractableAnnotationElementName = 'PhanUnextractableAnnotationElementName';
     const CommentParamWithoutRealParam     = 'PhanCommentParamWithoutRealParam';
     const CommentParamOnEmptyParamList     = 'PhanCommentParamOnEmptyParamList';
     const CommentOverrideOnNonOverrideMethod = 'PhanCommentOverrideOnNonOverrideMethod';
@@ -298,20 +341,21 @@ class Issue
     const CATEGORY_NAME = [
         self::CATEGORY_ACCESS            => 'AccessError',
         self::CATEGORY_ANALYSIS          => 'Analysis',
+        self::CATEGORY_COMMENT           => 'CommentError',
         self::CATEGORY_COMPATIBLE        => 'CompatError',
         self::CATEGORY_CONTEXT           => 'Context',
         self::CATEGORY_DEPRECATED        => 'DeprecatedError',
+        self::CATEGORY_GENERIC           => 'Generic',
+        self::CATEGORY_INTERNAL          => 'Internal',
         self::CATEGORY_NOOP              => 'NOOPError',
         self::CATEGORY_PARAMETER         => 'ParamError',
+        self::CATEGORY_PLUGIN            => 'Plugin',
         self::CATEGORY_REDEFINE          => 'RedefineError',
         self::CATEGORY_STATIC            => 'StaticCallError',
+        self::CATEGORY_SYNTAX            => 'Syntax',
         self::CATEGORY_TYPE              => 'TypeError',
         self::CATEGORY_UNDEFINED         => 'UndefError',
         self::CATEGORY_VARIABLE          => 'VarError',
-        self::CATEGORY_PLUGIN            => 'Plugin',
-        self::CATEGORY_GENERIC           => 'Generic',
-        self::CATEGORY_INTERNAL          => 'Internal',
-        self::CATEGORY_SYNTAX            => 'Syntax',
     ];
 
     const SEVERITY_LOW      = 0;
@@ -357,6 +401,7 @@ class Issue
         'PROPERTY'      => '%s',
         'SCALAR'        => '%s',  // A scalar from the code
         'STRING_LITERAL' => '%s',  // A string literal from the code
+        'SUGGESTION'    => '%s',
         'TYPE'          => '%s',
         'TRAIT'         => '%s',
         'VARIABLE'      => '%s',
@@ -738,6 +783,22 @@ class Issue
                 self::REMEDIATION_B,
                 11033
             ),
+            new Issue(
+                self::EmptyFQSENInCallable,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Possible call to a function '{FUNCTIONLIKE}' with an empty FQSEN.",
+                self::REMEDIATION_B,
+                11035
+            ),
+            new Issue(
+                self::EmptyFQSENInClasslike,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Possible use of a classlike '{CLASSLIKE}' with an empty FQSEN.",
+                self::REMEDIATION_B,
+                11036
+            ),
 
             // Issue::CATEGORY_ANALYSIS
             new Issue(
@@ -765,6 +826,30 @@ class Issue
                 "Assigning {TYPE} to property but {PROPERTY} is {TYPE}",
                 self::REMEDIATION_B,
                 10001
+            ),
+            new Issue(
+                self::PartialTypeMismatchProperty,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Assigning {TYPE} to property but {PROPERTY} is {TYPE} ({TYPE} is incompatible)",
+                self::REMEDIATION_B,
+                10063
+            ),
+            new Issue(
+                self::PossiblyNullTypeMismatchProperty,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Assigning {TYPE} to property but {PROPERTY} is {TYPE} ({TYPE} is incompatible)",
+                self::REMEDIATION_B,
+                10064
+            ),
+            new Issue(
+                self::PossiblyFalseTypeMismatchProperty,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Assigning {TYPE} to property but {PROPERTY} is {TYPE} ({TYPE} is incompatible)",
+                self::REMEDIATION_B,
+                10065
             ),
             new Issue(
                 self::TypeMismatchDefault,
@@ -807,12 +892,108 @@ class Issue
                 10004
             ),
             new Issue(
+                self::TypeMismatchGeneratorYieldValue,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Yield statement has a value with type {TYPE} but {FUNCTIONLIKE}() is declared to yield values of type {TYPE} in {TYPE}",
+                self::REMEDIATION_B,
+                10067
+            ),
+            new Issue(
+                self::TypeMismatchGeneratorYieldKey,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Yield statement has a key with type {TYPE} but {FUNCTIONLIKE}() is declared to yield keys of type {TYPE} in {TYPE}",
+                self::REMEDIATION_B,
+                10068
+            ),
+            new Issue(
+                self::TypeInvalidYieldFrom,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Yield from statement was passed an invalid expression of type {TYPE} (expected Traversable/array)",
+                self::REMEDIATION_B,
+                10069
+            ),
+            new Issue(
+                self::PartialTypeMismatchArgument,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                10054
+            ),
+            new Issue(
+                self::PartialTypeMismatchArgumentInternal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)",
+                self::REMEDIATION_B,
+                10055
+            ),
+            new Issue(
+                self::PossiblyNullTypeArgument,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                10056
+            ),
+            new Issue(
+                self::PossiblyNullTypeArgumentInternal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)",
+                self::REMEDIATION_B,
+                10057
+            ),
+            new Issue(
+                self::PossiblyFalseTypeArgument,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                10058
+            ),
+            new Issue(
+                self::PossiblyFalseTypeArgumentInternal,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)",
+                self::REMEDIATION_B,
+                10059
+            ),
+            new Issue(
                 self::TypeMismatchReturn,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Returning type {TYPE} but {FUNCTIONLIKE}() is declared to return {TYPE}",
                 self::REMEDIATION_B,
                 10005
+            ),
+            new Issue(
+                self::PartialTypeMismatchReturn,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Returning type {TYPE} but {FUNCTIONLIKE}() is declared to return {TYPE} ({TYPE} is incompatible)",
+                self::REMEDIATION_B,
+                10060
+            ),
+            new Issue(
+                self::PossiblyNullTypeReturn,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Returning type {TYPE} but {FUNCTIONLIKE}() is declared to return {TYPE} ({TYPE} is incompatible)",
+                self::REMEDIATION_B,
+                10061
+            ),
+            new Issue(
+                self::PossiblyFalseTypeReturn,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Returning type {TYPE} but {FUNCTIONLIKE}() is declared to return {TYPE} ({TYPE} is incompatible)",
+                self::REMEDIATION_B,
+                10062
             ),
             new Issue(
                 self::TypeMismatchDeclaredReturn,
@@ -1158,6 +1339,7 @@ class Issue
                 self::REMEDIATION_B,
                 10049
             ),
+
             new Issue(
                 self::TypeInvalidThrowsNonObject,
                 self::CATEGORY_TYPE,
@@ -1178,7 +1360,7 @@ class Issue
                 self::TypeInvalidThrowsIsInterface,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "@throws annotation of {FUNCTIONLIKE} has suspicious interface type {TYPE} for an @throws annotation, expected class (Zend PHP allows interfaces to be caught, so this might be intentional)",
+                "@throws annotation of {FUNCTIONLIKE} has suspicious interface type {TYPE} for an @throws annotation, expected class (PHP allows interfaces to be caught, so this might be intentional)",
                 self::REMEDIATION_B,
                 10052
             ),
@@ -1189,6 +1371,14 @@ class Issue
                 "@throws annotation of {FUNCTIONLIKE} has suspicious class type {TYPE}, which does not extend Error/Exception",
                 self::REMEDIATION_B,
                 10053
+            ),
+            new Issue(
+                self::TypeSuspiciousStringExpression,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Suspicious type {TYPE} of a variable or expression encapsulated within a string. (Expected this to be able to cast to a string)",
+                self::REMEDIATION_B,
+                10066
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
@@ -1709,6 +1899,30 @@ class Issue
                 6021
             ),
             new Issue(
+                self::NoopStringLiteral,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused result of a string literal {STRING_LITERAL} near this line",
+                self::REMEDIATION_B,
+                6029
+            ),
+            new Issue(
+                self::NoopEncapsulatedStringLiteral,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused result of an encapsulated string literal",
+                self::REMEDIATION_B,
+                6030
+            ),
+            new Issue(
+                self::NoopNumericLiteral,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused result of a numeric literal {STRING_LITERAL} near this line",
+                self::REMEDIATION_B,
+                6031
+            ),
+            new Issue(
                 self::UnreferencedClass,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -1789,6 +2003,30 @@ class Issue
                 6016
             ),
             new Issue(
+                self::ReadOnlyPublicProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero write references to public property {PROPERTY}",
+                self::REMEDIATION_B,
+                6032
+            ),
+            new Issue(
+                self::ReadOnlyProtectedProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero write references to protected property {PROPERTY}",
+                self::REMEDIATION_B,
+                6033
+            ),
+            new Issue(
+                self::ReadOnlyPrivateProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero write references to private property {PROPERTY}",
+                self::REMEDIATION_B,
+                6034
+            ),
+            new Issue(
                 self::WriteOnlyPublicProperty,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -1860,6 +2098,103 @@ class Issue
                 self::REMEDIATION_B,
                 6024
             ),
+            new Issue(
+                self::UnreachableCatch,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Catch statement for {CLASSLIKE} is unreachable. An earlier catch statement at line {LINE} caught the ancestor class/interface {CLASSLIKE}",
+                self::REMEDIATION_B,
+                6028
+            ),
+            new Issue(
+                self::UnusedVariable,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Unused definition of variable ${VARIABLE}',
+                self::REMEDIATION_B,
+                6035
+            ),
+            new Issue(
+                self::UnusedPublicMethodParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6036
+            ),
+            new Issue(
+                self::UnusedPublicFinalMethodParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6037
+            ),
+            new Issue(
+                self::UnusedProtectedMethodParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6038
+            ),
+            new Issue(
+                self::UnusedProtectedFinalMethodParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6039
+            ),
+            new Issue(
+                self::UnusedPrivateMethodParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6040
+            ),
+            new Issue(
+                self::UnusedPrivateFinalMethodParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6041
+            ),
+            new Issue(
+                self::UnusedClosureUseVariable,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Closure use variable ${VARIABLE} is never used',
+                self::REMEDIATION_B,
+                6042
+            ),
+            new Issue(
+                self::UnusedClosureParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6043
+            ),
+            new Issue(
+                self::UnusedGlobalFunctionParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6044
+            ),
+            new Issue(
+                self::UnusedVariableValueOfForeachWithKey,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Unused definition of variable ${VARIABLE} as the value of a foreach loop that included keys',
+                self::REMEDIATION_B,
+                6045
+            ),
+
 
             // Issue::CATEGORY_REDEFINE
             new Issue(
@@ -2268,7 +2603,7 @@ class Issue
                 self::UnextractableAnnotation,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "Saw unextractable annotation for comment {COMMENT}",
+                "Saw unextractable annotation for comment '{COMMENT}'",
                 self::REMEDIATION_B,
                 16002
             ),
@@ -2276,9 +2611,25 @@ class Issue
                 self::UnextractableAnnotationPart,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "Saw unextractable annotation for a fragment of comment {COMMENT}: {COMMENT}",
+                "Saw unextractable annotation for a fragment of comment '{COMMENT}': '{COMMENT}'",
                 self::REMEDIATION_B,
                 16003
+            ),
+            new Issue(
+                self::UnextractableAnnotationSuffix,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw a token Phan may have failed to parse after '{COMMENT}': after {TYPE}, saw '{COMMENT}'",
+                self::REMEDIATION_B,
+                16009
+            ),
+            new Issue(
+                self::UnextractableAnnotationElementName,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw possibly unextractable annotation for a fragment of comment '{COMMENT}': after {TYPE}, did not see an element name (will guess based on comment order)",
+                self::REMEDIATION_B,
+                16010
             ),
             new Issue(
                 self::CommentParamWithoutRealParam,
@@ -2335,7 +2686,6 @@ class Issue
     /**
      * @param array<int,Issue> $error_list
      * @return void
-     * @suppress PhanPluginUnusedVariable (error_map and unique_type_id_set)
      */
     private static function sanityCheckErrorList(array $error_list)
     {
@@ -2347,7 +2697,9 @@ class Issue
             \assert(\strncmp($error_type, 'Phan', 4) === 0, "Issue of type $error_type should begin with 'Phan'");
 
             $error_type_id = $error->getTypeId();
-            \assert(!\array_key_exists($error_type_id, $unique_type_id_set), "Multiple issues exist with pylint error id $error_type_id");
+            if (\array_key_exists($error_type_id, $unique_type_id_set)) {
+                throw new \AssertionError("Multiple issues exist with pylint error id $error_type_id");
+            }
             $unique_type_id_set[$error_type_id] = $error;
             $category = $error->getCategory();
             $expected_category_for_type_id_bitpos = (int)floor($error_type_id / 1000);
@@ -2362,6 +2714,7 @@ class Issue
                     $expected_category_for_type_id_bitpos
                 ));
             }
+            // @phan-suppress-next-line PhanPluginUnusedVariable
             $error_map[$error_type] = $error;
         }
     }
@@ -2389,6 +2742,15 @@ class Issue
     public function getCategory() : int
     {
         return $this->category;
+    }
+
+    /**
+     * @return string
+     * The name of this issue's category
+     */
+    public function getCategoryName() : string
+    {
+        return self::getNameForCategory($this->getCategory());
     }
 
     /**
@@ -2457,13 +2819,16 @@ class Issue
     public function __invoke(
         string $file,
         int $line,
-        array $template_parameters = []
+        array $template_parameters = [],
+        Suggestion $suggestion = null
     ) : IssueInstance {
+        // TODO: Add callable to expanded union types instead
         return new IssueInstance(
             $this,
             $file,
             $line,
-            $template_parameters
+            $template_parameters,
+            $suggestion
         );
     }
 
@@ -2527,18 +2892,21 @@ class Issue
      * Any template parameters required for the issue
      * message
      *
+     * @param ?Suggestion $suggestion (optional details on fixing this)
+     *
      * @return void
      */
     public static function emitWithParameters(
         string $type,
         string $file,
         int $line,
-        array $template_parameters
+        array $template_parameters,
+        Suggestion $suggestion = null
     ) {
         $issue = self::fromType($type);
 
         self::emitInstance(
-            $issue($file, $line, $template_parameters)
+            $issue($file, $line, $template_parameters, $suggestion)
         );
     }
 
@@ -2574,35 +2942,16 @@ class Issue
         // If this issue type has been suppressed in
         // the config, ignore it
 
-        if (!Config::getValue('disable_suppression')) {
-            if (in_array(
-                $issue_instance->getIssue()->getType(),
-                Config::getValue('suppress_issue_types') ?? []
-            )
-            ) {
-                return;
-            }
-
-            // If a white-list of allowed issue types is defined,
-            // only emit issues on the white-list
-            $whitelist_issue_types = Config::getValue('whitelist_issue_types') ?? [];
-            if (count($whitelist_issue_types) > 0
-                && !in_array(
-                    $issue_instance->getIssue()->getType(),
-                    $whitelist_issue_types
-                )
-            ) {
-                return;
-            }
-
-            // If this issue type has been suppressed in
-            // this scope from a doc block, ignore it.
-            if ($context->hasSuppressIssue(
-                $code_base,
-                $issue_instance->getIssue()->getType()
-            )) {
-                return;
-            }
+        $issue = $issue_instance->getIssue();
+        if (self::shouldSuppressIssue(
+            $code_base,
+            $context,
+            $issue->getType(),
+            $issue_instance->getLine(),
+            $issue_instance->getTemplateParameters(),
+            $issue_instance->getSuggestion()
+        )) {
+            return;
         }
 
         self::emitInstance($issue_instance);
@@ -2659,6 +3008,8 @@ class Issue
      * The line number where the issue was found
      *
      * @param array<int,string|int|float|bool|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $parameters
+     * @param ?Suggestion $suggestion (optional)
+     *
      * Template parameters for the issue's error message
      *
      * @return void
@@ -2668,33 +3019,17 @@ class Issue
         Context $context,
         string $issue_type,
         int $lineno,
-        array $parameters
+        array $parameters,
+        Suggestion $suggestion = null
     ) {
-        // If this issue type has been suppressed in
-        // the config, ignore it
-        if (!Config::getValue('disable_suppression')
-            && in_array(
-                $issue_type,
-                Config::getValue('suppress_issue_types') ?? []
-            )
-        ) {
-            return;
-        }
-        // If a white-list of allowed issue types is defined,
-        // only emit issues on the white-list
-        if (!Config::getValue('disable_suppression')
-            && count(Config::getValue('whitelist_issue_types')) > 0
-            && !in_array(
-                $issue_type,
-                Config::getValue('whitelist_issue_types') ?? []
-            )
-        ) {
-            return;
-        }
-
-        if (!Config::getValue('disable_suppression')
-            && $context->hasSuppressIssue($code_base, $issue_type)
-        ) {
+        if (self::shouldSuppressIssue(
+            $code_base,
+            $context,
+            $issue_type,
+            $lineno,
+            $parameters,
+            $suggestion
+        )) {
             return;
         }
 
@@ -2702,7 +3037,46 @@ class Issue
             $issue_type,
             $context->getFile(),
             $lineno,
-            $parameters
+            $parameters,
+            $suggestion
+        );
+    }
+
+    private static function shouldSuppressIssue(
+        CodeBase $code_base,
+        Context $context,
+        string $issue_type,
+        int $lineno,
+        array $parameters,
+        Suggestion $suggestion = null
+    ) : bool {
+        if (Config::getValue('disable_suppression')) {
+            return false;
+        }
+        // If this issue type has been suppressed in
+        // the config, ignore it
+        if (in_array($issue_type, Config::getValue('suppress_issue_types') ?? [])) {
+            return true;
+        }
+        // If a white-list of allowed issue types is defined,
+        // only emit issues on the white-list
+        $whitelist_issue_types = Config::getValue('whitelist_issue_types') ?? [];
+        if (count($whitelist_issue_types) > 0 &&
+            !in_array($issue_type, $whitelist_issue_types)) {
+            return true;
+        }
+
+        if ($context->hasSuppressIssue($code_base, $issue_type)) {
+            return true;
+        }
+
+        return ConfigPluginSet::instance()->shouldSuppressIssue(
+            $code_base,
+            $context,
+            $issue_type,
+            $lineno,
+            $parameters,
+            $suggestion
         );
     }
 }

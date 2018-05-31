@@ -1,5 +1,5 @@
 <?php
-
+// TODO: Should func_get_args affect unused parameter detection?
 class UndefAndUndeclaredParam {
     public static function foo($targetId) {
         return self::_private_method($targetId, $undefVar);

@@ -16,13 +16,15 @@ use Symfony\Component\Console\Output\StreamOutput;
  * Contains methods for parsing CLI arguments to Phan,
  * outputting to the CLI, as well as helper methods to retrieve files/folders
  * for the analyzed project.
+ *
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  */
 class CLI
 {
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '0.12.2';
+    const PHAN_VERSION = '0.12.12-dev';
 
     /**
      * @var OutputInterface
@@ -110,6 +112,9 @@ class CLI
                 'language-server-verbose',
                 'language-server-allow-missing-pcntl',
                 'language-server-force-missing-pcntl',
+                'language-server-require-pcntl',
+                'language-server-enable',
+                'language-server-enable-go-to-definition',
                 'markdown-issue-messages',
                 'memory-limit:',
                 'minimum-severity:',
@@ -125,7 +130,12 @@ class CLI
                 'quick',
                 'require-config-exists',
                 'signature-compatibility',
+                'strict-param-checking',
+                'strict-property-checking',
+                'strict-return-checking',
+                'strict-type-checking',
                 'target-php-version',
+                'unused-variable-detection',
                 'use-fallback-parser',
                 'version',
             ]
@@ -154,9 +164,12 @@ class CLI
             // TODO: Add an option to allow searching ancestor directories?
             \chdir($overriden_project_root_directory);
         }
-        Config::setProjectRootDirectory(
-            \getcwd()
-        );
+        $cwd = \getcwd();
+        if (!is_string($cwd)) {
+            echo "Failed to find current working directory\n";
+            exit(1);
+        }
+        Config::setProjectRootDirectory($cwd);
 
         if (\array_key_exists('init', $opts)) {
             $exit_code = Initializer::initPhanConfig($opts);
@@ -178,7 +191,8 @@ class CLI
 
         if (isset($opts['language-server-force-missing-pcntl'])) {
             Config::setValue('language_server_use_pcntl_fallback', true);
-        } elseif (isset($opts['language-server-allow-missing-pcntl'])) {
+        } elseif (!isset($opts['language-server-require-pcntl'])) {
+            // --language-server-allow-missing-pcntl is now the default
             if (!extension_loaded('pcntl')) {
                 Config::setValue('language_server_use_pcntl_fallback', true);
             }
@@ -211,6 +225,10 @@ class CLI
                 case 'file-list':
                     $file_list = \is_array($value) ? $value : [$value];
                     foreach ($file_list as $file_name) {
+                        if (!is_string($file_name)) {
+                            error_log("invalid argument for --file-list");
+                            continue;
+                        }
                         $file_path = Config::projectPath($file_name);
                         if (is_file($file_path) && is_readable($file_path)) {
                             /** @var array<int,string> */
@@ -228,6 +246,10 @@ class CLI
                     if (!$this->file_list_only) {
                         $directory_list = \is_array($value) ? $value : [$value];
                         foreach ($directory_list as $directory_name) {
+                            if (!is_string($directory_name)) {
+                                error_log("Invalid --directory setting");
+                                return;
+                            }
                             $this->file_list_in_config = array_merge(
                                 $this->file_list,
                                 $this->directoryNameToFileList(
@@ -245,8 +267,8 @@ class CLI
                     if (!in_array($value, $factory->getTypes(), true)) {
                         $this->usage(
                             sprintf(
-                                'Unknown output mode "%s". Known values are [%s]',
-                                $value,
+                                'Unknown output mode %s. Known values are [%s]',
+                                json_encode($value),
                                 implode(',', $factory->getTypes())
                             ),
                             EXIT_FAILURE
@@ -330,6 +352,7 @@ class CLI
                     break;  // handled earlier.
                 case 'language-server-allow-missing-pcntl':
                 case 'language-server-force-missing-pcntl':
+                case 'language-server-require-pcntl':
                     break;  // handled earlier
                 case 'disable-plugins':
                     // Slightly faster, e.g. for daemon mode with lowest latency (along with --quick).
@@ -346,6 +369,20 @@ class CLI
                     break;
                 case 'use-fallback-parser':
                     Config::setValue('use_fallback_parser', true);
+                    break;
+                case 'strict-param-checking':
+                    Config::setValue('strict_param_checking', true);
+                    break;
+                case 'strict-property-checking':
+                    Config::setValue('strict_property_checking', true);
+                    break;
+                case 'strict-return-checking':
+                    Config::setValue('strict_return_checking', true);
+                    break;
+                case 'strict-type-checking':
+                    Config::setValue('strict_param_checking', true);
+                    Config::setValue('strict_property_checking', true);
+                    Config::setValue('strict_return_checking', true);
                     break;
                 case 's':
                 case 'daemonize-socket':
@@ -385,12 +422,18 @@ class CLI
                 case 'language-server-analyze-only-on-save':
                     Config::setValue('language_server_analyze_only_on_save', true);
                     break;
+                case 'language-server-enable-go-to-definition':
+                    Config::setValue('language_server_enable_go_to_definition', true);
+                    break;
                 case 'language-server-verbose':
                     Config::setValue('language_server_debug_level', 'info');
                     break;
                 case 'x':
                 case 'dead-code-detection':
                     Config::setValue('dead_code_detection', true);
+                    break;
+                case 'unused-variable-detection':
+                    Config::setValue('unused_variable_detection', true);
                     break;
                 case 'allow-polyfill-parser':
                     // Just check if it's installed and of a new enough version.
@@ -550,6 +593,7 @@ class CLI
     /**
      * @return array<int,string>
      * Get the set of files to analyze
+     * @suppress PhanPartialTypeMismatchReturn other types get inferred from assignments
      */
     public function getFileList() : array
     {
@@ -682,7 +726,12 @@ Usage: {$argv[0]} [options] [files...]
  -x, --dead-code-detection
   Emit issues for classes, methods, functions, constants and
   properties that are probably never referenced and can
-  possibly be removed.
+  possibly be removed. This implies `--unused-variable-detection`.
+
+ --unused-variable-detection
+  Emit issues for variables, parameters and closure use variables
+  that are probably never referenced.
+  This has a few known false positives, e.g. for loops or branches.
 
  -j, --processes <int>
   The number of parallel processes to run during the analysis
@@ -698,6 +747,19 @@ Usage: {$argv[0]} [options] [files...]
  --plugin <pluginName|path/to/Plugin.php>
   Add an additional plugin to run. This flag can be repeated.
   (Either pass the name of the plugin or a relative/absolute path to the plugin)
+
+ --strict-param-checking
+  Enables the config option `strict_param_checking`.
+
+ --strict-property-checking
+  Enables the config option `strict_property_checking`.
+
+ --strict-return-checking
+  Enables the config option `strict_return_checking`.
+
+ --strict-type-checking
+  Equivalent to
+  `--strict-param-checking --strict-property-checking --strict-return-checking`.
 
  --use-fallback-parser
   If a file to be analyzed is syntactically invalid
@@ -783,16 +845,24 @@ Extended help:
   Prevent the client from sending change notifications (Only notify the language server when the user saves a document)
   This significantly reduces CPU usage, but clients won't get notifications about issues immediately.
 
+ --language-server-enable-go-to-definition
+  Enables support for "Go To Definition" and "Go To Type Definition" in the Phan Language Server.
+  Disabled by default.
+
  --language-server-verbose
   Emit verbose logging messages related to the language server implementation to stderr.
   This is useful when developing or debugging language server clients.
 
  --language-server-allow-missing-pcntl
+  Noop (This is the default behavior).
   Allow the fallback that doesn't use pcntl (New and experimental) to be used if the pcntl extension is not installed.
   This is useful for running the language server on Windows.
 
  --language-server-force-missing-pcntl
   Force Phan to use the fallback for when pcntl is absent (New and experimental). Useful for debugging that fallback.
+
+ --language-server-require-pcntl
+  Don't start the language server if PCNTL isn't installed (don't use the fallback). Useful for debugging.
 
  --require-config-exists
   Exit immediately with an error code if .phan/config.php does not exist.

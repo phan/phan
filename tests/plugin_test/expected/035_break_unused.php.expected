@@ -1,0 +1,3 @@
+src/035_break_unused.php:7 PhanUnusedVariable Unused definition of variable $myUnusedVar
+src/035_break_unused.php:8 PhanUnusedVariable Unused definition of variable $myUnusedVar3
+src/035_break_unused.php:12 PhanUnusedVariable Unused definition of variable $myUnusedVar3

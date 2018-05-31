@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use Phan\AST\PhanAnnotationAdder;
 use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Config;
@@ -22,6 +23,11 @@ trait Analyzable
      * and
      */
     private $node = null;
+
+    /**
+     * @var bool
+     */
+    private $did_annotate_node = false;
 
     /**
      * @var int
@@ -77,8 +83,13 @@ trait Analyzable
             return $context;
         }
 
-        if (!$this->hasNode()) {
+        $definition_node = $this->node;
+        if (!$definition_node) {
             return $context;
+        }
+        if (!$this->did_annotate_node) {
+            $this->did_annotate_node = true;
+            PhanAnnotationAdder::applyToScope($definition_node);
         }
 
         // Closures depend on the context surrounding them such
@@ -87,7 +98,6 @@ trait Analyzable
         // that.
         //
         // TODO: Store the parent context on Analyzable objects
-        $definition_node = $this->getNode();
         if ($definition_node->kind === \ast\AST_CLOSURE) {
             // TODO: Pick up 'uses' when this is a closure invoked inline (e.g. array_map(function($x) use($localVar) {...}, args
             // TODO: Investigate replacing the types of these with 'mixed' for quick mode re-analysis, or checking if the type will never vary.
@@ -106,7 +116,7 @@ trait Analyzable
         try {
             // Analyze the node in a cloned context so that we
             // don't overwrite anything
-            return (new BlockAnalysisVisitor($code_base, clone($context)))(
+            return (new BlockAnalysisVisitor($code_base, clone($context)))->__invoke(
                 $definition_node
             );
         } finally {

@@ -37,8 +37,11 @@ final class ArrayShapeType extends ArrayType
      */
     private $generic_array_element_union_type = null;
 
+    /** @var ?array<int,UnionType> */
+    private $unique_value_union_types;
+
     /**
-     * @param array<string|int,UnionType> $types
+     * @param array<string|int,UnionType|AnnotatedUnionType> $types
      * Maps 0 or more field names to the corresponding types
      *
      * @param bool $is_nullable
@@ -61,12 +64,18 @@ final class ArrayShapeType extends ArrayType
         return $this->field_types;
     }
 
+    public function isNotEmptyArrayShape() : bool
+    {
+        return \count($this->field_types) !== 0;
+    }
+
     /**
-     * @param int|string $field_key
+     * @param int|string|float|bool $field_key
      */
     public function withoutField($field_key) : ArrayShapeType
     {
         $field_types = $this->field_types;
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
         if (!\array_key_exists($field_key, $field_types)) {
             return $this;
         }
@@ -101,21 +110,56 @@ final class ArrayShapeType extends ArrayType
         return true;
     }
 
-    /** @return array<int,type> */
+    /**
+     * @return array<int,ArrayType>
+     */
     private function computeGenericArrayTypeInstances() : array
     {
+        $field_types = $this->field_types;
+        if (\count($field_types) === 0) {
+            // there are 0 fields, so we know nothing about the field types (and there's no way to indicate an empty array yet)
+            return [ArrayType::instance($this->is_nullable)];
+        }
+
         $union_type_builder = new UnionTypeBuilder();
-        foreach ($this->field_types as $key => $field_union_type) {
+        foreach ($field_types as $key => $field_union_type) {
             foreach ($field_union_type->getTypeSet() as $type) {
                 $union_type_builder->addType(GenericArrayType::fromElementType($type, $this->is_nullable, \is_string($key) ? GenericArrayType::KEY_STRING : GenericArrayType::KEY_INT));
             }
         }
+        // @phan-suppress-next-line PhanPartialTypeMismatchReturn
         return $union_type_builder->getTypeSet();
     }
 
     public function getKeyType() : int
     {
         return $this->key_type ?? ($this->key_type = GenericArrayType::getKeyTypeForArrayLiteral($this->field_types));
+    }
+
+    /**
+     * @return UnionType
+     * @phan-override
+     */
+    public function iterableKeyUnionType(CodeBase $unused_code_base)
+    {
+        return $this->getKeyUnionType();
+    }
+
+    // TODO: Refactor other code calling unionTypeForKeyType to use this?
+    public function getKeyUnionType() : UnionType
+    {
+        if (\count($this->field_types) === 0) {
+            return UnionType::empty();
+        }
+        return GenericArrayType::unionTypeForKeyType($this->getKeyType());
+    }
+
+    /**
+     * @return UnionType
+     */
+    public function iterableValueUnionType(CodeBase $unused_code_base)
+    {
+        return $this->genericArrayElementUnionType();
     }
 
     public function genericArrayElementUnionType() : UnionType
@@ -127,6 +171,37 @@ final class ArrayShapeType extends ArrayType
     {
         // FIXME Deprecate genericArrayElementType
         return MixedType::instance(false);
+    }
+
+    /**
+     * @override
+     * @param Type[] $target_type_set
+     */
+    public function canCastToAnyTypeInSet(array $target_type_set) : bool
+    {
+        $element_union_types = null;
+        foreach ($target_type_set as $target_type) {
+            if ($target_type instanceof GenericArrayType) {
+                if (($this->getKeyType() & ($target_type->getKeyType() ?: GenericArrayType::KEY_MIXED)) === 0 && !Config::getValue('scalar_array_key_cast')) {
+                    // Attempting to cast an int key to a string key (or vice versa) is normally invalid, so skip it.
+                    // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
+                    continue;
+                }
+                if ($element_union_types) {
+                    $element_union_types = $element_union_types->withType($target_type->genericArrayElementType());
+                } else {
+                    $element_union_types = $target_type->genericArrayElementUnionType();
+                }
+                continue;
+            }
+            if ($this->canCastToType($target_type)) {
+                return true;
+            }
+        }
+        if ($element_union_types) {
+            return $this->canEachFieldTypeCastToExpectedUnionType($element_union_types);
+        }
+        return false;
     }
 
     /**
@@ -143,7 +218,7 @@ final class ArrayShapeType extends ArrayType
                     // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
                     return false;
                 }
-                return $this->genericArrayElementUnionType()->canCastToUnionType($type->genericArrayElementUnionType());
+                return $this->canEachFieldTypeCastToExpectedUnionType($type->genericArrayElementUnionType());
             } elseif ($type instanceof ArrayShapeType) {
                 foreach ($type->field_types as $key => $field_type) {
                     $this_field_type = $this->field_types[$key] ?? null;
@@ -170,6 +245,9 @@ final class ArrayShapeType extends ArrayType
             // can cast to Iterable but not Traversable
             return true;
         }
+        if ($type instanceof GenericIterableType) {
+            return $this->canCastToGenericIterableType($type);
+        }
 
         $d = \strtolower((string)$type);
         if ($d[0] == '\\') {
@@ -186,8 +264,59 @@ final class ArrayShapeType extends ArrayType
         return parent::canCastToNonNullableType($type);
     }
 
+    private function canCastToGenericIterableType(GenericIterableType $iterable_type) : bool
+    {
+        if (!$this->getKeyUnionType()->canCastToUnionType($iterable_type->getKeyUnionType())) {
+            // TODO: Use the scalar_array_key_cast config
+            return false;
+        }
+        return $this->canEachFieldTypeCastToExpectedUnionType($iterable_type->getElementUnionType());
+    }
+
+    /** @return array<int,UnionType> */
+    private function getUniqueValueUnionTypes() : array
+    {
+        return $this->unique_value_union_types ?? ($this->unique_value_union_types = $this->calculateUniqueValueUnionTypes());
+    }
+
+    /** @return array<int,UnionType> */
+    private function calculateUniqueValueUnionTypes() : array
+    {
+        $field_types = $this->field_types;
+        $unique = [];
+        foreach ($field_types as $value_union_type) {
+            if ($value_union_type->getIsPossiblyUndefined()) {
+                continue;
+            }
+
+            $value_union_type = $value_union_type->withIsPossiblyUndefined(false);
+            $unique[$value_union_type->generateUniqueId()] = $value_union_type;
+        }
+        return \array_values($unique);
+    }
+
     /**
-     * @param array<string|int,UnionType> $field_types
+     * This implements a type casting check for casting array shape values to element type of generic arrays.
+     *
+     * We reject casts of array{key:string,otherKey:int} to string[] because otherKey is there and incompatible
+     *
+     * We accept casts of array{key:string,otherKey:?int} to string[] because otherKey is possibly absent (to reduce
+     *
+     * TODO: Consider ways to implement a strict mode
+     *
+     */
+    private function canEachFieldTypeCastToExpectedUnionType(UnionType $expected_type) : bool
+    {
+        foreach ($this->getUniqueValueUnionTypes() as $value_union_type) {
+            if (!$value_union_type->canCastToUnionType($expected_type)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @param array<string|int,UnionType|AnnotatedUnionType> $field_types
      * @param bool $is_nullable
      * @return ArrayShapeType
      * TODO: deduplicate
@@ -251,10 +380,10 @@ final class ArrayShapeType extends ArrayType
     }
 
     /**
-     * @param CodeBase
+     * @param CodeBase $code_base
      * The code base to use in order to find super classes, etc.
      *
-     * @param $recursion_depth
+     * @param int $recursion_depth
      * This thing has a tendency to run-away on me. This tracks
      * how bad I messed up by seeing how far the expanded types
      * go
@@ -278,31 +407,33 @@ final class ArrayShapeType extends ArrayType
             $recursion_depth < 20,
             "Recursion has gotten out of hand"
         );
-        // TODO: Use UnionType::merge from a future change?
-        $result_fields = [];
-        foreach ($this->field_types as $key => $union_type) {
-            // UnionType already increments recursion_depth before calling asExpandedTypes on a subclass of Type,
-            // and has a depth limit of 10.
-            // Don't increase recursion_depth here, it's too easy to reach.
-            $result_fields[$key] = $union_type->asExpandedTypes($code_base, $recursion_depth);
-        }
-        return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asUnionType();
+        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) {
+            $result_fields = [];
+            foreach ($this->field_types as $key => $union_type) {
+                // UnionType already increments recursion_depth before calling asExpandedTypes on a subclass of Type,
+                // and has a depth limit of 10.
+                // Don't increase recursion_depth here, it's too easy to reach.
+                $expanded_field_type = $union_type->asExpandedTypes($code_base, $recursion_depth);
+                if ($union_type->getIsPossiblyUndefined()) {
+                    // array{key?:string} should become array{key?:string}.
+                    $expanded_field_type = $union_type->withIsPossiblyUndefined(true);
+                }
+                $result_fields[$key] = $expanded_field_type;
+            }
+            return ArrayShapeType::fromFieldTypes($result_fields, $this->is_nullable)->asUnionType();
+        });
     }
 
     /**
-     * @return GenericArrayType[]
+     * @return array<int,ArrayType>
      * @override
      */
     public function withFlattenedArrayShapeTypeInstances() : array
     {
-        if (\is_array($this->as_generic_array_type_instances)) {
-            return $this->as_generic_array_type_instances;
+        $instances = $this->as_generic_array_type_instances;
+        if (\is_array($instances)) {
+            return $instances;
         }
-        if (\count($this->field_types) === 0) {
-            // there are 0 fields, so we know nothing about the field types (and there's no way to indicate an empty array yet)
-            return $this->as_generic_array_type_instances = [ArrayType::instance($this->is_nullable)];
-        }
-
         return $this->as_generic_array_type_instances = $this->computeGenericArrayTypeInstances();
     }
 
@@ -312,7 +443,7 @@ final class ArrayShapeType extends ArrayType
     }
 
     /**
-     * Computes the union of two or more array shape types.
+     * Computes the non-nullable union of two or more array shape types.
      *
      * E.g. array{0: string} + array{0:int,1:int} === array{0:int|string,1:int}
      * @param array<int,ArrayShapeType> $array_shape_types
@@ -331,13 +462,14 @@ final class ArrayShapeType extends ArrayType
         foreach ($array_shape_types as $type) {
             foreach ($type->field_types as $key => $union_type) {
                 $old_union_type = $field_types[$key] ?? null;
-                if (!isset($old_union_type)) {
+                if ($old_union_type === null) {
                     $field_types[$key] = $union_type;
                     continue;
                 }
                 $field_types[$key] = $old_union_type->withUnionType($union_type);
             }
         }
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         return self::fromFieldTypes($field_types, false);
     }
 
@@ -352,10 +484,27 @@ final class ArrayShapeType extends ArrayType
     }
 
     /**
-     * @override
+     * @phan-override
      */
     public function shouldBeReplacedBySpecificTypes() : bool
     {
+        return false;
+    }
+
+    /**
+     * @return bool true if there is guaranteed to be at least one property
+     * @phan-override
+     */
+    public function getIsAlwaysTruthy() : bool
+    {
+        if ($this->is_nullable) {
+            return false;
+        }
+        foreach ($this->field_types as $field) {
+            if (!$field->getIsPossiblyUndefined()) {
+                return true;
+            }
+        }
         return false;
     }
 }

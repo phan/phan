@@ -31,6 +31,13 @@ return [
     // of the php executable used to execute phan.
     "target_php_version" => null,
 
+    // Default: true. If this is set to true,
+    // and target_php_version is newer than the version used to run Phan,
+    // Phan will act as though functions added in newer PHP versions exist.
+    //
+    // NOTE: Currently, this only affects Closure::fromCallable
+    'pretend_newer_core_functions_exist' => true,
+
     // If true, missing properties will be created when
     // they are first seen. If false, we'll report an
     // error message.
@@ -49,6 +56,24 @@ return [
     // This is an incremental step in migrating away from null_casts_as_any_type.
     // If null_casts_as_any_type is true, this has no effect.
     'array_casts_as_null' => false,
+
+    // If enabled, Phan will warn if **any** type in the argument's type
+    // cannot be cast to a type in the parameter's expected type.
+    // Setting this to true will introduce a large number of false positives (and some bugs).
+    // (For self-analysis, Phan has a large number of suppressions and file-level suppressions, due to \ast\Node being difficult to type check)
+    'strict_param_checking' => true,
+
+    // If enabled, Phan will warn if **any** type in a property assignment's type
+    // cannot be cast to a type in the property's expected type.
+    // Setting this to true will introduce a large number of false positives (and some bugs).
+    // (For self-analysis, Phan has a large number of suppressions and file-level suppressions, due to \ast\Node being difficult to type check)
+    'strict_property_checking' => true,
+
+    // If enabled, Phan will warn if **any** type in the return statement's type
+    // cannot be cast to a type in the method's declared return type.
+    // Setting this to true will introduce a large number of false positives (and some bugs).
+    // (For self-analysis, Phan has a large number of suppressions and file-level suppressions, due to \ast\Node being difficult to type check)
+    'strict_return_checking' => true,
 
     // If enabled, scalars (int, float, bool, string, null)
     // are treated as if they can cast to each other.
@@ -118,6 +143,13 @@ return [
     // This is false by default. (Will warn if real parameter types are omitted in an override)
     'allow_method_param_type_widening' => false,
 
+    // Set this to true to make Phan guess that undocumented parameter types
+    // (for optional parameters) have the same type as default values
+    // (Instead of combining that type with `mixed`).
+    // E.g. `function($x = 'val')` would make Phan infer that $x had a type of `string`, not `string|mixed`.
+    // Phan will not assume it knows specific types if the default value is false or null.
+    'guess_unknown_parameter_type_using_default' => false,
+
     // This setting maps case insensitive strings to union types.
     // This is useful if a project uses phpdoc that differs from the phpdoc2 standard.
     // If the corresponding value is the empty string, Phan will ignore that union type (E.g. can ignore 'the' in `@return the value`)
@@ -140,6 +172,10 @@ return [
     // `$class->$method()`) in ways that we're unable
     // to make sense of.
     'dead_code_detection' => false,
+
+    // Set to true in order to attempt to detect unused variables.
+    // dead_code_detection will also enable unused variable detection.
+    'unused_variable_detection' => true,
 
     // Set to true in order to force tracking references to elements
     // (functions/methods/consts/protected).
@@ -180,7 +216,7 @@ return [
     // (use when the number of files is much larger than the process count)
     // NOTE: If you rely on Phan parsing files/directories in the order
     // that they were provided in this config, don't use this)
-    // See https://github.com/etsy/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
+    // See https://github.com/phan/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
     'consistent_hashing_file_order' => false,
 
     // Override to hardcode existence and types of (non-builtin) globals.
@@ -197,6 +233,11 @@ return [
     // here to inhibit them from being reported
     'suppress_issue_types' => [
         'PhanUnreferencedClosure',  // False positives seen with closures in arrays, TODO: move closure checks closer to what is done by unused variable plugin
+        'PhanPossiblyFalseTypeArgument',
+        'PhanPossiblyFalseTypeArgumentInternal',
+        'PhanPossiblyNullTypeArgument',
+        'PhanPossiblyNullTypeArgumentInternal',
+        'PhanPossiblyNullTypeReturn',
         // 'PhanUndeclaredMethod',
     ],
 
@@ -400,6 +441,7 @@ return [
     // your application should be included in this list.
     'directory_list' => [
         'src',
+        'internal',
         'tests/Phan',
         'vendor/composer/semver/src',
         'vendor/composer/xdebug-handler/src',
@@ -458,6 +500,21 @@ return [
     // Also see 'autoload_internal_extension_signatures' for an alternative way to fix this type of issue.
     'ignore_undeclared_functions_with_known_signatures' => false,
 
+    'plugin_config' => [
+        // A list of 1 or more PHP binaries (Absolute path or program name found in $PATH)
+        // to use to analyze your files with PHP's native `--syntax-check`.
+        //
+        // This can be used to simultaneously run PHP's syntax checks with multiple PHP versions.
+        // e.g. `'plugin_config' => ['php_native_syntax_check_binaries' => ['php72', 'php70', 'php56']]`
+        // if all of those programs can be found in $PATH
+
+        // 'php_native_syntax_check_binaries' => [PHP_BINARY],
+
+        // The maximum number of `php --syntax-check` processes to run at any point in time (Minimum: 1).
+        // This may be temporarily higher if php_native_syntax_check_binaries has more elements than this process count.
+        'php_native_syntax_check_max_processes' => 4,
+    ],
+
     // A list of plugin files to execute
     // NOTE: values can be the base name without the extension for plugins bundled with Phan (E.g. 'AlwaysReturnPlugin')
     // or relative/absolute paths to the plugin (Relative to the project root).
@@ -470,6 +527,12 @@ return [
         'DuplicateArrayKeyPlugin',
         'PregRegexCheckerPlugin',
         'PrintfCheckerPlugin',
+
+        // 'SleepCheckerPlugin' is useful for projects which heavily use the __sleep() method. Phan doesn't use __sleep().
+
+        // InvokePHPNativeSyntaxCheckPlugin invokes 'php --no-php-ini --syntax-check ${abs_path_to_analyzed_file}.php' and reports any error messages.
+        // Using this can cause phan's overall analysis time to more than double.
+        // 'InvokePHPNativeSyntaxCheckPlugin',
 
         // 'PHPUnitNotDeadCodePlugin',  // Marks phpunit test case subclasses and test cases as refernced code. only useful for runs when dead code detection is enabled
 

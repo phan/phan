@@ -7,5 +7,5 @@
 %s:39 PhanTypeInvalidThrowsNonThrowable @throws annotation of d has suspicious class type \MyNs\Test454, which does not extend Error/Exception
 %s:42 PhanTypeInvalidThrowsNonObject @throws annotation of e has invalid non-object type resource, expected a class
 %s:48 PhanTypeInvalidThrowsNonObject @throws annotation of f has invalid non-object type false, expected a class
-%s:57 PhanTypeInvalidThrowsIsInterface @throws annotation of throwInterface has suspicious interface type \ArrayAccess for an @throws annotation, expected class (Zend PHP allows interfaces to be caught, so this might be intentional)
+%s:57 PhanTypeInvalidThrowsIsInterface @throws annotation of throwInterface has suspicious interface type \ArrayAccess for an @throws annotation, expected class (PHP allows interfaces to be caught, so this might be intentional)
 %s:60 PhanTypeInvalidThrowsIsTrait @throws annotation of throwTrait has invalid trait type \MyNs\MyTrait, expected a class

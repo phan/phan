@@ -78,4 +78,25 @@ class AnnotatedUnionType extends UnionType
     {
         return parent::withUnionType($union_type)->withIsPossiblyUndefined(false);
     }
+
+    /**
+     * @return bool - True if not empty, not possibly undefined, and at least one type is NullType or nullable.
+     * @override
+     */
+    public function containsNullableOrUndefined() : bool
+    {
+        return $this->is_possibly_undefined || $this->containsNullable();
+    }
+
+    /**
+     * @override
+     */
+    public function generateUniqueId() : string
+    {
+        $id = parent::generateUniqueId();
+        if ($this->is_possibly_undefined) {
+            return $id . '=';
+        }
+        return $id;
+    }
 }

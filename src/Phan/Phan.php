@@ -131,6 +131,8 @@ class Phan implements IgnoredFilesFilterInterface
         CLI::progress('parse', 0.0);
         $code_base->setCurrentParsedFile(null);
         foreach ($file_path_list as $i => $file_path) {
+            \assert(\is_string($file_path));
+
             $code_base->setCurrentParsedFile($file_path);
             CLI::progress('parse', ($i + 1) / $file_count);
 
@@ -202,9 +204,6 @@ class Phan implements IgnoredFilesFilterInterface
                     exit(2);
                 }
                 LanguageServerLogger::logInfo(sprintf("language server (pid=%d) accepted connection", getmypid()));
-
-                // FIXME use sabre or some other async code
-                // FIXME implement
             }
             self::setPrinter($request->getPrinter());
 
@@ -254,6 +253,10 @@ class Phan implements IgnoredFilesFilterInterface
             // actually need. When running as multiple processes this
             // lets us only need to do hydrate a subset of classes.
             $code_base->setShouldHydrateRequestedElements(true);
+
+            // This is only needed when `pcntl` *isn't* used.
+            // This object (if non-null) removes the temporary plugins added to implement "Go To Definition", etc.
+            $raii = ConfigPluginSet::instance()->addTemporaryAnalysisPlugin($code_base, $request);
 
             // TODO: consider filtering if Config::getValue('include_analysis_file_list') is set
             // most of what needs considering is that Analysis::analyzeClasses() and Analysis:analyzeFunctions() have side effects
@@ -312,9 +315,9 @@ class Phan implements IgnoredFilesFilterInterface
              * This worker takes a file and analyzes it
              * @return void
              */
-            $analysis_worker = function ($i, $file_path) use ($file_count, $code_base, $temporary_file_mapping) {
+            $analysis_worker = function ($i, $file_path) use ($file_count, $code_base, $temporary_file_mapping, $request) {
                 CLI::progress('analyze', ($i + 1) / $file_count);
-                Analysis::analyzeFile($code_base, $file_path, $temporary_file_mapping[$file_path] ?? null);
+                Analysis::analyzeFile($code_base, $file_path, $request, $temporary_file_mapping[$file_path] ?? null);
             };
 
             // Determine how many processes we're running on. This may be

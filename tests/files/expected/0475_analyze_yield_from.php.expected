@@ -1,0 +1,6 @@
+%s:23 PhanTypeMismatchGeneratorYieldValue Yield statement has a value with type int but test_yield_from() is declared to yield values of type string in \Generator<int,string>
+%s:24 PhanTypeMismatchGeneratorYieldKey Yield statement has a key with type string but test_yield_from() is declared to yield keys of type int in \Generator<int,string>
+%s:28 PhanTypeMismatchGeneratorYieldKey Yield statement has a key with type void but test_yield_from() is declared to yield keys of type int in \Generator<int,string>
+%s:29 PhanTypeMismatchGeneratorYieldValue Yield statement has a value with type \stdClass but test_yield_from() is declared to yield values of type string in \Generator<int,string>
+%s:31 PhanTypeInvalidYieldFrom Yield from statement was passed an invalid expression of type string (expected Traversable/array)
+%s:32 PhanTypeInvalidYieldFrom Yield from statement was passed an invalid expression of type \stdClass (expected Traversable/array)

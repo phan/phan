@@ -4,6 +4,7 @@ namespace Phan\Analysis;
 use Phan\CodeBase;
 use Phan\Exception\IssueException;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\GenericArrayType;
@@ -32,7 +33,7 @@ class PropertyTypesAnalyzer
             }
 
             // Look at each type in the parameter's Union Type
-            foreach ($union_type->getTypeSet() as $outer_type) {
+            foreach ($union_type->withFlattenedArrayShapeTypeInstances()->getTypeSet() as $outer_type) {
                 $type = $outer_type;
                 // TODO: Expand this to ArrayShapeType
                 while ($type instanceof GenericArrayType) {
@@ -67,13 +68,13 @@ class PropertyTypesAnalyzer
                             || $property->getDefiningFQSEN() == $property->getFQSEN()
                         )
                     ) {
-                        Issue::maybeEmit(
+                        Issue::maybeEmitWithParameters(
                             $code_base,
                             $property->getContext(),
                             Issue::UndeclaredTypeProperty,
                             $property->getFileRef()->getLineNumberStart(),
-                            (string)$property->getFQSEN(),
-                            (string)$outer_type
+                            [(string)$property->getFQSEN(), (string)$outer_type],
+                            IssueFixSuggester::suggestSimilarClass($code_base, $property->getContext(), $type_fqsen, null, 'Did you mean', IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES)
                         );
                     }
                 }

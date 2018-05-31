@@ -7,7 +7,7 @@ Add their relative path (.phan/plugins/...) to the `plugins` entry of .phan/conf
 Plugin Documentation
 --------------------
 
-[Wiki Article: Writing Plugins For Phan](https://github.com/etsy/phan/wiki/Writing-Plugins-for-Phan)
+[Wiki Article: Writing Plugins For Phan](https://github.com/phan/phan/wiki/Writing-Plugins-for-Phan)
 
 Plugin List
 -----------
@@ -88,13 +88,6 @@ Subclassing this plugin (and overriding `gettextForAllLocales`) will allow you t
 This will require extra work to set up.
 See [PrintfCheckerPlugin's source](./PrintfCheckerPlugin.php) for details.
 
-                        'PhanPluginPrintfNotPercent',
-                        'PhanPluginPrintfTranslatedWidthNotPosition',
-                    'PhanPluginPrintfIncompatibleSpecifier',
-                        'PhanPluginPrintfIncompatibleArgumentTypeWeak',
-                        'PhanPluginPrintfIncompatibleArgumentType',
-                            $issue_type = 'PhanPluginPrintfTranslatedIncompatible';
-                            $issue_type = 'PhanPluginPrintfTranslatedHasMoreArgs';
 #### UnreachableCodePlugin.php
 
 Checks for syntactically unreachable statements in the global scope or function bodies.
@@ -104,7 +97,38 @@ Checks for syntactically unreachable statements in the global scope or function 
 
 #### Unused variable detection
 
-See https://github.com/etsy/phan/issues/345
+This is now built into Phan itself, and can be enabled via `--unused-variable-detection`.
+
+#### InvokePHPNativeSyntaxCheckPlugin.php
+
+This invokes `php --no-php-ini --syntax-check $analyzed_file_path` for you. (See
+This is useful for cases Phan doesn't cover (e.g. [Issue #449](https://github.com/phan/phan/issues/449) or [Issue #277](https://github.com/phan/phan/issues/277)).
+
+Note: This may double the time Phan takes to analyze a project. This plugin can be safely used along with `--processes N`.
+
+This does not run on files that are parsed but not analyzed.
+
+Configuration settings can be added to `.phan/config.php`:
+
+```php
+    'plugin_config' => [
+        // A list of 1 or more PHP binaries (Absolute path or program name found in $PATH)
+        // to use to analyze your files with PHP's native `--syntax-check`.
+        //
+        // This can be used to simultaneously run PHP's syntax checks with multiple PHP versions.
+        // e.g. `'plugin_config' => ['php_native_syntax_check_binaries' => ['php72', 'php70', 'php56']]`
+        // if all of those programs can be found in $PATH
+
+        // 'php_native_syntax_check_binaries' => [PHP_BINARY],
+
+        // The maximum number of `php --syntax-check` processes to run at any point in time (Minimum: 1. Default: 1).
+        // This may be temporarily higher if php_native_syntax_check_binaries has more elements than this process count.
+        'php_native_syntax_check_max_processes' => 4,
+    ],
+```
+
+If you wish to make sure that analyzed files would be accepted by those PHP versions
+(Requires that php72, php70, and php56 be locatable with the `$PATH` environment variable)
 
 ### 3. Plugins Specific to Code Styles
 
@@ -146,6 +170,18 @@ Marks unit tests and dataProviders of subclasses of PHPUnit\Framework\TestCase a
 Avoids false positives when `--dead-code-detection` is enabled.
 
 (Does not emit any issue types)
+
+#### SleepCheckerPlugin.php
+
+Warn about returning non-arrays in [`__sleep`](https://secure.php.net/__sleep),
+as well as about returning array values with invalid property names in `__sleep`.
+
+- **SleepCheckerInvalidReturnStatement`**: `__sleep must return an array of strings. This is definitely not an array.`
+- **SleepCheckerInvalidReturnType**: `__sleep is returning {TYPE}, expected string[]`
+- **SleepCheckerInvalidPropNameType**: `__sleep is returning an array with a value of type {TYPE}, expected string`
+- **SleepCheckerInvalidPropName**: `__sleep is returning an array that includes {PROPERTY}, which cannot be found`
+- **SleepCheckerMagicPropName**: `__sleep is returning an array that includes {PROPERTY}, which is a magic property`
+- **SleepCheckerDynamicPropName**: `__sleep is returning an array that includes {PROPERTY}, which is a dynamically added property (but not a declared property)`
 
 ### 4. Demo plugins:
 

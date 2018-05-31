@@ -1,0 +1,2 @@
+%s:8 PhanUnusedVariable Unused definition of variable $x
+%s:8 PhanUnusedVariable Unused definition of variable $y

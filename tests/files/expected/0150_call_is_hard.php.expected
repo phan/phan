@@ -1,0 +1,2 @@
+%s:5 PhanUnextractableAnnotationElementName Saw possibly unextractable annotation for a fragment of comment '* @param string': after string, did not see an element name (will guess based on comment order)
+%s:6 PhanUnextractableAnnotationElementName Saw possibly unextractable annotation for a fragment of comment '* @param array': after array, did not see an element name (will guess based on comment order)

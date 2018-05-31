@@ -26,6 +26,10 @@ final class PylintPrinter implements IssuePrinterInterface
             self::getSeverityCode($instance),
             $message
         );
+        $suggestion = $instance->getSuggestionMessage();
+        if ($suggestion) {
+            $line .= " ($suggestion)";
+        }
 
         $this->output->writeln($line);
     }

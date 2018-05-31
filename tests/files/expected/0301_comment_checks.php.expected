@@ -2,16 +2,16 @@
 %s:5 PhanInvalidCommentForDeclarationType The phpdoc comment for @param cannot occur on a class
 %s:6 PhanInvalidCommentForDeclarationType The phpdoc comment for @return cannot occur on a class
 %s:7 PhanMisspelledAnnotation Saw misspelled annotation @phan-forbid-this-is-a-typo, should be one of @phan-forbid-undeclared-magic-methods @phan-forbid-undeclared-magic-properties @phan-closure-scope @phan-override
-%s:12 PhanUnextractableAnnotationPart Saw unextractable annotation for a fragment of comment * @method foo(string$invalidType $param1): string$invalidType $param1
-%s:13 PhanUnextractableAnnotation Saw unextractable annotation for comment * @method unmatched(
-%s:17 PhanUnextractableAnnotation Saw unextractable annotation for comment * @property int (Can't parse the variable name, so silently ignore)
+%s:12 PhanUnextractableAnnotationPart Saw unextractable annotation for a fragment of comment '* @method foo(string$invalidType $param1)': 'string$invalidType $param1'
+%s:13 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @method unmatched('
+%s:17 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @property int (Can't parse the variable name, so silently ignore)'
 %s:19 PhanInvalidCommentForDeclarationType The phpdoc comment for @param cannot occur on a property
 %s:20 PhanInvalidCommentForDeclarationType The phpdoc comment for @return cannot occur on a property
 %s:26 PhanInvalidCommentForDeclarationType The phpdoc comment for @phan-forbid-undeclared-magic-properties cannot occur on a method
 %s:27 PhanInvalidCommentForDeclarationType The phpdoc comment for @property cannot occur on a method
 %s:28 PhanInvalidCommentForDeclarationType The phpdoc comment for @method cannot occur on a method
-%s:28 PhanUnextractableAnnotation Saw unextractable annotation for comment * @method int $wrongPlaceForMethod
-%s:35 PhanUnextractableAnnotation Saw unextractable annotation for comment * @param
-%s:36 PhanUnextractableAnnotation Saw unextractable annotation for comment * @param <>$x $x (not parseable)
-%s:42 PhanUnextractableAnnotation Saw unextractable annotation for comment * @param <
-%s:43 PhanUnextractableAnnotation Saw unextractable annotation for comment * @param > */
+%s:28 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @method int $wrongPlaceForMethod'
+%s:35 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @param'
+%s:36 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @param <>$x $x (not parseable)'
+%s:42 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @param <'
+%s:43 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @param > */'

@@ -16,7 +16,7 @@ use Closure;
 use ast\Node;
 
 /**
- * @phan-file-suppress PhanPluginUnusedPublicMethodArgument
+ * @phan-file-suppress PhanPluginUnusedPublicMethodArgument, PhanUnusedPublicMethodParameter
  */
 abstract class FunctionLikeDeclarationType extends Type implements FunctionInterface
 {
@@ -118,11 +118,13 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     {
         $result = $this->params[$i] ?? null;
         if (!$result) {
+            // @phan-suppress-next-line PhanPossiblyFalseTypeReturn is_variadic implies at least one parameter exists.
             return $this->is_variadic ? end($this->params) : null;
         }
         return $result;
     }
 
+    // TODO: Figure out why ?Closure():bool can't cast to ?Closure(): bool
     public function canCastToNonNullableFunctionLikeDeclarationType(FunctionLikeDeclarationType $type) : bool
     {
         if ($this->required_param_count > $type->required_param_count) {
@@ -161,7 +163,36 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return $this->asUnionType();
     }
 
+    /**
+     * @param bool $is_nullable
+     * Set to true if the type should be nullable, else pass
+     * false
+     *
+     * @return Type
+     * A new type that is a copy of this type but with the
+     * given nullability value.
+     *
+     * @override - Avoid calling make() , which is not compatible with FunctionLikeDeclarationType::__construct
+     *             (E.g. from UnionType->asNormalizedTypes)
+     */
+    public function withIsNullable(bool $is_nullable) : Type
+    {
+        if ($is_nullable === $this->is_nullable) {
+            return $this;
+        }
+        return new static(
+            $this->file_ref,
+            $this->params,
+            $this->return_type,
+            $this->returns_reference,
+            $is_nullable
+        );
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
     // Begin FunctionInterface overrides. Most of these are intentionally no-ops
+    ////////////////////////////////////////////////////////////////////////////////
+
     /**
      * @override
      * @return void
@@ -206,7 +237,10 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }
 
-    /** @override */
+    /**
+     * @phan-return \Generator<FunctionLikeDeclarationType>
+     * @override
+     */
     public function alternateGenerator(CodeBase $_) : \Generator
     {
         yield $this;
@@ -501,7 +535,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /**
-     * @param ?UnionType the raw phpdoc union type
+     * @param ?UnionType $union_type the raw phpdoc union type
      */
     public function setPHPDocReturnType($union_type)
     {
@@ -529,6 +563,16 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function hasSuppressIssue(string $issue_type) : bool
     {
         return in_array($issue_type, $this->getSuppressIssueList());
+    }
+
+    public function checkHasSuppressIssueAndIncrementCount(string $issue_type) : bool
+    {
+        // helpers are no-ops right now
+        if ($this->hasSuppressIssue($issue_type)) {
+            $this->incrementSuppressIssueCount($issue_type);
+            return true;
+        }
+        return false;
     }
 
     public function hydrate(CodeBase $_)
@@ -568,5 +612,43 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         throw new \AssertionError('should not call ' . __METHOD__);
     }
 
+    /**
+     * @return array<mixed,string> in the same format as FunctionSignatureMap.php
+     * @override (Unused, but part of the interface)
+     */
+    public function toFunctionSignatureArray() : array
+    {
+        // no need for returns ref yet
+        $stub .= '(' . implode(', ', array_map(function (Parameter $parameter) : string {
+            return $parameter->toStubString();
+        }, $this->getRealParameterList())) . ')';
+
+        $return_type = $this->return_type;
+        $stub = [$return_type->__toString()];
+        foreach ($this->params as $i => $parameter) {
+            $name = "p$i";
+            if ($parameter->isOptional()) {
+                $name .= '=';
+            }
+            $type_string = $parameter->getNonVariadicUnionType()->__toString();
+            if ($parameter->isPassByReference()) {
+                $type_string .= '&';
+            }
+            if ($parameter->isVariadic()) {
+                $type_string .= '...';
+            }
+            $stub[$name] = $type_string;
+        }
+        return $stub;
+    }
+
+    public function getReturnTypeAsGeneratorTemplateType() : Type
+    {
+        // Probably unused
+        return Type::fromFullyQualifiedString('\Generator');
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
     // End FunctionInterface overrides
+    ////////////////////////////////////////////////////////////////////////////////
 }

@@ -299,13 +299,31 @@ abstract class TypedElement implements TypedElementInterface
     }
 
     /**
-     * return bool
+     * @return bool
      * True if this element would like to suppress the given
      * issue name
+     * @see $this->checkHasSuppressIssueAndIncrementCount() for the most common usage
      */
     public function hasSuppressIssue(string $issue_name) : bool
     {
         return isset($this->suppress_issue_list[$issue_name]);
+    }
+
+    /**
+     * @return bool
+     * True if this element would like to suppress the given
+     * issue name.
+     *
+     * If this is true, this automatically calls incrementSuppressIssueCount.
+     * Most callers should use this, except for uses similar to UnusedSuppressionPlugin.
+     */
+    public function checkHasSuppressIssueAndIncrementCount(string $issue_name) : bool
+    {
+        if ($this->hasSuppressIssue($issue_name)) {
+            $this->incrementSuppressIssueCount($issue_name);
+            return true;
+        }
+        return false;
     }
 
     /**

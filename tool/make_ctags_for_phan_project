@@ -35,4 +35,5 @@ echo "Generating file list with Phan and running phpctags"
 # Run phpctags on the files that Phan would parse or analyze.
 # This can be a long list. Choose a default larger than 128KB (2MB) -- (run getconf ARG_MAX for the actual limit)
 # Unfortunately, phpctags doesn't have an option to read file arguments from a list or stdin
-$DIR/../phan --dump-parsed-file-list | xargs --exit -s 2000000 phpctags --verbose "$@"
+# Note: Use a default memory limit higher than 128M - This is needed to parse FunctionSignatureMap.php
+$DIR/../phan --dump-parsed-file-list | xargs --exit -s 2000000 phpctags --memory=2G --verbose "$@"

@@ -7,6 +7,7 @@ use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\Printer\PlainTextPrinter;
 use Phan\Language\Type;
 use Phan\Phan;
+use Phan\Plugin\ConfigPluginSet;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTestInterface
@@ -14,7 +15,6 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     const EXPECTED_SUFFIX = '.expected';
 
     private $code_base;
-    private $original_config = [];
 
     public function setCodeBase(CodeBase $code_base = null)
     {
@@ -26,6 +26,24 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      */
     abstract public function getTestFiles();
 
+    public static function setUpBeforeClass()
+    {
+        parent::setUpBeforeClass();
+        // Reset the config file
+        Config::reset();
+        // Clear the plugins
+        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+    }
+
+    public static function tearDownAfterClass()
+    {
+        parent::tearDownAfterClass();
+        // Reset the config file
+        Config::reset();
+        // Clear the plugins
+        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+    }
+
     /**
      * Setup our state before running each test
      *
@@ -34,11 +52,6 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     public function setUp()
     {
         parent::setUp();
-
-        // Backup the config file
-        foreach (Config::get()->toArray() as $key => $value) {
-            $this->original_config[$key] = $value;
-        }
 
         Type::clearAllMemoizations();
     }
@@ -49,11 +62,6 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     public function tearDown()
     {
         parent::tearDown();
-
-        // Reinstate the original config
-        foreach ($this->original_config as $key => $value) {
-            Config::setValue($key, $value);
-        }
 
         Type::clearAllMemoizations();
     }
@@ -66,6 +74,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      */
     protected function scanSourceFilesDir(string $sourceDir, string $expectedDir)
     {
+        // TODO: Make Phan know that array_filter with a single argument implies elements aren't falsey
         $files = array_filter(
             array_filter(
                 scandir($sourceDir),

@@ -13,10 +13,7 @@ class ASTRewriterTest extends AbstractPhanFileTest
      */
     public function getTestFiles()
     {
-        /** @return string[] - Original file and expected file */
-        return array_map(function (array $values) : array {
-            return [$values[0], $values[1]];
-        }, $this->scanSourceFilesDir(AST_TEST_FILE_DIR, AST_EXPECTED_DIR));
+        return $this->scanSourceFilesDir(AST_TEST_FILE_DIR, AST_EXPECTED_DIR);
     }
 
     /**

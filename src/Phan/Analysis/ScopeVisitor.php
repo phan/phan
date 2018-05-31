@@ -9,6 +9,10 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use ast\Node;
 
+/**
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
+ */
 abstract class ScopeVisitor extends AnalysisVisitor
 {
 
@@ -33,13 +37,12 @@ abstract class ScopeVisitor extends AnalysisVisitor
      * Default visitor for node kinds that do not have
      * an overriding method
      *
-     * @param Node $node
+     * @param Node $node @phan-unused-param
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
-     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function visit(Node $node) : Context
     {
@@ -63,7 +66,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
         $declares = $node->children['declares'];
         $name = $declares->children[0]->children['name'];
         $value = $declares->children[0]->children['value'];
-        if ('strict_types' === $name) {
+        if ('strict_types' === $name && is_int($value)) {
             return $this->context->withStrictTypes($value);
         }
 
@@ -104,7 +107,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
 
         $context = $this->context;
 
-        $alias_target_map = $this->aliasTargetMapFromUseNode(
+        $alias_target_map = self::aliasTargetMapFromUseNode(
             $children['uses'],
             $prefix,
             $node->flags ?? 0
@@ -136,7 +139,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
     {
         $context = $this->context;
 
-        foreach ($this->aliasTargetMapFromUseNode($node) as $alias => list($flags, $target, $lineno)) {
+        foreach (self::aliasTargetMapFromUseNode($node) as $alias => list($flags, $target, $lineno)) {
             $context = $context->withNamespaceMap(
                 $node->flags ?: $flags,
                 $alias,
@@ -158,8 +161,10 @@ abstract class ScopeVisitor extends AnalysisVisitor
      *
      * @return array<string,array{0:int,1:FullyQualifiedGlobalStructuralElement,2:int}>
      * A map from alias to target
+     *
+     * @suppress PhanPartialTypeMismatchReturn TODO: investigate
      */
-    private function aliasTargetMapFromUseNode(
+    public static function aliasTargetMapFromUseNode(
         Node $node,
         string $prefix = '',
         int $flags = 0

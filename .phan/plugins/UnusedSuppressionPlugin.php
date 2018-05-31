@@ -1,17 +1,23 @@
 <?php declare(strict_types=1);
 
 use Phan\CodeBase;
+use Phan\Config;
+use Phan\Language\Context;
 use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
+use Phan\Plugin\ConfigPluginSet;
 use Phan\PluginV2;
+use Phan\PluginV2\BeforeAnalyzeFileCapability;
 use Phan\PluginV2\AnalyzeClassCapability;
 use Phan\PluginV2\AnalyzeFunctionCapability;
 use Phan\PluginV2\AnalyzePropertyCapability;
 use Phan\PluginV2\AnalyzeMethodCapability;
 use Phan\PluginV2\FinalizeProcessCapability;
+use Phan\PluginV2\SuppressionCapability;
+use ast\Node;
 
 /**
  * Check for unused (at)suppress annotations.
@@ -20,6 +26,7 @@ use Phan\PluginV2\FinalizeProcessCapability;
  *       is run on a single processor (via the `-j1` flag).
  */
 class UnusedSuppressionPlugin extends PluginV2 implements
+    BeforeAnalyzeFileCapability,
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
@@ -37,6 +44,17 @@ class UnusedSuppressionPlugin extends PluginV2 implements
      * These are currently unique, even when quick_mode is false.
      */
     private $elements_for_postponed_analysis = [];
+
+    private $files_for_postponed_analysis = [];
+
+    /**
+     * @var array<string,array<string,array<string,array<int,int>>>> stores the suppressions for active plugins
+     *   maps plugin class to
+     *     file name to
+     *       issue type to
+     *         unique list of line numbers of suppressions
+     */
+    private $plugin_active_suppression_list;
 
     /**
      * @param CodeBase $code_base
@@ -164,6 +182,92 @@ class UnusedSuppressionPlugin extends PluginV2 implements
         foreach ($this->elements_for_postponed_analysis as $element) {
             $this->analyzeAddressableElement($code_base, $element);
         }
+        $this->analyzePluginSuppressions($code_base);
+    }
+
+    private function analyzePluginSuppressions(CodeBase $code_base)
+    {
+        $suppression_plugin_set = ConfigPluginSet::instance()->getSuppressionPluginSet();
+        if (count($suppression_plugin_set) === 0) {
+            return;
+        }
+
+        foreach ($this->files_for_postponed_analysis as $file_path) {
+            foreach ($suppression_plugin_set as $plugin) {
+                $this->analyzePluginSuppressionsForFile($code_base, $plugin, $file_path);
+            }
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function analyzePluginSuppressionsForFile(CodeBase $code_base, SuppressionCapability $plugin, string $relative_file_path)
+    {
+        $absolute_file_path = Config::projectPath($relative_file_path);
+        $plugin_class = \get_class($plugin);
+        $name_pos = \strrpos($plugin_class, '\\');
+        if ($name_pos !== false) {
+            $plugin_name = \substr($plugin_class, $name_pos + 1);
+        } else {
+            $plugin_name = $plugin_class;
+        }
+        $plugin_suppressions = $plugin->getIssueSuppressionList($code_base, $absolute_file_path);
+        $plugin_successful_suppressions = $this->plugin_active_suppression_list[$plugin_class][$absolute_file_path] ?? null;
+
+        foreach ($plugin_suppressions as $issue_type => $line_list) {
+            foreach ($line_list as $lineno) {
+                if (isset($plugin_successful_suppressions[$issue_type][$lineno])) {
+                    continue;
+                }
+                // TODO: finish letting plugins suppress UnusedSuppression on other plugins
+                $issue_kind = 'UnusedPluginSuppression';
+                $message = 'Plugin {STRING_LITERAL} suppresses issue {ISSUETYPE} on this line but this suppression is unused or suppressed elsewhere';
+                if ($lineno === 0) {
+                    $lineno = 1;
+                    $issue_kind = 'UnusedPluginFileSuppression';
+                    $message = 'Plugin {STRING_LITERAL} suppresses issue {ISSUETYPE} in this file but this suppression is unused or suppressed elsewhere';
+                }
+                if (isset($plugin_suppressions['UnusedSuppression'][$lineno])) {
+                    continue;
+                }
+                if (isset($plugin_suppressions[$issue_kind][$lineno])) {
+                    continue;
+                }
+                $this->emitIssue(
+                    $code_base,
+                    (new Context())->withFile($relative_file_path)->withLineNumberStart($lineno),
+                    $issue_kind,
+                    $message,
+                    [$plugin_name, $issue_type]
+                );
+            }
+        }
+        return;
+    }
+
+    public function beforeAnalyzeFile(
+        CodeBase $unused_code_base,
+        Context $context,
+        string $unused_file_contents,
+        Node $unused_node
+    ) {
+        $file = $context->getFile();
+        $this->files_for_postponed_analysis[$file] = $file;
+    }
+
+    /**
+     * @internal
+     */
+    public function recordPluginSuppression(
+        SuppressionCapability $plugin,
+        string $file_path,
+        string $issue_type,
+        int $line
+    ) {
+        $file_name = Config::projectPath($file_path);
+        $plugin_class = \get_class($plugin);
+        $this->plugin_active_suppression_list[$plugin_class][$file_name][$issue_type][$line] = $line;
     }
 }
 

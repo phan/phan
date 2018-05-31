@@ -25,7 +25,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
         $this->messages[] = [
             'type' => 'issue',
             'check_name' => $instance->getIssue()->getType(),
-            'description' => $instance->getMessage(),
+            'description' => $instance->getMessageAndMaybeSuggestion(),
             'categories' => ['Bug Risk'],
             'severity' => self::mapSeverity($instance->getIssue()->getSeverity()),
             'location' => [

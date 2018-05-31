@@ -1,1 +1,1 @@
-%s:8 PhanTypeMismatchReturn Returning type array<int,\stdClass> but testPipeInTemplate386() is declared to return array<int,bool>|array<int,null>
+%s:8 PhanTypeMismatchReturn Returning type array{0:\stdClass} but testPipeInTemplate386() is declared to return array<int,bool>|array<int,null>

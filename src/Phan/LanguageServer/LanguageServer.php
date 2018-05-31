@@ -16,6 +16,7 @@ use Phan\LanguageServer\Protocol\ClientCapabilities;
 use Phan\LanguageServer\Protocol\Diagnostic;
 use Phan\LanguageServer\Protocol\DiagnosticSeverity;
 use Phan\LanguageServer\Protocol\InitializeResult;
+use Phan\LanguageServer\Protocol\Location;
 use Phan\LanguageServer\Protocol\Message;
 use Phan\LanguageServer\Protocol\Position;
 use Phan\LanguageServer\Protocol\Range;
@@ -122,6 +123,19 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     protected $analyze_request_set = [];
 
+    /**
+     * @var ?GoToDefinitionRequest
+     *
+     * Contains the promise for the most recent "Go to definition" request
+     * If more than one such request exists, the earlier requests will be discarded.
+     *
+     * TODO: Will need to Resolve(null) for the older requests.
+     */
+    protected $most_recent_definition_request = null;
+
+    /**
+     * Constructs the only instance of the language server
+     */
     public function __construct(ProtocolReader $reader, ProtocolWriter $writer, CodeBase $code_base, Closure $file_path_lister)
     {
         parent::__construct($this, '/');
@@ -136,10 +150,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $this->shutdown();
             $this->exit();
         });
-        /** @suppress PhanUndeclaredClassMethod https://github.com/fruux/sabre-event/pull/52 */
         $reader->on('message', function (Message $msg) {
             /** @suppress PhanUndeclaredProperty Request->body->id is a request with an id */
-            coroutine(function () use ($msg) {
+            coroutine(function () use ($msg) : \Generator {
                 // Ignore responses, this is the handler for requests and notifications
                 if (AdvancedJsonRpc\Response::isResponse($msg->body)) {
                     return;
@@ -381,6 +394,35 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     }
 
     /**
+     * Asynchronously generates the definition for a given URL
+     * @return Promise <Location|Location[]|null>
+     */
+    public function awaitDefinition(
+        string $uri,
+        Position $position,
+        bool $is_type_definition_request
+    ) : Promise {
+        // TODO: Add a way to "go to definition" without emitting analysis results as a side effect
+        $path_to_analyze = Utils::uriToPath($uri);
+        $logType = $is_type_definition_request ? 'awaitTypeDefinition' : 'awaitDefinition';
+        Logger::logInfo("Called LanguageServer->$logType, uri=$uri, position=" . json_encode($position));
+        $prev_definition_request = $this->most_recent_definition_request;
+        if ($prev_definition_request) {
+            // Discard the previous request silently
+            $prev_definition_request->finalize();
+        }
+        $request = new GoToDefinitionRequest($uri, $position, $is_type_definition_request);
+        $this->most_recent_definition_request = $request;
+
+        // We analyze this url so that Phan is aware enough of the types and namespace maps to trigger "Go to definition"
+        // E.g. going to the definition of `Bar` in `use Foo as Bar; Bar::method();` requires parsing other statements in this file, not just the name in question.
+        //
+        // NOTE: This also ensures that we will run analysis, because of the check for analyze_request_set being non-empty
+        $this->analyze_request_set[$path_to_analyze] = $uri;
+        return $request->getPromise();
+    }
+
+    /**
      * Gets URIs (and corresponding paths) which the language server client needs Phan to re-analyze.
      * This excludes any files that aren't in files and directories of .phan/config.php
      *
@@ -398,6 +440,10 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $file_path_list = ($this->file_path_lister)(true);
         $filtered_uris_to_analyze = [];
         foreach ($uris_to_analyze as $path_to_analyze => $uri) {
+            if (!is_string($uri)) {
+                Logger::logInfo("Uri for path '$path_to_analyze' is not a string, should not happen");
+                continue;
+            }
             $relative_path_to_analyze = FileRef::getProjectRelativePathForPath($path_to_analyze);
             if (!\in_array($uri, $file_path_list) && !\in_array($relative_path_to_analyze, $file_path_list)) {
                 Logger::logInfo("Path '$relative_path_to_analyze' (URI '$uri') not in parse list, skipping");
@@ -414,7 +460,14 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     private function finalizeAnalyzingURIs()
     {
         $uris_to_analyze = $this->getFilteredURIsToAnalyze();
+        // TODO: Add a better abstraction of
         if (\count($uris_to_analyze) === 0) {
+            // Do the same thing as Request->rejectLanguageServerRequestsRequiringAnalysis(), we haven't created a request yet.
+            $most_recent_definition_request = $this->most_recent_definition_request;
+            if ($most_recent_definition_request) {
+                $most_recent_definition_request->finalize();
+                $this->most_recent_definition_request = null;
+            }
             return;
         }
 
@@ -465,6 +518,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $this->handleJSONResponseFromWorker($uris_to_analyze, $json_contents);
             return;
         }
+        // This is the worker process.
 
         $child_stream = self::streamForChild($sockets);
         $paths_to_analyze = array_keys($uris_to_analyze);
@@ -474,6 +528,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $this->code_base,
             $this->file_path_lister,
             $this->file_mapping,
+            $this->most_recent_definition_request,
             true  // We are the fork. Call exit() instead of throwing ExitException
         );
         // FIXME update the parsed file lists before and after (e.g. add to analyzeURI). See Daemon\Request::accept()
@@ -494,6 +549,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     private function finishAnalyzingURIsWithoutPcntl(array $uris_to_analyze)
     {
         $paths_to_analyze = array_keys($uris_to_analyze);
+        Logger::logInfo('in ' . __METHOD__ . ' paths: ' . json_encode($paths_to_analyze));
         // When there is no pcntl:
         // Create a fake request object.
         // Instead of stopping the loop, keep going with the loop and keep accepting the requests
@@ -506,12 +562,14 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $code_base,
             $this->file_path_lister,
             $this->file_mapping,
+            $this->most_recent_definition_request,
             false  // We aren't forking. Throw ExitException instead of calling exit()
         );
 
         $analyze_file_path_list = $analysis_request->filterFilesToAnalyze($this->code_base->getParsedFilePathList());
         if (count($analyze_file_path_list) === 0) {
             // Nothing to do, don't start analysis
+            $analysis_request->rejectLanguageServerRequestsRequiringAnalysis();
             return;
         }
 
@@ -553,11 +611,18 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
     /**
      * @param array<string,string> $uris_to_analyze
-     * @param array{issues:array} $response_data
+     * @param array{issues:array,definitions?:?Location|?(Location[])} $response_data
      * @return void
      */
     private function handleJSONResponseFromWorker(array $uris_to_analyze, array $response_data)
     {
+        $most_recent_definition_request = $this->most_recent_definition_request;
+        if ($most_recent_definition_request) {
+            $most_recent_definition_request->recordDefinitionLocationList($response_data['definitions'] ?? null);
+            $most_recent_definition_request->finalize();
+        }
+
+        $this->most_recent_definition_request = null;
         if (!\array_key_exists('issues', $response_data)) {
             Logger::logInfo("Failed to fetch 'issues' from JSON:" . json_encode($response_data));
             return;
@@ -576,6 +641,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                 $diagnostics[$issue_uri][] = $diagnostic;
             }
         }
+
         foreach ($diagnostics as $diagnostics_uri => $diagnostics_list) {
             $this->client->textDocument->publishDiagnostics($diagnostics_uri, $diagnostics_list);
         }
@@ -592,30 +658,39 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         }
         //$check_name = $issue['check_name'];
         $description = $issue['description'];
+        if (isset($issue['suggestion'])) {
+            $description .= ' (' . $issue['suggestion'] . ')';
+        }
+
         $severity = $issue['severity'];
         $path = Config::projectPath($issue['location']['path']);
         $issue_uri = Utils::pathToUri($path);
         $start_line = $issue['location']['lines']['begin'];
-        $start_line = max($start_line, 1);
+        $start_line = (int)max($start_line, 1);
         // If we ever supported end_line:
         // $end_line = $issue['location']['lines']['end'] ?? $start_line;
         // $end_line = max($end_line, 1);
         // Language server has 0 based lines and columns, phan has 1-based lines and columns.
         $range = new Range(new Position($start_line - 1, 0), new Position($start_line, 0));
-        switch ($severity) {
-            case Issue::SEVERITY_LOW:
-                $diagnostic_severity = DiagnosticSeverity::INFORMATION;
-                break;
-            case Issue::SEVERITY_NORMAL:
-                $diagnostic_severity = DiagnosticSeverity::WARNING;
-                break;
-            case Issue::SEVERITY_CRITICAL:
-            default:
-                $diagnostic_severity = DiagnosticSeverity::ERROR;
-                break;
-        }
+        $diagnostic_severity = self::diagnosticSeverityFromPhanSeverity($severity);
         // TODO: copy issue code in 'json' format
         return [$issue_uri, new Diagnostic($description, $range, $issue['type_id'], $diagnostic_severity, 'Phan')];
+    }
+
+    /**
+     * @param int $severity
+     * @return int
+     */
+    public static function diagnosticSeverityFromPhanSeverity($severity) : int
+    {
+        switch ($severity) {
+            case Issue::SEVERITY_LOW:
+                return DiagnosticSeverity::INFORMATION;
+            case Issue::SEVERITY_NORMAL:
+                return DiagnosticSeverity::WARNING;
+            default:
+                return DiagnosticSeverity::ERROR;
+        }
     }
 
     /**
@@ -664,18 +739,17 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     /**
      * The initialize request is sent as the first request from the client to the server.
      *
-     * @param ClientCapabilities $capabilities The capabilities provided by the client (editor)
-     * @param string|null $rootPath The rootPath of the workspace. Is null if no folder is open.
-     * @param int|null $processId The process Id of the parent process that started the server. Is null if the process has not been started by another process. If the parent process is not alive then the server should exit (see exit notification) its process.
+     * @param ClientCapabilities $capabilities The capabilities provided by the client (editor) @phan-unused-param
+     * @param string|null $rootPath The rootPath of the workspace. Is null if no folder is open. @phan-unused-param
+     * @param int|null $processId The process Id of the parent process that started the server. Is null if the process has not been started by another process. If the parent process is not alive then the server should exit (see exit notification) its process. @phan-unused-param
      * @return Promise <InitializeResult>
-     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function initialize(ClientCapabilities $capabilities, string $rootPath = null, int $processId = null): Promise
     {
         return coroutine(function () : \Generator {
             // Eventually, this might block on something. Leave it as a generator.
             if (false) {
-                yield null;
+                yield;
             }
 
             // There would be an asynchronous indexing step, but the startup already did the indexing.
@@ -699,7 +773,11 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             //$serverCapabilities->workspaceSymbolProvider = true;
             // XXX do this next?
             // TODO: Support "Go to definition" (reasonably practical, should be able to infer types in many cases)
-            // $serverCapabilities->definitionProvider = false;
+            // TODO: Support "Goto type definition" (e.g. for variables, properties) (since LSP 3.6.0)
+
+            $supports_go_to_definition = (bool)Config::getValue('language_server_enable_go_to_definition');
+            $serverCapabilities->definitionProvider = $supports_go_to_definition;
+            $serverCapabilities->typeDefinitionProvider = $supports_go_to_definition;
             // TODO: (probably impractical, slow) Support "Find all references"? (We don't track this, except when checking for dead code elimination possibilities.
             // $serverCapabilities->referencesProvider = false;
             // Can't support "Hover" without phpdoc for internal functions, such as those from phpstorm

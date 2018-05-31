@@ -47,6 +47,7 @@ class FunctionFactory
     }
 
     /**
+     * @param string[] $signature
      * @return array<int,Func>
      * One or more (alternate) methods begotten from
      * reflection info and internal method data
@@ -109,6 +110,7 @@ class FunctionFactory
         );
 
         $method->setNumberOfOptionalParameters(
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument TODO: Make this consistently an int?
             $reflection_method->getNumberOfParameters()
             - $reflection_method->getNumberOfRequiredParameters()
         );

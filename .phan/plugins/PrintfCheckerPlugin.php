@@ -56,8 +56,8 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
 
     /**
      * People who have translations may subclass this plugin and return a mapping from other locales to those locales translations of $fmt_str.
+     * @param string $fmt_str @phan-unused-param
      * @return string[] mapping locale to the translation (e.g. ['fr_FR' => 'Bonjour'] for $fmt_str == 'Hello')
-     * @suppress PhanPluginUnusedProtectedMethodArgument
      */
     protected static function gettextForAllLocales(string $fmt_str)
     {
@@ -71,7 +71,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      *
      * @param CodeBase $code_base
      * @param Context $context
-     * @param int|string|float|Node|array $astNode
+     * @param bool|int|string|float|Node|array|null $astNode
      * @return ?PrimitiveValue
      */
     protected function astNodeToPrimitive(CodeBase $code_base, Context $context, $astNode)
@@ -85,6 +85,10 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 $nameNode = $astNode->children['name'];
                 if ($nameNode->kind === \ast\AST_NAME) {
                     $name = $nameNode->children['name'];
+                    if (!\is_string($name)) {
+                        return null;
+                    }
+
                     if (\strcasecmp($name, '__DIR__') === 0) {
                         // Relative to the directory of that file... Hopefully doesn't contain a format specifier
                         return new PrimitiveValue('(__DIR__ literal)');
@@ -109,6 +113,9 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                     // TODO: Use Phan's function resolution?
                     // TODO: ngettext?
                     $name = $nameNode->children['name'];
+                    if (!\is_string($name)) {
+                        return null;
+                    }
                     if ($name === '_' || strcasecmp($name, 'gettext') === 0) {
                         $childArg = $astNode->children['args']->children[0] ?? null;
                         if ($childArg === null) {
@@ -163,6 +170,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
     }
 
     /**
+     * @param CodeBase $code_base @phan-unused-param
      * @return \Closure[]
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
@@ -177,12 +185,12 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             Func $function,
             array $args
         ) {
-            if (\count($args) < 1) {
-                return;
-            }
             // TODO: Resolve global constants and class constants?
             // TODO: Check for AST_UNPACK
-            $pattern = $args[0];
+            $pattern = $args[0] ?? null;
+            if ($pattern === null) {
+                return;
+            }
             if ($pattern instanceof Node) {
                 $pattern = (new ContextNode($code_base, $context, $pattern))->getEquivalentPHPScalarValue();
             }
@@ -282,9 +290,10 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      * @param CodeBase $code_base
      * @param Context $context
      * @param FunctionInterface $function
-     * @param Node|string|int $pattern_node
-     * @param null|Node[]|string[]|int[] $arg_nodes arguments following the format string. Null if the arguments could not be determined.
+     * @param Node|array|string|float|int|bool|null $pattern_node
+     * @param Node[]|string[]|int[]|float[] $arg_nodes arguments following the format string. Null if the arguments could not be determined.
      * @return void
+     * @suppress PhanPartialTypeMismatchArgument TODO: refactor into smaller functions
      */
     protected function analyzePrintfPattern(CodeBase $code_base, Context $context, FunctionInterface $function, $pattern_node, $arg_nodes)
     {
@@ -302,7 +311,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
 
         $fmt_str = $primitive_for_fmtstr->value;
         $is_translated = $primitive_for_fmtstr->is_translated;
-        $specs = ConversionSpec::extract_all($fmt_str);
+        $specs = is_string($fmt_str) ? ConversionSpec::extract_all($fmt_str) : [];
         $fmt_str = (string)$fmt_str;
         /**
          * @param string $issue_type
@@ -315,7 +324,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
          * The list of placeholders for between braces can be found
          * in \Phan\Issue::uncolored_format_string_for_template.
          *
-         * @param string[] $issue_message_args
+         * @param array<int,string|float|int> $issue_message_args
          * The arguments for this issue format.
          * If this array is empty, $issue_message_args is kept in place
          *
@@ -685,7 +694,7 @@ class ConversionSpec
     /**
      * Extract a list of directives from a format string.
      * @param string $fmt_str a format string to extract directives from.
-     * @return ConversionSpec[][] array(int position => array of ConversionSpec referring to arg at that position)
+     * @return array<int,array<int,ConversionSpec>> array(int position => array of ConversionSpec referring to arg at that position)
      */
     public static function extract_all($fmt_str) : array
     {
@@ -754,13 +763,13 @@ class ConversionSpec
  */
 class PrimitiveValue
 {
-    /** @var int|string|float|null The primitive value of the expression if it could be determined. */
+    /** @var array|int|string|float|bool|null The primitive value of the expression if it could be determined. */
     public $value;
     /** @var bool Whether or not the expression value was translated. */
     public $is_translated;
 
     /**
-     * @param array|int|string|float|null $value
+     * @param array|int|string|float|bool|null $value
      */
     public function __construct($value, bool $is_translated = false)
     {

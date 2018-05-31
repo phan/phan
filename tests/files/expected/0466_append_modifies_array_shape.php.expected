@@ -1,0 +1,4 @@
+%s:4 PhanUndeclaredVariable Variable $this is undeclared
+%s:7 PhanTypeMismatchDimFetch When fetching an array index from a value of type array<int,mixed>|array{}, found an array index of type string, but expected the index to be of type int
+%s:8 PhanTypeMismatchDimFetch When fetching an array index from a value of type array<int,mixed>|array{}, found an array index of type string, but expected the index to be of type int
+%s:9 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,mixed>|array{} but \strlen() takes string

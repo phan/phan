@@ -20,7 +20,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     protected $fqsen;
 
     /**
-     * @var FileRef[]
+     * @var array<string,FileRef>
      * A list of locations in which this typed structural
      * element is referenced from.
      * References from the same file and line are deduplicated to save memory.
@@ -201,6 +201,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     /**
      * @return array<string,FileRef>
      * A list of references to this typed structural element.
+     * @suppress PhanPartialTypeMismatchReturn TODO: investigate
      */
     public function getReferenceList() : array
     {

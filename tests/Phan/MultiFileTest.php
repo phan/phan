@@ -6,7 +6,10 @@ class MultiFileTest extends AbstractPhanFileTest
 
     /**
      * @suppress PhanUndeclaredConstant
+     * @suppress PhanParamSignatureMismatch
+     *
      * The constant MULTI_FILE_DIR is defined in `phpunit.xml`.
+     * @return array<int,array{0:array<int,string>,1:string}>
      */
     public function getTestFiles()
     {

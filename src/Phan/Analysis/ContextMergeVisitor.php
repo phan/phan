@@ -221,6 +221,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // If there weren't multiple branches, continue on
         // as if the conditional never happened
         if (\count($scope_list) < 2) {
+            // @phan-suppress-next-line PhanPossiblyFalseTypeReturn child_context_list is not empty
             return \reset($this->child_context_list);
         }
 
@@ -269,7 +270,6 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
         // Get the intersection of all types for all versions of
         // the variable from every side of the branch
-        /** @suppress PhanPluginUnusedVariable plugin doesn't handle loops well */
         $union_type =
             function (string $variable_name) use ($scope_list) {
                 $previous_type = null;
@@ -286,6 +286,8 @@ class ContextMergeVisitor extends KindVisitorImplementation
                     // The immutable UnionType might have the exact same instance
                     if ($type !== $previous_type) {
                         $type_list[] = $type;
+
+                        // @phan-suppress-next-line PhanPluginUnusedVariable plugin doesn't handle loops well.
                         $previous_type = $type;
                     }
                 };
@@ -316,6 +318,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         $scope = clone($this->context->getScope());
 
         foreach ($variable_map as $name => $variable) {
+            $name = (string)$name;
             // Skip variables that are only partially defined
             if (!$is_defined_on_all_branches($name)) {
                 if ($this->context->getIsStrictTypes()) {

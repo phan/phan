@@ -1,4 +1,4 @@
 %s:6 PhanUndeclaredVariable Variable $prev is undeclared
 %s:10 PhanUndeclaredVariable Variable $prev is undeclared
-%s:22 PhanUnextractableAnnotation Saw unextractable annotation for comment @phan-example-annotation array<int,string> description :
-%s:22 PhanUnextractableAnnotation Saw unextractable annotation for comment @phan-param a value
+%s:22 PhanUnextractableAnnotation Saw unextractable annotation for comment '@phan-example-annotation array<int,string> description :'
+%s:22 PhanUnextractableAnnotation Saw unextractable annotation for comment '@phan-param a value'

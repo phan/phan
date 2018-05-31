@@ -18,6 +18,16 @@ final class MixedType extends NativeType
         return true;
     }
 
+    /**
+     * @param Type[] $target_type_set 1 or more types @phan-unused-param
+     * @return bool
+     * @override
+     */
+    public function canCastToAnyTypeInSet(array $target_type_set) : bool
+    {
+        return true;
+    }
+
     // mixed or ?mixed can cast to/from anything.
     // For purposes of analysis, there's no difference between mixed and nullable mixed.
     protected function canCastToNonNullableType(Type $unused_type) : bool
@@ -36,7 +46,8 @@ final class MixedType extends NativeType
     }
 
     /**
-     * @suppress PhanPluginUnusedPublicFinalMethodArgument (TODO: maybe use it in the future?)
+     * @param int $key_type @phan-unused-param
+     * (TODO: maybe use $key_type in the future?)
      */
     public function asGenericArrayType(int $key_type) : Type
     {

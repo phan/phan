@@ -25,6 +25,9 @@
  * (Install phpVERSION-dev/pecl to install extensions from source/pecl (phpize, configure, make install/pecl install))
  *
  * TODO: tutorial or repo.
+ *
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  */
 class PhanPHPLinter
 {
@@ -64,6 +67,7 @@ class PhanPHPLinter
 
         $failure_code = 0;
         $temporary_file_mapping_contents = [];
+        // TODO: Check that path gets defined
         foreach ($opts->file_list as $path) {
             if (isset($opts->temporary_file_map[$path])) {
                 $temporary_path = $opts->temporary_file_map[$path];
@@ -153,13 +157,10 @@ class PhanPHPLinter
             // Convert this to a relative path
             if (strncmp($dirname . '/', $real, strlen($dirname . '/')) === 0) {
                 $real = substr($real, strlen($dirname . '/'));
-                if (isset($opts->temporary_file_map[$path])) {
-                    // If we are analyzing a temporary file, but it's within a project, then output the path to a temporary file for consistency.
-                    // (Tools which pass something a temporary path expect a temporary path in the output.)
-                    $file_mapping[$real] = $opts->temporary_file_map[$path];
-                } else {
-                    $file_mapping[$real] = $path;
-                }
+                $mapped_path = isset($opts->temporary_file_map[$path]) ? $opts->temporary_file_map[$path] : $path;
+                // If we are analyzing a temporary file, but it's within a project, then output the path to a temporary file for consistency.
+                // (Tools which pass something a temporary path expect a temporary path in the output.)
+                $file_mapping[$real] = $mapped_path;
                 $real_files[] = $real;
             } else {
                 self::debugInfo("Not in a Phan project, nothing to do.");
@@ -202,6 +203,10 @@ class PhanPHPLinter
         $response_bytes = implode('', $response_lines);
         // This uses the 'phplike' format imitating php's error format. "%s in %s on line %d"
         $response = json_decode($response_bytes, true);
+        if (!is_array($response)) {
+            self::debugError(sprintf("Invalid response from phan for %s: expected JSON object: %s", $opts->url, $response_bytes));
+            return;
+        }
         $status = isset($response['status']) ? $response['status'] : null;
         if ($status === 'ok') {
             self::dumpJSONIssues($response, $file_mapping);
@@ -248,6 +253,9 @@ class PhanPHPLinter
             if (count($parts) === 3 && $parts[1] === $issue['check_name']) {
                 $description = implode(': ', $parts);
             }
+            if (isset($issue['suggestion'])) {
+                $description .= ' (' . $issue['suggestion'] . ')';
+            }
             $lines[] = sprintf("Phan error: %s in %s on line %d\n", $description, $file_mapping[$pathInProject], $line);
         }
         // https://github.com/neomake/neomake/issues/153
@@ -260,7 +268,7 @@ class PhanPHPLinterOpts
     /** @var string tcp:// or unix:// socket URL of the daemon. */
     public $url;
 
-    /** @var string[] - file list */
+    /** @var array<int,string> - file list */
     public $file_list = [];
 
     /** @var string[]|null - optional, maps original files to temporary file path to use as a substitute. */
@@ -402,9 +410,11 @@ EOB;
                     if (!\is_array($this->file_list) || count($this->file_list) !== 1) {
                         $this->usage('--flycheck-file should be specified after the first occurrence of -l.', 1);
                     }
-                    $this->temporary_file_map = [
-                    $this->file_list[0] => $value,
-                    ];
+                    if (!is_string($value)) {
+                        $this->usage('--flycheck-file should be passed a string value', 1);
+                        break;  // unreachable
+                    }
+                    $this->temporary_file_map = [$this->file_list[0] => $value];
                     break;
                 case 't':
                 case 'temporary-file-map':
@@ -414,6 +424,7 @@ EOB;
                     $mapping = json_decode($value, true);
                     if (!\is_array($mapping)) {
                         $this->usage('--temporary-file-map should be a JSON encoded map from source file to temporary file to analyze instead', 1);
+                        break;  // unreachable
                     }
                     $this->temporary_file_map = $mapping;
 
@@ -472,8 +483,8 @@ EOB;
         if ($this->url === null) {
             $this->url = 'tcp://127.0.0.1:4846';
         }
-		// In the majority of cases, apply this **after** checking sanity of CLI options
-		// (without actually starting the analysis).
+        // In the majority of cases, apply this **after** checking sanity of CLI options
+        // (without actually starting the analysis).
         $this->print_usage_on_error = $print_usage_on_error;
     }
 

@@ -10,13 +10,13 @@ platform: x86
 environment:
   matrix:
     - PHP_EXT_VERSION: '7.0'
-      PHP_VERSION: '7.0.28'
+      PHP_VERSION: '7.0.30'
       VC_VERSION: 14
     - PHP_EXT_VERSION: '7.1'
-      PHP_VERSION: '7.1.15'
+      PHP_VERSION: '7.1.17'
       VC_VERSION: 14
     - PHP_EXT_VERSION: '7.2'
-      PHP_VERSION: '7.2.3'
+      PHP_VERSION: '7.2.5'
       VC_VERSION: 15
 
 init:
@@ -90,7 +90,7 @@ build_script:
 test_script:
 - cmd: cd C:\projects\phan
 - cmd: php C:\projects\composer\composer.phar install --classmap-authoritative --prefer-dist
-- cmd: php phan
+- cmd: php phan --plugin InvokePHPNativeSyntaxCheckPlugin
 - cmd: .\vendor\bin\phpunit --verbose
 # Verify that a phar can be built and executed under windows
 - cmd: mkdir build

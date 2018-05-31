@@ -1,0 +1,5 @@
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array but \intdiv() takes int
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array{key:string} but \intdiv() takes int
+%s:24 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array but \intdiv() takes int
+%s:27 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array{key:string} but \intdiv() takes int
+%s:30 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array{key:true} but \intdiv() takes int

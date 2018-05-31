@@ -8,6 +8,7 @@ use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\NodeException;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
@@ -384,7 +385,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         ) {
             $uses = $node->children['uses'];
             foreach ($uses->children as $use) {
-                if ($use->kind != \ast\AST_CLOSURE_VAR) {
+                if (!($use instanceof Node) || $use->kind != \ast\AST_CLOSURE_VAR) {
                     $this->emitIssue(
                         Issue::VariableUseClause,
                         $node->lineno ?? 0
@@ -416,11 +417,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                             clone($context)->withLineNumberStart($use->lineno),
                             Issue::UndeclaredVariable,
                             $node->lineno ?? 0,
-                            [$variable_name]
+                            [$variable_name],
+                            IssueFixSuggester::suggestVariableTypoFix($this->code_base, $context, $variable_name)
                         );
                         continue;
                     } else {
-                        // If the variable doesn't exist, but its
+                        // If the variable doesn't exist, but it's
                         // a pass-by-reference variable, we can
                         // just create it
                         $variable = Variable::fromNodeInContext(
@@ -453,11 +455,36 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $func->setUnionType(VoidType::instance(false)->asUnionType());
         }
 
+        // Add parameters to the context.
+        $context = $context->withScope($func->getInternalScope());
+
+        $comment = $func->getComment();
+
+        // For any @var references in the method declaration,
+        // add them as variables to the method's scope
+        if ($comment !== null) {
+            foreach ($comment->getVariableList() as $parameter) {
+                $context->addScopeVariable(
+                    $parameter->asVariable($this->context)
+                );
+            }
+        }
+        if ($func->getRecursionDepth() === 0) {
+            // Add each closure parameter to the scope. We clone it
+            // so that changes to the variable don't alter the
+            // parameter definition
+            foreach ($func->getParameterList() as $parameter) {
+                $context->addScopeVariable(
+                    $parameter->cloneAsNonVariadic()
+                );
+            }
+        }
+
         if ($func->getHasYield()) {
             $this->setReturnTypeOfGenerator($func, $node);
         }
 
-        return $context->withScope($func->getInternalScope());
+        return $context;
     }
 
     /**
@@ -510,7 +537,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // In php 7.0, a **valid** parsed AST would be an \ast\AST_LIST.
         // However, --force-polyfill-parser will emit \ast\AST_ARRAY.
         $var_node = $node->children['var'];
-        if (Config::get_closest_target_php_version_id() < 70100 && $node->children['var']->kind === \ast\AST_ARRAY) {
+        if (Config::get_closest_target_php_version_id() < 70100 && $var_node instanceof Node && $var_node->kind === \ast\AST_ARRAY) {
             $this->analyzeArrayAssignBackwardsCompatibility($var_node);
         }
         return $this->context;
@@ -526,13 +553,16 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitForeach(Node $node) : Context
     {
+        $code_base = $this->code_base;
+        $context = $this->context;
+
         $expression_union_type = UnionTypeVisitor::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
+            $code_base,
+            $context,
             $node->children['expr']
         );
 
-        // Check the expression type to make sure its
+        // Check the expression type to make sure it's
         // something we can iterate over
         if ($expression_union_type->isScalar()) {
             $this->emitIssue(
@@ -543,6 +573,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         }
 
         $value_node = $node->children['value'];
+        if (!($value_node instanceof Node)) {
+            return $context;
+        }
         if ($value_node->kind == \ast\AST_ARRAY) {
             if (Config::get_closest_target_php_version_id() < 70100) {
                 $this->analyzeArrayAssignBackwardsCompatibility($value_node);
@@ -555,17 +588,17 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             // Filter out the non-generic types of the
             // expression
             $non_generic_expression_union_type =
-                $expression_union_type->genericArrayElementTypes();
+                $expression_union_type->iterableValueUnionType($code_base);
+
             // Create a variable for the value
             $variable = Variable::fromNodeInContext(
                 $value_node,
-                $this->context,
-                $this->code_base,
+                $context,
+                $code_base,
                 false
             );
 
-
-            // If we were able to figure out the type and its
+            // If we were able to figure out the type and it's
             // a generic type, then set its element types as
             // the type of the variable
             if (!$non_generic_expression_union_type->isEmpty()) {
@@ -573,7 +606,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
 
             // Add the variable to the scope
-            $this->context->addScopeVariable($variable);
+            $context->addScopeVariable($variable);
         }
 
         // If there's a key, make a variable out of that too
@@ -588,25 +621,26 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
             $variable = Variable::fromNodeInContext(
                 $key_node,
-                $this->context,
-                $this->code_base,
+                $context,
+                $code_base,
                 false
             );
             if (!$expression_union_type->isEmpty()) {
                 // TODO: Support Traversable<Key, T> then return Key.
                 // If we see array<int,T> or array<string,T> and no other array types, we're reasonably sure the foreach key is an integer or a string, so set it.
-                $union_type_of_array_key = UnionTypeVisitor::arrayKeyUnionTypeOfUnionType($expression_union_type);
+                // (Or if we see iterable<int,T>
+                $union_type_of_array_key = $expression_union_type->iterableKeyUnionType($code_base);
                 if ($union_type_of_array_key !== null) {
                     $variable->setUnionType($union_type_of_array_key);
                 }
             }
 
-            $this->context->addScopeVariable($variable);
+            $context->addScopeVariable($variable);
         }
 
         // Note that we're not creating a new scope, just
         // adding variables to the existing scope
-        return $this->context;
+        return $context;
     }
 
     private function analyzeArrayAssignBackwardsCompatibility(Node $node)
@@ -731,7 +765,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 $second_order_non_generic_expression_union_type = $get_fallback_second_order_element_type();
             }
 
-            // If we were able to figure out the type and its
+            // If we were able to figure out the type and it's
             // a generic type, then set its element types as
             // the type of the variable
             $variable->setUnionType(
@@ -789,7 +823,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 false
             );
 
-            // If we were able to figure out the type and its
+            // If we were able to figure out the type and it's
             // a generic type, then set its element types as
             // the type of the variable
             if (!$element_union_type->isEmpty()) {
@@ -871,19 +905,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 $class->addReference($this->context);
             }
         } catch (CodeBaseException $exception) {
-            $this->emitIssue(
+            Issue::maybeEmitWithParameters(
+                $this->code_base,
+                $this->context,
                 Issue::UndeclaredClassCatch,
                 $node->lineno ?? 0,
-                (string)$exception->getFQSEN()
-            );
-
-            // The class doesn't exist. Analyze the variable as if it's a Throwable.
-            // (Wouldn't work for php 5.6, but phan doesn't support php < 7.
-            $variable = Variable::fromNodeInContext(
-                $node->children['var'],
-                $this->context,
-                $this->code_base,
-                false
+                [(string)$exception->getFQSEN()],
+                IssueFixSuggester::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception->getFQSEN())
             );
 
             $union_type = $union_type->withType(Type::fromFullyQualifiedString('\Throwable'));
@@ -934,7 +962,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         return (new ConditionVisitor(
             $this->code_base,
             $this->context
-        ))($cond);
+        ))->__invoke($cond);
     }
 
     /**
@@ -958,7 +986,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         return (new ConditionVisitor(
             $this->code_base,
             $this->context
-        ))($cond);
+        ))->__invoke($cond);
     }
 
     /**
@@ -982,7 +1010,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         return (new ConditionVisitor(
             $this->code_base,
             $this->context
-        ))($cond);
+        ))->__invoke($cond);
     }
 
     /**
@@ -1000,10 +1028,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         if ($name !== 'assert') {
             return $this->context;
         }
-        $args = $node->children['args'];
-        if (!isset($node->children['args']->children[0])
-            || !($node->children['args']->children[0] instanceof Node)
-        ) {
+        $args_first_child = $node->children['args']->children[0] ?? null;
+        if (!($args_first_child instanceof Node)) {
             return $this->context;
         }
 
@@ -1012,7 +1038,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         return (new ConditionVisitor(
             $this->code_base,
             $this->context
-        ))($args->children[0]);
+        ))->__invoke($args_first_child);
     }
 
     /**

@@ -37,7 +37,7 @@ class BranchScope extends Scope
     }
 
     /**
-     * @return array<string,Variable>
+     * @return array<string|int,Variable> (keys are variable names, which are *almost* always strings)
      * A map from name to Variable in this scope
      */
     public function getVariableMap() : array

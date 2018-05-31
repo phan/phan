@@ -2,6 +2,9 @@
 namespace Phan;
 
 use Phan\Output\Colorizing;
+use Phan\Language\FQSEN;
+use Phan\Language\Type;
+use Phan\Language\UnionType;
 
 class IssueInstance
 {
@@ -14,24 +17,34 @@ class IssueInstance
     /** @var int */
     private $line;
 
-    /** @var string */
+    /** @var string the issue message */
     private $message;
+
+    /** @var ?Suggestion If this is non-null, this contains suggestions on how to resolve the error. */
+    private $suggestion;
+
+    /** @var array<int,string|int|float|FQSEN|Type|UnionType> $template_parameters If this is non-null, this contains suggestions on how to resolve the error. */
+    private $template_parameters;
 
     /**
      * @param Issue $issue
      * @param string $file
      * @param int $line
-     * @param array<int,string|int|float|bool|object> $template_parameters
+     * @param array<int,string|int|float|FQSEN|Type|UnionType> $template_parameters
+     * @param ?Suggestion $suggestion
      */
     public function __construct(
         Issue $issue,
         string $file,
         int $line,
-        array $template_parameters
+        array $template_parameters,
+        Suggestion $suggestion = null
     ) {
         $this->issue = $issue;
         $this->file = $file;
         $this->line = $line;
+        $this->suggestion = $suggestion;
+        $this->template_parameters = $template_parameters;
 
         // color_issue_message will interfere with some formatters, such as xml.
         if (Config::getValue('color_issue_messages')) {
@@ -66,15 +79,44 @@ class IssueInstance
     }
 
     /**
-     * @param array<int,string|int|float|bool|object> $template_parameters
+     * @param array<int,string|int|float|FQSEN|Type|UnionType> $template_parameters
      */
     private static function generateColorizedMessage(
         Issue $issue,
-        array $template_parameters
+        array $template_parameters,
+        string $suggestion = null
     ) : string {
         $template = $issue->getTemplateRaw();
 
-        return Colorizing::colorizeTemplate($template, $template_parameters);
+        $result = Colorizing::colorizeTemplate($template, $template_parameters);
+        if ($suggestion) {
+            $result .= Colorizing::colorizeTemplate(" ({SUGGESTION})", [$suggestion]);
+        }
+        return $result;
+    }
+
+    /**
+     * @return ?Suggestion
+     */
+    public function getSuggestion()
+    {
+        return $this->suggestion;
+    }
+
+    /** @var array<int,string|int|float|FQSEN|Type|UnionType> $template_parameters If this is non-null, this contains suggestions on how to resolve the error. */
+    public function getTemplateParameters() : array
+    {
+        return $this->template_parameters;
+    }
+
+    /** @return ?string */
+    public function getSuggestionMessage()
+    {
+        $suggestion = $this->suggestion;
+        if (!$suggestion) {
+            return null;
+        }
+        return $suggestion->getMessage() ?: null;
     }
 
     /**
@@ -104,13 +146,26 @@ class IssueInstance
     /**
      * @return string
      */
-    public function getMessage()
+    public function getMessage() : string
     {
         return $this->message;
     }
 
+    /**
+     * @return string
+     */
+    public function getMessageAndMaybeSuggestion() : string
+    {
+        $message = $this->getMessage();
+        $suggestion = $this->getSuggestionMessage();
+        if ($suggestion) {
+            return $message . ' (' . $suggestion . ')';
+        }
+        return $message;
+    }
+
     public function __toString() : string
     {
-        return "{$this->getFile()}:{$this->getLine()} {$this->getMessage()}";
+        return "{$this->getFile()}:{$this->getLine()} {$this->getMessageAndMaybeSuggestion()}";
     }
 }

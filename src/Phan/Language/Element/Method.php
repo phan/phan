@@ -11,6 +11,9 @@ use Phan\Language\Type\GenericArrayType;
 use Phan\Language\UnionType;
 use ast\Node;
 
+/**
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ */
 class Method extends ClassElement implements FunctionInterface
 {
     use \Phan\Analysis\Analyzable;
@@ -495,6 +498,7 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @return \Generator
+     * @phan-return \Generator<Method>
      * The set of all alternates to this method
      */
     public function alternateGenerator(CodeBase $code_base) : \Generator
@@ -576,6 +580,8 @@ class Method extends ClassElement implements FunctionInterface
     /**
      * @return FullyQualifiedMethodName the FQSEN with the original definition (Even if this is private/protected and inherited from a trait). Used for dead code detection.
      *                                  Inheritance tests use getDefiningFQSEN() so that access checks won't break.
+     *
+     * @suppress PhanPartialTypeMismatchReturn TODO: Allow subclasses to make property types more specific
      */
     public function getRealDefiningFQSEN() : FullyQualifiedMethodName
     {

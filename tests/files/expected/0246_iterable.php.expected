@@ -1,3 +1,7 @@
+%s:3 PhanUnusedVariable Unused definition of variable $v
+%s:6 PhanUnusedVariable Unused definition of variable $v
+%s:9 PhanUnusedVariable Unused definition of variable $v
+%s:12 PhanUnusedVariable Unused definition of variable $v
 %s:16 PhanTypeMismatchArgument Argument 1 (p) is iterable but \f246_1() takes array defined at %s:5
 %s:17 PhanTypeMismatchArgument Argument 1 (p) is iterable but \f246_2() takes \ArrayAccess defined at %s:8
 %s:18 PhanTypeMismatchArgument Argument 1 (p) is iterable but \f246_3() takes \Traversable defined at %s:11

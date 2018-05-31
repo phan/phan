@@ -10,5 +10,6 @@
 %s:34 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<string,array<int,int>>|array<string,array<int,string>>|array<string,int>|array<string,string> but \strlen() takes string
 %s:37 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array<string,array<int,int>>|array<string,array<int,string>>|array<string,int>|array<string,string> but \intdiv() takes int
 %s:40 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,string>|null but \strlen() takes string
+%s:43 PhanUnusedVariable Unused definition of variable $http_response_headers
 %s:49 PhanUndeclaredVariable Variable $argc is undeclared
 %s:50 PhanUndeclaredVariable Variable $argv is undeclared

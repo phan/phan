@@ -38,15 +38,6 @@ final class TemplateType extends Type
     }
 
     /**
-     * @return bool
-     * True if this namespace is defined
-     */
-    public function hasNamespace() : bool
-    {
-        return false;
-    }
-
-    /**
      * @return string
      * The namespace associated with this type
      */
@@ -60,6 +51,12 @@ final class TemplateType extends Type
         // Return true because we don't know, it may or may not be an object.
         // Not sure if this will be called.
         return true;
+    }
+
+    public function isObjectWithKnownFQSEN() : bool
+    {
+        // We have a template type ID, not an fqsen
+        return false;
     }
 
     public function isPossiblyObject() : bool

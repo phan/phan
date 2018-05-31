@@ -29,6 +29,14 @@ final class ObjectType extends NativeType
     }
 
     /**
+     * @override
+     */
+    public function isObjectWithKnownFQSEN() : bool
+    {
+        return false;  // Overridden in various subclasses
+    }
+
+    /**
      * @return bool
      * True if this type is an object (or the phpdoc `object`)
      * @override

@@ -28,6 +28,9 @@ use Phan\Library\Set;
 
 use ReflectionClass;
 
+use function strtolower;
+use function strlen;
+
 /**
  * A CodeBase represents the known state of a code base
  * we're analyzing.
@@ -60,12 +63,17 @@ use ReflectionClass;
  *
  * This supports undoing some operations in the parse phase,
  * for a background daemon analyzing single files. (Phan\CodeBase\UndoTracker)
+ *
+ * @phan-file-suppress PhanPartialTypeMismatchReturn the way generic objects is type hinted is inadequate, etc.
  */
 class CodeBase
 {
     /**
      * @var Map
      * A map from FQSEN to an internal or user defined class
+     *
+     * TODO: Improve phan's self analysis, allow the shorthand array access set syntax to be used without making bad inferences
+     * (e.g. $this->fqsen_class_map[$fqsen] = $clazz;
      */
     private $fqsen_class_map;
 
@@ -162,6 +170,11 @@ class CodeBase
      * @var bool
      */
     private $has_enabled_undo_tracker = false;
+
+    /**
+     * @var ?string (The currently parsed or analyzed file, if any. Used only for the crash reporting output)
+     */
+    private static $current_file = null;
 
     /**
      * If a ClassResolver is set, Phan will attempt to autoload a class it does not have in its registry. This allows
@@ -292,9 +305,29 @@ class CodeBase
      */
     public function setCurrentParsedFile($current_parsed_file)
     {
+        self::$current_file = $current_parsed_file;
         if ($this->undo_tracker) {
             $this->undo_tracker->setCurrentParsedFile($current_parsed_file);
         }
+    }
+
+    /**
+     * Sets the currently analyzed file, to improve Phan's crash reporting.
+     * @param string|null $current_analyzed_file
+     * @return void
+     */
+    public function setCurrentAnalyzedFile($current_analyzed_file)
+    {
+        self::$current_file = $current_analyzed_file;
+    }
+
+    /**
+     * @return ?string
+     * @internal - For use only by the phan error handler
+     */
+    public static function getMostRecentlyParsedOrAnalyzedFile()
+    {
+        return self::$current_file;
     }
 
     /**
@@ -361,6 +394,8 @@ class CodeBase
     public function updateFileList(array $new_file_list, array $file_mapping_contents = [])
     {
         if ($this->undo_tracker) {
+            $this->invalidateDependentCacheEntries();
+
             return $this->undo_tracker->updateFileList($this, $new_file_list, $file_mapping_contents);
         }
         throw new \RuntimeException("Calling updateFileList without undo tracker");
@@ -373,6 +408,8 @@ class CodeBase
     public function beforeReplaceFileContents(string $file_name)
     {
         if ($this->undo_tracker) {
+            $this->invalidateDependentCacheEntries();
+
             return $this->undo_tracker->beforeReplaceFileContents($this, $file_name);
         }
         throw new \RuntimeException("Calling replaceFileContents without undo tracker");
@@ -434,9 +471,9 @@ class CodeBase
 
         foreach ($this->fqsen_class_map as $fqsen => $clazz) {
             if ($clazz->isPHPInternal()) {
-                $this->fqsen_class_map_internal[$fqsen] = $clazz;
+                $this->fqsen_class_map_internal->offsetSet($fqsen, $clazz);
             } else {
-                $this->fqsen_class_map_user_defined[$fqsen] = $clazz;
+                $this->fqsen_class_map_user_defined->offsetSet($fqsen, $clazz);
             }
         }
 
@@ -470,31 +507,20 @@ class CodeBase
     }
 
     /**
-     * @param array{clone:CodeBase,callbacks:?(Closure():void)[]}
+     * @param array{clone:CodeBase,callbacks:?(Closure():void)[]} $restore_point
      * @return void
      */
     public function restoreFromRestorePoint(array $restore_point)
     {
         $clone = $restore_point['clone'];
-        $this->undo_tracker             = $clone->undo_tracker;
-        $this->has_enabled_undo_tracker = $clone->has_enabled_undo_tracker;
 
         // TODO: Restore the inner state of Clazz objects as well
         // (e.g. memoizations, types added in method/analysis phases, plugin changes, etc.
         // NOTE: Type::clearAllMemoizations is called elsewhere already.
-        $this->fqsen_class_map              = $clone->fqsen_class_map;
-        $this->fqsen_class_map_user_defined = $clone->fqsen_class_map_user_defined;
-        $this->fqsen_class_map_internal     = $clone->fqsen_class_map_internal;
-        $this->fqsen_class_map_reflection   = $clone->fqsen_class_map_reflection;
-        $this->fqsen_alias_map              = $clone->fqsen_alias_map;
-        $this->fqsen_global_constant_map    = $clone->fqsen_global_constant_map;
-        $this->fqsen_func_map               = $clone->fqsen_func_map;
-        $this->internal_function_fqsen_set  = $clone->internal_function_fqsen_set;
-        $this->method_set                   = $clone->method_set;
-        $this->class_fqsen_class_map_map    = $clone->class_fqsen_class_map_map;
-        $this->name_method_map              = $clone->name_method_map;
+        foreach ($clone as $key => $value) {
+            $this->{$key} = $value;
+        }
 
-        $this->parsed_namespace_maps        = $clone->parsed_namespace_maps;
         foreach ($restore_point['callbacks'] as $callback) {
             if ($callback) {
                 $callback();
@@ -506,7 +532,7 @@ class CodeBase
      * For use by daemon mode when running without pcntl
      * Returns a serialized representation of everything in this CodeBase.
      * @internal
-     * @return array{clone:CodeBase,callbacks:?Closure():void)[]}
+     * @return array{clone:CodeBase,callbacks:(?Closure():void)[]}
      */
     public function createRestorePoint() : array
     {
@@ -598,8 +624,8 @@ class CodeBase
     {
         // Map the FQSEN to the class
         $fqsen = $class->getFQSEN();
-        $this->fqsen_class_map[$fqsen] = $class;
-        $this->fqsen_class_map_user_defined[$fqsen] = $class;
+        $this->fqsen_class_map->offsetSet($fqsen, $class);
+        $this->fqsen_class_map_user_defined->offsetSet($fqsen, $class);
         if ($this->undo_tracker) {
             $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($fqsen) {
                 Daemon::debugf("Undoing addClass %s\n", $fqsen);
@@ -665,7 +691,7 @@ class CodeBase
     {
         // Map the FQSEN to the class
         $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class->getName());
-        $this->fqsen_class_map_reflection[$class_fqsen] = $class;
+        $this->fqsen_class_map_reflection->offsetSet($class_fqsen, $class);
     }
 
     /**
@@ -688,11 +714,11 @@ class CodeBase
         Context $context,
         int $lineno
     ) {
-        if (!isset($this->fqsen_alias_map[$original])) {
-            $this->fqsen_alias_map[$original] = new Set();
+        if (!$this->fqsen_alias_map->offsetExists($original)) {
+            $this->fqsen_alias_map->offsetSet($original, new Set());
         }
         $alias_record = new ClassAliasRecord($alias, $context, $lineno);
-        $this->fqsen_alias_map[$original]->attach($alias_record);
+        $this->fqsen_alias_map->offsetGet($original)->attach($alias_record);
 
         if ($this->undo_tracker) {
             // TODO: Track a count of aliases instead? This doesn't work in daemon mode if multiple files add the same alias to the same class.
@@ -730,14 +756,15 @@ class CodeBase
             // The original class does not exist.
             // Emit issues at the point of every single class_alias call with that original class.
             foreach ($alias_set as $alias_record) {
+                $suggestion = IssueFixSuggester::suggestSimilarClass($this, $alias_record->context, $original_fqsen);
                 \assert($alias_record instanceof ClassAliasRecord);
-                Issue::maybeEmit(
+                Issue::maybeEmitWithParameters(
                     $this,
                     $alias_record->context,
                     Issue::UndeclaredClassAliasOriginal,
                     $alias_record->lineno,
-                    $original_fqsen,
-                    $alias_record->alias_fqsen
+                    [$original_fqsen, $alias_record->alias_fqsen],
+                    $suggestion
                 );
             }
             return;
@@ -764,7 +791,7 @@ class CodeBase
                     $clazz->getFileRef()->getLineNumberStart()
                 );
             } else {
-                $this->fqsen_class_map[$alias_fqsen] = $class;
+                $this->fqsen_class_map->offsetSet($alias_fqsen, $class);
             }
         }
     }
@@ -849,8 +876,8 @@ class CodeBase
     private function lazyLoadPHPInternalClassWithFQSEN(
         FullyQualifiedClassName $fqsen
     ) : bool {
-        $reflection_class = $this->fqsen_class_map_reflection[$fqsen] ?? null;
-        if ($reflection_class !== null) {
+        if ($this->fqsen_class_map_reflection->offsetExists($fqsen)) {
+            $reflection_class = $this->fqsen_class_map_reflection->offsetGet($fqsen);
             $this->loadPHPInternalClassWithFQSEN($fqsen, $reflection_class);
             return true;
         }
@@ -863,9 +890,9 @@ class CodeBase
         ReflectionClass $reflection_class
     ) {
         $class = Clazz::fromReflectionClass($this, $reflection_class);
-        $this->fqsen_class_map[$fqsen] = $class;
-        $this->fqsen_class_map_internal[$fqsen] = $class;
-        unset($this->fqsen_class_map_reflection[$fqsen]);
+        $this->fqsen_class_map->offsetSet($fqsen, $class);
+        $this->fqsen_class_map_internal->offsetSet($fqsen, $class);
+        $this->fqsen_class_map_reflection->offsetUnset($fqsen);
     }
 
     /**
@@ -878,7 +905,7 @@ class CodeBase
     public function getClassByFQSEN(
         FullyQualifiedClassName $fqsen
     ) : Clazz {
-        $clazz = $this->fqsen_class_map[$fqsen];
+        $clazz = $this->fqsen_class_map->offsetGet($fqsen);
 
         // This is an optimization that saves us a few minutes
         // on very large code bases.
@@ -906,7 +933,7 @@ class CodeBase
     public function getClassByFQSENWithoutHydrating(
         FullyQualifiedClassName $fqsen
     ) : Clazz {
-        return $this->fqsen_class_map[$fqsen];
+        return $this->fqsen_class_map->offsetGet($fqsen);
     }
 
     /**
@@ -919,8 +946,8 @@ class CodeBase
     public function getClassAliasesByFQSEN(
         FullyQualifiedClassName $original
     ) : array {
-        if (isset($this->fqsen_alias_map[$original])) {
-            return $this->fqsen_alias_map[$original]->toArray();
+        if ($this->fqsen_alias_map->offsetExists($original)) {
+            return $this->fqsen_alias_map->offsetGet($original)->toArray();
         }
 
         return [];
@@ -1086,11 +1113,11 @@ class CodeBase
      * Excludes internal functions and methods.
      *
      * This can be used for debugging Phan's inference
-     * @suppress PhanDeprecatedFunction
      */
     public function exportFunctionAndMethodSet() : array
     {
         $result = [];
+        // @phan-suppress-next-line PhanDeprecatedFunction
         foreach ($this->getFunctionAndMethodSet() as $function_or_method) {
             if ($function_or_method->isPHPInternal()) {
                 continue;
@@ -1376,7 +1403,7 @@ class CodeBase
     }
 
     /**
-     * @param FullyQualifiedFunctionName
+     * @param FullyQualifiedFunctionName $fqsen
      * The FQSEN of a function we'd like to look up
      *
      * @return bool
@@ -1479,8 +1506,8 @@ class CodeBase
     }
 
     /**
+     * @param string $file_path @phan-unused-param
      * @return void
-     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function flushDependenciesForFile(string $file_path)
     {
@@ -1488,10 +1515,10 @@ class CodeBase
     }
 
     /**
+     * @param string $file_path @phan-unused-param
      * @return string[]
      * The list of files that depend on the code in the given
      * file path
-     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function dependencyListForFile(string $file_path) : array
     {
@@ -1540,5 +1567,250 @@ class CodeBase
             return true;
         }
         return false;
+    }
+
+    /**
+     * @var array<string,array<string,string>>|null
+     * Maps lowercase class name to (lowercase namespace => namespace)
+     */
+    private $namespaces_for_class_names = null;
+
+    /**
+     * @var array<string,array<string,string>>|null
+     * Maps lowercase class name to (lowercase class => class)
+     */
+    private $class_names_in_namespace = null;
+
+    /**
+     * @var array<string,array<int,array<string,string>>>|null
+     * Maps lowercase class name to (requested approximate length to (lowercase class => class))
+     */
+    private $class_names_near_strlen_in_namespace = null;
+
+    private function invalidateDependentCacheEntries()
+    {
+        $this->namespaces_for_class_names = null;
+        $this->class_names_in_namespace = null;
+        $this->class_names_near_strlen_in_namespace = null;
+    }
+
+    private function getNamespacesForClassNames()
+    {
+        return $this->namespaces_for_class_names ?? ($this->namespaces_for_class_names = $this->computeNamespacesForClassNames());
+    }
+
+    /**
+     * @return array<string,array<string,string>> a list of namespaces which have each class name
+     */
+    private function computeNamespacesForClassNames() : array
+    {
+        $class_fqsen_list = [];
+        // NOTE: This helper performs shallow clones to avoid interfering with the iteration pointer
+        // in other iterations over these class maps
+        foreach (clone($this->fqsen_class_map_user_defined) as $class_fqsen => $_) {
+            $class_fqsen_list[] = $class_fqsen;
+        }
+        foreach (clone($this->fqsen_class_map_internal) as $class_fqsen => $_) {
+            $class_fqsen_list[] = $class_fqsen;
+        }
+
+        $suggestion_set = [];
+        foreach ($class_fqsen_list as $class_fqsen) {
+            $namespace = $class_fqsen->getNamespace();
+            $suggestion_set[strtolower($class_fqsen->getName())][strtolower($namespace)] = $namespace;
+        }
+        foreach (clone($this->fqsen_class_map_reflection) as $reflection_class) {
+            $namespace = '\\' . $reflection_class->getNamespaceName();
+            // https://secure.php.net/manual/en/reflectionclass.getnamespacename.php
+            $suggestion_set[\strtolower($reflection_class->getShortName())][strtolower($namespace)] = $namespace;
+        }
+        return $suggestion_set;
+    }
+
+    /**
+     * @return array<int,FullyQualifiedClassName> (Don't rely on unique names)
+     */
+    private function getClassFQSENList()
+    {
+        $class_fqsen_list = [];
+        // NOTE: This helper performs shallow clones to avoid interfering with the iteration pointer
+        // in other iterations over these class maps
+        foreach (clone($this->fqsen_class_map_user_defined) as $class_fqsen => $_) {
+            $class_fqsen_list[] = $class_fqsen;
+        }
+        foreach (clone($this->fqsen_class_map_internal) as $class_fqsen => $_) {
+            $class_fqsen_list[] = $class_fqsen;
+        }
+        return $class_fqsen_list;
+    }
+
+    /**
+     * @return array<string,array<string,string>> a list of namespaces which have each class name
+     */
+    private function getClassNamesInNamespace() : array
+    {
+        return $this->class_names_in_namespace ?? ($this->class_names_in_namespace = $this->computeClassNamesInNamespace());
+    }
+
+    /**
+     * This limits the suggested class names from getClassNamesInNamespace for $namespace_lower to
+     * the names which are similar enough in length to be a potential suggestion
+     */
+    private function getSimilarLengthClassNamesForNamespace(string $namespace, int $strlen) : array
+    {
+        $namespace = \strtolower($namespace);
+        $class_names = $this->getClassNamesInNamespace()[$namespace] ?? [];
+        if (count($class_names) === 0) {
+            return $class_names;
+        }
+        return $this->class_names_near_strlen_in_namespace[$namespace][$strlen]
+            ?? ($this->class_names_near_strlen_in_namespace[$namespace][$strlen] = $this->computeSimilarLengthClassNamesForNamespace($class_names, $strlen));
+    }
+
+    /**
+     * For use with IssueFixSuggester::getSuggestionsForStringSet
+     * @param array<string,string> $class_names
+     */
+    private function computeSimilarLengthClassNamesForNamespace(array $class_names, int $strlen)
+    {
+        $max_levenshtein_distance = (int)(1 + $strlen / 6);
+        $results = [];
+
+        foreach ($class_names as $name_lower => $name) {
+            if (\abs(strlen($name) - $strlen) <= $max_levenshtein_distance) {
+                $results[$name_lower] = $name;
+            }
+        }
+        return $results;
+    }
+
+    /**
+     * @return array<string,array<string,string>> maps namespace name to unique classes in that namespace.
+     */
+    private function computeClassNamesInNamespace() : array
+    {
+        $class_fqsen_list = $this->getClassFQSENList();
+
+        $suggestion_set = [];
+        foreach ($class_fqsen_list as $class_fqsen) {
+            $namespace = $class_fqsen->getNamespace();
+            $name = $class_fqsen->getName();
+            $suggestion_set[strtolower($namespace)][strtolower($name)] = $name;
+        }
+        foreach (clone($this->fqsen_class_map_reflection) as $reflection_class) {
+            $namespace = '\\' . $reflection_class->getNamespaceName();
+            $name = '\\' . $reflection_class->getName();
+            // https://secure.php.net/manual/en/reflectionclass.getnamespacename.php
+            $suggestion_set[\strtolower($namespace)][strtolower($name)] = $name;
+        }
+        return $suggestion_set;
+    }
+
+    /**
+     * @return array<int,FullyQualifiedClassName> 0 or more namespaced class names found in this code base
+     */
+    public function suggestSimilarClassInOtherNamespace(
+        FullyQualifiedClassName $missing_class,
+        Context $unused_context
+    ) : array {
+        $class_name = $missing_class->getName();
+        $class_name_lower = \strtolower($class_name);
+        $namespaces_for_class_names = $this->getNamespacesForClassNames();
+
+        $namespaces_for_class = $namespaces_for_class_names[$class_name_lower] ?? [];
+        if (count($namespaces_for_class) === 0) {
+            return [];
+        }
+        // We're looking for similar names, not identical ones
+        unset($namespaces_for_class[strtolower($missing_class->getNamespace())]);
+        $namespaces_for_class = array_values($namespaces_for_class);
+
+        usort($namespaces_for_class, 'strcmp');
+
+        return array_map(function (string $namespace_name) use ($class_name) : FullyQualifiedClassName {
+            return FullyQualifiedClassName::make($namespace_name, $class_name);
+        }, $namespaces_for_class);
+    }
+
+    /**
+     * @internal
+     */
+    const _NON_CLASS_TYPE_SUGGESTION_SET = [
+        'array'     => 'array',
+        'bool'      => 'bool',
+        'callable'  => 'callable',
+        'false'     => 'false',
+        'float'     => 'float',
+        'int'       => 'int',
+        'iterable'  => 'iterable',
+        'mixed'     => 'mixed',
+        'null'      => 'null',
+        'object'    => 'object',
+        'resource'  => 'resource',
+        'scalar'    => 'scalar',
+        'self'      => 'self',
+        'static'    => 'static',
+        'string'    => 'string',
+        'true'      => 'true',
+        // 'void' only makes sense for return type suggestions
+    ];
+
+    /**
+     * @param int $class_suggest_type value from IssueFixSuggester::CLASS_SUGGEST_*
+     *
+     * @return array<int,FullyQualifiedClassName|string> 0 or more namespaced class names found in this code base
+     *
+     *  NOTE: Non-classes are always represented as strings (and will be suggested even if there is a namespace),
+     *  classes are always represented as FullyQualifiedClassName
+     */
+    public function suggestSimilarClassInSameNamespace(
+        FullyQualifiedClassName $missing_class,
+        Context $unused_context,
+        int $class_suggest_type = IssueFixSuggester::CLASS_SUGGEST_ONLY_CLASSES
+    ) : array {
+        $namespace = $missing_class->getNamespace();
+        $class_name_lower = strtolower($missing_class->getName());
+
+        $class_names_in_namespace = $this->getSimilarLengthClassNamesForNamespace($namespace, strlen($class_name_lower));
+
+        if (count($class_names_in_namespace) > Config::getValue('suggestion_check_limit')) {
+            return [];
+        }
+
+        $suggestion_set = $class_names_in_namespace;
+        if ($class_suggest_type !== IssueFixSuggester::CLASS_SUGGEST_ONLY_CLASSES) {
+            // TODO: Could limit earlier here and precompute (based on similar string length)
+            $suggestion_set += self::_NON_CLASS_TYPE_SUGGESTION_SET;
+            if ($class_suggest_type === IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES_AND_VOID) {
+                $suggestion_set['void'] = 'void';
+            }
+        }
+        unset($suggestion_set[$class_name_lower]);
+        if (count($suggestion_set) === 0) {
+            return [];
+        }
+
+        // We're looking for similar names, not identical names
+        $suggested_class_names = \array_keys(
+            IssueFixSuggester::getSuggestionsForStringSet($class_name_lower, $suggestion_set)
+        );
+
+        if (\count($suggested_class_names) === 0) {
+            return [];
+        }
+        usort($suggested_class_names, 'strcmp');
+
+        /**
+         * @return string|FullyQualifiedClassName
+         */
+        return array_map(function (string $class_name_lower) use ($namespace, $class_names_in_namespace) {
+            if (!\array_key_exists($class_name_lower, $class_names_in_namespace)) {
+                // This is a builtin type
+                return $class_name_lower;
+            }
+            $class_name = $class_names_in_namespace[$class_name_lower];
+            return FullyQualifiedClassName::make($namespace, $class_name);
+            ;
+        }, $suggested_class_names);
     }
 }
