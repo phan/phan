@@ -31,6 +31,9 @@
         "sabre/event": "^5.0",
         "symfony/console": "^2.3|^3.0|~4.0"
     },
+    "suggest": {
+        "ext-tokenizer": "Needed for non-AST support and file/line-based suppressions"
+    },
     "require-dev": {
         "phpunit/phpunit": "^6.3.0"
     },

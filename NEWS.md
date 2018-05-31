@@ -8,6 +8,10 @@ Language Server/Daemon mode:
 + By default, allow the language server and daemon mode to start with the fallback even if `pcntl` is unavailable.
   (`--language-server-require-pcntl` can be used to make the language server refuse to start without `pcntl`)
 
+Bug fixes:
++ Don't crash if `ext-tokenizer` isn't installed (#1747)
++ Fix invalid output of `tool/make_stubs` for apcu (#1745)
+
 27 May 2018, Phan 0.12.10
 -------------------------
 
