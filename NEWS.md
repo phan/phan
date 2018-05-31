@@ -1,6 +1,6 @@
 Phan NEWS
 
-?? ??? 2018, Phan 0.12.11 (dev)
+30 May 2018, Phan 0.12.11
 -------------------------
 
 Language Server/Daemon mode:
