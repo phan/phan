@@ -216,7 +216,7 @@ return [
     // (use when the number of files is much larger than the process count)
     // NOTE: If you rely on Phan parsing files/directories in the order
     // that they were provided in this config, don't use this)
-    // See https://github.com/etsy/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
+    // See https://github.com/phan/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
     'consistent_hashing_file_order' => false,
 
     // Override to hardcode existence and types of (non-builtin) globals.

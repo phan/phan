@@ -7,7 +7,7 @@ Add their relative path (.phan/plugins/...) to the `plugins` entry of .phan/conf
 Plugin Documentation
 --------------------
 
-[Wiki Article: Writing Plugins For Phan](https://github.com/etsy/phan/wiki/Writing-Plugins-for-Phan)
+[Wiki Article: Writing Plugins For Phan](https://github.com/phan/phan/wiki/Writing-Plugins-for-Phan)
 
 Plugin List
 -----------
@@ -97,7 +97,7 @@ Checks for syntactically unreachable statements in the global scope or function 
 
 #### Unused variable detection
 
-See https://github.com/etsy/phan/issues/345
+This is now built into Phan itself, and can be enabled via `--unused-variable-detection`.
 
 #### InvokePHPNativeSyntaxCheckPlugin.php
 
