@@ -671,6 +671,9 @@ class Config
         // (e.g. PHP is compiled with --enable-debug or when using XDebug)
         'skip_slow_php_options_warning' => false,
 
+        // By default, Phan will warn if 'tokenizer' isn't installed.
+        'skip_missing_tokenizer_warning' => false,
+
         // You can put paths to stubs of internal extensions in this config option.
         // If the corresponding extension is **not** loaded, then phan will use the stubs instead.
         // Phan will continue using its detailed type annotations,

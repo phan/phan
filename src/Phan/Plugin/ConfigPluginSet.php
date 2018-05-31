@@ -640,7 +640,12 @@ final class ConfigPluginSet extends PluginV2 implements
             $plugin_set[] = new VariableTrackerPlugin();
         }
         if (self::requiresPluginBasedBuiltinSuppressions()) {
-            $plugin_set[] = new BuiltinSuppressionPlugin();
+            if (function_exists('token_get_all')) {
+                $plugin_set[] = new BuiltinSuppressionPlugin();
+            } else {
+                fwrite(STDERR, "ext-tokenizer is required for file-based and line-based suppressions to work, as well as the error-tolerant parser fallback." . PHP_EOL);
+                fwrite(STDERR, "(This warning can be disabled by setting skip_missing_tokenizer_warning in the project's config)" . PHP_EOL);
+            }
         }
 
         // Register the entire set.
