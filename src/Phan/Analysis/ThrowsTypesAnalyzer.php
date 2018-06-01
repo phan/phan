@@ -41,26 +41,35 @@ class ThrowsTypesAnalyzer
         FunctionInterface $method,
         Type $type
     ) {
-        if (!$type->isObject()) {
-            Issue::maybeEmit(
+        /**
+         * @param array<int,int|string|Type> $args
+         */
+        $maybe_emit_for_method = function(string $issue_type, array $args, Suggestion $suggestion = null) use ($code_base, $method) {
+            if ($method->hasSuppressIssue($issue_type)) {
+                return;
+            }
+            Issue::maybeEmitWithParameters(
                 $code_base,
                 $method->getContext(),
+                $issue_type,
+                $method->getContext()->getLineNumberStart(),
+                $args,
+                $suggestion
+            );
+        };
+        if (!$type->isObject()) {
+            $maybe_emit_for_method(
                 Issue::TypeInvalidThrowsNonObject,
-                $method->getFileRef()->getLineNumberStart(),
-                $method->getName(),
-                (string)$type
+                [$method->getName(), (string)$type]
             );
             return;
         }
         if ($type instanceof TemplateType) {
             // TODO: Add unit tests of templates for return types and checks
             if ($method instanceof Method && $method->isStatic()) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $method->getContext(),
+                $maybe_emit_for_method(
                     Issue::TemplateTypeStaticMethod,
-                    $method->getFileRef()->getLineNumberStart(),
-                    (string)$method->getFQSEN()
+                    [(string)$method->getFQSEN()]
                 );
             }
             return;
@@ -81,11 +90,11 @@ class ThrowsTypesAnalyzer
         $type_fqsen = $type->asFQSEN();
         \assert($type_fqsen instanceof FullyQualifiedClassName, 'non-native types must be class names');
         if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
-            Issue::maybeEmitWithParameters(
-                $code_base,
-                $method->getContext(),
+            if ($method->hasSuppressIssue(Issue::UndeclaredTypeThrowsType)) {
+                return;
+            }
+            $maybe_emit_for_method(
                 Issue::UndeclaredTypeThrowsType,
-                $method->getFileRef()->getLineNumberStart(),
                 [$method->getName(), $type],
                 self::suggestSimilarClassForThrownClass($code_base, $method->getContext(), $type_fqsen)
             );
@@ -93,11 +102,8 @@ class ThrowsTypesAnalyzer
         }
         $exception_class = $code_base->getClassByFQSEN($type_fqsen);
         if ($exception_class->isTrait() || $exception_class->isInterface()) {
-            Issue::maybeEmitWithParameters(
-                $code_base,
-                $method->getContext(),
+            $maybe_emit_for_method(
                 $exception_class->isTrait() ? Issue::TypeInvalidThrowsIsTrait : Issue::TypeInvalidThrowsIsInterface,
-                $method->getFileRef()->getLineNumberStart(),
                 [$method->getName(), $type],
                 self::suggestSimilarClassForThrownClass($code_base, $method->getContext(), $type_fqsen)
             );
@@ -105,11 +111,8 @@ class ThrowsTypesAnalyzer
         }
 
         if (!($type->asExpandedTypes($code_base)->hasType($throwable))) {
-            Issue::maybeEmitWithParameters(
-                $code_base,
-                $method->getContext(),
+            $maybe_emit_for_method(
                 Issue::TypeInvalidThrowsNonThrowable,
-                $method->getFileRef()->getLineNumberStart(),
                 [$method->getName(), $type],
                 self::suggestSimilarClassForThrownClass($code_base, $method->getContext(), $type_fqsen)
             );
