@@ -23,7 +23,7 @@ class PylintPrinterTest extends BaseTest
         $expected_output = '';
         $expected_output .= 'dim.php:10: [C11027] PhanUndeclaredVariableDim: Variable $varName was undeclared, but array fields are being added to it.' . PHP_EOL;
         $expected_output .= 'test.php:1: [E17000] PhanSyntaxError: fake error' . PHP_EOL;
-        $expected_output .= 'undefinedmethod.php:1: [W11013] PhanUndeclaredMethod: Call to undeclared method \Foo::bar' . PHP_EOL;
+        $expected_output .= 'undefinedmethod.php:1: [E11013] PhanUndeclaredMethod: Call to undeclared method \Foo::bar' . PHP_EOL;
         $this->assertSame($expected_output, $output->fetch());
     }
 }
