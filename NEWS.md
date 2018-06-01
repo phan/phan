@@ -14,6 +14,8 @@ Language Server/Daemon mode:
 Bug fixes:
 + Don't crash if `ext-tokenizer` isn't installed (#1747)
 + Fix invalid output of `tool/make_stubs` for apcu (#1745)
++ Allow suppressing `PhanTypeInvalidThrowsIsInterface` with doc comment suppressions
+  in the phpdoc of a function/method/closure.
 
 27 May 2018, Phan 0.12.10
 -------------------------
