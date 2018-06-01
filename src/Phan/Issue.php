@@ -610,7 +610,7 @@ class Issue
             new Issue(
                 self::UndeclaredMethod,
                 self::CATEGORY_UNDEFINED,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Call to undeclared method {METHOD}",
                 self::REMEDIATION_B,
                 11013
@@ -618,7 +618,7 @@ class Issue
             new Issue(
                 self::UndeclaredStaticMethod,
                 self::CATEGORY_UNDEFINED,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Static call to undeclared method {METHOD}",
                 self::REMEDIATION_B,
                 11014
@@ -1262,7 +1262,7 @@ class Issue
             new Issue(
                 self::TypeExpectedObjectPropAccess,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 'Expected an object instance when accessing an instance property, but saw an expression with type {TYPE}',
                 self::REMEDIATION_B,
                 10038
