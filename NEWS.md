@@ -1,7 +1,17 @@
 Phan NEWS
 
-?? ??? 2018, Phan 0.12.12(dev)
+08 Jun 2018, Phan 0.12.12
 -------------------------
+
+Maintenance:
++ Increase the severity of some issues to critical
+  (if they are likely to cause runtime Errors in the latest PHP version).
+
+Bug fixes:
++ Allow suppressing `PhanTypeInvalidThrows*` with doc comment suppressions
+  in the phpdoc of a function/method/closure.
++ Fix crashes when fork pool is used and some issue types are emitted (#1754)
++ Catch uncaught exception for PhanContextNotObject when calling `instanceof self` outside a class scope (#1754)
 
 30 May 2018, Phan 0.12.11
 -------------------------
@@ -11,17 +21,9 @@ Language Server/Daemon mode:
 + By default, allow the language server and daemon mode to start with the fallback even if `pcntl` is unavailable.
   (`--language-server-require-pcntl` can be used to make the language server refuse to start without `pcntl`)
 
-Maintenance
-+ Increase the severity of some issues to critical
-  (if they are likely to cause runtime Errors in the latest PHP version).
-
 Bug fixes:
 + Don't crash if `ext-tokenizer` isn't installed (#1747)
 + Fix invalid output of `tool/make_stubs` for apcu (#1745)
-+ Allow suppressing `PhanTypeInvalidThrowsIsInterface` with doc comment suppressions
-  in the phpdoc of a function/method/closure.
-+ Fix crashes when fork pool is used and some issue types are emitted (#1754)
-+ Catch uncaught exception for PhanContextNotObject when calling `instanceof self` outside a class scope (#1754)
 
 27 May 2018, Phan 0.12.10
 -------------------------
