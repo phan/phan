@@ -20,6 +20,8 @@ Bug fixes:
 + Fix invalid output of `tool/make_stubs` for apcu (#1745)
 + Allow suppressing `PhanTypeInvalidThrowsIsInterface` with doc comment suppressions
   in the phpdoc of a function/method/closure.
++ Fix crashes when fork pool is used and some issue types are emitted (#1754)
++ Catch uncaught exception for PhanContextNotObject when calling `instanceof self` outside a class scope (#1754)
 
 27 May 2018, Phan 0.12.10
 -------------------------

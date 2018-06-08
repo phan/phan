@@ -23,7 +23,7 @@ class IssueInstance
     /** @var ?Suggestion If this is non-null, this contains suggestions on how to resolve the error. */
     private $suggestion;
 
-    /** @var array<int,string|int|float|FQSEN|Type|UnionType> $template_parameters If this is non-null, this contains suggestions on how to resolve the error. */
+    /** @var array<int,string|int|float> $template_parameters If this is non-null, this contains suggestions on how to resolve the error. */
     private $template_parameters;
 
     /**
@@ -44,7 +44,6 @@ class IssueInstance
         $this->file = $file;
         $this->line = $line;
         $this->suggestion = $suggestion;
-        $this->template_parameters = $template_parameters;
 
         // color_issue_message will interfere with some formatters, such as xml.
         if (Config::getValue('color_issue_messages')) {
@@ -52,6 +51,18 @@ class IssueInstance
         } else {
             $this->message = self::generatePlainMessage($issue, $template_parameters);
         }
+        // Fixes #1754 : Some issue template parameters might not be serializable (for passing to ForkPool)
+
+        /**
+         * @param string|float|int|FQSEN|Type|UnionType $parameter
+         * @return string|float|int
+         */
+        $this->template_parameters = \array_map(function($parameter) {
+            if (\is_object($parameter)) {
+                return (string)$parameter;
+            }
+            return $parameter;
+        }, $template_parameters);
     }
 
     /**

@@ -486,6 +486,10 @@ class ContextNode
      * @throws CodeBaseException
      * An exception is thrown if a non-native type does not have
      * an associated class
+     *
+     * @throws IssueException
+     * An exception is thrown if fetching the requested class name
+     * would trigger an issue (e.g. Issue::ContextNotObject)
      */
     public function getClassList(bool $ignore_missing_classes = false, int $expected_type_categories = self::CLASS_LIST_ACCEPT_ANY, string $custom_issue_type = null) : array
     {
