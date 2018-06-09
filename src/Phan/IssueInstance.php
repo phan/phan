@@ -57,7 +57,7 @@ class IssueInstance
          * @param string|float|int|FQSEN|Type|UnionType $parameter
          * @return string|float|int
          */
-        $this->template_parameters = \array_map(function($parameter) {
+        $this->template_parameters = \array_map(function ($parameter) {
             if (\is_object($parameter)) {
                 return (string)$parameter;
             }

@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 2018, Phan 0.12.13 (dev)
 -------------------------
 
+Bug fixes:
++ Fix uncaught `AssertionError` when `parent` is used in PHPDoc (#1758)
+
 08 Jun 2018, Phan 0.12.12
 -------------------------
 

@@ -1,9 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\EmptyFQSENException;
+use Phan\Exception\IssueException;
 use Phan\Language\Element\Comment;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
@@ -891,13 +893,19 @@ class Type
      * @param int $source
      * Type::FROM_NODE, Type::FROM_TYPE, or Type::FROM_PHPDOC
      *
+     * @param ?CodeBase $code_base
+     * May be provided to resolve 'parent' in the context
+     * (e.g. if parsing complex phpdoc).
+     * Unnecessary in most use cases.
+     *
      * @return Type
      * Parse a type from the given string
      */
     public static function fromStringInContext(
         string $string,
         Context $context,
-        int $source
+        int $source,
+        CodeBase $code_base = null
     ) : Type {
         \assert(
             $string !== '',
@@ -933,7 +941,8 @@ class Type
                 self::fromStringInContext(
                     $substring,
                     $context,
-                    $source
+                    $source,
+                    $code_base
                 ),
                 $is_nullable,
                 GenericArrayType::KEY_MIXED
@@ -951,7 +960,7 @@ class Type
         if (\is_array($shape_components)) {
             if (\strcasecmp($type_name, 'array') === 0) {
                 return ArrayShapeType::fromFieldTypes(
-                    self::shapeComponentStringsToTypes($shape_components, $context, $source),
+                    self::shapeComponentStringsToTypes($shape_components, $context, $source, $code_base),
                     $is_nullable
                 );
             }
@@ -1066,19 +1075,19 @@ class Type
             && self::isSelfTypeString($non_generic_array_type_name)
             && $context->isInClassScope()
         ) {
-            // Callers of this method should be checking on their own
-            // to see if this type is a reference to 'parent' and
-            // dealing with it there. We don't want to have this
-            // method be dependent on the code base
-            \assert(
-                'parent' !== $non_generic_array_type_name,
-                __METHOD__ . " does not know how to handle the type name 'parent'"
-            );
+            // The element type can be nullable.
+            // Independently, the array of elements can also be nullable.
+            if (stripos($non_generic_array_type_name, 'parent') !== false) {
+                // Will throw if $code_base is null or there is no parent type
+                $element_type = self::maybeFindParentType($non_generic_array_type_name[0] === '?', $context, $code_base);
+            } else {
+                $element_type = static::fromFullyQualifiedString(
+                    (string)$context->getClassFQSEN()
+                );
+            }
 
             return GenericArrayType::fromElementType(
-                static::fromFullyQualifiedString(
-                    (string)$context->getClassFQSEN()
-                ),
+                $element_type,
                 $is_nullable,
                 GenericArrayType::KEY_MIXED
             );
@@ -1089,15 +1098,10 @@ class Type
         if (self::isSelfTypeString($type_name)
             && $context->isInClassScope()
         ) {
-            // Callers of this method should be checking on their own
-            // to see if this type is a reference to 'parent' and
-            // dealing with it there. We don't want to have this
-            // method be dependent on the code base
-            \assert(
-                'parent' !== $type_name,
-                __METHOD__ . " does not know how to handle the type name 'parent'"
-            );
-
+            if (stripos($type_name, 'parent') !== false) {
+                // Will throw if $code_base is null or there is no parent type
+                return self::maybeFindParentType($is_nullable, $context, $code_base);
+            }
             return static::fromFullyQualifiedString(
                 (string)$context->getClassFQSEN()
             )->withIsNullable($is_nullable);
@@ -1121,6 +1125,22 @@ class Type
             $is_nullable,
             $source
         );
+    }
+
+    /**
+     * @throws IssueException (TODO: Catch, emit, and proceed?
+     */
+    private static function maybeFindParentType(bool $is_nullable, Context $context, CodeBase $code_base = null) : Type
+    {
+        if ($code_base === null) {
+            return MixedType::instance($is_nullable);
+        }
+        $parent_type = UnionTypeVisitor::findParentType($context, $code_base);
+        if (!$parent_type) {
+            return MixedType::instance($is_nullable);
+        }
+
+        return $parent_type->withIsNullable($is_nullable);
     }
 
     /**
@@ -1157,9 +1177,10 @@ class Type
      * @param array<string|int,string> $shape_components Maps field keys (integers or strings) to the corresponding type representations
      * @param Context $context
      * @param int $source
+     * @param ?CodeBase $code_base for resolving 'parent'
      * @return array<string|int,UnionType> The types for the representations of types, in the given $context
      */
-    private static function shapeComponentStringsToTypes(array $shape_components, Context $context, int $source) : array
+    private static function shapeComponentStringsToTypes(array $shape_components, Context $context, int $source, CodeBase $code_base = null) : array
     {
         $result = [];
         foreach ($shape_components as $key => $component_string) {
@@ -1168,12 +1189,12 @@ class Type
                     $component_string = \substr($component_string, 0, -1);
                 }
                 $key = \substr($key, 0, -1);
-                $result[$key] = UnionType::fromStringInContext($component_string, $context, $source)->withIsPossiblyUndefined(true);
+                $result[$key] = UnionType::fromStringInContext($component_string, $context, $source, $code_base)->withIsPossiblyUndefined(true);
             } elseif (\substr($component_string, -1) === '=') {
                 $component_string = \substr($component_string, 0, -1);
-                $result[$key] = UnionType::fromStringInContext($component_string, $context, $source)->withIsPossiblyUndefined(true);
+                $result[$key] = UnionType::fromStringInContext($component_string, $context, $source, $code_base)->withIsPossiblyUndefined(true);
             } else {
-                $result[$key] = UnionType::fromStringInContext($component_string, $context, $source);
+                $result[$key] = UnionType::fromStringInContext($component_string, $context, $source, $code_base);
             }
         }
         return $result;

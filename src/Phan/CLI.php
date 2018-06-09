@@ -183,10 +183,9 @@ class CLI
 
         // Before reading the config, check for an override on
         // the location of the config file path.
-        if (isset($opts['k'])) {
-            $this->config_file = $opts['k'];
-        } elseif (isset($opts['config-file'])) {
-            $this->config_file = $opts['config-file'];
+        $config_file_override = $opts['k'] ?? $opts['config-file'] ?? null;
+        if (is_string($config_file_override)) {
+            $this->config_file = $config_file_override;
         }
 
         if (isset($opts['language-server-force-missing-pcntl'])) {

@@ -395,6 +395,46 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
+     * @return ?Type
+     * @throws IssueException if the parent type could not be resolved
+     */
+    public static function findParentType(Context $context, CodeBase $code_base)
+    {
+        if (!$context->isInClassScope()) {
+            throw new IssueException(
+                Issue::fromType(Issue::ContextNotObject)(
+                    $context->getFile(),
+                    $context->getLineNumberStart(),
+                    [
+                        'parent'
+                    ]
+                )
+            );
+        }
+        $class = $context->getClassInScope($code_base);
+
+        if ($class->hasParentType()) {
+            return Type::fromFullyQualifiedString(
+                (string)$class->getParentClassFQSEN()
+            );
+        }
+
+        // Using `parent` in a class or interface without a parent is always invalid.
+        // Doing this in a trait may or not be valid.
+        if (!$class->isTrait()) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::ParentlessClass,
+                $context->getLineNumberStart(),
+                (string)$class->getFQSEN()
+            );
+        }
+
+        return null;
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_NAME`
      *
      * @param Node $node
@@ -408,35 +448,9 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitName(Node $node) : UnionType
     {
         if ($node->flags & \ast\flags\NAME_NOT_FQ) {
-            if ('parent' === $node->children['name']) {
-                if (!$this->context->isInClassScope()) {
-                    throw new IssueException(
-                        Issue::fromType(Issue::ContextNotObject)(
-                            $this->context->getFile(),
-                            $this->context->getLineNumberStart(),
-                            [
-                                'parent'
-                            ]
-                        )
-                    );
-                }
-                $class = $this->context->getClassInScope($this->code_base);
-
-                if ($class->hasParentType()) {
-                    return Type::fromFullyQualifiedString(
-                        (string)$class->getParentClassFQSEN()
-                    )->asUnionType();
-                } else {
-                    if (!$class->isTrait()) {
-                        $this->emitIssue(
-                            Issue::ParentlessClass,
-                            $node->lineno ?? 0,
-                            (string)$class->getFQSEN()
-                        );
-                    }
-
-                    return UnionType::empty();
-                }
+            if (strcasecmp('parent', $node->children['name']) === 0) {
+                $parent_type = self::findParentType($this->context, $this->code_base);
+                return $parent_type ? $parent_type->asUnionType() : UnionType::empty();
             }
 
             return Type::fromStringInContext(

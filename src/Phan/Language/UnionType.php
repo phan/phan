@@ -189,12 +189,18 @@ class UnionType implements \Serializable
      *
      * @param int $source one of the constants in Type::FROM_*
      *
+     * @param ?CodeBase $code_base
+     * May be provided to resolve 'parent' in the context
+     * (e.g. if parsing complex phpdoc).
+     * Unnecessary in most use cases.
+     *
      * @return UnionType
      */
     public static function fromStringInContext(
         string $type_string,
         Context $context,
-        int $source
+        int $source,
+        CodeBase $code_base = null
     ) : UnionType {
         if (empty($type_string)) {
             return self::$empty_instance;
@@ -212,7 +218,8 @@ class UnionType implements \Serializable
             $types[] = Type::fromStringInContext(
                 $type_name,
                 $context,
-                $source
+                $source,
+                $code_base
             );
         }
         return UnionType::of(self::normalizeMultiTypes($types));
