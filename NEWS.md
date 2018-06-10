@@ -12,6 +12,9 @@ New features(Analysis)
 + Warn about making static properties into non-static properties (and vice-versa) (#615)
   New issue types: `PhanAccessNonStaticToStaticProperty`, `PhanAccessStaticToNonStaticProperty`
 
+Maintenance:
++ Update signature map with more accurate signatures (#1761)
+
 Bug fixes:
 + Fix uncaught `AssertionError` when `parent` is used in PHPDoc (#1758)
 + Fix an uncaught error in the polyfill parser.
