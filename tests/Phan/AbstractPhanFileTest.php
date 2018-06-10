@@ -186,7 +186,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             $start = strpos($wanted_re, $r, $startOffset);
             if ($start !== false) {
                 // we have found a start tag
-                $end = strpos($wanted_re, $r, $start+2);
+                $end = strpos($wanted_re, $r, $start + 2);
                 if ($end === false) {
                     // unbalanced tag, ignore it.
                     $end = $start = $length;
@@ -199,7 +199,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             $temp = $temp . preg_quote(substr($wanted_re, $startOffset, ($start - $startOffset)), '/');
             // add the re unquoted.
             if ($end > $start) {
-                $temp = $temp . '(' . substr($wanted_re, $start+2, ($end - $start-2)). ')';
+                $temp = $temp . '(' . substr($wanted_re, $start + 2, ($end - $start - 2)) . ')';
             }
             $startOffset = $end + 2;
         }

@@ -181,7 +181,7 @@ class ForkPool
         $content = array_fill_keys(array_keys($streams), '');
 
         // Read the data off of all the stream.
-        while (count($streams) >0) {
+        while (count($streams) > 0) {
             $needs_read = array_values($streams);
             $needs_write = null;
             $needs_except = null;

@@ -218,7 +218,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
             $target = $child_node->children['name'];
 
             if (empty($child_node->children['alias'])) {
-                if (($pos = \strrpos($target, '\\'))!==false) {
+                if (($pos = \strrpos($target, '\\')) !== false) {
                     $alias = \substr($target, $pos + 1);
                 } else {
                     $alias = $target;

@@ -99,7 +99,7 @@ class AnalyzerTest extends BaseTest
         return
             Analysis::parseNodeInContext(
                 $this->code_base,
-                new Context,
+                new Context(),
                 \ast\parse_code(
                     '<?php ' . $code_stub,
                     Config::AST_VERSION

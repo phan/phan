@@ -75,7 +75,7 @@ class Context extends FileRef
      */
     public function __construct()
     {
-        $this->scope = new GlobalScope;
+        $this->scope = new GlobalScope();
     }
 
     /*

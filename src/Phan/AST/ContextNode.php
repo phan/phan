@@ -1301,7 +1301,7 @@ class ContextNode
             $property_fqsen
         );
 
-        $class->addProperty($this->code_base, $property, new None);
+        $class->addProperty($this->code_base, $property, new None());
 
         return $property;
     }
@@ -1754,17 +1754,17 @@ class ContextNode
     // Flags for getEquivalentPHPValue
 
     // Should this attempt to resolve arrays?
-    const RESOLVE_ARRAYS = (1<<0);
+    const RESOLVE_ARRAYS = (1 << 0);
     // Should this attempt to resolve array keys?
-    const RESOLVE_ARRAY_KEYS = (1<<1);
+    const RESOLVE_ARRAY_KEYS = (1 << 1);
     // Should this attempt to resolve array values?
-    const RESOLVE_ARRAY_VALUES = (1<<2);
+    const RESOLVE_ARRAY_VALUES = (1 << 2);
     // Should this attempt to resolve accesses to constants?
-    const RESOLVE_CONSTANTS = (1<<3);
+    const RESOLVE_CONSTANTS = (1 << 3);
     // If resolving array keys fails, should this use a placeholder?
-    const RESOLVE_KEYS_USE_FALLBACK_PLACEHOLDER = (1<<4);
+    const RESOLVE_KEYS_USE_FALLBACK_PLACEHOLDER = (1 << 4);
     // Skip unknown keys
-    const RESOLVE_KEYS_SKIP_UNKNOWN_KEYS = (1<<5);
+    const RESOLVE_KEYS_SKIP_UNKNOWN_KEYS = (1 << 5);
 
     const RESOLVE_DEFAULT =
         self::RESOLVE_ARRAYS |

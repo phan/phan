@@ -58,7 +58,7 @@ class BlockExitStatusCheckerTest extends BaseTest
      */
     public function testExitStatus(string $expectedStatusRepresentation, string $codeSnippet)
     {
-        $ast = \ast\parse_code("<"."?php " . $codeSnippet, Config::AST_VERSION);
+        $ast = \ast\parse_code("<" . "?php " . $codeSnippet, Config::AST_VERSION);
         $status_code = (new BlockExitStatusChecker())($ast);
         $this->assertSame($expectedStatusRepresentation, $this->representStatus($status_code), sprintf("Unexpected status 0x%x\nCode:\n%s\n", $status_code, $codeSnippet));
     }

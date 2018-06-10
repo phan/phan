@@ -74,7 +74,7 @@ class ContextTest extends BaseTest
 
         $class_node = $stmt_list_node->children[0];
 
-        $context = new Context;
+        $context = new Context();
 
         $context = (new ParseVisitor(
             $this->code_base,

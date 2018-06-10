@@ -31,7 +31,7 @@ class ClientHandler
     {
         $this->protocolReader = $protocolReader;
         $this->protocolWriter = $protocolWriter;
-        $this->idGenerator = new IdGenerator;
+        $this->idGenerator = new IdGenerator();
     }
 
     /**
@@ -51,7 +51,7 @@ class ClientHandler
                 new AdvancedJsonRpc\Request($id, $method, (object)$params)
             )
         )->then(function () use ($id) {
-            $promise = new Promise;
+            $promise = new Promise();
             /**
              * @suppress PhanUndeclaredProperty taken care of by isResponse checks on msg->body
              */

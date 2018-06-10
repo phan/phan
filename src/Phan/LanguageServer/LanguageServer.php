@@ -606,7 +606,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
         $code_base->restoreFromRestorePoint($restore_point);
 
-        Logger::logInfo("Response from non-pcntl server: " . json_encode($response_data, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
+        Logger::logInfo("Response from non-pcntl server: " . json_encode($response_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 
     /**

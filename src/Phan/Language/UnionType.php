@@ -403,14 +403,14 @@ class UnionType implements \Serializable
         static $map = [];
 
         if (!$map) {
-            $map_raw = require(__DIR__.'/Internal/PropertyMap.php');
+            $map_raw = require(__DIR__ . '/Internal/PropertyMap.php');
             foreach ($map_raw as $key => $value) {
                 $map[\strtolower($key)] = $value;
             }
 
             // Merge in an empty type for dynamic properties on any
             // classes listed as supporting them.
-            foreach (require(__DIR__.'/Internal/DynamicPropertyMap.php') as $class_name) {
+            foreach (require(__DIR__ . '/Internal/DynamicPropertyMap.php') as $class_name) {
                 $map[\strtolower($class_name)]['*'] = '';
             }
         }
@@ -461,7 +461,7 @@ class UnionType implements \Serializable
 
             $result = $internal_fn_cache[$type_name] ?? null;
             if ($result === null) {
-                $context = new Context;
+                $context = new Context();
                 $result = UnionType::fromStringInContext($type_name, $context, Type::FROM_PHPDOC);
                 $internal_fn_cache[$type_name] = $result;
             }
@@ -2231,7 +2231,7 @@ class UnionType implements \Serializable
     private static function computeLatestFunctionSignatureMap() : array
     {
         $map = [];
-        $map_raw = require(__DIR__.'/Internal/FunctionSignatureMap.php');
+        $map_raw = require(__DIR__ . '/Internal/FunctionSignatureMap.php');
         foreach ($map_raw as $key => $value) {
             $map[\strtolower($key)] = $value;
         }
@@ -2244,7 +2244,7 @@ class UnionType implements \Serializable
      */
     private static function computePHP71FunctionSignatureMap(array $php72_map) : array
     {
-        $delta_raw = require(__DIR__.'/Internal/FunctionSignatureMap_php72_delta.php');
+        $delta_raw = require(__DIR__ . '/Internal/FunctionSignatureMap_php72_delta.php');
         return self::applyDeltaToGetOlderSignatures($php72_map, $delta_raw);
     }
 
@@ -2254,7 +2254,7 @@ class UnionType implements \Serializable
      */
     private static function computePHP70FunctionSignatureMap(array $php71_map) : array
     {
-        $delta_raw = require(__DIR__.'/Internal/FunctionSignatureMap_php71_delta.php');
+        $delta_raw = require(__DIR__ . '/Internal/FunctionSignatureMap_php71_delta.php');
         return self::applyDeltaToGetOlderSignatures($php71_map, $delta_raw);
     }
 

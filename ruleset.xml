@@ -2,12 +2,16 @@
 <!-- This is a ruleset for https://github.com/squizlabs/PHP_CodeSniffer -->
 <!-- Usage:  phpcs.phar \-\-standard=path/toruleset.xml path/to/file_or_folder.php (Can't have double hyphen in xml comment) -->
 <!-- phpcbf.phar can be used to automatically fix many issues -->
+<!-- Use this with PHP_CodeSniffer 3.3.0 or newer -->
 <ruleset name="Custom Standard">
   <rule ref="PSR1" />
   <rule ref="PSR2">
     <exclude name="Generic.Files.LineLength.TooLong" />
     <exclude name="PSR1.Files.SideEffects.FoundWithSymbols" />
   </rule>
+  <exclude-pattern>*SignatureMap*.php</exclude-pattern>
+
+  <rule ref="PSR12" />
   <!-- Arbitrary increase of line length limit -->
   <rule ref="Generic.Files.LineLength">
     <properties>

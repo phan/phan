@@ -146,7 +146,7 @@ class TypeTest extends BaseTest
 
     public function testTemplateTypesWithNullable()
     {
-        $type = self::makePHPDocType('TypeTestClass<'.'?int,?string>');  // not exactly a template, but has the same parsing
+        $type = self::makePHPDocType('TypeTestClass<' . '?int,?string>');  // not exactly a template, but has the same parsing
         $this->assertSame('\\', $type->getNamespace());
         $this->assertSame('TypeTestClass', $type->getName());
         $parts = $type->getTemplateParameterTypeList();

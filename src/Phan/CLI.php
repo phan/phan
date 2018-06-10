@@ -233,7 +233,7 @@ class CLI
                             /** @var array<int,string> */
                             $this->file_list_in_config = array_merge(
                                 $this->file_list_in_config,
-                                file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)
+                                file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES)
                             );
                         } else {
                             error_log("Unable to read file $file_path");
@@ -487,10 +487,10 @@ class CLI
         $pruneargv = [];
         foreach ($opts as $opt => $value) {
             foreach ($argv as $key => $chunk) {
-                $regex = '/^'. (isset($opt[1]) ? '--' : '-') . $opt . '/';
+                $regex = '/^' . (isset($opt[1]) ? '--' : '-') . $opt . '/';
 
                 if (in_array($chunk, is_array($value) ? $value : [$value])
-                    && $argv[$key-1][0] == '-'
+                    && $argv[$key - 1][0] == '-'
                     || preg_match($regex, $chunk)
                 ) {
                     $pruneargv[] = $key;
@@ -504,7 +504,7 @@ class CLI
         }
 
         foreach ($argv as $arg) {
-            if ($arg[0]=='-') {
+            if ($arg[0] == '-') {
                 $this->usage("Unknown option '{$arg}'", EXIT_FAILURE);
             }
         }
@@ -1018,8 +1018,8 @@ EOB;
             fwrite(STDERR, '.');
             return;
         }
-        $memory = memory_get_usage()/1024/1024;
-        $peak = memory_get_peak_usage()/1024/1024;
+        $memory = memory_get_usage() / 1024 / 1024;
+        $peak = memory_get_peak_usage() / 1024 / 1024;
 
         $current = (int)($p * 60);
         $rest = max(60 - $current, 0);
@@ -1029,7 +1029,7 @@ EOB;
                ' ' .
                str_repeat("\u{2588}", $current) .
                str_repeat("\u{2591}", $rest) .
-               " " . sprintf("%1$ 3d", (int)(100*$p)) . "%" .
+               " " . sprintf("%1$ 3d", (int)(100 * $p)) . "%" .
                sprintf(' %0.2dMB/%0.2dMB', $memory, $peak) . "\r";
         fwrite(STDERR, $msg);
     }
@@ -1105,7 +1105,7 @@ EOB;
         // Workaround for https://github.com/nikic/php-ast/issues/79
         try {
             \ast\parse_code(
-                '<'.'?php syntaxerror',
+                '<' . '?php syntaxerror',
                 Config::AST_VERSION
             );
             assert(

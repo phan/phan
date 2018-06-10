@@ -20,7 +20,7 @@ class FQSENTest extends BaseTest
 
     protected function setUp()
     {
-        $this->context = new Context;
+        $this->context = new Context();
     }
 
     protected function tearDown()

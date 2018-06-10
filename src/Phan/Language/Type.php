@@ -469,7 +469,7 @@ class Type
         if (isset($result)) {
             return new Some($result);
         }
-        return new None;
+        return new None();
     }
 
     /**
@@ -2258,7 +2258,7 @@ class Type
 
         $match = [];
         $is_nullable = false;
-        if (\preg_match('/^' . self::type_regex_or_this. '$/', $type_string, $match)) {
+        if (\preg_match('/^' . self::type_regex_or_this . '$/', $type_string, $match)) {
             if ($match[3] !== '') {
                 return self::closureTypeStringComponents($type_string, $match[3]);
             }

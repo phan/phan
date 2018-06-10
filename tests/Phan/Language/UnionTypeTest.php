@@ -80,7 +80,7 @@ class UnionTypeTest extends BaseTest
                 $internal_function_name_list
             );
         }
-        $this->context = new Context;
+        $this->context = new Context();
     }
 
     protected function tearDown()

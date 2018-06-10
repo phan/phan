@@ -191,16 +191,16 @@ class CodeBase
         array $internal_constant_name_list,
         array $internal_function_name_list
     ) {
-        $this->fqsen_class_map = new Map;
-        $this->fqsen_class_map_internal = new Map;
-        $this->fqsen_class_map_reflection = new Map;
-        $this->fqsen_class_map_user_defined = new Map;
-        $this->fqsen_alias_map = new Map;
-        $this->fqsen_global_constant_map = new Map;
-        $this->fqsen_func_map = new Map;
-        $this->class_fqsen_class_map_map = new Map;
-        $this->method_set = new Set;
-        $this->internal_function_fqsen_set = new Set;
+        $this->fqsen_class_map = new Map();
+        $this->fqsen_class_map_internal = new Map();
+        $this->fqsen_class_map_reflection = new Map();
+        $this->fqsen_class_map_user_defined = new Map();
+        $this->fqsen_alias_map = new Map();
+        $this->fqsen_global_constant_map = new Map();
+        $this->fqsen_func_map = new Map();
+        $this->class_fqsen_class_map_map = new Map();
+        $this->method_set = new Set();
+        $this->internal_function_fqsen_set = new Set();
 
         // Add any pre-defined internal classes, interfaces,
         // constants, traits and functions
@@ -406,7 +406,7 @@ class CodeBase
     public function forceLoadingInternalFunctions()
     {
         $internal_function_fqsen_set = $this->internal_function_fqsen_set;
-        $this->internal_function_fqsen_set = new Set;  // Don't need to track these any more.
+        $this->internal_function_fqsen_set = new Set();  // Don't need to track these any more.
         foreach ($internal_function_fqsen_set as $function_fqsen) {
             // hasFunctionWithFQSEN will automatically load $function_name, **unless** we don't have a signature for that function.
             if (!$this->hasFunctionWithFQSEN($function_fqsen)) {
@@ -443,10 +443,10 @@ class CodeBase
             $this->fqsen_class_map->deepCopyValues();
 
         $this->fqsen_class_map_user_defined =
-            new Map;
+            new Map();
 
         $this->fqsen_class_map_internal =
-            new Map;
+            new Map();
 
         foreach ($this->fqsen_class_map as $fqsen => $clazz) {
             if ($clazz->isPHPInternal()) {
@@ -903,7 +903,7 @@ class CodeBase
         if (\count($this->fqsen_class_map_reflection) > 0) {
             $fqsen_class_map_reflection = $this->fqsen_class_map_reflection;
             // Free up memory used by old class map. Prevent it from being freed before we can load it manually.
-            $this->fqsen_class_map_reflection = new Map;
+            $this->fqsen_class_map_reflection = new Map();
             foreach ($fqsen_class_map_reflection as $fqsen => $reflection_class) {
                 $this->loadPHPInternalClassWithFQSEN($fqsen, $reflection_class);
             }
@@ -932,7 +932,7 @@ class CodeBase
         // mary references.
         if (Config::get_track_references()) {
             if (empty($this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()])) {
-                $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()] = new Set;
+                $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()] = new Set();
             }
             $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()]->attach($method);
         }
@@ -999,7 +999,7 @@ class CodeBase
             . ' detection (or force_tracking_references) is enabled.'
         );
 
-        return $this->name_method_map[$name] ?? new Set;
+        return $this->name_method_map[$name] ?? new Set();
     }
 
     /**
@@ -1309,7 +1309,7 @@ class CodeBase
         if ($class_fqsen_class_map_map->offsetExists($fqsen)) {
             return $class_fqsen_class_map_map->offsetGet($fqsen);
         }
-        $class_fqsen_class_map_map->offsetSet($fqsen, new ClassMap);
+        $class_fqsen_class_map_map->offsetSet($fqsen, new ClassMap());
         return $class_fqsen_class_map_map->offsetGet($fqsen);
     }
 

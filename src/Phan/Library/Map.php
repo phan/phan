@@ -44,7 +44,7 @@ class Map extends \SplObjectStorage
      */
     public function keyValueMap(\Closure $key_closure, \Closure $value_closure)
     {
-        $map = new Map;
+        $map = new Map();
         foreach ($this as $key => $value) {
             // TODO: Don't infer $map[$key] = ...; as making $map possibly an array
             $map->offsetSet($key_closure($key), $value_closure($value));
@@ -71,7 +71,7 @@ class Map extends \SplObjectStorage
      */
     public function deepCopyValues() : Map
     {
-        $map = new Map;
+        $map = new Map();
         foreach ($this as $key => $value) {
             $map->offsetSet($key, clone($value));
         }
