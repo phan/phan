@@ -67,7 +67,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             // Common case: no namespace
             return self::make('\\', $name);
         }
-        return self::make('\\' . \substr($name, 0, $i), \substr($name, $i+1));
+        return self::make('\\' . \substr($name, 0, $i), \substr($name, $i + 1));
     }
 
     /**

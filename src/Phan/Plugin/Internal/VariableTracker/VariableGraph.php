@@ -37,9 +37,9 @@ final class VariableGraph
      */
     public $variable_types = [];
 
-    const IS_REFERENCE      = 1<<0;
-    const IS_GLOBAL         = 1<<1;
-    const IS_STATIC         = 1<<2;
+    const IS_REFERENCE      = 1 << 0;
+    const IS_GLOBAL         = 1 << 1;
+    const IS_STATIC         = 1 << 2;
 
     const IS_REFERENCE_OR_GLOBAL_OR_STATIC = self::IS_REFERENCE | self::IS_GLOBAL | self::IS_STATIC;
 

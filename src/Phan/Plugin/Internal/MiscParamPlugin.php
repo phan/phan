@@ -101,7 +101,7 @@ final class MiscParamPlugin extends PluginV2 implements
                 }
             );
 
-            for ($i=0; $i < ($argcount - 1); $i++) {
+            for ($i = 0; $i < ($argcount - 1); $i++) {
                 self::analyzeNodeUnionTypeCast(
                     $args[$i],
                     $context,
@@ -113,7 +113,7 @@ final class MiscParamPlugin extends PluginV2 implements
                             $context->getFile(),
                             $context->getLineNumberStart(),
                             [
-                            ($i+1),
+                            ($i + 1),
                             (string)$node_type,
                             (string)$function->getFQSEN(),
                             'array'
@@ -263,7 +263,7 @@ final class MiscParamPlugin extends PluginV2 implements
                 }
             );
 
-            for ($i=0; $i < ($argcount-2); $i++) {
+            for ($i = 0; $i < ($argcount - 2); $i++) {
                 self::analyzeNodeUnionTypeCast(
                     $args[$i],
                     $context,
@@ -275,7 +275,7 @@ final class MiscParamPlugin extends PluginV2 implements
                             $context->getFile(),
                             $context->getLineNumberStart(),
                             [
-                            ($i+1),
+                            ($i + 1),
                             (string)$node_type,
                             (string)$function->getFQSEN(),
                             'array'

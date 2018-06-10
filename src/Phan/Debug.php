@@ -220,14 +220,14 @@ class Debug
      */
     public static function backtrace(int $levels = 0)
     {
-        $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $levels+1);
+        $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $levels + 1);
         foreach ($bt as $level => $context) {
             if (!$level) {
                 continue;
             }
-            echo "#".($level-1)." {$context['file']}:{$context['line']} {$context['class']} ";
+            echo "#" . ($level - 1) . " {$context['file']}:{$context['line']} {$context['class']} ";
             if (!empty($context['type'])) {
-                echo $context['class'].$context['type'];
+                echo $context['class'] . $context['type'];
             }
             echo $context['function'];
             echo "\n";

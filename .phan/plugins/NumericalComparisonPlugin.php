@@ -87,4 +87,4 @@ class NumericalComparisonVisitor extends PluginAwarePostAnalysisVisitor
     }
 }
 
-return new NumericalComparisonPlugin;
+return new NumericalComparisonPlugin();

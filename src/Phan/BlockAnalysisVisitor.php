@@ -195,7 +195,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                             $context,
                             Issue::NoopStringLiteral,
                             $context->getLineNumberStart(),
-                            json_encode($child_node, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)
+                            json_encode($child_node, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
                         );
                     }
                 } elseif (\is_scalar($child_node)) {

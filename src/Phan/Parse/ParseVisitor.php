@@ -339,10 +339,10 @@ class ParseVisitor extends ScopeVisitor
             // only for stubs
             foreach (FunctionFactory::functionListFromFunction($method) as $method_variant) {
                 \assert($method_variant instanceof Method);
-                $class->addMethod($code_base, $method_variant, new None);
+                $class->addMethod($code_base, $method_variant, new None());
             }
         } else {
-            $class->addMethod($code_base, $method, new None);
+            $class->addMethod($code_base, $method, new None());
         }
 
         if ('__construct' === $method_name) {
@@ -452,7 +452,7 @@ class ParseVisitor extends ScopeVisitor
             );
 
             // Add the property to the class
-            $class->addProperty($this->code_base, $property, new None);
+            $class->addProperty($this->code_base, $property, new None());
 
             $property->setSuppressIssueList(
                 $comment->getSuppressIssueList()
@@ -1029,7 +1029,7 @@ class ParseVisitor extends ScopeVisitor
             }
             $dollars = str_repeat('$', $depth);
             $ftemp = new \SplFileObject($this->context->getFile());
-            $ftemp->seek($node->lineno-1);
+            $ftemp->seek($node->lineno - 1);
             $line = $ftemp->current();
             \assert(\is_string($line));
             unset($ftemp);
@@ -1051,7 +1051,7 @@ class ParseVisitor extends ScopeVisitor
             && ($node->children['expr']->children[1]->kind == \ast\AST_VAR)
         ) {
             $ftemp = new \SplFileObject($this->context->getFile());
-            $ftemp->seek($node->lineno-1);
+            $ftemp->seek($node->lineno - 1);
             $line = $ftemp->current();
             \assert(\is_string($line));
             unset($ftemp);

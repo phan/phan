@@ -159,7 +159,7 @@ class ReferenceCountsAnalyzer
         int &$i
     ) {
         foreach ($element_list as $element) {
-            CLI::progress('dead code', (++$i)/$total_count);
+            CLI::progress('dead code', (++$i) / $total_count);
             // Don't worry about internal elements
             if ($element->isPHPInternal()) {
                 continue;
@@ -184,7 +184,7 @@ class ReferenceCountsAnalyzer
         int &$i
     ) {
         foreach ($element_list as $element) {
-            CLI::progress('dead code', (++$i)/$total_count);
+            CLI::progress('dead code', (++$i) / $total_count);
             // Don't worry about internal elements
             if ($element->isPHPInternal()) {
                 continue;

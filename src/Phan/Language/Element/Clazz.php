@@ -162,7 +162,7 @@ class Clazz extends AddressableElement
             $flags |= \ast\flags\CLASS_ABSTRACT;
         }
 
-        $context = new Context;
+        $context = new Context();
 
         $class_name = $class->getName();
         $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_name);
@@ -210,13 +210,13 @@ class Clazz extends AddressableElement
             }
 
             $property_context = $context->withScope(
-                new ClassScope(new GlobalScope, $clazz->getFQSEN())
+                new ClassScope(new GlobalScope(), $clazz->getFQSEN())
             );
 
             $property_type =
                 UnionType::fromStringInContext(
                     $property_type_string,
-                    new Context,
+                    new Context(),
                     Type::FROM_TYPE
                 );
 
@@ -233,7 +233,7 @@ class Clazz extends AddressableElement
                 $property_fqsen
             );
 
-            $clazz->addProperty($code_base, $property, new None);
+            $clazz->addProperty($code_base, $property, new None());
         }
 
         // n.b.: public properties on internal classes don't get
@@ -244,7 +244,7 @@ class Clazz extends AddressableElement
 
         foreach ($class->getDefaultProperties() as $name => $value) {
             $property_context = $context->withScope(
-                new ClassScope(new GlobalScope, $clazz->getFQSEN())
+                new ClassScope(new GlobalScope(), $clazz->getFQSEN())
             );
 
             $property_fqsen = FullyQualifiedPropertyName::make(
@@ -260,7 +260,7 @@ class Clazz extends AddressableElement
                 $property_fqsen
             );
 
-            $clazz->addProperty($code_base, $property, new None);
+            $clazz->addProperty($code_base, $property, new None());
         }
 
         foreach ($class->getInterfaceNames() as $name) {
@@ -301,7 +301,7 @@ class Clazz extends AddressableElement
 
         foreach ($class->getMethods() as $reflection_method) {
             $method_context = $context->withScope(
-                new ClassScope(new GlobalScope, $clazz->getFQSEN())
+                new ClassScope(new GlobalScope(), $clazz->getFQSEN())
             );
 
             $method_list =
@@ -312,7 +312,7 @@ class Clazz extends AddressableElement
                 );
 
             foreach ($method_list as $method) {
-                $clazz->addMethod($code_base, $method, new None);
+                $clazz->addMethod($code_base, $method, new None());
             }
         }
         self::addTargetedPHPVersionMethodsToInternalClass($code_base, $clazz);
@@ -428,7 +428,7 @@ class Clazz extends AddressableElement
             return new Some($parent_type);
         }
 
-        return new None;
+        return new None();
     }
 
     /**
@@ -795,7 +795,7 @@ class Clazz extends AddressableElement
             );
             $property->setIsFromPHPDoc(true);
 
-            $this->addProperty($code_base, $property, new None);
+            $this->addProperty($code_base, $property, new None());
         }
         return true;
     }
@@ -849,7 +849,7 @@ class Clazz extends AddressableElement
             $method->setNumberOfOptionalParameters($comment_method->getNumberOfOptionalParameters());
             $method->setIsFromPHPDoc(true);
 
-            $this->addMethod($code_base, $method, new None);
+            $this->addMethod($code_base, $method, new None());
         }
         return true;
     }
@@ -1048,7 +1048,7 @@ class Clazz extends AddressableElement
             );
             $property->setIsDynamicProperty(true);
 
-            $this->addProperty($code_base, $property, new None);
+            $this->addProperty($code_base, $property, new None());
 
             return $property;
         } elseif ($has_property) {
@@ -1090,7 +1090,7 @@ class Clazz extends AddressableElement
             );
             $property->setIsDynamicProperty(true);
 
-            $this->addProperty($code_base, $property, new None);
+            $this->addProperty($code_base, $property, new None());
 
             return $property;
         }
@@ -2012,7 +2012,7 @@ class Clazz extends AddressableElement
             $this->importAncestorClass(
                 $code_base,
                 $ancestor,
-                new None
+                new None()
             );
         }
 
@@ -2029,7 +2029,7 @@ class Clazz extends AddressableElement
             $this->importAncestorClass(
                 $code_base,
                 $ancestor,
-                new None
+                new None()
             );
         }
 

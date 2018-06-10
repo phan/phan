@@ -160,7 +160,7 @@ class Set extends \SplObjectStorage
      */
     public function map(\Closure $closure) : Set
     {
-        $set = new Set;
+        $set = new Set();
         foreach ($this as $element) {
             $set->attach($closure($element));
         }

@@ -150,7 +150,7 @@ final class ConfigPluginSet extends PluginV2 implements
     {
         static $instance = null;
         if ($instance === null) {
-            $instance = new self;
+            $instance = new self();
             $instance->ensurePluginsExist();
         }
         return $instance;

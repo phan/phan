@@ -1175,7 +1175,7 @@ class TolerantASTConverter
                 return new ast\Node(
                     ast\AST_ECHO,
                     0,
-                    ['expr' =>static::tokenToRawString($n->text)],
+                    ['expr' => static::tokenToRawString($n->text)],
                     $start_line
                 );
             },
@@ -2226,7 +2226,7 @@ class TolerantASTConverter
                     throw new \RuntimeException("Unexpected visibility modifier '" . Token::getTokenKindNameFromValue($token->kind) . "'");
             }
         }
-        if ($automatically_add_public && !($ast_visibility & (ast\flags\MODIFIER_PUBLIC|ast\flags\MODIFIER_PROTECTED|ast\flags\MODIFIER_PRIVATE))) {
+        if ($automatically_add_public && !($ast_visibility & (ast\flags\MODIFIER_PUBLIC | ast\flags\MODIFIER_PROTECTED | ast\flags\MODIFIER_PRIVATE))) {
             $ast_visibility |= ast\flags\MODIFIER_PUBLIC;
         }
         return $ast_visibility;

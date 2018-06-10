@@ -115,4 +115,4 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
 }
 // Every plugin needs to return an instance of itself at the
 // end of the file in which its defined.
-return new UnreachableCodePlugin;
+return new UnreachableCodePlugin();

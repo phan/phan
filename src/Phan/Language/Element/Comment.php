@@ -358,13 +358,13 @@ class Comment
                 [],
                 [],
                 [],
-                new None,
+                new None(),
                 UnionType::empty(),
                 [],
                 [],
                 [],
                 [],
-                new None,
+                new None(),
                 UnionType::empty()
             );
         }
@@ -372,12 +372,12 @@ class Comment
         $variable_list = [];
         $parameter_list = [];
         $template_type_list = [];
-        $inherited_type = new None;
+        $inherited_type = new None();
         $return_union_type = UnionType::empty();
         $suppress_issue_list = [];
         $magic_property_list = [];
         $magic_method_list = [];
-        $closure_scope = new None;
+        $closure_scope = new None();
         $comment_flags = 0;
         $phan_overrides = [];
         $throw_union_type = UnionType::empty();
@@ -857,7 +857,7 @@ class Comment
         string $line
     ) {
         // TODO: Just use WORD_REGEX? Backslashes or nested templates wouldn't make sense.
-        if (preg_match('/@template\s+(' . Type::simple_type_regex. ')/', $line, $match)) {
+        if (preg_match('/@template\s+(' . Type::simple_type_regex . ')/', $line, $match)) {
             $template_type_identifier = $match[1];
             return new TemplateType($template_type_identifier);
         }

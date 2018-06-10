@@ -674,7 +674,7 @@ class ConversionSpec
 
     // A padding string regex may be a space or 0.
     // Alternate padding specifiers may be specified by prefixing it with a single quote.
-    const padding_string_regex_part ='[0 ]?|\'.';
+    const padding_string_regex_part = '[0 ]?|\'.';
 
     /**
      * Based on https://secure.php.net/manual/en/function.sprintf.php
