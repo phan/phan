@@ -958,6 +958,12 @@ class TolerantASTConverter
              * int|string for no-op scalar statements like `;2;`
              */
             'Microsoft\PhpParser\Node\Statement\ExpressionStatement' => function (PhpParser\Node\Statement\ExpressionStatement $n, int $_) {
+                $expression = $n->expression;
+                // tolerant-php-parser uses parseExpression(..., $force=true), which can return an array.
+                // It is the only thing that uses $force=true at the time of writing.
+                if (!\is_object($expression)) {
+                    return null;
+                }
                 return static::phpParserNodeToAstNode($n->expression);
             },
             'Microsoft\PhpParser\Node\Statement\BreakOrContinueStatement' => function (PhpParser\Node\Statement\BreakOrContinueStatement $n, int $start_line) : ast\Node {
