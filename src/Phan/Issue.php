@@ -266,15 +266,21 @@ class Issue
     const AccessMethodPrivateWithCallMagicMethod = 'PhanAccessMethodPrivateWithCallMagicMethod';
     const AccessMethodProtected     = 'PhanAccessMethodProtected';
     const AccessMethodProtectedWithCallMagicMethod = 'PhanAccessMethodProtectedWithCallMagicMethod';
-    const AccessSignatureMismatch   = 'PhanAccessSignatureMismatch';
+    const AccessSignatureMismatch         = 'PhanAccessSignatureMismatch';
     const AccessSignatureMismatchInternal = 'PhanAccessSignatureMismatchInternal';
-    const AccessStaticToNonStatic   = 'PhanAccessStaticToNonStatic';
-    const AccessNonStaticToStatic   = 'PhanAccessNonStaticToStatic';
-    const AccessClassConstantPrivate     = 'PhanAccessClassConstantPrivate';
-    const AccessClassConstantProtected   = 'PhanAccessClassConstantProtected';
+    const PropertyAccessSignatureMismatch = 'PhanPropertyAccessSignatureMismatch';
+    const PropertyAccessSignatureMismatchInternal  = 'PhanPropertyAccessSignatureMismatchInternal';
+    const AccessConstantSignatureMismatch = 'PhanConstantAccessSignatureMismatch';
+    const AccessConstantSignatureMismatchInternal  = 'PhanConstantAccessSignatureMismatchInternal';
+    const AccessStaticToNonStatic         = 'PhanAccessStaticToNonStatic';
+    const AccessNonStaticToStatic         = 'PhanAccessNonStaticToStatic';
+    const AccessStaticToNonStaticProperty = 'PhanAccessStaticToNonStaticProperty';
+    const AccessNonStaticToStaticProperty = 'PhanAccessNonStaticToStaticProperty';
+    const AccessClassConstantPrivate      = 'PhanAccessClassConstantPrivate';
+    const AccessClassConstantProtected    = 'PhanAccessClassConstantProtected';
     const AccessPropertyStaticAsNonStatic = 'PhanAccessPropertyStaticAsNonStatic';
     const AccessPropertyNonStaticAsStatic = 'PhanAccessPropertyNonStaticAsStatic';
-    const AccessOwnConstructor = 'PhanAccessOwnConstructor';
+    const AccessOwnConstructor            = 'PhanAccessOwnConstructor';
 
     const AccessConstantInternal    = 'PhanAccessConstantInternal';
     const AccessClassInternal       = 'PhanAccessClassInternal';
@@ -2305,6 +2311,54 @@ class Issue
                 "Access level to {METHOD} must be compatible with internal {METHOD}",
                 self::REMEDIATION_B,
                 1005
+            ),
+            new Issue(
+                self::PropertyAccessSignatureMismatch,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Access level to {PROPERTY} must be compatible with {PROPERTY} defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1022
+            ),
+            new Issue(
+                self::PropertyAccessSignatureMismatchInternal,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Access level to {PROPERTY} must be compatible with internal {PROPERTY}",
+                self::REMEDIATION_B,
+                1023
+            ),
+            new Issue(
+                self::AccessConstantSignatureMismatch,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Access level to {CONST} must be compatible with {CONST} defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1024
+            ),
+            new Issue(
+                self::AccessConstantSignatureMismatchInternal,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Access level to {CONST} must be compatible with internal {CONST}",
+                self::REMEDIATION_B,
+                1025
+            ),
+            new Issue(
+                self::AccessStaticToNonStaticProperty,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot make static property {PROPERTY} into the non static property {PROPERTY}",
+                self::REMEDIATION_B,
+                1026
+            ),
+            new Issue(
+                self::AccessNonStaticToStaticProperty,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot make non static property {PROPERTY} into the static property {PROPERTY}",
+                self::REMEDIATION_B,
+                1027
             ),
             new Issue(
                 self::AccessStaticToNonStatic,

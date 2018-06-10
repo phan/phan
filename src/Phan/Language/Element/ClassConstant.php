@@ -78,17 +78,18 @@ class ClassConstant extends ClassElement implements ConstantInterface
 
     public function __toString() : string
     {
-        $string = '';
+        return $this->getVisibilityName() . ' const ' . $this->getName();
+    }
 
-        if ($this->isPublic()) {
-            $string .= 'public ';
-        } elseif ($this->isProtected()) {
-            $string .= 'protected ';
-        } elseif ($this->isPrivate()) {
-            $string .= 'private ';
-        }
-
-        return $string . 'const ' . $this->getName();
+    /**
+     * Used for generating issue messages
+     */
+    public function asVisibilityAndFQSENString()
+    {
+        return $this->getVisibilityName() . ' ' .
+            $this->getClassFQSEN()->__toString() .
+            '::' .
+            $this->getName();
     }
 
     /**
@@ -116,17 +117,20 @@ class ClassConstant extends ClassElement implements ConstantInterface
         );
     }
 
+    private function getVisibilityName() : string
+    {
+        if ($this->isPrivate()) {
+            return 'private';
+        } elseif ($this->isProtected()) {
+            return 'protected';
+        } else {
+            return 'public';
+        }
+    }
+
     public function toStub() : string
     {
-        $string = '    ';
-
-        if ($this->isPublic()) {
-            $string .= 'public ';
-        } elseif ($this->isProtected()) {
-            $string .= 'protected ';
-        } elseif ($this->isPrivate()) {
-            $string .= 'private ';
-        }
+        $string = '    ' . $this->getVisibilityName() . ' ';
 
         $string .= 'const ' . $this->getName() . ' = ';
         $fqsen = (string)$this->getFQSEN();

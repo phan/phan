@@ -6,6 +6,11 @@ Phan NEWS
 New features(Analysis)
 + Warn about using `void`/`iterable`/`object` in use statements based on `target_php_version`. (#449)
   New issue types: `PhanCompatibleUseVoidPHP70`, `PhanCompatibleUseObjectPHP71`, `PhanCompatibleUseObjectPHP71`
++ Warn about making overrides of inherited property and constants less visible (#788)
+  New issue types: `PhanPropertyAccessSignatureMismatch`, `PhanPropertyAccessSignatureMismatchInternal`,
+  `PhanConstantAccessSignatureMismatch`, `PhanConstantAccessSignatureMismatchInternal`.
++ Warn about making static properties into non-static properties (and vice-versa) (#615)
+  New issue types: `PhanAccessNonStaticToStaticProperty`, `PhanAccessStaticToNonStaticProperty`
 
 Bug fixes:
 + Fix uncaught `AssertionError` when `parent` is used in PHPDoc (#1758)

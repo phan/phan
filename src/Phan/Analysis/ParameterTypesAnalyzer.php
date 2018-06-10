@@ -591,9 +591,7 @@ class ParameterTypesAnalyzer
         }
 
         // Access must be compatible
-        if ($o_method->isProtected() && $method->isPrivate()
-            || $o_method->isPublic() && !$method->isPublic()
-        ) {
+        if ($o_method->isStrictlyMoreVisibileThan($method)) {
             if ($o_method->isPHPInternal()) {
                 if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::AccessSignatureMismatchInternal)) {
                     Issue::maybeEmit(
