@@ -651,19 +651,13 @@ class Clazz extends AddressableElement
         // TODO: warn about private properties in subclass overriding ancestor private property.
         $property_name = $property->getName();
         if ($this->hasPropertyWithName($code_base, $property_name)) {
-            // original_property is the one that the class is using.
-            // We added $property after that (so it likely in a base class, or a trait's property added after this property was added)
-            // $overriding_property = $this->getPropertyMap($code_base)[$property_name];;
-            // TODO: implement https://github.com/phan/phan/issues/615 in another PR, see below comment
-            /**
-            if ($overriding_property->isStatic() != $property->isStatic()) {
-                if ($overriding_property->isStatic()) {
-                    // emit warning about redefining non-static as static $overriding_property
-                } else {
-                    // emit warning about redefining static as
-                }
-            }
-             */
+            // TODO: Check if trait properties would be inherited first.
+            // TODO: Figure out semantics and use $from_trait?
+            $this->checkPropertyCompatibility(
+                $code_base,
+                $property,
+                $this->getPropertyByName($code_base, $property_name)
+            );
             return;
         }
 
@@ -710,6 +704,61 @@ class Clazz extends AddressableElement
         }
 
         $code_base->addProperty($property);
+    }
+
+    /**
+     * @return void
+     */
+    private function checkPropertyCompatibility(
+        CodeBase $code_base,
+        Property $inherited_property,
+        Property $overriding_property
+    ) {
+        if ($inherited_property->isFromPHPDoc() || $inherited_property->isDynamicProperty() ||
+            $overriding_property->isFromPHPDoc() || $overriding_property->isDynamicProperty()) {
+            return;
+        }
+
+        if ($inherited_property->isStrictlyMoreVisibileThan($overriding_property)) {
+            if ($inherited_property->isPHPInternal()) {
+                if (!$overriding_property->checkHasSuppressIssueAndIncrementCount(Issue::PropertyAccessSignatureMismatchInternal)) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $overriding_property->getContext(),
+                        Issue::PropertyAccessSignatureMismatchInternal,
+                        $overriding_property->getFileRef()->getLineNumberStart(),
+                        $overriding_property->asVisibilityAndFQSENString(),
+                        $inherited_property->asVisibilityAndFQSENString()
+                    );
+                }
+            } else {
+                if (!$overriding_property->checkHasSuppressIssueAndIncrementCount(Issue::PropertyAccessSignatureMismatchInternal)) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $overriding_property->getContext(),
+                        Issue::PropertyAccessSignatureMismatch,
+                        $overriding_property->getFileRef()->getLineNumberStart(),
+                        $overriding_property,
+                        $inherited_property,
+                        $inherited_property->getFileRef()->getFile(),
+                        $inherited_property->getFileRef()->getLineNumberStart()
+                    );
+                }
+            }
+        }
+        // original_property is the one that the class is using.
+        // We added $property after that (so it likely in a base class, or a trait's property added after this property was added)
+        // TODO: implement https://github.com/phan/phan/issues/615 in another PR, see below comment
+        if ($overriding_property->isStatic() != $inherited_property->isStatic()) {
+            Issue::maybeEmit(
+                $code_base,
+                $overriding_property->getContext(),
+                $overriding_property->isStatic() ? Issue::AccessNonStaticToStaticProperty : Issue::AccessStaticToNonStaticProperty,
+                $overriding_property->getFileRef()->getLineNumberStart(),
+                $inherited_property->asPropertyFQSENString(),
+                $overriding_property->asPropertyFQSENString()
+            );
+        }
     }
 
     /**
@@ -1086,6 +1135,13 @@ class Clazz extends AddressableElement
             // If the constant with that name already exists, mark it as an override.
             $overriding_constant = $code_base->getClassConstantByFQSEN($constant_fqsen);
             $overriding_constant->setIsOverride(true);
+            $this->checkConstantCompatibility(
+                $code_base,
+                $constant,
+                $code_base->getClassConstantByFQSEN(
+                    $constant_fqsen
+                )
+            );
             return;
         }
 
@@ -1098,6 +1154,45 @@ class Clazz extends AddressableElement
 
         $code_base->addClassConstant($constant);
     }
+
+    /**
+     * @return void
+     */
+    private function checkConstantCompatibility(
+        CodeBase $code_base,
+        ClassConstant $inherited_constant,
+        ClassConstant $overriding_constant
+    ) {
+        // Traits don't have constants, thankfully, so the logic is simple.
+        if ($inherited_constant->isStrictlyMoreVisibileThan($overriding_constant)) {
+            if ($inherited_constant->isPHPInternal()) {
+                if (!$overriding_constant->checkHasSuppressIssueAndIncrementCount(Issue::AccessConstantSignatureMismatchInternal)) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $overriding_constant->getContext(),
+                        Issue::AccessConstantSignatureMismatchInternal,
+                        $overriding_constant->getFileRef()->getLineNumberStart(),
+                        $overriding_constant->asVisibilityAndFQSENString(),
+                        $inherited_constant->asVisibilityAndFQSENString()
+                    );
+                }
+            } else {
+                if (!$overriding_constant->checkHasSuppressIssueAndIncrementCount(Issue::AccessConstantSignatureMismatchInternal)) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $overriding_constant->getContext(),
+                        Issue::AccessConstantSignatureMismatch,
+                        $overriding_constant->getFileRef()->getLineNumberStart(),
+                        $overriding_constant->asVisibilityAndFQSENString(),
+                        $inherited_constant->asVisibilityAndFQSENString(),
+                        $inherited_constant->getFileRef()->getFile(),
+                        $inherited_constant->getFileRef()->getLineNumberStart()
+                    );
+                }
+            }
+        }
+    }
+
 
     /**
      * Add a class constant

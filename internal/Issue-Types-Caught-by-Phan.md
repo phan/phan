@@ -103,6 +103,12 @@ This issue is emitted when a class redeclares an inherited instance method as a 
 Cannot make non static method {METHOD}() static
 ```
 
+## PhanAccessNonStaticToStaticProperty
+
+```
+Cannot make non static property {PROPERTY} into the static property {PROPERTY}
+```
+
 ## PhanAccessOverridesFinalMethod
 
 This issue is emitted when a class attempts to override an inherited final method.
@@ -214,6 +220,12 @@ This issue is emitted when a class redeclares an inherited static method as an i
 Cannot make static method {METHOD}() non static
 ```
 
+## PhanAccessStaticToNonStaticProperty
+
+```
+Cannot make static property {PROPERTY} into the non static property {PROPERTY}
+```
+
 ## PhanAccessWrongInheritanceCategory
 
 ```
@@ -224,6 +236,30 @@ Attempting to inherit {CLASSLIKE} defined at {FILE}:{LINE} as if it were a {CLAS
 
 ```
 Attempting to inherit internal {CLASSLIKE} as if it were a {CLASSLIKE}
+```
+
+## PhanConstantAccessSignatureMismatch
+
+```
+Access level to {CONST} must be compatible with {CONST} defined in {FILE}:{LINE}
+```
+
+## PhanConstantAccessSignatureMismatchInternal
+
+```
+Access level to {CONST} must be compatible with internal {CONST}
+```
+
+## PhanPropertyAccessSignatureMismatch
+
+```
+Access level to {PROPERTY} must be compatible with {PROPERTY} defined in {FILE}:{LINE}
+```
+
+## PhanPropertyAccessSignatureMismatchInternal
+
+```
+Access level to {PROPERTY} must be compatible with internal {PROPERTY}
 ```
 
 # Analysis
@@ -306,6 +342,24 @@ $c->$m[0]();
 
 ```
 Square bracket syntax for an array destructuring assignment is not compatible with PHP 7.0
+```
+
+## PhanCompatibleUseIterablePHP71
+
+```
+Using '{TYPE}' as iterable will be a syntax error in PHP 7.2 (iterable becomes a native type with subtypes Array and Iterator).
+```
+
+## PhanCompatibleUseObjectPHP71
+
+```
+Using '{TYPE}' as object will be a syntax error in PHP 7.2 (object becomes a native type that accepts any class instance).
+```
+
+## PhanCompatibleUseVoidPHP70
+
+```
+Using '{TYPE}' as void will be a syntax error in PHP 7.1 (void becomes the absense of a return type).
 ```
 
 ## PhanCompatibleVoidTypePHP70

@@ -3,6 +3,7 @@ namespace Phan\Language\Type;
 
 use Phan\CodeBase;
 use Phan\Language\Context;
+use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Parameter;
@@ -229,6 +230,15 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function isPublic() : bool
     {
         return true;
+    }
+
+    /**
+     * @return bool true if this element's visibility
+     *                   is strictly more visible than $other (public > protected > private)
+     */
+    public function isStrictlyMoreVisibileThan(AddressableElementInterface $other) : bool
+    {
+        return false;
     }
 
     /** @override */
