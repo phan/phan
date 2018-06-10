@@ -6,7 +6,6 @@ use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
-use Phan\Debug;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
@@ -117,13 +116,18 @@ class AssignmentVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * @throws UnanalyzableException
      */
     public function visit(Node $node) : Context
     {
-        throw new \AssertionError(
-            "Unknown left side of assignment in {$this->context} with node type "
-            . Debug::nodeName($node)
+        // TODO: Add more details.
+        // This should only happen when the polyfill parser is used on invalid ASTs
+        $this->emitIssue(
+            Issue::Unanalyzable,
+            $node->lineno
         );
+        return $this->context;
     }
 
     /**
@@ -307,53 +311,56 @@ class AssignmentVisitor extends AnalysisVisitor
 
             $value_node = $child_node->children['value'];
 
-            if ($value_node->kind == \ast\AST_VAR) {
-                $variable = Variable::fromNodeInContext(
-                    $value_node,
-                    $this->context,
-                    $this->code_base,
-                    false
-                );
-
-                // Set the element type on each element of
-                // the list
-                $variable->setUnionType($element_type);
-
-                // Note that we're not creating a new scope, just
-                // adding variables to the existing scope
-                $this->context->addScopeVariable($variable);
-            } elseif ($value_node->kind == \ast\AST_PROP) {
-                try {
-                    $property = (new ContextNode(
-                        $this->code_base,
+            if ($value_node instanceof Node) {
+                $kind = $value_node->kind;
+                if ($kind === \ast\AST_VAR) {
+                    $variable = Variable::fromNodeInContext(
+                        $value_node,
                         $this->context,
-                        $value_node
-                    ))->getProperty(false);
+                        $this->code_base,
+                        false
+                    );
 
                     // Set the element type on each element of
                     // the list
-                    $property->setUnionType($element_type);
-                } catch (UnanalyzableException $exception) {
-                    // Ignore it. There's nothing we can do.
-                } catch (NodeException $exception) {
-                    // Ignore it. There's nothing we can do.
-                } catch (IssueException $exception) {
-                    Issue::maybeEmitInstance(
+                    $variable->setUnionType($element_type);
+
+                    // Note that we're not creating a new scope, just
+                    // adding variables to the existing scope
+                    $this->context->addScopeVariable($variable);
+                } elseif ($kind === \ast\AST_PROP) {
+                    try {
+                        $property = (new ContextNode(
+                            $this->code_base,
+                            $this->context,
+                            $value_node
+                        ))->getProperty(false);
+
+                        // Set the element type on each element of
+                        // the list
+                        $property->setUnionType($element_type);
+                    } catch (UnanalyzableException $exception) {
+                        // Ignore it. There's nothing we can do.
+                    } catch (NodeException $exception) {
+                        // Ignore it. There's nothing we can do.
+                    } catch (IssueException $exception) {
+                        Issue::maybeEmitInstance(
+                            $this->code_base,
+                            $this->context,
+                            $exception->getIssueInstance()
+                        );
+                        continue;
+                    }
+                } else {
+                    $this->context = (new AssignmentVisitor(
                         $this->code_base,
                         $this->context,
-                        $exception->getIssueInstance()
-                    );
-                    continue;
+                        $node,
+                        $element_type,
+                        0
+                    ))->__invoke($value_node);
                 }
-            } else {
-                $this->context = (new AssignmentVisitor(
-                    $this->code_base,
-                    $this->context,
-                    $node,
-                    $element_type,
-                    0
-                ))->__invoke($value_node);
-            }
+            }  // TODO: Warn if $value_node is not a node. NativeSyntaxCheckPlugin already does this.
         }
 
         if (!Config::getValue('scalar_array_key_cast')) {

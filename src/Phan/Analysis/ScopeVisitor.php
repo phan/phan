@@ -67,13 +67,16 @@ abstract class ScopeVisitor extends AnalysisVisitor
     public function visitDeclare(Node $node) : Context
     {
         $declares = $node->children['declares'];
-        $name = $declares->children[0]->children['name'];
-        $value = $declares->children[0]->children['value'];
-        if ('strict_types' === $name && is_int($value)) {
-            return $this->context->withStrictTypes($value);
+        $context = $this->context;
+        foreach ($declares->children as $elem) {
+            $name = $elem->children['name'];
+            $value = $elem->children['value'];
+            if ('strict_types' === $name && is_int($value)) {
+                $context = $context->withStrictTypes($value);
+            }
         }
 
-        return $this->context;
+        return $context;
     }
 
     /**
