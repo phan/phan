@@ -17,7 +17,7 @@ Maintenance:
 
 Bug fixes:
 + Fix uncaught `AssertionError` when `parent` is used in PHPDoc (#1758)
-+ Fix an uncaught error in the polyfill parser.
++ Fix various bugs that can cause crashes in the polyfill parser when parsing invalid ASTs
 
 08 Jun 2018, Phan 0.12.12
 -------------------------
