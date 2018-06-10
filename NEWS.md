@@ -3,8 +3,13 @@ Phan NEWS
 ?? ??? 2018, Phan 0.12.13 (dev)
 -------------------------
 
+New features(Analysis)
++ Warn about using `void`/`iterable`/`object` in use statements based on `target_php_version`. (#449)
+  New issue types: `PhanCompatibleUseVoidPHP70`, `PhanCompatibleUseObjectPHP71`, `PhanCompatibleUseObjectPHP71`
+
 Bug fixes:
 + Fix uncaught `AssertionError` when `parent` is used in PHPDoc (#1758)
++ Fix an uncaught error in the polyfill parser.
 
 08 Jun 2018, Phan 0.12.12
 -------------------------

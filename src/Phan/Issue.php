@@ -298,6 +298,9 @@ class Issue
     const CompatibleVoidTypePHP70           = 'PhanCompatibleVoidTypePHP70';
     const CompatibleIterableTypePHP70       = 'PhanCompatibleIterableTypePHP70';
     const CompatibleObjectTypePHP71         = 'PhanCompatibleNullableTypePHP71';
+    const CompatibleUseVoidPHP70            = 'PhanCompatibleUseVoidPHP70';
+    const CompatibleUseIterablePHP71        = 'PhanCompatibleUseIterablePHP71';
+    const CompatibleUseObjectPHP71          = 'PhanCompatibleUseObjectPHP71';
 
     // Issue::CATEGORY_GENERIC
     const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -2496,6 +2499,30 @@ class Issue
                 "Type '{TYPE}' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'",
                 self::REMEDIATION_B,
                 3007
+            ),
+            new Issue(
+                self::CompatibleUseVoidPHP70,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Using '{TYPE}' as void will be a syntax error in PHP 7.1 (void becomes the absense of a return type).",
+                self::REMEDIATION_B,
+                3008
+            ),
+            new Issue(
+                self::CompatibleUseIterablePHP71,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Using '{TYPE}' as iterable will be a syntax error in PHP 7.2 (iterable becomes a native type with subtypes Array and Iterator).",
+                self::REMEDIATION_B,
+                3009
+            ),
+            new Issue(
+                self::CompatibleUseObjectPHP71,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Using '{TYPE}' as object will be a syntax error in PHP 7.2 (object becomes a native type that accepts any class instance).",
+                self::REMEDIATION_B,
+                3010
             ),
 
             // Issue::CATEGORY_GENERIC

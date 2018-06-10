@@ -2,11 +2,14 @@
 namespace Phan\Analysis;
 
 use Phan\AST\AnalysisVisitor;
+use Phan\Config;
 use Phan\Language\Context;
+use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Issue;
 use ast\Node;
 
 /**
@@ -138,10 +141,15 @@ abstract class ScopeVisitor extends AnalysisVisitor
     public function visitUse(Node $node) : Context
     {
         $context = $this->context;
+        $target_php_version = Config::get_closest_target_php_version_id();
 
         foreach (self::aliasTargetMapFromUseNode($node) as $alias => list($flags, $target, $lineno)) {
+            $flags = $node->flags ?: $flags;
+            if ($flags === \ast\flags\USE_NORMAL && $target_php_version < 70200) {
+                self::analyzeUseElemCompatibility($alias, $target, $target_php_version, $lineno);
+            }
             $context = $context->withNamespaceMap(
-                $node->flags ?: $flags,
+                $flags,
                 $alias,
                 $target,
                 $lineno
@@ -149,6 +157,37 @@ abstract class ScopeVisitor extends AnalysisVisitor
         }
 
         return $context;
+    }
+
+    /** @return void */
+    private function analyzeUseElemCompatibility(
+        string $alias,
+        FQSEN $target,
+        int $target_php_version,
+        int $lineno
+    ) {
+        $alias_lower = \strtolower($alias);
+        if ($target_php_version < 70100) {
+            if ($alias_lower === 'void') {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    Issue::CompatibleUseVoidPHP70,
+                    $lineno,
+                    $target
+                );
+                return;
+            }
+        }
+        if ($alias_lower === 'iterable' || $alias === 'object') {
+            Issue::maybeEmit(
+                $this->code_base,
+                $this->context,
+                $alias_lower === 'iterable' ? Issue::CompatibleUseIterablePHP71 : Issue::CompatibleUseObjectPHP71,
+                $lineno,
+                $target
+            );
+        }
     }
 
     /**
