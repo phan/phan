@@ -6,6 +6,7 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
+use Phan\Exception\UnanalyzableException;
 use Phan\Exception\NodeException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
@@ -71,6 +72,11 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $class_name = (string)$node->children['name'];
         }
 
+        if (empty($class_name)) {
+            // Should only occur with --use-fallback-parser
+            // Class name
+            throw new UnanalyzableException($node, "Class name cannot be empty");
+        }
         \assert(!empty($class_name), "Class name cannot be empty");
 
         $alternate_id = 0;

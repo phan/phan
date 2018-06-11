@@ -1206,6 +1206,24 @@ You'll see this issue with code like
 function strlen() {}
 ```
 
+## PhanRedefinedExtendedClass
+
+```
+{CLASS} extends {CLASS} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors.
+```
+
+## PhanRedefinedInheritedInterface
+
+```
+{CLASS} inherits {INTERFACE} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors.
+```
+
+## PhanRedefinedUsedTrait
+
+```
+{CLASS} uses {TRAIT} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors.
+```
+
 # StaticCallError
 
 ## PhanStaticCallToNonStatic

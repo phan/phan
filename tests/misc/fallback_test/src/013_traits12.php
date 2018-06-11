@@ -1,4 +1,4 @@
 <?php
-trait A {
-    use A { A insteadof B; C as D; }
+trait A13 {
+    use A13 { A13 insteadof B; C as D; }
 }
