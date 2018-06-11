@@ -2382,7 +2382,6 @@ class Type
     /**
      * Extracts the inner parts of a template name list (i.e. within <>) or a shape component list (i.e. within {})
      * @return array<int,string>
-     * @suppress PhanPluginUnusedVariable
      */
     private static function extractNameList(string $list_string) : array
     {

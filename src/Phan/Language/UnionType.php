@@ -290,7 +290,6 @@ class UnionType implements \Serializable
      * @param string[] $parts (already trimmed)
      * @return string[]
      * @see Type::extractTemplateParameterTypeNameList (Similar method)
-     * @suppress PhanPluginUnusedVariable $prev_parts is used in loop
      */
     private static function mergeTypeParts(array $parts) : array
     {
