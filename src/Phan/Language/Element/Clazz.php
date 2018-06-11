@@ -2251,11 +2251,16 @@ class Clazz extends AddressableElement
         Clazz $class,
         $type_option
     ) {
-        $key = \strtolower((string)$class->getFQSEN());
+        $class_fqsen = $class->getFQSEN();
+        $key = \strtolower($class_fqsen->__toString());
         if (!$this->isFirstExecution(
             __METHOD__ . ':' . $key
         )) {
             return;
+        }
+        $next_class_fqsen = $class_fqsen->withAlternateId($class_fqsen->getAlternateId() + 1);
+        if ($code_base->hasClassWithFQSEN($next_class_fqsen)) {
+            $this->warnAboutAmbiguousInheritance($code_base, $class, $next_class_fqsen);
         }
 
         // Constants should have been imported earlier, but call it again just in case
@@ -2350,6 +2355,39 @@ class Clazz extends AddressableElement
             );
             $this->addMethod($code_base, $alias_method, $type_option);
         }
+    }
+
+    /**
+     * @return void
+     */
+    private function warnAboutAmbiguousInheritance(
+        CodeBase $code_base,
+        Clazz $inherited_class,
+        FullyQualifiedClassName $alternate_class_fqsen
+    ) {
+        $alternate_class = $code_base->getClassByFQSEN($alternate_class_fqsen);
+        if ($inherited_class->isTrait()) {
+            $issue_type = Issue::RedefinedUsedTrait;
+        } elseif ($inherited_class->isInterface()) {
+            $issue_type = Issue::RedefinedInheritedInterface;
+        } else {
+            $issue_type = Issue::RedefinedExtendedClass;
+        }
+        $first_context = $inherited_class->getContext();
+        $second_context = $alternate_class->getContext();
+
+        Issue::maybeEmit(
+            $code_base,
+            $this->getContext(),
+            $issue_type,
+            $this->getContext()->getLineNumberStart(),
+            $this->getFQSEN(),
+            $inherited_class->__toString(),
+            $first_context->getFile(),
+            $first_context->getLineNumberStart(),
+            $second_context->getFile(),
+            $second_context->getLineNumberStart()
+        );
     }
 
     /**

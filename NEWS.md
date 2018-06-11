@@ -11,6 +11,8 @@ New features(Analysis)
   `PhanConstantAccessSignatureMismatch`, `PhanConstantAccessSignatureMismatchInternal`.
 + Warn about making static properties into non-static properties (and vice-versa) (#615)
   New issue types: `PhanAccessNonStaticToStaticProperty`, `PhanAccessStaticToNonStaticProperty`
++ Warn about inheriting from a class/trait/interface that has multiple possible definitions (#773)
+  New issue types: `PhanRedefinedExtendedClass`, `PhanRedefinedUsedTrait`, `PhanRedefinedInheritedInterface`
 
 Maintenance:
 + Update signature map with more accurate signatures (#1761)

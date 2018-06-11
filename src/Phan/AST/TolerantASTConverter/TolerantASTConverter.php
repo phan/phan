@@ -1917,7 +1917,11 @@ class TolerantASTConverter
         int $end_line,
         $doc_comment
     ) : ast\Node {
-        if ($name === null) {
+
+        // NOTE: `null` would be an anonymous class.
+        // the empty string or '0' is a missing string we pretend is an anonymous class
+        // so that Phan won't throw an UnanalyzableException during the analysis phase
+        if ($name === null || !$name) {
             $flags |= ast\flags\CLASS_ANONYMOUS;
         }
 

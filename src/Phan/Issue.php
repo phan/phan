@@ -258,6 +258,9 @@ class Issue
     const RedefineFunctionInternal  = 'PhanRedefineFunctionInternal';
     const IncompatibleCompositionProp = 'PhanIncompatibleCompositionProp';
     const IncompatibleCompositionMethod = 'PhanIncompatibleCompositionMethod';
+    const RedefinedUsedTrait            = 'PhanRedefinedUsedTrait';
+    const RedefinedInheritedInterface   = 'PhanRedefinedInheritedInterface';
+    const RedefinedExtendedClass        = 'PhanRedefinedExtendedClass';
 
     // Issue::CATEGORY_ACCESS
     const AccessPropertyPrivate     = 'PhanAccessPropertyPrivate';
@@ -2261,6 +2264,30 @@ class Issue
                 "{CLASS} aliased at {FILE}:{LINE} was previously defined as {CLASS} at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 8006
+            ),
+            new Issue(
+                self::RedefinedUsedTrait,
+                self::CATEGORY_REDEFINE,
+                self::SEVERITY_NORMAL,
+                "{CLASS} uses {TRAIT} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors.",
+                self::REMEDIATION_B,
+                8007
+            ),
+            new Issue(
+                self::RedefinedInheritedInterface,
+                self::CATEGORY_REDEFINE,
+                self::SEVERITY_NORMAL,
+                "{CLASS} inherits {INTERFACE} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors.",
+                self::REMEDIATION_B,
+                8008
+            ),
+            new Issue(
+                self::RedefinedExtendedClass,
+                self::CATEGORY_REDEFINE,
+                self::SEVERITY_NORMAL,
+                "{CLASS} extends {CLASS} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors.",
+                self::REMEDIATION_B,
+                8009
             ),
 
             // Issue::CATEGORY_ACCESS
