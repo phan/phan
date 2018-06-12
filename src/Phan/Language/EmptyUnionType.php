@@ -1055,4 +1055,9 @@ final class EmptyUnionType extends UnionType
     {
         return $this;
     }
+
+    public function applyUnaryMinusOperator() : UnionType
+    {
+        return $this;
+    }
 }

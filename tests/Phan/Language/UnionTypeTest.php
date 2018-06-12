@@ -2,6 +2,10 @@
 
 namespace Phan\Tests\Language;
 
+use Phan\AST\UnionTypeVisitor;
+use Phan\CodeBase;
+use Phan\Config;
+use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
@@ -20,6 +24,8 @@ use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
+use Phan\Language\UnionType;
+use Phan\Tests\BaseTest;
 
 // Grab these before we define our own classes
 $internal_class_name_list = get_declared_classes();
@@ -27,18 +33,9 @@ $internal_interface_name_list = get_declared_interfaces();
 $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
-use Phan\CodeBase;
-use Phan\Config;
-use Phan\Language\Context;
-use Phan\Language\UnionType;
-use Phan\Tests\BaseTest;
 
 class UnionTypeTest extends BaseTest
 {
-
-    /** @var Context|null */
-    protected $context = null;
-
     /** @var CodeBase|null */
     protected static $code_base = null;
 
@@ -84,12 +81,6 @@ class UnionTypeTest extends BaseTest
                 $internal_function_name_list
             );
         }
-        $this->context = new Context();
-    }
-
-    protected function tearDown()
-    {
-        $this->context = null;
     }
 
     public static function tearDownAfterClass()
@@ -103,6 +94,9 @@ class UnionTypeTest extends BaseTest
         $this->assertUnionTypeStringEqual('rand(0,20)+1', 'int');
         // TODO: Perform arithmetic if in bounds
         $this->assertUnionTypeStringEqual('42+2', 'int');
+        $this->assertUnionTypeStringEqual('-42', '-42');
+        $this->assertUnionTypeStringEqual('~42', '-43');
+        $this->assertUnionTypeStringEqual('~-43', '42');
     }
 
     public function testString()
@@ -211,14 +205,13 @@ class UnionTypeTest extends BaseTest
      * A string representation of the union type begotten from
      * the first statement in the statement list in the given
      * code.
-     * @suppress PhanDeprecatedFunction
      * @suppress PhanPartialTypeMismatchArgument
      */
     private function typeStringFromCode(string $code) : string
     {
-        return UnionType::fromNode(
-            $this->context,
+        return UnionTypeVisitor::unionTypeFromNode(
             self::$code_base,
+            new Context(),  // NOTE: This has to be new - Otherwise, object ids will be reused and inferences would be cached for those.
             \ast\parse_code(
                 $code,
                 Config::AST_VERSION

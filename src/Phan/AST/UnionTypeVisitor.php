@@ -1940,16 +1940,25 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitUnaryOp(Node $node) : UnionType
     {
         // Shortcut some easy operators
-        switch ($node->flags) {
-            case \ast\flags\UNARY_BOOL_NOT:
-                return BoolType::instance(false)->asUnionType();
+        $flags = $node->flags;
+        if ($flags === \ast\flags\UNARY_BOOL_NOT) {
+            return BoolType::instance(false)->asUnionType();
         }
 
-        return self::unionTypeFromNode(
+        $result = self::unionTypeFromNode(
             $this->code_base,
             $this->context,
             $node->children['expr']
         );
+        if ($flags === \ast\flags\UNARY_MINUS) {
+            return $result->applyUnaryMinusOperator();
+        } elseif ($flags === \ast\flags\UNARY_BITWISE_NOT) {
+            return $result->applyUnaryBitwiseNotOperator();
+        } elseif ($flags === \ast\flags\UNARY_PLUS) {
+            return $result->applyUnaryPlusOperator();
+        }
+        // UNARY_SILENCE or UNARY_PLUS
+        return $result;
     }
 
     /**

@@ -22,11 +22,13 @@ use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\MultiType;
 use Phan\Language\Type\NullType;
+use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use ast\Node;
+use Closure;
 use Generator;
 
 if (!\function_exists('spl_object_id')) {
@@ -2691,6 +2693,74 @@ class UnionType implements \Serializable
             }
             yield $outer_type => $type;
         }
+    }
+
+    public function applyUnaryMinusOperator() : UnionType
+    {
+        // TODO: Extend to LiteralFloatType
+        /** @param int|float $value */
+        return $this->applyNumericOperation(function($value) : ScalarType {
+            $result = -$value;
+            if (\is_int($result)) {
+                return LiteralIntType::instance_for_value($result, false);
+            }
+            // -INT_MIN is a float.
+            return FloatType::instance(false);
+        }, true);
+    }
+
+    public function applyUnaryBitwiseNotOperator() : UnionType
+    {
+        /** @param int|float $value */
+        return $this->applyNumericOperation(function($value) : ScalarType {
+            return LiteralIntType::instance_for_value(~$value, false);
+        }, false);
+    }
+
+    public function applyUnaryPlusOperator() : UnionType
+    {
+        /** @param int|float $value */
+        return $this->applyNumericOperation(function($value) : ScalarType {
+            $result = -$value;
+            if (\is_int($result)) {
+                return LiteralIntType::instance_for_value($result, false);
+            }
+            // -INT_MIN is a float.
+            return FloatType::instance(false);
+        }, true);
+    }
+
+    /**
+     * @param Closure(int): ScalarType $operation
+     */
+    private function applyNumericOperation(Closure $operation, bool $can_be_float) : UnionType {
+        $added_fallbacks = false;
+        $type_set = UnionType::empty();
+        foreach ($this->type_set as $type) {
+            if ($type instanceof LiteralIntType) {
+                $type_set = $type_set->withType($operation($type->getValue()));
+                if ($type->getIsNullable()) {
+                    $type_set = $type_set->withType(LiteralIntType::instance_for_value(0, false));
+                }
+            } else {
+                if ($added_fallbacks) {
+                    continue;
+                }
+                if ($can_be_float) {
+                    if (!($type instanceof IntType)) {
+                        $type_set = $type_set->withType(FloatType::instance(false));
+                        $added_fallbacks = true;
+                    } else {
+                        $type_set = $type_set->withType(IntType::instance(false));
+                        // Keep added_fallbacks false in case this needs to add FloatType
+                    }
+                } else {
+                    $type_set = $type_set->withType(IntType::instance(false));
+                    $added_fallbacks = true;
+                }
+            }
+        }
+        return $type_set;
     }
 }
 
