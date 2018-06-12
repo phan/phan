@@ -16,6 +16,7 @@ New features(Analysis)
 
 Maintenance:
 + Update signature map with more accurate signatures (#1761)
++ Upgrade tolerant-php-parser, making the polyfill/fallback able to parse PHP 7.1's multi exception catch.
 
 Bug fixes:
 + Fix uncaught `AssertionError` when `parent` is used in PHPDoc (#1758)
