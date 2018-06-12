@@ -2509,20 +2509,20 @@ class UnionType implements \Serializable
         return false;
     }
 
-    public function hasArrayShapeOrLiteralTypeInstances() : bool
+    public function hasArrayShapeTypeInstances() : bool
     {
         foreach ($this->type_set as $type) {
-            if ($type->hasArrayShapeOrLiteralTypeInstances()) {
+            if ($type->hasArrayShapeTypeInstances()) {
                 return true;
             }
         }
         return false;
     }
 
-    public function hasArrayShapeTypeInstances() : bool
+    public function hasArrayShapeOrLiteralTypeInstances() : bool
     {
         foreach ($this->type_set as $type) {
-            if ($type->hasArrayShapeTypeInstances()) {
+            if ($type->hasArrayShapeOrLiteralTypeInstances()) {
                 return true;
             }
         }
@@ -2553,14 +2553,13 @@ class UnionType implements \Serializable
      */
     public function withFlattenedArrayShapeOrLiteralTypeInstances() : UnionType
     {
-        // TODO: Also flatten literals in values here
-        if (!$this->hasArrayShapeTypeInstances()) {
+        if (!$this->hasArrayShapeOrLiteralTypeInstances()) {
             return $this;
         }
 
         $result = new UnionTypeBuilder();
         foreach ($this->type_set as $type) {
-            if ($type->hasArrayShapeTypeInstances()) {
+            if ($type->hasArrayShapeOrLiteralTypeInstances()) {
                 foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
                     $result->addType($type_part);
                 }

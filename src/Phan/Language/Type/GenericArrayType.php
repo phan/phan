@@ -486,7 +486,10 @@ final class GenericArrayType extends ArrayType
         return $this->element_type->hasArrayShapeTypeInstances();
     }
 
-    /** @return array<int,Type> */
+    /**
+     * @return array<int,Type>
+     * @override
+     */
     public function withFlattenedArrayShapeOrLiteralTypeInstances() : array
     {
         // TODO: Any point in caching this?
