@@ -799,7 +799,7 @@ class ParseVisitor extends ScopeVisitor
                 if (!($node->children['method'] instanceof Node)) {
                     $meth = \strtolower($node->children['method']);
 
-                    if ($meth == '__construct') {
+                    if ($meth == '__construct' && $this->context->isInClassScope()) {
                         $class = $this->getContextClass();
                         $class->setIsParentConstructorCalled(true);
                     }

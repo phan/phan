@@ -55,6 +55,10 @@ class UnionTypeTest extends BaseTest
             'canonical_object_map',
             'internal_fn_cache',
         ],
+        'Phan\Language\Type\LiteralIntType' => [
+            'nullable_int_type',
+            'non_nullable_int_type',
+        ],
         'Phan\Language\UnionType' => [
             'empty_instance',
         ],
@@ -95,7 +99,10 @@ class UnionTypeTest extends BaseTest
 
     public function testInt()
     {
-        $this->assertUnionTypeStringEqual('42', 'int');
+        $this->assertUnionTypeStringEqual('rand(0,20)', 'int');
+        $this->assertUnionTypeStringEqual('rand(0,20)+1', 'int');
+        // TODO: Perform arithmetic if in bounds
+        $this->assertUnionTypeStringEqual('42+2', 'int');
     }
 
     public function testString()
@@ -122,7 +129,7 @@ class UnionTypeTest extends BaseTest
     {
         $this->assertUnionTypeStringEqual(
             '[false => rand(0,1) ? "string" : 2]',
-            'array{0:int|string}'
+            'array{0:2|string}'
         );
     }
 
@@ -130,7 +137,7 @@ class UnionTypeTest extends BaseTest
     {
         $this->assertUnionTypeStringEqual(
             '[1, "string"]',
-            'array{0:int,1:string}'
+            'array{0:1,1:string}'
         );
     }
 

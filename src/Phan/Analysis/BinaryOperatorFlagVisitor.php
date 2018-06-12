@@ -61,6 +61,8 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visit(Node $node) : UnionType
     {
+        // TODO: % operator always returns int.
+
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -86,14 +88,14 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             );
 
             return UnionType::empty();
-        } elseif ($left->hasType(IntType::instance(false))
-            && $right->hasType(IntType::instance(false))
-        ) {
-            return IntType::instance(false)->asUnionType();
         } elseif ($left->hasType(FloatType::instance(false))
-            && $right->hasType(FloatType::instance(false))
+            || $right->hasType(FloatType::instance(false))
         ) {
             return FloatType::instance(false)->asUnionType();
+        } elseif ($left->hasNonNullIntType()
+            && $right->hasNonNullIntType()
+        ) {
+            return IntType::instance(false)->asUnionType();
         }
 
         static $int_or_float = null;
@@ -172,8 +174,8 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             );
 
             return UnionType::empty();
-        } elseif ($left->hasType(IntType::instance(false))
-            && $right->hasType(IntType::instance(false))
+        } elseif ($left->hasNonNullIntType()
+            && $right->hasNonNullIntType()
         ) {
             return IntType::instance(false)->asUnionType();
         } elseif ($left->hasType(StringType::instance(false))
@@ -278,7 +280,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $this->context,
                 Issue::TypeComparisonFromArray,
                 $node->lineno ?? 0,
-                (string)$right
+                (string)$right->withResolvedLiterals()
             );
         } elseif ($right_is_array_like
             && !$left->hasArrayLike()
@@ -293,7 +295,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $this->context,
                 Issue::TypeComparisonToArray,
                 $node->lineno ?? 0,
-                (string)$left
+                (string)$left->withResolvedLiterals()
             );
         }
 
@@ -417,22 +419,20 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $node->children['right']
         );
 
-        static $int_type = null;
         static $float_type = null;
         static $array_type = null;
         static $int_or_float_union_type = null;
-        if ($int_type === null) {
-            $int_type = IntType::instance(false);
+        if ($int_or_float_union_type === null) {
             $float_type = FloatType::instance(false);
             $array_type = ArrayType::instance(false);
             $int_or_float_union_type = new UnionType([
-                $int_type,
+                IntType::instance(false),
                 $float_type
             ]);
         }
 
         // fast-track common cases
-        if ($left->isType($int_type) && $right->isType($int_type)) {
+        if ($left->isNonNullIntType() && $right->isNonNullIntType()) {
             return IntType::instance(false)->asUnionType();
         }
 
@@ -445,9 +445,9 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             return ArrayType::combineArrayTypesOverriding($left, $right);
         }
 
-        if (($left->isType($int_type)
+        if (($left->isNonNullIntType()
             || $left->isType($float_type))
-            && ($right->isType($int_type)
+            && ($right->isNonNullIntType()
             || $right->isType($float_type))
         ) {
             return $float_type->asUnionType();

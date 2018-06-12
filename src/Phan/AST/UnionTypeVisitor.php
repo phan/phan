@@ -120,10 +120,9 @@ class UnionTypeVisitor extends AnalysisVisitor
     ) : UnionType {
         if (!($node instanceof Node)) {
             // TODO: String null shouldn't be a special case (or should be case insensitive)?
-            if ($node === null || $node === 'null') {
+            if ($node === null) {
                 return UnionType::empty();
             }
-
             return Type::fromObject($node)->asUnionType();
         }
         $node_id = \spl_object_id($node);

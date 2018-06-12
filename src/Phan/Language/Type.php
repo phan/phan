@@ -22,6 +22,7 @@ use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\GenericIterableType;
 use Phan\Language\Type\GenericMultiArrayType;
+use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
@@ -293,6 +294,7 @@ class Type
     //  which saves and restores some static properties)
     public function __wakeup()
     {
+        debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
         throw new \Error("Cannot unserialize Type");
     }
 
@@ -550,12 +552,16 @@ class Type
      */
     public static function fromObject($object) : Type
     {
+        if (\is_int($object)) {
+            return LiteralIntType::instance_for_value($object, false);
+        }
+
         static $type_map = null;
         if ($type_map === null) {
             $type_map = [
                 'integer' => IntType::instance(false),
                 'boolean' => BoolType::instance(false),
-                'double'   => FloatType::instance(false),
+                'double'  => FloatType::instance(false),
                 'string'  => StringType::instance(false),
                 'object'  => ObjectType::instance(false),
                 'NULL'    => NullType::instance(false),
@@ -2449,5 +2455,12 @@ class Type
     public function withFlattenedArrayShapeTypeInstances() : array
     {
         return [$this];
+    }
+
+    /**
+     * Overridden in subclasses such as LiteralIntType
+     */
+    public function asNonLiteralType() : Type {
+        return $this;
     }
 }

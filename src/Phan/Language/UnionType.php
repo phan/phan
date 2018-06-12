@@ -17,6 +17,7 @@ use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\MultiType;
@@ -966,6 +967,57 @@ class UnionType implements \Serializable
             }
         }
         return false;
+    }
+
+    /**
+     * Returns true if this contains at least one non-null IntType or LiteralIntType
+     */
+    public function hasNonNullIntType() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type instanceof IntType && !$type->getIsNullable()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if this is exclusively non-null IntType or LiteralIntType
+     */
+    public function isNonNullIntType() : bool
+    {
+        if (\count($this->type_set) === 0) {
+            return false;
+        }
+        foreach ($this->type_set as $type) {
+            if (!($type instanceof IntType) || $type->getIsNullable()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function hasLiterals() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type instanceof LiteralIntType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function withResolvedLiterals() : UnionType
+    {
+        if (!$this->hasLiterals()) {
+            return $this;
+        }
+        $result = UnionType::empty();
+        foreach ($this->type_set as $type) {
+            $result = $result->withType($type->asNonLiteralType());
+        }
+        return $result;
     }
 
     public function nonTruthyClone() : UnionType
@@ -2475,8 +2527,13 @@ class UnionType implements \Serializable
         return false;
     }
 
+    /**
+     * Flatten literals in keys and values into non-literal types
+     * E.g. convert array{2:3} to array<int,string>
+     */
     public function withFlattenedArrayShapeTypeInstances() : UnionType
     {
+        // TODO: Also flatten literals in values here
         if (!$this->hasArrayShapeTypeInstances()) {
             return $this;
         }

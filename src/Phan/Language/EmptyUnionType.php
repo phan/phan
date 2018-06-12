@@ -1029,4 +1029,24 @@ final class EmptyUnionType extends UnionType
             yield;
         }
     }
+
+    public function hasNonNullIntType() : bool
+    {
+        return false;
+    }
+
+    public function isNonNullIntType() : bool
+    {
+        return false;
+    }
+
+    public function hasLiterals() : bool
+    {
+        return false;
+    }
+
+    public function withResolvedLiterals() : UnionType
+    {
+        return $this;
+    }
 }
