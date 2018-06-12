@@ -548,6 +548,29 @@ class Type
 
     /**
      * @return Type
+     * Get a type for the given object. Equivalent to Type::fromObject($object)->asNonLiteralType()
+     */
+    public static function nonLiteralFromObject($object) : Type
+    {
+        static $type_map = null;
+        if ($type_map === null) {
+            $type_map = [
+                'integer' => IntType::instance(false),
+                'boolean' => BoolType::instance(false),
+                'double'  => FloatType::instance(false),
+                'string'  => StringType::instance(false),
+                'object'  => ObjectType::instance(false),
+                'NULL'    => NullType::instance(false),
+                'array'   => ArrayType::instance(false),
+                'resource' => ResourceType::instance(false),  // For inferring the type of constants STDIN, etc.
+            ];
+        }
+        // gettype(2) doesn't return 'int', it returns 'integer', so use FROM_PHPDOC
+        return $type_map[\gettype($object)];
+    }
+
+    /**
+     * @return Type
      * Get a type for the given object
      */
     public static function fromObject($object) : Type

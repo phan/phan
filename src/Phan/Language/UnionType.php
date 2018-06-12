@@ -2711,7 +2711,9 @@ class UnionType implements \Serializable
 
     public function applyUnaryBitwiseNotOperator() : UnionType
     {
-        /** @param int|float $value */
+        /**
+         * @param int|float $value
+         */
         return $this->applyNumericOperation(function($value) : ScalarType {
             return LiteralIntType::instance_for_value(~$value, false);
         }, false);
