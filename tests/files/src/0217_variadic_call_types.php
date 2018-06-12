@@ -35,7 +35,7 @@ test_vararg_within_function();
 test_vararg_within_function(42);
 
 accept_array(test_misc(2, []));  // Correct, should infer type was array.
-accept_int(test_misc(2, []));  // Wrong
+accept_int(test_misc(2, []));  // Wrong (TODO: better error message for variadic)
 test_ints_phpdoc(3);
 
 /**
