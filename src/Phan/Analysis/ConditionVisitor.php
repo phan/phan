@@ -517,7 +517,7 @@ class ConditionVisitor extends KindVisitorImplementation
                         $context,
                         Issue::TypeInvalidInstanceof,
                         $context->getLineNumberStart(),
-                        (string)$type
+                        (string)$type->asNonLiteralType()
                     );
                 }
                 self::analyzeIsObjectAssertion($variable);

@@ -513,7 +513,7 @@ class ContextNode
                     $this->context,
                     $custom_issue_type ?? ($expected_type_categories === self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME ? Issue::TypeExpectedObjectOrClassName : Issue::TypeExpectedObject),
                     $this->node->lineno ?? 0,
-                    (string)$union_type
+                    (string)$union_type->asNonLiteralType()
                 );
             }
         }
