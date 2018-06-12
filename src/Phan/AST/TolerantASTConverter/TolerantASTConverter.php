@@ -460,7 +460,10 @@ class TolerantASTConverter
                     $n->byRef !== null
                 );
             },
-            'Microsoft\PhpParser\Node\Expression\BinaryExpression' => function (PhpParser\Node\Expression\BinaryExpression $n, int $start_line) : ast\Node {
+            /**
+             * @return ast\Node|string|float|int (can return a non-Node if the left or right hand side could not be parsed
+             */
+            'Microsoft\PhpParser\Node\Expression\BinaryExpression' => function (PhpParser\Node\Expression\BinaryExpression $n, int $start_line) {
                 static $lookup = [
                     TokenKind::AmpersandAmpersandToken              => ast\flags\BINARY_BOOL_AND,
                     TokenKind::AmpersandToken                       => ast\flags\BINARY_BITWISE_AND,
@@ -2155,7 +2158,10 @@ class TolerantASTConverter
         return new ast\Node(ast\AST_IF, 0, $if_elems, $start_line);
     }
 
-    private static function astNodeBinaryop(int $flags, PhpParser\Node\Expression\BinaryExpression $n, int $start_line) : \ast\Node
+    /**
+     * @return ast\Node|string|int|float
+     */
+    private static function astNodeBinaryop(int $flags, PhpParser\Node\Expression\BinaryExpression $n, int $start_line)
     {
         try {
             $left_node = static::phpParserNodeToAstNode($n->leftOperand);
