@@ -744,7 +744,7 @@ class AssignmentVisitor extends AnalysisVisitor
 
                 // TODO: If the codebase explicitly sets a phpdoc array shape type on a property assignment,
                 // then preserve the array shape type.
-                $new_types = $this->typeCheckDimAssignment($property_union_type, $node)->withFlattenedArrayShapeTypeInstances();
+                $new_types = $this->typeCheckDimAssignment($property_union_type, $node)->withFlattenedArrayShapeOrLiteralTypeInstances();
 
                 // TODO: More precise than canCastToExpandedUnionType
                 if (!$new_types->canCastToExpandedUnionType(
@@ -875,7 +875,7 @@ class AssignmentVisitor extends AnalysisVisitor
         $property_types = $property->getUnionType();
         if ($property_types->isEmpty()) {
             // TODO: Be more precise?
-            $property->setUnionType($this->right_type->withFlattenedArrayShapeTypeInstances());
+            $property->setUnionType($this->right_type->withFlattenedArrayShapeOrLiteralTypeInstances());
             return;
         }
         if ($this->dim_depth > 0) {
@@ -887,7 +887,7 @@ class AssignmentVisitor extends AnalysisVisitor
         if ($new_types->hasType(MixedType::instance(false))) {
             $new_types = $new_types->withoutType(MixedType::instance(false));
         }
-        $new_types = $new_types->withFlattenedArrayShapeTypeInstances();
+        $new_types = $new_types->withFlattenedArrayShapeOrLiteralTypeInstances();
 
         // TODO: Add an option to check individual types, not just the whole union type?
         //       If that is implemented, verify that generic arrays will properly cast to regular arrays (public $x = [];)

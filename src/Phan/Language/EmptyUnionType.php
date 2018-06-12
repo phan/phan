@@ -933,6 +933,12 @@ final class EmptyUnionType extends UnionType
     }
 
     /** @override */
+    public function hasArrayShapeOrLiteralTypeInstances() : bool
+    {
+        return false;
+    }
+
+    /** @override */
     public function hasArrayShapeTypeInstances() : bool
     {
         return false;
@@ -945,7 +951,7 @@ final class EmptyUnionType extends UnionType
     }
 
     /** @override */
-    public function withFlattenedArrayShapeTypeInstances() : UnionType
+    public function withFlattenedArrayShapeOrLiteralTypeInstances() : UnionType
     {
         return $this;
     }

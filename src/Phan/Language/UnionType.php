@@ -2507,6 +2507,16 @@ class UnionType implements \Serializable
         return false;
     }
 
+    public function hasArrayShapeOrLiteralTypeInstances() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type->hasArrayShapeOrLiteralTypeInstances()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function hasArrayShapeTypeInstances() : bool
     {
         foreach ($this->type_set as $type) {
@@ -2528,10 +2538,18 @@ class UnionType implements \Serializable
     }
 
     /**
+     * @deprecated alias of withFlattenedArrayShapeOrLiteralTypeInstances
+     */
+    public final function withFlattenedArrayShapeTypeInstances() : UnionType
+    {
+        return $this->withFlattenedArrayShapeOrLiteralTypeInstances();
+    }
+
+    /**
      * Flatten literals in keys and values into non-literal types
      * E.g. convert array{2:3} to array<int,string>
      */
-    public function withFlattenedArrayShapeTypeInstances() : UnionType
+    public function withFlattenedArrayShapeOrLiteralTypeInstances() : UnionType
     {
         // TODO: Also flatten literals in values here
         if (!$this->hasArrayShapeTypeInstances()) {
@@ -2541,7 +2559,7 @@ class UnionType implements \Serializable
         $result = new UnionTypeBuilder();
         foreach ($this->type_set as $type) {
             if ($type->hasArrayShapeTypeInstances()) {
-                foreach ($type->withFlattenedArrayShapeTypeInstances() as $type_part) {
+                foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
                     $result->addType($type_part);
                 }
             } else {
@@ -2662,7 +2680,7 @@ class UnionType implements \Serializable
      */
     public function getReferencedClasses() : Generator
     {
-        foreach ($this->withFlattenedArrayShapeTypeInstances()->getTypeSet() as $outer_type) {
+        foreach ($this->withFlattenedArrayShapeOrLiteralTypeInstances()->getTypeSet() as $outer_type) {
             $type = $outer_type;
 
             while ($type instanceof GenericArrayType) {

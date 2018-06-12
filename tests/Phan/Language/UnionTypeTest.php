@@ -448,7 +448,7 @@ class UnionTypeTest extends BaseTest
         $type = reset($types);
 
         $this->assertSame('array{key:int|string[]}', (string)$type);
-        $this->assertSame('array<string,int>|array<string,string[]>', (string)$union_type->withFlattenedArrayShapeTypeInstances());
+        $this->assertSame('array<string,int>|array<string,string[]>', (string)$union_type->withFlattenedArrayShapeOrLiteralTypeInstances());
         \assert($type instanceof ArrayShapeType);
         $field_union_type = $type->getFieldTypes()['key'];
         $this->assertFalse($field_union_type->getIsPossiblyUndefined());
@@ -464,7 +464,7 @@ class UnionTypeTest extends BaseTest
 
         $this->assertSame('array{key?:int|string}', (string)$type);
         \assert($type instanceof ArrayShapeType);
-        $this->assertSame('array<string,int>|array<string,string>', (string)$union_type->withFlattenedArrayShapeTypeInstances());
+        $this->assertSame('array<string,int>|array<string,string>', (string)$union_type->withFlattenedArrayShapeOrLiteralTypeInstances());
         $field_union_type = $type->getFieldTypes()['key'];
         $this->assertTrue($field_union_type->getIsPossiblyUndefined());
         $this->assertSame('int|string=', (string)$field_union_type);

@@ -2435,6 +2435,11 @@ class Type
         return $this->is_nullable ? self::_bit_nullable : 0;
     }
 
+    public function hasArrayShapeOrLiteralTypeInstances() : bool
+    {
+        return false;
+    }
+
     public function hasArrayShapeTypeInstances() : bool
     {
         return false;
@@ -2450,9 +2455,17 @@ class Type
     }
 
     /**
+     * @deprecated - Use withFlattenedArrayShapeOrLiteralTypeInstances
+     */
+    public final function withFlattenedArrayShapeInstances() : array
+    {
+        return $this->withFlattenedArrayShapeOrLiteralTypeInstances();
+    }
+
+    /**
      * @return Type[]
      */
-    public function withFlattenedArrayShapeTypeInstances() : array
+    public function withFlattenedArrayShapeOrLiteralTypeInstances() : array
     {
         return [$this];
     }

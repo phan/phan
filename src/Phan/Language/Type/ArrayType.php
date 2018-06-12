@@ -55,7 +55,7 @@ class ArrayType extends IterableType
             return ArrayShapeType::union($array_shape_types)->asUnionType();
         }
         foreach ($array_shape_types as $type) {
-            foreach ($type->withFlattenedArrayShapeTypeInstances() as $type_part) {
+            foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
                 $result->addType($type_part);
             }
         }
@@ -110,7 +110,7 @@ class ArrayType extends IterableType
             )->asUnionType();
         }
         foreach (\array_merge($left_array_shape_types, $right_array_shape_types) as $type) {
-            foreach ($type->withFlattenedArrayShapeTypeInstances() as $type_part) {
+            foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
                 $result->addType($type_part);
             }
         }

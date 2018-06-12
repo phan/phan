@@ -33,7 +33,7 @@ class ReturnTypesAnalyzer
         // are valid
 
         // Look at each type in the function's return union type
-        foreach ($return_type->withFlattenedArrayShapeTypeInstances()->getTypeSet() as $outer_type) {
+        foreach ($return_type->withFlattenedArrayShapeOrLiteralTypeInstances()->getTypeSet() as $outer_type) {
             $type = $outer_type;
             // TODO: Expand this to ArrayShapeType, add unit test of `@return array{key:MissingClazz}`
             while ($type instanceof GenericArrayType) {
