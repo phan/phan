@@ -1,7 +1,7 @@
 <?php
 class A {
     /**
-     * @var string $text
+     * @var string $text (TODO: is the error message "expected 1|string" reasonable?
      * @var int $num
      * @var array $foo
      */

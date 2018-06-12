@@ -1,0 +1,3 @@
+<?php
+
+parent::__construct();
