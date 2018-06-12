@@ -201,7 +201,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->code_base,
             $this->context,
             $node->children['var']
-        );
+        )->asNonLiteralType();
     }
 
     /**
@@ -222,7 +222,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->code_base,
             $this->context,
             $node->children['var']
-        );
+        )->asNonLiteralType();
     }
 
     /**
@@ -243,7 +243,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->code_base,
             $this->context,
             $node->children['var']
-        );
+        )->asNonLiteralType();
     }
 
     /**
@@ -256,6 +256,8 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @return UnionType
      * The set of types that are possibly produced by the
      * given node
+     *
+     * TODO: in PostOrderAnalysisVisitor, set the type to unknown for ++/--
      */
     public function visitPreInc(Node $node) : UnionType
     {
@@ -264,7 +266,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->code_base,
             $this->context,
             $node->children['var']
-        );
+        )->asNonLiteralType();
     }
 
     /**
@@ -916,7 +918,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         return (new AssignOperatorFlagVisitor(
             $this->code_base,
             $this->context
-        ))($node);
+        ))->__invoke($node);
     }
 
     /**

@@ -280,7 +280,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $this->context,
                 Issue::TypeComparisonFromArray,
                 $node->lineno ?? 0,
-                (string)$right->withResolvedLiterals()
+                (string)$right->asNonLiteralType()
             );
         } elseif ($right_is_array_like
             && !$left->hasArrayLike()
@@ -295,7 +295,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $this->context,
                 Issue::TypeComparisonToArray,
                 $node->lineno ?? 0,
-                (string)$left->withResolvedLiterals()
+                (string)$left->asNonLiteralType()
             );
         }
 
@@ -539,11 +539,17 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryCoalesce(Node $node) : UnionType
     {
+        $left_node = $node->children['left'];
         $left_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['left']
+            $left_node
         );
+        if (!($left_node instanceof Node)) {
+            // TODO: Warn about this being an unnecessary coalesce operation
+            // TODO: Be more aggressive for constants, etc, when we are very sure the type is accurate.
+            return $left_type;
+        }
 
         $right_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,

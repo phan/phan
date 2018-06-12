@@ -1051,7 +1051,7 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
-    public function withResolvedLiterals() : UnionType
+    public function asNonLiteralType() : UnionType
     {
         return $this;
     }

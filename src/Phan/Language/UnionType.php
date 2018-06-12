@@ -1010,7 +1010,7 @@ class UnionType implements \Serializable
         return false;
     }
 
-    public function withResolvedLiterals() : UnionType
+    public function asNonLiteralType() : UnionType
     {
         if (!$this->hasLiterals()) {
             return $this;
