@@ -16,7 +16,6 @@ use Phan\Language\Element\Variable;
 use Phan\Language\Type;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\PluginV2\StopParamAnalysisException;
 use ast\Node;
