@@ -1,1 +1,1 @@
-%s:8 PhanTypeMismatchArgument Argument 1 (x) is string but \expects_nullable_int266() takes ?int defined at %s:3
+%s:8 PhanTypeMismatchArgument Argument 1 (x) is 'default'|string but \expects_nullable_int266() takes ?int defined at %s:3
