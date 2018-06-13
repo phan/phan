@@ -1600,7 +1600,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Give up on things like Class::$var
         if (!\is_string($method_name)) {
             $method_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $method_name);
-            if (!is_string($method_name)) {
+            if (!\is_string($method_name)) {
                 return $this->context;
             }
         }

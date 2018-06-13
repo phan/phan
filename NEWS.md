@@ -4,8 +4,10 @@ Phan NEWS
 -------------------------
 
 New features(Analysis)
-+ Support integers both in PHPDoc and in Phan's type system. (E.g. `@return -1|string`)
++ Support integer literals both in PHPDoc and in Phan's type system. (E.g. `@return -1|string`)
   Include integer values in issue messages if the values are known.
++ Support string literals in Phan's type system. (To be added to PHPDoc soon)
+  Phan can now infer possible variable values for dynamic function/method calls, etc.
 + Improve inferred types of unary operators.
 + Warn about using `void`/`iterable`/`object` in use statements based on `target_php_version`. (#449)
   New issue types: `PhanCompatibleUseVoidPHP70`, `PhanCompatibleUseObjectPHP71`, `PhanCompatibleUseObjectPHP71`

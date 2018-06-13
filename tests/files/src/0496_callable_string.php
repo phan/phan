@@ -7,6 +7,8 @@ use stdClass;
 class MyClass496 {
     public static function myStaticMethod(stdClass $arg) {}
     public function myInstanceMethod(stdClass $arg) {}
+    /** @var array */
+    public $static_prop = [];
 }
 
 call_user_func(function() {
@@ -21,4 +23,7 @@ call_user_func(function() {
     echo MyClass496::$m();
     $i = 'myInstanceMethod';
     echo (new MyClass496())->$i();
+
+    $name = 'static_prop';
+    echo MyClass496::${$name};
 });

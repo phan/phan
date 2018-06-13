@@ -1063,10 +1063,13 @@ class ContextNode
 
         // Give up for things like C::$prop_name
         if (!\is_string($property_name)) {
-            throw new NodeException(
-                $node,
-                "Cannot figure out non-string property name"
-            );
+            $property_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $property_name);
+            if (!\is_string($property_name)) {
+                throw new NodeException(
+                    $node,
+                    "Cannot figure out non-string property name"
+                );
+            }
         }
 
         $class_fqsen = null;
