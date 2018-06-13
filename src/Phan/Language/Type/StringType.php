@@ -3,7 +3,7 @@ namespace Phan\Language\Type;
 
 use Phan\Language\Type;
 
-final class StringType extends ScalarType
+class StringType extends ScalarType
 {
     /** @phan-override */
     const NAME = 'string';

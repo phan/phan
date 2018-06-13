@@ -5,12 +5,12 @@ use Phan\Language\Type;
 
 use RuntimeException;
 
-final class LiteralIntType extends IntType implements LiteralTypeInterface
+final class LiteralStringType extends StringType implements LiteralTypeInterface
 {
-    /** @var int $value */
+    /** @var string $value */
     private $value;
 
-    protected function __construct(int $value, bool $is_nullable)
+    protected function __construct(string $value, bool $is_nullable)
     {
         parent::__construct('\\', self::NAME, [], $is_nullable);
         $this->value = $value;
@@ -25,7 +25,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
         throw new RuntimeException('Call ' . __CLASS__ . '::instance_for_value() instead');
     }
 
-    public static function instance_for_value(int $value, bool $is_nullable)
+    public static function instance_for_value(string $value, bool $is_nullable)
     {
         if ($is_nullable) {
             static $nullable_cache = [];
@@ -35,28 +35,30 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
         return $cache[$value] ?? ($cache[$value] = new self($value, false));
     }
 
-    public function getValue() : int
+    public function getValue() : string
     {
         return $this->value;
     }
 
     public function __toString() : string
     {
+        // TODO: Finalize escaping
+        $as_string = "'" . \addcslashes($this->value, "'\\") . "'";
         if ($this->is_nullable) {
-            return '?' . $this->value;
+            return '?' . $as_string;
         }
-        return (string)$this->value;
+        return $as_string;
     }
 
-    /** @var IntType */
+    /** @var StringType */
     private static $non_nullable_int_type;
-    /** @var IntType */
+    /** @var StringType */
     private static $nullable_int_type;
 
     public static function init()
     {
-        self::$non_nullable_int_type = IntType::instance(false);
-        self::$nullable_int_type = IntType::instance(true);
+        self::$non_nullable_int_type = StringType::instance(false);
+        self::$nullable_int_type = StringType::instance(true);
     }
 
     public function asNonLiteralType() : Type
@@ -109,7 +111,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
      */
     protected function canCastToNonNullableType(Type $type) : bool
     {
-        if ($type instanceof LiteralIntType) {
+        if ($type instanceof LiteralStringType) {
             return $type->getValue() === $this->getValue();
         }
 
@@ -138,4 +140,4 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     }
 }
 
-LiteralIntType::init();
+LiteralStringType::init();

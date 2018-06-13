@@ -76,7 +76,7 @@ class TypeTest extends BaseTest
         $this->assertParsesAsType(VoidType::instance(false), 'void');
     }
 
-    public function testLiteralTypes()
+    public function testLiteralIntType()
     {
         $this->assertParsesAsType(LiteralIntType::instance_for_value(1, false), '1');
         $this->assertParsesAsType(LiteralIntType::instance_for_value(0, false), '0');

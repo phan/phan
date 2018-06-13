@@ -1,0 +1,4 @@
+src/022_double_backslash.php:2 PhanNoopConstant Unused constant
+src/022_double_backslash.php:2 PhanSyntaxError syntax error, unexpected '\' (T_NS_SEPARATOR), expecting identifier (T_STRING)
+src/022_double_backslash.php:2 PhanUndeclaredConstant Reference to undeclared constant \A
+src/022_double_backslash.php:2 PhanUndeclaredConstant Reference to undeclared constant \B
