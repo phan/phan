@@ -33,6 +33,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
@@ -739,6 +740,32 @@ class ContextNode
                         }
                     } elseif ($type instanceof FunctionLikeDeclarationType) {
                         yield $type;
+                    } elseif ($type instanceof LiteralStringType) {
+                        try {
+                            $method = (new ContextNode(
+                                $code_base,
+                                $context,
+                                $expression
+                            ))->getFunction($type->getValue());
+                        } catch (IssueException $exception) {
+                            Issue::maybeEmitInstance(
+                                $code_base,
+                                $context,
+                                $exception->getIssueInstance()
+                            );
+                            continue;
+                        } catch (EmptyFQSENException $exception) {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $context,
+                                Issue::EmptyFQSENInCallable,
+                                $expression->lineno ?? $context->getLineNumberStart(),
+                                $exception->getFQSEN()
+                            );
+                            continue;
+                        }
+
+                        yield $method;
                     }
                 }
             }
@@ -763,7 +790,7 @@ class ContextNode
                     $code_base,
                     $context,
                     Issue::EmptyFQSENInCallable,
-                    $expression->children['name']->lineno ?? $context->getLineNumberStart(),
+                    $expression->lineno ?? $context->getLineNumberStart(),
                     $exception->getFQSEN()
                 );
                 return $context;

@@ -1,0 +1,2 @@
+%s:4 PhanParamTooManyInternal Call with 2 arg(s) to \strlen() which only takes 1 arg(s)
+%s:4 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
