@@ -2763,6 +2763,33 @@ class UnionType implements \Serializable
         }
         return $type_set;
     }
+
+    /**
+     * @return ?string|?float|?int|bool|null
+     * If this union type can be represented by a single scalar value,
+     * then this returns that scalar value.
+     *
+     * Otherwise, this returns null.
+     */
+    public function asSingleScalarValueOrNull() {
+        $type_set = $this->type_set;
+        if (\count($type_set) !== 1) {
+            return null;
+        }
+        $type = \reset($type_set);
+        switch (\get_class($type)) {
+            case LiteralIntType::class:
+                '@phan-var LiteralIntType $type';  // TODO: support switches
+                return $type->getIsNullable() ? $type->getValue() : null;
+            case FalseType::class:
+                return false;
+            case TrueType::class:
+                return true;
+            // case NullType::class:
+            default:
+                return null;
+        }
+    }
 }
 
 UnionType::init();

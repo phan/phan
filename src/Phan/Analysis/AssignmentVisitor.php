@@ -525,7 +525,6 @@ class AssignmentVisitor extends AnalysisVisitor
         // For most types, it should be int|string, but SplObjectStorage and a few user-defined types will be exceptions.
         // Infer it from offsetSet?
         $dim_node = $node->children['dim'];
-        $dim_value = null;
         if ($dim_node instanceof Node) {
             // TODO: Use ContextNode to infer dim_value
             $dim_type = UnionTypeVisitor::unionTypeFromNode(
@@ -533,12 +532,14 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->context,
                 $dim_node
             );
+            $dim_value = $dim_type->asSingleScalarValueOrNull();
         } elseif (\is_scalar($dim_node) && $dim_node !== null) {
             $dim_value = $dim_node;
             $dim_type = Type::fromObject($dim_node)->asUnionType();
         } else {
             // TODO: If the array shape has only one set of keys, then appending should add to that shape? Possibly not a common use case.
             $dim_type = null;
+            $dim_value = null;
         }
 
         if ($dim_value !== null) {
@@ -1092,7 +1093,6 @@ class AssignmentVisitor extends AnalysisVisitor
     public function typeCheckDimAssignment(UnionType $assign_type, Node $node) : UnionType
     {
         static $int_or_string_type = null;
-        static $int_type = null;
         static $string_type = null;
         static $mixed_type = null;
         static $string_array_type = null;
@@ -1100,7 +1100,6 @@ class AssignmentVisitor extends AnalysisVisitor
 
         if ($int_or_string_type === null) {
             $int_or_string_type = UnionType::fromFullyQualifiedString('int|string');
-            $int_type = IntType::instance(false);
             $string_type = StringType::instance(false);
             $mixed_type = MixedType::instance(false);
             $string_array_type = UnionType::fromFullyQualifiedString('string[]');
@@ -1138,15 +1137,15 @@ class AssignmentVisitor extends AnalysisVisitor
                         Issue::TypeMismatchDimEmpty,
                         $node->lineno ?? 0,
                         (string)$assign_type,
-                        (string)$int_type
+                        'int'
                     );
-                } elseif (!$dim_type->isEmpty() && !$dim_type->hasType($int_type)) {
+                } elseif (!$dim_type->isEmpty() && !$dim_type->hasNonNullIntType()) {
                     $this->emitIssue(
                         Issue::TypeMismatchDimAssignment,
                         $node->lineno,
                         (string)$assign_type,
                         (string)$dim_type,
-                        (string)$int_type
+                        'int'
                     );
                 } else {
                     if ($right_type->canCastToUnionType($string_array_type)) {

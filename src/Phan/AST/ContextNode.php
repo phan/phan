@@ -1886,7 +1886,12 @@ class ContextNode
         } elseif ($kind === ast\AST_MAGIC_CONST) {
             return $this->getValueForMagicConstByNode($node);
         }
-        return $node;
+        $node_type = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node
+        );
+        return $node_type->asSingleScalarValueOrNull() ?? $node;
     }
 
     public function getValueForMagicConst()

@@ -35,6 +35,7 @@ use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
@@ -354,7 +355,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitMagicConst(Node $node) : UnionType
     {
         if ($node->flags === \ast\flags\MAGIC_LINE) {
-            return IntType::instance(false)->asUnionType();
+            return LiteralIntType::instance_for_value($node->lineno, false)->asUnionType();
         }
         // This is for things like __METHOD__
         return StringType::instance(false)->asUnionType();
