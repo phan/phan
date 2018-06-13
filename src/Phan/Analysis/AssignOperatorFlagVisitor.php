@@ -123,8 +123,8 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             && $right->hasNonNullIntType()
         ) {
             return IntType::instance(false)->asUnionType();
-        } elseif ($left->hasType(StringType::instance(false)) &&
-            $right->hasType(StringType::instance(false))) {
+        } elseif ($left->hasNonNullStringType() &&
+            $right->hasNonNullStringType()) {
             // $x = 'a'; $x &= 'c';
             return StringType::instance(false)->asUnionType();
         }
@@ -148,8 +148,8 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             && $right->hasNonNullIntType()
         ) {
             return IntType::instance(false)->asUnionType();
-        } elseif ($left->hasType(StringType::instance(false)) &&
-            $right->hasType(StringType::instance(false))) {
+        } elseif ($left->hasNonNullStringType() &&
+            $right->hasNonNullStringType()) {
             // $x = 'a'; $x |= 'c';
             return StringType::instance(false)->asUnionType();
         }
@@ -189,8 +189,8 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             && $right->hasNonNullIntType()
         ) {
             return IntType::instance(false)->asUnionType();
-        } elseif ($left->hasType(StringType::instance(false))
-            && $right->hasType(StringType::instance(false))
+        } elseif ($left->hasNonNullStringType()
+            && $right->hasNonNullStringType()
         ) {
             return StringType::instance(false)->asUnionType();
         }

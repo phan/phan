@@ -18,6 +18,7 @@ use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\LiteralIntType;
+use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\LiteralTypeInterface;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
@@ -2752,7 +2753,7 @@ class UnionType implements \Serializable
         $type_set = UnionType::empty();
         foreach ($this->type_set as $type) {
             if ($type instanceof LiteralIntType) {
-                $type_set = $type_set->withType(LiteralIntType::instance_for_value(~$type->getValue()));
+                $type_set = $type_set->withType(LiteralIntType::instance_for_value(~$type->getValue(), false));
                 if ($type->getIsNullable()) {
                     $type_set = $type_set->withType(LiteralIntType::instance_for_value(0, false));
                 }
@@ -2834,6 +2835,9 @@ class UnionType implements \Serializable
         switch (\get_class($type)) {
             case LiteralIntType::class:
                 '@phan-var LiteralIntType $type';  // TODO: support switches
+                return $type->getIsNullable() ? $type->getValue() : null;
+            case LiteralStringType::class:
+                '@phan-var LiteralStringType $type';  // TODO: support switches
                 return $type->getIsNullable() ? $type->getValue() : null;
             case FalseType::class:
                 return false;

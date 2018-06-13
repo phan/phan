@@ -36,6 +36,7 @@ use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\LiteralIntType;
+use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
@@ -48,6 +49,7 @@ use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
 use ast\Node;
+use ast;
 
 /**
  * Determine the UnionType associated with a
@@ -341,6 +343,16 @@ class UnionTypeVisitor extends AnalysisVisitor
         return UnionType::empty();
     }
 
+    private static function literalIntUnionType(int $value) : UnionType
+    {
+        return LiteralIntType::instance_for_value($value, false)->asUnionType();
+    }
+
+    private static function literalStringUnionType(string $value) : UnionType
+    {
+        return LiteralStringType::instance_for_value($value, false)->asUnionType();
+    }
+
     /**
      * Visit a node with kind `\ast\AST_MAGIC_CONST`
      *
@@ -354,8 +366,40 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitMagicConst(Node $node) : UnionType
     {
-        if ($node->flags === \ast\flags\MAGIC_LINE) {
-            return LiteralIntType::instance_for_value($node->lineno, false)->asUnionType();
+        switch ($node->flags) {
+            case ast\flags\MAGIC_CLASS:
+                if ($this->context->isInClassScope()) {
+                    return self::literalStringUnionType($this->context->getClassFQSEN()->__toString());
+                }
+                return StringType::instance(false)->asUnionType();
+            case ast\flags\MAGIC_FUNCTION:
+                if ($this->context->isInFunctionLikeScope()) {
+                    $fqsen = $this->context->getFunctionLikeFQSEN();
+                    return self::literalStringUnionType($fqsen->isClosure() ? '{closure}' : $fqsen->getName());
+                }
+                // TODO: Warn?
+                return StringType::instance(false)->asUnionType();
+            case ast\flags\MAGIC_METHOD:
+                // TODO: Is this right?
+                if ($this->context->isInMethodScope()) {
+                    return self::literalStringUnionType(\ltrim($this->context->getFunctionLikeFQSEN()->__toString(), '\\'));
+                }
+                return StringType::instance(false)->asUnionType();
+            case ast\flags\MAGIC_DIR:
+                // TODO: Absolute directory?
+                return self::literalStringUnionType(\dirname($this->context->getFile()));
+            case ast\flags\MAGIC_FILE:
+                return self::literalStringUnionType($this->context->getFile());
+            case ast\flags\MAGIC_LINE:
+                return self::literalIntUnionType($node->lineno);
+            case ast\flags\MAGIC_NAMESPACE:
+                return self::literalStringUnionType(\ltrim($this->context->getNamespace(), '\\'));
+            case ast\flags\MAGIC_TRAIT:
+                // TODO: Could check if in trait, low importance.
+                if ($this->context->isInClassScope()) {
+                    return self::literalStringUnionType((string)$this->context->getClassFQSEN());
+                }
+                return StringType::instance(false)->asUnionType();
         }
         // This is for things like __METHOD__
         return StringType::instance(false)->asUnionType();

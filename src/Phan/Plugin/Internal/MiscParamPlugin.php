@@ -190,7 +190,7 @@ final class MiscParamPlugin extends PluginV2 implements
                         );
                     }
                     throw $stop_exception;
-                } elseif ($arg1_type->isType(StringType::instance(false))) {
+                } elseif ($arg1_type->isNonNullStringType()) {
                     if (!$arg2_type->canCastToUnionType(
                         ArrayType::instance(false)->asUnionType()
                     )) {

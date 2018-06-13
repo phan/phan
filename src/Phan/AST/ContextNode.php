@@ -620,7 +620,7 @@ class ContextNode
                     ObjectType::instance(false),
                 ])
                 // reject `$stringVar->method()` but not `$stringVar::method()` and not (`new $stringVar()`
-                && !(($is_static || $is_new_expression) && $union_type->hasType(StringType::instance(false)))
+                && !(($is_static || $is_new_expression) && $union_type->hasNonNullStringType())
                 && !(
                     Config::get_null_casts_as_any_type()
                     && $union_type->hasType(NullType::instance(false))
@@ -1883,8 +1883,6 @@ class ContextNode
                 $new_node = $this->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
             }
             return $new_node;
-        } elseif ($kind === ast\AST_MAGIC_CONST) {
-            return $this->getValueForMagicConstByNode($node);
         }
         $node_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -1903,6 +1901,7 @@ class ContextNode
 
     public function getValueForMagicConstByNode(Node $node)
     {
+        // TODO: clean up or refactor?
         $context = $this->context;
         switch ($node->flags) {
             case ast\flags\MAGIC_CLASS:
