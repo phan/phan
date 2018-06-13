@@ -830,7 +830,8 @@ class Type
         );
     }
 
-    private static function fromEscapedLiteralScalar(string $escaped_literal) : ScalarType {
+    private static function fromEscapedLiteralScalar(string $escaped_literal) : ScalarType
+    {
         $is_nullable = $escaped_literal[0] === '?';
         if ($is_nullable) {
             $escaped_literal = \substr($escaped_literal, 1);
@@ -2518,7 +2519,7 @@ class Type
      * @deprecated - Use withFlattenedArrayShapeOrLiteralTypeInstances
      * @suppress PhanUnreferencedPublicMethod
      */
-    public final function withFlattenedArrayShapeInstances() : array
+    final public function withFlattenedArrayShapeInstances() : array
     {
         return $this->withFlattenedArrayShapeOrLiteralTypeInstances();
     }
@@ -2534,7 +2535,8 @@ class Type
     /**
      * Overridden in subclasses such as LiteralIntType
      */
-    public function asNonLiteralType() : Type {
+    public function asNonLiteralType() : Type
+    {
         return $this;
     }
 }

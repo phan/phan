@@ -2115,7 +2115,8 @@ class TolerantASTConverter
     /**
      * @param PhpParser\Node[]|PhpParser\Node|Token $stmts
      */
-    private static function getStartLineOfStatementOrStatements($stmts) : int {
+    private static function getStartLineOfStatementOrStatements($stmts) : int
+    {
         if (is_array($stmts)) {
             return isset($stmts[0]) ? self::getStartLine($stmts[0]) : 0;
         }

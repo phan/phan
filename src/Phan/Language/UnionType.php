@@ -2703,7 +2703,7 @@ class UnionType implements \Serializable
     {
         // TODO: Extend to LiteralFloatType
         /** @param int|float $value */
-        return $this->applyNumericOperation(function($value) : ScalarType {
+        return $this->applyNumericOperation(function ($value) : ScalarType {
             $result = -$value;
             if (\is_int($result)) {
                 return LiteralIntType::instance_for_value($result, false);
@@ -2721,7 +2721,7 @@ class UnionType implements \Serializable
         /**
          * @param int|float $value
          */
-        return $this->applyNumericOperation(function($value) : ScalarType {
+        return $this->applyNumericOperation(function ($value) : ScalarType {
             return LiteralIntType::instance_for_value(~$value, false);
         }, false);
     }
@@ -2729,7 +2729,7 @@ class UnionType implements \Serializable
     public function applyUnaryPlusOperator() : UnionType
     {
         /** @param int|float $value */
-        return $this->applyNumericOperation(function($value) : ScalarType {
+        return $this->applyNumericOperation(function ($value) : ScalarType {
             $result = -$value;
             if (\is_int($result)) {
                 return LiteralIntType::instance_for_value($result, false);
@@ -2742,7 +2742,8 @@ class UnionType implements \Serializable
     /**
      * @param Closure(int): ScalarType $operation
      */
-    private function applyNumericOperation(Closure $operation, bool $can_be_float) : UnionType {
+    private function applyNumericOperation(Closure $operation, bool $can_be_float) : UnionType
+    {
         $added_fallbacks = false;
         $type_set = UnionType::empty();
         foreach ($this->type_set as $type) {
@@ -2779,7 +2780,8 @@ class UnionType implements \Serializable
      *
      * Otherwise, this returns null.
      */
-    public function asSingleScalarValueOrNull() {
+    public function asSingleScalarValueOrNull()
+    {
         $type_set = $this->type_set;
         if (\count($type_set) !== 1) {
             return null;

@@ -10,7 +10,8 @@ final class LiteralIntType extends IntType
     /** @var int $value */
     private $value;
 
-    protected function __construct(int $value, bool $is_nullable) {
+    protected function __construct(int $value, bool $is_nullable)
+    {
         parent::__construct('\\', self::NAME, [], $is_nullable);
         $this->value = $value;
     }
@@ -19,11 +20,13 @@ final class LiteralIntType extends IntType
      * @internal - Only exists to prevent accidentally calling this
      * @deprecated
      */
-    public static function instance(bool $unused_is_nullable) {
+    public static function instance(bool $unused_is_nullable)
+    {
         throw new RuntimeException('Call ' . __CLASS__ . '::instance_for_value() instead');
     }
 
-    public static function instance_for_value(int $value, bool $is_nullable) {
+    public static function instance_for_value(int $value, bool $is_nullable)
+    {
         if ($is_nullable) {
             static $nullable_cache = [];
             return $nullable_cache[$value] ?? ($nullable_cache[$value] = new self($value, true));
@@ -32,11 +35,13 @@ final class LiteralIntType extends IntType
         return $cache[$value] ?? ($cache[$value] = new self($value, false));
     }
 
-    public function getValue() {
+    public function getValue()
+    {
         return $this->value;
     }
 
-    public function __toString() : string {
+    public function __toString() : string
+    {
         if ($this->is_nullable) {
             return '?' . $this->value;
         }
@@ -48,12 +53,14 @@ final class LiteralIntType extends IntType
     /** @var IntType */
     private static $nullable_int_type;
 
-    public static function init() {
+    public static function init()
+    {
         self::$non_nullable_int_type = IntType::instance(false);
         self::$nullable_int_type = IntType::instance(true);
     }
 
-    public function asNonLiteralType() : Type {
+    public function asNonLiteralType() : Type
+    {
         return $this->is_nullable ? self::$nullable_int_type : self::$non_nullable_int_type;
     }
 
