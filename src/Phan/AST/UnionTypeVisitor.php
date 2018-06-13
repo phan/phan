@@ -2755,4 +2755,31 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return $int_or_string_type;
         }
     }
+
+    /**
+     * @param Node $node
+     * @return ?string - One of the values for the LiteralStringType, or null
+     */
+    public static function anyStringLiteralForNode(
+        CodeBase $code_base,
+        Context $context,
+        $node
+    ) {
+        if (!($node instanceof Node)) {
+            return \is_string($node) ? $node : null;
+        }
+        $node_type = self::unionTypeFromNode(
+            $code_base,
+            $context,
+            $node
+        );
+        foreach ($node_type->getTypeSet() as $type) {
+            if ($type instanceof LiteralStringType) {
+                // Arbitrarily return only the first value.
+                // TODO: Rewrite code using this to work with lists of possible values?
+                return $type->getValue();
+            }
+        }
+        return null;
+    }
 }

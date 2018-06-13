@@ -25,6 +25,9 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
         throw new RuntimeException('Call ' . __CLASS__ . '::instance_for_value() instead');
     }
 
+    /**
+     * @return LiteralStringType
+     */
     public static function instance_for_value(string $value, bool $is_nullable)
     {
         if ($is_nullable) {

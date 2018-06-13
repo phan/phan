@@ -1,2 +1,4 @@
-%s:4 PhanParamTooManyInternal Call with 2 arg(s) to \strlen() which only takes 1 arg(s)
-%s:4 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:18 PhanTypeMismatchArgumentInternal Argument 1 (var) is 'NS\\MyClass496' but \count() takes \Countable|array
+%s:21 PhanParamTooFew Call with 0 arg(s) to \NS\MyClass496::myStaticMethod() which requires 1 arg(s) defined at %s:8
+%s:23 PhanParamTooFew Call with 0 arg(s) to \NS\MyClass496::myInstanceMethod() which requires 1 arg(s) defined at %s:9

@@ -561,6 +561,17 @@ class ContextNode
     ) : Method {
 
         if ($method_name instanceof Node) {
+            $method_name_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $method_name
+            );
+            foreach ($method_name_type->getTypeSet() as $type) {
+                if ($type instanceof LiteralStringType) {
+                    // TODO: Warn about nullable?
+                    return $this->getMethod($type->getValue(), $is_static, $is_direct, $is_new_expression);
+                }
+            }
             // The method_name turned out to be a variable.
             // There isn't much we can do to figure out what
             // it's referring to.
@@ -741,6 +752,7 @@ class ContextNode
                     } elseif ($type instanceof FunctionLikeDeclarationType) {
                         yield $type;
                     } elseif ($type instanceof LiteralStringType) {
+                        // TODO: deduplicate this functionality
                         try {
                             $method = (new ContextNode(
                                 $code_base,

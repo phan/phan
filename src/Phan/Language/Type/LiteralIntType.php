@@ -25,6 +25,9 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
         throw new RuntimeException('Call ' . __CLASS__ . '::instance_for_value() instead');
     }
 
+    /**
+     * @return LiteralIntType
+     */
     public static function instance_for_value(int $value, bool $is_nullable)
     {
         if ($is_nullable) {
