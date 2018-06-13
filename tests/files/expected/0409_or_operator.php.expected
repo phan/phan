@@ -2,5 +2,5 @@
 %s:12 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
 %s:20 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
 %s:20 PhanTypeMismatchArgumentInternal Argument 1 (var) is int but \count() takes \Countable|array
-%s:29 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:29 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is 'a string'|string but \intdiv() takes int
 %s:36 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is false|string but \intdiv() takes int
