@@ -85,6 +85,8 @@ class TypeTest extends BaseTest
         $this->assertParsesAsType(LiteralIntType::instance_for_value(9, false), '9');
         $this->assertParsesAsType(LiteralIntType::instance_for_value(190, false), '190');
         $this->assertParsesAsType(FloatType::instance(false), '1111111111111111111111111111111111');
+        $this->assertParsesAsType(LiteralIntType::instance_for_value(1, true), '?1');
+        $this->assertParsesAsType(LiteralIntType::instance_for_value(-1, true), '?-1');
     }
 
     private function assertSameType(Type $expected, Type $actual, string $extra = '')

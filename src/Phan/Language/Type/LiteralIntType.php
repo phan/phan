@@ -37,6 +37,9 @@ final class LiteralIntType extends IntType
     }
 
     public function __toString() : string {
+        if ($this->is_nullable) {
+            return '?' . $this->value;
+        }
         return (string)$this->value;
     }
 
@@ -104,6 +107,27 @@ final class LiteralIntType extends IntType
         }
 
         return parent::canCastToNonNullableType($type);
+    }
+
+    /**
+     * @param bool $is_nullable
+     * Set to true if the type should be nullable, else pass
+     * false
+     *
+     * @return Type
+     * A new type that is a copy of this type but with the
+     * given nullability value.
+     */
+    public function withIsNullable(bool $is_nullable) : Type
+    {
+        if ($is_nullable === $this->is_nullable) {
+            return $this;
+        }
+
+        return self::instance_for_value(
+            $this->value,
+            $is_nullable
+        );
     }
 }
 

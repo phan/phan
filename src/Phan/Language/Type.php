@@ -78,7 +78,7 @@ class Type
         '[-._a-zA-Z0-9\x7f-\xff]+\??';
 
     const noncapturing_literal_regex =
-        '-?(?:0|[1-9][0-9]*)';
+        '\??-?(?:0|[1-9][0-9]*)';
 
     /**
      * @var string
@@ -831,11 +831,15 @@ class Type
     }
 
     private static function fromEscapedLiteralScalar(string $escaped_literal) : ScalarType {
+        $is_nullable = $escaped_literal[0] === '?';
+        if ($is_nullable) {
+            $escaped_literal = \substr($escaped_literal, 1);
+        }
         $value = filter_var($escaped_literal, FILTER_VALIDATE_INT);
         if (\is_int($value)) {
-            return LiteralIntType::instance_for_value($value, false);
+            return LiteralIntType::instance_for_value($value, $is_nullable);
         }
-        return FloatType::instance(false);
+        return FloatType::instance($is_nullable);
     }
 
     /**
@@ -2318,7 +2322,7 @@ class Type
                 // Parse '(X)' as 'X'
                 return self::typeStringComponents(\substr($match[1], 1, -1));
             } elseif (!isset($match[4])) {
-                if ($type_string[0] === '?') {
+                if (\substr($type_string, -1) === ')') {
                     // Parse '?(X[]) as '?X[]'
                     return self::typeStringComponents('?' . \substr($match[2], 2, -1));
                 } else {
