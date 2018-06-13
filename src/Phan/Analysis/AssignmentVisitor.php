@@ -24,7 +24,6 @@ use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
-use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;

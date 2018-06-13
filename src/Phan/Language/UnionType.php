@@ -350,6 +350,7 @@ class UnionType implements \Serializable
      * be thrown for optional issues.
      *
      * @deprecated - Use UnionTypeVisitor::unionTypeFromNode
+     * @suppress PhanUnreferencedPublicMethod
      */
     public static function fromNode(
         Context $context,
@@ -2509,6 +2510,9 @@ class UnionType implements \Serializable
         return false;
     }
 
+    /**
+     * @suppress PhanUnreferencedPublicMethod
+     */
     public function hasArrayShapeTypeInstances() : bool
     {
         foreach ($this->type_set as $type) {
@@ -2541,8 +2545,9 @@ class UnionType implements \Serializable
 
     /**
      * @deprecated alias of withFlattenedArrayShapeOrLiteralTypeInstances
+     * @suppress PhanUnreferencedPublicMethod
      */
-    public final function withFlattenedArrayShapeTypeInstances() : UnionType
+    public function withFlattenedArrayShapeTypeInstances() : UnionType
     {
         return $this->withFlattenedArrayShapeOrLiteralTypeInstances();
     }
@@ -2710,6 +2715,9 @@ class UnionType implements \Serializable
 
     public function applyUnaryBitwiseNotOperator() : UnionType
     {
+        if ($this->isEmpty()) {
+            return IntType::instance(false)->asUnionType();
+        }
         /**
          * @param int|float $value
          */

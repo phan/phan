@@ -5,6 +5,7 @@ use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\IntType;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Generator;
 
@@ -956,6 +957,12 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
+    /** @override */
+    public function withFlattenedArrayShapeTypeInstances() : UnionType
+    {
+        return $this;
+    }
+
     public function hasPossiblyObjectTypes() : bool
     {
         return false;
@@ -1059,5 +1066,21 @@ final class EmptyUnionType extends UnionType
     public function applyUnaryMinusOperator() : UnionType
     {
         return $this;
+    }
+
+    public function applyUnaryBitwiseNotOperator() : UnionType
+    {
+        return IntType::instance(false)->asUnionType();
+    }
+
+    public function applyUnaryPlusOperator() : UnionType
+    {
+        return UnionType::fromFullyQualifiedString('int|float');
+    }
+
+    /** @return null */
+    public function asSingleScalarValueOrNull()
+    {
+        return null;
     }
 }

@@ -2479,6 +2479,7 @@ class Type
 
     /**
      * @deprecated - Use withFlattenedArrayShapeOrLiteralTypeInstances
+     * @suppress PhanUnreferencedPublicMethod
      */
     public final function withFlattenedArrayShapeInstances() : array
     {
