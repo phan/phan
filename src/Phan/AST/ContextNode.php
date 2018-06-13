@@ -1883,6 +1883,9 @@ class ContextNode
                 $new_node = $this->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
             }
             return $new_node;
+        } elseif ($kind === ast\AST_MAGIC_CONST) {
+            // TODO: Look into eliminating this
+            return $this->getValueForMagicConstByNode($node);
         }
         $node_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,

@@ -2835,10 +2835,10 @@ class UnionType implements \Serializable
         switch (\get_class($type)) {
             case LiteralIntType::class:
                 '@phan-var LiteralIntType $type';  // TODO: support switches
-                return $type->getIsNullable() ? $type->getValue() : null;
+                return $type->getIsNullable() ? null : $type->getValue();
             case LiteralStringType::class:
                 '@phan-var LiteralStringType $type';  // TODO: support switches
-                return $type->getIsNullable() ? $type->getValue() : null;
+                return $type->getIsNullable() ? null : $type->getValue();
             case FalseType::class:
                 return false;
             case TrueType::class:

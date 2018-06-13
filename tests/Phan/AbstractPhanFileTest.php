@@ -117,6 +117,10 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         return $path;
     }
 
+    const WHITELIST = [
+        '0338_magic_const_types.php.expected',
+    ];
+
     /**
      * This reads all files in a test directory (e.g. `tests/files/src`), runs
      * the analyzer on each and compares the output
@@ -135,7 +139,9 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             $expected_output =
                 trim(file_get_contents($expected_file_path));
         }
-        $this->assertNotRegExp('@tests[/\\\\]files[/\\\\]@', $expected_output, 'Expected output should contain a %s placeholder instead of the relative path to the file');
+        if (!in_array(basename($expected_file_path), self::WHITELIST)) {
+            $this->assertNotRegExp('@tests[/\\\\]files[/\\\\]@', $expected_output, 'Expected output should contain a %s placeholder instead of the relative path to the file');
+        }
 
         // Overlay any test-specific config modifiers
         if ($config_file_path) {
