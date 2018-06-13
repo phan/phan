@@ -725,7 +725,7 @@ trait FunctionTrait
                 }
                 // The parameter constructor or above check for wasEmpty already took care of null default case
             } else {
-                $default_type = $default_type->withFlattenedArrayShapeTypeInstances();
+                $default_type = $default_type->withFlattenedArrayShapeOrLiteralTypeInstances();
                 if ($wasEmpty) {
                     $parameter->addUnionType(self::inferNormalizedTypesOfDefault($default_type));
                     if (!Config::getValue('guess_unknown_parameter_type_using_default')) {

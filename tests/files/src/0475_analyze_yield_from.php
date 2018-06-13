@@ -23,7 +23,7 @@ function test_yield_from() {
     yield from [2 => 4];
     yield from ['x' => 'y'];
     yield from [2 => 'y', 3 => new stdClass()];
-
+    yield from [2 => rand(0,4)];
     yield from yields_correct_generator();
     yield from yields_generator_without_key();
     yield from yields_generator_with_wrong_value();

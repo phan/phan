@@ -1,1 +1,1 @@
-%s:4 PhanTypeMismatchArgument Argument 1 (p) is array{0:int} but \f() takes string[] defined at %s:3
+%s:4 PhanTypeMismatchArgument Argument 1 (p) is array{0:42} but \f() takes string[] defined at %s:3

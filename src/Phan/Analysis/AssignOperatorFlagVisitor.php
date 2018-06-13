@@ -29,7 +29,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
     private $context;
 
     /**
-     * Create a new BinaryOperatorFlagVisitor
+     * Create a new AssignOperatorFlagVisitor
      */
     public function __construct(
         CodeBase $code_base,
@@ -89,8 +89,8 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             );
 
             return UnionType::empty();
-        } elseif ($left->hasType(IntType::instance(false))
-            && $right->hasType(IntType::instance(false))
+        } elseif ($left->hasNonNullIntType()
+            && $right->hasNonNullIntType()
         ) {
             return IntType::instance(false)->asUnionType();
         } elseif ($left->hasType(FloatType::instance(false))
@@ -119,8 +119,8 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             $this->context,
             $node->children['expr']
         );
-        if ($left->hasType(IntType::instance(false))
-            && $right->hasType(IntType::instance(false))
+        if ($left->hasNonNullIntType()
+            && $right->hasNonNullIntType()
         ) {
             return IntType::instance(false)->asUnionType();
         } elseif ($left->hasType(StringType::instance(false)) &&
@@ -144,8 +144,8 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             $this->context,
             $node->children['expr']
         );
-        if ($left->hasType(IntType::instance(false))
-            && $right->hasType(IntType::instance(false))
+        if ($left->hasNonNullIntType()
+            && $right->hasNonNullIntType()
         ) {
             return IntType::instance(false)->asUnionType();
         } elseif ($left->hasType(StringType::instance(false)) &&
@@ -185,8 +185,8 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             );
 
             return UnionType::empty();
-        } elseif ($left->hasType(IntType::instance(false))
-            && $right->hasType(IntType::instance(false))
+        } elseif ($left->hasNonNullIntType()
+            && $right->hasNonNullIntType()
         ) {
             return IntType::instance(false)->asUnionType();
         } elseif ($left->hasType(StringType::instance(false))
@@ -232,8 +232,8 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         );
 
         // fast-track common cases
-        if ($left->isType(IntType::instance(false))
-            && $right->isType(IntType::instance(false))
+        if ($left->isNonNullIntType()
+            && $right->isNonNullIntType()
         ) {
             return IntType::instance(false)->asUnionType();
         }
@@ -248,9 +248,10 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             return ArrayType::instance(false)->asUnionType();
         }
 
-        if (($left->isType(IntType::instance(false))
+        // TODO: isNonNullNumberType
+        if (($left->isNonNullIntType()
             || $left->isType(FloatType::instance(false)))
-            && ($right->isType(IntType::instance(false))
+            && ($right->isNonNullIntType()
             || $right->isType(FloatType::instance(false)))
         ) {
             return FloatType::instance(false)->asUnionType();

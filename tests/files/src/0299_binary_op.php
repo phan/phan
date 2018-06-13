@@ -46,6 +46,7 @@ function test298() {
     expect_string_298($intVar *= 2);
     expect_string_298($intVar **= 2);
     expect_string_298($intVar %= 5);
+    $intVar = 42;
     expect_string_298($intVar += 2);
     expect_string_298($intVar -= 5);
     expect_string_298($intVar <<= 1);

@@ -367,7 +367,7 @@ final class MiscParamPlugin extends PluginV2 implements
             }
 
             $variable = $context->getScope()->getVariableByName($variable_name);
-            $variable->setUnionType($variable->getUnionType()->withFlattenedArrayShapeTypeInstances());
+            $variable->setUnionType($variable->getUnionType()->withFlattenedArrayShapeOrLiteralTypeInstances());
         };
 
         $array_splice_callback = static function (
@@ -393,10 +393,10 @@ final class MiscParamPlugin extends PluginV2 implements
             // TODO: Support array_splice('x', $offset, $length, $notAnArray)
             // TODO: handle empty array
             $added_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[3])->genericArrayTypes();
-            $added_types = $added_types->withFlattenedArrayShapeTypeInstances();
+            $added_types = $added_types->withFlattenedArrayShapeOrLiteralTypeInstances();
 
             $variable = $context->getScope()->getVariableByName($variable_name);
-            $old_types = $variable->getUnionType()->withFlattenedArrayShapeTypeInstances();
+            $old_types = $variable->getUnionType()->withFlattenedArrayShapeOrLiteralTypeInstances();
 
             $variable->setUnionType($old_types->withUnionType($added_types));
         };

@@ -410,9 +410,9 @@ class ParseVisitor extends ScopeVisitor
             $context_for_property = clone($this->context)->withLineNumberStart($child_node->lineno ?? 0);
 
             if (!($default_node instanceof Node)) {
-                // Get the type of the default
+                // Get the type of the default (not a literal)
                 if ($default_node !== null) {
-                    $union_type = Type::fromObject($default_node)->asUnionType();
+                    $union_type = Type::nonLiteralFromObject($default_node)->asUnionType();
                 } else {
                     // This is a declaration such as `public $x;` with no $default_node
                     // (we don't assume the property is always null, to reduce false positives)
@@ -799,7 +799,7 @@ class ParseVisitor extends ScopeVisitor
                 if (!($node->children['method'] instanceof Node)) {
                     $meth = \strtolower($node->children['method']);
 
-                    if ($meth == '__construct') {
+                    if ($meth == '__construct' && $this->context->isInClassScope()) {
                         $class = $this->getContextClass();
                         $class->setIsParentConstructorCalled(true);
                     }

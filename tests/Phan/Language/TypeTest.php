@@ -19,6 +19,7 @@ use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\GenericIterableType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
+use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
@@ -73,6 +74,19 @@ class TypeTest extends BaseTest
         $this->assertParsesAsType(StringType::instance(false), 'string');
         $this->assertParsesAsType(TrueType::instance(false), 'true');
         $this->assertParsesAsType(VoidType::instance(false), 'void');
+    }
+
+    public function testLiteralTypes()
+    {
+        $this->assertParsesAsType(LiteralIntType::instance_for_value(1, false), '1');
+        $this->assertParsesAsType(LiteralIntType::instance_for_value(0, false), '0');
+        $this->assertParsesAsType(LiteralIntType::instance_for_value(0, false), '-0');
+        $this->assertParsesAsType(LiteralIntType::instance_for_value(-1, false), '-1');
+        $this->assertParsesAsType(LiteralIntType::instance_for_value(9, false), '9');
+        $this->assertParsesAsType(LiteralIntType::instance_for_value(190, false), '190');
+        $this->assertParsesAsType(FloatType::instance(false), '1111111111111111111111111111111111');
+        $this->assertParsesAsType(LiteralIntType::instance_for_value(1, true), '?1');
+        $this->assertParsesAsType(LiteralIntType::instance_for_value(-1, true), '?-1');
     }
 
     private function assertSameType(Type $expected, Type $actual, string $extra = '')
@@ -441,7 +455,7 @@ class TypeTest extends BaseTest
         $expected_flattened_type = UnionType::fromStringInContext($normalized_union_type_string, new Context(), Type::FROM_PHPDOC);
         $this->assertInstanceOf(ArrayShapeType::class, $actual_type, "Failed to create expected class for $type_string");
         assert($actual_type instanceof ArrayShapeType);
-        $actual_flattened_type = UnionType::of($actual_type->withFlattenedArrayShapeTypeInstances());
+        $actual_flattened_type = UnionType::of($actual_type->withFlattenedArrayShapeOrLiteralTypeInstances());
         $this->assertTrue($expected_flattened_type->isEqualTo($actual_flattened_type), "expected $actual_flattened_type to equal $expected_flattened_type");
     }
 

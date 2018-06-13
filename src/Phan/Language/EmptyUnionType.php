@@ -5,6 +5,7 @@ use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\IntType;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Generator;
 
@@ -933,6 +934,12 @@ final class EmptyUnionType extends UnionType
     }
 
     /** @override */
+    public function hasArrayShapeOrLiteralTypeInstances() : bool
+    {
+        return false;
+    }
+
+    /** @override */
     public function hasArrayShapeTypeInstances() : bool
     {
         return false;
@@ -942,6 +949,12 @@ final class EmptyUnionType extends UnionType
     public function hasMixedType() : bool
     {
         return false;
+    }
+
+    /** @override */
+    public function withFlattenedArrayShapeOrLiteralTypeInstances() : UnionType
+    {
+        return $this;
     }
 
     /** @override */
@@ -1028,5 +1041,46 @@ final class EmptyUnionType extends UnionType
         if (false) {
             yield;
         }
+    }
+
+    public function hasNonNullIntType() : bool
+    {
+        return false;
+    }
+
+    public function isNonNullIntType() : bool
+    {
+        return false;
+    }
+
+    public function hasLiterals() : bool
+    {
+        return false;
+    }
+
+    public function asNonLiteralType() : UnionType
+    {
+        return $this;
+    }
+
+    public function applyUnaryMinusOperator() : UnionType
+    {
+        return $this;
+    }
+
+    public function applyUnaryBitwiseNotOperator() : UnionType
+    {
+        return IntType::instance(false)->asUnionType();
+    }
+
+    public function applyUnaryPlusOperator() : UnionType
+    {
+        return UnionType::fromFullyQualifiedString('int|float');
+    }
+
+    /** @return null */
+    public function asSingleScalarValueOrNull()
+    {
+        return null;
     }
 }

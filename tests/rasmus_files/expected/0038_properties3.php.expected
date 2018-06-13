@@ -1,2 +1,2 @@
 %s:9 PhanTypeMismatchProperty Assigning array<int,string> to property but \A::prop is int[]
-%s:10 PhanTypeMismatchProperty Assigning int to property but \A::prop is int[]
+%s:10 PhanTypeMismatchProperty Assigning 1 to property but \A::prop is int[]

@@ -79,7 +79,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             if (\count($args) >= 1) {
                 $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0])->genericArrayTypes();
                 if (!$element_types->isEmpty()) {
-                    return $element_types->withFlattenedArrayShapeTypeInstances();
+                    return $element_types->withFlattenedArrayShapeOrLiteralTypeInstances();
                 }
             }
             return $array_type->asUnionType();
@@ -88,7 +88,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             if (\count($args) >= 2) {
                 $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1])->genericArrayTypes();
                 if (!$element_types->isEmpty()) {
-                    return $element_types->withFlattenedArrayShapeTypeInstances();
+                    return $element_types->withFlattenedArrayShapeOrLiteralTypeInstances();
                 }
             }
             return $array_type->asUnionType();
@@ -144,8 +144,8 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
                         // ARRAY_FILTER_USE_BOTH - pass both value and key as arguments to callback instead of the value
                     }
                     // TODO: Analyze if it and the flags are compatible with the arguments to the closure provided.
-                    // TODO: withFlattenedArrayShapeTypeInstances() for other values
-                    return $generic_passed_array_type->withFlattenedArrayShapeTypeInstances();
+                    // TODO: withFlattenedArrayShapeOrLiteralTypeInstances() for other values
+                    return $generic_passed_array_type->withFlattenedArrayShapeOrLiteralTypeInstances();
                 }
             }
             return $array_type->asUnionType();
@@ -174,7 +174,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             $types = UnionType::empty();
             foreach ($args as $arg) {
                 $passed_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg);
-                $types = $types->withUnionType($passed_array_type->genericArrayTypes()->withFlattenedArrayShapeTypeInstances());
+                $types = $types->withUnionType($passed_array_type->genericArrayTypes()->withFlattenedArrayShapeOrLiteralTypeInstances());
             }
             if ($types->isEmpty()) {
                 $types = $types->withType($array_type);

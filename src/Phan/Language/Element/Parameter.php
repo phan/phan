@@ -109,7 +109,7 @@ class Parameter extends Variable
         if ($future_type !== null) {
             // Only attempt to resolve the future type once.
             try {
-                $this->default_value_type = $future_type->get();
+                $this->default_value_type = $future_type->get()->asNonLiteralType();
             } catch (IssueException $exception) {
                 // Ignore exceptions
                 Issue::maybeEmitInstance(
@@ -241,7 +241,7 @@ class Parameter extends Variable
     private static function maybeGetKnownDefaultValueForNode($node)
     {
         if (!($node instanceof Node)) {
-            return Type::fromObject($node)->asUnionType();
+            return Type::nonLiteralFromObject($node)->asUnionType();
         }
         if ($node->kind === \ast\AST_CONST) {
             $name = $node->children['name']->children['name'] ?? null;

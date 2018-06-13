@@ -513,7 +513,7 @@ class ContextNode
                     $this->context,
                     $custom_issue_type ?? ($expected_type_categories === self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME ? Issue::TypeExpectedObjectOrClassName : Issue::TypeExpectedObject),
                     $this->node->lineno ?? 0,
-                    (string)$union_type
+                    (string)$union_type->asNonLiteralType()
                 );
             }
         }
@@ -1886,7 +1886,12 @@ class ContextNode
         } elseif ($kind === ast\AST_MAGIC_CONST) {
             return $this->getValueForMagicConstByNode($node);
         }
-        return $node;
+        $node_type = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node
+        );
+        return $node_type->asSingleScalarValueOrNull() ?? $node;
     }
 
     public function getValueForMagicConst()

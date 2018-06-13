@@ -1,6 +1,6 @@
 %s:18 PhanTypeMissingReturn Method \B307::offsetExists is declared to return bool but has no return value
 %s:22 PhanTypeMissingReturn Method \B307::offsetGet is declared to return mixed but has no return value
-%s:34 PhanTypeMismatchReturn Returning type int but serialize() is declared to return string
+%s:34 PhanTypeMismatchReturn Returning type 42 but serialize() is declared to return string
 %s:39 PhanUnusedVariable Unused definition of variable $x
 %s:40 PhanTypeMismatchReturn Returning type true but unserialize() is declared to return void
 %s:44 PhanUnusedVariable Unused definition of variable $result

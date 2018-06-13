@@ -1,5 +1,5 @@
-%s:9 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,\stdClass>|array<int,int>|array<string,string> but \strlen() takes string
-%s:19 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,\stdClass>|array<int,int>|array<string,string> but \strlen() takes string
+%s:9 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,2>|array<int,\stdClass>|array<string,string> but \strlen() takes string
+%s:19 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,2>|array<int,\stdClass>|array<string,string> but \strlen() takes string
 %s:26 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,int> but \strlen() takes string
 %s:32 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,int> but \strlen() takes string
 %s:39 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,\stdClass>|array<int,int>|array<string,string> but \strlen() takes string

@@ -1,9 +1,9 @@
-src/003_short_array.php:6 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+src/003_short_array.php:6 PhanTypeMismatchArgumentInternal Argument 1 (string) is 2|3 but \strlen() takes string
 src/003_short_array.php:8 PhanCompatibleShortArrayAssignPHP70 Square bracket syntax for an array destructuring assignment is not compatible with PHP 7.0
-src/003_short_array.php:9 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
-src/003_short_array.php:13 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{0:int} but \strlen() takes string
+src/003_short_array.php:9 PhanTypeMismatchArgumentInternal Argument 1 (string) is 2|3 but \strlen() takes string
+src/003_short_array.php:13 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{0:2} but \strlen() takes string
 src/003_short_array.php:15 PhanCompatibleShortArrayAssignPHP70 Square bracket syntax for an array destructuring assignment is not compatible with PHP 7.0
-src/003_short_array.php:17 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{0:int} but \strlen() takes string
+src/003_short_array.php:17 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{0:2} but \strlen() takes string
 src/003_short_array.php:20 PhanUnusedVariable Unused definition of variable $a
 src/003_short_array.php:21 PhanCompatibleKeyedArrayAssignPHP70 Using array keys in an array destructuring assignment is not compatible with PHP 7.0
-src/003_short_array.php:24 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{0:int} but \strlen() takes string
+src/003_short_array.php:24 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{0:3} but \strlen() takes string

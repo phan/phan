@@ -2883,11 +2883,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // For https://github.com/phan/phan/issues/1525 : Collapse array shapes into generic arrays before recursively analyzing a method.
         if (!$parameter->isCloneOfVariadic()) {
             $parameter->addUnionType(
-                $argument_type->withFlattenedArrayShapeTypeInstances()
+                $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()
             );
         } else {
             $parameter->addUnionType(
-                $argument_type->withFlattenedArrayShapeTypeInstances()->asGenericArrayTypes(GenericArrayType::KEY_INT)
+                $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->asGenericArrayTypes(GenericArrayType::KEY_INT)
             );
         }
 

@@ -476,16 +476,24 @@ final class GenericArrayType extends ArrayType
         return GenericArrayType::KEY_MIXED;
     }
 
+    public function hasArrayShapeOrLiteralTypeInstances() : bool
+    {
+        return $this->element_type->hasArrayShapeOrLiteralTypeInstances();
+    }
+
     public function hasArrayShapeTypeInstances() : bool
     {
         return $this->element_type->hasArrayShapeTypeInstances();
     }
 
-    /** @return array<int,Type> */
-    public function withFlattenedArrayShapeTypeInstances() : array
+    /**
+     * @return array<int,Type>
+     * @override
+     */
+    public function withFlattenedArrayShapeOrLiteralTypeInstances() : array
     {
         // TODO: Any point in caching this?
-        $type_instances = $this->element_type->withFlattenedArrayShapeTypeInstances();
+        $type_instances = $this->element_type->withFlattenedArrayShapeOrLiteralTypeInstances();
         if (\count($type_instances) === 1 && $type_instances[0] === $this->element_type) {
             return [$this];
         }

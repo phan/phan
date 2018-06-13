@@ -35,6 +35,7 @@ use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
@@ -120,10 +121,9 @@ class UnionTypeVisitor extends AnalysisVisitor
     ) : UnionType {
         if (!($node instanceof Node)) {
             // TODO: String null shouldn't be a special case (or should be case insensitive)?
-            if ($node === null || $node === 'null') {
+            if ($node === null) {
                 return UnionType::empty();
             }
-
             return Type::fromObject($node)->asUnionType();
         }
         $node_id = \spl_object_id($node);
@@ -202,7 +202,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->code_base,
             $this->context,
             $node->children['var']
-        );
+        )->asNonLiteralType();
     }
 
     /**
@@ -223,7 +223,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->code_base,
             $this->context,
             $node->children['var']
-        );
+        )->asNonLiteralType();
     }
 
     /**
@@ -244,7 +244,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->code_base,
             $this->context,
             $node->children['var']
-        );
+        )->asNonLiteralType();
     }
 
     /**
@@ -257,6 +257,8 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @return UnionType
      * The set of types that are possibly produced by the
      * given node
+     *
+     * TODO: in PostOrderAnalysisVisitor, set the type to unknown for ++/--
      */
     public function visitPreInc(Node $node) : UnionType
     {
@@ -265,7 +267,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->code_base,
             $this->context,
             $node->children['var']
-        );
+        )->asNonLiteralType();
     }
 
     /**
@@ -353,7 +355,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitMagicConst(Node $node) : UnionType
     {
         if ($node->flags === \ast\flags\MAGIC_LINE) {
-            return IntType::instance(false)->asUnionType();
+            return LiteralIntType::instance_for_value($node->lineno, false)->asUnionType();
         }
         // This is for things like __METHOD__
         return StringType::instance(false)->asUnionType();
@@ -917,7 +919,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         return (new AssignOperatorFlagVisitor(
             $this->code_base,
             $this->context
-        ))($node);
+        ))->__invoke($node);
     }
 
     /**
@@ -1941,16 +1943,25 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitUnaryOp(Node $node) : UnionType
     {
         // Shortcut some easy operators
-        switch ($node->flags) {
-            case \ast\flags\UNARY_BOOL_NOT:
-                return BoolType::instance(false)->asUnionType();
+        $flags = $node->flags;
+        if ($flags === \ast\flags\UNARY_BOOL_NOT) {
+            return BoolType::instance(false)->asUnionType();
         }
 
-        return self::unionTypeFromNode(
+        $result = self::unionTypeFromNode(
             $this->code_base,
             $this->context,
             $node->children['expr']
         );
+        if ($flags === \ast\flags\UNARY_MINUS) {
+            return $result->applyUnaryMinusOperator();
+        } elseif ($flags === \ast\flags\UNARY_BITWISE_NOT) {
+            return $result->applyUnaryBitwiseNotOperator();
+        } elseif ($flags === \ast\flags\UNARY_PLUS) {
+            return $result->applyUnaryPlusOperator();
+        }
+        // UNARY_SILENCE or UNARY_PLUS
+        return $result;
     }
 
     /**

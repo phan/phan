@@ -22,6 +22,7 @@ use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\GenericIterableType;
 use Phan\Language\Type\GenericMultiArrayType;
+use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
@@ -30,6 +31,7 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\ScalarRawType;
+use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
@@ -75,6 +77,9 @@ class Type
     const shape_key_regex =
         '[-._a-zA-Z0-9\x7f-\xff]+\??';
 
+    const noncapturing_literal_regex =
+        '\??-?(?:0|[1-9][0-9]*)';
+
     /**
      * @var string
      * A legal array entry in an array shape (e.g. 'field:string[]')
@@ -105,6 +110,7 @@ class Type
             . ')'
           . ')?'
         . ')|'
+        . self::noncapturing_literal_regex . '|'
         . '(' . self::simple_type_regex . ')'  // ?T or T. TODO: Get rid of pattern for '?'?
         . '(?:'
           . '<'
@@ -147,6 +153,7 @@ class Type
                 . ')'
               . ')?'
             . ')|'
+            . self::noncapturing_literal_regex . '|'
             . '(' . self::simple_type_regex_or_this . ')'  // 3 patterns
             . '(?:<'
               . '('
@@ -293,6 +300,7 @@ class Type
     //  which saves and restores some static properties)
     public function __wakeup()
     {
+        debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
         throw new \Error("Cannot unserialize Type");
     }
 
@@ -546,16 +554,43 @@ class Type
 
     /**
      * @return Type
-     * Get a type for the given object
+     * Get a type for the given object. Equivalent to Type::fromObject($object)->asNonLiteralType()
      */
-    public static function fromObject($object) : Type
+    public static function nonLiteralFromObject($object) : Type
     {
         static $type_map = null;
         if ($type_map === null) {
             $type_map = [
                 'integer' => IntType::instance(false),
                 'boolean' => BoolType::instance(false),
-                'double'   => FloatType::instance(false),
+                'double'  => FloatType::instance(false),
+                'string'  => StringType::instance(false),
+                'object'  => ObjectType::instance(false),
+                'NULL'    => NullType::instance(false),
+                'array'   => ArrayType::instance(false),
+                'resource' => ResourceType::instance(false),  // For inferring the type of constants STDIN, etc.
+            ];
+        }
+        // gettype(2) doesn't return 'int', it returns 'integer', so use FROM_PHPDOC
+        return $type_map[\gettype($object)];
+    }
+
+    /**
+     * @return Type
+     * Get a type for the given object
+     */
+    public static function fromObject($object) : Type
+    {
+        if (\is_int($object)) {
+            return LiteralIntType::instance_for_value($object, false);
+        }
+
+        static $type_map = null;
+        if ($type_map === null) {
+            $type_map = [
+                'integer' => IntType::instance(false),
+                'boolean' => BoolType::instance(false),
+                'double'  => FloatType::instance(false),
                 'string'  => StringType::instance(false),
                 'object'  => ObjectType::instance(false),
                 'NULL'    => NullType::instance(false),
@@ -705,7 +740,7 @@ class Type
         string $fully_qualified_string
     ) : Type {
         \assert(
-            !empty($fully_qualified_string),
+            $fully_qualified_string !== '',
             "Type cannot be empty"
         );
         while (\substr($fully_qualified_string, -1) === ')') {
@@ -737,6 +772,9 @@ class Type
         $template_parameter_type_name_list = $tuple->_2;
         $is_nullable = $tuple->_3;
         $shape_components = $tuple->_4;
+        if (\preg_match('/^(' . self::noncapturing_literal_regex . ')$/', $type_name)) {
+            return self::fromEscapedLiteralScalar($type_name);
+        }
         if (\is_array($shape_components)) {
             if (\strcasecmp($type_name, 'array') === 0) {
                 return ArrayShapeType::fromFieldTypes(
@@ -790,6 +828,19 @@ class Type
             $is_nullable,
             Type::FROM_NODE
         );
+    }
+
+    private static function fromEscapedLiteralScalar(string $escaped_literal) : ScalarType
+    {
+        $is_nullable = $escaped_literal[0] === '?';
+        if ($is_nullable) {
+            $escaped_literal = \substr($escaped_literal, 1);
+        }
+        $value = filter_var($escaped_literal, FILTER_VALIDATE_INT);
+        if (\is_int($value)) {
+            return LiteralIntType::instance_for_value($value, $is_nullable);
+        }
+        return FloatType::instance($is_nullable);
     }
 
     /**
@@ -957,6 +1008,11 @@ class Type
         $template_parameter_type_name_list = $tuple->_2;
         $is_nullable = $tuple->_3;
         $shape_components = $tuple->_4;
+
+        if (\preg_match('/^(' . self::noncapturing_literal_regex . ')$/', $type_name)) {
+            return self::fromEscapedLiteralScalar($type_name);
+        }
+
         if (\is_array($shape_components)) {
             if (\strcasecmp($type_name, 'array') === 0) {
                 return ArrayShapeType::fromFieldTypes(
@@ -2259,15 +2315,26 @@ class Type
         $match = [];
         $is_nullable = false;
         if (\preg_match('/^' . self::type_regex_or_this . '$/', $type_string, $match)) {
-            if ($match[3] !== '') {
-                return self::closureTypeStringComponents($type_string, $match[3]);
+            $closure_components = $match[3] ?? '';
+            if ($closure_components !== '') {
+                return self::closureTypeStringComponents($type_string, $closure_components);
             }
             if (!isset($match[2])) {
                 // Parse '(X)' as 'X'
                 return self::typeStringComponents(\substr($match[1], 1, -1));
             } elseif (!isset($match[4])) {
-                // Parse '?(X[]) as '?X[]'
-                return self::typeStringComponents('?' . \substr($match[2], 2, -1));
+                if (\substr($type_string, -1) === ')') {
+                    // Parse '?(X[]) as '?X[]'
+                    return self::typeStringComponents('?' . \substr($match[2], 2, -1));
+                } else {
+                    return new Tuple5(
+                        '',
+                        $match[0],
+                        [],
+                        false,
+                        null
+                    );
+                }
             }
             $type_string = $match[4];
 
@@ -2429,6 +2496,11 @@ class Type
         return $this->is_nullable ? self::_bit_nullable : 0;
     }
 
+    public function hasArrayShapeOrLiteralTypeInstances() : bool
+    {
+        return false;
+    }
+
     public function hasArrayShapeTypeInstances() : bool
     {
         return false;
@@ -2444,10 +2516,27 @@ class Type
     }
 
     /**
+     * @deprecated - Use withFlattenedArrayShapeOrLiteralTypeInstances
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    final public function withFlattenedArrayShapeInstances() : array
+    {
+        return $this->withFlattenedArrayShapeOrLiteralTypeInstances();
+    }
+
+    /**
      * @return Type[]
      */
-    public function withFlattenedArrayShapeTypeInstances() : array
+    public function withFlattenedArrayShapeOrLiteralTypeInstances() : array
     {
         return [$this];
+    }
+
+    /**
+     * Overridden in subclasses such as LiteralIntType
+     */
+    public function asNonLiteralType() : Type
+    {
+        return $this;
     }
 }

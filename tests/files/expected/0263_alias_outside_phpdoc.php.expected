@@ -6,7 +6,8 @@
 %s:4 PhanUndeclaredTypeReturnType Return type of foo263 is undeclared type \boolean
 %s:5 PhanTypeMismatchReturn Returning type false but foo263() is declared to return \boolean
 %s:7 PhanTypeMismatchArgument Argument 1 (a) is false but \foo263() takes \boolean defined at %s:4
-%s:7 PhanTypeMismatchArgument Argument 2 (b) is int but \foo263() takes \integer defined at %s:4
+%s:7 PhanTypeMismatchArgument Argument 2 (b) is 2 but \foo263() takes \integer defined at %s:4
 %s:7 PhanTypeMismatchArgument Argument 3 (c) is Closure():void but \foo263() takes \callback defined at %s:4
 %s:7 PhanTypeMismatchArgument Argument 4 (d) is float but \foo263() takes \double defined at %s:4
 %s:7 PhanTypeMismatchArgument Argument 5 (e) is float but \foo263() takes \double defined at %s:4
+
