@@ -3,7 +3,7 @@
 %s:12 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
 %s:13 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<string,string>|array<string,string[]> but \strlen() takes string
 %s:15 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<string,string>|array<string,string[]> but \strlen() takes string
-%s:19 PhanTypeMismatchArgumentInternal Argument 1 (var) is string but \count() takes \Countable|array
+%s:19 PhanTypeMismatchArgumentInternal Argument 1 (var) is 'foo' but \count() takes \Countable|array
 %s:20 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<string,string> but \strlen() takes string
 %s:22 PhanTypeMismatchArgumentInternal Argument 1 (var) is string but \count() takes \Countable|array
 %s:27 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<string,mixed> but \strlen() takes string
@@ -13,3 +13,4 @@
 %s:43 PhanUnusedVariable Unused definition of variable $http_response_headers
 %s:49 PhanUndeclaredVariable Variable $argc is undeclared
 %s:50 PhanUndeclaredVariable Variable $argv is undeclared
+

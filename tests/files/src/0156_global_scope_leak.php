@@ -5,9 +5,9 @@ class C1 {}
 $c = new C1;
 
 class C2 {
-    function f() : int {
+    function f(string $s) : int {
         if (false) {
-            $c = 's';
+            $c = $s;
         }
         return $c;
     }

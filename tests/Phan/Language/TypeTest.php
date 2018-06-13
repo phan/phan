@@ -89,6 +89,14 @@ class TypeTest extends BaseTest
         $this->assertParsesAsType(LiteralIntType::instance_for_value(-1, true), '?-1');
     }
 
+    /*
+    // Planned:
+    public function testLiteralStringType()
+    {
+        $this->assertParsesAsType(LiteralStringType::instance_for_value('x', false), '"x"');
+    }
+     */
+
     private function assertSameType(Type $expected, Type $actual, string $extra = '')
     {
         $message = \sprintf("Expected %s to be %s", (string)$actual, (string)$expected);
