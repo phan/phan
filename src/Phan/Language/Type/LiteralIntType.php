@@ -5,7 +5,7 @@ use Phan\Language\Type;
 
 use RuntimeException;
 
-final class LiteralIntType extends IntType
+final class LiteralIntType extends IntType implements LiteralTypeInterface
 {
     /** @var int $value */
     private $value;
@@ -25,6 +25,9 @@ final class LiteralIntType extends IntType
         throw new RuntimeException('Call ' . __CLASS__ . '::instance_for_value() instead');
     }
 
+    /**
+     * @return LiteralIntType
+     */
     public static function instance_for_value(int $value, bool $is_nullable)
     {
         if ($is_nullable) {
@@ -35,7 +38,7 @@ final class LiteralIntType extends IntType
         return $cache[$value] ?? ($cache[$value] = new self($value, false));
     }
 
-    public function getValue()
+    public function getValue() : int
     {
         return $this->value;
     }

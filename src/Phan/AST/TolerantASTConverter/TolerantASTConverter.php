@@ -881,7 +881,6 @@ class TolerantASTConverter
                         }
                     }
                 } else {
-                    // FIXME: skip over whitespace and \\
                     $imploded_parts = static::phpParserNameToString($n);
                 }
                 if ($n->globalSpecifier !== null) {
@@ -2619,7 +2618,15 @@ class TolerantASTConverter
         // TODO: Handle error case (can there be missing parts?)
         $result = '';
         foreach ($nameParts as $part) {
-            $result .= \trim(static::tokenToString($part));
+            $part_as_string = static::tokenToString($part);
+            if ($part_as_string !== '') {
+                $result .= \trim($part_as_string);
+            }
+        }
+        $result = \rtrim(\preg_replace('/\\\\{2,}/', '\\', $result), '\\');
+        if ($result === '') {
+            // Would lead to "The name cannot be empty" when parsing
+            throw new InvalidNodeException();
         }
         return $result;
     }

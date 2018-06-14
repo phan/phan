@@ -33,6 +33,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
@@ -560,6 +561,17 @@ class ContextNode
     ) : Method {
 
         if ($method_name instanceof Node) {
+            $method_name_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $method_name
+            );
+            foreach ($method_name_type->getTypeSet() as $type) {
+                if ($type instanceof LiteralStringType) {
+                    // TODO: Warn about nullable?
+                    return $this->getMethod($type->getValue(), $is_static, $is_direct, $is_new_expression);
+                }
+            }
             // The method_name turned out to be a variable.
             // There isn't much we can do to figure out what
             // it's referring to.
@@ -620,7 +632,7 @@ class ContextNode
                     ObjectType::instance(false),
                 ])
                 // reject `$stringVar->method()` but not `$stringVar::method()` and not (`new $stringVar()`
-                && !(($is_static || $is_new_expression) && $union_type->hasType(StringType::instance(false)))
+                && !(($is_static || $is_new_expression) && $union_type->hasNonNullStringType())
                 && !(
                     Config::get_null_casts_as_any_type()
                     && $union_type->hasType(NullType::instance(false))
@@ -739,6 +751,33 @@ class ContextNode
                         }
                     } elseif ($type instanceof FunctionLikeDeclarationType) {
                         yield $type;
+                    } elseif ($type instanceof LiteralStringType) {
+                        // TODO: deduplicate this functionality
+                        try {
+                            $method = (new ContextNode(
+                                $code_base,
+                                $context,
+                                $expression
+                            ))->getFunction($type->getValue());
+                        } catch (IssueException $exception) {
+                            Issue::maybeEmitInstance(
+                                $code_base,
+                                $context,
+                                $exception->getIssueInstance()
+                            );
+                            continue;
+                        } catch (EmptyFQSENException $exception) {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $context,
+                                Issue::EmptyFQSENInCallable,
+                                $expression->lineno ?? $context->getLineNumberStart(),
+                                $exception->getFQSEN()
+                            );
+                            continue;
+                        }
+
+                        yield $method;
                     }
                 }
             }
@@ -763,7 +802,7 @@ class ContextNode
                     $code_base,
                     $context,
                     Issue::EmptyFQSENInCallable,
-                    $expression->children['name']->lineno ?? $context->getLineNumberStart(),
+                    $expression->lineno ?? $context->getLineNumberStart(),
                     $exception->getFQSEN()
                 );
                 return $context;
@@ -1024,10 +1063,13 @@ class ContextNode
 
         // Give up for things like C::$prop_name
         if (!\is_string($property_name)) {
-            throw new NodeException(
-                $node,
-                "Cannot figure out non-string property name"
-            );
+            $property_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $property_name);
+            if (!\is_string($property_name)) {
+                throw new NodeException(
+                    $node,
+                    "Cannot figure out non-string property name"
+                );
+            }
         }
 
         $class_fqsen = null;
@@ -1884,6 +1926,7 @@ class ContextNode
             }
             return $new_node;
         } elseif ($kind === ast\AST_MAGIC_CONST) {
+            // TODO: Look into eliminating this
             return $this->getValueForMagicConstByNode($node);
         }
         $node_type = UnionTypeVisitor::unionTypeFromNode(
@@ -1903,6 +1946,7 @@ class ContextNode
 
     public function getValueForMagicConstByNode(Node $node)
     {
+        // TODO: clean up or refactor?
         $context = $this->context;
         switch ($node->flags) {
             case ast\flags\MAGIC_CLASS:

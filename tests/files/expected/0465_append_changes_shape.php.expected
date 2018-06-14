@@ -1,2 +1,2 @@
 %s:3 PhanUndeclaredVariable Variable $this is undeclared
-%s:5 PhanTypeMismatchDimFetch When fetching an array index from a value of type array<int,mixed>|array{}, found an array index of type string, but expected the index to be of type int
+%s:5 PhanTypeMismatchDimFetch When fetching an array index from a value of type array<int,mixed>|array{}, found an array index of type 'key', but expected the index to be of type int

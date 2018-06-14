@@ -23,7 +23,7 @@ use Phan\Language\Scope\ClassScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
 use Phan\Language\Type\IterableType;
-use Phan\Language\Type\StringType;
+use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 use Phan\Library\None;
@@ -2596,7 +2596,10 @@ class Clazz extends AddressableElement
         $class_constant = new ClassConstant(
             $this->getContext(),
             'class',
-            StringType::instance(false)->asUnionType(),
+            LiteralStringType::instance_for_value(
+                \ltrim($this->getFQSEN()->__toString(), '\\'),
+                false
+            )->asUnionType(),
             0,
             FullyQualifiedClassConstantName::make(
                 $this->getFQSEN(),

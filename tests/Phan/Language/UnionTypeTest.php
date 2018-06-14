@@ -56,6 +56,10 @@ class UnionTypeTest extends BaseTest
             'nullable_int_type',
             'non_nullable_int_type',
         ],
+        'Phan\Language\Type\LiteralStringType' => [
+            'nullable_int_type',
+            'non_nullable_int_type',
+        ],
         'Phan\Language\UnionType' => [
             'empty_instance',
         ],
@@ -104,7 +108,7 @@ class UnionTypeTest extends BaseTest
         try {
             $this->assertUnionTypeStringEqual(
                 '"a string"',
-                'string'
+                "'a string'"
             );
         } catch (\Exception $exception) {
             print((string)$exception);
@@ -114,15 +118,23 @@ class UnionTypeTest extends BaseTest
     public function testArrayUniform()
     {
         $this->assertUnionTypeStringEqual(
-            '[false => "string"]',
-            'array{0:string}'
+            '[false => \'$string\']',
+            "array{0:'\$string'}"
+        );
+    }
+
+    public function testArrayUniformMultipleValuesLiteral()
+    {
+        $this->assertUnionTypeStringEqual(
+            '[false => rand(0,1) ? zend_version() : 2]',
+            "array{0:2|string}"
         );
     }
 
     public function testArrayUniformMultipleValues()
     {
         $this->assertUnionTypeStringEqual(
-            '[false => rand(0,1) ? "string" : 2]',
+            '[false => rand(0,1) ? zend_version() : 2]',
             'array{0:2|string}'
         );
     }
@@ -130,7 +142,7 @@ class UnionTypeTest extends BaseTest
     public function testArrayMixed()
     {
         $this->assertUnionTypeStringEqual(
-            '[1, "string"]',
+            '[1, zend_version()]',
             'array{0:1,1:string}'
         );
     }

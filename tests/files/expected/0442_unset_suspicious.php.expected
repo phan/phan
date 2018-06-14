@@ -1,3 +1,3 @@
-%s:4 PhanTypeArrayUnsetSuspicious Suspicious attempt to unset an offset of a value of type string
+%s:4 PhanTypeArrayUnsetSuspicious Suspicious attempt to unset an offset of a value of type 'myString'
 %s:7 PhanTypeArrayUnsetSuspicious Suspicious attempt to unset an offset of a value of type false
 %s:10 PhanTypeArrayUnsetSuspicious Suspicious attempt to unset an offset of a value of type \stdClass

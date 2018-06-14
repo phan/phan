@@ -27,7 +27,6 @@ use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\StringType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use ast\Node;
@@ -1162,7 +1161,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 if ($method->isPHPInternal()) {
                     // If we are not in strict mode and we accept a string parameter
                     // and the argument we are passing has a __toString method then it is ok
-                    if (!$context->getIsStrictTypes() && $method_return_type->hasType(StringType::instance(false))) {
+                    if (!$context->getIsStrictTypes() && $method_return_type->hasNonNullStringType()) {
                         if ($individual_type_expanded->hasClassWithToStringMethod($code_base, $context)) {
                             continue;
                         }
@@ -1600,7 +1599,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // Give up on things like Class::$var
         if (!\is_string($method_name)) {
-            return $this->context;
+            $method_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $method_name);
+            if (!\is_string($method_name)) {
+                return $this->context;
+            }
         }
 
         // Get the name of the static class being referenced
@@ -1978,7 +1980,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $method_name = $node->children['method'];
 
         if (!\is_string($method_name)) {
-            return $this->context;
+            $method_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $method_name);
+            if (!is_string($method_name)) {
+                return $this->context;
+            }
         }
 
         try {

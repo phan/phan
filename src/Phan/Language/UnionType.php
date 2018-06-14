@@ -18,6 +18,8 @@ use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\LiteralIntType;
+use Phan\Language\Type\LiteralStringType;
+use Phan\Language\Type\LiteralTypeInterface;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\MultiType;
@@ -1001,10 +1003,39 @@ class UnionType implements \Serializable
         return true;
     }
 
+    /**
+     * Returns true if this contains at least one non-null StringType or LiteralStringType
+     */
+    public function hasNonNullStringType() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type instanceof StringType && !$type->getIsNullable()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if this is exclusively non-null StringType or LiteralStringType
+     */
+    public function isNonNullStringType() : bool
+    {
+        if (\count($this->type_set) === 0) {
+            return false;
+        }
+        foreach ($this->type_set as $type) {
+            if (!($type instanceof StringType) || $type->getIsNullable()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public function hasLiterals() : bool
     {
         foreach ($this->type_set as $type) {
-            if ($type instanceof LiteralIntType) {
+            if ($type instanceof LiteralTypeInterface) {
                 return true;
             }
         }
@@ -2718,12 +2749,26 @@ class UnionType implements \Serializable
         if ($this->isEmpty()) {
             return IntType::instance(false)->asUnionType();
         }
-        /**
-         * @param int|float $value
-         */
-        return $this->applyNumericOperation(function ($value) : ScalarType {
-            return LiteralIntType::instance_for_value(~$value, false);
-        }, false);
+        $added_fallbacks = false;
+        $type_set = UnionType::empty();
+        foreach ($this->type_set as $type) {
+            if ($type instanceof LiteralIntType) {
+                $type_set = $type_set->withType(LiteralIntType::instance_for_value(~$type->getValue(), false));
+                if ($type->getIsNullable()) {
+                    $type_set = $type_set->withType(LiteralIntType::instance_for_value(0, false));
+                }
+            } elseif ($type instanceof StringType) {
+                // Not going to bother being more specific (this applies bitwise not to each character for LiteralStringType)
+                $type_set = $type_set->withType(StringType::instance(false));
+            } else {
+                if ($added_fallbacks) {
+                    continue;
+                }
+                $type_set = $type_set->withType(IntType::instance(false));
+                $added_fallbacks = true;
+            }
+        }
+        return $type_set;
     }
 
     public function applyUnaryPlusOperator() : UnionType
@@ -2790,7 +2835,10 @@ class UnionType implements \Serializable
         switch (\get_class($type)) {
             case LiteralIntType::class:
                 '@phan-var LiteralIntType $type';  // TODO: support switches
-                return $type->getIsNullable() ? $type->getValue() : null;
+                return $type->getIsNullable() ? null : $type->getValue();
+            case LiteralStringType::class:
+                '@phan-var LiteralStringType $type';  // TODO: support switches
+                return $type->getIsNullable() ? null : $type->getValue();
             case FalseType::class:
                 return false;
             case TrueType::class:

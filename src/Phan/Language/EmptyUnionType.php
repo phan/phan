@@ -1053,6 +1053,16 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
+    public function hasNonNullStringType() : bool
+    {
+        return false;
+    }
+
+    public function isNonNullStringType() : bool
+    {
+        return false;
+    }
+
     public function hasLiterals() : bool
     {
         return false;

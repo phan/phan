@@ -1092,14 +1092,12 @@ class AssignmentVisitor extends AnalysisVisitor
     public function typeCheckDimAssignment(UnionType $assign_type, Node $node) : UnionType
     {
         static $int_or_string_type = null;
-        static $string_type = null;
         static $mixed_type = null;
         static $string_array_type = null;
         static $simple_xml_element_type = null;
 
         if ($int_or_string_type === null) {
             $int_or_string_type = UnionType::fromFullyQualifiedString('int|string');
-            $string_type = StringType::instance(false);
             $mixed_type = MixedType::instance(false);
             $string_array_type = UnionType::fromFullyQualifiedString('string[]');
             $simple_xml_element_type =
@@ -1129,7 +1127,7 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         if (!$assign_type_expanded->hasArrayLike()) {
-            if ($assign_type->hasType($string_type)) {
+            if ($assign_type->hasNonNullStringType()) {
                 // Are we assigning to a variable/property of type 'string' (with no ArrayAccess or array types)?
                 if (\is_null($dim_type)) {
                     $this->emitIssue(

@@ -1,2 +1,2 @@
-%s:7 PhanTypeMismatchArgument Argument 1 (arg) is string but \A::__construct() takes int defined at %s:3
+%s:7 PhanTypeMismatchArgument Argument 1 (arg) is 'wrong' but \A::__construct() takes int defined at %s:3
 

@@ -1,2 +1,2 @@
-%s:5 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:5 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is 'value' but \intdiv() takes int
 %s:8 PhanUndeclaredVariableDim Variable $global435 was undeclared, but array fields are being added to it.

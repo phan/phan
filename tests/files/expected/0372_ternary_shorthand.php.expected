@@ -1,4 +1,4 @@
-%s:21 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int382() takes int defined at %s:17
+%s:21 PhanTypeMismatchArgument Argument 1 (x) is ''|string but \expect_int382() takes int defined at %s:17
 %s:21 PhanTypeSuspiciousEcho Suspicious argument void for an echo/print statement
-%s:22 PhanTypeMismatchArgument Argument 1 (x) is array{0:string}|string but \expect_int382() takes int defined at %s:17
+%s:22 PhanTypeMismatchArgument Argument 1 (x) is array{0:'x'}|string but \expect_int382() takes int defined at %s:17
 %s:22 PhanTypeSuspiciousEcho Suspicious argument void for an echo/print statement

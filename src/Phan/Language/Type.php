@@ -23,6 +23,7 @@ use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\GenericIterableType;
 use Phan\Language\Type\GenericMultiArrayType;
 use Phan\Language\Type\LiteralIntType;
+use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
@@ -77,8 +78,15 @@ class Type
     const shape_key_regex =
         '[-._a-zA-Z0-9\x7f-\xff]+\??';
 
+    /**
+     * A literal integer or string.
+     *
+     * Note that string literals can only contain a whitelist of characters.
+     * NOTE: The / is escaped
+     */
     const noncapturing_literal_regex =
-        '\??-?(?:0|[1-9][0-9]*)';
+        '\??(?:-?(?:0|[1-9][0-9]*)|\'(?:[- ,.\/?:;"!#$%^&*_+=a-zA-Z0-9_\x80-\xff]|\\\\(?:[\'\\\\]|x[0-9a-fA-F]{2}))*\')';
+        // '\??(?:-?(?:0|[1-9][0-9]*)|\'(?:[a-zA-Z0-9_])*\')';
 
     /**
      * @var string
@@ -581,25 +589,30 @@ class Type
      */
     public static function fromObject($object) : Type
     {
-        if (\is_int($object)) {
-            return LiteralIntType::instance_for_value($object, false);
+        switch (\gettype($object)) {
+            case 'integer':
+                '@phan-var int $object';
+                return LiteralIntType::instance_for_value($object, false);
+            case 'string':
+                '@phan-var string $object';
+                return LiteralStringType::instance_for_value($object, false);
+            case 'NULL':
+                return NullType::instance(false);
+            case 'double':
+                return FloatType::instance(false);
+            case 'object':
+                return ObjectType::instance(false);
+            case 'boolean':
+                // TODO: Does this have many side effects?
+                // Probably not, 'false' is an AST_CONST Node.
+                return $object ? TrueType::instance(false) : FalseType::instance(false);
+            case 'array':
+                return ArrayType::instance(false);
+            case 'resource':
+                return ResourceType::instance(false);  // For inferring the type of constants STDIN, etc.
+            default:
+                throw new \AssertionError("Unknown type " . gettype($object));
         }
-
-        static $type_map = null;
-        if ($type_map === null) {
-            $type_map = [
-                'integer' => IntType::instance(false),
-                'boolean' => BoolType::instance(false),
-                'double'  => FloatType::instance(false),
-                'string'  => StringType::instance(false),
-                'object'  => ObjectType::instance(false),
-                'NULL'    => NullType::instance(false),
-                'array'   => ArrayType::instance(false),
-                'resource' => ResourceType::instance(false),  // For inferring the type of constants STDIN, etc.
-            ];
-        }
-        // gettype(2) doesn't return 'int', it returns 'integer', so use FROM_PHPDOC
-        return $type_map[\gettype($object)];
     }
 
     /**
@@ -835,6 +848,9 @@ class Type
         $is_nullable = $escaped_literal[0] === '?';
         if ($is_nullable) {
             $escaped_literal = \substr($escaped_literal, 1);
+        }
+        if ($escaped_literal[0] === "'") {
+            return LiteralStringType::fromEscapedString($escaped_literal, $is_nullable);
         }
         $value = filter_var($escaped_literal, FILTER_VALIDATE_INT);
         if (\is_int($value)) {

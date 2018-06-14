@@ -1,0 +1,5 @@
+%s:16 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:20 PhanTypeMismatchArgumentInternal Argument 1 (var) is 'NS\\MyClass496' but \count() takes \Countable|array
+%s:23 PhanParamTooFew Call with 0 arg(s) to \NS\MyClass496::myStaticMethod() which requires 1 arg(s) defined at %s:8
+%s:25 PhanParamTooFew Call with 0 arg(s) to \NS\MyClass496::myInstanceMethod() which requires 1 arg(s) defined at %s:9
+%s:28 PhanAccessPropertyNonStaticAsStatic Accessing non static property \NS\MyClass496->$static_prop as static
