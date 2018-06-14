@@ -1525,7 +1525,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         $name_node = $node->children['name'];
         if (($name_node instanceof Node)) {
             // This is nonsense. Give up.
-            $name_node_type = $this($name_node);
+            $name_node_type = $this->__invoke($name_node);
             static $int_or_string_type;
             if ($int_or_string_type === null) {
                 $int_or_string_type = new UnionType([
@@ -1536,9 +1536,13 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
             if (!$name_node_type->canCastToUnionType($int_or_string_type)) {
                 Issue::maybeEmit($this->code_base, $this->context, Issue::TypeSuspiciousIndirectVariable, $name_node->lineno ?? 0, (string)$name_node_type);
+                return MixedType::instance(false)->asUnionType();
             }
-
-            return MixedType::instance(false)->asUnionType();
+            $name_node = $name_node_type->asSingleScalarValueOrNull();
+            if ($name_node === null) {
+                return MixedType::instance(false)->asUnionType();
+            }
+            // fall through
         }
 
         // foo(${42}) is technically valid PHP code, avoid TypeError

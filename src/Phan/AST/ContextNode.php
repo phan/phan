@@ -371,7 +371,8 @@ class ContextNode
                 Issue::maybeEmit($this->code_base, $this->context, Issue::TypeSuspiciousIndirectVariable, $name_node->lineno ?? 0, (string)$name_node_type);
             }
 
-            return '';
+            // return empty string on failure.
+            return (string)$name_node_type->asSingleScalarValueOrNull();
         }
 
         return (string)$name_node;
