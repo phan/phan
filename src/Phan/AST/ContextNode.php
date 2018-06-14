@@ -402,7 +402,7 @@ class ContextNode
         $node = $this->node;
         if (!($node instanceof Node)) {
             if (\is_string($node)) {
-                return [StringType::instance(false)->asUnionType(), []];
+                return [LiteralStringType::instance_for_value($node, false)->asUnionType(), []];
             }
             return [UnionType::empty(), []];
         }
@@ -499,7 +499,7 @@ class ContextNode
             return [];
         }
 
-        // TODO: Should this check that count($cclass_list) > 0 instead? Or just always check?
+        // TODO: Should this check that count($class_list) > 0 instead? Or just always check?
         if (\count($class_list) === 0 && $expected_type_categories !== self::CLASS_LIST_ACCEPT_ANY) {
             if (!$union_type->hasTypeMatchingCallback(function (Type $type) use ($expected_type_categories) : bool {
                 return $type->isObject() || ($type instanceof MixedType) || ($expected_type_categories === self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME && $type instanceof StringType);
@@ -516,6 +516,19 @@ class ContextNode
                     $this->node->lineno ?? 0,
                     (string)$union_type->asNonLiteralType()
                 );
+            } elseif ($expected_type_categories === self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME) {
+                foreach ($union_type->getTypeSet() as $type) {
+                    if ($type instanceof LiteralStringType) {
+                        $type_value = $type->getValue();
+                        if (\preg_match('/\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\]*/', $type_value)) {
+                            // TODO: warn about invalid types and unparseable types
+                            $fqsen = FullyQualifiedClassName::makeFromExtractedNamespaceAndName($type_value);
+                            if ($this->code_base->hasClassWithFQSEN($fqsen)) {
+                                $class_list[] = $this->code_base->getClassByFQSEN($fqsen);
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -1477,11 +1490,6 @@ class ContextNode
         \assert(
             $this->node instanceof Node,
             '$this->node must be a node'
-        );
-
-        \assert(
-            $this->node->kind === ast\AST_CLASS_CONST,
-            "Node must be of type ast\AST_CLASS_CONST"
         );
 
         $constant_name = $this->node->children['const'];

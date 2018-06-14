@@ -234,23 +234,25 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryConcat(Node $node) : UnionType
     {
-        $left_value = UnionTypeVisitor::unionTypeFromNode(
+        $left_node = $node->children['left'];
+        $left_value = $left_node instanceof Node ? UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['left']
-        )->asSingleScalarValueOrNull();
+            $left_node
+        )->asSingleScalarValueOrNull() : $left_node;
         if ($left_value === null) {
             return StringType::instance(false)->asUnionType();
         }
-        $right_value = UnionTypeVisitor::unionTypeFromNode(
+        $right_node = $node->children['right'];
+        $right_value = $right_node instanceof Node ? UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['right']
-        )->asSingleScalarValueOrNull();
+            $right_node
+        )->asSingleScalarValueOrNull() : $right_node;
         if ($right_value === null) {
             return StringType::instance(false)->asUnionType();
         }
-        return LiteralStringType::instance_for_value($left_value . $right_value, false);
+        return LiteralStringType::instance_for_value($left_value . $right_value, false)->asUnionType();
     }
 
     /**

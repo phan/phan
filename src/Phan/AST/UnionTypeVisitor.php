@@ -1585,7 +1585,19 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitEncapsList(Node $node) : UnionType
     {
-        return StringType::instance(false)->asUnionType();
+        $result = '';
+        foreach ($node->children as $part) {
+            $part_string = $part instanceof Node ? UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $part
+            )->asSingleScalarValueOrNull() : $part;
+            if ($part_string === null) {
+                return StringType::instance(false)->asUnionType();
+            }
+            $result .= $part_string;
+        }
+        return LiteralStringType::instance_for_value($result, false)->asUnionType();
     }
 
     /**
@@ -1674,10 +1686,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             return $constant->getUnionType();
         } catch (NodeException $exception) {
-            $this->emitIssue(
-                Issue::Unanalyzable,
-                $node->lineno ?? 0
-            );
+            // ignore, this should warn elsewhere
         }
 
         return UnionType::empty();
@@ -2048,13 +2057,12 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     private function visitClassNode(Node $node) : UnionType
     {
-        // Things of the form `new $class_name();`
-        if ($node->kind == \ast\AST_VAR) {
-            return UnionType::empty();
+        $kind = $node->kind;
+        if ($kind === \ast\AST_VAR) {
+            return $this->classLiteralsForNonName($node);
         }
-
         // Anonymous class of form `new class { ... }`
-        if ($node->kind == \ast\AST_CLASS
+        if ($kind === \ast\AST_CLASS
             && $node->flags & \ast\flags\CLASS_ANONYMOUS
         ) {
             // Generate a stable name for the anonymous class
@@ -2075,8 +2083,8 @@ class UnionTypeVisitor extends AnalysisVisitor
             return Type::fromFullyQualifiedString((string)$fqsen)->asUnionType();
         }
 
-        // Things of the form `new $method->name()`
-        if ($node->kind !== \ast\AST_NAME) {
+        // Things of the form `new $className()`, `new (foo())()`, etc.
+        if ($kind !== \ast\AST_NAME) {
             return UnionType::empty();
         }
 
@@ -2133,6 +2141,29 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         if ($is_static_type_string) {
             $result = $result->withType(StaticType::instance(false));
+        }
+        return $result;
+    }
+
+    private function classLiteralsForNonName(Node $node) : UnionType
+    {
+        $node_type = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node
+        );
+        $result = UnionType::empty();
+        foreach ($node_type->getTypeSet() as $sub_type) {
+            if ($sub_type instanceof LiteralStringType) {
+                $value = $sub_type->getValue();
+                if (\preg_match('/\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\]*/', $value)) {
+                    // TODO: warn about invalid types and unparseable types
+                    $fqsen = FullyQualifiedClassName::makeFromExtractedNamespaceAndName($value);
+                    if ($this->code_base->hasClassWithFQSEN($fqsen)) {
+                        $result = $result->withType($fqsen->asType());
+                    }
+                }
+            }
         }
         return $result;
     }
