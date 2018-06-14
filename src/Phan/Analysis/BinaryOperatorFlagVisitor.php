@@ -10,6 +10,7 @@ use Phan\Language\UnionType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FloatType;
+use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\StringType;
 use Phan\Issue;
@@ -233,7 +234,23 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryConcat(Node $node) : UnionType
     {
-        return StringType::instance(false)->asUnionType();
+        $left_value = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['left']
+        )->asSingleScalarValueOrNull();
+        if ($left_value === null) {
+            return StringType::instance(false)->asUnionType();
+        }
+        $right_value = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['right']
+        )->asSingleScalarValueOrNull();
+        if ($right_value === null) {
+            return StringType::instance(false)->asUnionType();
+        }
+        return LiteralStringType::instance_for_value($left_value . $right_value, false);
     }
 
     /**
