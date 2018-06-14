@@ -20,6 +20,7 @@ use Phan\Language\Type\GenericIterableType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\LiteralIntType;
+use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
@@ -87,6 +88,20 @@ class TypeTest extends BaseTest
         $this->assertParsesAsType(FloatType::instance(false), '1111111111111111111111111111111111');
         $this->assertParsesAsType(LiteralIntType::instance_for_value(1, true), '?1');
         $this->assertParsesAsType(LiteralIntType::instance_for_value(-1, true), '?-1');
+    }
+
+    public function testLiteralStringType()
+    {
+        $this->assertParsesAsType(LiteralStringType::instance_for_value('a', false), "'a'");
+        $this->assertParsesAsType(LiteralStringType::instance_for_value('a', true), "?'a'");
+        $this->assertParsesAsType(LiteralStringType::instance_for_value('', false), "''");
+        $this->assertParsesAsType(LiteralStringType::instance_for_value('', true), "?''");
+        $this->assertParsesAsType(LiteralStringType::instance_for_value('\\', false), "'\\\\'");
+        $this->assertParsesAsType(LiteralStringType::instance_for_value("'", false), "'\\''");
+        $this->assertParsesAsType(LiteralStringType::instance_for_value('0', false), "'0'");
+        $this->assertParsesAsType(LiteralStringType::instance_for_value('abcdefghijklmnopqrstuvwxyz01234567889-,./?:;!#$%^&*_-=+', false), "'abcdefghijklmnopqrstuvwxyz01234567889-,./?:;!#\$%^&*_-=+'");
+
+        $this->assertParsesAsType(LiteralStringType::instance_for_value("<=>\n", false), "'\\x3c\\x3d\\x3e\\x0a'");
     }
 
     /*
@@ -521,14 +536,14 @@ class TypeTest extends BaseTest
         ];
     }
 
-    /** @dataProvider unparseableArrayShapeProvider */
-    public function testUnparseableArrayShape($type_string)
+    /** @dataProvider unparseableTypeProvider */
+    public function testUnparseableType($type_string)
     {
         $this->assertFalse(\preg_match('@^' . Type::type_regex . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex");
         $this->assertFalse(\preg_match('@^' . Type::type_regex_or_this . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex_or_this");
     }
 
-    public function unparseableArrayShapeProvider()
+    public function unparseableTypeProvider()
     {
         return [
             ['array{'],
@@ -536,6 +551,11 @@ class TypeTest extends BaseTest
             ['array{,field:int}'],
             ['array{field:}'],
             ['array{::int}'],
+            ["-'a'"],
+            ["'@var'"],  // Ambiguous to support @, force hex escape
+            ["'\\'"],
+            ["'''"],
+            ["'\\\\\\'"],
         ];
     }
 

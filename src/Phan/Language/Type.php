@@ -78,8 +78,15 @@ class Type
     const shape_key_regex =
         '[-._a-zA-Z0-9\x7f-\xff]+\??';
 
+    /**
+     * A literal integer or string.
+     *
+     * Note that string literals can only contain a whitelist of characters.
+     * NOTE: The / is escaped
+     */
     const noncapturing_literal_regex =
-        '\??-?(?:0|[1-9][0-9]*)';
+        '\??(?:-?(?:0|[1-9][0-9]*)|\'(?:[- ,.\/?:;"!#$%^&*_+=a-zA-Z0-9_\x80-\xff]|\\\\(?:[\'\\\\]|x[0-9a-fA-F]{2}))*\')';
+        // '\??(?:-?(?:0|[1-9][0-9]*)|\'(?:[a-zA-Z0-9_])*\')';
 
     /**
      * @var string
@@ -841,6 +848,9 @@ class Type
         $is_nullable = $escaped_literal[0] === '?';
         if ($is_nullable) {
             $escaped_literal = \substr($escaped_literal, 1);
+        }
+        if ($escaped_literal[0] === "'") {
+            return LiteralStringType::fromEscapedString($escaped_literal, $is_nullable);
         }
         $value = filter_var($escaped_literal, FILTER_VALIDATE_INT);
         if (\is_int($value)) {

@@ -1,12 +1,16 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use Phan\Config;
 use Phan\Language\Type;
 
 use RuntimeException;
 
 final class LiteralStringType extends StringType implements LiteralTypeInterface
 {
+
+    const MINIMUM_MAX_STRING_LENGTH = 50;
+
     /** @var string $value */
     private $value;
 
@@ -26,10 +30,15 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     }
 
     /**
-     * @return LiteralStringType
+     * @return StringType|LiteralStringType
      */
     public static function instance_for_value(string $value, bool $is_nullable)
     {
+        if (\strlen($value) > self::MINIMUM_MAX_STRING_LENGTH && \strlen($value) > Config::getValue('max_literal_string_type_length')) {
+            // The config can only be used to increase this limit, not decrease it.
+            return StringType::instance($is_nullable);
+        }
+
         if ($is_nullable) {
             static $nullable_cache = [];
             return $nullable_cache[$value] ?? ($nullable_cache[$value] = new self($value, true));
@@ -43,14 +52,70 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
         return $this->value;
     }
 
+    /**
+     * @internal - For use within LiteralStringType
+     */
+    const ESCAPE_CHARACTER_LOOKUP = [
+        "\n" => '\\n',
+        "\r" => '\\r',
+        "\t" => '\\t',
+        "\\" => '\\\\',
+        "'" =>  '\\\'',
+    ];
+
+    /**
+     * @internal - For use within LiteralStringType
+     */
+    const UNESCAPE_CHARACTER_LOOKUP = [
+        '\\n' => "\n",
+        '\\r' => "\r",
+        '\\t' => "\t",
+        '\\\\' => "\\",
+        '\\\'' => "'",
+    ];
+
     public function __toString() : string
     {
         // TODO: Finalize escaping
-        $as_string = "'" . \addcslashes($this->value, "'\\") . "'";
+        $inner = \preg_replace_callback(
+            '/[^- ,.\/?:;"!#$%^&*_+=a-zA-Z0-9_\x80-\xff]/',
+            function (array $match) {
+                $c = $match[0];
+                return self::ESCAPE_CHARACTER_LOOKUP[$c] ?? \sprintf('\\x%02x', \ord($c));
+            },
+            $this->value
+        );
         if ($this->is_nullable) {
-            return '?' . $as_string;
+            return "?'$inner'";
         }
-        return $as_string;
+        return "'$inner'";
+    }
+
+    /**
+     * The opposite of __toString()
+     * @return StringType|LiteralStringType
+     */
+    public static function fromEscapedString(string $escaped_string, bool $is_nullable) : StringType
+    {
+        if (\strlen($escaped_string) < 2 || $escaped_string[0] !== "'" || \substr($escaped_string, -1) !== "'") {
+            throw new \InvalidArgumentException("Expected the literal type string to begin and end with \"'\"");
+        }
+        $escaped_string = \substr($escaped_string, 1, -1);
+        $escaped_string = preg_replace_callback(
+            '/\\\\(?:[\'\\\\trn]|x[0-9a-fA-F]{2})/',
+            /** @param array{0:string} $matches */
+            function (array $matches) : string {
+                $x = $matches[0];
+                if (\strlen($x) === 2) {
+                    // Parses one of \t \r \n \\ \'
+                    return self::UNESCAPE_CHARACTER_LOOKUP[$x];
+                }
+                // convert 2 hex bytes to a single character
+                return \chr(\hexdec(\substr($x, 2)));
+            },
+            $escaped_string
+        );
+        return self::instance_for_value($escaped_string, $is_nullable);
     }
 
     /** @var StringType */

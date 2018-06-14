@@ -2623,7 +2623,12 @@ class TolerantASTConverter
                 $result .= \trim($part_as_string);
             }
         }
-        return \rtrim(\preg_replace('/\\\\{2,}/', '\\', $result), '\\');
+        $result = \rtrim(\preg_replace('/\\\\{2,}/', '\\', $result), '\\');
+        if ($result === '') {
+            // Would lead to "The name cannot be empty" when parsing
+            throw new InvalidNodeException();
+        }
+        return $result;
     }
 
     /**

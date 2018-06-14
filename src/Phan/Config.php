@@ -734,6 +734,11 @@ class Config
         // Phan is slightly faster when these are disabled.
         'enable_internal_return_type_plugins' => true,
 
+        // This setting can be used if users wish to store strings that are even longer than 50 bytes.
+        // If a literal string type exceeds this length, Phan converts it to a regular string type.
+        // This setting cannot be used to decrease the maximum.
+        'max_literal_string_type_length' => \Phan\Language\Type\LiteralStringType::MINIMUM_MAX_STRING_LENGTH,
+
         // A list of plugin files to execute
         // Plugins which are bundled with Phan can be added here by providing their name (e.g. 'AlwaysReturnPlugin')
         // Alternately, you can pass in the full path to a PHP file with the plugin's implementation (e.g. 'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php')

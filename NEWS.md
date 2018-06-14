@@ -6,8 +6,12 @@ Phan NEWS
 New features(Analysis)
 + Support integer literals both in PHPDoc and in Phan's type system. (E.g. `@return -1|string`)
   Include integer values in issue messages if the values are known.
-+ Support string literals in Phan's type system. (To be added to PHPDoc soon)
++ Support string literals both in PHPDoc and in Phan's type system. (E.g. `@return 'example\n'`)
   Phan can now infer possible variable values for dynamic function/method calls, etc.
+
+  Note: By default, Phan does not store representations of strings longer than 50 characters. This can be increased with the `'max_literal_string_type_length'` config.
+
+  Supported escape codes: `\\`, `\'`, `\r`, `\n`, `\t`, and hexadecimal (`\xXX`).
 + Improve inferred types of unary operators.
 + Warn about using `void`/`iterable`/`object` in use statements based on `target_php_version`. (#449)
   New issue types: `PhanCompatibleUseVoidPHP70`, `PhanCompatibleUseObjectPHP71`, `PhanCompatibleUseObjectPHP71`
