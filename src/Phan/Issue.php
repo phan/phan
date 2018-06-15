@@ -310,6 +310,7 @@ class Issue
     const CompatibleUseVoidPHP70            = 'PhanCompatibleUseVoidPHP70';
     const CompatibleUseIterablePHP71        = 'PhanCompatibleUseIterablePHP71';
     const CompatibleUseObjectPHP71          = 'PhanCompatibleUseObjectPHP71';
+    const CompatibleNegativeStringOffset70  = 'PhanCompatibleNegativeStringOffset70';
 
     // Issue::CATEGORY_GENERIC
     const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -2604,6 +2605,14 @@ class Issue
                 "Using '{TYPE}' as object will be a syntax error in PHP 7.2 (object becomes a native type that accepts any class instance).",
                 self::REMEDIATION_B,
                 3010
+            ),
+            new Issue(
+                self::CompatibleNegativeStringOffset70,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Using negative string offset is not available before PHP 7.1 (emits a 'Uninitialized string offset' notice)",
+                self::REMEDIATION_B,
+                3011
             ),
 
             // Issue::CATEGORY_GENERIC

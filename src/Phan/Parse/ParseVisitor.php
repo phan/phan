@@ -1014,6 +1014,21 @@ class ParseVisitor extends ScopeVisitor
             return $this->context;
         }
 
+        // check for $str{-3} for PHP < 7.1
+        if (Config::get_closest_target_php_version_id() < 70100
+            && $node->children['expr'] instanceof Node
+            && $node->children['expr']->kind == \ast\AST_VAR
+            && ($node->children['dim'] ?? null) instanceof Node
+            && $node->children['dim']->kind == \ast\AST_UNARY_OP
+            && $node->children['dim']->flags == \ast\flags\UNARY_MINUS
+            && is_int($node->children['dim']->children['expr'] ?? null)
+        ) {
+            $this->emitIssue(
+                Issue::CompatibleNegativeStringOffset70,
+                $node->lineno ?? 0
+            );
+        }
+
         if (!($node->children['expr'] instanceof Node
             && ($node->children['expr']->children['name'] ?? null) instanceof Node)
         ) {
