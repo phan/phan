@@ -499,7 +499,7 @@ class ParseVisitor extends ScopeVisitor
 
                 $original_property_type = $property->getUnionType();
                 $variable_type = $variable->getUnionType();
-                if ($variable_type->hasGenericArray() && !$original_property_type->hasTypeMatchingCallback(function(Type $type) : bool {
+                if ($variable_type->hasGenericArray() && !$original_property_type->hasTypeMatchingCallback(function (Type $type) : bool {
                     return \get_class($type) !== ArrayType::class;
                 })) {
                     // Don't convert `/** @var T[] */ public $x = []` to union type `string[]|array`

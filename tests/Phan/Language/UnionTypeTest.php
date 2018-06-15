@@ -112,6 +112,9 @@ class UnionTypeTest extends BaseTest
         $this->assertUnionTypeStringEqual('constant($argv[0]) + constant($argv[1])', 'float|int');
         $this->assertUnionTypeStringEqual('-constant($argv[0])', 'float|int');
         $this->assertUnionTypeStringEqual('-(1.5)', 'float');
+        $this->assertUnionTypeStringEqual('(rand(0,1) ? "12" : 2.5) - (rand(0,1) ? "3" : 1.5)', 'float|int');
+        $this->assertUnionTypeStringEqual('(rand(0,1) ? "12" : 2.5) * (rand(0,1) ? "3" : 1.5)', 'float|int');
+        $this->assertUnionTypeStringEqual('(rand(0,1) ? "12" : 2.5) + (rand(0,1) ? "3" : 1.5)', 'float|int');
     }
 
     public function testString()
