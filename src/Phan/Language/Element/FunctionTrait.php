@@ -145,8 +145,8 @@ trait FunctionTrait
     private $phpdoc_parameter_type_map = [];
 
     /**
-     * @var array<string,true>
-     * A set of parameter names that are output-only references
+     * @var array<int,string>
+     * A list of parameter names that are output-only references
      */
     private $phpdoc_output_references = [];
 

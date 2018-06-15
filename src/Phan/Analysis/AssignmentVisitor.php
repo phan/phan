@@ -872,26 +872,43 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     private function addTypesToProperty(Property $property, Node $node)
     {
-        $property_types = $property->getUnionType();
-        if ($property_types->isEmpty()) {
+        $original_property_types = $property->getUnionType();
+        if ($original_property_types->isEmpty()) {
             // TODO: Be more precise?
             $property->setUnionType($this->right_type->withFlattenedArrayShapeOrLiteralTypeInstances());
             return;
         }
+
         if ($this->dim_depth > 0) {
-            $new_types = $this->typeCheckDimAssignment($property_types, $node);
+            $new_types = $this->typeCheckDimAssignment($original_property_types, $node);
         } else {
             $new_types = $this->right_type;
         }
-        // Don't add MixedType to a non-empty property - It makes inferences on that property useless.
-        if ($new_types->hasType(MixedType::instance(false))) {
-            $new_types = $new_types->withoutType(MixedType::instance(false));
-        }
         $new_types = $new_types->withFlattenedArrayShapeOrLiteralTypeInstances();
+        $updated_property_types = $original_property_types;
+        foreach ($new_types->getTypeSet() as $new_type) {
+            if ($new_type instanceof MixedType) {
+                // Don't add MixedType to a non-empty property - It makes inferences on that property useless.
+                continue;
+            }
+
+            // Only allow compatible types to be added to declared properties.
+            // Allow anything to be added to dynamic properties.
+            // TODO: Be more permissive about declared properties without phpdoc types.
+            if (!$new_type->asExpandedTypes($this->code_base)->canCastToUnionType($original_property_types) && !$property->isDynamicProperty()) {
+                continue;
+            }
+
+            // Check for adding a specific array to as generic array as a workaround for #1783
+            if (\get_class($new_type) === ArrayType::class && $original_property_types->hasGenericArray()) {
+                continue;
+            }
+            $updated_property_types = $updated_property_types->withType($new_type);
+        }
 
         // TODO: Add an option to check individual types, not just the whole union type?
         //       If that is implemented, verify that generic arrays will properly cast to regular arrays (public $x = [];)
-        $property->setUnionType($property_types->withUnionType($new_types));
+        $property->setUnionType($updated_property_types);
     }
 
     /**

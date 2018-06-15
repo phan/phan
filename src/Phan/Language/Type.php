@@ -422,6 +422,8 @@ class Type
                     $template_parameter_type_list,
                     $is_nullable
                 );
+                // FIXME Phan warns that array<string,static> can't be assigned to array<string,Type>
+                '@phan-var Type $value';
             }
             self::$canonical_object_map[$key] = $value;
         }

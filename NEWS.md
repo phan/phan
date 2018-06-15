@@ -28,6 +28,8 @@ Maintenance:
 + Upgrade tolerant-php-parser, making the polyfill/fallback able to parse PHP 7.1's multi exception catch.
 
 Bug fixes:
++ Don't add more generic types to properties with more specific PHPDoc types (#1783).
+  For example, don't add `array` to a property declared with PHPDoc type `/** @var string[] */`
 + Fix uncaught `AssertionError` when `parent` is used in PHPDoc (#1758)
 + Fix various bugs that can cause crashes in the polyfill/fallback parser when parsing invalid or incomplete ASTs.
 + Fix unparseable/invalid function signature entries of rarely used functions

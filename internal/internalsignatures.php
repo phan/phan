@@ -761,7 +761,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
 
 
     /**
-     * @var array<string,string>
+     * @var array<string,true>
      */
     private $known_entities = null;
 
@@ -779,6 +779,9 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         return $this->known_entities;
     }
 
+    /**
+     * @return array<string,true>
+     */
     private function getKnownEntities()
     {
         if (!is_array($this->known_entities)) {

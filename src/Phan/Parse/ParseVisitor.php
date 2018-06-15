@@ -497,11 +497,18 @@ class ParseVisitor extends ScopeVisitor
                     );
                 }
 
-                // Set the declared type to the doc-comment type and add
-                // |null if the default value is null
-                $property->setUnionType($property->getUnionType()->withUnionType(
-                    $variable->getUnionType()
-                ));
+                $original_property_type = $property->getUnionType();
+                $variable_type = $variable->getUnionType();
+                if ($variable_type->hasGenericArray() && !$original_property_type->hasTypeMatchingCallback(function(Type $type) : bool {
+                    return \get_class($type) !== ArrayType::class;
+                })) {
+                    // Don't convert `/** @var T[] */ public $x = []` to union type `string[]|array`
+                    $property->setUnionType($variable_type);
+                } else {
+                    // Set the declared type to the doc-comment type and add
+                    // |null if the default value is null
+                    $property->setUnionType($original_property_type->withUnionType($variable_type));
+                }
             }
 
             // Don't set 'null' as the type if that's the default

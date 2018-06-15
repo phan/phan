@@ -251,9 +251,9 @@ class CLI
                             }
                             $this->file_list_in_config = array_merge(
                                 $this->file_list,
-                                $this->directoryNameToFileList(
+                                array_values($this->directoryNameToFileList(
                                     $directory_name
-                                )
+                                ))
                             );
                         }
                     }
@@ -549,7 +549,7 @@ class CLI
             foreach (Config::getValue('directory_list') as $directory_name) {
                 $this->file_list = array_merge(
                     $this->file_list,
-                    $this->directoryNameToFileList($directory_name)
+                    array_values($this->directoryNameToFileList($directory_name))
                 );
             }
 
