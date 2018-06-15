@@ -38,7 +38,7 @@ final class GoToDefinitionRequest
     /** @var bool true if this is "Go to Type Definition" */
     private $is_type_definition_request;
 
-    /** @var array<int,Location> */
+    /** @var array<string,Location> */
     private $locations = [];
 
     public function __construct(string $uri, Position $position, bool $is_type_definition_request)

@@ -62,7 +62,7 @@ class Clazz extends AddressableElement
     private $trait_fqsen_list = [];
 
     /**
-     * @var array<int,TraitAdaptations>
+     * @var array<string,TraitAdaptations>
      * Maps lowercase fqsen of a method to the trait names which are hidden
      * and the trait aliasing info
      */
