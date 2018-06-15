@@ -2804,6 +2804,9 @@ class UnionType implements \Serializable
                 if ($can_be_float) {
                     if (!($type instanceof IntType)) {
                         $type_set = $type_set->withType(FloatType::instance(false));
+                        if (!($type instanceof FloatType)) {
+                            $type_set = $type_set->withType(IntType::instance(false));
+                        }
                         $added_fallbacks = true;
                     } else {
                         $type_set = $type_set->withType(IntType::instance(false));

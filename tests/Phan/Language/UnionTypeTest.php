@@ -101,6 +101,17 @@ class UnionTypeTest extends BaseTest
         $this->assertUnionTypeStringEqual('-42', '-42');
         $this->assertUnionTypeStringEqual('~42', '-43');
         $this->assertUnionTypeStringEqual('~-43', '42');
+        $this->assertUnionTypeStringEqual('$argc', 'int');
+        $this->assertUnionTypeStringEqual('$argc-1', 'int');
+        $this->assertUnionTypeStringEqual('$argc+1', 'int');
+        $this->assertUnionTypeStringEqual('$argc*1', 'int');
+        $this->assertUnionTypeStringEqual('$argc-1.5', 'float');
+        $this->assertUnionTypeStringEqual('$argc+1.5', 'float');
+        $this->assertUnionTypeStringEqual('$argc*1.5', 'float');
+        $this->assertUnionTypeStringEqual('constant($argv[0]) - constant($argv[1])', 'float|int');
+        $this->assertUnionTypeStringEqual('constant($argv[0]) + constant($argv[1])', 'float|int');
+        $this->assertUnionTypeStringEqual('-constant($argv[0])', 'float|int');
+        $this->assertUnionTypeStringEqual('-(1.5)', 'float');
     }
 
     public function testString()
