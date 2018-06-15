@@ -27,7 +27,6 @@ use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\StringType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use ast\Node;
@@ -254,13 +253,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node $node
+     * @param Node $node @phan-unused-param
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
-     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function visitWhile(Node $node) : Context
     {
@@ -268,13 +266,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node $node
+     * @param Node $node @phan-unused-param
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
-     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function visitSwitch(Node $node) : Context
     {
@@ -282,13 +279,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node $node
+     * @param Node $node @phan-unused-param
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
-     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function visitSwitchCase(Node $node) : Context
     {
@@ -296,13 +292,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node $node
-     * A node to parse
+     * @param Node $node @phan-unused-param
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
-     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function visitExprList(Node $node) : Context
     {
@@ -334,7 +328,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @return void
-     * @suppress PhanAccessMethodInternal
      */
     private function checkEncapsulatedStringArgument(Node $expr_node)
     {
@@ -347,6 +340,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             true
         );
 
+        // @phan-suppress-next-line PhanAccessMethodInternal
         if (!$type->hasPrintableScalar()) {
             if ($type->isType(ArrayType::instance(false))
                 || $type->isType(ArrayType::instance(true))
@@ -1167,7 +1161,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 if ($method->isPHPInternal()) {
                     // If we are not in strict mode and we accept a string parameter
                     // and the argument we are passing has a __toString method then it is ok
-                    if (!$context->getIsStrictTypes() && $method_return_type->hasType(StringType::instance(false))) {
+                    if (!$context->getIsStrictTypes() && $method_return_type->hasNonNullStringType()) {
                         if ($individual_type_expanded->hasClassWithToStringMethod($code_base, $context)) {
                             continue;
                         }
@@ -1346,7 +1340,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @param \Generator|UnionType[] $types
      * @return \Generator|array<int,UnionType>
      * @phan-return \Generator<int,UnionType>
-     * @suppress PhanPluginUnusedVariable
      */
     private static function deduplicateUnionTypes($types)
     {
@@ -1567,6 +1560,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $node->children['class']
             ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, Issue::TypeInvalidInstanceof);
+        } catch (IssueException $exception) {
+            Issue::maybeEmitInstance(
+                $this->code_base,
+                $this->context,
+                $exception->getIssueInstance()
+            );
         } catch (CodeBaseException $exception) {
             $this->emitIssueWithSuggestion(
                 Issue::UndeclaredClassInstanceof,
@@ -1600,7 +1599,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // Give up on things like Class::$var
         if (!\is_string($method_name)) {
-            return $this->context;
+            $method_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $method_name);
+            if (!\is_string($method_name)) {
+                return $this->context;
+            }
         }
 
         // Get the name of the static class being referenced
@@ -1978,7 +1980,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $method_name = $node->children['method'];
 
         if (!\is_string($method_name)) {
-            return $this->context;
+            $method_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $method_name);
+            if (!is_string($method_name)) {
+                return $this->context;
+            }
         }
 
         try {
@@ -2883,11 +2888,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // For https://github.com/phan/phan/issues/1525 : Collapse array shapes into generic arrays before recursively analyzing a method.
         if (!$parameter->isCloneOfVariadic()) {
             $parameter->addUnionType(
-                $argument_type->withFlattenedArrayShapeTypeInstances()
+                $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()
             );
         } else {
             $parameter->addUnionType(
-                $argument_type->withFlattenedArrayShapeTypeInstances()->asGenericArrayTypes(GenericArrayType::KEY_INT)
+                $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->asGenericArrayTypes(GenericArrayType::KEY_INT)
             );
         }
 

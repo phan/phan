@@ -11,8 +11,8 @@
 %s:37 PhanNoopProperty Unused property
 %s:42 PhanNoopVariable Unused variable
 %s:48 PhanParamReqAfterOpt Required argument follows optional
-%s:51 PhanParamSpecial1 Argument 2 (pieces) is string but \join() takes array when argument 1 is string
-%s:51 PhanTypeMismatchArgumentInternal Argument 2 (pieces) is string but \join() takes array
+%s:51 PhanParamSpecial1 Argument 2 (pieces) is 'str' but \join() takes array when argument 1 is string
+%s:51 PhanTypeMismatchArgumentInternal Argument 2 (pieces) is 'str' but \join() takes array
 %s:54 PhanParamSpecial2 Argument 1 (pieces) is \join but string() takes array when passed only one argument
 %s:57 PhanParamSpecial3 The last argument to \array_udiff must be of type callable
 %s:57 PhanTypeConversionFromArray array to string conversion
@@ -32,11 +32,11 @@
 %s:110 PhanTypeComparisonToArray int to array comparison
 %s:116 PhanTypeInstantiateAbstract Instantiation of abstract class \C6
 %s:119 PhanTypeInstantiateInterface Instantiation of interface \C7
-%s:129 PhanTypeMismatchArgument Argument 1 (i) is string but \f8() takes int defined at %s:128
-%s:132 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:129 PhanTypeMismatchArgument Argument 1 (i) is 'string' but \f8() takes int defined at %s:128
+%s:132 PhanTypeMismatchArgumentInternal Argument 1 (string) is 42 but \strlen() takes string
 %s:138 PhanTypeMismatchForeach null passed to foreach instead of array
 %s:141 PhanTypeMismatchDefault Default value for int $p can't be false
-%s:144 PhanTypeMismatchReturn Returning type string but f() is declared to return int
+%s:144 PhanTypeMismatchReturn Returning type 'string' but f() is declared to return int
 %s:147 PhanTypeMissingReturn Method \C9::f is declared to return int but has no return value
 %s:150 PhanUndeclaredClassMethod Call to method f from undeclared class \F
 %s:155 PhanUndeclaredTypeParameter Parameter of undeclared type \Undef

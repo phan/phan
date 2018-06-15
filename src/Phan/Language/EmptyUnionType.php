@@ -5,13 +5,14 @@ use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\IntType;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Generator;
 
 /**
  * NOTE: there may also be instances of UnionType that are empty, due to the constructor being public
  *
- * @phan-file-suppress PhanPluginUnusedPublicFinalMethodArgument the results don't depend on passed in parameters
+ * @phan-file-suppress PhanPluginUnusedPublicFinalMethodArgument, PhanUnusedPublicFinalMethodParameter the results don't depend on passed in parameters
  */
 final class EmptyUnionType extends UnionType
 {
@@ -549,7 +550,7 @@ final class EmptyUnionType extends UnionType
      * @return bool
      * True if this union type represents types that are arrays
      * or generic arrays, but nothing else.
-     * @suppress PhanUnreferencedPublicMethod
+     * @override
      */
     public function isExclusivelyArray() : bool
     {
@@ -640,7 +641,7 @@ final class EmptyUnionType extends UnionType
      * @return UnionType
      * A UnionType with generic array types filtered out
      *
-     * @suppress PhanUnreferencedPublicMethod
+     * @override
      */
     public function nonGenericArrayTypes() : UnionType
     {
@@ -739,7 +740,7 @@ final class EmptyUnionType extends UnionType
      *
      * @see $this->callableTypes()
      *
-     * @suppress PhanUnreferencedPublicMethod
+     * @override
      */
     public function hasCallableType() : bool
     {
@@ -933,6 +934,12 @@ final class EmptyUnionType extends UnionType
     }
 
     /** @override */
+    public function hasArrayShapeOrLiteralTypeInstances() : bool
+    {
+        return false;
+    }
+
+    /** @override */
     public function hasArrayShapeTypeInstances() : bool
     {
         return false;
@@ -942,6 +949,12 @@ final class EmptyUnionType extends UnionType
     public function hasMixedType() : bool
     {
         return false;
+    }
+
+    /** @override */
+    public function withFlattenedArrayShapeOrLiteralTypeInstances() : UnionType
+    {
+        return $this;
     }
 
     /** @override */
@@ -1028,5 +1041,61 @@ final class EmptyUnionType extends UnionType
         if (false) {
             yield;
         }
+    }
+
+    public function hasNonNullIntType() : bool
+    {
+        return false;
+    }
+
+    public function isNonNullIntType() : bool
+    {
+        return false;
+    }
+
+    public function isNonNullNumberType() : bool
+    {
+        return false;
+    }
+
+    public function hasNonNullStringType() : bool
+    {
+        return false;
+    }
+
+    public function isNonNullStringType() : bool
+    {
+        return false;
+    }
+
+    public function hasLiterals() : bool
+    {
+        return false;
+    }
+
+    public function asNonLiteralType() : UnionType
+    {
+        return $this;
+    }
+
+    public function applyUnaryMinusOperator() : UnionType
+    {
+        return $this;
+    }
+
+    public function applyUnaryBitwiseNotOperator() : UnionType
+    {
+        return IntType::instance(false)->asUnionType();
+    }
+
+    public function applyUnaryPlusOperator() : UnionType
+    {
+        return UnionType::fromFullyQualifiedString('int|float');
+    }
+
+    /** @return null */
+    public function asSingleScalarValueOrNull()
+    {
+        return null;
     }
 }

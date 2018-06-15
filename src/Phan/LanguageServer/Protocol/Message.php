@@ -28,7 +28,7 @@ class Message
      */
     public static function parse(string $msg): Message
     {
-        $obj = new self;
+        $obj = new self();
         $parts = explode("\r\n", $msg);
         $obj->body = MessageBody::parse(array_pop($parts));
         foreach ($parts as $line) {

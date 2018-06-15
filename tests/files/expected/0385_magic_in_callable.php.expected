@@ -2,5 +2,5 @@
 %s:15 PhanTypeMismatchArgument Argument 1 (n) is int but \NS\MyClass385::fibonacci() takes string defined at %s:9
 %s:25 PhanTypeMismatchArgument Argument 1 (n) is int but \NS\MyClass385::fibonacci() takes string defined at %s:9
 %s:26 PhanTypeMismatchArgument Argument 1 (n) is int but \NS\MyClass385::fibonacci() takes string defined at %s:9
-%s:30 PhanTypeMismatchArgument Argument 1 (n) is int but \NS\MyClass385::fibonacci() takes string defined at %s:9
-%s:31 PhanTypeMismatchArgument Argument 1 (n) is int but \NS\MyClass385::fibonacci2() takes string defined at %s:20
+%s:30 PhanTypeMismatchArgument Argument 1 (n) is 5 but \NS\MyClass385::fibonacci() takes string defined at %s:9
+%s:31 PhanTypeMismatchArgument Argument 1 (n) is 5 but \NS\MyClass385::fibonacci2() takes string defined at %s:20

@@ -1,9 +1,9 @@
-%s:6 PhanTypeMismatchDimFetch When fetching an array index from a value of type array<int,mixed>, found an array index of type string, but expected the index to be of type int
-%s:11 PhanTypeMismatchDimFetch When fetching an array index from a value of type array<int,mixed>, found an array index of type string, but expected the index to be of type int
-%s:14 PhanTypeMismatchArgumentInternal Argument 2 (assoc) is int but \json_decode() takes bool
-%s:16 PhanTypeMismatchDimFetch When fetching an array index from a value of type array<int,mixed>, found an array index of type string, but expected the index to be of type int
-%s:24 PhanTypeMismatchArgumentInternal Argument 2 (assoc) is int but \json_decode() takes bool
+%s:6 PhanTypeMismatchDimFetch When fetching an array index from a value of type array<int,mixed>, found an array index of type 'key', but expected the index to be of type int
+%s:11 PhanTypeMismatchDimFetch When fetching an array index from a value of type array<int,mixed>, found an array index of type 'key', but expected the index to be of type int
+%s:14 PhanTypeMismatchArgumentInternal Argument 2 (assoc) is 0 but \json_decode() takes bool
+%s:16 PhanTypeMismatchDimFetch When fetching an array index from a value of type array<int,mixed>, found an array index of type 'key', but expected the index to be of type int
+%s:24 PhanTypeMismatchArgumentInternal Argument 2 (assoc) is 1 but \json_decode() takes bool
 %s:39 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression with type array|bool|float|int|null|string
-%s:40 PhanTypeMismatchArgumentInternal Argument 2 (assoc) is int but \json_decode() takes bool
+%s:40 PhanTypeMismatchArgumentInternal Argument 2 (assoc) is 1 but \json_decode() takes bool
 %s:41 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression with type array|bool|float|int|null|string
 %s:43 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression with type array|bool|float|int|null|string

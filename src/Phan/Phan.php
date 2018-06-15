@@ -534,8 +534,8 @@ class Phan implements IgnoredFilesFilterInterface
      */
     private static function printMemoryUsageSummary()
     {
-        $memory = memory_get_usage()/1024/1024;
-        $peak   = memory_get_peak_usage()/1024/1024;
+        $memory = memory_get_usage() / 1024 / 1024;
+        $peak   = memory_get_peak_usage() / 1024 / 1024;
         fwrite(STDERR, sprintf("Memory usage after analysis completed: %.02dMB/%.02dMB\n", $memory, $peak));
     }
 

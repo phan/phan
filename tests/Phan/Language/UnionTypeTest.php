@@ -2,6 +2,10 @@
 
 namespace Phan\Tests\Language;
 
+use Phan\AST\UnionTypeVisitor;
+use Phan\CodeBase;
+use Phan\Config;
+use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
@@ -20,6 +24,8 @@ use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
+use Phan\Language\UnionType;
+use Phan\Tests\BaseTest;
 
 // Grab these before we define our own classes
 $internal_class_name_list = get_declared_classes();
@@ -27,18 +33,9 @@ $internal_interface_name_list = get_declared_interfaces();
 $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
-use Phan\CodeBase;
-use Phan\Config;
-use Phan\Language\Context;
-use Phan\Language\UnionType;
-use Phan\Tests\BaseTest;
 
 class UnionTypeTest extends BaseTest
 {
-
-    /** @var Context|null */
-    protected $context = null;
-
     /** @var CodeBase|null */
     protected static $code_base = null;
 
@@ -54,6 +51,14 @@ class UnionTypeTest extends BaseTest
         'Phan\Language\Type' => [
             'canonical_object_map',
             'internal_fn_cache',
+        ],
+        'Phan\Language\Type\LiteralIntType' => [
+            'nullable_int_type',
+            'non_nullable_int_type',
+        ],
+        'Phan\Language\Type\LiteralStringType' => [
+            'nullable_int_type',
+            'non_nullable_int_type',
         ],
         'Phan\Language\UnionType' => [
             'empty_instance',
@@ -80,12 +85,6 @@ class UnionTypeTest extends BaseTest
                 $internal_function_name_list
             );
         }
-        $this->context = new Context;
-    }
-
-    protected function tearDown()
-    {
-        $this->context = null;
     }
 
     public static function tearDownAfterClass()
@@ -95,7 +94,24 @@ class UnionTypeTest extends BaseTest
 
     public function testInt()
     {
-        $this->assertUnionTypeStringEqual('42', 'int');
+        $this->assertUnionTypeStringEqual('rand(0,20)', 'int');
+        $this->assertUnionTypeStringEqual('rand(0,20)+1', 'int');
+        // TODO: Perform arithmetic if in bounds
+        $this->assertUnionTypeStringEqual('42+2', 'int');
+        $this->assertUnionTypeStringEqual('-42', '-42');
+        $this->assertUnionTypeStringEqual('~42', '-43');
+        $this->assertUnionTypeStringEqual('~-43', '42');
+        $this->assertUnionTypeStringEqual('$argc', 'int');
+        $this->assertUnionTypeStringEqual('$argc-1', 'int');
+        $this->assertUnionTypeStringEqual('$argc+1', 'int');
+        $this->assertUnionTypeStringEqual('$argc*1', 'int');
+        $this->assertUnionTypeStringEqual('$argc-1.5', 'float');
+        $this->assertUnionTypeStringEqual('$argc+1.5', 'float');
+        $this->assertUnionTypeStringEqual('$argc*1.5', 'float');
+        $this->assertUnionTypeStringEqual('constant($argv[0]) - constant($argv[1])', 'float|int');
+        $this->assertUnionTypeStringEqual('constant($argv[0]) + constant($argv[1])', 'float|int');
+        $this->assertUnionTypeStringEqual('-constant($argv[0])', 'float|int');
+        $this->assertUnionTypeStringEqual('-(1.5)', 'float');
     }
 
     public function testString()
@@ -103,7 +119,7 @@ class UnionTypeTest extends BaseTest
         try {
             $this->assertUnionTypeStringEqual(
                 '"a string"',
-                'string'
+                "'a string'"
             );
         } catch (\Exception $exception) {
             print((string)$exception);
@@ -113,24 +129,32 @@ class UnionTypeTest extends BaseTest
     public function testArrayUniform()
     {
         $this->assertUnionTypeStringEqual(
-            '[false => "string"]',
-            'array{0:string}'
+            '[false => \'$string\']',
+            "array{0:'\$string'}"
+        );
+    }
+
+    public function testArrayUniformMultipleValuesLiteral()
+    {
+        $this->assertUnionTypeStringEqual(
+            '[false => rand(0,1) ? zend_version() : 2]',
+            "array{0:2|string}"
         );
     }
 
     public function testArrayUniformMultipleValues()
     {
         $this->assertUnionTypeStringEqual(
-            '[false => rand(0,1) ? "string" : 2]',
-            'array{0:int|string}'
+            '[false => rand(0,1) ? zend_version() : 2]',
+            'array{0:2|string}'
         );
     }
 
     public function testArrayMixed()
     {
         $this->assertUnionTypeStringEqual(
-            '[1, "string"]',
-            'array{0:int,1:string}'
+            '[1, zend_version()]',
+            'array{0:1,1:string}'
         );
     }
 
@@ -204,14 +228,13 @@ class UnionTypeTest extends BaseTest
      * A string representation of the union type begotten from
      * the first statement in the statement list in the given
      * code.
-     * @suppress PhanDeprecatedFunction
      * @suppress PhanPartialTypeMismatchArgument
      */
     private function typeStringFromCode(string $code) : string
     {
-        return UnionType::fromNode(
-            $this->context,
+        return UnionTypeVisitor::unionTypeFromNode(
             self::$code_base,
+            new Context(),  // NOTE: This has to be new - Otherwise, object ids will be reused and inferences would be cached for those.
             \ast\parse_code(
                 $code,
                 Config::AST_VERSION
@@ -441,7 +464,7 @@ class UnionTypeTest extends BaseTest
         $type = reset($types);
 
         $this->assertSame('array{key:int|string[]}', (string)$type);
-        $this->assertSame('array<string,int>|array<string,string[]>', (string)$union_type->withFlattenedArrayShapeTypeInstances());
+        $this->assertSame('array<string,int>|array<string,string[]>', (string)$union_type->withFlattenedArrayShapeOrLiteralTypeInstances());
         \assert($type instanceof ArrayShapeType);
         $field_union_type = $type->getFieldTypes()['key'];
         $this->assertFalse($field_union_type->getIsPossiblyUndefined());
@@ -457,7 +480,7 @@ class UnionTypeTest extends BaseTest
 
         $this->assertSame('array{key?:int|string}', (string)$type);
         \assert($type instanceof ArrayShapeType);
-        $this->assertSame('array<string,int>|array<string,string>', (string)$union_type->withFlattenedArrayShapeTypeInstances());
+        $this->assertSame('array<string,int>|array<string,string>', (string)$union_type->withFlattenedArrayShapeOrLiteralTypeInstances());
         $field_union_type = $type->getFieldTypes()['key'];
         $this->assertTrue($field_union_type->getIsPossiblyUndefined());
         $this->assertSame('int|string=', (string)$field_union_type);

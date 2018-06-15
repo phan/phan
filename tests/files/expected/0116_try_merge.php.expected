@@ -1,4 +1,3 @@
-%s:16 PhanTypeMismatchArgument Argument 1 (p) is int but \f() takes string defined at %s:15
-%s:17 PhanTypeMismatchArgument Argument 1 (p) is int|true but \f() takes string defined at %s:15
-%s:18 PhanTypeMismatchArgument Argument 1 (p) is int|null but \f() takes string defined at %s:15
-
+%s:16 PhanTypeMismatchArgument Argument 1 (p) is 42 but \f() takes string defined at %s:15
+%s:17 PhanTypeMismatchArgument Argument 1 (p) is 42|true but \f() takes string defined at %s:15
+%s:18 PhanTypeMismatchArgument Argument 1 (p) is 21|null but \f() takes string defined at %s:15

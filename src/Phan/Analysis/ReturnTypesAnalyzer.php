@@ -33,7 +33,7 @@ class ReturnTypesAnalyzer
         // are valid
 
         // Look at each type in the function's return union type
-        foreach ($return_type->withFlattenedArrayShapeTypeInstances()->getTypeSet() as $outer_type) {
+        foreach ($return_type->withFlattenedArrayShapeOrLiteralTypeInstances()->getTypeSet() as $outer_type) {
             $type = $outer_type;
             // TODO: Expand this to ArrayShapeType, add unit test of `@return array{key:MissingClazz}`
             while ($type instanceof GenericArrayType) {
@@ -87,7 +87,7 @@ class ReturnTypesAnalyzer
                 // or equivalent form of the syntax-level declared
                 // return type.
                 if (!$is_exclusively_narrowed) {
-                    if (!$method->hasSuppressIssue(Issue::TypeMismatchDeclaredReturn)) {
+                    if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchDeclaredReturn)) {
                         Issue::maybeEmit(
                             $code_base,
                             $context,
@@ -106,7 +106,7 @@ class ReturnTypesAnalyzer
                     } else {
                         // This check isn't urgent to fix, and is specific to nullable casting rules,
                         // so use a different issue type.
-                        if (!$method->hasSuppressIssue(Issue::TypeMismatchDeclaredReturnNullable)) {
+                        if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchDeclaredReturnNullable)) {
                             Issue::maybeEmit(
                                 $code_base,
                                 $context,

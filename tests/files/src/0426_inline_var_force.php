@@ -1,7 +1,7 @@
 <?php
-
+/** @phan-file-suppress PhanUnusedVariable FIXME improve on this */
 function example(int ...$values) {
-    $data = ['key' => 'value'];
+
     $first = true;
     $sum = 0;
     '@phan-var int $prev';
@@ -10,14 +10,14 @@ function example(int ...$values) {
             $sum += $prev * $value;
         } else {
             $first = false;
-            $prev = $value;
+            $prev = $value;  // FIXME should not warn about $prev being unused
         }
     }
     return $sum;
 }
 
 function example2(int ...$values) {
-    $data = ['key' => 'value'];
+
     $first = true;
     $sum = 0;
     <<<'PHAN'

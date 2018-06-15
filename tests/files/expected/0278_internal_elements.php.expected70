@@ -1,5 +1,16 @@
 %s:35 PhanTypeVoidAssignment Cannot assign void return value
 %s:61 PhanTypeVoidAssignment Cannot assign void return value
+%s:61 PhanUnusedVariable Unused definition of variable $v01
+%s:62 PhanUnusedVariable Unused definition of variable $v02
+%s:63 PhanUnusedVariable Unused definition of variable $v03
+%s:66 PhanUnusedVariable Unused definition of variable $v11
+%s:67 PhanUnusedVariable Unused definition of variable $v12
+%s:68 PhanUnusedVariable Unused definition of variable $v13
+%s:71 PhanUnusedVariable Unused definition of variable $v21
+%s:72 PhanUnusedVariable Unused definition of variable $v22
+%s:73 PhanUnusedVariable Unused definition of variable $v23
+%s:74 PhanUnusedVariable Unused definition of variable $v24
+%s:75 PhanUnusedVariable Unused definition of variable $v25
 %s:92 PhanAccessMethodInternal Cannot access internal method \NS278\A\f of namespace \NS278\A defined at %s:33 from namespace \NS278\B
 %s:92 PhanTypeVoidAssignment Cannot assign void return value
 %s:96 PhanAccessMethodInternal Cannot access internal method \NS278\A\C1::__construct of namespace \NS278\A defined at %s:11 from namespace \NS278\B

@@ -4,6 +4,8 @@ namespace Phan\Language\Internal;
 $ordinary_ast_node = 'ast\Node|float|int|string';
 $ast_node_shape_inner = \implode(',', [
     "args?:ast\Node",
+    "catches?:ast\Node",
+    "finally?:ast\Node",
     "class?:ast\Node",
     "cond?:$ordinary_ast_node",
     "const?:string",
@@ -16,6 +18,7 @@ $ast_node_shape_inner = \implode(',', [
     "right?:$ordinary_ast_node",
     "var?:ast\Node",
     "value?:$ordinary_ast_node",
+    "try?:ast\Node",
     "stmts?:?ast\Node",
 ]);
 

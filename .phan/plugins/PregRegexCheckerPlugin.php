@@ -66,6 +66,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
     }
 
     /**
+     * @param CodeBase $code_base @phan-unused-param
      * @return array<string,\Closure>
      * @phan-return array<string, Closure(CodeBase,Context,Func,array):void>
      */
@@ -168,4 +169,4 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
 
 // Every plugin needs to return an instance of itself at the
 // end of the file in which its defined.
-return new PregRegexCheckerPlugin;
+return new PregRegexCheckerPlugin();

@@ -33,7 +33,7 @@ class UndoTracker
     private $undoOperationsForPath = [];
 
     /**
-     * @var array<string,string> Maps file paths to the modification dates and file size of the paths. - On ext4, milliseconds are available, but php APIs all return seconds.
+     * @var array<string,?string> Maps file paths to the modification dates and file size of the paths. - On ext4, milliseconds are available, but php APIs all return seconds.
      */
     private $fileModificationState = [];
 
@@ -70,6 +70,7 @@ class UndoTracker
     {
         if (\is_string($current_parsed_file)) {
             Daemon::debugf("Recording file modification state for %s", $current_parsed_file);
+            // This shouldn't be null. TODO: Figure out what to do if it is.
             $this->fileModificationState[$current_parsed_file] = self::getFileState($current_parsed_file);
         }
         $this->current_parsed_file = $current_parsed_file;

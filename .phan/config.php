@@ -173,6 +173,10 @@ return [
     // to make sense of.
     'dead_code_detection' => false,
 
+    // Set to true in order to attempt to detect unused variables.
+    // dead_code_detection will also enable unused variable detection.
+    'unused_variable_detection' => true,
+
     // Set to true in order to force tracking references to elements
     // (functions/methods/consts/protected).
     // dead_code_detection is another option which also causes references
@@ -212,7 +216,7 @@ return [
     // (use when the number of files is much larger than the process count)
     // NOTE: If you rely on Phan parsing files/directories in the order
     // that they were provided in this config, don't use this)
-    // See https://github.com/etsy/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
+    // See https://github.com/phan/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
     'consistent_hashing_file_order' => false,
 
     // Override to hardcode existence and types of (non-builtin) globals.

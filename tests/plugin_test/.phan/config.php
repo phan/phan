@@ -66,6 +66,9 @@ return [
     // Test dead code detection
     'dead_code_detection' => true,
 
+    // TODO: Test unused variable detection
+    'unused_variable_detection' => true,
+
     'globals_type_map' => ['test_global_exception' => 'Exception', 'test_global_error' => '\\Error'],
 
     "quick_mode" => false,

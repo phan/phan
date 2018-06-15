@@ -102,7 +102,6 @@ class Parameter extends Variable
      * @return UnionType
      * The type of the default value for this parameter
      * if it exists
-     * @suppress PhanAccessMethodInternal
      */
     public function getDefaultValueType() : UnionType
     {
@@ -110,12 +109,12 @@ class Parameter extends Variable
         if ($future_type !== null) {
             // Only attempt to resolve the future type once.
             try {
-                $this->default_value_type = $future_type->get();
+                $this->default_value_type = $future_type->get()->asNonLiteralType();
             } catch (IssueException $exception) {
                 // Ignore exceptions
                 Issue::maybeEmitInstance(
-                    $future_type->getCodebase(),
-                    $future_type->getContext(),
+                    $future_type->getCodebase(),  // @phan-suppress-current-line PhanAccessMethodInternal
+                    $future_type->getContext(),  // @phan-suppress-current-line PhanAccessMethodInternal
                     $exception->getIssueInstance()
                 );
             } finally {
@@ -163,7 +162,6 @@ class Parameter extends Variable
     /**
      * @return array<int,Parameter>
      * A list of parameters from an AST node.
-     * @suppress PhanPluginUnusedVariable
      */
     public static function listFromNode(
         Context $context,
@@ -187,6 +185,7 @@ class Parameter extends Variable
                 && !$is_optional_seen
                 && $parameter->getNonVariadicUnionType()->isEmpty()
             ) {
+                // @phan-suppress-next-line PhanPluginUnusedVariable
                 $is_optional_seen = true;
             }
 
@@ -242,7 +241,7 @@ class Parameter extends Variable
     private static function maybeGetKnownDefaultValueForNode($node)
     {
         if (!($node instanceof Node)) {
-            return Type::fromObject($node)->asUnionType();
+            return Type::nonLiteralFromObject($node)->asUnionType();
         }
         if ($node->kind === \ast\AST_CONST) {
             $name = $node->children['name']->children['name'] ?? null;

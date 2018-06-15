@@ -11,8 +11,6 @@ class DuplicateClassAnalyzer
      * Check to see if the given Clazz is a duplicate
      *
      * @return void
-     *
-     * @suppress PhanPartialTypeMismatchArgument static handling has ambiguity
      */
     public static function analyzeDuplicateClass(
         CodeBase $code_base,
@@ -27,6 +25,7 @@ class DuplicateClassAnalyzer
 
         $original_fqsen = $clazz->getFQSEN()->getCanonicalFQSEN();
 
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument static method has ambiguity
         if (!$code_base->hasClassWithFQSEN($original_fqsen)) {
             // If there's a missing class we'll catch that
             // elsewhere
@@ -34,12 +33,13 @@ class DuplicateClassAnalyzer
         }
 
         // Get the original class
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument static method has ambiguity
         $original_class = $code_base->getClassByFQSEN($original_fqsen);
 
         // Check to see if the original definition was from
         // an internal class
         if ($original_class->isPHPInternal()) {
-            if (!$clazz->hasSuppressIssue(Issue::RedefineClassInternal)) {
+            if (!$clazz->checkHasSuppressIssueAndIncrementCount(Issue::RedefineClassInternal)) {
                 Issue::maybeEmit(
                     $code_base,
                     $clazz->getContext(),
@@ -55,7 +55,7 @@ class DuplicateClassAnalyzer
         // Otherwise, print the coordinates of the original
         // definition
         } else {
-            if (!$clazz->hasSuppressIssue(Issue::RedefineClass)) {
+            if (!$clazz->checkHasSuppressIssueAndIncrementCount(Issue::RedefineClass)) {
                 Issue::maybeEmit(
                     $code_base,
                     $clazz->getContext(),

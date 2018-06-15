@@ -238,6 +238,18 @@ class Issue
     const UnreferencedUseFunction       = 'PhanUnreferencedUseFunction';
     const UnreferencedUseConstant       = 'PhanUnreferencedUseConstant';
 
+    const UnusedVariable                        = 'PhanUnusedVariable';
+    const UnusedPublicMethodParameter           = 'PhanUnusedPublicMethodParameter';
+    const UnusedPublicFinalMethodParameter      = 'PhanUnusedPublicFinalMethodParameter';
+    const UnusedProtectedMethodParameter        = 'PhanUnusedProtectedMethodParameter';
+    const UnusedProtectedFinalMethodParameter   = 'PhanUnusedProtectedFinalMethodParameter';
+    const UnusedPrivateMethodParameter          = 'PhanUnusedPrivateMethodParameter';
+    const UnusedPrivateFinalMethodParameter     = 'PhanUnusedPrivateFinalMethodParameter';
+    const UnusedClosureUseVariable              = 'PhanUnusedClosureUseVariable';
+    const UnusedClosureParameter                = 'PhanUnusedClosureParameter';
+    const UnusedGlobalFunctionParameter         = 'PhanUnusedGlobalFunctionParameter';
+    const UnusedVariableValueOfForeachWithKey   = 'PhanUnusedVariableValueOfForeachWithKey';  // has higher false positive rates than UnusedVariable
+
     // Issue::CATEGORY_REDEFINE
     const RedefineClass             = 'PhanRedefineClass';
     const RedefineClassAlias        = 'PhanRedefineClassAlias';
@@ -246,6 +258,9 @@ class Issue
     const RedefineFunctionInternal  = 'PhanRedefineFunctionInternal';
     const IncompatibleCompositionProp = 'PhanIncompatibleCompositionProp';
     const IncompatibleCompositionMethod = 'PhanIncompatibleCompositionMethod';
+    const RedefinedUsedTrait            = 'PhanRedefinedUsedTrait';
+    const RedefinedInheritedInterface   = 'PhanRedefinedInheritedInterface';
+    const RedefinedExtendedClass        = 'PhanRedefinedExtendedClass';
 
     // Issue::CATEGORY_ACCESS
     const AccessPropertyPrivate     = 'PhanAccessPropertyPrivate';
@@ -254,15 +269,21 @@ class Issue
     const AccessMethodPrivateWithCallMagicMethod = 'PhanAccessMethodPrivateWithCallMagicMethod';
     const AccessMethodProtected     = 'PhanAccessMethodProtected';
     const AccessMethodProtectedWithCallMagicMethod = 'PhanAccessMethodProtectedWithCallMagicMethod';
-    const AccessSignatureMismatch   = 'PhanAccessSignatureMismatch';
+    const AccessSignatureMismatch         = 'PhanAccessSignatureMismatch';
     const AccessSignatureMismatchInternal = 'PhanAccessSignatureMismatchInternal';
-    const AccessStaticToNonStatic   = 'PhanAccessStaticToNonStatic';
-    const AccessNonStaticToStatic   = 'PhanAccessNonStaticToStatic';
-    const AccessClassConstantPrivate     = 'PhanAccessClassConstantPrivate';
-    const AccessClassConstantProtected   = 'PhanAccessClassConstantProtected';
+    const PropertyAccessSignatureMismatch = 'PhanPropertyAccessSignatureMismatch';
+    const PropertyAccessSignatureMismatchInternal  = 'PhanPropertyAccessSignatureMismatchInternal';
+    const AccessConstantSignatureMismatch = 'PhanConstantAccessSignatureMismatch';
+    const AccessConstantSignatureMismatchInternal  = 'PhanConstantAccessSignatureMismatchInternal';
+    const AccessStaticToNonStatic         = 'PhanAccessStaticToNonStatic';
+    const AccessNonStaticToStatic         = 'PhanAccessNonStaticToStatic';
+    const AccessStaticToNonStaticProperty = 'PhanAccessStaticToNonStaticProperty';
+    const AccessNonStaticToStaticProperty = 'PhanAccessNonStaticToStaticProperty';
+    const AccessClassConstantPrivate      = 'PhanAccessClassConstantPrivate';
+    const AccessClassConstantProtected    = 'PhanAccessClassConstantProtected';
     const AccessPropertyStaticAsNonStatic = 'PhanAccessPropertyStaticAsNonStatic';
     const AccessPropertyNonStaticAsStatic = 'PhanAccessPropertyNonStaticAsStatic';
-    const AccessOwnConstructor = 'PhanAccessOwnConstructor';
+    const AccessOwnConstructor            = 'PhanAccessOwnConstructor';
 
     const AccessConstantInternal    = 'PhanAccessConstantInternal';
     const AccessClassInternal       = 'PhanAccessClassInternal';
@@ -286,6 +307,9 @@ class Issue
     const CompatibleVoidTypePHP70           = 'PhanCompatibleVoidTypePHP70';
     const CompatibleIterableTypePHP70       = 'PhanCompatibleIterableTypePHP70';
     const CompatibleObjectTypePHP71         = 'PhanCompatibleNullableTypePHP71';
+    const CompatibleUseVoidPHP70            = 'PhanCompatibleUseVoidPHP70';
+    const CompatibleUseIterablePHP71        = 'PhanCompatibleUseIterablePHP71';
+    const CompatibleUseObjectPHP71          = 'PhanCompatibleUseObjectPHP71';
 
     // Issue::CATEGORY_GENERIC
     const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -598,7 +622,7 @@ class Issue
             new Issue(
                 self::UndeclaredMethod,
                 self::CATEGORY_UNDEFINED,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Call to undeclared method {METHOD}",
                 self::REMEDIATION_B,
                 11013
@@ -606,7 +630,7 @@ class Issue
             new Issue(
                 self::UndeclaredStaticMethod,
                 self::CATEGORY_UNDEFINED,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Static call to undeclared method {METHOD}",
                 self::REMEDIATION_B,
                 11014
@@ -898,7 +922,7 @@ class Issue
             new Issue(
                 self::TypeInvalidYieldFrom,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Yield from statement was passed an invalid expression of type {TYPE} (expected Traversable/array)",
                 self::REMEDIATION_B,
                 10069
@@ -1250,7 +1274,7 @@ class Issue
             new Issue(
                 self::TypeExpectedObjectPropAccess,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 'Expected an object instance when accessing an instance property, but saw an expression with type {TYPE}',
                 self::REMEDIATION_B,
                 10038
@@ -1492,7 +1516,7 @@ class Issue
             new Issue(
                 self::ParamTooFew,
                 self::CATEGORY_PARAMETER,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Call with {COUNT} arg(s) to {FUNCTIONLIKE}() which requires {COUNT} arg(s) defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7003
@@ -1500,7 +1524,7 @@ class Issue
             new Issue(
                 self::ParamTooFewInternal,
                 self::CATEGORY_PARAMETER,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Call with {COUNT} arg(s) to {FUNCTIONLIKE}() which requires {COUNT} arg(s)",
                 self::REMEDIATION_B,
                 7004
@@ -1508,7 +1532,7 @@ class Issue
             new Issue(
                 self::ParamTooFewCallable,
                 self::CATEGORY_PARAMETER,
-                self::SEVERITY_LOW,
+                self::SEVERITY_CRITICAL,
                 "Call with {COUNT} arg(s) to {FUNCTIONLIKE}() (as a provided callable) which requires {COUNT} arg(s) defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7044
@@ -1631,7 +1655,7 @@ class Issue
             new Issue(
                 self::ParamSignatureRealMismatchHasParamType,
                 self::CATEGORY_PARAMETER,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} has type '{TYPE}' cannot replace original parameter with no type) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7017
@@ -2094,6 +2118,95 @@ class Issue
                 self::REMEDIATION_B,
                 6028
             ),
+            new Issue(
+                self::UnusedVariable,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Unused definition of variable ${VARIABLE}',
+                self::REMEDIATION_B,
+                6035
+            ),
+            new Issue(
+                self::UnusedPublicMethodParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6036
+            ),
+            new Issue(
+                self::UnusedPublicFinalMethodParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6037
+            ),
+            new Issue(
+                self::UnusedProtectedMethodParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6038
+            ),
+            new Issue(
+                self::UnusedProtectedFinalMethodParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6039
+            ),
+            new Issue(
+                self::UnusedPrivateMethodParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6040
+            ),
+            new Issue(
+                self::UnusedPrivateFinalMethodParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6041
+            ),
+            new Issue(
+                self::UnusedClosureUseVariable,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Closure use variable ${VARIABLE} is never used',
+                self::REMEDIATION_B,
+                6042
+            ),
+            new Issue(
+                self::UnusedClosureParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6043
+            ),
+            new Issue(
+                self::UnusedGlobalFunctionParameter,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                'Parameter ${PARAMETER} is never used',
+                self::REMEDIATION_B,
+                6044
+            ),
+            new Issue(
+                self::UnusedVariableValueOfForeachWithKey,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Unused definition of variable ${VARIABLE} as the value of a foreach loop that included keys',
+                self::REMEDIATION_B,
+                6045
+            ),
+
 
             // Issue::CATEGORY_REDEFINE
             new Issue(
@@ -2152,6 +2265,30 @@ class Issue
                 self::REMEDIATION_B,
                 8006
             ),
+            new Issue(
+                self::RedefinedUsedTrait,
+                self::CATEGORY_REDEFINE,
+                self::SEVERITY_NORMAL,
+                "{CLASS} uses {TRAIT} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors.",
+                self::REMEDIATION_B,
+                8007
+            ),
+            new Issue(
+                self::RedefinedInheritedInterface,
+                self::CATEGORY_REDEFINE,
+                self::SEVERITY_NORMAL,
+                "{CLASS} inherits {INTERFACE} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors.",
+                self::REMEDIATION_B,
+                8008
+            ),
+            new Issue(
+                self::RedefinedExtendedClass,
+                self::CATEGORY_REDEFINE,
+                self::SEVERITY_NORMAL,
+                "{CLASS} extends {CLASS} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors.",
+                self::REMEDIATION_B,
+                8009
+            ),
 
             // Issue::CATEGORY_ACCESS
             new Issue(
@@ -2201,6 +2338,54 @@ class Issue
                 "Access level to {METHOD} must be compatible with internal {METHOD}",
                 self::REMEDIATION_B,
                 1005
+            ),
+            new Issue(
+                self::PropertyAccessSignatureMismatch,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Access level to {PROPERTY} must be compatible with {PROPERTY} defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1022
+            ),
+            new Issue(
+                self::PropertyAccessSignatureMismatchInternal,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Access level to {PROPERTY} must be compatible with internal {PROPERTY}",
+                self::REMEDIATION_B,
+                1023
+            ),
+            new Issue(
+                self::AccessConstantSignatureMismatch,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Access level to {CONST} must be compatible with {CONST} defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1024
+            ),
+            new Issue(
+                self::AccessConstantSignatureMismatchInternal,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Access level to {CONST} must be compatible with internal {CONST}",
+                self::REMEDIATION_B,
+                1025
+            ),
+            new Issue(
+                self::AccessStaticToNonStaticProperty,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot make static property {PROPERTY} into the non static property {PROPERTY}",
+                self::REMEDIATION_B,
+                1026
+            ),
+            new Issue(
+                self::AccessNonStaticToStaticProperty,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot make non static property {PROPERTY} into the static property {PROPERTY}",
+                self::REMEDIATION_B,
+                1027
             ),
             new Issue(
                 self::AccessStaticToNonStatic,
@@ -2317,7 +2502,7 @@ class Issue
             new Issue(
                 self::AccessOverridesFinalMethodPHPDoc,
                 self::CATEGORY_ACCESS,
-                self::SEVERITY_LOW,
+                self::SEVERITY_CRITICAL,
                 "Declaration of phpdoc method {METHOD} is an unnecessary override of final method {METHOD} defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 1019
@@ -2395,6 +2580,30 @@ class Issue
                 "Type '{TYPE}' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'",
                 self::REMEDIATION_B,
                 3007
+            ),
+            new Issue(
+                self::CompatibleUseVoidPHP70,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Using '{TYPE}' as void will be a syntax error in PHP 7.1 (void becomes the absense of a return type).",
+                self::REMEDIATION_B,
+                3008
+            ),
+            new Issue(
+                self::CompatibleUseIterablePHP71,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Using '{TYPE}' as iterable will be a syntax error in PHP 7.2 (iterable becomes a native type with subtypes Array and Iterator).",
+                self::REMEDIATION_B,
+                3009
+            ),
+            new Issue(
+                self::CompatibleUseObjectPHP71,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Using '{TYPE}' as object will be a syntax error in PHP 7.2 (object becomes a native type that accepts any class instance).",
+                self::REMEDIATION_B,
+                3010
             ),
 
             // Issue::CATEGORY_GENERIC
@@ -2585,7 +2794,6 @@ class Issue
     /**
      * @param array<int,Issue> $error_list
      * @return void
-     * @suppress PhanPluginUnusedVariable (error_map and unique_type_id_set)
      */
     private static function sanityCheckErrorList(array $error_list)
     {
@@ -2614,6 +2822,7 @@ class Issue
                     $expected_category_for_type_id_bitpos
                 ));
             }
+            // @phan-suppress-next-line PhanPluginUnusedVariable
             $error_map[$error_type] = $error;
         }
     }

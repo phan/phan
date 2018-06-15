@@ -1,0 +1,2 @@
+src/006_crash.php:6 PhanNoopVariable Unused variable
+src/006_crash.php:6 PhanSyntaxError syntax error, unexpected ','

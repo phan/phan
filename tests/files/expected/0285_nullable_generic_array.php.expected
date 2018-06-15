@@ -1,3 +1,3 @@
-%s:25 PhanTypeMismatchReturn Returning type array{0:string} but f285_6() is declared to return ?int[]
+%s:25 PhanTypeMismatchReturn Returning type array{0:'string'} but f285_6() is declared to return ?int[]
 %s:28 PhanUnextractableAnnotation Saw unextractable annotation for comment '/** @return ??int[] */'
 %s:33 PhanUnextractableAnnotation Saw unextractable annotation for comment '/** @return ??int[] */'

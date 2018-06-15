@@ -1,4 +1,4 @@
-%s:32 PhanTypeMismatchArgument Argument 1 (x) is int but \ClassUsingTrait294::foO() takes string defined at %s:14
+%s:32 PhanTypeMismatchArgument Argument 1 (x) is 42 but \ClassUsingTrait294::foO() takes string defined at %s:14
 %s:34 PhanUndeclaredMethod Call to undeclared method \ClassUsingTrait294::foo3 (Did you mean expr->foO() or expr->foo2())
-%s:36 PhanTypeMismatchArgument Argument 1 (x) is string but \ClassUsingTrait294::foo2() takes int defined at %s:5
+%s:36 PhanTypeMismatchArgument Argument 1 (x) is '?' but \ClassUsingTrait294::foo2() takes int defined at %s:5
 %s:37 PhanTypeMismatchArgument Argument 1 (x) is float but \ClassUsingTrait294::bAr() takes array defined at %s:17

@@ -28,7 +28,6 @@ use Microsoft\PhpParser\TokenKind;
  *    then walking back up to the parent
  * 3. Then, Phan will use $node_mapping to update the corresponding AST node
  *
- * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanUndeclaredProperty deliberately adding dynamic property
  *
  * The logging to STDERR can be uncommented if you have issues debugging why
@@ -172,8 +171,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
     }
 
     /**
-     * @suppress PhanPluginUnusedPrivateMethodArgument $n (code can be uncommented for debugging)
-     * @param PhpParser\Node|Token $n
+     * @param PhpParser\Node|Token $n @phan-unused-param
      * @param mixed $ast_node
      */
     private static function markNodeAsSelected($n, $ast_node)
@@ -275,7 +273,6 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      * @param PhpParser\Node\QualifiedName|Token|null $type
      * @return ?ast\Node
      * @override
-     * @suppress PhanUndeclaredProperty
      */
     protected static function phpParserTypeToAstNode($type, int $line)
     {

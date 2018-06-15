@@ -25,8 +25,6 @@ use Phan\Library\Some;
  * TODO: Pass the doccomment line's index to the Element that will use the client,
  * so that it can be used for more precise line numbers (E.g. for where magic methods were declared,
  * where functions with no signature types but phpdoc types declared types that are invalid class names, etc.
- *
- * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 class Comment
 {
@@ -360,13 +358,13 @@ class Comment
                 [],
                 [],
                 [],
-                new None,
+                new None(),
                 UnionType::empty(),
                 [],
                 [],
                 [],
                 [],
-                new None,
+                new None(),
                 UnionType::empty()
             );
         }
@@ -374,12 +372,12 @@ class Comment
         $variable_list = [];
         $parameter_list = [];
         $template_type_list = [];
-        $inherited_type = new None;
+        $inherited_type = new None();
         $return_union_type = UnionType::empty();
         $suppress_issue_list = [];
         $magic_property_list = [];
         $magic_method_list = [];
-        $closure_scope = new None;
+        $closure_scope = new None();
         $comment_flags = 0;
         $phan_overrides = [];
         $throw_union_type = UnionType::empty();
@@ -438,7 +436,7 @@ class Comment
                     // Make sure support for generic types is enabled
                     if (Config::getValue('generic_types_enabled')) {
                         $inherited_type =
-                            self::inheritsFromCommentLine($context, $line);
+                            self::inheritsFromCommentLine($code_base, $context, $line);
                     }
                 } elseif ($type === 'return') {
                     $check_compatible('@return', Comment::FUNCTION_LIKE, $i, $line);
@@ -646,7 +644,6 @@ class Comment
      *
      * @return UnionType
      * The declared return type
-     * @suppress PhanParamSuspiciousOrder strstr
      */
     private static function returnTypeFromCommentLine(
         CodeBase $code_base,
@@ -688,7 +685,8 @@ class Comment
         $return_union_type = UnionType::fromStringInContext(
             $return_union_type_string,
             $context,
-            Type::FROM_PHPDOC
+            Type::FROM_PHPDOC,
+            $code_base
         );
 
         return $return_union_type;
@@ -772,7 +770,8 @@ class Comment
                     UnionType::fromStringInContext(
                         $type,
                         $context,
-                        Type::FROM_PHPDOC
+                        Type::FROM_PHPDOC,
+                        $code_base
                     );
             } else {
                 $union_type = UnionType::empty();
@@ -807,7 +806,6 @@ class Comment
 
     /**
      * This should be uncommon: $line is a parameter for which a parameter name could not be parsed
-     * @suppress PhanParamSuspiciousOrder
      */
     private static function checkParamWithoutVarName(
         CodeBase $code_base,
@@ -859,7 +857,7 @@ class Comment
         string $line
     ) {
         // TODO: Just use WORD_REGEX? Backslashes or nested templates wouldn't make sense.
-        if (preg_match('/@template\s+(' . Type::simple_type_regex. ')/', $line, $match)) {
+        if (preg_match('/@template\s+(' . Type::simple_type_regex . ')/', $line, $match)) {
             $template_type_identifier = $match[1];
             return new TemplateType($template_type_identifier);
         }
@@ -868,6 +866,9 @@ class Comment
     }
 
     /**
+     * @param CodeBase $code_base
+     * Needed to resolve 'parent', if we ever prefer that shorthand in templates.
+     *
      * @param Context $context
      * The context in which the comment line appears
      *
@@ -878,6 +879,7 @@ class Comment
      * An optional type overriding the extended type of the class
      */
     private static function inheritsFromCommentLine(
+        CodeBase $code_base,
         Context $context,
         string $line
     ) {
@@ -888,7 +890,8 @@ class Comment
             $type = new Some(Type::fromStringInContext(
                 $type_string,
                 $context,
-                Type::FROM_PHPDOC
+                Type::FROM_PHPDOC,
+                $code_base
             ));
 
             return $type;
@@ -926,6 +929,7 @@ class Comment
      * @return ?CommentParameter - if null, the phpdoc magic method was invalid.
      */
     private static function magicParamFromMagicMethodParamString(
+        CodeBase $code_base,
         Context $context,
         string $param_string,
         int $param_index
@@ -945,7 +949,8 @@ class Comment
             $union_type = UnionType::fromStringInContext(
                 $union_type_string,
                 $context,
-                Type::FROM_PHPDOC
+                Type::FROM_PHPDOC,
+                $code_base
             );
             $is_variadic = $param_match[19] === '...';
             $default_str = $param_match[21];
@@ -1000,7 +1005,8 @@ class Comment
                     UnionType::fromStringInContext(
                         $return_union_type_string,
                         $context,
-                        Type::FROM_PHPDOC
+                        Type::FROM_PHPDOC,
+                        $code_base
                     );
             } else {
                 // From https://phpdoc.org/docs/latest/references/phpdoc/tags/method.html
@@ -1018,7 +1024,7 @@ class Comment
                 $params_strings = explode(',', $arg_list);
                 $failed = false;
                 foreach ($params_strings as $i => $param_string) {
-                    $param = self::magicParamFromMagicMethodParamString($context, $param_string, $i);
+                    $param = self::magicParamFromMagicMethodParamString($code_base, $context, $param_string, $i);
                     if ($param === null) {
                         Issue::maybeEmit(
                             $code_base,
@@ -1086,7 +1092,8 @@ class Comment
                 UnionType::fromStringInContext(
                     $type,
                     $context,
-                    Type::FROM_PHPDOC
+                    Type::FROM_PHPDOC,
+                    $code_base
                 );
 
             return new CommentParameter(
@@ -1139,7 +1146,8 @@ class Comment
             return new Some(Type::fromStringInContext(
                 $closure_scope_union_type_string,
                 $context,
-                Type::FROM_PHPDOC
+                Type::FROM_PHPDOC,
+                $code_base
             ));
         }
         Issue::maybeEmit(

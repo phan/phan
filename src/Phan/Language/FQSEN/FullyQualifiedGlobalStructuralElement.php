@@ -67,7 +67,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             // Common case: no namespace
             return self::make('\\', $name);
         }
-        return self::make('\\' . \substr($name, 0, $i), \substr($name, $i+1));
+        return self::make('\\' . \substr($name, 0, $i), \substr($name, $i + 1));
     }
 
     /**
@@ -94,7 +94,10 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         $name_parts = \explode('\\', $name);
         $name = \array_pop($name_parts);
         foreach ($name_parts as $part) {
-            $namespace .= '\\' . $part;
+            // TODO: Emit a warning or throw instead?
+            if ($part !== '') {
+                $namespace .= '\\' . $part;
+            }
         }
         $namespace = self::cleanNamespace($namespace);
 
@@ -290,7 +293,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      */
     protected static function cleanNamespace(string $namespace) : string
     {
-        if (!$namespace
+        if ($namespace === ''
             || $namespace === '\\'
         ) {
             return '\\';
@@ -304,11 +307,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
 
         // Ensure that we don't have a trailing '\' on the
         // namespace
-        if ('\\' === \substr($namespace, -1)) {
-            $namespace = \substr($namespace, 0, -1);
-        }
-
-        return $namespace;
+        return \rtrim($namespace, '\\');
     }
 
     /**

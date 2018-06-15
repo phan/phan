@@ -64,4 +64,4 @@ class NonBoolBranchVisitor extends PluginAwarePostAnalysisVisitor
     }
 }
 
-return new NonBoolBranchPlugin;
+return new NonBoolBranchPlugin();

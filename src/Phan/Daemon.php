@@ -28,8 +28,6 @@ class Daemon
      *
      * @return Request|null - A writeable request, which has been fully read from.
      * Callers should close after they are finished writing.
-     *
-     * @suppress PhanPluginUnusedVariable https://github.com/mattriverm/PhanUnusedVariable/issues/30
      */
     public static function run(CodeBase $code_base, Closure $file_path_lister)
     {
@@ -63,7 +61,7 @@ class Daemon
                  * @param string $file
                  * @param int $line
                  * @return bool
-                 */
+                 * @phan-suppress-next-line PhanPluginUnusedVariable https://github.com/mattriverm/PhanUnusedVariable/issues/30 */
                 $previousErrorHandler = set_error_handler(function ($severity, $message, $file, $line) use (&$previousErrorHandler) {
                     self::debugf("In new error handler '$message'");
                     if (!preg_match('/stream_socket_accept/i', $message)) {
@@ -110,8 +108,6 @@ class Daemon
     /**
      * @return void - A writeable request, which has been fully read from.
      * Callers should close after they are finished writing.
-     *
-     * @suppress PhanPluginUnusedVariable https://github.com/mattriverm/PhanUnusedVariable/issues/30
      */
     private static function runWithoutPcntl(CodeBase $code_base, Closure $file_path_lister)
     {
@@ -121,6 +117,7 @@ class Daemon
             while (true) {
                 $gotSignal = false;  // reset this.
                 // We get an error from stream_socket_accept. After the RuntimeException is thrown, pcntl_signal is called.
+                // @phan-suppress-next-line PhanPluginUnusedVariable
                 $previousErrorHandler = set_error_handler(function ($severity, $message, $file, $line) use (&$previousErrorHandler) {
                     self::debugf("In new error handler '$message'");
                     if (!preg_match('/stream_socket_accept/i', $message)) {
@@ -228,10 +225,8 @@ class Daemon
      * Debug (non-error) statement related to the daemon.
      * Uncomment this when debugging issues (E.g. changes not being picked up)
      *
-     * @param string $format - printf style format string
-     * @param mixed ...$args - printf args
-     *
-     * @suppress PhanPluginUnusedPublicMethodArgument (Currently commented out)
+     * @param string $format - printf style format string @phan-unused-param
+     * @param mixed ...$args - printf args @phan-unused-param
      */
     public static function debugf(string $format, ...$args)
     {

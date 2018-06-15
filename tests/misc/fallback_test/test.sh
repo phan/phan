@@ -16,6 +16,8 @@ rm $ACTUAL_PATH -f || exit 1
 # normalize output for https://github.com/phan/phan/issues/1130
 sed -i "s/ syntax error, unexpected return (T_RETURN)/ syntax error, unexpected 'return' (T_RETURN)/" $ACTUAL_PATH
 sed -i "s/ syntax error, unexpected new (T_NEW)/ syntax error, unexpected 'new' (T_NEW)/" $ACTUAL_PATH
+# This warns in php 7.0 only, but the important thing to test is that the fallback doesn't crash.
+sed -i "/src\/018_list_expression_18\.php:2 PhanSyntaxError syntax error, unexpected '0'/d" $ACTUAL_PATH
 # diff returns a non-zero exit code if files differ or are missing
 echo
 echo "Comparing the output:"

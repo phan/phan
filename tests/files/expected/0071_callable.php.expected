@@ -1,1 +1,1 @@
-%s:10 PhanTypeMismatchArgument Argument 1 (c) is array{0:string,1:string} but \f() takes \Closure defined at %s:9
+%s:10 PhanTypeMismatchArgument Argument 1 (c) is array{0:'Test',1:'fn'} but \f() takes \Closure defined at %s:9

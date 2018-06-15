@@ -1,2 +1,2 @@
-%s:6 PhanTypeMismatchArgument Argument 1 (i) is string but \closure_%s() takes int defined at %s:3
-%s:7 PhanTypeMismatchArgument Argument 1 (s) is int but \closure_%s() takes string defined at %s:4
+%s:6 PhanTypeMismatchArgument Argument 1 (i) is 'string' but \closure_%s() takes int defined at %s:3
+%s:7 PhanTypeMismatchArgument Argument 1 (s) is 42 but \closure_%s() takes string defined at %s:4

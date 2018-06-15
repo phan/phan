@@ -8,10 +8,6 @@ use Phan\Language\Type;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 
-/**
- * @phan-file-suppress PhanPartialTypeMismatchArgument
- * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
- */
 class FunctionFactory
 {
     /**
@@ -114,6 +110,7 @@ class FunctionFactory
         );
 
         $method->setNumberOfOptionalParameters(
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument TODO: Make this consistently an int?
             $reflection_method->getNumberOfParameters()
             - $reflection_method->getNumberOfRequiredParameters()
         );

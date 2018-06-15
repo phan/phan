@@ -88,6 +88,28 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     }
 
     /**
+     * @return bool true if this element's visibility
+     *                   is strictly more visible than $other (public > protected > private)
+     */
+    public function isStrictlyMoreVisibileThan(AddressableElementInterface $other) : bool
+    {
+        if ($this->isPrivate()) {
+            return false;
+        } // $this is public or protected
+
+        if ($other->isPrivate()) {
+            return true;
+        }
+
+        if ($other->isProtected()) {
+            // True if this is public.
+            return !$this->isProtected();
+        }
+        // $other is public
+        return false;
+    }
+
+    /**
      * @return bool
      * True if this is a public property
      */

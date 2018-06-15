@@ -1,4 +1,4 @@
-%s:6 PhanTypeMismatchArgument Argument 1 (p1) is string but \f248_1() takes bool defined at %s:2
-%s:6 PhanTypeMismatchArgument Argument 2 (p2) is string but \f248_1() takes bool defined at %s:2
-%s:9 PhanTypeMismatchArgument Argument 1 (p1) is string but \f248_1() takes bool defined at %s:2
-%s:9 PhanTypeMismatchArgument Argument 2 (p2) is string but \f248_1() takes bool defined at %s:2
+%s70:6 PhanTypeMismatchArgument Argument 1 (p1) is 'alpha' but \f248_1() takes bool defined at %s70:2
+%s70:6 PhanTypeMismatchArgument Argument 2 (p2) is 'beta' but \f248_1() takes bool defined at %s70:2
+%s70:9 PhanTypeMismatchArgument Argument 1 (p1) is 's1'|'s3' but \f248_1() takes bool defined at %s70:2
+%s70:9 PhanTypeMismatchArgument Argument 2 (p2) is 's2'|'s4' but \f248_1() takes bool defined at %s70:2

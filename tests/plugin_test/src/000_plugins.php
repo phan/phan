@@ -7,7 +7,7 @@ testInstanceofObject(new stdClass());
 
 
 function testDollarDollarPlugin($a, $b = 'a') {
-    var_dump($$b);
+    var_dump($$b);  // Phan tracks types, not values, so it treats $a as unused
 }
 testDollarDollarPlugin(42);
 

@@ -1,0 +1,2 @@
+%s:5 PhanTypeMismatchArgumentInternal Argument 1 (var) is 'x' but \count() takes \Countable|array
+%s:7 PhanTypeMismatchReturn Returning type 2 but {closure}() is declared to return \stdClass

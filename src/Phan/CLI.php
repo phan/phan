@@ -24,7 +24,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '0.12.10-dev';
+    const PHAN_VERSION = '0.12.13-dev';
 
     /**
      * @var OutputInterface
@@ -112,6 +112,7 @@ class CLI
                 'language-server-verbose',
                 'language-server-allow-missing-pcntl',
                 'language-server-force-missing-pcntl',
+                'language-server-require-pcntl',
                 'language-server-enable',
                 'language-server-enable-go-to-definition',
                 'markdown-issue-messages',
@@ -134,6 +135,7 @@ class CLI
                 'strict-return-checking',
                 'strict-type-checking',
                 'target-php-version',
+                'unused-variable-detection',
                 'use-fallback-parser',
                 'version',
             ]
@@ -181,15 +183,15 @@ class CLI
 
         // Before reading the config, check for an override on
         // the location of the config file path.
-        if (isset($opts['k'])) {
-            $this->config_file = $opts['k'];
-        } elseif (isset($opts['config-file'])) {
-            $this->config_file = $opts['config-file'];
+        $config_file_override = $opts['k'] ?? $opts['config-file'] ?? null;
+        if (is_string($config_file_override)) {
+            $this->config_file = $config_file_override;
         }
 
         if (isset($opts['language-server-force-missing-pcntl'])) {
             Config::setValue('language_server_use_pcntl_fallback', true);
-        } elseif (isset($opts['language-server-allow-missing-pcntl'])) {
+        } elseif (!isset($opts['language-server-require-pcntl'])) {
+            // --language-server-allow-missing-pcntl is now the default
             if (!extension_loaded('pcntl')) {
                 Config::setValue('language_server_use_pcntl_fallback', true);
             }
@@ -231,7 +233,7 @@ class CLI
                             /** @var array<int,string> */
                             $this->file_list_in_config = array_merge(
                                 $this->file_list_in_config,
-                                file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)
+                                file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES)
                             );
                         } else {
                             error_log("Unable to read file $file_path");
@@ -249,9 +251,9 @@ class CLI
                             }
                             $this->file_list_in_config = array_merge(
                                 $this->file_list,
-                                $this->directoryNameToFileList(
+                                array_values($this->directoryNameToFileList(
                                     $directory_name
-                                )
+                                ))
                             );
                         }
                     }
@@ -349,6 +351,7 @@ class CLI
                     break;  // handled earlier.
                 case 'language-server-allow-missing-pcntl':
                 case 'language-server-force-missing-pcntl':
+                case 'language-server-require-pcntl':
                     break;  // handled earlier
                 case 'disable-plugins':
                     // Slightly faster, e.g. for daemon mode with lowest latency (along with --quick).
@@ -428,6 +431,9 @@ class CLI
                 case 'dead-code-detection':
                     Config::setValue('dead_code_detection', true);
                     break;
+                case 'unused-variable-detection':
+                    Config::setValue('unused_variable_detection', true);
+                    break;
                 case 'allow-polyfill-parser':
                     // Just check if it's installed and of a new enough version.
                     // Assume that if there is an installation, it works, and warn later in ensureASTParserExists()
@@ -481,10 +487,10 @@ class CLI
         $pruneargv = [];
         foreach ($opts as $opt => $value) {
             foreach ($argv as $key => $chunk) {
-                $regex = '/^'. (isset($opt[1]) ? '--' : '-') . $opt . '/';
+                $regex = '/^' . (isset($opt[1]) ? '--' : '-') . $opt . '/';
 
                 if (in_array($chunk, is_array($value) ? $value : [$value])
-                    && $argv[$key-1][0] == '-'
+                    && $argv[$key - 1][0] == '-'
                     || preg_match($regex, $chunk)
                 ) {
                     $pruneargv[] = $key;
@@ -498,7 +504,7 @@ class CLI
         }
 
         foreach ($argv as $arg) {
-            if ($arg[0]=='-') {
+            if ($arg[0] == '-') {
                 $this->usage("Unknown option '{$arg}'", EXIT_FAILURE);
             }
         }
@@ -543,7 +549,7 @@ class CLI
             foreach (Config::getValue('directory_list') as $directory_name) {
                 $this->file_list = array_merge(
                     $this->file_list,
-                    $this->directoryNameToFileList($directory_name)
+                    array_values($this->directoryNameToFileList($directory_name))
                 );
             }
 
@@ -719,7 +725,12 @@ Usage: {$argv[0]} [options] [files...]
  -x, --dead-code-detection
   Emit issues for classes, methods, functions, constants and
   properties that are probably never referenced and can
-  possibly be removed.
+  possibly be removed. This implies `--unused-variable-detection`.
+
+ --unused-variable-detection
+  Emit issues for variables, parameters and closure use variables
+  that are probably never referenced.
+  This has a few known false positives, e.g. for loops or branches.
 
  -j, --processes <int>
   The number of parallel processes to run during the analysis
@@ -842,11 +853,15 @@ Extended help:
   This is useful when developing or debugging language server clients.
 
  --language-server-allow-missing-pcntl
+  Noop (This is the default behavior).
   Allow the fallback that doesn't use pcntl (New and experimental) to be used if the pcntl extension is not installed.
   This is useful for running the language server on Windows.
 
  --language-server-force-missing-pcntl
   Force Phan to use the fallback for when pcntl is absent (New and experimental). Useful for debugging that fallback.
+
+ --language-server-require-pcntl
+  Don't start the language server if PCNTL isn't installed (don't use the fallback). Useful for debugging.
 
  --require-config-exists
   Exit immediately with an error code if .phan/config.php does not exist.
@@ -1003,8 +1018,8 @@ EOB;
             fwrite(STDERR, '.');
             return;
         }
-        $memory = memory_get_usage()/1024/1024;
-        $peak = memory_get_peak_usage()/1024/1024;
+        $memory = memory_get_usage() / 1024 / 1024;
+        $peak = memory_get_peak_usage() / 1024 / 1024;
 
         $current = (int)($p * 60);
         $rest = max(60 - $current, 0);
@@ -1014,7 +1029,7 @@ EOB;
                ' ' .
                str_repeat("\u{2588}", $current) .
                str_repeat("\u{2591}", $rest) .
-               " " . sprintf("%1$ 3d", (int)(100*$p)) . "%" .
+               " " . sprintf("%1$ 3d", (int)(100 * $p)) . "%" .
                sprintf(' %0.2dMB/%0.2dMB', $memory, $peak) . "\r";
         fwrite(STDERR, $msg);
     }
@@ -1090,7 +1105,7 @@ EOB;
         // Workaround for https://github.com/nikic/php-ast/issues/79
         try {
             \ast\parse_code(
-                '<'.'?php syntaxerror',
+                '<' . '?php syntaxerror',
                 Config::AST_VERSION
             );
             assert(

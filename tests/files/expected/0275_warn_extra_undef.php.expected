@@ -1,1 +1,2 @@
 %s:5 PhanUndeclaredVariable Variable $undefVar is undeclared
+%s:8 PhanUnusedPrivateMethodParameter Parameter $targetId is never used

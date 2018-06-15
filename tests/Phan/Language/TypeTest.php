@@ -19,6 +19,8 @@ use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\GenericIterableType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
+use Phan\Language\Type\LiteralIntType;
+use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
@@ -74,6 +76,41 @@ class TypeTest extends BaseTest
         $this->assertParsesAsType(TrueType::instance(false), 'true');
         $this->assertParsesAsType(VoidType::instance(false), 'void');
     }
+
+    public function testLiteralIntType()
+    {
+        $this->assertParsesAsType(LiteralIntType::instance_for_value(1, false), '1');
+        $this->assertParsesAsType(LiteralIntType::instance_for_value(0, false), '0');
+        $this->assertParsesAsType(LiteralIntType::instance_for_value(0, false), '-0');
+        $this->assertParsesAsType(LiteralIntType::instance_for_value(-1, false), '-1');
+        $this->assertParsesAsType(LiteralIntType::instance_for_value(9, false), '9');
+        $this->assertParsesAsType(LiteralIntType::instance_for_value(190, false), '190');
+        $this->assertParsesAsType(FloatType::instance(false), '1111111111111111111111111111111111');
+        $this->assertParsesAsType(LiteralIntType::instance_for_value(1, true), '?1');
+        $this->assertParsesAsType(LiteralIntType::instance_for_value(-1, true), '?-1');
+    }
+
+    public function testLiteralStringType()
+    {
+        $this->assertParsesAsType(LiteralStringType::instance_for_value('a', false), "'a'");
+        $this->assertParsesAsType(LiteralStringType::instance_for_value('a', true), "?'a'");
+        $this->assertParsesAsType(LiteralStringType::instance_for_value('', false), "''");
+        $this->assertParsesAsType(LiteralStringType::instance_for_value('', true), "?''");
+        $this->assertParsesAsType(LiteralStringType::instance_for_value('\\', false), "'\\\\'");
+        $this->assertParsesAsType(LiteralStringType::instance_for_value("'", false), "'\\''");
+        $this->assertParsesAsType(LiteralStringType::instance_for_value('0', false), "'0'");
+        $this->assertParsesAsType(LiteralStringType::instance_for_value('abcdefghijklmnopqrstuvwxyz01234567889-,./?:;!#$%^&*_-=+', false), "'abcdefghijklmnopqrstuvwxyz01234567889-,./?:;!#\$%^&*_-=+'");
+
+        $this->assertParsesAsType(LiteralStringType::instance_for_value("<=>\n", false), "'\\x3c\\x3d\\x3e\\x0a'");
+    }
+
+    /*
+    // Planned:
+    public function testLiteralStringType()
+    {
+        $this->assertParsesAsType(LiteralStringType::instance_for_value('x', false), '"x"');
+    }
+     */
 
     private function assertSameType(Type $expected, Type $actual, string $extra = '')
     {
@@ -146,7 +183,7 @@ class TypeTest extends BaseTest
 
     public function testTemplateTypesWithNullable()
     {
-        $type = self::makePHPDocType('TypeTestClass<'.'?int,?string>');  // not exactly a template, but has the same parsing
+        $type = self::makePHPDocType('TypeTestClass<' . '?int,?string>');  // not exactly a template, but has the same parsing
         $this->assertSame('\\', $type->getNamespace());
         $this->assertSame('TypeTestClass', $type->getName());
         $parts = $type->getTemplateParameterTypeList();
@@ -441,7 +478,7 @@ class TypeTest extends BaseTest
         $expected_flattened_type = UnionType::fromStringInContext($normalized_union_type_string, new Context(), Type::FROM_PHPDOC);
         $this->assertInstanceOf(ArrayShapeType::class, $actual_type, "Failed to create expected class for $type_string");
         assert($actual_type instanceof ArrayShapeType);
-        $actual_flattened_type = UnionType::of($actual_type->withFlattenedArrayShapeTypeInstances());
+        $actual_flattened_type = UnionType::of($actual_type->withFlattenedArrayShapeOrLiteralTypeInstances());
         $this->assertTrue($expected_flattened_type->isEqualTo($actual_flattened_type), "expected $actual_flattened_type to equal $expected_flattened_type");
     }
 
@@ -499,14 +536,14 @@ class TypeTest extends BaseTest
         ];
     }
 
-    /** @dataProvider unparseableArrayShapeProvider */
-    public function testUnparseableArrayShape($type_string)
+    /** @dataProvider unparseableTypeProvider */
+    public function testUnparseableType($type_string)
     {
         $this->assertFalse(\preg_match('@^' . Type::type_regex . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex");
         $this->assertFalse(\preg_match('@^' . Type::type_regex_or_this . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex_or_this");
     }
 
-    public function unparseableArrayShapeProvider()
+    public function unparseableTypeProvider()
     {
         return [
             ['array{'],
@@ -514,6 +551,11 @@ class TypeTest extends BaseTest
             ['array{,field:int}'],
             ['array{field:}'],
             ['array{::int}'],
+            ["-'a'"],
+            ["'@var'"],  // Ambiguous to support @, force hex escape
+            ["'\\'"],
+            ["'''"],
+            ["'\\\\\\'"],
         ];
     }
 

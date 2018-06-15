@@ -75,7 +75,9 @@ class NodeDumper
     {
         $name = get_class($ast_node);
         if (stripos($name, 'Microsoft\\PhpParser\\') === 0) {
+            // Remove the PhpParser namespace
             $name = substr($name, 20);
+            \assert(\is_string($name));
         }
         return $name;
     }
@@ -84,7 +86,9 @@ class NodeDumper
     {
         $name = get_class($ast_node);
         if (stripos($name, 'Microsoft\\PhpParser\\') === 0) {
+            // Remove the PhpParser namespace
             $name = substr($name, 20);
+            \assert(\is_string($name));
         }
         return $name;
     }

@@ -1,10 +1,17 @@
 %s:17 PhanTypeMissingReturn Method \NS264\TestFramework::mockA is declared to return string but has no return value
 %s:22 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @phan-closure-scope'
+%s:24 PhanUnusedVariable Unused definition of variable $w
+%s:32 PhanUnusedVariable Unused definition of variable $x
+%s:41 PhanUnusedVariable Unused definition of variable $y
 %s:44 PhanUndeclaredProperty Reference to undeclared property \NS264\BoundClass264->d
 %s:50 PhanTypeInvalidClosureScope Invalid @phan-closure-scope: expected a class name, got string
+%s:50 PhanUnusedVariable Unused definition of variable $z
 %s:51 PhanUndeclaredProperty Reference to undeclared property \NS264\TestFramework->b
 %s:51 PhanUndeclaredProperty Reference to undeclared property \NS264\TestFramework->d
+%s:53 PhanUnusedVariable Unused definition of variable $prefix
+%s:59 PhanUnusedVariable Unused definition of variable $a
 %s:60 PhanUndeclaredVariable Variable $prefix is undeclared
 %s:69 PhanUndeclaredClosureScope Reference to undeclared class \NS264\UndeclaredClass264 in @phan-closure-scope
+%s:69 PhanUnusedVariable Unused definition of variable $b
 %s:70 PhanUndeclaredProperty Reference to undeclared property \NS264\TestFramework->b
 %s:80 PhanUndeclaredProperty Reference to undeclared property \NS264\BoundClass264->undefVar

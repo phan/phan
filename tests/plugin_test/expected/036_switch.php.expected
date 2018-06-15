@@ -1,0 +1,1 @@
+src/036_switch.php:4 PhanUnusedVariable Unused definition of variable $x

@@ -926,7 +926,7 @@ EOT;
      */
     private function writeEncodedBody($proc_in, array $body)
     {
-        $body_raw = json_encode($body, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) . "\r\n";
+        $body_raw = json_encode($body, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\r\n";
         $raw = sprintf(
             "Content-Length: %d\r\nContent-Type: application/vscode-jsonrpc; charset=utf-8\r\n\r\n%s",
             strlen($body_raw),

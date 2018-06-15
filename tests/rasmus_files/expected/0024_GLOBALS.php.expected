@@ -1,2 +1,2 @@
-%s:9 PhanTypeMismatchArgument Argument 1 (arr) is int but \test1() takes array defined at %s:6
-%s:10 PhanTypeMismatchArgument Argument 1 (arr) is array{b:int} but \test2() takes int defined at %s:7
+%s:9 PhanTypeMismatchArgument Argument 1 (arr) is 1 but \test1() takes array defined at %s:6
+%s:10 PhanTypeMismatchArgument Argument 1 (arr) is array{b:1} but \test2() takes int defined at %s:7

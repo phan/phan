@@ -5,6 +5,7 @@
 %s:19 PhanUndeclaredTypeProperty Property \D::p has undeclared type \Undef
 %s:22 PhanUndeclaredExtendedClass Class extends undeclared class \Undef
 %s:25 PhanParentlessClass Reference to parent of class \F that does not extend anything
+%s:25 PhanUnusedVariable Unused definition of variable $v
 %s:28 PhanUndeclaredProperty Reference to undeclared property \C->undef
 %s:31 PhanUndeclaredProperty Reference to undeclared property \C->undef
 %s:34 PhanUndeclaredClassMethod Call to method f from undeclared class \Undef
@@ -14,3 +15,4 @@
 %s:43 PhanUndeclaredExtendedClass Class extends undeclared class \Undef
 %s:46 PhanUndeclaredTypeReturnType Return type of j is undeclared type \Undef
 %s:49 PhanUndeclaredTypeReturnType Return type of k is undeclared type \self
+

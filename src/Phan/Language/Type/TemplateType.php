@@ -38,15 +38,6 @@ final class TemplateType extends Type
     }
 
     /**
-     * @return bool
-     * True if this namespace is defined
-     */
-    public function hasNamespace() : bool
-    {
-        return false;
-    }
-
-    /**
      * @return string
      * The namespace associated with this type
      */

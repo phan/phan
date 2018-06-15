@@ -2,11 +2,14 @@
 namespace Phan\Analysis;
 
 use Phan\AST\AnalysisVisitor;
+use Phan\Config;
 use Phan\Language\Context;
+use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Issue;
 use ast\Node;
 
 /**
@@ -37,13 +40,12 @@ abstract class ScopeVisitor extends AnalysisVisitor
      * Default visitor for node kinds that do not have
      * an overriding method
      *
-     * @param Node $node
+     * @param Node $node @phan-unused-param
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
-     * @suppress PhanPluginUnusedPublicMethodArgument
      */
     public function visit(Node $node) : Context
     {
@@ -65,13 +67,16 @@ abstract class ScopeVisitor extends AnalysisVisitor
     public function visitDeclare(Node $node) : Context
     {
         $declares = $node->children['declares'];
-        $name = $declares->children[0]->children['name'];
-        $value = $declares->children[0]->children['value'];
-        if ('strict_types' === $name && is_int($value)) {
-            return $this->context->withStrictTypes($value);
+        $context = $this->context;
+        foreach ($declares->children as $elem) {
+            $name = $elem->children['name'];
+            $value = $elem->children['value'];
+            if ('strict_types' === $name && is_int($value)) {
+                $context = $context->withStrictTypes($value);
+            }
         }
 
-        return $this->context;
+        return $context;
     }
 
     /**
@@ -139,10 +144,15 @@ abstract class ScopeVisitor extends AnalysisVisitor
     public function visitUse(Node $node) : Context
     {
         $context = $this->context;
+        $target_php_version = Config::get_closest_target_php_version_id();
 
         foreach (self::aliasTargetMapFromUseNode($node) as $alias => list($flags, $target, $lineno)) {
+            $flags = $node->flags ?: $flags;
+            if ($flags === \ast\flags\USE_NORMAL && $target_php_version < 70200) {
+                self::analyzeUseElemCompatibility($alias, $target, $target_php_version, $lineno);
+            }
             $context = $context->withNamespaceMap(
-                $node->flags ?: $flags,
+                $flags,
                 $alias,
                 $target,
                 $lineno
@@ -150,6 +160,37 @@ abstract class ScopeVisitor extends AnalysisVisitor
         }
 
         return $context;
+    }
+
+    /** @return void */
+    private function analyzeUseElemCompatibility(
+        string $alias,
+        FQSEN $target,
+        int $target_php_version,
+        int $lineno
+    ) {
+        $alias_lower = \strtolower($alias);
+        if ($target_php_version < 70100) {
+            if ($alias_lower === 'void') {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    Issue::CompatibleUseVoidPHP70,
+                    $lineno,
+                    $target
+                );
+                return;
+            }
+        }
+        if ($alias_lower === 'iterable' || $alias === 'object') {
+            Issue::maybeEmit(
+                $this->code_base,
+                $this->context,
+                $alias_lower === 'iterable' ? Issue::CompatibleUseIterablePHP71 : Issue::CompatibleUseObjectPHP71,
+                $lineno,
+                $target
+            );
+        }
     }
 
     /**
@@ -180,7 +221,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
             $target = $child_node->children['name'];
 
             if (empty($child_node->children['alias'])) {
-                if (($pos = \strrpos($target, '\\'))!==false) {
+                if (($pos = \strrpos($target, '\\')) !== false) {
                     $alias = \substr($target, $pos + 1);
                 } else {
                     $alias = $target;

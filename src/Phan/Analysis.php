@@ -54,8 +54,6 @@ class Analysis
      * See autoload_internal_extension_signatures.
      *
      * @return Context
-     *
-     * @suppress PhanAccessMethodInternal
      */
     public static function parseFile(CodeBase $code_base, string $file_path, bool $suppress_parse_errors = false, string $override_contents = null, bool $is_php_internal_stub = false) : Context
     {
@@ -65,7 +63,7 @@ class Analysis
             /** @see \Phan\Language\FileRef->isPHPInternal() */
             $file_path = 'internal';
         }
-        $context = (new Context)->withFile($file_path);
+        $context = (new Context())->withFile($file_path);
 
         // Convert the file to an Abstract Syntax Tree
         // before passing it on to the recursive version
@@ -144,6 +142,7 @@ class Analysis
             $context,
             $node
         );
+        // @phan-suppress-next-line PhanAccessMethodInternal
         $code_base->addParsedNamespaceMap($context->getFile(), $context->getNamespace(), $context->getNamespaceId(), $context->getNamespaceMap());
         return $context;
     }
@@ -232,9 +231,7 @@ class Analysis
     }
 
     /**
-     * Take a pass over all functions verifying various
-     * states.
-     * @suppress PhanTypeArraySuspicious https://github.com/phan/phan/issues/642
+     * Take a pass over all functions verifying various states.
      *
      * @return void
      */
@@ -310,7 +307,7 @@ class Analysis
         $function_map = $code_base->getFunctionMap();
         foreach ($function_map as $function) {  // iterate, ignoring $fqsen
             if ($show_progress) {
-                CLI::progress('function', (++$i)/(\count($function_map)));
+                CLI::progress('function', (++$i) / (\count($function_map)));
             }
             $analyze_function_or_method($function);
         }
@@ -327,7 +324,7 @@ class Analysis
                 // I suspect that method analysis is hydrating some of the classes,
                 // adding even more inherited methods to the end of the set.
                 // This recalculation is needed so that the progress bar is accurate.
-                CLI::progress('method', (++$i)/(\count($method_set)));
+                CLI::progress('method', (++$i) / (\count($method_set)));
             }
             $analyze_function_or_method($method);
         }
@@ -441,7 +438,6 @@ class Analysis
      * were $override_contents
      *
      * @return Context
-     * @suppress PhanAccessMethodInternal
      */
     public static function analyzeFile(
         CodeBase $code_base,
@@ -450,7 +446,8 @@ class Analysis
         string $override_contents = null
     ) : Context {
         // Set the file on the context
-        $context = (new Context)->withFile($file_path);
+        $context = (new Context())->withFile($file_path);
+        // @phan-suppress-next-line PhanAccessMethodInternal
         $context->importNamespaceMapFromParsePhase($code_base);
 
         $code_base->setCurrentAnalyzedFile($file_path);

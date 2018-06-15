@@ -11,22 +11,10 @@ class PHP72Test extends AbstractPhanFileTest
         'target_php_version' => '7.2',
     ];
 
-    /** @var array<string,mixed> */
-    protected $old_values = [];
-
     public function setUp()
     {
         parent::setUp();
         foreach (self::overrides as $key => $value) {
-            $this->old_values[$key] = Config::getValue($key);
-            Config::setValue($key, $value);
-        }
-    }
-
-    public function tearDown()
-    {
-        parent::tearDown();
-        foreach ($this->old_values as $key => $value) {
             Config::setValue($key, $value);
         }
     }

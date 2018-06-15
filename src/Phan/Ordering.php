@@ -37,8 +37,6 @@ class Ordering
      * @return array<int,array<int,string>>
      * A map from process_id to a list of files to be analyzed
      * on that process in stable ordering.
-     *
-     * @suppress PhanPartialTypeMismatchReturn TODO: investigate why array<int,null> is inferred as possible?
      */
     public function orderForProcessCount(
         int $process_count,

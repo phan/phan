@@ -83,4 +83,4 @@ class NonBoolInLogicalArithVisitor extends PluginAwarePostAnalysisVisitor
     }
 }
 
-return new NonBoolInLogicalArithPlugin;
+return new NonBoolInLogicalArithPlugin();

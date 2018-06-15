@@ -87,7 +87,7 @@ EOT;
                 $title = $line;
                 $text_for_section[$title] = '';
             } else {
-                $text_for_section[$title] .= $line."\n";
+                $text_for_section[$title] .= $line . "\n";
             }
         }
         return $text_for_section;
@@ -124,7 +124,7 @@ EOT;
                     throw new InvalidArgumentException("Failed to find category name for category $category of {$issue->getType()}");
                 }
 
-                $header = '# '.$category_name;
+                $header = '# ' . $category_name;
                 $writer->append($header . "\n");
                 if (array_key_exists($header, $old_text_for_section)) {
                     $writer->append($old_text_for_section[$header]);
@@ -133,7 +133,7 @@ EOT;
                 }
             }
             // TODO: Print each severity as we see it?
-            $header = '## '.$issue->getType();
+            $header = '## ' . $issue->getType();
             // TODO: echo '## \[', $issue->getSeverityName(), '\] ', $issue->getType(), "\n";
             if (array_key_exists($header, $old_text_for_section)) {
                 $writer->append($header . "\n");

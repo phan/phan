@@ -65,9 +65,9 @@ class StreamResponder implements Responder
             throw new \RuntimeException("Called sendAndClose before calling getRequestData");
         }
         if ($connection === null) {
-            throw new \RuntimeException("Called sendAndClose twice: data = " . json_encode($data, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
+            throw new \RuntimeException("Called sendAndClose twice: data = " . json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
         }
-        fwrite($connection, json_encode($data, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) . "\n");
+        fwrite($connection, json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n");
         // disable further receptions and transmissions
         // Note: This is likely a giant hack,
         // and pcntl and sockets may break in the future if used together. (multiple processes owning a single resource).

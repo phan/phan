@@ -28,7 +28,7 @@ class Config
      * New features increment minor versions, and bug fixes increment patch versions.
      * @suppress PhanUnreferencedPublicClassConstant
      */
-    const PHAN_PLUGIN_VERSION = '2.3.0';
+    const PHAN_PLUGIN_VERSION = '2.4.0';
 
     /**
      * @var string|null
@@ -310,6 +310,11 @@ class Config
         // `$class->$method()`) in ways that we're unable
         // to make sense of.
         'dead_code_detection' => false,
+
+        // Set to true in order to attempt to detect unused variables.
+        // dead_code_detection will also enable unused variable detection.
+        // This has a few known false positives, e.g. for loops or branches.
+        'unused_variable_detection' => false,
 
         // Set to true in order to force tracking references to elements
         // (functions/methods/consts/protected).
@@ -666,6 +671,9 @@ class Config
         // (e.g. PHP is compiled with --enable-debug or when using XDebug)
         'skip_slow_php_options_warning' => false,
 
+        // By default, Phan will warn if 'tokenizer' isn't installed.
+        'skip_missing_tokenizer_warning' => false,
+
         // You can put paths to stubs of internal extensions in this config option.
         // If the corresponding extension is **not** loaded, then phan will use the stubs instead.
         // Phan will continue using its detailed type annotations,
@@ -716,7 +724,7 @@ class Config
         'language_server_debug_level' => null,
 
         // Use the command line option instead
-        'language_server_use_pcntl_fallback' => false,
+        'language_server_use_pcntl_fallback' => true,
 
         // This should only be set via CLI (--language-server-enable-go-to-definition)
         // Affects "go to definition" and "go to type definition"
@@ -725,6 +733,11 @@ class Config
         // Can be set to false to disable the plugins Phan uses to infer more accurate return types of array_map, array_filter, etc.
         // Phan is slightly faster when these are disabled.
         'enable_internal_return_type_plugins' => true,
+
+        // This setting can be used if users wish to store strings that are even longer than 50 bytes.
+        // If a literal string type exceeds this length, Phan converts it to a regular string type.
+        // This setting cannot be used to decrease the maximum.
+        'max_literal_string_type_length' => \Phan\Language\Type\LiteralStringType::MINIMUM_MAX_STRING_LENGTH,
 
         // A list of plugin files to execute
         // Plugins which are bundled with Phan can be added here by providing their name (e.g. 'AlwaysReturnPlugin')
@@ -879,7 +892,7 @@ class Config
     {
         self::$configuration = self::DEFAULT_CONFIGURATION;
         // Trigger magic behavior
-        self::get();
+        self::get()->init();
     }
 
     /**

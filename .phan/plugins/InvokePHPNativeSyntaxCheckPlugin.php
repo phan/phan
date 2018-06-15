@@ -233,7 +233,6 @@ class InvokeExecutionPromise
      * @param string $file_contents
      * @return void
      * See https://bugs.php.net/bug.php?id=39598
-     * @suppress PhanPluginUnusedVariable loop variable
      */
     private static function streamPutContents($stream, string $file_contents)
     {
@@ -341,4 +340,4 @@ class InvokeExecutionPromise
 
 // Every plugin needs to return an instance of itself at the
 // end of the file in which its defined.
-return new InvokePHPNativeSyntaxCheckPlugin;
+return new InvokePHPNativeSyntaxCheckPlugin();

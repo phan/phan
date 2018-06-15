@@ -7,4 +7,6 @@ src/032_line_suppression.php:11 PhanUnreferencedFunction Possibly zero reference
 src/032_line_suppression.php:13 PhanUndeclaredVariable Variable $x is undeclared
 src/032_line_suppression.php:15 PhanUndeclaredVariable Variable $z is undeclared
 src/032_line_suppression.php:18 PhanUndeclaredFunction Call to undeclared function \call_undeclared_function_not_suppressed()
+src/032_line_suppression.php:18 PhanUnusedVariable Unused definition of variable $result
 src/032_line_suppression.php:20 UnusedPluginSuppression Plugin BuiltinSuppressionPlugin suppresses issue PhanUndeclaredVariable on this line but this suppression is unused or suppressed elsewhere
+src/032_line_suppression.php:30 UnusedPluginSuppression Plugin BuiltinSuppressionPlugin suppresses issue PhanUndeclaredVariable on this line but this suppression is unused or suppressed elsewhere

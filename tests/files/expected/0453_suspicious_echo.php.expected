@@ -8,5 +8,5 @@
 %s:13 PhanTypeSuspiciousEcho Suspicious argument true for an echo/print statement
 %s:15 PhanTypeSuspiciousEcho Suspicious argument \stdClass for an echo/print statement
 %s:25 PhanTypeSuspiciousEcho Suspicious argument \NonStringableClass for an echo/print statement
-%s:28 PhanTypeSuspiciousEcho Suspicious argument array{key:string}|false for an echo/print statement
+%s:28 PhanTypeSuspiciousEcho Suspicious argument array{key:'value'}|false for an echo/print statement
 %s:34 PhanTypeSuspiciousEcho Suspicious argument void for an echo/print statement

@@ -16,7 +16,6 @@ use Phan\Language\Element\Variable;
 use Phan\Language\Type;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\PluginV2\StopParamAnalysisException;
 use ast\Node;
@@ -427,7 +426,7 @@ class ArgumentType
                             $context,
                             Issue::TypeNonVarPassByRef,
                             $node->lineno ?? 0,
-                            ($i+1),
+                            ($i + 1),
                             $method->getRepresentationForIssue()
                         );
                     }
@@ -525,7 +524,7 @@ class ArgumentType
         if ($method->isPHPInternal()) {
             // If we are not in strict mode and we accept a string parameter
             // and the argument we are passing has a __toString method then it is ok
-            if (!$context->getIsStrictTypes() && $parameter_type->hasType(StringType::instance(false))) {
+            if (!$context->getIsStrictTypes() && $parameter_type->hasNonNullStringType()) {
                 try {
                     foreach ($argument_type_expanded->asClassList($code_base, $context) as $clazz) {
                         if ($clazz->hasMethodWithName($code_base, "__toString")) {
@@ -541,7 +540,7 @@ class ArgumentType
                 $context,
                 Issue::TypeMismatchArgumentInternal,
                 $lineno,
-                ($i+1),
+                ($i + 1),
                 $alternate_parameter->getName(),
                 $argument_type_expanded,
                 $method->getRepresentationForIssue(),
@@ -554,7 +553,7 @@ class ArgumentType
             $context,
             Issue::TypeMismatchArgument,
             $lineno,
-            ($i+1),
+            ($i + 1),
             $alternate_parameter->getName(),
             $argument_type_expanded,
             $method->getRepresentationForIssue(),
@@ -587,7 +586,7 @@ class ArgumentType
                 if ($method->isPHPInternal()) {
                     // If we are not in strict mode and we accept a string parameter
                     // and the argument we are passing has a __toString method then it is ok
-                    if (!$context->getIsStrictTypes() && $parameter_type->hasType(StringType::instance(false))) {
+                    if (!$context->getIsStrictTypes() && $parameter_type->hasNonNullStringType()) {
                         if ($individual_type_expanded->hasClassWithToStringMethod($code_base, $context)) {
                             continue;  // don't warn about $type
                         }
@@ -613,7 +612,7 @@ class ArgumentType
                 $context,
                 self::getStrictIssueType($mismatch_type_set, true),
                 $lineno,
-                ($i+1),
+                ($i + 1),
                 $alternate_parameter->getName(),
                 $argument_type,
                 $method->getRepresentationForIssue(),
@@ -627,7 +626,7 @@ class ArgumentType
             $context,
             self::getStrictIssueType($mismatch_type_set, false),
             $lineno,
-            ($i+1),
+            ($i + 1),
             $alternate_parameter->getName(),
             $argument_type,
             $method->getRepresentationForIssue(),

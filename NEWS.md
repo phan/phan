@@ -1,7 +1,113 @@
 Phan NEWS
 
-?? ??? 2018, Phan 0.12.10 (dev)
+?? ??? 2018, Phan 0.12.13 (dev)
 -------------------------
+
+New features(Analysis)
++ Support integer literals both in PHPDoc and in Phan's type system. (E.g. `@return -1|string`)
+  Include integer values in issue messages if the values are known.
++ Support string literals both in PHPDoc and in Phan's type system. (E.g. `@return 'example\n'`)
+  Phan can now infer possible variable values for dynamic function/method calls, etc.
+
+  Note: By default, Phan does not store representations of strings longer than 50 characters. This can be increased with the `'max_literal_string_type_length'` config.
+
+  Supported escape codes: `\\`, `\'`, `\r`, `\n`, `\t`, and hexadecimal (`\xXX`).
++ Improve inferred types of unary operators.
++ Warn about using `void`/`iterable`/`object` in use statements based on `target_php_version`. (#449)
+  New issue types: `PhanCompatibleUseVoidPHP70`, `PhanCompatibleUseObjectPHP71`, `PhanCompatibleUseObjectPHP71`
++ Warn about making overrides of inherited property and constants less visible (#788)
+  New issue types: `PhanPropertyAccessSignatureMismatch`, `PhanPropertyAccessSignatureMismatchInternal`,
+  `PhanConstantAccessSignatureMismatch`, `PhanConstantAccessSignatureMismatchInternal`.
++ Warn about making static properties into non-static properties (and vice-versa) (#615)
+  New issue types: `PhanAccessNonStaticToStaticProperty`, `PhanAccessStaticToNonStaticProperty`
++ Warn about inheriting from a class/trait/interface that has multiple possible definitions (#773)
+  New issue types: `PhanRedefinedExtendedClass`, `PhanRedefinedUsedTrait`, `PhanRedefinedInheritedInterface`
+
+Maintenance:
++ Update signature map with more accurate signatures (#1761)
++ Upgrade tolerant-php-parser, making the polyfill/fallback able to parse PHP 7.1's multi exception catch.
+
+Bug fixes:
++ Don't add more generic types to properties with more specific PHPDoc types (#1783).
+  For example, don't add `array` to a property declared with PHPDoc type `/** @var string[] */`
++ Fix uncaught `AssertionError` when `parent` is used in PHPDoc (#1758)
++ Fix various bugs that can cause crashes in the polyfill/fallback parser when parsing invalid or incomplete ASTs.
++ Fix unparseable/invalid function signature entries of rarely used functions
+
+08 Jun 2018, Phan 0.12.12
+-------------------------
+
+Maintenance:
++ Increase the severity of some issues to critical
+  (if they are likely to cause runtime Errors in the latest PHP version).
+
+Bug fixes:
++ Allow suppressing `PhanTypeInvalidThrows*` with doc comment suppressions
+  in the phpdoc of a function/method/closure.
++ Fix crashes when fork pool is used and some issue types are emitted (#1754)
++ Catch uncaught exception for PhanContextNotObject when calling `instanceof self` outside a class scope (#1754)
+
+30 May 2018, Phan 0.12.11
+-------------------------
+
+Language Server/Daemon mode:
++ Make the language server work more reliably when `pcntl` is unavailable. (E.g. on Windows) (#1739)
++ By default, allow the language server and daemon mode to start with the fallback even if `pcntl` is unavailable.
+  (`--language-server-require-pcntl` can be used to make the language server refuse to start without `pcntl`)
+
+Bug fixes:
++ Don't crash if `ext-tokenizer` isn't installed (#1747)
++ Fix invalid output of `tool/make_stubs` for apcu (#1745)
+
+27 May 2018, Phan 0.12.10
+-------------------------
+
+New features(CLI, Configs)
++ Add CLI flag `--unused-variable-detection`.
++ Add config setting `unused_variable_detection` (disabled by default).
+  Unused variable detection can be enabled by `--unused-variable-detection`, `--dead-code-detection`, or the config.
+
+New features(Analysis):
++ Add built-in support for unused variable detection. (#345)
+  Currently, this is limited to analyzing inside of functions, methods, and closures.
+  This has some minor false positives with loops and conditional branches.
+
+  Warnings about unused parameters can be suppressed by adding `@phan-unused-param` on the same line as `@param`,
+  e.g. `@param MyClass $x @phan-unused-param`.
+  (as well as via standard issue suppression methods.)
+
+  The built in unused variable detection support will currently not warn about any of the following issue types, to reduce false positives.
+
+  - Variables beginning with `$unused` or `$raii` (case insensitive)
+  - `$_` (the exact variable name)
+  - Superglobals, used globals (`global $myGlobal;`), and static variables within function scopes.
+  - Any references, globals, or static variables in a function scope.
+
+  New Issue types:
+  - `PhanUnusedVariable`,
+  - `PhanUnusedVariableValueOfForeachWithKey`, (has a high false positive rate)
+  - `PhanUnusedPublicMethodParameter`, `PhanUnusedPublicFinalMethodParameter`,
+  - `PhanUnusedProtectedMethodParameter`, `PhanUnusedProtectedFinalMethodParameter`,
+  - `PhanUnusedPrivateMethodParameter`, `PhanUnusedProtectedFinalMethodParameter`,
+  - `PhanUnusedClosureUseVariable`, `PhanUnusedClosureParameter`,
+  - `PhanUnusedGlobalFunctionParameter`
+
+  This is similar to the third party plugin `PhanUnusedVariable`.
+  The built-in support has the following changes:
+
+  - Emits fewer/different false positives (e.g. when analyzing loops), but also detects fewer potential issues.
+  - Reimplemented using visitors extensively (Similar to the code for `BlockAnalysisVisitor`)
+  - Uses a different data structure from `PhanUnusedVariable`.
+    This represent all definitions of a variable, instead of just the most recent one.
+    This approximately tracks the full graph of definitions and uses of variables within a function body.
+    (This allows warning about all unused definitions, or about definitions that are hidden by subsequent definitions)
+  - Integration: This is planned to be integrated with other features of Phan, e.g. "Go to Definition" for variables. (Planned for #1211 and #1705)
+
+Bug fixes:
++ Minor improvements to `UnusedSuppressionPlugin`
+
+Misc:
++ Support  `composer.json`'s `vendor-dir` for `phan --init`
 
 22 May 2018, Phan 0.12.9
 ------------------------

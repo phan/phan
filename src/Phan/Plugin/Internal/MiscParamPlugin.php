@@ -33,7 +33,7 @@ final class MiscParamPlugin extends PluginV2 implements
      * @return array<string,Closure>
      * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
      */
-    private function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
+    private function getAnalyzeFunctionCallClosuresStatic() : array
     {
         $stop_exception = new StopParamAnalysisException();
 
@@ -101,7 +101,7 @@ final class MiscParamPlugin extends PluginV2 implements
                 }
             );
 
-            for ($i=0; $i < ($argcount - 1); $i++) {
+            for ($i = 0; $i < ($argcount - 1); $i++) {
                 self::analyzeNodeUnionTypeCast(
                     $args[$i],
                     $context,
@@ -113,7 +113,7 @@ final class MiscParamPlugin extends PluginV2 implements
                             $context->getFile(),
                             $context->getLineNumberStart(),
                             [
-                            ($i+1),
+                            ($i + 1),
                             (string)$node_type,
                             (string)$function->getFQSEN(),
                             'array'
@@ -190,7 +190,7 @@ final class MiscParamPlugin extends PluginV2 implements
                         );
                     }
                     throw $stop_exception;
-                } elseif ($arg1_type->isType(StringType::instance(false))) {
+                } elseif ($arg1_type->isNonNullStringType()) {
                     if (!$arg2_type->canCastToUnionType(
                         ArrayType::instance(false)->asUnionType()
                     )) {
@@ -263,7 +263,7 @@ final class MiscParamPlugin extends PluginV2 implements
                 }
             );
 
-            for ($i=0; $i < ($argcount-2); $i++) {
+            for ($i = 0; $i < ($argcount - 2); $i++) {
                 self::analyzeNodeUnionTypeCast(
                     $args[$i],
                     $context,
@@ -275,7 +275,7 @@ final class MiscParamPlugin extends PluginV2 implements
                             $context->getFile(),
                             $context->getLineNumberStart(),
                             [
-                            ($i+1),
+                            ($i + 1),
                             (string)$node_type,
                             (string)$function->getFQSEN(),
                             'array'
@@ -367,7 +367,7 @@ final class MiscParamPlugin extends PluginV2 implements
             }
 
             $variable = $context->getScope()->getVariableByName($variable_name);
-            $variable->setUnionType($variable->getUnionType()->withFlattenedArrayShapeTypeInstances());
+            $variable->setUnionType($variable->getUnionType()->withFlattenedArrayShapeOrLiteralTypeInstances());
         };
 
         $array_splice_callback = static function (
@@ -393,10 +393,10 @@ final class MiscParamPlugin extends PluginV2 implements
             // TODO: Support array_splice('x', $offset, $length, $notAnArray)
             // TODO: handle empty array
             $added_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[3])->genericArrayTypes();
-            $added_types = $added_types->withFlattenedArrayShapeTypeInstances();
+            $added_types = $added_types->withFlattenedArrayShapeOrLiteralTypeInstances();
 
             $variable = $context->getScope()->getVariableByName($variable_name);
-            $old_types = $variable->getUnionType()->withFlattenedArrayShapeTypeInstances();
+            $old_types = $variable->getUnionType()->withFlattenedArrayShapeOrLiteralTypeInstances();
 
             $variable->setUnionType($old_types->withUnionType($added_types));
         };
@@ -427,6 +427,7 @@ final class MiscParamPlugin extends PluginV2 implements
     }
 
     /**
+     * @param Codebase $code_base @phan-unused-param
      * @return array<string,Closure>
      * @phan-return array<string,Closure(CodeBase,Context,FunctionInterface,array):void>
      */
@@ -435,7 +436,7 @@ final class MiscParamPlugin extends PluginV2 implements
         // Unit tests invoke this repeatedly. Cache it.
         static $analyzers = null;
         if ($analyzers === null) {
-            $analyzers = self::getAnalyzeFunctionCallClosuresStatic($code_base);
+            $analyzers = self::getAnalyzeFunctionCallClosuresStatic();
         }
         return $analyzers;
     }

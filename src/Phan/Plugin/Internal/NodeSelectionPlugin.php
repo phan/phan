@@ -35,7 +35,7 @@ trait NodeSelectionTrait
 {
     /**
      * @var Context $context
-     * @suppress PhanReadOnlyProtectedProperty (shared with PluginAwarePostAnalysisVisitor)
+     * @suppress PhanReadOnlyProtectedProperty
      */
     protected $context;
 
@@ -93,4 +93,4 @@ class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
 
 // Every plugin needs to return an instance of itself at the
 // end of the file in which its defined.
-return new NodeSelectionPlugin;
+return new NodeSelectionPlugin();

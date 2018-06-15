@@ -1,0 +1,4 @@
+<?php
+    {
+        $escaped_string = \
+    }

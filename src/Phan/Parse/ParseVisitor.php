@@ -43,7 +43,7 @@ use ast\Node;
  *
  * @property-read CodeBase $code_base
  *
- * @phan-file-suppress PhanPluginUnusedPublicMethodArgument implementing faster no-op methods for common visit*
+ * @phan-file-suppress PhanPluginUnusedPublicMethodArgument, PhanUnusedPublicMethodParameter implementing faster no-op methods for common visit*
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  */
@@ -339,10 +339,10 @@ class ParseVisitor extends ScopeVisitor
             // only for stubs
             foreach (FunctionFactory::functionListFromFunction($method) as $method_variant) {
                 \assert($method_variant instanceof Method);
-                $class->addMethod($code_base, $method_variant, new None);
+                $class->addMethod($code_base, $method_variant, new None());
             }
         } else {
-            $class->addMethod($code_base, $method, new None);
+            $class->addMethod($code_base, $method, new None());
         }
 
         if ('__construct' === $method_name) {
@@ -410,9 +410,9 @@ class ParseVisitor extends ScopeVisitor
             $context_for_property = clone($this->context)->withLineNumberStart($child_node->lineno ?? 0);
 
             if (!($default_node instanceof Node)) {
-                // Get the type of the default
+                // Get the type of the default (not a literal)
                 if ($default_node !== null) {
-                    $union_type = Type::fromObject($default_node)->asUnionType();
+                    $union_type = Type::nonLiteralFromObject($default_node)->asUnionType();
                 } else {
                     // This is a declaration such as `public $x;` with no $default_node
                     // (we don't assume the property is always null, to reduce false positives)
@@ -452,7 +452,7 @@ class ParseVisitor extends ScopeVisitor
             );
 
             // Add the property to the class
-            $class->addProperty($this->code_base, $property, new None);
+            $class->addProperty($this->code_base, $property, new None());
 
             $property->setSuppressIssueList(
                 $comment->getSuppressIssueList()
@@ -486,7 +486,7 @@ class ParseVisitor extends ScopeVisitor
 
                 if (!$original_union_type->isType(NullType::instance(false))
                     && !$original_union_type->canCastToUnionType($variable->getUnionType())
-                    && !$property->hasSuppressIssue(Issue::TypeMismatchProperty)
+                    && !$property->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchProperty)
                 ) {
                     $this->emitIssue(
                         Issue::TypeMismatchProperty,
@@ -497,11 +497,18 @@ class ParseVisitor extends ScopeVisitor
                     );
                 }
 
-                // Set the declared type to the doc-comment type and add
-                // |null if the default value is null
-                $property->setUnionType($property->getUnionType()->withUnionType(
-                    $variable->getUnionType()
-                ));
+                $original_property_type = $property->getUnionType();
+                $variable_type = $variable->getUnionType();
+                if ($variable_type->hasGenericArray() && !$original_property_type->hasTypeMatchingCallback(function(Type $type) : bool {
+                    return \get_class($type) !== ArrayType::class;
+                })) {
+                    // Don't convert `/** @var T[] */ public $x = []` to union type `string[]|array`
+                    $property->setUnionType($variable_type);
+                } else {
+                    // Set the declared type to the doc-comment type and add
+                    // |null if the default value is null
+                    $property->setUnionType($original_property_type->withUnionType($variable_type));
+                }
             }
 
             // Don't set 'null' as the type if that's the default
@@ -799,7 +806,7 @@ class ParseVisitor extends ScopeVisitor
                 if (!($node->children['method'] instanceof Node)) {
                     $meth = \strtolower($node->children['method']);
 
-                    if ($meth == '__construct') {
+                    if ($meth == '__construct' && $this->context->isInClassScope()) {
                         $class = $this->getContextClass();
                         $class->setIsParentConstructorCalled(true);
                     }
@@ -1029,7 +1036,7 @@ class ParseVisitor extends ScopeVisitor
             }
             $dollars = str_repeat('$', $depth);
             $ftemp = new \SplFileObject($this->context->getFile());
-            $ftemp->seek($node->lineno-1);
+            $ftemp->seek($node->lineno - 1);
             $line = $ftemp->current();
             \assert(\is_string($line));
             unset($ftemp);
@@ -1051,7 +1058,7 @@ class ParseVisitor extends ScopeVisitor
             && ($node->children['expr']->children[1]->kind == \ast\AST_VAR)
         ) {
             $ftemp = new \SplFileObject($this->context->getFile());
-            $ftemp->seek($node->lineno-1);
+            $ftemp->seek($node->lineno - 1);
             $line = $ftemp->current();
             \assert(\is_string($line));
             unset($ftemp);
@@ -1063,28 +1070,6 @@ class ParseVisitor extends ScopeVisitor
                     $node->lineno ?? 0
                 );
             }
-        }
-
-        return $this->context;
-    }
-
-    /**
-     * Visit a node with kind `\ast\AST_DECLARE`
-     *
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitDeclare(Node $node) : Context
-    {
-        $declares = $node->children['declares'];
-        $name = $declares->children[0]->children['name'];
-        $value = $declares->children[0]->children['value'];
-        if ('strict_types' === $name) {
-            return $this->context->withStrictTypes($value);
         }
 
         return $this->context;
@@ -1223,12 +1208,11 @@ class ParseVisitor extends ScopeVisitor
      *
      * @return Context
      * A new context resulting from parsing the node
-     *
-     * @suppress PhanAccessMethodInternal
      */
     public function visitNamespace(Node $node) : Context
     {
         $context = $this->context;
+        // @phan-suppress-next-line PhanAccessMethodInternal addParsedNamespaceMap and getNamespaceMap
         $this->code_base->addParsedNamespaceMap($context->getFile(), $context->getNamespace(), $context->getNamespaceId(), $context->getNamespaceMap());
         return parent::visitNamespace($node);
     }

@@ -99,7 +99,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @suppress PhanPluginUnusedPublicMethodArgument
+     * @param Node $node @phan-unused-param this was analyzed in visitUse
      */
     public function visitUseElem(Node $node) : Context
     {
@@ -108,7 +108,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @suppress PhanAccessMethodInternal
+     * Analyzes a namespace block or statement (e.g. `namespace NS\SubNS;` or `namespace OtherNS { ... }`)
+     * @param Node $node a node of type AST_NAMESPACE
      */
     public function visitNamespace(Node $node) : Context
     {
@@ -118,6 +119,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         // If there are multiple namespaces in the file, have to warn about unused entries in the current namespace first.
         // If this is the first namespace, then there wouldn't be any use statements yet.
+        // @phan-suppress-next-line PhanAccessMethodInternal
         $context->warnAboutUnusedUseElements($this->code_base);
 
         // Visit the given node populating the code base
@@ -193,7 +195,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                             $context,
                             Issue::NoopStringLiteral,
                             $context->getLineNumberStart(),
-                            json_encode($child_node, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)
+                            json_encode($child_node, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
                         );
                     }
                 } elseif (\is_scalar($child_node)) {
@@ -948,7 +950,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @param array<int,Node> $catch_nodes
      * @param Context $context
      * @return void
-     * @suppress PhanPluginUnusedVariable
      */
     private function checkUnreachableCatch(array $catch_nodes, Context $context)
     {
@@ -988,6 +989,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             }
             foreach ($union_type->getTypeSet() as $type) {
                 // Track where this ancestor type was thrown
+                // @phan-suppress-next-line PhanPluginUnusedVariable
                 $caught_union_types[\spl_object_id($type)] = $catch_line;
             }
         }

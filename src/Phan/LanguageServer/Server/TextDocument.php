@@ -106,7 +106,6 @@ class TextDocument
      * @param VersionedTextDocumentIdentifier $textDocument
      * @param string|null $text (NOTE: can't use ?T here)
      * @return void
-     * @suppress PhanTypeMismatchArgument
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
     public function didSave(TextDocumentIdentifier $textDocument, string $text = null)
@@ -185,10 +184,11 @@ class TextDocument
 
     /**
      * Placeholder to avoid a crash on malformed clients
-     * @suppress PhanPluginUnusedPublicMethodArgument
+     * @param TextDocumentIdentifier $textDocument @phan-unused-param
+     * @param Position $position @phan-unused-param
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function hover(TextDocumentIdentifier $unusedTtextDocument, Position $position)
+    public function hover(TextDocumentIdentifier $textDocument, Position $position)
     {
         return null;
     }

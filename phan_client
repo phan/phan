@@ -446,6 +446,11 @@ EOB;
                 case 'l':
                 case 'syntax-check':
                     $path = $value;
+					if (!is_string($path)) {
+                        $this->print_usage_on_error = $print_usage_on_error;
+                        $this->usage(sprintf("Error: asked to analyze path %s which is not a string", json_encode($path)), 1);
+                        exit(1);
+					}
                     if (!file_exists($path)) {
                         $this->print_usage_on_error = $print_usage_on_error;
                         $this->usage(sprintf("Error: asked to analyze file %s which does not exist", json_encode($path)), 1);

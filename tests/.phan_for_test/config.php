@@ -56,6 +56,10 @@ return [
     // This is set to true for a unit test.
     'ignore_undeclared_functions_with_known_signatures' => true,
 
+    // Set to true in order to attempt to detect unused variables.
+    // dead_code_detection will also enable unused variable detection.
+    'unused_variable_detection' => true,
+
     // If true, Phan will read `class_alias` calls in the global scope,
     // then (1) create aliases from the *parsed* files if no class definition was found,
     // and (2) emit issues in the global scope if the source or target class is invalid.
@@ -63,4 +67,11 @@ return [
     //  the one which will be created is unspecified.)
     // NOTE: THIS IS EXPERIMENTAL, and the implementation may change.
     'enable_class_alias_support' => true,
+
+    'suppress_issue_types' => [
+        'PhanUnusedPublicMethodParameter',
+        'PhanUnusedPublicFinalMethodParameter',
+        'PhanUnusedGlobalFunctionParameter',
+        'PhanUnusedClosureParameter',
+    ],
 ];

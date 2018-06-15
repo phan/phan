@@ -1,2 +1,2 @@
-%s70:3 PhanTypeMismatchReturn Returning type int but f2() is declared to return void
+%s70:3 PhanTypeMismatchReturn Returning type 42 but f2() is declared to return void
 %s70:4 PhanTypeMissingReturn Method \f3 is declared to return int but has no return value

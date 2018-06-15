@@ -71,11 +71,11 @@ final class ArrayShapeType extends ArrayType
 
     /**
      * @param int|string|float|bool $field_key
-     * @suppress PhanPartialTypeMismatchArgumentInternal
      */
     public function withoutField($field_key) : ArrayShapeType
     {
         $field_types = $this->field_types;
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
         if (!\array_key_exists($field_key, $field_types)) {
             return $this;
         }
@@ -105,14 +105,19 @@ final class ArrayShapeType extends ArrayType
     }
 
     /** @override */
+    public function hasArrayShapeOrLiteralTypeInstances() : bool
+    {
+        return true;
+    }
+
+    /** @override */
     public function hasArrayShapeTypeInstances() : bool
     {
         return true;
     }
 
     /**
-     * @return array<int,ArrayType>
-     * @suppress PhanPartialTypeMismatchReturn
+     * @return array<int,ArrayType> the array shape transformed to remove literal keys and values.
      */
     private function computeGenericArrayTypeInstances() : array
     {
@@ -125,9 +130,14 @@ final class ArrayShapeType extends ArrayType
         $union_type_builder = new UnionTypeBuilder();
         foreach ($field_types as $key => $field_union_type) {
             foreach ($field_union_type->getTypeSet() as $type) {
-                $union_type_builder->addType(GenericArrayType::fromElementType($type, $this->is_nullable, \is_string($key) ? GenericArrayType::KEY_STRING : GenericArrayType::KEY_INT));
+                $union_type_builder->addType(GenericArrayType::fromElementType(
+                    $type->asNonLiteralType(),
+                    $this->is_nullable,
+                    \is_string($key) ? GenericArrayType::KEY_STRING : GenericArrayType::KEY_INT
+                ));
             }
         }
+        // @phan-suppress-next-line PhanPartialTypeMismatchReturn
         return $union_type_builder->getTypeSet();
     }
 
@@ -428,7 +438,7 @@ final class ArrayShapeType extends ArrayType
      * @return array<int,ArrayType>
      * @override
      */
-    public function withFlattenedArrayShapeTypeInstances() : array
+    public function withFlattenedArrayShapeOrLiteralTypeInstances() : array
     {
         $instances = $this->as_generic_array_type_instances;
         if (\is_array($instances)) {
@@ -447,7 +457,6 @@ final class ArrayShapeType extends ArrayType
      *
      * E.g. array{0: string} + array{0:int,1:int} === array{0:int|string,1:int}
      * @param array<int,ArrayShapeType> $array_shape_types
-     * @suppress PhanPartialTypeMismatchArgument
      */
     public static function union(array $array_shape_types) : ArrayShapeType
     {
@@ -470,6 +479,7 @@ final class ArrayShapeType extends ArrayType
                 $field_types[$key] = $old_union_type->withUnionType($union_type);
             }
         }
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         return self::fromFieldTypes($field_types, false);
     }
 

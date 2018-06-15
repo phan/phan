@@ -1,2 +1,3 @@
 %s:12 PhanTypeMismatchArgumentInternal Argument 1 (string) is \ArrayAccess|\Countable|\Iterator|\Serializable|\SplObjectStorage|\Traversable|iterable but \strlen() takes string
 %s:14 PhanTypeMismatchArgumentInternal Argument 1 (string) is \ArrayAccess|\Countable|\Iterator|\Serializable|\SplObjectStorage|\Traversable|iterable but \strlen() takes string
+%s:15 PhanUnusedVariableValueOfForeachWithKey Unused definition of variable $v as the value of a foreach loop that included keys

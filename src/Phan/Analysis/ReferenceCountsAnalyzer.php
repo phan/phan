@@ -159,7 +159,7 @@ class ReferenceCountsAnalyzer
         int &$i
     ) {
         foreach ($element_list as $element) {
-            CLI::progress('dead code', (++$i)/$total_count);
+            CLI::progress('dead code', (++$i) / $total_count);
             // Don't worry about internal elements
             if ($element->isPHPInternal()) {
                 continue;
@@ -184,7 +184,7 @@ class ReferenceCountsAnalyzer
         int &$i
     ) {
         foreach ($element_list as $element) {
-            CLI::progress('dead code', (++$i)/$total_count);
+            CLI::progress('dead code', (++$i) / $total_count);
             // Don't worry about internal elements
             if ($element->isPHPInternal()) {
                 continue;
@@ -323,8 +323,7 @@ class ReferenceCountsAnalyzer
 
 
         // If we're suppressing this element type being unreferenced, then exit early.
-        if ($element->hasSuppressIssue($issue_type)) {
-            $element->incrementSuppressIssueCount($issue_type);
+        if ($element->checkHasSuppressIssueAndIncrementCount($issue_type)) {
             return;
         }
 
@@ -379,8 +378,7 @@ class ReferenceCountsAnalyzer
         } else {
             $issue_type = Issue::WriteOnlyPublicProperty;
         }
-        if ($property->hasSuppressIssue($issue_type)) {
-            $property->incrementSuppressIssueCount($issue_type);
+        if ($property->checkHasSuppressIssueAndIncrementCount($issue_type)) {
             return;
         }
         $property_alt = self::findAlternateReferencedElementDeclaration($code_base, $property);
@@ -408,8 +406,7 @@ class ReferenceCountsAnalyzer
         } else {
             $issue_type = Issue::ReadOnlyPublicProperty;
         }
-        if ($property->hasSuppressIssue($issue_type)) {
-            $property->incrementSuppressIssueCount($issue_type);
+        if ($property->checkHasSuppressIssueAndIncrementCount($issue_type)) {
             return;
         }
         $property_alt = self::findAlternateReferencedElementDeclaration($code_base, $property);

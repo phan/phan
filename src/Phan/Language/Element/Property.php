@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\Exception\IssueException;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\PropertyScope;
@@ -79,17 +80,20 @@ class Property extends ClassElement
         return $this->real_defining_fqsen ?? $this->getDefiningFQSEN();
     }
 
+    private function getVisibilityName() : string
+    {
+        if ($this->isPrivate()) {
+            return 'private';
+        } elseif ($this->isProtected()) {
+            return 'protected';
+        } else {
+            return 'public';
+        }
+    }
+
     public function __toString() : string
     {
-        $string = '';
-
-        if ($this->isPublic()) {
-            $string .= 'public ';
-        } elseif ($this->isProtected()) {
-            $string .= 'protected ';
-        } elseif ($this->isPrivate()) {
-            $string .= 'private ';
-        }
+        $string = $this->getVisibilityName() . ' ';
 
         if ($this->isStatic()) {
             $string .= 'static ';
@@ -98,20 +102,41 @@ class Property extends ClassElement
         // Since the UnionType can be a future, and that
         // can throw an exception, we catch it and ignore it
         try {
-            $union_type = $this->getUnionType();
+            $union_type = $this->getUnionType()->__toString();
+            if ($union_type !== '') {
+                $string .= "$union_type ";
+            } // Don't emit 2 spaces if there is no union type
         } catch (\Exception $exception) {
-            $union_type = UnionType::empty();
+            // do nothing
         }
 
-        $string .= "$union_type \${$this->getName()}";
-
+        $string .= "\${$this->getName()}";
 
         return $string;
     }
 
     /**
+     * Used for generating issue messages
+     */
+    public function asVisibilityAndFQSENString() : string
+    {
+        return $this->getVisibilityName() . ' ' . $this->asPropertyFQSENString();
+    }
+
+    /**
+     * Used for generating issue messages
+     */
+    public function asPropertyFQSENString() : string
+    {
+        return $this->getClassFQSEN()->__toString() .
+            ($this->isStatic() ? '::$' : '->') .
+            $this->getName();
+    }
+
+    /**
      * Override the default getter to fill in a future
      * union type if available.
+     * @throws IssueException if getFutureUnionType fails.
      */
     public function getUnionType() : UnionType
     {
@@ -135,15 +160,7 @@ class Property extends ClassElement
 
     public function toStub()
     {
-        $string = '    ';
-
-        if ($this->isPublic()) {
-            $string .= 'public ';
-        } elseif ($this->isProtected()) {
-            $string .= 'protected ';
-        } elseif ($this->isPrivate()) {
-            $string .= 'private ';
-        }
+        $string = '    ' . $this->getVisibilityName() . ' ';
 
         if ($this->isStatic()) {
             $string .= 'static ';

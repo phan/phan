@@ -6,6 +6,6 @@
 %s:10 PhanTypeMismatchArgument Argument 1 (value) is true but \expect_int412() takes int defined at %s:2
 %s:11 PhanTypeMismatchArgument Argument 1 (value) is string but \expect_int412() takes int defined at %s:2
 %s:12 PhanTypeMismatchArgument Argument 1 (value) is string|true but \expect_int412() takes int defined at %s:2
-%s:14 PhanTypeMismatchArgumentInternal Argument 2 (return) is int but \var_export() takes bool
+%s:14 PhanTypeMismatchArgumentInternal Argument 2 (return) is 1 but \var_export() takes bool
 %s:15 PhanTypeMismatchArgumentInternal Argument 1 (string) is void but \strlen() takes string
-%s:15 PhanTypeMismatchArgumentInternal Argument 2 (return) is int but \var_export() takes bool
+%s:15 PhanTypeMismatchArgumentInternal Argument 2 (return) is 0 but \var_export() takes bool

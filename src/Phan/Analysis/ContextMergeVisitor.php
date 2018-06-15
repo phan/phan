@@ -8,9 +8,6 @@ use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use ast\Node;
 
-/**
- * @phan-file-suppress PhanPartialTypeMismatchArgument
- */
 class ContextMergeVisitor extends KindVisitorImplementation
 {
     /**
@@ -195,8 +192,6 @@ class ContextMergeVisitor extends KindVisitorImplementation
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
-     *
-     * @suppress PhanPossiblyFalseTypeReturn child_context_list is not empty
      */
     public function visitIf(Node $node) : Context
     {
@@ -226,6 +221,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // If there weren't multiple branches, continue on
         // as if the conditional never happened
         if (\count($scope_list) < 2) {
+            // @phan-suppress-next-line PhanPossiblyFalseTypeReturn child_context_list is not empty
             return \reset($this->child_context_list);
         }
 
@@ -274,7 +270,6 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
         // Get the intersection of all types for all versions of
         // the variable from every side of the branch
-        /** @suppress PhanPluginUnusedVariable plugin doesn't handle loops well */
         $union_type =
             function (string $variable_name) use ($scope_list) {
                 $previous_type = null;
@@ -291,6 +286,8 @@ class ContextMergeVisitor extends KindVisitorImplementation
                     // The immutable UnionType might have the exact same instance
                     if ($type !== $previous_type) {
                         $type_list[] = $type;
+
+                        // @phan-suppress-next-line PhanPluginUnusedVariable plugin doesn't handle loops well.
                         $previous_type = $type;
                     }
                 };

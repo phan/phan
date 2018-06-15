@@ -88,4 +88,4 @@ class InvalidVariableIssetVisitor extends PluginAwarePostAnalysisVisitor
     }
 }
 
-return new InvalidVariableIssetPlugin;
+return new InvalidVariableIssetPlugin();

@@ -7,6 +7,7 @@ use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\Printer\PlainTextPrinter;
 use Phan\Language\Type;
 use Phan\Phan;
+use Phan\Plugin\ConfigPluginSet;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTestInterface
@@ -14,8 +15,6 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     const EXPECTED_SUFFIX = '.expected';
 
     private $code_base;
-    /** @var array<string,mixed> */
-    private $original_config = [];
 
     public function setCodeBase(CodeBase $code_base = null)
     {
@@ -27,6 +26,24 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      */
     abstract public function getTestFiles();
 
+    public static function setUpBeforeClass()
+    {
+        parent::setUpBeforeClass();
+        // Reset the config file
+        Config::reset();
+        // Clear the plugins
+        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+    }
+
+    public static function tearDownAfterClass()
+    {
+        parent::tearDownAfterClass();
+        // Reset the config file
+        Config::reset();
+        // Clear the plugins
+        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+    }
+
     /**
      * Setup our state before running each test
      *
@@ -35,11 +52,6 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     public function setUp()
     {
         parent::setUp();
-
-        // Backup the config file
-        foreach (Config::get()->toArray() as $key => $value) {
-            $this->original_config[$key] = $value;
-        }
 
         Type::clearAllMemoizations();
     }
@@ -50,11 +62,6 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     public function tearDown()
     {
         parent::tearDown();
-
-        // Reinstate the original config
-        foreach ($this->original_config as $key => $value) {
-            Config::setValue($key, $value);
-        }
 
         Type::clearAllMemoizations();
     }
@@ -110,6 +117,10 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         return $path;
     }
 
+    const WHITELIST = [
+        '0338_magic_const_types.php.expected',
+    ];
+
     /**
      * This reads all files in a test directory (e.g. `tests/files/src`), runs
      * the analyzer on each and compares the output
@@ -128,7 +139,9 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             $expected_output =
                 trim(file_get_contents($expected_file_path));
         }
-        $this->assertNotRegExp('@tests[/\\\\]files[/\\\\]@', $expected_output, 'Expected output should contain a %s placeholder instead of the relative path to the file');
+        if (!in_array(basename($expected_file_path), self::WHITELIST)) {
+            $this->assertNotRegExp('@tests[/\\\\]files[/\\\\]@', $expected_output, 'Expected output should contain a %s placeholder instead of the relative path to the file');
+        }
 
         // Overlay any test-specific config modifiers
         if ($config_file_path) {
@@ -179,7 +192,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             $start = strpos($wanted_re, $r, $startOffset);
             if ($start !== false) {
                 // we have found a start tag
-                $end = strpos($wanted_re, $r, $start+2);
+                $end = strpos($wanted_re, $r, $start + 2);
                 if ($end === false) {
                     // unbalanced tag, ignore it.
                     $end = $start = $length;
@@ -192,7 +205,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             $temp = $temp . preg_quote(substr($wanted_re, $startOffset, ($start - $startOffset)), '/');
             // add the re unquoted.
             if ($end > $start) {
-                $temp = $temp . '(' . substr($wanted_re, $start+2, ($end - $start-2)). ')';
+                $temp = $temp . '(' . substr($wanted_re, $start + 2, ($end - $start - 2)) . ')';
             }
             $startOffset = $end + 2;
         }

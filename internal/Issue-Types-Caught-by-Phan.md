@@ -103,6 +103,12 @@ This issue is emitted when a class redeclares an inherited instance method as a 
 Cannot make non static method {METHOD}() static
 ```
 
+## PhanAccessNonStaticToStaticProperty
+
+```
+Cannot make non static property {PROPERTY} into the static property {PROPERTY}
+```
+
 ## PhanAccessOverridesFinalMethod
 
 This issue is emitted when a class attempts to override an inherited final method.
@@ -214,6 +220,12 @@ This issue is emitted when a class redeclares an inherited static method as an i
 Cannot make static method {METHOD}() non static
 ```
 
+## PhanAccessStaticToNonStaticProperty
+
+```
+Cannot make static property {PROPERTY} into the non static property {PROPERTY}
+```
+
 ## PhanAccessWrongInheritanceCategory
 
 ```
@@ -224,6 +236,30 @@ Attempting to inherit {CLASSLIKE} defined at {FILE}:{LINE} as if it were a {CLAS
 
 ```
 Attempting to inherit internal {CLASSLIKE} as if it were a {CLASSLIKE}
+```
+
+## PhanConstantAccessSignatureMismatch
+
+```
+Access level to {CONST} must be compatible with {CONST} defined in {FILE}:{LINE}
+```
+
+## PhanConstantAccessSignatureMismatchInternal
+
+```
+Access level to {CONST} must be compatible with internal {CONST}
+```
+
+## PhanPropertyAccessSignatureMismatch
+
+```
+Access level to {PROPERTY} must be compatible with {PROPERTY} defined in {FILE}:{LINE}
+```
+
+## PhanPropertyAccessSignatureMismatchInternal
+
+```
+Access level to {PROPERTY} must be compatible with internal {PROPERTY}
 ```
 
 # Analysis
@@ -306,6 +342,24 @@ $c->$m[0]();
 
 ```
 Square bracket syntax for an array destructuring assignment is not compatible with PHP 7.0
+```
+
+## PhanCompatibleUseIterablePHP71
+
+```
+Using '{TYPE}' as iterable will be a syntax error in PHP 7.2 (iterable becomes a native type with subtypes Array and Iterator).
+```
+
+## PhanCompatibleUseObjectPHP71
+
+```
+Using '{TYPE}' as object will be a syntax error in PHP 7.2 (object becomes a native type that accepts any class instance).
+```
+
+## PhanCompatibleUseVoidPHP70
+
+```
+Using '{TYPE}' as void will be a syntax error in PHP 7.1 (void becomes the absense of a return type).
 ```
 
 ## PhanCompatibleVoidTypePHP70
@@ -647,6 +701,78 @@ Possibly zero references to use statement for function {FUNCTION} ({FUNCTION})
 
 ```
 Possibly zero references to use statement for classlike/namespace {CLASSLIKE} ({CLASSLIKE})
+```
+
+## PhanUnusedClosureParameter
+
+Phan has various checks (See the `unused_variable_detection` config)
+to detect if a variable or parameter is unused.
+
+```
+Parameter ${PARAMETER} is never used
+```
+
+## PhanUnusedClosureUseVariable
+
+```
+Closure use variable ${VARIABLE} is never used
+```
+
+## PhanUnusedGlobalFunctionParameter
+
+```
+Parameter ${PARAMETER} is never used
+```
+
+## PhanUnusedPrivateFinalMethodParameter
+
+```
+Parameter ${PARAMETER} is never used
+```
+
+## PhanUnusedPrivateMethodParameter
+
+```
+Parameter ${PARAMETER} is never used
+```
+
+## PhanUnusedProtectedFinalMethodParameter
+
+```
+Parameter ${PARAMETER} is never used
+```
+
+## PhanUnusedProtectedMethodParameter
+
+```
+Parameter ${PARAMETER} is never used
+```
+
+## PhanUnusedPublicFinalMethodParameter
+
+```
+Parameter ${PARAMETER} is never used
+```
+
+## PhanUnusedPublicMethodParameter
+
+```
+Parameter ${PARAMETER} is never used
+```
+
+## PhanUnusedVariable
+
+Phan has various checks (See the `unused_variable_detection` config)
+to detect if a variable or parameter is unused.
+
+```
+Unused definition of variable ${VARIABLE}
+```
+
+## PhanUnusedVariableValueOfForeachWithKey
+
+```
+Unused definition of variable ${VARIABLE} as the value of a foreach loop that included keys
 ```
 
 ## PhanWriteOnlyPrivateProperty
@@ -1078,6 +1204,24 @@ You'll see this issue with code like
 
 ```php
 function strlen() {}
+```
+
+## PhanRedefinedExtendedClass
+
+```
+{CLASS} extends {CLASS} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors.
+```
+
+## PhanRedefinedInheritedInterface
+
+```
+{CLASS} inherits {INTERFACE} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors.
+```
+
+## PhanRedefinedUsedTrait
+
+```
+{CLASS} uses {TRAIT} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors.
 ```
 
 # StaticCallError

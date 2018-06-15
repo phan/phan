@@ -72,7 +72,6 @@ class ConversionTest extends BaseTest
      * Asserts that valid files get parsed the same way by php-ast and the polyfill.
      *
      * @return array{0:string,1:int}[] array of [string $file_path, int $ast_version]
-     * @suppress PhanPluginUnusedVariable
      */
     public function astValidFileExampleProvider()
     {

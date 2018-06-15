@@ -5,7 +5,7 @@
 %s:21 PhanUndeclaredVariable Variable $b is undeclared
 %s:23 PhanUndeclaredVariable Variable $strTypo is undeclared
 %s:24 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
-%s:25 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:25 PhanTypeMismatchArgumentInternal Argument 1 (string) is 3 but \strlen() takes string
 %s:26 PhanUndeclaredVariable Variable $c is undeclared
 %s:27 PhanUndeclaredVariable Variable $unaryMissing1 is undeclared
 %s:28 PhanUndeclaredVariable Variable $unaryMissing2 is undeclared
@@ -16,3 +16,4 @@
 %s:36 PhanUndeclaredVariable Variable $c2 is undeclared
 %s:38 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
 %s:39 PhanUndeclaredVariable Variable $x3 is undeclared
+
