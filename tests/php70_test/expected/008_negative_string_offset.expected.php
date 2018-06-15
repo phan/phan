@@ -1,0 +1,3 @@
+src/008_negative_string_offset.php:5 PhanCompatibleNegativeStringOffset70 Using negative string offset is not available before PHP 7.1 (emits a 'Uninitialized string offset' notice)
+src/008_negative_string_offset.php:11 PhanCompatibleNegativeStringOffset70 Using negative string offset is not available before PHP 7.1 (emits a 'Uninitialized string offset' notice)
+src/008_negative_string_offset.php:16 PhanCompatibleNegativeStringOffset70 Using negative string offset is not available before PHP 7.1 (emits a 'Uninitialized string offset' notice)
