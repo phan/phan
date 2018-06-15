@@ -75,6 +75,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $this->context,
             $node->children['right']
         );
+        static $int_or_float = null;
 
         if ($left->isType(ArrayType::instance(false))
             || $right->isType(ArrayType::instance(false))
@@ -92,6 +93,13 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         } elseif ($left->hasType(FloatType::instance(false))
             || $right->hasType(FloatType::instance(false))
         ) {
+            if ($left->hasNonNullIntType() && $right->hasNonNullIntType()) {
+                return $int_or_float ?? ($int_or_float = new UnionType([
+                    IntType::instance(false),
+                    FloatType::instance(false)
+                ]));
+            }
+
             return FloatType::instance(false)->asUnionType();
         } elseif ($left->hasNonNullIntType()
             && $right->hasNonNullIntType()
@@ -99,7 +107,6 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             return IntType::instance(false)->asUnionType();
         }
 
-        static $int_or_float = null;
         return $int_or_float ?? ($int_or_float = new UnionType([
             IntType::instance(false),
             FloatType::instance(false)
@@ -464,12 +471,12 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             return ArrayType::combineArrayTypesOverriding($left, $right);
         }
 
-        if (($left->isNonNullIntType()
-            || $left->isType($float_type))
-            && ($right->isNonNullIntType()
-            || $right->isType($float_type))
-        ) {
-            return $float_type->asUnionType();
+        if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
+            if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
+                // Heuristic: If one or more of the sides is a float, the result is always a float.
+                return $float_type->asUnionType();
+            }
+            return $int_or_float_union_type;
         }
 
         $left_is_array = (
