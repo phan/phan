@@ -1289,11 +1289,11 @@ class UnionTypeVisitor extends AnalysisVisitor
         // You can access string characters via array index,
         // so we'll add the string type to the result if we're
         // indexing something that could be a string
-        if ($union_type->isType($string_type)
+        if ($union_type->isNonNullStringType()
             || ($union_type->canCastToUnionType($string_type->asUnionType()) && !$union_type->hasMixedType())
         ) {
             if (Config::get_closest_target_php_version_id() < 70100 && $union_type->isNonNullStringType()) {
-                $this->analyzeNegativeStringOffsetCompatibility($node);
+                $this->analyzeNegativeStringOffsetCompatibility($node, $dim_type);
             }
 
             if (!$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_union_type)) {
@@ -2827,18 +2827,17 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
+     * @return void
      */
-    private function analyzeNegativeStringOffsetCompatibility(Node $node)
+    private function analyzeNegativeStringOffsetCompatibility(Node $node, UnionType $dim_type)
     {
-        if (($node->children['dim'] ?? null) instanceof Node
-            && $node->children['dim']->kind === \ast\AST_UNARY_OP
-            && $node->children['dim']->flags === \ast\flags\UNARY_MINUS
-            && \is_int($node->children['dim']->children['expr'] ?? null)
-        ) {
-            $this->emitIssue(
-                Issue::CompatibleNegativeStringOffset,
-                $node->lineno ?? 0
-            );
+        $dim_value = $dim_type->asSingleScalarValueOrNull();
+        if (!\is_int($dim_value) || $dim_value >= 0) {
+            return;
         }
+        $this->emitIssue(
+            Issue::CompatibleNegativeStringOffset,
+            $node->children['dim']->lineno ?? $node->lineno ?? 0
+        );
     }
 }
