@@ -41,7 +41,7 @@ Phan is able to perform the following kinds of analysis.
 * Check that all methods, functions, classes, traits, interfaces, constants, properties and variables are defined and accessible.
 * Check for type safety and arity issues on method/function/closure calls.
 * Check for PHP7/PHP5 backward compatibility.
-* Check for features that weren't supported in older PHP 7.x minor releases (E.g. `object`, `void`, `iterable`, `?T`, `[$x] = ...;`, etc.)
+* Check for features that weren't supported in older PHP 7.x minor releases (E.g. `object`, `void`, `iterable`, `?T`, `[$x] = ...;`, negative string offsets, multiple exception catches, etc.)
 * Check for sanity with array accesses.
 * Check for type safety on binary operations.
 * Check for valid and type safe return values on methods, functions, and closures.
@@ -55,8 +55,8 @@ Phan is able to perform the following kinds of analysis.
 * Supports namespaces, traits and variadics.
 * Supports [Union Types](https://github.com/phan/phan/wiki/About-Union-Types).
 * Supports generic arrays such as `int[]`, `UserObject[]`, `array<int,UserObject>`, etc..
-* Supports array shapes such as `array{key:string,otherKey:?stdClass}`, etc. (internally and in PHPDoc tags) as of Phan >= 0.12.0.
-* The upcoming 0.12.3 release will support indicating that fields of an array shape are optional
+* Supports array shapes such as `array{key:string,otherKey:?stdClass}`, etc. (internally and in PHPDoc tags)
+  This also supports indicating that fields of an array shape are optional
   via `array{requiredKey:string,optionalKey?:string}` (useful for `@param`)
 * Supports phpdoc [type annotations](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code).
 * Supports inheriting phpdoc type annotations.
@@ -103,7 +103,7 @@ Additional analysis features have been provided by [plugins](https://github.com/
 - [Checking coding style conventions](https://github.com/phan/phan/tree/master/.phan/plugins#3-plugins-specific-to-code-styles)
 - [Others](https://github.com/phan/phan/tree/master/.phan/plugins#plugins)
 
-Example: [Phan's plugins for self-analysis.](https://github.com/phan/phan/blob/0.12.0/.phan/config.php#L461-L474)
+Example: [Phan's plugins for self-analysis.](https://github.com/phan/phan/blob/0.12.12/.phan/config.php#L521-L529)
 
 # Usage
 
@@ -157,10 +157,13 @@ return [
     // A list of plugin files to execute.
     // See https://github.com/phan/phan/tree/master/.phan/plugins for even more.
     // (Pass these in as relative paths.
-    // The 0.10.2 release will allow passing 'AlwaysReturnPlugin' if referring to a plugin that is bundled with Phan)
+    // Base names without extensions such as 'AlwaysReturnPlugin'
+    // can be used to refer to a plugin that is bundled with Phan)
     'plugins' => [
         // checks if a function, closure or method unconditionally returns.
-        'AlwaysReturnPlugin',  // can also be written as 'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php'
+
+        // can also be written as 'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php'
+        'AlwaysReturnPlugin',
         // Checks for syntactically unreachable statements in
         // the global scope or function bodies.
         'UnreachableCodePlugin',
@@ -419,20 +422,13 @@ class C {
 Just like in PHP, any type can be nulled in the function declaration which also
 means a null is allowed to be passed in for that parameter.
 
-As of Phan 0.8.12+/0.10.4+/0.11.2+/0.12.0:
 Phan checks the type of every single element of arrays (Including keys and values).
-In practical terms, this means that `[1,2,'a']` is seen as `array<int,int|string>`,
+In practical terms, this means that `[$int1=>$int2,$int3=>$int4,$int5=>$str6]` is seen as `array<int,int|string>`,
 which Phan represents as `array<int,int>|array<int,string>`.
 `[$strKey => new MyClass(), $strKey2 => $unknown]` will be represented as
 `array<string,MyClass>|array<string,mixed>`.
-(Note that Phan also started tracking the key types of generic arrays in 0.10.4)
 
-In older versions (<= 0.10.3 and other minor version releases from the same date):
-By default, and completely arbitrarily, for things like `int[]` it checks the first 5
-elements. If the first 5 are of the same type, it assumes the rest are as well. If it can't
-determine the array sub-type it just becomes `array` which will pass through most type
-checks. In practical terms, this means that `[1,2,'a']` is seen as `array` but `[1,2,3]`
-is `int[]` and `['a','b','c']` as `string[]`.
+- Literals such as `[12,'myString']` will be represented internally as array shapes such as `array{0:12,1:'myString'}`
 
 # Generating a file list
 
