@@ -299,17 +299,18 @@ class Issue
     const AccessOverridesFinalMethodPHPDoc       = 'PhanAccessOverridesFinalMethodPHPDoc';
 
     // Issue::CATEGORY_COMPATIBLE
-    const CompatibleExpressionPHP7          = 'PhanCompatibleExpressionPHP7';
-    const CompatiblePHP7                    = 'PhanCompatiblePHP7';
-    const CompatibleNullableTypePHP70       = 'PhanCompatibleNullableTypePHP70';
-    const CompatibleShortArrayAssignPHP70   = 'PhanCompatibleShortArrayAssignPHP70';
-    const CompatibleKeyedArrayAssignPHP70   = 'PhanCompatibleKeyedArrayAssignPHP70';
-    const CompatibleVoidTypePHP70           = 'PhanCompatibleVoidTypePHP70';
-    const CompatibleIterableTypePHP70       = 'PhanCompatibleIterableTypePHP70';
-    const CompatibleObjectTypePHP71         = 'PhanCompatibleNullableTypePHP71';
-    const CompatibleUseVoidPHP70            = 'PhanCompatibleUseVoidPHP70';
-    const CompatibleUseIterablePHP71        = 'PhanCompatibleUseIterablePHP71';
-    const CompatibleUseObjectPHP71          = 'PhanCompatibleUseObjectPHP71';
+    const CompatibleExpressionPHP7           = 'PhanCompatibleExpressionPHP7';
+    const CompatiblePHP7                     = 'PhanCompatiblePHP7';
+    const CompatibleNullableTypePHP70        = 'PhanCompatibleNullableTypePHP70';
+    const CompatibleShortArrayAssignPHP70    = 'PhanCompatibleShortArrayAssignPHP70';
+    const CompatibleKeyedArrayAssignPHP70    = 'PhanCompatibleKeyedArrayAssignPHP70';
+    const CompatibleVoidTypePHP70            = 'PhanCompatibleVoidTypePHP70';
+    const CompatibleIterableTypePHP70        = 'PhanCompatibleIterableTypePHP70';
+    const CompatibleObjectTypePHP71          = 'PhanCompatibleNullableTypePHP71';
+    const CompatibleUseVoidPHP70             = 'PhanCompatibleUseVoidPHP70';
+    const CompatibleUseIterablePHP71         = 'PhanCompatibleUseIterablePHP71';
+    const CompatibleUseObjectPHP71           = 'PhanCompatibleUseObjectPHP71';
+    const CompatibleMultiExceptionCatchPHP70 = 'PhanCompatibleMultiExceptionCatchPHP70';
 
     // Issue::CATEGORY_GENERIC
     const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -2604,6 +2605,14 @@ class Issue
                 "Using '{TYPE}' as object will be a syntax error in PHP 7.2 (object becomes a native type that accepts any class instance).",
                 self::REMEDIATION_B,
                 3010
+            ),
+            new Issue(
+                self::CompatibleMultiExceptionCatchPHP70,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Catching multiple exceptions is not available before PHP 7.1",
+                self::REMEDIATION_B,
+                3011
             ),
 
             // Issue::CATEGORY_GENERIC
