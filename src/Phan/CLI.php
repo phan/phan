@@ -1062,7 +1062,6 @@ EOB;
                 } else {
                     $this->usage(sprintf("Could not figure out the path for config file '%s', but --require-config-exists was set", $this->config_file), EXIT_FAILURE, true);
                 }
-
             }
             return;
         }

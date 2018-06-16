@@ -1238,7 +1238,6 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             if (!$dim_type->isEmpty()) {
                 if (!$union_type->hasMixedType() && !$union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
-
                     if (Config::getValue('scalar_array_key_cast')) {
                         $expected_key_type = $int_or_string_union_type;
                     } else {
@@ -1294,7 +1293,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             || ($union_type->canCastToUnionType($string_type->asUnionType()) && !$union_type->hasMixedType())
         ) {
             if (Config::get_closest_target_php_version_id() < 70100 && $union_type->isNonNullStringType()) {
-               $this->analyzeNegativeStringOffsetCompatibility($node);
+                $this->analyzeNegativeStringOffsetCompatibility($node);
             }
 
             if (!$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_union_type)) {
