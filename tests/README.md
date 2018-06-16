@@ -1,3 +1,10 @@
+Scripts
+=======
+
+`tests/run_test` can be run from the root folder to run individual test suites.
+
+`tests/run_all_tests [--parallel]` can be run from the root folder to run all test suites (Tested only on Linux)
+
 Folder Layout
 =============
 
@@ -55,11 +62,6 @@ Integration tests of all of Phan's plugins' output.
 
 Rasmus's original test cases for Phan.
 These get updated when Phan's behavior improves or intentionally changes.
-
-Scripts
--------
-
-`run_test` can be run from the root folder to run individual test suites
 
 Language Server Tests
 ---------------------
