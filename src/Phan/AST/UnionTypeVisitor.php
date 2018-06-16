@@ -1193,6 +1193,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         static $string_type;
         static $int_union_type;
         static $int_or_string_union_type;
+
         if ($array_access_type === null) {
             // array offsets work on strings, unfortunately
             // Double check that any classes in the type don't
@@ -1206,12 +1207,18 @@ class UnionTypeVisitor extends AnalysisVisitor
             $int_union_type = IntType::instance(false)->asUnionType();
             $int_or_string_union_type = new UnionType([IntType::instance(false), StringType::instance(false)], true);
         }
+
+        if (Config::get_closest_target_php_version_id() < 70100 && $union_type->isNonNullStringType()) {
+            $this->analyzeNegativeStringOffsetCompatibility($node);
+        }
+
         if ($union_type->hasTopLevelArrayShapeTypeInstances()) {
             $element_type = $this->resolveArrayShapeElementTypes($node, $union_type);
             if ($element_type !== null) {
                 return $element_type;
             }
         }
+
         $dim_type = self::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -1221,12 +1228,11 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // Figure out what the types of accessed array
         // elements would be.
-        $generic_types =
-            $union_type->genericArrayElementTypes();
+        $generic_types = $union_type->genericArrayElementTypes();
 
         // If we have generics, we're all set
         if (!$generic_types->isEmpty()) {
-            if ($this->isSuspiciousNullable($union_type) && !($node->flags & self::FLAG_IGNORE_NULLABLE)) {
+            if (!($node->flags & self::FLAG_IGNORE_NULLABLE) && $this->isSuspiciousNullable($union_type)) {
                 $this->emitIssue(
                     Issue::TypeArraySuspiciousNullable,
                     $node->lineno ?? 0,
@@ -1235,7 +1241,8 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
 
             if (!$dim_type->isEmpty()) {
-                if (!$union_type->asExpandedTypes($this->code_base)->hasArrayAccess() && !$union_type->hasMixedType()) {
+                if (!$union_type->hasMixedType() && !$union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
+
                     if (Config::getValue('scalar_array_key_cast')) {
                         $expected_key_type = $int_or_string_union_type;
                     } else {
@@ -1244,14 +1251,14 @@ class UnionTypeVisitor extends AnalysisVisitor
                             GenericArrayType::CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE
                         );
                     }
+
                     if (!$dim_type->canCastToUnionType($expected_key_type)) {
                         $issue_type = Issue::TypeMismatchDimFetch;
 
-                        if ($dim_type->containsNullable()) {
-                            if ($dim_type->nonNullableClone()->canCastToUnionType($expected_key_type)) {
-                                $issue_type = Issue::TypeMismatchDimFetchNullable;
-                            }
+                        if ($dim_type->containsNullable() && $dim_type->nonNullableClone()->canCastToUnionType($expected_key_type)) {
+                            $issue_type = Issue::TypeMismatchDimFetchNullable;
                         }
+
                         if ($this->should_catch_issue_exception) {
                             $this->emitIssue(
                                 $issue_type,
@@ -1262,6 +1269,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                             );
                             return $generic_types;
                         }
+
                         throw new IssueException(
                             Issue::fromType($issue_type)(
                                 $this->context->getFile(),
@@ -2816,5 +2824,22 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
         }
         return null;
+    }
+
+    /**
+     * @param Node $node
+     */
+    private function analyzeNegativeStringOffsetCompatibility(Node $node)
+    {
+        if (($node->children['dim'] ?? null) instanceof Node
+            && $node->children['dim']->kind === \ast\AST_UNARY_OP
+            && $node->children['dim']->flags === \ast\flags\UNARY_MINUS
+            && \is_int($node->children['dim']->children['expr'] ?? null)
+        ) {
+            $this->emitIssue(
+                Issue::CompatibleNegativeStringOffset,
+                $node->lineno ?? 0
+            );
+        }
     }
 }
