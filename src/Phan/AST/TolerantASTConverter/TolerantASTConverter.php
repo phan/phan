@@ -554,6 +554,9 @@ class TolerantASTConverter
                 if (($ast_return_type->children['name'] ?? null) === '') {
                     $ast_return_type = null;
                 }
+                if ($n->questionToken !== null && $ast_return_type !== null) {
+                    $ast_return_type = new ast\Node(ast\AST_NULLABLE_TYPE, 0, ['type' => $ast_return_type], $start_line);
+                }
                 return static::astDeclClosure(
                     $n->byRefToken !== null,
                     $n->staticModifier !== null,
