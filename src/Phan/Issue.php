@@ -377,11 +377,16 @@ class Issue
         self::CATEGORY_VARIABLE          => 'VarError',
     ];
 
+    /** Low severity. E.g. documentation errors or code that would cause a (typically harmless) PHP notice. */
     const SEVERITY_LOW      = 0;
+    /** Normal severity. E.g. something that may cause a minor bug. */
     const SEVERITY_NORMAL   = 5;
+    /** Highest severity. Likely to cause an uncaught Error, Exception, or fatal error at runtime. */
     const SEVERITY_CRITICAL = 10;
 
     // See https://docs.codeclimate.com/v1.0/docs/remediation
+    // TODO: Decide on a way to estimate these and bring these up to date once codeclimate updates phan.
+    // Right now, almost everything is REMEDIATION_B.
     const REMEDIATION_A = 1000000;
     const REMEDIATION_B = 3000000;
     /** @suppress PhanUnreferencedPublicClassConstant */
@@ -2656,15 +2661,15 @@ class Issue
                 self::CompatibleMultiExceptionCatchPHP70,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
-                "Catching multiple exceptions is not available before PHP 7.1",
+                "Catching multiple exceptions is not supported before PHP 7.1",
                 self::REMEDIATION_B,
                 3011
             ),
             new Issue(
                 self::CompatibleNegativeStringOffset,
                 self::CATEGORY_COMPATIBLE,
-                self::SEVERITY_CRITICAL,
-                "Using negative string offset is not available before PHP 7.1 (emits an 'Uninitialized string offset' notice)",
+                self::SEVERITY_NORMAL,
+                "Using negative string offsets is not supported before PHP 7.1 (emits an 'Uninitialized string offset' notice)",
                 self::REMEDIATION_B,
                 3012
             ),
