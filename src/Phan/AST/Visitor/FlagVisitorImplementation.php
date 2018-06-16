@@ -112,6 +112,31 @@ abstract class FlagVisitorImplementation implements FlagVisitor
         return $this->visit($node);
     }
 
+    public function visitBinaryBoolAnd(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitBinaryBoolOr(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitBinaryCoalesce(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitBinaryIsGreater(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitBinaryIsGreaterOrEqual(Node $node)
+    {
+        return $this->visit($node);
+    }
+
     public function visitClassAbstract(Node $node)
     {
         return $this->visit($node);
@@ -238,31 +263,6 @@ abstract class FlagVisitorImplementation implements FlagVisitor
     }
 
     public function visitUnaryBoolNot(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitBinaryBoolAnd(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitBinaryBoolOr(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitBinaryCoalesce(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitBinaryIsGreater(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitBinaryIsGreaterOrEqual(Node $node)
     {
         return $this->visit($node);
     }

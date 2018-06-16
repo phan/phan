@@ -22,6 +22,7 @@ New features(Analysis)
   New issue types: `PhanAccessNonStaticToStaticProperty`, `PhanAccessStaticToNonStaticProperty`
 + Warn about inheriting from a class/trait/interface that has multiple possible definitions (#773)
   New issue types: `PhanRedefinedExtendedClass`, `PhanRedefinedUsedTrait`, `PhanRedefinedInheritedInterface`
++ Infer more accurate types for the side effects of assignment operators (i.e. `+=`, `.=`, etc) and other binary operations. (#1775)
 
 Maintenance:
 + Update signature map with more accurate signatures (#1761)
@@ -33,6 +34,7 @@ Bug fixes:
 + Fix uncaught `AssertionError` when `parent` is used in PHPDoc (#1758)
 + Fix various bugs that can cause crashes in the polyfill/fallback parser when parsing invalid or incomplete ASTs.
 + Fix unparseable/invalid function signature entries of rarely used functions
++ Warn about undefined variables on the left hand side of assignment operations (e.g. `$x .= 'string'`) (#1613)
 
 08 Jun 2018, Phan 0.12.12
 -------------------------

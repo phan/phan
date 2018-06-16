@@ -1053,11 +1053,16 @@ EOB;
             ]);
 
         // Totally cool if the file isn't there
-        if (!file_exists($config_file_name)) {
+        if ($config_file_name === false || !file_exists($config_file_name)) {
             if ($require_config_exists) {
                 // But if the CLI option --require-config-exists is provided, exit immediately.
                 // (Include extended help documenting that option)
-                $this->usage("Could not find a config file at '$config_file_name', but --require-config-exists was set", EXIT_FAILURE, true);
+                if ($config_file_name !== false) {
+                    $this->usage("Could not find a config file at '$config_file_name', but --require-config-exists was set", EXIT_FAILURE, true);
+                } else {
+                    $this->usage(sprintf("Could not figure out the path for config file '%s', but --require-config-exists was set", $this->config_file), EXIT_FAILURE, true);
+                }
+
             }
             return;
         }

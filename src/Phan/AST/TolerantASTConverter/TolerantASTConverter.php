@@ -550,10 +550,12 @@ class TolerantASTConverter
                 return static::astNodeCast($ast_kind, $n, $start_line);
             },
             'Microsoft\PhpParser\Node\Expression\AnonymousFunctionCreationExpression' => function (PhpParser\Node\Expression\AnonymousFunctionCreationExpression $n, int $start_line) : ast\Node {
-                $return_type_line = static::getEndLine($n->returnType) ?: $start_line;
-                $return_type = static::phpParserTypeToAstNode($n->returnType, $return_type_line);
-                if ($n->questionToken !== null) {
-                    $return_type = new ast\Node(ast\AST_NULLABLE_TYPE, 0, ['type' => $return_type], $return_type_line);
+                $ast_return_type = static::phpParserTypeToAstNode($n->returnType, static::getEndLine($n->returnType) ?: $start_line);
+                if (($ast_return_type->children['name'] ?? null) === '') {
+                    $ast_return_type = null;
+                }
+                if ($n->questionToken !== null && $ast_return_type !== null) {
+                    $ast_return_type = new ast\Node(ast\AST_NULLABLE_TYPE, 0, ['type' => $ast_return_type], $start_line);
                 }
                 return static::astDeclClosure(
                     $n->byRefToken !== null,
@@ -561,7 +563,7 @@ class TolerantASTConverter
                     static::phpParserParamsToAstParams($n->parameters, $start_line),
                     static::phpParserClosureUsesToAstClosureUses($n->anonymousFunctionUseClause->useVariableNameList ?? null, $start_line),
                     static::phpParserStmtlistToAstNode($n->compoundStatementOrSemicolon->statements, self::getStartLine($n->compoundStatementOrSemicolon), false),
-                    $return_type,
+                    $ast_return_type,
                     $start_line,
                     static::getEndLine($n),
                     static::resolveDocCommentForClosure($n)

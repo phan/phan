@@ -907,6 +907,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 $node->children['class']
             ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
 
+            if (Config::get_closest_target_php_version_id() < 70100 && \count($class_list) > 1) {
+                $this->emitIssue(
+                    Issue::CompatibleMultiExceptionCatchPHP70,
+                    $node->lineno ?? 0
+                );
+            }
+
             foreach ($class_list as $class) {
                 $class->addReference($this->context);
             }

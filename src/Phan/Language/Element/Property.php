@@ -141,7 +141,7 @@ class Property extends ClassElement
     public function getUnionType() : UnionType
     {
         if (null !== ($union_type = $this->getFutureUnionType())) {
-            $this->setUnionType(parent::getUnionType()->withUnionType($union_type));
+            $this->setUnionType(parent::getUnionType()->withUnionType($union_type->asNonLiteralType()));
         }
 
         return parent::getUnionType();

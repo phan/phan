@@ -629,10 +629,6 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function toFunctionSignatureArray() : array
     {
         // no need for returns ref yet
-        $stub .= '(' . implode(', ', array_map(function (Parameter $parameter) : string {
-            return $parameter->toStubString();
-        }, $this->getRealParameterList())) . ')';
-
         $return_type = $this->return_type;
         $stub = [$return_type->__toString()];
         foreach ($this->params as $i => $parameter) {

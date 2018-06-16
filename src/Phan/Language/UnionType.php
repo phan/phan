@@ -1022,6 +1022,19 @@ class UnionType implements \Serializable
     /**
      * Returns true if this contains at least one non-null StringType or LiteralStringType
      */
+    public function hasStringType() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type instanceof StringType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if this contains at least one non-null StringType or LiteralStringType
+     */
     public function hasNonNullStringType() : bool
     {
         foreach ($this->type_set as $type) {

@@ -75,6 +75,8 @@ return [
 
     'generic_types_enabled' => true,
 
+    'guess_unknown_parameter_type_using_default' => true,
+
     'minimum_severity' => Issue::SEVERITY_LOW,
 
     'directory_list' => ['src'],
