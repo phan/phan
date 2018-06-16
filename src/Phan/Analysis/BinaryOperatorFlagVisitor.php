@@ -7,6 +7,7 @@ use Phan\AST\Visitor\FlagVisitorImplementation;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
+use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FloatType;
@@ -93,7 +94,15 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         } elseif ($left->hasType(FloatType::instance(false))
             || $right->hasType(FloatType::instance(false))
         ) {
-            if ($left->hasNonNullIntType() && $right->hasNonNullIntType()) {
+            if ($left->hasTypeMatchingCallback(
+                function (Type $type) : bool {
+                    return !($type instanceof FloatType);
+                }
+            ) && $right->hasTypeMatchingCallback(
+                function (Type $type) : bool {
+                    return !($type instanceof FloatType);
+                }
+            )) {
                 return $int_or_float ?? ($int_or_float = new UnionType([
                     IntType::instance(false),
                     FloatType::instance(false)

@@ -466,7 +466,7 @@ class ParseVisitor extends ScopeVisitor
                 // to avoid issues such as https://github.com/phan/phan/issues/311 and many more.
                 if ($future_union_type !== null) {
                     try {
-                        $original_union_type = $future_union_type->get();
+                        $original_union_type = $future_union_type->get()->asNonLiteralType();
                         // We successfully resolved the union type. We no longer need $future_union_type
                         $future_union_type = null;
                     } catch (IssueException $e) {
@@ -500,7 +500,7 @@ class ParseVisitor extends ScopeVisitor
 
                 $original_property_type = $property->getUnionType();
                 $variable_type = $variable->getUnionType();
-                if ($variable_type->hasGenericArray() && !$original_property_type->hasTypeMatchingCallback(function(Type $type) : bool {
+                if ($variable_type->hasGenericArray() && !$original_property_type->hasTypeMatchingCallback(function (Type $type) : bool {
                     return \get_class($type) !== ArrayType::class;
                 })) {
                     // Don't convert `/** @var T[] */ public $x = []` to union type `string[]|array`

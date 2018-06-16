@@ -107,6 +107,9 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
         CodeBase $code_base,
         string $file_path
     ) : array {
+        if ($file_path === 'internal') {
+            return [];
+        }
         $absolute_file_path = Config::projectPath($file_path);
         $file_contents = FileCache::getOrReadEntry($absolute_file_path)->getContents();  // This is the recommended way to fetch the file contents
 

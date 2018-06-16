@@ -299,18 +299,19 @@ class Issue
     const AccessOverridesFinalMethodPHPDoc       = 'PhanAccessOverridesFinalMethodPHPDoc';
 
     // Issue::CATEGORY_COMPATIBLE
-    const CompatibleExpressionPHP7          = 'PhanCompatibleExpressionPHP7';
-    const CompatiblePHP7                    = 'PhanCompatiblePHP7';
-    const CompatibleNullableTypePHP70       = 'PhanCompatibleNullableTypePHP70';
-    const CompatibleShortArrayAssignPHP70   = 'PhanCompatibleShortArrayAssignPHP70';
-    const CompatibleKeyedArrayAssignPHP70   = 'PhanCompatibleKeyedArrayAssignPHP70';
-    const CompatibleVoidTypePHP70           = 'PhanCompatibleVoidTypePHP70';
-    const CompatibleIterableTypePHP70       = 'PhanCompatibleIterableTypePHP70';
-    const CompatibleObjectTypePHP71         = 'PhanCompatibleNullableTypePHP71';
-    const CompatibleUseVoidPHP70            = 'PhanCompatibleUseVoidPHP70';
-    const CompatibleUseIterablePHP71        = 'PhanCompatibleUseIterablePHP71';
-    const CompatibleUseObjectPHP71          = 'PhanCompatibleUseObjectPHP71';
-    const CompatibleNegativeStringOffset    = 'PhanCompatibleNegativeStringOffset';
+    const CompatibleExpressionPHP7           = 'PhanCompatibleExpressionPHP7';
+    const CompatiblePHP7                     = 'PhanCompatiblePHP7';
+    const CompatibleNullableTypePHP70        = 'PhanCompatibleNullableTypePHP70';
+    const CompatibleShortArrayAssignPHP70    = 'PhanCompatibleShortArrayAssignPHP70';
+    const CompatibleKeyedArrayAssignPHP70    = 'PhanCompatibleKeyedArrayAssignPHP70';
+    const CompatibleVoidTypePHP70            = 'PhanCompatibleVoidTypePHP70';
+    const CompatibleIterableTypePHP70        = 'PhanCompatibleIterableTypePHP70';
+    const CompatibleObjectTypePHP71          = 'PhanCompatibleNullableTypePHP71';
+    const CompatibleUseVoidPHP70             = 'PhanCompatibleUseVoidPHP70';
+    const CompatibleUseIterablePHP71         = 'PhanCompatibleUseIterablePHP71';
+    const CompatibleUseObjectPHP71           = 'PhanCompatibleUseObjectPHP71';
+    const CompatibleMultiExceptionCatchPHP70 = 'PhanCompatibleMultiExceptionCatchPHP70';
+    const CompatibleNegativeStringOffset     = 'PhanCompatibleNegativeStringOffset';
 
     // Issue::CATEGORY_GENERIC
     const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -2607,12 +2608,20 @@ class Issue
                 3010
             ),
             new Issue(
+                self::CompatibleMultiExceptionCatchPHP70,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Catching multiple exceptions is not available before PHP 7.1",
+                self::REMEDIATION_B,
+                3011
+            ),
+            new Issue(
                 self::CompatibleNegativeStringOffset,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
                 "Using negative string offset is not available before PHP 7.1 (emits an 'Uninitialized string offset' notice)",
                 self::REMEDIATION_B,
-                3011
+                3012
             ),
 
             // Issue::CATEGORY_GENERIC
