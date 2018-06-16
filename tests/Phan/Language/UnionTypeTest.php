@@ -3,6 +3,7 @@
 namespace Phan\Tests\Language;
 
 use Phan\AST\UnionTypeVisitor;
+use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
@@ -25,6 +26,8 @@ use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
+use Phan\Output\Collector\BufferingCollector;
+use Phan\Phan;
 use Phan\Tests\BaseTest;
 
 // Grab these before we define our own classes
@@ -94,20 +97,22 @@ class UnionTypeTest extends BaseTest
 
     public function testInt()
     {
+        Phan::setIssueCollector(new BufferingCollector());
         $this->assertUnionTypeStringEqual('rand(0,20)', 'int');
-        $this->assertUnionTypeStringEqual('rand(0,20)+1', 'int');
+        $this->assertUnionTypeStringEqual('rand(0,20) + 1', 'int');
         // TODO: Perform arithmetic if in bounds
-        $this->assertUnionTypeStringEqual('42+2', 'int');
+        $this->assertUnionTypeStringEqual('42 + 2', 'int');
         $this->assertUnionTypeStringEqual('-42', '-42');
         $this->assertUnionTypeStringEqual('~42', '-43');
+        $this->assertUnionTypeStringEqual('12.3 % 5.2', 'int');
         $this->assertUnionTypeStringEqual('~-43', '42');
         $this->assertUnionTypeStringEqual('$argc', 'int');
-        $this->assertUnionTypeStringEqual('$argc-1', 'int');
-        $this->assertUnionTypeStringEqual('$argc+1', 'int');
-        $this->assertUnionTypeStringEqual('$argc*1', 'int');
-        $this->assertUnionTypeStringEqual('$argc-1.5', 'float');
-        $this->assertUnionTypeStringEqual('$argc+1.5', 'float');
-        $this->assertUnionTypeStringEqual('$argc*1.5', 'float');
+        $this->assertUnionTypeStringEqual('$argc - 1', 'int');
+        $this->assertUnionTypeStringEqual('$argc + 1', 'int');
+        $this->assertUnionTypeStringEqual('$argc * 1', 'int');
+        $this->assertUnionTypeStringEqual('$argc - 1.5', 'float');
+        $this->assertUnionTypeStringEqual('$argc + 1.5', 'float');
+        $this->assertUnionTypeStringEqual('$argc * 1.5', 'float');
         $this->assertUnionTypeStringEqual('constant($argv[0]) - constant($argv[1])', 'float|int');
         $this->assertUnionTypeStringEqual('constant($argv[0]) + constant($argv[1])', 'float|int');
         $this->assertUnionTypeStringEqual('-constant($argv[0])', 'float|int');
@@ -115,6 +120,41 @@ class UnionTypeTest extends BaseTest
         $this->assertUnionTypeStringEqual('(rand(0,1) ? "12" : 2.5) - (rand(0,1) ? "3" : 1.5)', 'float|int');
         $this->assertUnionTypeStringEqual('(rand(0,1) ? "12" : 2.5) * (rand(0,1) ? "3" : 1.5)', 'float|int');
         $this->assertUnionTypeStringEqual('(rand(0,1) ? "12" : 2.5) + (rand(0,1) ? "3" : 1.5)', 'float|int');
+    }
+
+    public function testComplex() {
+        Phan::setIssueCollector(new BufferingCollector());
+        $this->assertUnionTypeStringEqual('$x=constant($argv[0]); $x <<= 2; $x', 'int');
+        $this->assertUnionTypeStringEqual('$x=constant($argv[0]); $x >>= 2; $x', 'int');
+        $this->assertUnionTypeStringEqual('$x=constant($argv[0]); $x %= 2; $x', 'int');
+        $this->assertUnionTypeStringEqual('$x=constant($argv[0]); $x .= "suffix"; $x', 'string');
+        $this->assertUnionTypeStringEqual('$x=constant($argv[0]); $x .= 33; $x', 'string');
+        // TODO: Optionally, convert to "prefixSuffix"
+        $this->assertUnionTypeStringEqual('$x="prefixSuffix"; $x .= "Suffix"; $x', 'string');
+        $this->assertUnionTypeStringEqual('$x=[2]; $x += [3,"other"]; $x', "array{0:2,1:'other'}");
+        $this->assertUnionTypeStringEqual('$x=2; $x += 3; $x', 'int');
+        $this->assertUnionTypeStringEqual('$x=2.5; $x += 3; $x', 'float');
+        $this->assertUnionTypeStringEqual('$x=2; $x += 3.5; $x', 'float');
+        $this->assertUnionTypeStringEqual('$x=2; $x += (rand()%2) ? 3.5 : 2; $x', 'float|int');
+        $this->assertUnionTypeStringEqual('$x=2; $x -= 3; $x', 'int');
+        $this->assertUnionTypeStringEqual('$x=2; $x -= 3.5; $x', 'float');
+        $this->assertUnionTypeStringEqual('$x=2; $x *= 3.5; $x', 'float');
+        $this->assertUnionTypeStringEqual('$x=2; $x *= 3; $x', 'int');
+        $this->assertUnionTypeStringEqual('$x=2; $x **= 3; $x', 'int');
+        $this->assertUnionTypeStringEqual('$x=2; $x **= 3.5; $x', 'float');
+        $this->assertUnionTypeStringEqual('$x=5; $x %= 3; $x', 'int');  // This casts to float
+        $this->assertUnionTypeStringEqual('$x=21.2; $x %= 3.5; $x', 'int');  // This casts to float
+        $this->assertUnionTypeStringEqual('$x=5;    $x ^= 3;    $x', 'int');
+        $this->assertUnionTypeStringEqual('$x="ab"; $x ^= "ac"; $x', 'string');
+        $this->assertUnionTypeStringEqual('$x=5;    $x |= 3;    $x', 'int');
+        $this->assertUnionTypeStringEqual('$x="ab"; $x |= "ac"; $x', 'string');
+        // `&=` is a bitwise and, not to be confused with `=&`
+        $this->assertUnionTypeStringEqual('$x=5;    $x &= 3;    $x', 'int');
+        $this->assertUnionTypeStringEqual('$x="ab"; $x &= "ac"; $x', 'string');
+
+        // TODO: Implement more code to warn about invalid operands.
+        // Evaluating this should result in '0'
+        $this->assertUnionTypeStringEqual('$x=(new stdClass()); $x &= 2; $x', 'int');
     }
 
     public function testString()
@@ -235,13 +275,17 @@ class UnionTypeTest extends BaseTest
      */
     private function typeStringFromCode(string $code) : string
     {
+        $stmt_list = \ast\parse_code(
+            $code,
+            Config::AST_VERSION
+        );
+        $last_node = \array_pop($stmt_list->children);
+        $context = new Context();
+        (new BlockAnalysisVisitor(self::$code_base, new Context()))($stmt_list);
         return UnionTypeVisitor::unionTypeFromNode(
             self::$code_base,
-            new Context(),  // NOTE: This has to be new - Otherwise, object ids will be reused and inferences would be cached for those.
-            \ast\parse_code(
-                $code,
-                Config::AST_VERSION
-            )->children[0]
+            $context,  // NOTE: This has to be new - Otherwise, object ids will be reused and inferences would be cached for those.
+            $last_node
         )->asExpandedTypes(self::$code_base)->__toString();
     }
 

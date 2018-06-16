@@ -14,7 +14,11 @@ use Phan\Language\Type\StringType;
 use Phan\Issue;
 use ast\Node;
 
-// TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed
+/**
+ * TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed
+ *
+ * TODO: Move many of these checks to AssignOperatorAnalysisVisitor
+ */
 class AssignOperatorFlagVisitor extends FlagVisitorImplementation
 {
 
@@ -45,7 +49,6 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function __invoke(Node $node)
     {
-        // AST_ASSIGN_OP uses \ast\flags\BINARY_* in ast versions >= 20.
         // NOTE: Some operations currently don't exist in any php version, such as `$x ||= 2;`, `$x xor= 2;`
         return Element::acceptBinaryFlagVisitor($node, $this);
     }

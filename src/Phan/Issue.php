@@ -51,6 +51,7 @@ class Issue
     const UndeclaredTypeThrowsType  = 'PhanUndeclaredTypeThrowsType';
     const UndeclaredVariable        = 'PhanUndeclaredVariable';
     const UndeclaredVariableDim     = 'PhanUndeclaredVariableDim';
+    const UndeclaredVariableAssignOp = 'PhanUndeclaredVariableAssignOp';
     const UndeclaredClassInCallable = 'PhanUndeclaredClassInCallable';
     const UndeclaredStaticMethodInCallable = 'PhanUndeclaredStaticMethodInCallable';
     const UndeclaredFunctionInCallable = 'PhanUndeclaredFunctionInCallable';
@@ -73,6 +74,10 @@ class Issue
     const TypeInvalidClosureScope   = 'PhanTypeInvalidClosureScope';
     const TypeInvalidLeftOperand    = 'PhanTypeInvalidLeftOperand';
     const TypeInvalidRightOperand   = 'PhanTypeInvalidRightOperand';
+    const TypeInvalidLeftOperandOfAdd  = 'PhanTypeInvalidLeftOperandOfAdd';
+    const TypeInvalidRightOperandOfAdd = 'PhanTypeInvalidRightOperandOfAdd';
+    const TypeInvalidLeftOperandOfNumericOp = 'PhanTypeInvalidLeftOperandOfNumericOp';
+    const TypeInvalidRightOperandOfNumericOp = 'PhanTypeInvalidRightOperandOfNumericOp';
     const TypeInvalidInstanceof     = 'PhanTypeInvalidInstanceof';
     const TypeInvalidDimOffset      = 'PhanTypeInvalidDimOffset';
     const TypeInvalidDimOffsetArrayDestructuring = 'PhanTypeInvalidDimOffsetArrayDestructuring';
@@ -741,6 +746,14 @@ class Issue
                 11027
             ),
             new Issue(
+                self::UndeclaredVariableAssignOp,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_LOW,
+                "Variable \${VARIABLE} was undeclared, but it is being used as the left hand side of an assignment operation",
+                self::REMEDIATION_B,
+                11037
+            ),
+            new Issue(
                 self::UndeclaredTypeReturnType,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
@@ -1143,6 +1156,38 @@ class Issue
                 "Invalid operator: right operand is array and left is not",
                 self::REMEDIATION_B,
                 10016
+            ),
+            new Issue(
+                self::TypeInvalidRightOperandOfAdd,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Invalid operator: right operand is {TYPE} (expected array or number)",
+                self::REMEDIATION_B,
+                10070
+            ),
+            new Issue(
+                self::TypeInvalidLeftOperandOfAdd,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Invalid operator: left operand is {TYPE} (expected array or number)",
+                self::REMEDIATION_B,
+                10071
+            ),
+            new Issue(
+                self::TypeInvalidRightOperandOfNumericOp,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Invalid operator: right operand is {TYPE} (expected number)",
+                self::REMEDIATION_B,
+                10072
+            ),
+            new Issue(
+                self::TypeInvalidLeftOperandOfNumericOp,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Invalid operator: left operand is {TYPE} (expected number)",
+                self::REMEDIATION_B,
+                10073
             ),
             new Issue(
                 self::TypeParentConstructorCalled,
