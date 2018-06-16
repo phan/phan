@@ -122,7 +122,8 @@ class UnionTypeTest extends BaseTest
         $this->assertUnionTypeStringEqual('(rand(0,1) ? "12" : 2.5) + (rand(0,1) ? "3" : 1.5)', 'float|int');
     }
 
-    public function testComplex() {
+    public function testComplex()
+    {
         Phan::setIssueCollector(new BufferingCollector());
         $this->assertUnionTypeStringEqual('$x=constant($argv[0]); $x <<= 2; $x', 'int');
         $this->assertUnionTypeStringEqual('$x=constant($argv[0]); $x >>= 2; $x', 'int');

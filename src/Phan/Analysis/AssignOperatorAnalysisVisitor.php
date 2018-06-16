@@ -259,7 +259,8 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         });
     }
 
-    private function analyzeNumericArithmeticOp(Node $node) {
+    private function analyzeNumericArithmeticOp(Node $node)
+    {
         return $this->updateTargetWithType($node, function (UnionType $left) use ($node) : UnionType {
             $code_base = $this->code_base;
             $context = $this->context;
