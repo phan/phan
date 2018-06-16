@@ -1,23 +1,32 @@
 <?php
 
-$str = "abcdef";
-
-$char = $str{-1};
-
 class class_008 {
 
-    public function method_1($param1, $param2)
+    public function testStrCurlyBrackets(string $param1, string $param2) : string
     {
-        return $param1{-2} . $param2{-3};
+        $temp = $param1{-2};
+        return $temp . $param2{"-3"};
     }
 
-    public function method_2($param)
+    /**
+     * @param string $param
+     * @return bool
+     */
+    public function testStrSquareBrackets(string $param) : bool
     {
-        return in_array($param[-4], [1, 2, 3]);
+        $one = $param["-1"];
+        return $one || in_array($param[-4], [1, 2, 3]);
+    }
+
+    public function testArray(array $array)
+    {
+        return $array[-1];
     }
 
 }
 
 $c = new class_008();
-$c->method_1("param1", "param2");
-$c->method_2("param");
+
+$c->testStrCurlyBrackets("param1", "param2");
+$c->testStrSquareBrackets("param");
+$c->testArray([-1 => 1]);

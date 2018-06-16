@@ -310,7 +310,7 @@ class Issue
     const CompatibleUseVoidPHP70            = 'PhanCompatibleUseVoidPHP70';
     const CompatibleUseIterablePHP71        = 'PhanCompatibleUseIterablePHP71';
     const CompatibleUseObjectPHP71          = 'PhanCompatibleUseObjectPHP71';
-    const CompatibleNegativeStringOffset70  = 'PhanCompatibleNegativeStringOffset70';
+    const CompatibleNegativeStringOffset    = 'PhanCompatibleNegativeStringOffset';
 
     // Issue::CATEGORY_GENERIC
     const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -2607,10 +2607,10 @@ class Issue
                 3010
             ),
             new Issue(
-                self::CompatibleNegativeStringOffset70,
+                self::CompatibleNegativeStringOffset,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
-                "Using negative string offset is not available before PHP 7.1 (emits a 'Uninitialized string offset' notice)",
+                "Using negative string offset is not available before PHP 7.1 (emits an 'Uninitialized string offset' notice)",
                 self::REMEDIATION_B,
                 3011
             ),

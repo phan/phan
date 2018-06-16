@@ -3,6 +3,7 @@ namespace Phan\Parse;
 
 use Phan\AST\ContextNode;
 use Phan\Analysis\ScopeVisitor;
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Daemon;
@@ -1010,23 +1011,12 @@ class ParseVisitor extends ScopeVisitor
 
     public function visitDim(Node $node) : Context
     {
-        if (!Config::get_backward_compatibility_checks()) {
-            return $this->context;
+        if (Config::get_closest_target_php_version_id() < 70100) {
+            $this->analyzeNegativeStringOffsetCompatibility($node);
         }
 
-        // check for $str{-3} for PHP < 7.1
-        if (Config::get_closest_target_php_version_id() < 70100
-            && $node->children['expr'] instanceof Node
-            && $node->children['expr']->kind == \ast\AST_VAR
-            && ($node->children['dim'] ?? null) instanceof Node
-            && $node->children['dim']->kind == \ast\AST_UNARY_OP
-            && $node->children['dim']->flags == \ast\flags\UNARY_MINUS
-            && is_int($node->children['dim']->children['expr'] ?? null)
-        ) {
-            $this->emitIssue(
-                Issue::CompatibleNegativeStringOffset70,
-                $node->lineno ?? 0
-            );
+        if (!Config::get_backward_compatibility_checks()) {
+            return $this->context;
         }
 
         if (!($node->children['expr'] instanceof Node
@@ -1272,5 +1262,36 @@ class ParseVisitor extends ScopeVisitor
     public function visitBinaryOp(Node $node)
     {
         return $this->context;
+    }
+
+    /**
+     * @param Node $node
+     * @throws IssueException
+     */
+    private function analyzeNegativeStringOffsetCompatibility(Node $node)
+    {
+        $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
+
+        if ($union_type->isNonNullStringType()
+            && (
+                // $str{-1}|$str[-1]
+                (
+                    ($node->children['dim'] ?? null) instanceof Node
+                    && $node->children['dim']->kind === \ast\AST_UNARY_OP
+                    && $node->children['dim']->flags === \ast\flags\UNARY_MINUS
+                    && \is_int($node->children['dim']->children['expr'] ?? null)
+                )
+                // $str{"-1"}|["-1"]
+                || (
+                    \is_string($node->children['dim'])
+                    && ((int) $node->children['dim'] < 0)
+                )
+            )
+        ) {
+            $this->emitIssue(
+                Issue::CompatibleNegativeStringOffset,
+                $node->lineno ?? 0
+            );
+        }
     }
 }
