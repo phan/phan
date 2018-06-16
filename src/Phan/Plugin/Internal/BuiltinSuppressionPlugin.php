@@ -157,7 +157,8 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
                     continue;
                 }
                 $is_next_line = $comment_name === 'suppress-next-line';
-                $line = $comment_start_line;
+                // TODO: Why isn't the type of $comment_start_line inferred?
+                $line = (int)$comment_start_line;
                 if ($is_next_line) {
                     $line++;
                 }

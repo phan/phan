@@ -8,7 +8,10 @@
 %s:17 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int_300() takes int defined at %s:4
 %s:20 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \expect_string_300() takes string defined at %s:3
 %s:21 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_300() takes string defined at %s:3
-%s:21 PhanUndeclaredVariable Variable $refIntVar is undeclared
+%s:21 PhanUndeclaredVariableAssignOp Variable $undefIntVar was undeclared, but it is being used as the left hand side of an assignment operation
+%s:21 PhanUndeclaredVariable Variable $undefIntVar is undeclared
+%s:22 PhanTypeMismatchArgument Argument 1 (x) is 42 but \expect_string_300() takes string defined at %s:3
+%s:22 PhanUnusedVariable Unused definition of variable $refIntVar
 %s:23 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int_300() takes int defined at %s:4
 %s:25 PhanTypeMismatchArgument Argument 1 (x) is object but \expect_string_300() takes string defined at %s:3
 %s:26 PhanTypeMismatchArgument Argument 1 (x) is 3 but \expect_string_300() takes string defined at %s:3

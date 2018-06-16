@@ -162,6 +162,20 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     * @override
+     */
+    public function visitAssignOp(Node $node) : Context
+    {
+        return (new AssignOperatorAnalysisVisitor($this->code_base, $this->context))->__invoke($node);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
      */
     public function visitUnset(Node $node) : Context
     {
