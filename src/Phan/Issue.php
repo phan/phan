@@ -316,6 +316,7 @@ class Issue
     const CompatibleUseIterablePHP71         = 'PhanCompatibleUseIterablePHP71';
     const CompatibleUseObjectPHP71           = 'PhanCompatibleUseObjectPHP71';
     const CompatibleMultiExceptionCatchPHP70 = 'PhanCompatibleMultiExceptionCatchPHP70';
+    const CompatibleNegativeStringOffset     = 'PhanCompatibleNegativeStringOffset';
 
     // Issue::CATEGORY_GENERIC
     const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -2658,6 +2659,14 @@ class Issue
                 "Catching multiple exceptions is not available before PHP 7.1",
                 self::REMEDIATION_B,
                 3011
+            ),
+            new Issue(
+                self::CompatibleNegativeStringOffset,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                "Using negative string offset is not available before PHP 7.1 (emits an 'Uninitialized string offset' notice)",
+                self::REMEDIATION_B,
+                3012
             ),
 
             // Issue::CATEGORY_GENERIC

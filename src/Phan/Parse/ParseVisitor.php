@@ -1258,4 +1258,5 @@ class ParseVisitor extends ScopeVisitor
     {
         return $this->context;
     }
+
 }

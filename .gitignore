@@ -15,3 +15,4 @@ all_output.*
 .phan/config.local.php
 nohup.out
 *.md.new
+.idea/
