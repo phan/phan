@@ -1208,10 +1208,6 @@ class UnionTypeVisitor extends AnalysisVisitor
             $int_or_string_union_type = new UnionType([IntType::instance(false), StringType::instance(false)], true);
         }
 
-        if (Config::get_closest_target_php_version_id() < 70100 && $union_type->isNonNullStringType()) {
-            $this->analyzeNegativeStringOffsetCompatibility($node);
-        }
-
         if ($union_type->hasTopLevelArrayShapeTypeInstances()) {
             $element_type = $this->resolveArrayShapeElementTypes($node, $union_type);
             if ($element_type !== null) {
@@ -1297,6 +1293,10 @@ class UnionTypeVisitor extends AnalysisVisitor
         if ($union_type->isType($string_type)
             || ($union_type->canCastToUnionType($string_type->asUnionType()) && !$union_type->hasMixedType())
         ) {
+            if (Config::get_closest_target_php_version_id() < 70100 && $union_type->isNonNullStringType()) {
+               $this->analyzeNegativeStringOffsetCompatibility($node);
+            }
+
             if (!$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_union_type)) {
                 // TODO: Efficient implementation of asExpandedTypes()->hasArrayAccess()?
                 if (!$union_type->isEmpty() && !$union_type->asExpandedTypes($this->code_base)->hasArrayLike()) {

@@ -1,6 +1,2 @@
-src/008_negative_string_offset.php:7 PhanCompatibleNegativeStringOffset Using negative string offset is not available before PHP 7.1 (emits an 'Uninitialized string offset' notice)
-src/008_negative_string_offset.php:8 PhanCompatibleNegativeStringOffset Using negative string offset is not available before PHP 7.1 (emits an 'Uninitialized string offset' notice)
-src/008_negative_string_offset.php:8 PhanTypeMismatchDimFetch When fetching an array index from a value of type string, found an array index of type '-3', but expected the index to be of type int
-src/008_negative_string_offset.php:17 PhanCompatibleNegativeStringOffset Using negative string offset is not available before PHP 7.1 (emits an 'Uninitialized string offset' notice)
-src/008_negative_string_offset.php:17 PhanTypeMismatchDimFetch When fetching an array index from a value of type string, found an array index of type '-1', but expected the index to be of type int
-src/008_negative_string_offset.php:18 PhanCompatibleNegativeStringOffset Using negative string offset is not available before PHP 7.1 (emits an 'Uninitialized string offset' notice)
+src/009_negative_string_offset.php:5 PhanCompatibleNegativeStringOffset Using negative string offset is not available before PHP 7.1 (emits an 'Uninitialized string offset' notice)
+src/009_negative_string_offset.php:6 PhanCompatibleNegativeStringOffset Using negative string offset is not available before PHP 7.1 (emits an 'Uninitialized string offset' notice)
