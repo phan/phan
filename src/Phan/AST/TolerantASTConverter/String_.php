@@ -138,6 +138,8 @@ final class String_
      * @param int $num Code point
      *
      * @return string UTF-8 representation of code point
+     *
+     * @throws \Error for invalid code points
      */
     private static function codePointToUtf8(int $num) : string
     {

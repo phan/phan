@@ -43,6 +43,7 @@ use Phan\Library\Option;
 use Phan\Library\Some;
 use Phan\Library\Tuple5;
 
+use Error;
 use AssertionError;
 use InvalidArgumentException;
 
@@ -306,15 +307,18 @@ class Type
     // Override two magic methods to ensure that Type isn't being cloned accidentally.
     // (It has previously been accidentally cloned in unit tests by phpunit (global_state helper),
     //  which saves and restores some static properties)
+
+    /** @throws Error this should not be called accidentally */
     public function __wakeup()
     {
         debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-        throw new \Error("Cannot unserialize Type");
+        throw new Error("Cannot unserialize Type");
     }
 
+    /** @throws Error this should not be called accidentally */
     public function __clone()
     {
-        throw new \Error("Cannot clone Type");
+        throw new Error("Cannot clone Type");
     }
 
     /**
@@ -338,6 +342,8 @@ class Type
      *
      * @return Type
      * A single canonical instance of the given type.
+     *
+     * @throws AssertionError if an unparseable string is passed in
      */
     protected static function make(
         string $namespace,
@@ -588,6 +594,7 @@ class Type
     /**
      * @return Type
      * Get a type for the given object
+     * @throws AssertionError if the type was unexpected
      */
     public static function fromObject($object) : Type
     {
@@ -629,6 +636,8 @@ class Type
      *
      * @return Type
      * Get a type for the given type name
+     *
+     * @throws AssertionError if the type was unexpected
      */
     public static function fromInternalTypeName(
         string $type_name,
@@ -751,6 +760,10 @@ class Type
         return $type_cache[$fully_qualified_string] ?? ($type_cache[$fully_qualified_string] = self::fromFullyQualifiedStringInner($fully_qualified_string));
     }
 
+    /**
+     * @throws EmptyFQSENException if the type name was the empty string
+     * @throws InvalidArgumentException if namespace is missing from something that should have a namespace
+     */
     public static function fromFullyQualifiedStringInner(
         string $fully_qualified_string
     ) : Type {
@@ -876,17 +889,19 @@ class Type
      * @param bool $is_closure_type
      * @param array<int,string> $shape_components
      * @param bool $is_nullable
+     * @throws AssertionError if creating a closure/callable from the arguments failed
      */
     private static function fromFullyQualifiedFunctionLike(
         bool $is_closure_type,
         array $shape_components,
         bool $is_nullable
     ) : FunctionLikeDeclarationType {
-        $return_type = \array_pop($shape_components);
-        if (!$return_type) {
+        if (\count($shape_components) === 0) {
+            // The literal int '0' is a valid union type, but it's falsey, so check the count instead.
             // shouldn't happen
             throw new AssertionError("Expected at least one component of a closure phpdoc type");
         }
+        $return_type = \array_pop($shape_components);
         if ($return_type[0] === '(' && \substr($return_type, -1) === ')') {
             // TODO: Maybe catch that in UnionType parsing instead
             $return_type = \substr($return_type, 1, -1);
@@ -1223,6 +1238,7 @@ class Type
      * @param Context $context
      * @param int $source
      * @param bool $is_nullable
+     * @throws AssertionError if the components were somehow invalid
      */
     private static function fromFunctionLikeInContext(
         bool $is_closure_type,
@@ -1696,6 +1712,9 @@ class Type
      * @return Type
      * A variation of this type that is not generic.
      * i.e. 'int[]' becomes 'int'.
+     * @throws Error if this is unexpectedly called on the base class
+     * (callers should check if this is a generic array-like type first)
+     * TODO: Refactor?
      */
     public function genericArrayElementType() : Type
     {
@@ -1794,10 +1813,11 @@ class Type
      * @return UnionType
      * A variation of this type that is not generic.
      * i.e. 'int[]' becomes 'int'.
+     * @throws Error if this is unexpectedly called
      */
     public function genericArrayElementUnionType() : UnionType
     {
-        throw new \Error("genericArrayElementUnionType should not be called on Type base class");
+        throw new Error("genericArrayElementUnionType should not be called on Type base class");
     }
 
     /**

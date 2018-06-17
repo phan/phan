@@ -10,6 +10,11 @@ use InvalidArgumentException;
 use ast;
 use ast\Node;
 
+/**
+ * Tests that the fallback works with ASTs, and can point an ast\Node to the original.
+ *
+ * @phan-file-suppress PhanThrowTypeAbsent it's a test
+ */
 class TolerantASTConverterWithNodeMappingTest extends BaseTest
 {
     public static function setUpBeforeClass()

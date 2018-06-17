@@ -8,6 +8,8 @@ use Phan\Output\Filter\ChainedIssueFilter;
 use Phan\Output\Filter\FileIssueFilter;
 use Phan\Output\Filter\MinimumSeverityFilter;
 use Phan\Output\PrinterFactory;
+
+use InvalidArgumentException;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
@@ -877,6 +879,9 @@ EOB;
      *
      * @return array<string,string>
      * A list of PHP files in the given directory
+     *
+     * @throws InvalidArgumentException
+     * if there is nothing to analyze
      */
     private function directoryNameToFileList(
         string $directory_name
@@ -887,7 +892,7 @@ EOB;
             $file_extensions = Config::getValue('analyzed_file_extensions');
 
             if (!\is_array($file_extensions) || count($file_extensions) === 0) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'Empty list in config analyzed_file_extensions. Nothing to analyze.'
                 );
             }

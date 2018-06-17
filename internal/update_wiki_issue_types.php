@@ -93,7 +93,10 @@ EOT;
         return $text_for_section;
     }
 
-    /** @return void */
+    /**
+     * @return void
+     * @throws InvalidArgumentException (uncaught) if the documented issue types can't be found.
+     */
     public static function main()
     {
         global $argv;

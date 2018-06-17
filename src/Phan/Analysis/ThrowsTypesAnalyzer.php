@@ -27,6 +27,7 @@ class ThrowsTypesAnalyzer
         FunctionInterface $method
     ) {
         foreach ($method->getThrowsUnionType()->getTypeSet() as $type) {
+            // TODO: When analyzing the method body, only check the valid exceptions
             self::analyzeSingleThrowType($code_base, $method, $type);
         }
     }
@@ -34,7 +35,7 @@ class ThrowsTypesAnalyzer
     /**
      * Check a throw type to make sure it's valid
      *
-     * @return void
+     * @return bool - True if the type can be thrown
      */
     private static function analyzeSingleThrowType(
         CodeBase $code_base,
@@ -62,7 +63,7 @@ class ThrowsTypesAnalyzer
                 Issue::TypeInvalidThrowsNonObject,
                 [$method->getName(), (string)$type]
             );
-            return;
+            return false;
         }
         if ($type instanceof TemplateType) {
             // TODO: Add unit tests of templates for return types and checks
@@ -72,11 +73,12 @@ class ThrowsTypesAnalyzer
                     [(string)$method->getFQSEN()]
                 );
             }
-            return;
+            return false;
         }
         if ($type instanceof ObjectType) {
-            // (at)throws object is valid
-            return;
+            // (at)throws object is valid and should be treated like throwable
+            // NOTE: catch (object $o) does nothing in php 7.2.
+            return true;
         }
         static $throwable;
         if ($throwable === null) {
@@ -84,21 +86,21 @@ class ThrowsTypesAnalyzer
         }
         if ($type === $throwable) {
             // allow (at)throws Throwable.
-            return;
+            return true;
         }
 
         $type_fqsen = $type->asFQSEN();
         \assert($type_fqsen instanceof FullyQualifiedClassName, 'non-native types must be class names');
         if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
             if ($method->hasSuppressIssue(Issue::UndeclaredTypeThrowsType)) {
-                return;
+                return false;
             }
             $maybe_emit_for_method(
                 Issue::UndeclaredTypeThrowsType,
                 [$method->getName(), $type],
                 self::suggestSimilarClassForThrownClass($code_base, $method->getContext(), $type_fqsen)
             );
-            return;
+            return false;
         }
         $exception_class = $code_base->getClassByFQSEN($type_fqsen);
         if ($exception_class->isTrait() || $exception_class->isInterface()) {
@@ -107,7 +109,7 @@ class ThrowsTypesAnalyzer
                 [$method->getName(), $type],
                 self::suggestSimilarClassForThrownClass($code_base, $method->getContext(), $type_fqsen)
             );
-            return;
+            return $exception_class->isInterface();
         }
 
         if (!($type->asExpandedTypes($code_base)->hasType($throwable))) {
@@ -116,8 +118,8 @@ class ThrowsTypesAnalyzer
                 [$method->getName(), $type],
                 self::suggestSimilarClassForThrownClass($code_base, $method->getContext(), $type_fqsen)
             );
-            return;
         }
+        return true;
     }
 
     /**

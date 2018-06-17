@@ -14,6 +14,11 @@ use RuntimeException;
 
 use ast;
 
+/**
+ * Tests that the polyfill works with valid ASTs
+ *
+ * @phan-file-suppress PhanThrowTypeAbsent it's a test
+ */
 class ConversionTest extends BaseTest
 {
     /**

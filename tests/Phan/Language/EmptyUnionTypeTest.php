@@ -23,6 +23,10 @@ use ReflectionParameter;
 use RuntimeException;
 use TypeError;
 
+/**
+ * Checks that EmptyUnionType behaves the same way as an empty UnionType instance
+ * @phan-file-suppress PhanThrowTypeAbsent it's a test
+ */
 class EmptyUnionTypeTest extends BaseTest
 {
     const SKIPPED_METHOD_NAMES = [

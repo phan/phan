@@ -30,6 +30,7 @@ use Phan\Plugin\Internal\DependentReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\MiscParamPlugin;
 use Phan\Plugin\Internal\NodeSelectionPlugin;
 use Phan\Plugin\Internal\StringFunctionPlugin;
+use Phan\Plugin\Internal\ThrowAnalyzerPlugin;
 use Phan\Plugin\Internal\VariableTrackerPlugin;
 use Phan\Plugin\PluginImplementation;
 use Phan\PluginV2;
@@ -550,9 +551,6 @@ final class ConfigPluginSet extends PluginV2 implements
             return null;
         }
         $completion_plugin = new NodeSelectionPlugin();
-        /**
-         * @return void
-         */
         $completion_plugin->setNodeSelectorClosure(DefinitionResolver::createGoToDefinitionClosure($go_to_definition_request, $code_base));
         $new_post_analyze_node_plugins = self::filterPostAnalysisPlugins([$completion_plugin]);
         if (!$new_post_analyze_node_plugins) {
@@ -571,10 +569,8 @@ final class ConfigPluginSet extends PluginV2 implements
             }
         }
 
-        // TODO: Add plugins
         return new RAII(function () use ($old_post_analyze_node_plugin_set) {
             $this->postAnalyzeNodePluginSet = $old_post_analyze_node_plugin_set;
-            // TODO: Clean up all of the plugins that were added
         });
     }
 
@@ -635,6 +631,9 @@ final class ConfigPluginSet extends PluginV2 implements
                 new MiscParamPlugin(),
             ];
             $plugin_set = array_merge($internal_return_type_plugins, $plugin_set);
+        }
+        if (Config::getValue('warn_about_undocumented_throw_statements')) {
+            $plugin_set[] = new ThrowAnalyzerPlugin();
         }
         if (Config::getValue('unused_variable_detection') || Config::getValue('dead_code_detection')) {
             $plugin_set[] = new VariableTrackerPlugin();

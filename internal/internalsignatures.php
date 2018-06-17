@@ -235,7 +235,7 @@ EOT;
     }
 
     /**
-     * @suppress PhanPluginUnusedVariable $header in loop not detected
+     * @throws RuntimeException if the file could not be read
      */
     public static function readSignatureHeader() : string
     {
@@ -343,6 +343,9 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         $this->doc_base_directory = self::realpath($dir);
     }
 
+    /**
+     * @throws RuntimeException if the real path could not be determined
+     */
     private static function realpath(string $dir) : string
     {
         $realpath = realpath($dir);

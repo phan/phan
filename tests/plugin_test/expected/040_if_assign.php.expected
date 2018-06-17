@@ -1,1 +1,3 @@
+src/040_if_assign.php:4 PhanThrowTypeAbsent \test_if_assign() can throw \RuntimeException here, but has no '@throws' declarations
 src/040_if_assign.php:9 PhanUnusedVariable Unused definition of variable $x
+src/040_if_assign.php:10 PhanThrowTypeAbsent \test_unused_if_assign() can throw \RuntimeException here, but has no '@throws' declarations
