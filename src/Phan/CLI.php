@@ -24,7 +24,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '0.12.13-dev';
+    const PHAN_VERSION = '0.12.14-dev';
 
     /**
      * @var OutputInterface
@@ -1062,7 +1062,6 @@ EOB;
                 } else {
                     $this->usage(sprintf("Could not figure out the path for config file '%s', but --require-config-exists was set", $this->config_file), EXIT_FAILURE, true);
                 }
-
             }
             return;
         }

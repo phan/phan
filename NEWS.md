@@ -1,6 +1,9 @@
 Phan NEWS
 
-?? ??? 2018, Phan 0.12.13 (dev)
+?? ??? 2018, Phan 0.12.14 (dev)
+-------------------------
+
+16 Jun 2018, Phan 0.12.13
 -------------------------
 
 New features(Analysis)
@@ -23,6 +26,11 @@ New features(Analysis)
 + Warn about inheriting from a class/trait/interface that has multiple possible definitions (#773)
   New issue types: `PhanRedefinedExtendedClass`, `PhanRedefinedUsedTrait`, `PhanRedefinedInheritedInterface`
 + Infer more accurate types for the side effects of assignment operators (i.e. `+=`, `.=`, etc) and other binary operations. (#1775)
++ Warn about invalid arguments to binary operators or assignment operators.
+  New issue types: `PhanTypeInvalidLeftOperandOfAdd`,  `PhanTypeInvalidLeftOperandOfNumericOp`,
+                   `PhanTypeInvalidRightOperandOfAdd`, `PhanTypeInvalidRightOperandOfNumericOp`
++ Warn about using negative string offsets and multiple catch exceptions in PHP 7.0 (if `target_php_version` is less than `'7.1'`). (#1771, #1778)
+  New issue types: `PhanCompatibleMultiExceptionCatchPHP70`, `PhanCompatibleNegativeStringOffset`.
 
 Maintenance:
 + Update signature map with more accurate signatures (#1761)
