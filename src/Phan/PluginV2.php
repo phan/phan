@@ -12,6 +12,8 @@ use Phan\PluginV2\IssueEmitter;
  * (And at least one of the interfaces corresponding to plugin capabilities)
  * and return an instance of themselves.
  *
+ * @link https://github.com/phan/phan/wiki/Writing-Plugins-for-Phan has addititional resources for users writing a plugin.
+ *
  * List of capabilities which a plugin may implement:
  *
  *  1. public function analyzeClass(CodeBase $code_base, Clazz $class)
@@ -50,11 +52,14 @@ use Phan\PluginV2\IssueEmitter;
  *     See .phan/plugins/PregRegexCheckerPlugin.php as an example.
  *
  *      Closure Type: function(CodeBase $code_base, Context $context, Func|Method $function, array $args) : void {...}
+ *
+ *      (implement \Phan\PluginV2\AnalyzeFunctionCallCapability)
  *  9. public function getReturnTypeOverrides(CodeBase $code_base) : array<string,Closure(CodeBase,Context,Func|Method,array):UnionType>
  *     Maps FQSEN of function or method to a closure used to override the returned UnionType.
  *     See \Phan\Plugin\Internal\ArrayReturnTypeOverridePlugin as an example (That is automatically loaded by phan)
  *
  *     Closure type: function(CodeBase $code_base, Context $context, Func|Method $function, array $args) : UnionType {...}
+ *      (implement \Phan\PluginV2\ReturnTypeOverrideCapability)
  * 10. public function shouldSuppress(CodeBase $code_base, IssueInstance $instance, string $file_contents) : bool
  *
  *     Called in every phase when Phan is emitting an issue(parse, method, analysis, etc)
@@ -63,7 +68,7 @@ use Phan\PluginV2\IssueEmitter;
  *
  *     Called by UnusedSuppressionPlugin to check if the plugin's suppressions are no longer needed.
  *
- *     (implement \Phan\PluginV2\FinalizeProcessCapability)
+ *     (implement \Phan\PluginV2\SuppressionCapability)
  *
  * List of deprecated legacy capabilities
  *
