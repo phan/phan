@@ -18,6 +18,8 @@ src/000_plugins.php:66 PhanUnreferencedClass Possibly zero references to class \
 src/000_plugins.php:67 PhanUnreferencedConstant Possibly zero references to global constant \__autoload
 src/000_plugins.php:69 PhanPluginAlwaysReturnFunction Function \missingReturnType has a return type of int, but may fail to return a value
 src/000_plugins.php:77 PhanPluginAlwaysReturnMethod Method \ReturnChecks::missingReturnTypeSwitch has a return type of int, but may fail to return a value
+src/000_plugins.php:80 PhanThrowTypeAbsent \ReturnChecks::missingReturnTypeSwitch() can throw \RuntimeException here, but has no '@throws' declarations
+src/000_plugins.php:93 PhanThrowTypeAbsent \ReturnChecks::missingReturnTypeSwitchGood() can throw \RuntimeException here, but has no '@throws' declarations
 src/000_plugins.php:114 PhanUnusedVariable Unused definition of variable $x
 src/000_plugins.php:127 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
 src/000_plugins.php:138 DemoPluginMethodName Method \TestDemoPlugin::function cannot be called `function`

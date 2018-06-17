@@ -50,6 +50,7 @@ use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
 use ast\Node;
 use ast;
+use AssertionError;
 
 /**
  * Determine the UnionType associated with a
@@ -530,6 +531,8 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @return UnionType
      * The set of types that are possibly produced by the
      * given node
+     *
+     * @throws AssertionError if the type flags were unknown
      */
     public function visitType(Node $node) : UnionType
     {
@@ -555,7 +558,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             case \ast\flags\TYPE_VOID:
                 return VoidType::instance(false)->asUnionType();
             default:
-                throw new \AssertionError("All flags must match. Found "
+                throw new AssertionError("All flags must match. Found "
                     . Debug::astFlagDescription($node->flags ?? 0, $node->kind));
         }
     }
@@ -1008,6 +1011,8 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @return UnionType
      * The set of types that are possibly produced by the
      * given node
+     *
+     * @throws NodeException if the flags are a value we aren't expecting
      */
     public function visitCast(Node $node) : UnionType
     {
@@ -1171,6 +1176,9 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @return UnionType
      * The set of types that are possibly produced by the
      * given node
+     *
+     * @throws IssueException
+     * if the dimension access is invalid
      */
     public function visitDim(Node $node) : UnionType
     {
@@ -1427,7 +1435,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * Visit a node with kind `\ast\AST_DIM`
+     * Visit a node with kind `\ast\AST_UNPACK`
      *
      * @param Node $node
      * A node of the type indicated by the method name that we'd
@@ -1436,6 +1444,9 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @return UnionType
      * The set of types that are possibly produced by the
      * given node
+     *
+     * @throws IssueException
+     * if the unpack is on an invalid expression
      */
     public function visitUnpack(Node $node) : UnionType
     {
@@ -1525,6 +1536,9 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @return UnionType
      * The set of types that are possibly produced by the
      * given node
+     *
+     * @throws IssueException
+     * if variable is undeclined and being fetched
      */
     public function visitVar(Node $node) : UnionType
     {

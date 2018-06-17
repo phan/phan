@@ -337,6 +337,8 @@ class Issue
     const CommentOverrideOnNonOverrideMethod = 'PhanCommentOverrideOnNonOverrideMethod';
     const CommentOverrideOnNonOverrideConstant = 'PhanCommentOverrideOnNonOverrideConstant';
     const CommentParamOutOfOrder           = 'PhanCommentParamOutOfOrder';
+    const ThrowTypeAbsent                  = 'PhanThrowTypeAbsent';
+    const ThrowTypeMismatch                = 'PhanThrowTypeMismatch';
 
 
     const CATEGORY_ACCESS            = 1 << 1;
@@ -2846,6 +2848,22 @@ class Issue
                 "Expected @param annotation for {VARIABLE} to be before the @param annotation for {VARIABLE}",
                 self::REMEDIATION_A,
                 16008
+            ),
+            new Issue(
+                self::ThrowTypeAbsent,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "{METHOD}() can throw {TYPE} here, but has no '@throws' declarations",
+                self::REMEDIATION_A,
+                16011
+            ),
+            new Issue(
+                self::ThrowTypeMismatch,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "{METHOD}() throws {TYPE}, but it only has declarations of '@throws {TYPE}'",
+                self::REMEDIATION_A,
+                16012
             ),
         ];
 

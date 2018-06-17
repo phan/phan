@@ -58,6 +58,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * @throws UnanalyzableException
+     * if the class name is unexpectedly empty
+     *
+     * @throws CodeBaseException
+     * if the class could not be located
      */
     public function visitClass(Node $node) : Context
     {
@@ -118,6 +124,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * @throws CodeBaseException if the method could not be found
      */
     public function visitMethod(Node $node) : Context
     {
@@ -209,6 +217,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     * @throws CodeBaseException
+     * if this function declaration could not be found
      */
     public function visitFuncDecl(Node $node) : Context
     {
@@ -216,18 +226,14 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $code_base = $this->code_base;
         $original_context = $this->context;
 
-        try {
-            $canonical_function = (new ContextNode(
-                $code_base,
-                $original_context,
-                $node
-            ))->getFunction($function_name, true);
-        } catch (CodeBaseException $exception) {
-            // This really ought not happen given that
-            // we already successfully parsed the code
-            // base
-            throw $exception;
-        }
+        // This really ought not to throw given that
+        // we already successfully parsed the code
+        // base
+        $canonical_function = (new ContextNode(
+            $code_base,
+            $original_context,
+            $node
+        ))->getFunction($function_name, true);
 
         // Hunt for the alternate associated with the file we're
         // looking at currently in this context.
@@ -556,6 +562,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * @throws NodeException
+     * if the key is invalid
      */
     public function visitForeach(Node $node) : Context
     {

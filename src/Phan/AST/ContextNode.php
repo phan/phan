@@ -254,6 +254,7 @@ class ContextNode
      * @param array<string,TraitAdaptations> $adaptations_map
      * @param Node $adaptation_node
      * @return void
+     * @throws UnanalyzableException (should be caught and emitted as an issue)
      */
     private function handleTraitPrecedence(array $adaptations_map, Node $adaptation_node)
     {
@@ -861,6 +862,9 @@ class ContextNode
         // TODO: AST_CLOSURE
     }
 
+    /**
+     * @throws IssueException for PhanUndeclaredFunction to be caught and reported by the caller
+     */
     private function throwUndeclaredFunctionIssueException(FullyQualifiedFunctionName $function_fqsen)
     {
         throw new IssueException(
@@ -1373,6 +1377,9 @@ class ContextNode
      * @throws CodeBaseException
      * An exception is thrown if we can't find the given
      * global constant
+     *
+     * @throws IssueException
+     * should be emitted by the caller if caught.
      */
     public function getConst() : GlobalConstant
     {
@@ -1604,6 +1611,7 @@ class ContextNode
 
     /**
      * @return Func
+     * @throws CodeBaseException if the closure could not be found
      */
     public function getClosure() : Func
     {

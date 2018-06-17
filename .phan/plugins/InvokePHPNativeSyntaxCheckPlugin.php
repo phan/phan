@@ -302,6 +302,7 @@ class InvokeExecutionPromise
 
     /**
      * @return void
+     * @throws Error if reading failed
      */
     public function blockingRead()
     {
@@ -318,6 +319,7 @@ class InvokeExecutionPromise
 
     /**
      * @return ?string
+     * @throws RangeException if this was called before the process finished
      */
     public function getError()
     {

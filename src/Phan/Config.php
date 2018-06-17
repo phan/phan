@@ -367,6 +367,10 @@ class Config
         // types expressed in code.
         'read_type_annotations' => true,
 
+        // If enabled, warn about throw statement where the exception types
+        // are not documented in the PHPDoc of functions, methods, and closures.
+        'warn_about_undocumented_throw_statements' => false,
+
         // This setting maps case insensitive strings to union types.
         // This is useful if a project uses phpdoc that differs from the phpdoc2 standard.
         // If the corresponding value is the empty string, Phan will ignore that union type (E.g. can ignore 'the' in `@return the value`)

@@ -2346,6 +2346,18 @@ The phpdoc comment for {COMMENT} cannot occur on a {TYPE}
 Saw misspelled annotation {COMMENT}, should be one of {COMMENT}
 ```
 
+## PhanThrowTypeAbsent
+
+```
+{METHOD}() can throw {TYPE} here, but has no '@throws' declarations
+```
+
+## PhanThrowTypeMismatch
+
+```
+{METHOD}() throws {TYPE}, but it only has declarations of '@throws {TYPE}'
+```
+
 ## PhanUnextractableAnnotation
 
 ```

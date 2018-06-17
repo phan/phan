@@ -23,6 +23,7 @@ use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
 
 use ast\Node;
+use InvalidArgumentException;
 use ParseError;
 
 /**
@@ -54,6 +55,8 @@ class Analysis
      * See autoload_internal_extension_signatures.
      *
      * @return Context
+     *
+     * @throws InvalidArgumentException for invalid stub files
      */
     public static function parseFile(CodeBase $code_base, string $file_path, bool $suppress_parse_errors = false, string $override_contents = null, bool $is_php_internal_stub = false) : Context
     {
@@ -79,7 +82,7 @@ class Analysis
         $file_contents = $cache_entry->getContents();
         if ($file_contents === '') {
             if ($is_php_internal_stub) {
-                throw new \InvalidArgumentException("Unexpected empty php file for autoload_internal_extension_signatures: path=" . json_encode($original_file_path, JSON_UNESCAPED_SLASHES));
+                throw new InvalidArgumentException("Unexpected empty php file for autoload_internal_extension_signatures: path=" . json_encode($original_file_path, JSON_UNESCAPED_SLASHES));
             }
             // php-ast would return null for 0 byte files as an implementation detail.
             // Make Phan consistently emit this warning.

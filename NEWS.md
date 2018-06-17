@@ -3,6 +3,13 @@ Phan NEWS
 ?? ??? 2018, Phan 0.12.14 (dev)
 -------------------------
 
+New features(CLI, Configs)
++ Add `warn_about_undocumented_throw_statements` config. (#90)
+  If this is enabled, Phan will warn about uncaught throw statements that aren't documented in the function's PHPDoc.
+  This does not yet check function and method calls within the checked function that may themselves throw.
+
+  New issue types: `PhanThrowTypeAbsent`, `PhanThrowTypeMismatch`
+
 16 Jun 2018, Phan 0.12.13
 -------------------------
 

@@ -209,6 +209,10 @@ return [
     // class types.
     'generic_types_enabled' => true,
 
+    // If enabled, warn about throw statement where the exception types
+    // are not documented in the PHPDoc of functions, methods, and closures.
+    'warn_about_undocumented_throw_statements' => true,
+
     // Setting this to true makes the process assignment for file analysis
     // as predictable as possible, using consistent hashing.
     // Even if files are added or removed, or process counts change,
@@ -238,7 +242,7 @@ return [
         'PhanPossiblyNullTypeArgument',
         'PhanPossiblyNullTypeArgumentInternal',
         'PhanPossiblyNullTypeReturn',
-        // 'PhanUndeclaredMethod',
+        'PhanThrowTypeAbsent',  // TODO: Remove this suppression
     ],
 
     // If empty, no filter against issues types will be applied.
