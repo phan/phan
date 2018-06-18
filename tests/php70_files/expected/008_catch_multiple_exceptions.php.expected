@@ -1,0 +1,2 @@
+%s:5 PhanCompatibleMultiExceptionCatchPHP70 Catching multiple exceptions is not supported before PHP 7.1
+

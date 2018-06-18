@@ -36,12 +36,6 @@ case "$TEST_SUITE" in
 			--memory-limit 1G
 		exit $?
 		;;
-	__FakePHP70Test)
-		# TODO: Can this use phpunit?
-		cd tests/php70_test
-		./test.sh
-		exit $?
-		;;
 	__FakeRewritingTest)
 		cd tests/misc/rewriting_test
 		./test.sh

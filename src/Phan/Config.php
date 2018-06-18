@@ -71,7 +71,7 @@ class Config
     private static $quick_mode = false;
     // End of the 4 most commonly accessed configs.
 
-    private static $closest_target_php_version_id = null;
+    private static $closest_target_php_version_id;
 
     const DEFAULT_CONFIGURATION = [
         // Supported values: '7.0', '7.1', '7.2', null.

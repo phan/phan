@@ -1,6 +1,0 @@
-src/005_nullable.php:3 PhanCompatibleNullableTypePHP70 Nullable type '?int' is not compatible with PHP 7.0
-src/005_nullable.php:3 PhanUnusedGlobalFunctionParameter Parameter $y is never used
-src/005_nullable.php:5 PhanCompatibleNullableTypePHP70 Nullable type '?int' is not compatible with PHP 7.0
-src/005_nullable.php:9 PhanCompatibleNullableTypePHP70 Nullable type '?int' is not compatible with PHP 7.0
-src/005_nullable.php:9 PhanUnusedGlobalFunctionParameter Parameter $x is never used
-src/005_nullable.php:17 PhanCompatibleNullableTypePHP70 Nullable type '?int' is not compatible with PHP 7.0
