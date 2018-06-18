@@ -27,7 +27,6 @@ fi
 TEST_SUITES="__FakeAllPHPUnitTests"
 TEST_SUITES+=" __FakeSelfTest"
 TEST_SUITES+=" __FakeSelfFallbackTest"
-TEST_SUITES+=" __FakePHP70Test"
 TEST_SUITES+=" __FakeRewritingTest"
 TEST_SUITES+=" __FakePluginTest"
 TEST_SUITES+=" __FakeFallbackTest"

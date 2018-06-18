@@ -1,0 +1,5 @@
+%s:5 PhanCompatibleNegativeStringOffset Using negative string offsets is not supported before PHP 7.1 (emits an 'Uninitialized string offset' notice)
+%s:6 PhanCompatibleNegativeStringOffset Using negative string offsets is not supported before PHP 7.1 (emits an 'Uninitialized string offset' notice)
+%s:8 PhanCompatibleNegativeStringOffset Using negative string offsets is not supported before PHP 7.1 (emits an 'Uninitialized string offset' notice)
+%s:11 PhanCompatibleNegativeStringOffset Using negative string offsets is not supported before PHP 7.1 (emits an 'Uninitialized string offset' notice)
+
