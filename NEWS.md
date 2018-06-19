@@ -12,6 +12,9 @@ New features(CLI, Configs)
 
   New issue types: `PhanThrowTypeAbsent`, `PhanThrowTypeMismatch`
 
+New features(Analysis)
++ Support analysis of [`list()` reference assignment](https://wiki.php.net/rfc/list_reference_assignment) for php 7.3 (which is still in alpha). (#1537)
+
 Bug fixes:
 + Start warning about assignment operations (e.g. `+=`) when the modified variable isn't referenced later in the function.
 + Fix another rare bug that can cause crashes in the polyfill/fallback parser when parsing invalid or incomplete ASTs.

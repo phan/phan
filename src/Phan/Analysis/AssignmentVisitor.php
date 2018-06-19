@@ -307,65 +307,78 @@ class AssignmentVisitor extends AnalysisVisitor
                 $element_type = $get_fallback_element_type();
             }
 
-
-            $value_node = $child_node->children['value'];
-
-            if ($value_node instanceof Node) {
-                $kind = $value_node->kind;
-                if ($kind === \ast\AST_VAR) {
-                    $variable = Variable::fromNodeInContext(
-                        $value_node,
-                        $this->context,
-                        $this->code_base,
-                        false
-                    );
-
-                    // Set the element type on each element of
-                    // the list
-                    $variable->setUnionType($element_type);
-
-                    // Note that we're not creating a new scope, just
-                    // adding variables to the existing scope
-                    $this->context->addScopeVariable($variable);
-                } elseif ($kind === \ast\AST_PROP) {
-                    try {
-                        $property = (new ContextNode(
-                            $this->code_base,
-                            $this->context,
-                            $value_node
-                        ))->getProperty(false);
-
-                        // Set the element type on each element of
-                        // the list
-                        $property->setUnionType($element_type);
-                    } catch (UnanalyzableException $exception) {
-                        // Ignore it. There's nothing we can do.
-                    } catch (NodeException $exception) {
-                        // Ignore it. There's nothing we can do.
-                    } catch (IssueException $exception) {
-                        Issue::maybeEmitInstance(
-                            $this->code_base,
-                            $this->context,
-                            $exception->getIssueInstance()
-                        );
-                        continue;
-                    }
-                } else {
-                    $this->context = (new AssignmentVisitor(
-                        $this->code_base,
-                        $this->context,
-                        $node,
-                        $element_type,
-                        0
-                    ))->__invoke($value_node);
-                }
-            }  // TODO: Warn if $value_node is not a node. NativeSyntaxCheckPlugin already does this.
+            $this->analyzeValueNodeOfShapedArray($element_type, $child_node->children['value']);
         }
 
         if (!Config::getValue('scalar_array_key_cast')) {
             $this->checkMismatchArrayDestructuringKey($expect_int_keys_lineno, $expect_string_keys_lineno);
         }
     }
+
+    /**
+     * @return void
+     */
+    private function analyzeValueNodeOfShapedArray(
+        UnionType $element_type, $value_node
+    ) {
+        if (!$value_node instanceof Node) {
+            return;
+        }
+        $kind = $value_node->kind;
+        if ($kind === \ast\AST_REF) {
+            $value_node = $value_node->children['expr'];
+            if (!$value_node instanceof Node) {
+                return;
+            }
+        }
+        if ($kind === \ast\AST_VAR) {
+            $variable = Variable::fromNodeInContext(
+                $value_node,
+                $this->context,
+                $this->code_base,
+                false
+            );
+
+            // Set the element type on each element of
+            // the list
+            $variable->setUnionType($element_type);
+
+            // Note that we're not creating a new scope, just
+            // adding variables to the existing scope
+            $this->context->addScopeVariable($variable);
+        } elseif ($kind === \ast\AST_PROP) {
+            try {
+                $property = (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $value_node
+                ))->getProperty(false);
+
+                // Set the element type on each element of
+                // the list
+                $property->setUnionType($element_type);
+            } catch (UnanalyzableException $exception) {
+                // Ignore it. There's nothing we can do.
+            } catch (NodeException $exception) {
+                // Ignore it. There's nothing we can do.
+            } catch (IssueException $exception) {
+                Issue::maybeEmitInstance(
+                    $this->code_base,
+                    $this->context,
+                    $exception->getIssueInstance()
+                );
+                return;
+            }
+        } else {
+            $this->context = (new AssignmentVisitor(
+                $this->code_base,
+                $this->context,
+                $value_node,
+                $element_type,
+                0
+            ))->__invoke($value_node);
+        }
+    }  // TODO: Warn if $value_node is not a node. NativeSyntaxCheckPlugin already does this.
 
     /**
      * Analyzes code such as list($a) = function_returning_array();
@@ -456,7 +469,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->context = (new AssignmentVisitor(
                     $this->code_base,
                     $this->context,
-                    $node,
+                    $value_node,
                     $element_type,
                     0
                 ))->__invoke($value_node);

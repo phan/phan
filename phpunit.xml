@@ -35,6 +35,8 @@
         <const name="PHP70_EXPECTED_DIR" value="./tests/php70_files/expected"/>
         <const name="PHP72_TEST_FILE_DIR" value="./tests/php72_files/src"/>
         <const name="PHP72_EXPECTED_DIR" value="./tests/php72_files/expected"/>
+        <const name="PHP73_TEST_FILE_DIR" value="./tests/php73_files/src"/>
+        <const name="PHP73_EXPECTED_DIR" value="./tests/php73_files/expected"/>
     </php>
 
     <testsuites>
@@ -74,6 +76,9 @@
         </testsuite>
         <testsuite name="PHP72Test">
             <file>tests/Phan/PHP72Test.php</file>
+        </testsuite>
+        <testsuite name="PHP73Test">
+            <file>tests/Phan/PHP73Test.php</file>
         </testsuite>
     </testsuites>
     <filter>
