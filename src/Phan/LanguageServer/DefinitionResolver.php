@@ -13,10 +13,15 @@ use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
+use Phan\Language\Type;
+use Phan\Language\UnionType;
 use ast;
 use ast\Node;
 use AssertionError;
 
+/**
+ * This implements closures for finding definitions for nodes where isSelected is set
+ */
 class DefinitionResolver
 {
     /**
@@ -28,6 +33,12 @@ class DefinitionResolver
     public static function createGoToDefinitionClosure(GoToDefinitionRequest $request, CodeBase $code_base)
     {
         return function (Context $context, Node $node) use ($request, $code_base) {
+            // @phan-suppress-next-line PhanUndeclaredProperty this is overridden
+            $selected_fragment = $node->selectedFragment ?? null;
+            if (is_string($selected_fragment)) {
+                self::locateCommentDefinition($request, $code_base, $context, $selected_fragment);
+                return;
+            }
             // TODO: Better way to be absolutely sure this $node is in the same requested file path?
             // I think it's possible that we'll have more than one Node to check against (with simplify_ast)
 
@@ -71,12 +82,41 @@ class DefinitionResolver
         };
     }
 
+    private static function locateCommentDefinition(
+        GoToDefinitionRequest $request,
+        CodeBase $code_base,
+        Context $context,
+        string $selected_fragment
+    ) {
+        // fprintf(STDERR, "locateCommentDefinition called for %s\n", $selected_fragment);
+        // TODO: Handle method references in doc comments, global functions, etc.
+        try {
+            $union_type = UnionType::fromStringInContext($selected_fragment, $context, Type::FROM_PHPDOC);
+        } catch (\Exception $e) {
+            fprintf(STDERR, "Unexpected error in " . __METHOD__ . ": " . $e->getMessage() . "\n");
+            return;
+        }
+        self::locateClassDefinitionForUnionType($request, $code_base, $union_type);
+    }
+
     /**
      * @return void
      */
-    public static function locateClassDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
-    {
+    public static function locateClassDefinition(
+        GoToDefinitionRequest $request,
+        CodeBase $code_base,
+        Context $context,
+        Node $node
+    ) {
         $union_type = UnionTypeVisitor::unionTypeFromClassNode($code_base, $context, $node);
+        self::locateClassDefinitionForUnionType($request, $code_base, $union_type);
+    }
+
+    private static function locateClassDefinitionForUnionType(
+        GoToDefinitionRequest $request,
+        CodeBase $code_base,
+        UnionType $union_type
+    ) {
         foreach ($union_type->getTypeSet() as $type) {
             if ($type->isNativeType()) {
                 continue;

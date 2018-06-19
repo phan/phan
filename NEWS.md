@@ -29,8 +29,10 @@ New features(CLI, Configs)
 Language Server/Daemon mode:
 + Fix another rare bug that can cause crashes in the polyfill/fallback parser when parsing invalid or incomplete ASTs.
 + Add a `--language-server-hide-category` setting to hide the issue category from diagnostic messages.
-+ Remove the numeric diagnostic code from the language server diagnostics (issues).
-  (E.g. LanguageClient-neovim would render that the code in the quickfix menu)
++ Remove the numeric diagnostic code from the language server diagnostics (a.k.a. issues).
+  (Certain language clients such as LanguageClient-neovim would render that the code in the quickfix menu, wasting space)
++ Support "go to definition" for union types within all code comment types  (#1704)
+  (e.g. can go to definition in `// some annotation or comment mentioning MyType`)
 
 New features(Analysis)
 + Support analysis of [`list()` reference assignment](https://wiki.php.net/rfc/list_reference_assignment) for php 7.3 (which is still in alpha). (#1537)
