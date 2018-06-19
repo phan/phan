@@ -219,6 +219,7 @@ class CodeBase
     public function enableUndoTracking()
     {
         if ($this->has_enabled_undo_tracker) {
+            // @phan-suppress-next-line PhanThrowTypeAbsent should be impossible.
             throw new \RuntimeException("Undo tracking already enabled");
         }
         $this->has_enabled_undo_tracker = true;

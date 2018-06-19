@@ -2,7 +2,11 @@
 namespace Phan\Plugin\Internal;
 
 use Phan\AST\UnionTypeVisitor;
+use Phan\Config;
 use Phan\Issue;
+use Phan\Language\Context;
+use Phan\Language\Type;
+use Phan\Language\UnionType;
 use Phan\PluginV2;
 use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
@@ -14,8 +18,15 @@ use ast;
 
 class ThrowAnalyzerPlugin extends PluginV2 implements PostAnalyzeNodeCapability
 {
+    /**
+     * This is invalidated every time this plugin is loaded (e.g. for tests)
+     * @var ?UnionType
+     */
+    public static $configured_ignore_throws_union_type = null;
+
     public static function getPostAnalyzeNodeVisitorClassName() : string
     {
+        self::$configured_ignore_throws_union_type = null;
         return ThrowVisitor::class;
     }
 }
@@ -63,6 +74,10 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
         }
         $throws_union_type = $function->getThrowsUnionType();
         foreach ($union_type->getTypeSet() as $type) {
+            $expanded_type = $type->asExpandedTypes($code_base);
+            if (!$this->shouldWarnAboutThrowType($expanded_type)) {
+                continue;
+            }
             if ($throws_union_type->isEmpty()) {
                 $this->emitIssue(
                     Issue::ThrowTypeAbsent,
@@ -72,7 +87,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
                 );
                 continue;
             }
-            if (!$type->asExpandedTypes($code_base)->canCastToUnionType($throws_union_type)) {
+            if (!$expanded_type->canCastToUnionType($throws_union_type)) {
                 $this->emitIssue(
                     Issue::ThrowTypeMismatch,
                     $node->lineno,
@@ -82,5 +97,34 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
                 );
             }
         }
+    }
+
+    private static function calculateConfiguredIgnoreThrowsUnionType() : UnionType
+    {
+        $throws_union_type = new UnionType();
+        foreach (Config::getValue('exception_classes_with_optional_throws_phpdoc') as $type_string) {
+            if (!\is_string($type_string) || $type_string === '') {
+                continue;
+            }
+            $throws_union_type = $throws_union_type->withUnionType(UnionType::fromStringInContext($type_string, new Context(), Type::FROM_PHPDOC));
+        }
+        return $throws_union_type;
+    }
+
+    private function getConfiguredIgnoreThrowsUnionType() : UnionType
+    {
+        return ThrowAnalyzerPlugin::$configured_ignore_throws_union_type ?? (ThrowAnalyzerPlugin::$configured_ignore_throws_union_type = $this->calculateConfiguredIgnoreThrowsUnionType());
+    }
+
+    /**
+     * Check if the user wants to warn about a given throw type.
+     */
+    private function shouldWarnAboutThrowType(UnionType $expanded_type) : bool
+    {
+        $ignore_union_type = $this->getConfiguredIgnoreThrowsUnionType();
+        if ($ignore_union_type->isEmpty()) {
+            return true;
+        }
+        return !$expanded_type->canCastToUnionType($ignore_union_type);
     }
 }

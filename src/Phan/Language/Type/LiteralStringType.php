@@ -4,6 +4,7 @@ namespace Phan\Language\Type;
 use Phan\Config;
 use Phan\Language\Type;
 
+use InvalidArgumentException;
 use RuntimeException;
 
 final class LiteralStringType extends StringType implements LiteralTypeInterface
@@ -21,8 +22,9 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     }
 
     /**
-     * @internal - Only exists to prevent accidentally calling this
+     * @internal - Only exists to prevent accidentally calling this on the parent class
      * @deprecated
+     * @throws RuntimeException to prevent this from being called
      */
     public static function instance(bool $unused_is_nullable)
     {
@@ -94,11 +96,14 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     /**
      * The opposite of __toString()
      * @return StringType|LiteralStringType
+     * @throws InvalidArgumentException
+     * if the $escaped_string is not using the proper escaping
+     * (should not happen if UnionType's regex is used)
      */
     public static function fromEscapedString(string $escaped_string, bool $is_nullable) : StringType
     {
         if (\strlen($escaped_string) < 2 || $escaped_string[0] !== "'" || \substr($escaped_string, -1) !== "'") {
-            throw new \InvalidArgumentException("Expected the literal type string to begin and end with \"'\"");
+            throw new InvalidArgumentException("Expected the literal type string to begin and end with \"'\"");
         }
         $escaped_string = \substr($escaped_string, 1, -1);
         $escaped_string = preg_replace_callback(

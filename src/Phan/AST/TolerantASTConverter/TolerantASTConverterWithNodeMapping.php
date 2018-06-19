@@ -3,10 +3,12 @@
 namespace Phan\AST\TolerantASTConverter;
 
 use ast;
+use InvalidArgumentException;
 use Microsoft\PhpParser;
 use Microsoft\PhpParser\Diagnostic;
 use Microsoft\PhpParser\Token;
 use Microsoft\PhpParser\TokenKind;
+use Throwable;
 
 /**
  * This is a subclass of TolerantASTConverter
@@ -53,6 +55,9 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      * @param Diagnostic[] &$errors @phan-output-reference
      *
      * @return \ast\Node
+     *
+     * @throws InvalidArgumentException for invalid $version
+     * @throws Throwable (after logging) if anything is thrown by the parser
      */
     public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = [])
     {
@@ -60,7 +65,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
         $byte_offset = \max(0, \min(\strlen($file_contents), $this->expected_byte_offset));
 
         if (!\in_array($version, self::SUPPORTED_AST_VERSIONS)) {
-            throw new \InvalidArgumentException(sprintf("Unexpected version: want %s, got %d", \implode(', ', self::SUPPORTED_AST_VERSIONS), $version));
+            throw new InvalidArgumentException(sprintf("Unexpected version: want %s, got %d", \implode(', ', self::SUPPORTED_AST_VERSIONS), $version));
         }
 
         // Aside: this can be implemented as a stub.
@@ -69,7 +74,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
             self::findNodeAtOffset($parser_node, $byte_offset);
             // fwrite(STDERR, "Seeking node: " . json_encode(self::$closest_node_or_token). "\n");
             return $this->phpParserToPhpast($parser_node, $version, $file_contents);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             fprintf(STDERR, "saw exception: %s\n", $e->getMessage());
             throw $e;
         } finally {
@@ -198,10 +203,13 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
             //
             // This is worked around by copying and pasting the parent implementation
             $callback_map = static::initHandleMap();
-            /** @param PhpParser\Node|Token $n */
+            /**
+             * @param PhpParser\Node|Token $n
+             * @throws InvalidArgumentException for invalid token classes
+             */
             $fallback_closure = function ($n, int $unused_start_line) {
                 if (!($n instanceof PhpParser\Node) && !($n instanceof Token)) {
-                    throw new \InvalidArgumentException("Invalid type for node: " . (\is_object($n) ? \get_class($n) : \gettype($n)) . ": " . static::debugDumpNodeOrToken($n));
+                    throw new InvalidArgumentException("Invalid type for node: " . (\is_object($n) ? \get_class($n) : \gettype($n)) . ": " . static::debugDumpNodeOrToken($n));
                 }
 
                 return static::astStub($n);
@@ -234,10 +242,13 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
             //
             // This is worked around by copying and pasting the parent implementation
             $callback_map = static::initHandleMap();
-            /** @param PhpParser\Node|Token $n */
+            /**
+             * @param PhpParser\Node|Token $n
+             * @throws InvalidArgumentException for invalid token classes
+             */
             $fallback_closure = function ($n, int $unused_start_line) {
                 if (!($n instanceof PhpParser\Node) && !($n instanceof Token)) {
-                    throw new \InvalidArgumentException("Invalid type for node: " . (\is_object($n) ? \get_class($n) : \gettype($n)) . ": " . static::debugDumpNodeOrToken($n));
+                    throw new InvalidArgumentException("Invalid type for node: " . (\is_object($n) ? \get_class($n) : \gettype($n)) . ": " . static::debugDumpNodeOrToken($n));
                 }
                 return static::astStub($n);
             };

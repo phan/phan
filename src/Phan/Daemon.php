@@ -4,7 +4,9 @@ namespace Phan;
 use Phan\Daemon\Request;
 use Phan\Daemon\Transport\StreamResponder;
 use Phan\Daemon\ExitException;
+
 use Closure;
+use InvalidArgumentException;
 
 /**
  * A simple analyzing daemon that can be used by IDEs. (see `phan_client`)
@@ -197,6 +199,7 @@ class Daemon
 
     /**
      * @return resource (resource is not a reserved keyword)
+     * @throws InvalidArgumentException if the config does not specify a method. (should not happen)
      */
     private static function createDaemonStreamSocketServer()
     {
@@ -206,7 +209,7 @@ class Daemon
         } elseif (Config::getValue('daemonize_tcp_port')) {
             $listen_url = sprintf('tcp://127.0.0.1:%d', Config::getValue('daemonize_tcp_port'));
         } else {
-            throw new \InvalidArgumentException("Should not happen, no port/socket for daemon to listen on.");
+            throw new InvalidArgumentException("Should not happen, no port/socket for daemon to listen on.");
         }
         printf(
             "Listening for Phan analysis requests at %s\nAwaiting analysis requests for directory %s\n",

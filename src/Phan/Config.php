@@ -371,6 +371,12 @@ class Config
         // are not documented in the PHPDoc of functions, methods, and closures.
         'warn_about_undocumented_throw_statements' => false,
 
+        // Phan will not warn about lack of documentation of (at)throws for any of the configured classes or their subclasses.
+        // This only matters when warn_about_undocumented_throw_statements is true.
+        // The default is the empty array (Warn about every kind of Throwable)
+        // (E.g. ['\RuntimeException', '\AssertionError', '\TypeError'])
+        'exception_classes_with_optional_throws_phpdoc' => [ ],
+
         // This setting maps case insensitive strings to union types.
         // This is useful if a project uses phpdoc that differs from the phpdoc2 standard.
         // If the corresponding value is the empty string, Phan will ignore that union type (E.g. can ignore 'the' in `@return the value`)

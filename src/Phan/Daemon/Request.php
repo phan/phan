@@ -106,6 +106,9 @@ class Request
         return -1;
     }
 
+    /**
+     * @throws ExitException to imitate an exit without actually exiting
+     */
     public function exit(int $exit_code)
     {
         if ($this->should_exit) {

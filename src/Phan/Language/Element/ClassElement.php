@@ -68,6 +68,9 @@ abstract class ClassElement extends AddressableElement
      * @return FullyQualifiedClassName
      * The FQSEN of this class element from where it was
      * originally defined
+     *
+     * @throws CodeBaseException if this was called without first checking
+     * if hasDefiningFQSEN()
      */
     public function getDefiningClassFQSEN() : FullyQualifiedClassName
     {
@@ -94,6 +97,7 @@ abstract class ClassElement extends AddressableElement
     /**
      * @return Clazz
      * The class on which this element was originally defined
+     * @throws CodeBaseException if hasDefiningFQSEN is false
      */
     public function getDefiningClass(CodeBase $code_base) : Clazz
     {

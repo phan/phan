@@ -11,6 +11,7 @@ use Phan\CodeBase;
 use Phan\Config;
 
 use ast\Node;
+use InvalidArgumentException;
 
 final class GenericArrayType extends ArrayType
 {
@@ -61,11 +62,13 @@ final class GenericArrayType extends ArrayType
      *
      * @param int $key_type
      * Corresponds to the type of the array keys. Set this to a GenericArrayType::KEY_* constant.
+     *
+     * @throws InvalidArgumentException if $key_type is an invalid constant
      */
     protected function __construct(Type $type, bool $is_nullable, int $key_type)
     {
         if ($key_type & ~3) {
-            throw new \InvalidArgumentException("Invalid key_type $key_type");
+            throw new InvalidArgumentException("Invalid key_type $key_type");
         }
         parent::__construct('\\', self::NAME, [], $is_nullable);
         $this->element_type = $type;
