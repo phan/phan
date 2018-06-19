@@ -18,7 +18,7 @@ function test300() {
 
     clone(42);  // TODO: Warn
     expect_string_300(clone(new stdClass()));
-    expect_string_300($undefIntVar &= $intVar);  // should warn
+    expect_string_300($undefIntVar &= $intVar);  // should warn (both about being undeclared and the new declaration being unused)
     expect_string_300($refIntVar =& $intVar);  // should warn
     if (false) { expect_int_300(`ls`); }
 

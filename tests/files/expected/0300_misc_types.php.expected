@@ -10,6 +10,7 @@
 %s:21 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_300() takes string defined at %s:3
 %s:21 PhanUndeclaredVariableAssignOp Variable $undefIntVar was undeclared, but it is being used as the left hand side of an assignment operation
 %s:21 PhanUndeclaredVariable Variable $undefIntVar is undeclared
+%s:21 PhanUnusedVariable Unused definition of variable $undefIntVar
 %s:22 PhanTypeMismatchArgument Argument 1 (x) is 42 but \expect_string_300() takes string defined at %s:3
 %s:22 PhanUnusedVariable Unused definition of variable $refIntVar
 %s:23 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int_300() takes int defined at %s:4
@@ -18,5 +19,7 @@
 %s:27 PhanTypeMismatchArgument Argument 1 (x) is 3 but \expect_string_300() takes string defined at %s:3
 %s:28 PhanUndeclaredFunction Call to undeclared function \expect_default_int_300()
 %s:31 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_300() takes string defined at %s:3
+%s:32 PhanUnusedVariable Unused definition of variable $definedIntVar
 %s:34 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int_300() takes int defined at %s:4
+%s:35 PhanUnusedVariable Unused definition of variable $definedStrVar
 %s:37 PhanContextNotObject Cannot access self when not in object context

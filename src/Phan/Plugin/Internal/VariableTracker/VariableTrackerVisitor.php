@@ -98,7 +98,37 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      */
     public function visitAssignOp(Node $node)
     {
-        return $this->analyzeAssign($node, true);
+        $expr = $node->children['expr'];
+        if ($expr instanceof Node) {
+            $this->scope = $this->analyze($this->scope, $expr);
+        }
+        $var_node = $node->children['var'];
+        if (!($var_node instanceof Node)) {
+            return $this->scope;
+        }
+        switch ($var_node->kind) {
+            case ast\AST_VAR:
+                $name = $var_node->children['name'];
+                if (!is_string($name)) {
+                    break;
+                }
+                // The left hand node ($var_node) is the usage of this variable
+                self::$variable_graph->recordVariableUsage($name, $var_node, $this->scope);
+                // And the whole assignment operation is the redefinition of this variable
+                self::$variable_graph->recordVariableDefinition($name, $node, $this->scope);
+                $this->scope->recordDefinition($name, $node);
+                return $this->scope;
+            case ast\AST_PROP:
+                return $this->analyzePropAssignmentTarget($var_node);
+            case ast\AST_DIM:
+                return $this->analyzeDimAssignmentTarget($var_node);
+                // TODO: Analyze array access and param/return references of function/method calls.
+            default:
+                // Static property or an unexpected target.
+                // Analyze this normally.
+                return $this->analyze($this->scope, $var_node);
+        }
+        return $this->scope;
     }
 
     /**
@@ -107,19 +137,11 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      */
     public function visitAssign(Node $node)
     {
-        return $this->analyzeAssign($node, false);
-    }
-
-    /**
-     * @return VariableTrackingScope
-     */
-    private function analyzeAssign(Node $node, bool $is_ref)
-    {
         $expr = $node->children['expr'];
         if ($expr instanceof Node) {
             $this->scope = $this->analyze($this->scope, $expr);
         }
-        return $this->analyzeAssignmentTarget($node->children['var'], $is_ref);
+        return $this->analyzeAssignmentTarget($node->children['var'], false);
     }
 
     private function analyzeAssignmentTarget($node, bool $is_ref) : VariableTrackingScope
@@ -128,8 +150,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         if (!($node instanceof Node)) {
             return $this->scope;
         }
-        $kind = $node->kind;
-        switch ($kind) {
+        switch ($node->kind) {
             case ast\AST_VAR:
                 $name = $node->children['name'];
                 if (!is_string($name)) {

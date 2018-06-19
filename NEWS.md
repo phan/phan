@@ -10,6 +10,9 @@ New features(CLI, Configs)
 
   New issue types: `PhanThrowTypeAbsent`, `PhanThrowTypeMismatch`
 
+Bug fixes:
++ Start warning about assignment operations (e.g. `+=`) when the modified variable isn't referenced later in the function.
+
 16 Jun 2018, Phan 0.12.13
 -------------------------
 

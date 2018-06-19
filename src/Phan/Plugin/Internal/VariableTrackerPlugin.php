@@ -31,6 +31,9 @@ final class VariableTrackerPlugin extends PluginV2 implements
 }
 
 /**
+ * This will analyze any variable definition and uses within function-like scopes,
+ * and warn about unused variable definitions.
+ *
  * TODO: Hook into the global scope as well?
  */
 final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor

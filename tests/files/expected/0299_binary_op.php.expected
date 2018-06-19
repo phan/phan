@@ -27,6 +27,7 @@
 %s:39 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int_298() takes int defined at %s:4
 %s:40 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_298() takes string defined at %s:3
 %s:41 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int_298() takes int defined at %s:4
+%s:41 PhanUnusedVariable Unused definition of variable $strVar
 %s:42 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_298() takes string defined at %s:3
 %s:43 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_298() takes string defined at %s:3
 %s:44 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_298() takes string defined at %s:3
@@ -34,6 +35,7 @@
 %s:46 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_298() takes string defined at %s:3
 %s:47 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_298() takes string defined at %s:3
 %s:48 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_298() takes string defined at %s:3
+%s:48 PhanUnusedVariable Unused definition of variable $intVar
 %s:50 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_298() takes string defined at %s:3
 %s:51 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_298() takes string defined at %s:3
 %s:52 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_298() takes string defined at %s:3
