@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Library;
 
+use Exception;
+
 /**
  * @inherits Option<null>
  */
@@ -32,10 +34,11 @@ class None extends Option
 
     /**
      * @return null
+     * @throws Exception to indicate that get() was called without checking for a value.
      */
     public function get()
     {
-        throw new \Exception("Cannot call get on None");
+        throw new Exception("Cannot call get on None");
     }
 
     /**

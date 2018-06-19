@@ -125,6 +125,8 @@ final class MiscParamPlugin extends PluginV2 implements
         };
         /**
          * @return void
+         * @throws StopParamAnalysisException
+         * to prevent Phan's default incorrect analysis of a call to join()
          */
         $join_callback = function (
             CodeBase $code_base,

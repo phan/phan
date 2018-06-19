@@ -1510,6 +1510,8 @@ class Clazz extends AddressableElement
     /**
      * @return Method
      * The method with the given name
+     *
+     * @throws CodeBaseException if the method (or a placeholder) could not be found (or created)
      */
     public function getMethodByName(
         CodeBase $code_base,

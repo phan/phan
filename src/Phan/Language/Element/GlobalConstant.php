@@ -44,6 +44,9 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
      * @return GlobalConstant
      * A GlobalConstant structural element representing the given named
      * builtin constant.
+     *
+     * @throws \InvalidArgumentException
+     * If reflection could not locate the builtin constant.
      */
     public static function fromGlobalConstantName(
         string $name

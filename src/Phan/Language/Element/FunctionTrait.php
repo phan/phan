@@ -1085,6 +1085,7 @@ trait FunctionTrait
 
     /**
      * @return array<mixed,string> in the same format as FunctionSignatureMap.php
+     * @throws \InvalidArgumentException if this function has invalid parameters for generating a stub (e.g. param names, types, etc.)
      */
     public function toFunctionSignatureArray() : array
     {

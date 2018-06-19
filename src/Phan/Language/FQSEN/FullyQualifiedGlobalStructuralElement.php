@@ -31,6 +31,9 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      * @param int $alternate_id
      * An alternate ID for the element for use when
      * there are multiple definitions of the element
+     *
+     * @throws EmptyFQSENException
+     * if the name component of this FullyQualifiedGlobalStructuralElement is empty
      */
     protected function __construct(
         string $namespace,

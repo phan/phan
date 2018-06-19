@@ -213,6 +213,15 @@ return [
     // are not documented in the PHPDoc of functions, methods, and closures.
     'warn_about_undocumented_throw_statements' => true,
 
+    // Phan will not warn about lack of documentation of (at)throws for any of the configured classes or their subclasses.
+    // This only matters when warn_about_undocumented_throw_statements is true.
+    // The default is the empty array (Warn about every kind of Throwable)
+    'exception_classes_with_optional_throws_phpdoc' => [
+        '\RuntimeException',
+        '\AssertionError',
+        '\TypeError',
+    ],
+
     // Setting this to true makes the process assignment for file analysis
     // as predictable as possible, using consistent hashing.
     // Even if files are added or removed, or process counts change,
@@ -242,7 +251,6 @@ return [
         'PhanPossiblyNullTypeArgument',
         'PhanPossiblyNullTypeArgumentInternal',
         'PhanPossiblyNullTypeReturn',
-        'PhanThrowTypeAbsent',  // TODO: Remove this suppression
     ],
 
     // If empty, no filter against issues types will be applied.

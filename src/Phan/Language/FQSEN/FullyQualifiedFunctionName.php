@@ -38,6 +38,9 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
      *
      * @param Context $context
      * The context in which the FQSEN string was found
+     *
+     * @throws EmptyFQSENException
+     * if $fqsen_string has an empty name component.
      */
     public static function fromStringInContext(
         string $fqsen_string,

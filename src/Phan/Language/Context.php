@@ -559,14 +559,12 @@ class Context extends FileRef
      * The element who's scope we're in. If we're in the global
      * scope this method will go down in flames and take your
      * process with it.
+     *
+     * @throws CodeBaseException if this was called without first checking
+     * if this context is in an element scope
      */
     public function getElementInScope(CodeBase $code_base) : TypedElement
     {
-        \assert(
-            $this->isInElementScope(),
-            "Cannot get element in scope if we're in the global scope"
-        );
-
         if ($this->isInFunctionLikeScope()) {
             return $this->getFunctionLikeInScope($code_base);
         } elseif ($this->isInPropertyScope()) {
