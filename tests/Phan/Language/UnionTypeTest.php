@@ -156,6 +156,7 @@ class UnionTypeTest extends BaseTest
         // TODO: Implement more code to warn about invalid operands.
         // Evaluating this should result in '0'
         $this->assertUnionTypeStringEqual('$x=(new stdClass()); $x &= 2; $x', 'int');
+        $this->assertUnionTypeStringEqual('$x = stdClass::class; new $x();', '\stdClass');
     }
 
     public function testString()
