@@ -973,7 +973,15 @@ class TolerantASTConverter
             },
             'Microsoft\PhpParser\Node\Statement\BreakOrContinueStatement' => function (PhpParser\Node\Statement\BreakOrContinueStatement $n, int $start_line) : ast\Node {
                 $kind = $n->breakOrContinueKeyword->kind === TokenKind::ContinueKeyword ? ast\AST_CONTINUE : ast\AST_BREAK;
-                return new ast\Node($kind, 0, ['depth' => isset($n->breakoutLevel) ? (int)static::phpParserNodeToAstNode($n->breakoutLevel) : null], $start_line);
+                if ($n->breakoutLevel !== null) {
+                    $breakoutLevel = static::phpParserNodeToAstNode($n->breakoutLevel);
+                    if (!\is_int($breakoutLevel)) {
+                        $breakoutLevel = null;
+                    }
+                } else {
+                    $breakoutLevel = null;
+                }
+                return new ast\Node($kind, 0, ['depth' => $breakoutLevel], $start_line);
             },
             'Microsoft\PhpParser\Node\CatchClause' => function (PhpParser\Node\CatchClause $n, int $start_line) : ast\Node {
                 $qualified_name = $n->qualifiedName;

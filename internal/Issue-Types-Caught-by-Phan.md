@@ -2355,13 +2355,25 @@ Saw misspelled annotation {COMMENT}, should be one of {COMMENT}
 ## PhanThrowTypeAbsent
 
 ```
-{METHOD}() can throw {TYPE} here, but has no '@throws' declarations
+{METHOD}() can throw {TYPE} here, but has no '@throws' declarations for that class
+```
+
+## PhanThrowTypeAbsentForCall
+
+```
+{METHOD}() can throw {TYPE} because it calls {FUNCTIONLIKE}(), but has no '@throws' declarations for that class
 ```
 
 ## PhanThrowTypeMismatch
 
 ```
 {METHOD}() throws {TYPE}, but it only has declarations of '@throws {TYPE}'
+```
+
+## PhanThrowTypeMismatchForCall
+
+```
+{METHOD}() throws {TYPE} because it calls {FUNCTIONLIKE}(), but it only has declarations of '@throws {TYPE}'
 ```
 
 ## PhanUnextractableAnnotation

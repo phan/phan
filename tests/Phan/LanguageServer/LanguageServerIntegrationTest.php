@@ -19,7 +19,7 @@ use stdClass;
  * Note: This test file is not enabled in CI because they may hang indefinitely.
  * (integration test timeouts weren't implemented or tested yet).
  *
- * @phan-file-suppress PhanThrowTypeAbsent it's a test
+ * @phan-file-suppress PhanThrowTypeAbsent, PhanThrowTypeAbsentForCall it's a test
  */
 class LanguageServerIntegrationTest extends BaseTest
 {

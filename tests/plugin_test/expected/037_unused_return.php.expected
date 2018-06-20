@@ -6,4 +6,4 @@ src/037_unused_return.php:20 PhanUnusedVariable Unused definition of variable $m
 src/037_unused_return.php:21 PhanUnusedVariable Unused definition of variable $myUnusedVar
 src/037_unused_return.php:23 PhanUnusedVariable Unused definition of variable $myVar
 src/037_unused_return.php:24 PhanUnusedVariable Unused definition of variable $myUnusedVar
-src/037_unused_return.php:25 PhanThrowTypeAbsent \unused_return() can throw \RuntimeException here, but has no '@throws' declarations
+src/037_unused_return.php:25 PhanThrowTypeAbsent \unused_return() can throw \RuntimeException here, but has no '@throws' declarations for that class

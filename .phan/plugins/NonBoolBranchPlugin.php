@@ -2,6 +2,7 @@
 // .phan/plugins/NonBoolBranchPlugin.php
 
 use Phan\AST\UnionTypeVisitor;
+use Phan\Exception\IssueException;
 use Phan\Language\Context;
 use Phan\PluginV2;
 use Phan\PluginV2\PostAnalyzeNodeCapability;
@@ -25,7 +26,9 @@ class NonBoolBranchVisitor extends PluginAwarePostAnalysisVisitor
 {
     // A plugin's visitors should not override visit() unless they need to.
 
-    /** @override */
+    /**
+     * @override
+     */
     public function visitIf(Node $node) : Context
     {
         // Here, we visit the group of if/elseif/else instead of the individuals (visitIfElem)
@@ -51,7 +54,11 @@ class NonBoolBranchVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context = $this->context->withLineNumberStart($condition->lineno);
             }
             // evaluate the type of conditional expression
-            $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $condition);
+            try {
+                $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $condition);
+            } catch (IssueException $e) {
+                return $this->context;
+            }
             if (!$union_type->isExclusivelyBoolTypes()) {
                 $this->emit(
                     'PhanPluginNonBoolBranch',

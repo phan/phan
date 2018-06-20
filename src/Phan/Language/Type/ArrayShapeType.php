@@ -11,7 +11,7 @@ use Phan\Config;
 /**
  * This is generated from phpdoc such as array{field:int}
  */
-final class ArrayShapeType extends ArrayType
+final class ArrayShapeType extends ArrayType implements GenericArrayInterface
 {
     /** @phan-override */
     const NAME = 'array';

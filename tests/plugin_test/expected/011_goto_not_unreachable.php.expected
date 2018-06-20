@@ -1,2 +1,2 @@
-src/011_goto_not_unreachable.php:12 PhanThrowTypeAbsent \goto11() can throw \RuntimeException here, but has no '@throws' declarations
+src/011_goto_not_unreachable.php:12 PhanThrowTypeAbsent \goto11() can throw \RuntimeException here, but has no '@throws' declarations for that class
 src/011_goto_not_unreachable.php:13 PhanPluginUnreachableCode Unreachable statement detected

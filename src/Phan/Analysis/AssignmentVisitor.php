@@ -319,7 +319,8 @@ class AssignmentVisitor extends AnalysisVisitor
      * @return void
      */
     private function analyzeValueNodeOfShapedArray(
-        UnionType $element_type, $value_node
+        UnionType $element_type,
+        $value_node
     ) {
         if (!$value_node instanceof Node) {
             return;
