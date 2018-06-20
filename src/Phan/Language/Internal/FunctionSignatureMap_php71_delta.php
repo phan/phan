@@ -18,9 +18,11 @@ PHAN;
 return [
 'new' => [
     'Closure::fromCallable' => ['Closure', 'callable'=>'callable'],
+    'SQLite3::createFunction' => ['bool', 'name'=>'string', 'callback'=>'callable', 'argument_count='=>'int', 'flags='=>'int'],
     'curl_multi_errno' => ['int', 'mh'=>'resource'],
     'curl_share_errno' => ['int', 'sh'=>'resource'],
     'curl_share_strerror' => ['string', 'code'=>'int'],
+    'getenv\'1' => ['array<string,string>'],
     'getopt' => ['array<string,string>|array<string,false>|array<string,array<int,string|false>>', 'options'=>'string', 'longopts='=>'array', '&w_optind='=>'int'],
     'hash_hkdf' => ['string', 'algo'=>'string', 'ikm'=>'string', 'length='=>'int', 'info='=>'string', 'salt='=>'string'],
     'is_iterable' => ['bool', 'var'=>'mixed'],
@@ -39,6 +41,7 @@ return [
     'unpack' => ['array', 'format'=>'string', 'data'=>'string', 'offset='=>'int'],
 ],
 'old' => [
+    'SQLite3::createFunction' => ['bool', 'name'=>'string', 'callback'=>'callable', 'argument_count='=>'int'],
     'getopt' => ['array<string,string>|array<string,false>|array<string,array<int,string|false>>', 'options'=>'string', 'longopts='=>'array'],
     'pg_fetch_all' => ['array', 'result'=>'resource'],
     'pg_last_error' => ['string', 'connection='=>'resource'],
