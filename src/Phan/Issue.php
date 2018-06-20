@@ -129,6 +129,7 @@ class Issue
     const TypeInvalidCallableObjectOfMethod = 'PhanTypeInvalidCallableObjectOfMethod';
     const TypeExpectedObject        = 'PhanTypeExpectedObject';
     const TypeExpectedObjectOrClassName = 'PhanTypeExpectedObjectOrClassName';
+    const TypeExpectedObjectOrClassNameInvalidName = 'PhanTypeExpectedObjectOrClassNameInvalidName';
     const TypeExpectedObjectPropAccess = 'PhanTypeExpectedObjectPropAccess';
     const TypeExpectedObjectPropAccessButGotNull = 'PhanTypeExpectedObjectPropAccessButGotNull';
     const TypeExpectedObjectStaticPropAccess = 'PhanTypeExpectedObjectStaticPropAccess';
@@ -1324,6 +1325,14 @@ class Issue
                 'Expected an object instance or the name of a class but saw expression with type {TYPE}',
                 self::REMEDIATION_B,
                 10037
+            ),
+            new Issue(
+                self::TypeExpectedObjectOrClassNameInvalidName,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Expected an object instance or the name of a class but saw an invalid class name \'{STRING_LITERAL}\'',
+                self::REMEDIATION_B,
+                10074
             ),
             new Issue(
                 self::TypeExpectedObjectPropAccess,

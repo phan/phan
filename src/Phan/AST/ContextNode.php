@@ -522,12 +522,28 @@ class ContextNode
                 foreach ($union_type->getTypeSet() as $type) {
                     if ($type instanceof LiteralStringType) {
                         $type_value = $type->getValue();
-                        if (\preg_match('/\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\]*/', $type_value)) {
+                        if (\preg_match('/^\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\]*$/', $type_value)) {
                             // TODO: warn about invalid types and unparseable types
                             $fqsen = FullyQualifiedClassName::makeFromExtractedNamespaceAndName($type_value);
                             if ($this->code_base->hasClassWithFQSEN($fqsen)) {
                                 $class_list[] = $this->code_base->getClassByFQSEN($fqsen);
+                            } else {
+                                Issue::maybeEmit(
+                                    $this->code_base,
+                                    $this->context,
+                                    Issue::UndeclaredClass,
+                                    $this->node->lineno ?? 0,
+                                    (string)$fqsen
+                                );
                             }
+                        } else {
+                            Issue::maybeEmit(
+                                $this->code_base,
+                                $this->context,
+                                Issue::TypeExpectedObjectOrClassNameInvalidName,
+                                $this->node->lineno ?? 0,
+                                (string)$type_value
+                            );
                         }
                     }
                 }

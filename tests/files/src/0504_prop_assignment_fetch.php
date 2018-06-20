@@ -12,5 +12,10 @@ class Test504 {
         echo $t::$otherProp;
         $t::$propMissing = 2;
         echo $t::$otherMissingProp;
+        $t2 = 'Missing504';
+        echo $t2::$prop;
+        $t2::$otherProp = 'invalid';
+        $t3 = 'Invalid@504';
+        $t3::$otherProp = 'invalid';
     }
 }
