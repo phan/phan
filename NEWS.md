@@ -11,6 +11,9 @@ New features(CLI, Configs)
   This does not yet check function and method calls within the checked function that may themselves throw.
 
   New issue types: `PhanThrowTypeAbsent`, `PhanThrowTypeMismatch`
++ Warn when string literals refer to invalid class names (E.g. `$myClass::SOME_CONSTANT`). (#1794)
+  New issue types: `PhanTypeExpectedObjectOrClassNameInvalidName` (emitted if the name can't be used as a class)
+  This will also emit `PhanUndeclaredClass` if the class name could not be found.
 
 New features(Analysis)
 + Support analysis of [`list()` reference assignment](https://wiki.php.net/rfc/list_reference_assignment) for php 7.3 (which is still in alpha). (#1537)

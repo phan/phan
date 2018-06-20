@@ -1456,6 +1456,12 @@ Expected an object instance but saw expression with type {TYPE}
 Expected an object instance or the name of a class but saw expression with type {TYPE}
 ```
 
+## PhanTypeExpectedObjectOrClassNameInvalidName
+
+```
+Expected an object instance or the name of a class but saw an invalid class name '{STRING_LITERAL}'
+```
+
 ## PhanTypeExpectedObjectPropAccess
 
 ```
