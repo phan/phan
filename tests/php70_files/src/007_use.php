@@ -4,8 +4,8 @@ use A\void;
 use NS\iterable;
 use My\Framework\object;
 
-function example(object $o, iterable $i) : void {
+function example007(object $o, iterable $i) : void {
     var_export($o);
     var_export($i);
 }
-example(null, null);
+example007(null, null);

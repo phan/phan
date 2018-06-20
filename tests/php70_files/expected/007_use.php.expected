@@ -7,6 +7,5 @@
 %s:7 PhanCompatibleIterableTypePHP70 Return type 'iterable' means a Traversable/array value starting in PHP 7.1. In PHP 7.0, iterable refers to a class/interface with the name 'iterable'
 %s:7 PhanCompatibleNullableTypePHP71 Type 'object' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
 %s:7 PhanCompatibleVoidTypePHP70 Return type 'void' means the absense of a return value starting in PHP 7.1. In PHP 7.0, void refers to a class/interface with the name 'void'
-%s:11 PhanTypeMismatchArgument Argument 1 (o) is null but \Example() takes object defined at %s:7
-%s:11 PhanTypeMismatchArgument Argument 2 (i) is null but \Example() takes iterable defined at %s:7
-
+%s:11 PhanTypeMismatchArgument Argument 1 (o) is null but \example007() takes object defined at %s:7
+%s:11 PhanTypeMismatchArgument Argument 2 (i) is null but \example007() takes iterable defined at %s:7
