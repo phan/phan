@@ -58,4 +58,9 @@ final class MixedType extends NativeType
     {
         return true;  // It's possible.
     }
+
+    public function isValidNumericOperand() : bool
+    {
+        return true;
+    }
 }

@@ -121,5 +121,10 @@ abstract class ScalarType extends NativeType
     {
         return false;
     }
+
+    public function isValidNumericOperand() : bool
+    {
+        return true;
+    }
 }
 \class_exists(IntType::class);

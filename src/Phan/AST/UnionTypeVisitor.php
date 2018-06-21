@@ -51,6 +51,7 @@ use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
 use ast\Node;
 use ast;
+use Closure;
 use AssertionError;
 
 /**
@@ -2031,30 +2032,71 @@ class UnionTypeVisitor extends AnalysisVisitor
             $node->children['expr']
         );
         if ($flags === \ast\flags\UNARY_MINUS) {
+            $this->warnAboutInvalidUnaryOp(
+                $node,
+                function (Type $type) {
+                    // TODO: Stricten this to warn about strings based on user config.
+                    return $type->isValidNumericOperand();
+                },
+                $result,
+                '-',
+                Issue::TypeInvalidUnaryOperandNumeric
+            );
             return $result->applyUnaryMinusOperator();
-        } elseif ($flags === \ast\flags\UNARY_BITWISE_NOT) {
-            return $result->applyUnaryBitwiseNotOperator();
         } elseif ($flags === \ast\flags\UNARY_PLUS) {
+            $this->warnAboutInvalidUnaryOp(
+                $node,
+                function (Type $type) {
+                    // NOTE: Don't be as strict because this is a way to cast to a number
+                    return $type->isValidNumericOperand();
+                },
+                $result,
+                '+',
+                Issue::TypeInvalidUnaryOperandNumeric
+            );
             return $result->applyUnaryPlusOperator();
+        } elseif ($flags === \ast\flags\UNARY_BITWISE_NOT) {
+            $this->warnAboutInvalidUnaryOp(
+                $node,
+                function (Type $type) {
+                    // Adding $type instanceof StringType in case it becomes necessary later
+                    return $type->isValidNumericOperand() || $type instanceof StringType;
+                },
+                $result,
+                '~',
+                Issue::TypeInvalidUnaryOperandBitwiseNot
+            );
+            return $result->applyUnaryBitwiseNotOperator();
         }
-        // UNARY_SILENCE or UNARY_PLUS
+        // UNARY_SILENCE
         return $result;
     }
 
     /**
-     * Visit a node with kind `\ast\AST_UNARY_MINUS`
-     *
-     * @param Node $node
-     * A node of the type indicated by the method name that we'd
-     * like to figure out the type that it produces.
-     *
-     * @return UnionType
-     * The set of types that are possibly produced by the
-     * given node
+     * @param Node $node with type AST_BINARY_OP
+     * @param Closure(Type):bool $is_valid_type
+     * @return void
      */
-    public function visitUnaryMinus(Node $node) : UnionType
-    {
-        return Type::fromObject($node->children['expr'])->asUnionType();
+    private function warnAboutInvalidUnaryOp(
+        Node $node,
+        Closure $is_valid_type,
+        UnionType $type,
+        string $operator,
+        string $issue_type
+    ) {
+        if ($type->isEmpty()) {
+            return;
+        }
+        if (!$type->hasTypeMatchingCallback($is_valid_type)) {
+            Issue::maybeEmit(
+                $this->code_base,
+                $this->context,
+                $issue_type,
+                $node->children['left']->lineno ?? $node->lineno,
+                $operator,
+                $type
+            );
+        }
     }
 
     /**

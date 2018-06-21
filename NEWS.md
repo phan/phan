@@ -33,6 +33,8 @@ Language Server/Daemon mode:
 
 New features(Analysis)
 + Support analysis of [`list()` reference assignment](https://wiki.php.net/rfc/list_reference_assignment) for php 7.3 (which is still in alpha). (#1537)
++ Warn about invalid operands of the unary operators `+`, `-`, and `~`
+  New issue types: `PhanTypeInvalidUnaryOperandNumeric` and `PhanTypeInvalidUnaryOperandBitwiseNot` (#680)
 
 Bug fixes:
 + Fix a bug causing Phan to infer extra wrong types (`ancestorClass[][]`) for `@return className[]` (#1822)

@@ -2554,4 +2554,9 @@ class Type
     {
         return $this;
     }
+
+    public function isValidNumericOperand() : bool
+    {
+        return false;
+    }
 }

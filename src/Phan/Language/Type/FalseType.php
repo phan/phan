@@ -63,4 +63,9 @@ final class FalseType extends ScalarType
         // This would be '', which is probably not intended
         return Config::getValue('scalar_implicit_cast');
     }
+
+    public function isValidNumericOperand() : bool
+    {
+        return Config::getValue('scalar_implicit_cast');
+    }
 }

@@ -308,7 +308,8 @@ class UnionTypeTest extends BaseTest
         $this->assertTrue($union_type->hasType($type), "Expected $union_type (from $union_type_string) to be $type");
     }
 
-    public function testExpandedTypes() {
+    public function testExpandedTypes()
+    {
         $this->assertSame(
             '\Exception[]|\Throwable[]',
             UnionType::fromFullyQualifiedString('\Exception[]')->asExpandedTypes(self::$code_base)->__toString()

@@ -78,6 +78,8 @@ class Issue
     const TypeInvalidRightOperandOfAdd = 'PhanTypeInvalidRightOperandOfAdd';
     const TypeInvalidLeftOperandOfNumericOp = 'PhanTypeInvalidLeftOperandOfNumericOp';
     const TypeInvalidRightOperandOfNumericOp = 'PhanTypeInvalidRightOperandOfNumericOp';
+    const TypeInvalidUnaryOperandNumeric = 'PhanTypeInvalidUnaryOperandNumeric';
+    const TypeInvalidUnaryOperandBitwiseNot = 'PhanTypeInvalidUnaryOperandBitwiseNot';
     const TypeInvalidInstanceof     = 'PhanTypeInvalidInstanceof';
     const TypeInvalidDimOffset      = 'PhanTypeInvalidDimOffset';
     const TypeInvalidDimOffsetArrayDestructuring = 'PhanTypeInvalidDimOffsetArrayDestructuring';
@@ -1199,6 +1201,22 @@ class Issue
                 "Invalid operator: left operand is {TYPE} (expected number)",
                 self::REMEDIATION_B,
                 10073
+            ),
+            new Issue(
+                self::TypeInvalidUnaryOperandNumeric,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Invalid operator: unary operand of {STRING_LITERAL} is {TYPE} (expected number)",
+                self::REMEDIATION_B,
+                10075
+            ),
+            new Issue(
+                self::TypeInvalidUnaryOperandBitwiseNot,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Invalid operator: unary operand of {STRING_LITERAL} is {TYPE} (expected number or string)",
+                self::REMEDIATION_B,
+                10076
             ),
             new Issue(
                 self::TypeParentConstructorCalled,

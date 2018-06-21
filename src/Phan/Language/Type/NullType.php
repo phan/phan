@@ -126,4 +126,9 @@ final class NullType extends ScalarType
         // This would be '', which is probably not intended. allow null in union types for `echo` if there are **other** valid types.
         return Config::get_null_casts_as_any_type();
     }
+
+    public function isValidNumericOperand() : bool
+    {
+        return Config::get_null_casts_as_any_type();
+    }
 }

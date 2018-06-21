@@ -13,8 +13,6 @@ use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\IntType;
-use Phan\Language\Type\MixedType;
-use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
 use Phan\Issue;
 use ast\Node;
@@ -513,8 +511,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         $this->warnAboutInvalidUnionType(
             $node,
             static function (Type $type) : bool {
-                // TODO: Stricten this to warn about strings based on user config.
-                return $type instanceof ScalarType || $type instanceof ArrayType || $type instanceof MixedType;
+                return $type->isValidNumericOperand() || $type instanceof ArrayType;
             },
             $left,
             $right,
@@ -625,7 +622,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $node,
             static function (Type $type) : bool {
                 // TODO: Stricten this to warn about strings based on user config.
-                return $type instanceof ScalarType || $type instanceof MixedType;
+                return $type->isValidNumericOperand();
             },
             $left,
             $right,

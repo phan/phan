@@ -1606,6 +1606,18 @@ Invalid operator: right operand is {TYPE} (expected number)
 @throws annotation of {FUNCTIONLIKE} has suspicious class type {TYPE}, which does not extend Error/Exception
 ```
 
+## PhanTypeInvalidUnaryOperandBitwiseNot
+
+```
+Invalid operator: unary operand of {STRING_LITERAL} is {TYPE} (expected number or string)
+```
+
+## PhanTypeInvalidUnaryOperandNumeric
+
+```
+Invalid operator: unary operand of {STRING_LITERAL} is {TYPE} (expected number)
+```
+
 ## PhanTypeInvalidYieldFrom
 
 ```
