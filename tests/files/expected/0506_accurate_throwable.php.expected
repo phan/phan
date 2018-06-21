@@ -1,0 +1,1 @@
+%s:8 PhanParamTooMany Call with 1 arg(s) to \MyInterface506::doSomething() which only takes 0 arg(s) defined at %s:3

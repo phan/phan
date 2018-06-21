@@ -37,6 +37,7 @@ New features(Analysis)
 Bug fixes:
 + Fix a bug causing Phan to infer extra wrong types (`ancestorClass[][]`) for `@return className[]` (#1822)
 + Start warning about assignment operations (e.g. `+=`) when the modified variable isn't referenced later in the function.
++ Make exceptions in `catch{}` always include the type `Throwable` even if the declared type doesn't. (#336)
 
 16 Jun 2018, Phan 0.12.13
 -------------------------

@@ -935,8 +935,11 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 [(string)$exception->getFQSEN()],
                 IssueFixSuggester::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception->getFQSEN())
             );
+        }
 
-            $union_type = $union_type->withType(Type::fromFullyQualifiedString('\Throwable'));
+        $throwable_type = Type::fromFullyQualifiedString('\Throwable');
+        if ($union_type->isEmpty() || !$union_type->asExpandedTypes($this->code_base)->hasType($throwable_type)) {
+            $union_type = $union_type->withType($throwable_type);
         }
 
         $variable_name = (new ContextNode(
