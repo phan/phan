@@ -25,13 +25,18 @@ New features(CLI, Configs)
   New issue types: `PhanTypeExpectedObjectOrClassNameInvalidName` (emitted if the name can't be used as a class)
   This will also emit `PhanUndeclaredClass` if the class name could not be found.
 
+Language Server/Daemon mode:
++ Fix another rare bug that can cause crashes in the polyfill/fallback parser when parsing invalid or incomplete ASTs.
++ Add a `--language-server-hide-category` setting to hide the issue category from diagnostic messages.
++ Remove the numeric diagnostic code from the language server diagnostics (issues).
+  (E.g. LanguageClient-neovim would render that the code in the quickfix menu)
+
 New features(Analysis)
 + Support analysis of [`list()` reference assignment](https://wiki.php.net/rfc/list_reference_assignment) for php 7.3 (which is still in alpha). (#1537)
 
 Bug fixes:
 + Fix a bug causing Phan to infer extra wrong types (`ancestorClass[][]`) for `@return className[]` (#1822)
 + Start warning about assignment operations (e.g. `+=`) when the modified variable isn't referenced later in the function.
-+ Fix another rare bug that can cause crashes in the polyfill/fallback parser when parsing invalid or incomplete ASTs.
 
 16 Jun 2018, Phan 0.12.13
 -------------------------

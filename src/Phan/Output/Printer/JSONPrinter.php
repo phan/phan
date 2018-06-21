@@ -9,7 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class JSONPrinter implements BufferedPrinterInterface
 {
 
-    /** @var  OutputInterface */
+    /** @var OutputInterface */
     private $output;
 
     /** @var array<int,array> */

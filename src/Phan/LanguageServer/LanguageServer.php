@@ -658,6 +658,10 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         }
         //$check_name = $issue['check_name'];
         $description = $issue['description'];
+        if (Config::getValue('language_server_hide_category_of_issues')) {
+            // See JSONPrinter.php for how $description is built
+            $description = explode(' ', $description, 2)[1];
+        }
         if (isset($issue['suggestion'])) {
             $description .= ' (' . $issue['suggestion'] . ')';
         }
@@ -674,7 +678,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $range = new Range(new Position($start_line - 1, 0), new Position($start_line, 0));
         $diagnostic_severity = self::diagnosticSeverityFromPhanSeverity($severity);
         // TODO: copy issue code in 'json' format
-        return [$issue_uri, new Diagnostic($description, $range, $issue['type_id'], $diagnostic_severity, 'Phan')];
+        return [$issue_uri, new Diagnostic($description, $range, null, $diagnostic_severity, 'Phan')];
     }
 
     /**

@@ -746,6 +746,10 @@ class Config
         // Affects "go to definition" and "go to type definition"
         'language_server_enable_go_to_definition' => false,
 
+        // Don't show the category name in issue messages.
+        // This makes error messages slightly shorter.
+        'language_server_hide_category_of_issues' => false,
+
         // Can be set to false to disable the plugins Phan uses to infer more accurate return types of array_map, array_filter, etc.
         // Phan is slightly faster when these are disabled.
         'enable_internal_return_type_plugins' => true,

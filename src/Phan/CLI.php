@@ -112,6 +112,7 @@ class CLI
                 'language-server-tcp-connect:',
                 'language-server-tcp-server:',
                 'language-server-verbose',
+                'language-server-hide-category',
                 'language-server-allow-missing-pcntl',
                 'language-server-force-missing-pcntl',
                 'language-server-require-pcntl',
@@ -156,7 +157,7 @@ class CLI
         }
 
         // Determine the root directory of the project from which
-        // we root all relative paths passed in as args
+        // we route all relative paths passed in as args
         $overriden_project_root_directory = $opts['d'] ?? $opts['project-root-directory'] ?? null;
         if (\is_string($overriden_project_root_directory)) {
             if (!\is_dir($overriden_project_root_directory)) {
@@ -355,6 +356,9 @@ class CLI
                 case 'language-server-force-missing-pcntl':
                 case 'language-server-require-pcntl':
                     break;  // handled earlier
+                case 'language-server-hide-category':
+                    Config::setValue('language_server_hide_category_of_issues', true);
+                    break;
                 case 'disable-plugins':
                     // Slightly faster, e.g. for daemon mode with lowest latency (along with --quick).
                     Config::setValue('plugins', []);
@@ -858,6 +862,10 @@ Extended help:
   Noop (This is the default behavior).
   Allow the fallback that doesn't use pcntl (New and experimental) to be used if the pcntl extension is not installed.
   This is useful for running the language server on Windows.
+
+ --language-server-hide-category
+  Remove the Phan issue category from diagnostic messages.
+  Makes issue messages slightly shorter.
 
  --language-server-force-missing-pcntl
   Force Phan to use the fallback for when pcntl is absent (New and experimental). Useful for debugging that fallback.
