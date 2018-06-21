@@ -16,6 +16,7 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
+use Phan\Language\Type\GenericArrayInterface;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
@@ -1548,7 +1549,7 @@ class UnionType implements \Serializable
     public function hasGenericArray() : bool
     {
         return $this->hasTypeMatchingCallback(function (Type $type) : bool {
-            return $type->isGenericArray();
+            return $type instanceof GenericArrayInterface;
         });
     }
 
@@ -1607,7 +1608,7 @@ class UnionType implements \Serializable
         }
 
         return !$this->hasTypeMatchingCallback(function (Type $type) : bool {
-            return $type !== ArrayType::instance(false) && !$type->isGenericArray();
+            return !($type instanceof ArrayType) || $type->getIsNullable();
         });
     }
 
@@ -1787,7 +1788,7 @@ class UnionType implements \Serializable
     public function nonGenericArrayTypes() : UnionType
     {
         return $this->makeFromFilter(function (Type $type) : bool {
-            return !$type->isGenericArray();
+            return !($type instanceof GenericArrayInterface);
         });
     }
 
@@ -1802,7 +1803,7 @@ class UnionType implements \Serializable
     public function genericArrayTypes() : UnionType
     {
         return $this->makeFromFilter(function (Type $type) : bool {
-            return $type->isGenericArray();
+            return $type instanceof GenericArrayInterface;
         });
     }
 
@@ -1964,8 +1965,7 @@ class UnionType implements \Serializable
     {
         return $this->makeFromFilter(
             function (Type $type) : bool {
-                return !$type->isGenericArray()
-                    && $type !== ArrayType::instance(false);
+                return !($type instanceof ArrayType);
             }
         );
     }
@@ -1981,7 +1981,7 @@ class UnionType implements \Serializable
         }
 
         return !$this->hasTypeMatchingCallback(function (Type $type) : bool {
-            return !$type->isGenericArray();
+            return !($type instanceof GenericArrayInterface);
         });
     }
 
@@ -2099,7 +2099,7 @@ class UnionType implements \Serializable
         $builder = new UnionTypeBuilder();
         $type_set = $this->type_set;
         foreach ($type_set as $type) {
-            if ($type->isGenericArray()) {
+            if ($type instanceof GenericArrayInterface) {
                 if ($type instanceof ArrayShapeType) {
                     $builder->addUnionType($type->genericArrayElementUnionType());
                 } else {

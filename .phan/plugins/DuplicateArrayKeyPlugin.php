@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use Phan\AST\ContextNode;
+use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
 use Phan\Issue;
@@ -171,9 +172,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             } else {
                 $key = $context_node->getValueForMagicConst();
             }
-            if ($key === null) {
-                $key = '';
-            }
+            return $key ?? '';
         } catch (IssueException $e) {
             // This is redundant, but do it anyway
             Issue::maybeEmitInstance(
@@ -181,6 +180,8 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $e->getIssueInstance()
             );
+        } catch (CodeBaseException $e) {
+            // e.g. Can't find the class (ignore)
         } catch (NodeException $e) {
             // E.g. Can't figure out constant class in node
             // (ignore)

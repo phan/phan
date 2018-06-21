@@ -589,7 +589,8 @@ class ConditionVisitor extends KindVisitorImplementation
             // (E.g. T[]|false becomes T[], ?array|null becomes array
             $new_type_builder = new UnionTypeBuilder();
             foreach ($variable->getUnionType()->getTypeSet() as $type) {
-                if ($type->isGenericArray()) {
+                if ($type instanceof ArrayType) {
+                    // @phan-suppress-next-line PhanUndeclaredMethod TODO: Support intersection types
                     $new_type_builder->addType($type->withIsNullable(false));
                     continue;
                 }

@@ -241,6 +241,7 @@ class UnionTypeTest extends BaseTest
     public function testGenericArrayTypeFromString()
     {
         $type = Type::fromFullyQualifiedString("int[][]");
+        assert($type instanceof GenericArrayType);
 
         $this->assertEquals(
             $type->genericArrayElementType()->__toString(),

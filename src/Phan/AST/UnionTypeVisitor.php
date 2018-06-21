@@ -34,6 +34,7 @@ use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FloatType;
+use Phan\Language\Type\GenericArrayInterface;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
@@ -123,8 +124,8 @@ class UnionTypeVisitor extends AnalysisVisitor
         bool $should_catch_issue_exception = true
     ) : UnionType {
         if (!($node instanceof Node)) {
-            // TODO: String null shouldn't be a special case (or should be case insensitive)?
             if ($node === null) {
+                // NOTE: Parameter default checks expect this to return empty
                 return UnionType::empty();
             }
             return Type::fromObject($node)->asUnionType();
@@ -1954,10 +1955,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                     if ($union_type->genericArrayElementTypes()->hasStaticType()) {
                         // Find the static type on the list
                         $static_type = $union_type->findTypeMatchingCallback(function (Type $type) : bool {
-                            return (
-                                $type->isGenericArray()
-                                && $type->genericArrayElementUnionType()->hasStaticType()
-                            );
+                            return $type instanceof GenericArrayInterface
+                                && $type->genericArrayElementUnionType()->hasStaticType();  // @phan-suppress-current-line PhanUndeclaredMethod TODO: Support intersection types
                         });
 
                         // Remove it from the list
@@ -2813,7 +2812,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node $node
+     * @param Node|array|string|bool|float|int|null $node
      * @return ?string - One of the values for the LiteralStringType, or null
      */
     public static function anyStringLiteralForNode(

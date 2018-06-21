@@ -11,7 +11,7 @@ use Phan\CodeBase;
  *
  * This is generated from phpdoc array<int, T1|T2> where callers expect a subclass of Type.
  */
-final class GenericMultiArrayType extends ArrayType implements MultiType
+final class GenericMultiArrayType extends ArrayType implements MultiType, GenericArrayInterface
 {
     /** @phan-override */
     const NAME = 'array';
@@ -144,6 +144,14 @@ final class GenericMultiArrayType extends ArrayType implements MultiType
             ?? ($this->element_types_union_type = UnionType::of(
                 UnionType::normalizeMultiTypes($this->element_types)
             ));
+    }
+
+    /**
+     * @unused (hopefully)
+     */
+    public function genericArrayElementType() : Type
+    {
+        return MixedType::instance(false);
     }
 
     public function __toString() : string

@@ -13,7 +13,7 @@ use Phan\Config;
 use ast\Node;
 use InvalidArgumentException;
 
-final class GenericArrayType extends ArrayType
+final class GenericArrayType extends ArrayType implements GenericArrayInterface
 {
     /** @phan-override */
     const NAME = 'array';

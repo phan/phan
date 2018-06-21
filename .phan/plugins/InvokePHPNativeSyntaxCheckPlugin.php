@@ -73,6 +73,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
      * @param Node $node the node @phan-unused-param
      * @return void
      * @override
+     * @throws Error if a process fails to shut down
      */
     public function afterAnalyzeFile(
         CodeBase $code_base,
@@ -87,6 +88,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
 
     /**
      * @suppress PhanPartialTypeMismatchArgument
+     * @throws Error if a syntax check process fails to shut down
      */
     private function awaitIncompleteProcesses(CodeBase $code_base, int $max_incomplete_processes)
     {
@@ -108,6 +110,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
 
     /**
      * @override
+     * @throws Error if a syntax check process fails to shut down.
      */
     public function finalizeProcess(CodeBase $code_base)
     {

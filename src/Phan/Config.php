@@ -371,10 +371,16 @@ class Config
         // are not documented in the PHPDoc of functions, methods, and closures.
         'warn_about_undocumented_throw_statements' => false,
 
+        // If enabled (and `warn_about_undocumented_throw_statements` is enabled),
+        // Phan will warn about function/closure/method invocations that have `@throws`
+        // that aren't caught or documented in the invoking method.
+
+        'warn_about_undocumented_exceptions_thrown_by_invoked_functions' => false,
+
         // Phan will not warn about lack of documentation of (at)throws for any of the configured classes or their subclasses.
         // This only matters when warn_about_undocumented_throw_statements is true.
-        // The default is the empty array (Warn about every kind of Throwable)
-        // (E.g. ['\RuntimeException', '\AssertionError', '\TypeError'])
+        // The default is the empty array (Don't suppress any warnings)
+        // (E.g. ['RuntimeException', 'AssertionError', 'TypeError'])
         'exception_classes_with_optional_throws_phpdoc' => [ ],
 
         // This setting maps case insensitive strings to union types.

@@ -339,7 +339,9 @@ class Issue
     const CommentOverrideOnNonOverrideConstant = 'PhanCommentOverrideOnNonOverrideConstant';
     const CommentParamOutOfOrder           = 'PhanCommentParamOutOfOrder';
     const ThrowTypeAbsent                  = 'PhanThrowTypeAbsent';
+    const ThrowTypeAbsentForCall           = 'PhanThrowTypeAbsentForCall';
     const ThrowTypeMismatch                = 'PhanThrowTypeMismatch';
+    const ThrowTypeMismatchForCall         = 'PhanThrowTypeMismatchForCall';
 
 
     const CATEGORY_ACCESS            = 1 << 1;
@@ -2862,9 +2864,17 @@ class Issue
                 self::ThrowTypeAbsent,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "{METHOD}() can throw {TYPE} here, but has no '@throws' declarations",
+                "{METHOD}() can throw {TYPE} here, but has no '@throws' declarations for that class",
                 self::REMEDIATION_A,
                 16011
+            ),
+            new Issue(
+                self::ThrowTypeAbsentForCall,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "{METHOD}() can throw {TYPE} because it calls {FUNCTIONLIKE}(), but has no '@throws' declarations for that class",
+                self::REMEDIATION_A,
+                16012
             ),
             new Issue(
                 self::ThrowTypeMismatch,
@@ -2872,7 +2882,15 @@ class Issue
                 self::SEVERITY_LOW,
                 "{METHOD}() throws {TYPE}, but it only has declarations of '@throws {TYPE}'",
                 self::REMEDIATION_A,
-                16012
+                16013
+            ),
+            new Issue(
+                self::ThrowTypeMismatchForCall,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "{METHOD}() throws {TYPE} because it calls {FUNCTIONLIKE}(), but it only has declarations of '@throws {TYPE}'",
+                self::REMEDIATION_A,
+                16014
             ),
         ];
 
