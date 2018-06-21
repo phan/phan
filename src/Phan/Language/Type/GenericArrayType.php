@@ -310,8 +310,6 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
                 return $union_type;
             }
 
-            \assert($class_fqsen instanceof FullyQualifiedClassName);
-
             if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
                 return $union_type;
             }
@@ -321,7 +319,7 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
             $class_union_type = $clazz->getUnionType();
             $additional_union_type = $clazz->getAdditionalTypes();
             if ($additional_union_type !== null) {
-                $class_union_type = $union_type->withUnionType($additional_union_type);
+                $class_union_type = $class_union_type->withUnionType($additional_union_type);
             }
 
             $union_type = $union_type->withUnionType(
@@ -330,9 +328,9 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
 
             // Recurse up the tree to include all types
             $recursive_union_type_builder = new UnionTypeBuilder();
-            $representation = (string)$this;
+            $representation = $this->__toString();
             foreach ($union_type->getTypeSet() as $clazz_type) {
-                if ((string)$clazz_type != $representation) {
+                if ($clazz_type->__toString() !== $representation) {
                     $recursive_union_type_builder->addUnionType(
                         $clazz_type->asExpandedTypes(
                             $code_base,
@@ -346,15 +344,26 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
 
             // Add in aliases
             // (If enable_class_alias_support is false, this will do nothing)
-            $fqsen_aliases = $code_base->getClassAliasesByFQSEN($class_fqsen);
-            foreach ($fqsen_aliases as $alias_fqsen_record) {
-                $alias_fqsen = $alias_fqsen_record->alias_fqsen;
-                $recursive_union_type_builder->addType(
-                    $alias_fqsen->asType()->asGenericArrayType($this->key_type)
-                );
+            if (Config::getValue('enable_class_alias_support')) {
+                self::addClassAliases($code_base, $recursive_union_type_builder, $class_fqsen);
             }
             return $recursive_union_type_builder->getUnionType();
         });
+    }
+
+    // (If enable_class_alias_support is false, this will not be called)
+    private function addClassAliases(
+        CodeBase $code_base,
+        UnionTypeBuilder $union_type_builder,
+        FullyQualifiedClassName $class_fqsen
+    ) {
+        $fqsen_aliases = $code_base->getClassAliasesByFQSEN($class_fqsen);
+        foreach ($fqsen_aliases as $alias_fqsen_record) {
+            $alias_fqsen = $alias_fqsen_record->alias_fqsen;
+            $union_type_builder->addType(
+                $alias_fqsen->asType()->asGenericArrayType($this->key_type)
+            );
+        }
     }
 
     public static function keyTypeFromUnionTypeKeys(UnionType $union_type) : int
