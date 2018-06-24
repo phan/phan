@@ -7,7 +7,6 @@ $code_base = require_once(__DIR__ . '/../../src/codebase.php');
 require_once(__DIR__ . '/../../src/Phan/Bootstrap.php');
 
 use Phan\CLI;
-use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Output\Collector\BufferingCollector;
@@ -15,7 +14,6 @@ use Phan\Output\Filter\CategoryIssueFilter;
 use Phan\Output\Filter\ChainedIssueFilter;
 use Phan\Output\Filter\FileIssueFilter;
 use Phan\Output\Filter\MinimumSeverityFilter;
-use Phan\Output\ParallelConsoleOutput;
 use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Phan\Phan;
@@ -47,15 +45,15 @@ if ($inner_config['ignore-undeclared'] ?? false) {
 }
 
 if (isset($inner_config['quick'])) {
-    Config::get()->quick_mode = (bool)$inner_config['quick'];
+    Config::setValue('quick_mode', (bool)$inner_config['quick']);
 }
 
 if (isset($inner_config['backward-compatibility-checks'])) {
-    Config::get()->backward_compatibility_checks = (bool)$inner_config['backward-compatibility-checks'];
+    Config::setValue('backward_compatibility_checks', (bool)$inner_config['backward-compatibility-checks']);
 }
 
 if (isset($inner_config['dead-code-detection'])) {
-    Config::get()->dead_code_detection = (bool)$inner_config['dead-code-detection'];
+    Config::setValue('dead_code_detection', (bool)$inner_config['dead-code-detection']);
 }
 
 if (isset($inner_config['file_extensions'])) {
@@ -103,7 +101,7 @@ if (empty($include_paths)) {
 
 $output = new ConsoleOutput();
 $factory = new PrinterFactory();
-Config::get()->markdown_issue_messages = true;
+Config::setValue('markdown_issue_messages', true);
 $printer = $factory->getPrinter('codeclimate', $output);
 Phan::setPrinter($printer);
 

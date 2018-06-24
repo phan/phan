@@ -1341,7 +1341,7 @@ class CodeBase
             // (All of the functions were loaded during initialization)
             //
             // Also, skip over user-defined global functions defined **by Phan** and its dependencies for analysis
-            if (!Config::get()->ignore_undeclared_functions_with_known_signatures) {
+            if (!Config::getValue('ignore_undeclared_functions_with_known_signatures')) {
                 return false;
             }
             // If we already created the alternates, do nothing.

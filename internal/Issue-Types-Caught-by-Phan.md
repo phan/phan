@@ -292,7 +292,7 @@ This category of issue is emitted when there are compatibility issues. They will
 
 This issue will be thrown if there is an expression that may be treated differently in PHP7 than it was in previous major versions of the PHP runtime. Take a look at the [PHP7 Migration Manual](http://php.net/manual/en/migration70.incompatible.php) to understand changes in behavior.
 
-The config `Config::get()->backward_compatibility_checks` must be enabled for this to run such as by passing the command line argument `--backward-compatibility-checks` or by defining it in a `.phan/config.php` file such as [Phan's own config](https://github.com/phan/phan/blob/master/.phan/config.php).
+The config `backward_compatibility_checks` must be enabled for this to run such as by passing the command line argument `--backward-compatibility-checks` or by defining it in a `.phan/config.php` file such as [Phan's own config](https://github.com/phan/phan/blob/master/.phan/config.php).
 
 ```
 {CLASS} expression may not be PHP 7 compatible
@@ -338,7 +338,7 @@ Type '{TYPE}' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, 
 
 This issue will be thrown if there is an expression that may be treated differently in PHP7 than it was in previous major versions of the PHP runtime. Take a look at the [PHP7 Migration Manual](http://php.net/manual/en/migration70.incompatible.php) to understand changes in behavior.
 
-The config `Config::get()->backward_compatibility_checks` must be enabled for this to run such as by passing the command line argument `--backward-compatibility-checks` or by defining it in a `.phan/config.php` file such as [Phan's own config](https://github.com/phan/phan/blob/master/.phan/config.php).
+The config `backward_compatibility_checks` must be enabled for this to run such as by passing the command line argument `--backward-compatibility-checks` or by defining it in a `.phan/config.php` file such as [Phan's own config](https://github.com/phan/phan/blob/master/.phan/config.php).
 
 ```
 Expression may not be PHP 7 compatible
@@ -600,13 +600,13 @@ Catch statement for {CLASSLIKE} is unreachable. An earlier catch statement at li
 
 Similar issues exist for PhanUnreferencedProperty, PhanUnreferencedConstant, PhanUnreferencedMethod, and PhanUnreferencedFunction
 
-This issue is disabled by default, but can be enabled by setting `Config::get()->dead_code_detection` to enabled. It indicates that the given element is (possibly) unused.
+This issue is disabled by default, but can be enabled by setting `dead_code_detection` to enabled. It indicates that the given element is (possibly) unused.
 
 ```
 Possibly zero references to class {CLASS}
 ```
 
-This will be emitted for the following code so long as `Config::get()->dead_code_detection` is enabled.
+This will be emitted for the following code so long as `dead_code_detection` is enabled.
 
 ```php
 class C {}
@@ -2129,7 +2129,7 @@ Reference to undeclared static method {METHOD} in callable
 
 ## PhanUndeclaredStaticProperty
 
-Attempting to read a property that doesn't exist will result in this issue. You'll also see this issue if you write to an undeclared static property so long as `Config::get()->allow_missing_property` is false (which defaults to true).
+Attempting to read a property that doesn't exist will result in this issue. You'll also see this issue if you write to an undeclared static property so long as `allow_missing_property` is false (which defaults to true).
 
 ```
 Static property '{PROPERTY}' on {CLASS} is undeclared

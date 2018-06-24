@@ -897,6 +897,7 @@ class Config
      */
     public function __get(string $name)
     {
+        trigger_error("Getting Config values using __get is deprecated; use Config::getValue() instead", E_USER_DEPRECATED);
         return self::getValue($name);
     }
 
@@ -923,6 +924,7 @@ class Config
      */
     public function __set(string $name, $value)
     {
+        trigger_error("Setting Config values using __set is deprecated; use Config::setValue() instead", E_USER_DEPRECATED);
         self::setValue($name, $value);
     }
 
