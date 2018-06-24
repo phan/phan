@@ -339,6 +339,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         Context $context,
         Func $func
     ) {
+        // skip adding $this to internal scope if the closure is a static one
+        if ($func->getNode() instanceof Node && ($func->getNode()->flags == \ast\flags\MODIFIER_STATIC))
+        {
+            return;
+        }
+
         $override_this_fqsen = self::getOverrideClassFQSEN($code_base, $func);
         if ($override_this_fqsen !== null) {
             if ($context->getScope()->hasVariableWithName('this') || !$context->isInClassScope()) {
