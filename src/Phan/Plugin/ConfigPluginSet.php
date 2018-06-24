@@ -389,6 +389,8 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
+     * @param CodeBase $code_base
+     * @param string $file_path
      * @return array<string,array<int,int>> Maps 0 or more issue types to a *list* of lines that this plugin set is going to suppress.
      */
     public function getIssueSuppressionList(
@@ -501,6 +503,7 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
+     * @param CodeBase $code_base
      * @return array<string,\Closure> maps FQSEN string to closure
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
@@ -525,6 +528,7 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
+     * @param CodeBase $code_base
      * @return array<string,\Closure> maps FQSEN string to closure
      */
     public function getReturnTypeOverrides(CodeBase $code_base) : array
@@ -538,6 +542,7 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
+     * @param CodeBase $code_base
      * @param ?Request $request
      * @return ?RAII
      */
@@ -639,7 +644,7 @@ final class ConfigPluginSet extends PluginV2 implements
             $plugin_set[] = new VariableTrackerPlugin();
         }
         if (self::requiresPluginBasedBuiltinSuppressions()) {
-            if (function_exists('token_get_all')) {
+            if (\function_exists('token_get_all')) {
                 $plugin_set[] = new BuiltinSuppressionPlugin();
             } else {
                 fwrite(STDERR, "ext-tokenizer is required for file-based and line-based suppressions to work, as well as the error-tolerant parser fallback." . PHP_EOL);
@@ -683,12 +688,10 @@ final class ConfigPluginSet extends PluginV2 implements
     private static function filterOutEmptyMethodBodies(array $plugin_set, string $method_name) : array
     {
         return \array_values(\array_filter($plugin_set, function (PluginV2 $plugin) use ($method_name) : bool {
-            if ($plugin instanceof PluginImplementation) {
-                if (!$plugin->isDefinedInSubclass($method_name)) {
-                    // PluginImplementation defines empty method bodies for each of the plugin $method_names
-                    // Don't execute $method_name for a plugin during analysis if the subclass didn't override the implementation for $method_name.
-                    return false;
-                }
+            if ($plugin instanceof PluginImplementation && !PluginImplementation::isDefinedInSubclass($method_name)) {
+                // PluginImplementation defines empty method bodies for each of the plugin $method_names
+                // Don't execute $method_name for a plugin during analysis if the subclass didn't override the implementation for $method_name.
+                return false;
             }
             return true;
         }));
@@ -707,10 +710,8 @@ final class ConfigPluginSet extends PluginV2 implements
                 if ($plugin instanceof PreAnalyzeNodeCapability) {
                     throw new \TypeError(sprintf("plugin %s should implement only one of LegacyPreAnalyzeNodeCapability and PreAnalyzeNodeCapability, not both", get_class($plugin)));
                 }
-                if ($plugin instanceof PluginImplementation) {
-                    if (!$plugin->isDefinedInSubclass('preAnalyzeNode')) {
-                        continue;
-                    }
+                if ($plugin instanceof PluginImplementation && !PluginImplementation::isDefinedInSubclass('preAnalyzeNode')) {
+                    continue;
                 }
                 $closure = (new \ReflectionMethod($plugin, 'preAnalyzeNode'))->getClosure($plugin);
                 $closures_for_kind->recordForAllKinds($closure);
@@ -740,7 +741,7 @@ final class ConfigPluginSet extends PluginV2 implements
                     fprintf(
                         STDERR,
                         "Plugin %s has an preAnalyzeNode visitor %s (subclass of %s) which doesn't override any known visit<Suffix>() methods, but expected at least one method to be overridden\n",
-                        get_class($plugin),
+                        \get_class($plugin),
                         $plugin_analysis_class,
                         PluginAwarePreAnalysisVisitor::class
                     );
@@ -781,27 +782,25 @@ final class ConfigPluginSet extends PluginV2 implements
                 throw new \TypeError(
                     sprintf(
                         "plugin %s should implement only one of LegacyAnalyzeNodeCapability, AnalyzeNodeCapability, LegacyPostAnalyzeNodeCapability, or PostAnalyzeNodeCapability. PostAnalyzeNodeCapability is preferred.",
-                        get_class($plugin)
+                        \get_class($plugin)
                     )
                 );
             }
             // TODO: Get rid of LegacyAnalyzeNodeCapability and AnalyzeNodeCapability.
             if ($plugin instanceof LegacyAnalyzeNodeCapability) {
-                if ($plugin instanceof PluginImplementation) {
-                    if (!$plugin->isDefinedInSubclass('analyzeNode')) {
-                        continue;
-                    }
+                if ($plugin instanceof PluginImplementation && !PluginImplementation::isDefinedInSubclass('analyzeNode')) {
+                    continue;
                 }
+
                 $closure = (new \ReflectionMethod($plugin, 'analyzeNode'))->getClosure($plugin);
                 $closures_for_kind->recordForAllKinds(function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list) use ($closure) {
                     $closure($code_base, $context, $node, \end($parent_node_list) ?: null);
                 });
             } elseif ($plugin instanceof LegacyPostAnalyzeNodeCapability) {
-                if ($plugin instanceof PluginImplementation) {
-                    if (!$plugin->isDefinedInSubclass('analyzeNode')) {
-                        continue;
-                    }
+                if ($plugin instanceof PluginImplementation && !PluginImplementation::isDefinedInSubclass('analyzeNode')) {
+                    continue;
                 }
+
                 $closure = (new \ReflectionMethod($plugin, 'analyzeNode'))->getClosure($plugin);
                 $closures_for_kind->recordForAllKinds($closure);
             } elseif ($plugin instanceof AnalyzeNodeCapability) {
@@ -810,7 +809,7 @@ final class ConfigPluginSet extends PluginV2 implements
                     throw new \TypeError(
                         sprintf(
                             "Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not",
-                            get_class($plugin),
+                            \get_class($plugin),
                             PluginAwareAnalysisVisitor::class,
                             $plugin_analysis_class
                         )
@@ -833,7 +832,7 @@ final class ConfigPluginSet extends PluginV2 implements
                     fprintf(
                         STDERR,
                         "Plugin %s has an analyzeNode visitor %s (subclass of %s) which doesn't override any known visit<Suffix>() methods, but expected at least one method to be overridden\n",
-                        get_class($plugin),
+                        \get_class($plugin),
                         $plugin_analysis_class,
                         PluginAwareAnalysisVisitor::class
                     );
@@ -845,7 +844,7 @@ final class ConfigPluginSet extends PluginV2 implements
                     throw new \TypeError(
                         sprintf(
                             "Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not",
-                            get_class($plugin),
+                            \get_class($plugin),
                             PluginAwarePostAnalysisVisitor::class,
                             $plugin_analysis_class
                         )
@@ -927,7 +926,7 @@ final class ConfigPluginSet extends PluginV2 implements
         foreach ($plugin_set as $plugin) {
             // Don't use instanceof, avoid triggering class autoloader unnecessarily.
             // (load one less file)
-            if (get_class($plugin) === 'UnusedSuppressionPlugin') {
+            if (\get_class($plugin) === 'UnusedSuppressionPlugin') {
                 return $plugin;
             }
         }
