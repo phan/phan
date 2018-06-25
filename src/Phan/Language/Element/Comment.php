@@ -696,7 +696,7 @@ class Comment
         string $original_type
     ) : string {
         // TODO: Would need to pass in CodeBase to emit an issue:
-        $type = Config::get()->phpdoc_type_mapping[\strtolower($original_type)] ?? null;
+        $type = Config::getValue('phpdoc_type_mapping')[\strtolower($original_type)] ?? null;
         if (\is_string($type)) {
             return $type;
         }

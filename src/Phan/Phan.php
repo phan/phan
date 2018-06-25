@@ -391,7 +391,7 @@ class Phan implements IgnoredFilesFilterInterface
             // Collect all issues, blocking
             self::display();
 
-            if (Config::get()->print_memory_usage_summary) {
+            if (Config::getValue('print_memory_usage_summary')) {
                 self::printMemoryUsageSummary();
             }
         } catch (Exception $e) {
