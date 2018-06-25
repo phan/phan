@@ -24,6 +24,7 @@ New features(CLI, Configs)
 + Warn when string literals refer to invalid class names (E.g. `$myClass::SOME_CONSTANT`). (#1794)
   New issue types: `PhanTypeExpectedObjectOrClassNameInvalidName` (emitted if the name can't be used as a class)
   This will also emit `PhanUndeclaredClass` if the class name could not be found.
++ Make Phan aware that `$this` doesn't exist in a static closure (#768)
 
 Language Server/Daemon mode:
 + Fix another rare bug that can cause crashes in the polyfill/fallback parser when parsing invalid or incomplete ASTs.
