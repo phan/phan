@@ -683,12 +683,13 @@ final class ConfigPluginSet extends PluginV2 implements
 
     /**
      * @param array<int,PluginV2> $plugin_set
+     * @param string $method_name
      * @return array<int,mixed> (TODO: Can't precisely annotate without improved (at)template analysis)
      */
     private static function filterOutEmptyMethodBodies(array $plugin_set, string $method_name) : array
     {
         return \array_values(\array_filter($plugin_set, function (PluginV2 $plugin) use ($method_name) : bool {
-            if ($plugin instanceof PluginImplementation && !PluginImplementation::isDefinedInSubclass($method_name)) {
+            if ($plugin instanceof PluginImplementation && !$plugin->isDefinedInSubclass($method_name)) {
                 // PluginImplementation defines empty method bodies for each of the plugin $method_names
                 // Don't execute $method_name for a plugin during analysis if the subclass didn't override the implementation for $method_name.
                 return false;
@@ -708,9 +709,9 @@ final class ConfigPluginSet extends PluginV2 implements
         foreach ($plugin_set as $plugin) {
             if ($plugin instanceof LegacyPreAnalyzeNodeCapability) {
                 if ($plugin instanceof PreAnalyzeNodeCapability) {
-                    throw new \TypeError(sprintf("plugin %s should implement only one of LegacyPreAnalyzeNodeCapability and PreAnalyzeNodeCapability, not both", get_class($plugin)));
+                    throw new \TypeError(sprintf("plugin %s should implement only one of LegacyPreAnalyzeNodeCapability and PreAnalyzeNodeCapability, not both", \get_class($plugin)));
                 }
-                if ($plugin instanceof PluginImplementation && !PluginImplementation::isDefinedInSubclass('preAnalyzeNode')) {
+                if ($plugin instanceof PluginImplementation && !$plugin->isDefinedInSubclass('preAnalyzeNode')) {
                     continue;
                 }
                 $closure = (new \ReflectionMethod($plugin, 'preAnalyzeNode'))->getClosure($plugin);
@@ -721,7 +722,7 @@ final class ConfigPluginSet extends PluginV2 implements
                     throw new \TypeError(
                         sprintf(
                             "Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not",
-                            get_class($plugin),
+                            \get_class($plugin),
                             PluginAwarePreAnalysisVisitor::class,
                             $plugin_analysis_class
                         )
@@ -788,7 +789,7 @@ final class ConfigPluginSet extends PluginV2 implements
             }
             // TODO: Get rid of LegacyAnalyzeNodeCapability and AnalyzeNodeCapability.
             if ($plugin instanceof LegacyAnalyzeNodeCapability) {
-                if ($plugin instanceof PluginImplementation && !PluginImplementation::isDefinedInSubclass('analyzeNode')) {
+                if ($plugin instanceof PluginImplementation && !$plugin->isDefinedInSubclass('analyzeNode')) {
                     continue;
                 }
 
@@ -797,7 +798,7 @@ final class ConfigPluginSet extends PluginV2 implements
                     $closure($code_base, $context, $node, \end($parent_node_list) ?: null);
                 });
             } elseif ($plugin instanceof LegacyPostAnalyzeNodeCapability) {
-                if ($plugin instanceof PluginImplementation && !PluginImplementation::isDefinedInSubclass('analyzeNode')) {
+                if ($plugin instanceof PluginImplementation && !$plugin->isDefinedInSubclass('analyzeNode')) {
                     continue;
                 }
 
@@ -890,7 +891,7 @@ final class ConfigPluginSet extends PluginV2 implements
                     fprintf(
                         STDERR,
                         "Plugin %s has an analyzeNode visitor %s (subclass of %s) which doesn't override any known visit<Suffix>() methods, but expected at least one method to be overridden\n",
-                        get_class($plugin),
+                        \get_class($plugin),
                         $plugin_analysis_class,
                         PluginAwarePostAnalysisVisitor::class
                     );
