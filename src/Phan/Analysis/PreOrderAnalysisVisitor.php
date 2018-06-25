@@ -340,7 +340,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         Func $func
     ) {
         // skip adding $this to internal scope if the closure is a static one
-        if ($func->getNode() instanceof Node && ($func->getNode()->flags == \ast\flags\MODIFIER_STATIC))
+        if ($func->getFlags() == \ast\flags\MODIFIER_STATIC)
         {
             return;
         }
