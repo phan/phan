@@ -124,7 +124,7 @@ class PluginImplementation extends Plugin
      * @return bool true if $method_name is defined by the subclass of PluginAwareAnalysisVisitor or PluginAwarePostAnalysisVisitor,
      * and not by PluginAware*AnalysisVisitor or one of its parents.
      */
-    final public static function isDefinedInSubclass(string $method_name) : bool
+    final public function isDefinedInSubclass(string $method_name) : bool
     {
         $method = new \ReflectionMethod(static::class, $method_name);
         return is_subclass_of($method->getDeclaringClass()->name, self::class);
