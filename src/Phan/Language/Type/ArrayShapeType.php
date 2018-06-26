@@ -75,11 +75,11 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     public function withoutField($field_key) : ArrayShapeType
     {
         $field_types = $this->field_types;
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
-        if (!\array_key_exists($field_key, $field_types)) {
+        // This check is written this way to avoid https://github.com/phan/phan/issues/1831
+        unset($field_types[$field_key]);
+        if (\count($field_types) === \count($this->field_types)) {
             return $this;
         }
-        unset($field_types[$field_key]);
         return self::fromFieldTypes($field_types, $this->is_nullable);
     }
 
