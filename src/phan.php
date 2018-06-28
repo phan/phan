@@ -37,7 +37,7 @@ $is_issue_found =
             if ($recomputeFileList) {
                 $cli->recomputeFileList();
             }
-            return $cli->getFileList();
+            return array('files' => $cli->getFileList(), 'refer_files' => $cli->getReferFileList());
         }  // Daemon mode will reload the file list.
     );
 

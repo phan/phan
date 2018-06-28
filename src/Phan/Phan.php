@@ -28,6 +28,9 @@ class Phan implements IgnoredFilesFilterInterface
     /** @var IssuePrinterInterface */
     public static $printer;
 
+    /** var Out_put_files */
+    public static $out_put_files;
+
     /** @var IssueCollectorInterface */
     private static $issue_collector;
 
@@ -38,6 +41,7 @@ class Phan implements IgnoredFilesFilterInterface
     {
         return self::$issue_collector;
     }
+
 
     /**
      * @param IssueCollectorInterface $issueCollector
@@ -104,8 +108,10 @@ class Phan implements IgnoredFilesFilterInterface
         if ($is_undoable_request) {
             $code_base->enableUndoTracking();
         }
-
-        $file_path_list = $file_path_lister();
+        $files_arr = $file_path_lister();
+        self::$out_put_files = $files_arr['files'];
+        $file_path_list = array_merge($files_arr['files'], $files_arr['refer_files']);
+        $file_path_list = array_unique($file_path_list);
 
         $file_count = count($file_path_list);
 
@@ -223,7 +229,7 @@ class Phan implements IgnoredFilesFilterInterface
             // Stop tracking undo operations, now that the parse phase is done.
             $code_base->disableUndoTracking();
         }
-
+        $analyze_file_path_list = array_intersect($files_arr['files'], $analyze_file_path_list);
         return self::finishAnalyzingRemainingStatements($code_base, $request, $analyze_file_path_list, $temporary_file_mapping);
     }
 
@@ -559,6 +565,9 @@ class Phan implements IgnoredFilesFilterInterface
      */
     public function isFilenameIgnored(string $filename) : bool
     {
+        if (!in_array($filename, self::$out_put_files)) {
+            return true;
+        }
         return self::isExcludedAnalysisFile($filename);
     }
 
