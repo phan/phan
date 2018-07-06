@@ -1,0 +1,3 @@
+%s:16 PhanTypeMismatchArgumentInternal Argument 1 (string) is \MyLittleProject\NumberStatus but \strlen() takes string
+%s:17 PhanTypeMismatchArgument Argument 1 (param) is \stdClass but \MyLittleProject\NumberStatus::ACCEPT_INSTANCE() takes \MyLittleProject\NumberStatus defined at %s:10
+%s:18 PhanTypeMismatchArgumentInternal Argument 1 (string) is \MyLittleProject\NumberStatus but \strlen() takes string
