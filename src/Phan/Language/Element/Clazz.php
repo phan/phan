@@ -2375,6 +2375,9 @@ class Clazz extends AddressableElement
         } else {
             $issue_type = Issue::RedefinedExtendedClass;
         }
+        if ($this->checkHasSuppressIssueAndIncrementCount($issue_type)) {
+            return;
+        }
         $first_context = $inherited_class->getContext();
         $second_context = $alternate_class->getContext();
 

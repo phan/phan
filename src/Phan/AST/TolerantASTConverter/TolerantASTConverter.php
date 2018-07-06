@@ -40,7 +40,7 @@ if (!class_exists('\ast\Node')) {
  * each time they are invoked,
  * so it's possible to have multiple callers use this without affecting each other.
  *
- * Compatibility: PHP 7.0
+ * Compatibility: PHP 7.0-7.2
  *
  * ----------------------------------------------------------------------------
  *
