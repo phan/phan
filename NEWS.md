@@ -1,6 +1,6 @@
 Phan NEWS
 
-?? ??? 2018, Phan 0.12.14 (dev)
+08 Jul 2018, Phan 0.12.14
 -------------------------
 
 New features(CLI, Configs)
