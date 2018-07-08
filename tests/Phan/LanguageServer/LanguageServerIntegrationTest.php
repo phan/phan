@@ -290,7 +290,7 @@ EOT;
 
             $cur_line = explode("\n", $new_file_contents)[$position->line] ?? '';
 
-            $message = "Unexpected definition for {$position->line}:{$position->character} (0-based) on line " . json_encode($cur_line);
+            $message = "Unexpected definition for {$position->line}:{$position->character} (0-based) on line \"" . $cur_line . '"';
             if ($expected_definition_response != $definition_response) {
                 var_export($definition_response);
             }
@@ -433,6 +433,11 @@ function example(MyClass $param_clss) {
 }
 use MyNS\SubNS\MyNamespacedClass;
 echo MyNamespacedClass::class;
+
+/** MyNamespacedClass is a class, \MyNS\SubNS\MyNamespacedClass is a different class (line 20) */
+function unused_example() {}
+// This is a comment referring to \MyClass (must be before a ast\Node)
+echo 'something';
 EOT;
         $definitions_file_uri = Utils::pathToUri(self::getLSPFolder() . '/src/definitions.php');
         return [
@@ -559,6 +564,24 @@ EOT;
                 $definitions_file_uri,
                 31,
             ],
+            [
+                $example_file_contents,
+                new Position(20, 10),  // MyNamespacedClass in doc comment
+                $definitions_file_uri,
+                31,
+            ],
+            [
+                $example_file_contents,
+                new Position(20, 40),  // MySub in doc comment
+                $definitions_file_uri,
+                31,
+            ],
+            [
+                $example_file_contents,
+                new Position(22, 35),  // MyClass in line comment
+                $definitions_file_uri,
+                9,
+            ],
         ];
     }
 
@@ -655,7 +678,7 @@ EOT;
                 ],
             ],
             'severity' => LanguageServer::diagnosticSeverityFromPhanSeverity($issue->getSeverity()),
-            'code' => $issue->getTypeId(),
+            'code' => null, // Deliberately leaving out $issue->getTypeId()
             'source' => 'Phan',
             'message' => $expected_message,
         ];

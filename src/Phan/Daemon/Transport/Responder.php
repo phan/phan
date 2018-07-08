@@ -13,11 +13,11 @@ interface Responder
     /**
      * @return ?array the request data(E.g. returns null if JSON is malformed)
      */
-    function getRequestData();
+    public function getRequestData();
 
     /**
      * This must be called exactly once
      * @return void
      */
-    function sendResponseAndClose(array $data);
+    public function sendResponseAndClose(array $data);
 }
