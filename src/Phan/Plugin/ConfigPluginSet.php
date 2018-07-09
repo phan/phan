@@ -85,53 +85,53 @@ final class ConfigPluginSet extends PluginV2 implements
 {
 
     /** @var array<int,Plugin>|null - Cached plugin set for this instance. Lazily generated. */
-    private $pluginSet;
+    private $plugin_set;
 
     /**
      * @var array<int,Closure>|null - plugins to analyze nodes in pre order.
      * @phan-var array<int,Closure(CodeBase,Context,Node):void>|null
      */
-    private $preAnalyzeNodePluginSet;
+    private $pre_analyze_node_plugin_set;
 
     /**
      * @var array<int,Closure> - plugins to analyze files
      * @phan-var array<int,Closure(string,Node):void>|null
      */
-    private $postAnalyzeNodePluginSet;
+    private $post_analyze_node_plugin_set;
 
     /**
      * @var array<int,BeforeAnalyzeFileCapability> - plugins to analyze files before phan's analysis of that file is completed.
      */
-    private $beforeAnalyzeFilePluginSet;
+    private $before_analyze_file_plugin_set;
 
     /**
      * @var array<int,AfterAnalyzeFileCapability> - plugins to analyze files after phan's analysis of that file is completed.
      */
-    private $afterAnalyzeFilePluginSet;
+    private $after_analyze_file_plugin_set;
 
     /** @var array<int,AnalyzeClassCapability>|null - plugins to analyze class declarations. */
-    private $analyzeClassPluginSet;
+    private $analyze_class_plugin_set;
 
     /** @var array<int,AnalyzeFunctionCallCapability>|null - plugins to analyze invocations of subsets of functions and methods. */
-    private $analyzeFunctionCallPluginSet;
+    private $analyze_function_call_plugin_set;
 
     /** @var array<int,AnalyzeFunctionCapability>|null - plugins to analyze function declarations. */
-    private $analyzeFunctionPluginSet;
+    private $analyze_function_plugin_set;
 
     /** @var array<int,AnalyzePropertyCapability>|null - plugins to analyze property declarations. */
-    private $analyzePropertyPluginSet;
+    private $analyze_property_plugin_set;
 
     /** @var array<int,AnalyzeMethodCapability>|null - plugins to analyze method declarations.*/
-    private $analyzeMethodPluginSet;
+    private $analyze_method_plugin_set;
 
     /** @var array<int,FinalizeProcessCapability>|null - plugins to call finalize() on after analysis is finished. */
-    private $finalizeProcessPluginSet;
+    private $finalize_process_plugin_set;
 
     /** @var array<int,ReturnTypeOverrideCapability>|null - plugins which generate return UnionTypes of functions based on arguments. */
-    private $returnTypeOverridePluginSet;
+    private $return_type_override_plugin_set;
 
     /** @var array<int,SuppressionCapability>|null - plugins which generate return UnionTypes of functions based on arguments. */
-    private $suppressionPluginSet;
+    private $suppression_plugin_set;
 
     /** @var ?UnusedSuppressionPlugin - TODO: Refactor*/
     private $unused_suppression_plugin = null;
@@ -192,7 +192,7 @@ final class ConfigPluginSet extends PluginV2 implements
         Context $context,
         Node $node
     ) {
-        $plugin_callback = $this->preAnalyzeNodePluginSet[$node->kind] ?? null;
+        $plugin_callback = $this->pre_analyze_node_plugin_set[$node->kind] ?? null;
         if ($plugin_callback !== null) {
             $plugin_callback(
                 $code_base,
@@ -226,7 +226,7 @@ final class ConfigPluginSet extends PluginV2 implements
         Node $node,
         array $parent_node_list = []
     ) {
-        $plugin_callback = $this->postAnalyzeNodePluginSet[$node->kind] ?? null;
+        $plugin_callback = $this->post_analyze_node_plugin_set[$node->kind] ?? null;
         if ($plugin_callback !== null) {
             $plugin_callback(
                 $code_base,
@@ -255,7 +255,7 @@ final class ConfigPluginSet extends PluginV2 implements
         string $file_contents,
         Node $node
     ) {
-        foreach ($this->beforeAnalyzeFilePluginSet as $plugin) {
+        foreach ($this->before_analyze_file_plugin_set as $plugin) {
             $plugin->beforeAnalyzeFile(
                 $code_base,
                 $context,
@@ -283,7 +283,7 @@ final class ConfigPluginSet extends PluginV2 implements
         string $file_contents,
         Node $node
     ) {
-        foreach ($this->afterAnalyzeFilePluginSet as $plugin) {
+        foreach ($this->after_analyze_file_plugin_set as $plugin) {
             $plugin->afterAnalyzeFile(
                 $code_base,
                 $context,
@@ -307,7 +307,7 @@ final class ConfigPluginSet extends PluginV2 implements
         CodeBase $code_base,
         Clazz $class
     ) {
-        foreach ($this->analyzeClassPluginSet as $plugin) {
+        foreach ($this->analyze_class_plugin_set as $plugin) {
             $plugin->analyzeClass(
                 $code_base,
                 $class
@@ -334,7 +334,7 @@ final class ConfigPluginSet extends PluginV2 implements
         CodeBase $code_base,
         Method $method
     ) {
-        foreach ($this->analyzeMethodPluginSet as $plugin) {
+        foreach ($this->analyze_method_plugin_set as $plugin) {
             $plugin->analyzeMethod(
                 $code_base,
                 $method
@@ -369,7 +369,7 @@ final class ConfigPluginSet extends PluginV2 implements
         array $parameters,
         $suggestion
     ) : bool {
-        foreach ($this->suppressionPluginSet as $plugin) {
+        foreach ($this->suppression_plugin_set as $plugin) {
             if ($plugin->shouldSuppressIssue(
                 $code_base,
                 $context,
@@ -399,7 +399,7 @@ final class ConfigPluginSet extends PluginV2 implements
         string $file_path
     ) : array {
         $result = [];
-        foreach ($this->suppressionPluginSet as $plugin) {
+        foreach ($this->suppression_plugin_set as $plugin) {
             $result += $plugin->getIssueSuppressionList(
                 $code_base,
                 $file_path
@@ -411,7 +411,7 @@ final class ConfigPluginSet extends PluginV2 implements
     /** @return array<int,SuppressionCapability> */
     public function getSuppressionPluginSet() : array
     {
-        return $this->suppressionPluginSet;
+        return $this->suppression_plugin_set;
     }
 
     /**
@@ -428,7 +428,7 @@ final class ConfigPluginSet extends PluginV2 implements
         CodeBase $code_base,
         Func $function
     ) {
-        foreach ($this->analyzeFunctionPluginSet as $plugin) {
+        foreach ($this->analyze_function_plugin_set as $plugin) {
             $plugin->analyzeFunction(
                 $code_base,
                 $function
@@ -452,7 +452,7 @@ final class ConfigPluginSet extends PluginV2 implements
         CodeBase $code_base,
         Property $property
     ) {
-        foreach ($this->analyzePropertyPluginSet as $plugin) {
+        foreach ($this->analyze_property_plugin_set as $plugin) {
             try {
                 $plugin->analyzeProperty(
                     $code_base,
@@ -480,7 +480,7 @@ final class ConfigPluginSet extends PluginV2 implements
     public function finalizeProcess(
         CodeBase $code_base
     ) {
-        foreach ($this->finalizeProcessPluginSet as $plugin) {
+        foreach ($this->finalize_process_plugin_set as $plugin) {
             $plugin->finalizeProcess($code_base);
         }
     }
@@ -490,8 +490,8 @@ final class ConfigPluginSet extends PluginV2 implements
      */
     public function hasAnalyzeFunctionPlugins() : bool
     {
-        \assert(!\is_null($this->pluginSet));
-        return \count($this->analyzeFunctionPluginSet) > 0;
+        \assert(!\is_null($this->plugin_set));
+        return \count($this->analyze_function_plugin_set) > 0;
     }
 
     /**
@@ -499,8 +499,8 @@ final class ConfigPluginSet extends PluginV2 implements
      */
     public function hasAnalyzeMethodPlugins() : bool
     {
-        \assert(!\is_null($this->pluginSet));
-        return \count($this->analyzeMethodPluginSet) > 0;
+        \assert(!\is_null($this->plugin_set));
+        return \count($this->analyze_method_plugin_set) > 0;
     }
 
     /**
@@ -510,8 +510,8 @@ final class ConfigPluginSet extends PluginV2 implements
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
     {
         $result = [];
-        \assert(!\is_null($this->pluginSet));
-        foreach ($this->analyzeFunctionCallPluginSet as $plugin) {
+        \assert(!\is_null($this->plugin_set));
+        foreach ($this->analyze_function_call_plugin_set as $plugin) {
             // TODO: Make this case insensitive.
             foreach ($plugin->getAnalyzeFunctionCallClosures($code_base) as $fqsen_name => $closure) {
                 $other_closure = $result[$fqsen_name] ?? null;
@@ -535,8 +535,8 @@ final class ConfigPluginSet extends PluginV2 implements
     public function getReturnTypeOverrides(CodeBase $code_base) : array
     {
         $result = [];
-        \assert(!\is_null($this->pluginSet));
-        foreach ($this->returnTypeOverridePluginSet as $plugin) {
+        \assert(!\is_null($this->plugin_set));
+        foreach ($this->return_type_override_plugin_set as $plugin) {
             $result += $plugin->getReturnTypeOverrides($code_base);
         }
         return $result;
@@ -592,7 +592,7 @@ final class ConfigPluginSet extends PluginV2 implements
         $node_selection_plugin->setNodeSelectorClosure(DefinitionResolver::createGoToDefinitionClosure($go_to_definition_request, $code_base));
         $this->node_selection_plugin = $node_selection_plugin;
 
-        $old_post_analyze_node_plugin_set = $this->postAnalyzeNodePluginSet;
+        $old_post_analyze_node_plugin_set = $this->post_analyze_node_plugin_set;
 
         /*
         $new_post_analyze_node_plugins = self::filterPostAnalysisPlugins([$node_selection_plugin]);
@@ -607,7 +607,7 @@ final class ConfigPluginSet extends PluginV2 implements
          */
 
         return new RAII(function () use ($old_post_analyze_node_plugin_set) {
-            $this->postAnalyzeNodePluginSet = $old_post_analyze_node_plugin_set;
+            $this->post_analyze_node_plugin_set = $old_post_analyze_node_plugin_set;
             $this->node_selection_plugin = null;
         });
     }
@@ -617,14 +617,14 @@ final class ConfigPluginSet extends PluginV2 implements
      */
     private function addNodeSelectionClosureForKind(int $kind, Closure $new_plugin)
     {
-        $old_plugin_for_kind = $this->postAnalyzeNodePluginSet[$kind] ?? null;
+        $old_plugin_for_kind = $this->post_analyze_node_plugin_set[$kind] ?? null;
         if ($old_plugin_for_kind) {
-            $this->postAnalyzeNodePluginSet[$kind] = static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) use ($old_plugin_for_kind, $new_plugin) {
+            $this->post_analyze_node_plugin_set[$kind] = static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) use ($old_plugin_for_kind, $new_plugin) {
                 $old_plugin_for_kind($code_base, $context, $node, $parent_node_list);
                 $new_plugin($code_base, $context, $node, $parent_node_list);
             };
         } else {
-            $this->postAnalyzeNodePluginSet[$kind] = $new_plugin;
+            $this->post_analyze_node_plugin_set[$kind] = $new_plugin;
         }
     }
 
@@ -633,8 +633,8 @@ final class ConfigPluginSet extends PluginV2 implements
      */
     private function hasAnalyzePropertyPlugins() : bool
     {
-        \assert(!\is_null($this->pluginSet));
-        return \count($this->analyzePropertyPluginSet) > 0;
+        \assert(!\is_null($this->plugin_set));
+        return \count($this->analyze_property_plugin_set) > 0;
     }
 
     /**
@@ -643,7 +643,7 @@ final class ConfigPluginSet extends PluginV2 implements
      */
     private function ensurePluginsExist()
     {
-        if (!\is_null($this->pluginSet)) {
+        if (!\is_null($this->plugin_set)) {
             return;
         }
         // Add user-defined plugins.
@@ -702,21 +702,21 @@ final class ConfigPluginSet extends PluginV2 implements
         }
 
         // Register the entire set.
-        $this->pluginSet = $plugin_set;
+        $this->plugin_set = $plugin_set;
 
-        $this->preAnalyzeNodePluginSet      = self::filterPreAnalysisPlugins($plugin_set);
-        $this->postAnalyzeNodePluginSet     = self::filterPostAnalysisPlugins($plugin_set);
-        $this->beforeAnalyzeFilePluginSet   = self::filterByClass($plugin_set, BeforeAnalyzeFileCapability::class);
-        $this->afterAnalyzeFilePluginSet    = self::filterByClass($plugin_set, AfterAnalyzeFileCapability::class);
-        $this->analyzeMethodPluginSet       = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeMethodCapability::class), 'analyzeMethod');
-        $this->analyzeFunctionPluginSet     = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeFunctionCapability::class), 'analyzeFunction');
-        $this->analyzePropertyPluginSet     = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzePropertyCapability::class), 'analyzeProperty');
-        $this->analyzeClassPluginSet        = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeClassCapability::class), 'analyzeClass');
-        $this->finalizeProcessPluginSet     = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, FinalizeProcessCapability::class), 'finalizeProcess');
-        $this->returnTypeOverridePluginSet  = self::filterByClass($plugin_set, ReturnTypeOverrideCapability::class);
-        $this->suppressionPluginSet         = self::filterByClass($plugin_set, SuppressionCapability::class);
-        $this->analyzeFunctionCallPluginSet = self::filterByClass($plugin_set, AnalyzeFunctionCallCapability::class);
-        $this->unused_suppression_plugin    = self::findUnusedSuppressionPlugin($plugin_set);
+        $this->pre_analyze_node_plugin_set      = self::filterPreAnalysisPlugins($plugin_set);
+        $this->post_analyze_node_plugin_set     = self::filterPostAnalysisPlugins($plugin_set);
+        $this->before_analyze_file_plugin_set   = self::filterByClass($plugin_set, BeforeAnalyzeFileCapability::class);
+        $this->after_analyze_file_plugin_set    = self::filterByClass($plugin_set, AfterAnalyzeFileCapability::class);
+        $this->analyze_method_plugin_set        = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeMethodCapability::class), 'analyzeMethod');
+        $this->analyze_function_plugin_set      = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeFunctionCapability::class), 'analyzeFunction');
+        $this->analyze_property_plugin_set      = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzePropertyCapability::class), 'analyzeProperty');
+        $this->analyze_class_plugin_set         = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeClassCapability::class), 'analyzeClass');
+        $this->finalize_process_plugin_set      = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, FinalizeProcessCapability::class), 'finalizeProcess');
+        $this->return_type_override_plugin_set  = self::filterByClass($plugin_set, ReturnTypeOverrideCapability::class);
+        $this->suppression_plugin_set           = self::filterByClass($plugin_set, SuppressionCapability::class);
+        $this->analyze_function_call_plugin_set = self::filterByClass($plugin_set, AnalyzeFunctionCallCapability::class);
+        $this->unused_suppression_plugin        = self::findUnusedSuppressionPlugin($plugin_set);
     }
 
     private static function requiresPluginBasedBuiltinSuppressions() : bool

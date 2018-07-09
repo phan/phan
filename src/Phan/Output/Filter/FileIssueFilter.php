@@ -9,17 +9,17 @@ final class FileIssueFilter implements IssueFilterInterface
 {
 
     /** @var IgnoredFilesFilterInterface */
-    private $ignoredFilesFilter;
+    private $ignored_files_filter;
 
     /**
      * FileIssueFilter constructor.
      *
-     * @param IgnoredFilesFilterInterface $ignoredFilesFilter
+     * @param IgnoredFilesFilterInterface $ignored_files_filter
      */
     public function __construct(
-        IgnoredFilesFilterInterface $ignoredFilesFilter
+        IgnoredFilesFilterInterface $ignored_files_filter
     ) {
-        $this->ignoredFilesFilter = $ignoredFilesFilter;
+        $this->ignored_files_filter = $ignored_files_filter;
     }
 
     /**
@@ -28,6 +28,6 @@ final class FileIssueFilter implements IssueFilterInterface
      */
     public function supports(IssueInstance $issue):bool
     {
-        return !$this->ignoredFilesFilter->isFilenameIgnored($issue->getFile());
+        return !$this->ignored_files_filter->isFilenameIgnored($issue->getFile());
     }
 }

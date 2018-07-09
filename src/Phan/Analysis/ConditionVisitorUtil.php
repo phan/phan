@@ -214,8 +214,8 @@ trait ConditionVisitorUtil
         // Don't analyze variables such as $$a
         if (\is_string($var_name) && $var_name) {
             try {
-                $exprType = UnionTypeVisitor::unionTypeFromLiteralOrConstant($this->code_base, $context, $expr);
-                if ($exprType) {
+                $expr_type = UnionTypeVisitor::unionTypeFromLiteralOrConstant($this->code_base, $context, $expr);
+                if ($expr_type) {
                     // Get the variable we're operating on
                     $variable = $this->getVariableFromScope($var_node, $context);
                     if (\is_null($variable)) {
@@ -225,7 +225,7 @@ trait ConditionVisitorUtil
                     // Make a copy of the variable
                     $variable = clone($variable);
 
-                    $variable->setUnionType($exprType);
+                    $variable->setUnionType($expr_type);
 
                     // Overwrite the variable with its new type in this
                     // scope without overwriting other scopes
@@ -255,11 +255,11 @@ trait ConditionVisitorUtil
         if (\is_string($var_name)) {
             try {
                 if ($expr instanceof Node && $expr->kind === \ast\AST_CONST) {
-                    $exprNameNode = $expr->children['name'];
-                    if ($exprNameNode->kind === \ast\AST_NAME) {
+                    $expr_name_node = $expr->children['name'];
+                    if ($expr_name_node->kind === \ast\AST_NAME) {
                         // Currently, only add this inference when we're absolutely sure this is a check rejecting null/false/true
-                        $exprName = $exprNameNode->children['name'];
-                        switch (\strtolower($exprName)) {
+                        $expr_name = $expr_name_node->children['name'];
+                        switch (\strtolower($expr_name)) {
                             case 'null':
                                 return $this->removeNullFromVariable($var_node, $context, false);
                             case 'false':
@@ -292,11 +292,11 @@ trait ConditionVisitorUtil
             try {
                 if ($expr instanceof Node) {
                     if ($expr->kind === \ast\AST_CONST) {
-                        $exprNameNode = $expr->children['name'];
-                        if ($exprNameNode->kind === \ast\AST_NAME) {
+                        $expr_name_node = $expr->children['name'];
+                        if ($expr_name_node->kind === \ast\AST_NAME) {
                             // Currently, only add this inference when we're absolutely sure this is a check rejecting null/false/true
-                            $exprName = $exprNameNode->children['name'];
-                            switch (\strtolower($exprName)) {
+                            $expr_name = $expr_name_node->children['name'];
+                            switch (\strtolower($expr_name)) {
                                 case 'null':
                                 case 'false':
                                     return $this->removeFalseyFromVariable($var_node, $context, false);

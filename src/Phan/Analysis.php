@@ -127,8 +127,8 @@ class Analysis
 
         if (Config::getValue('simplify_ast')) {
             try {
-                $newNode = ASTSimplifier::applyStatic($node);  // Transform the original AST, leaving the original unmodified.
-                $node = $newNode;  // Analyze the new AST instead.
+                // Transform the original AST, and if successful, then analyze the new AST instead of the original
+                $node = ASTSimplifier::applyStatic($node);
             } catch (\Exception $e) {
                 Issue::maybeEmit(
                     $code_base,
@@ -514,8 +514,8 @@ class Analysis
 
         if (Config::getValue('simplify_ast')) {
             try {
-                $newNode = ASTSimplifier::applyStatic($node);  // Transform the original AST, leaving the original unmodified.
-                $node = $newNode;  // Analyze the new AST instead.
+                // Transform the original AST, and if successful, then analyze the new AST instead of the original
+                $node = ASTSimplifier::applyStatic($node);
             } catch (\Exception $e) {
                 Issue::maybeEmit(
                     $code_base,

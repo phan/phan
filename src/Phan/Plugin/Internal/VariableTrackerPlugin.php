@@ -195,8 +195,8 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                 $issue_type = $issue_overrides_for_definition_ids[$definition_id] ?? Issue::UnusedVariable;
                 if ($issue_type === Issue::UnusedPublicMethodParameter) {
                     // Narrow down issues about parameters into more specific issues
-                    $docComment = $method_node->children['docComment'] ?? null;
-                    if ($docComment && preg_match('/@param[^$]*\$' . preg_quote($variable_name) . '\b.*@phan-unused-param\b/', $docComment)) {
+                    $doc_comment = $method_node->children['docComment'] ?? null;
+                    if ($doc_comment && preg_match('/@param[^$]*\$' . preg_quote($variable_name) . '\b.*@phan-unused-param\b/', $doc_comment)) {
                         // Don't warn about parameters marked with phan-unused-param
                         break;
                     }

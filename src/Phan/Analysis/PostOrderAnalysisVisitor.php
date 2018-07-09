@@ -722,9 +722,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         $context = $this->context;
         try {
-            $nameNode = $node->children['name'];
+            $name_node = $node->children['name'];
             // Based on UnionTypeVisitor::visitConst
-            if ($nameNode->kind == \ast\AST_NAME) {
+            if ($name_node->kind == \ast\AST_NAME) {
                 $constant = (new ContextNode(
                     $this->code_base,
                     $context,

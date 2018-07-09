@@ -379,14 +379,14 @@ class ParseVisitor extends ScopeVisitor
     {
         // Bomb out if we're not in a class context
         $class = $this->getContextClass();
-        $docComment = '';
+        $doc_comment = '';
         $first_child_node = $node->children[0] ?? null;
         if ($first_child_node instanceof Node) {
-            $docComment = $first_child_node->children['docComment'] ?? '';
+            $doc_comment = $first_child_node->children['docComment'] ?? '';
         }
         // Get a comment on the property declaration
         $comment = Comment::fromStringInContext(
-            $docComment,
+            $doc_comment,
             $this->code_base,
             $this->context,
             $node->lineno ?? 0,

@@ -12,21 +12,21 @@ class Sequential implements Hasher
     /** @var int */
     protected $counter;
     /** @var int */
-    protected $groupCount;
+    protected $group_count;
 
-    public function __construct(int $groupCount)
+    public function __construct(int $group_count)
     {
         $this->counter = 1;
-        $this->groupCount = $groupCount;
+        $this->group_count = $group_count;
     }
 
     /**
      * @param string $key (Used by sibling class Consistent) (@phan-unused-param)
-     * @return int - an integer between 0 and $this->groupCount - 1, inclusive
+     * @return int - an integer between 0 and $this->group_count - 1, inclusive
      */
     public function getGroup(string $key) : int
     {
-        return ($this->counter++) % $this->groupCount;
+        return ($this->counter++) % $this->group_count;
     }
 
     /**
