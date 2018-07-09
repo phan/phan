@@ -1,0 +1,2 @@
+# Exclude non-essential files from dist
+/tests export-ignore
