@@ -37,14 +37,14 @@ final class PylintPrinter implements IssuePrinterInterface
     public static function getSeverityCode(IssueInstance $instance) : string
     {
         $issue = $instance->getIssue();
-        $categoryId = $issue->getTypeId();
+        $category_id = $issue->getTypeId();
         switch ($issue->getSeverity()) {
             case Issue::SEVERITY_LOW:
-                return 'C' . $categoryId;
+                return 'C' . $category_id;
             case Issue::SEVERITY_NORMAL:
-                return 'W' . $categoryId;
+                return 'W' . $category_id;
             case Issue::SEVERITY_CRITICAL:
-                return 'E' . $categoryId;
+                return 'E' . $category_id;
             default:
                 throw new \AssertionError("Unrecognized severity for " . __METHOD__ . ": " . $issue->getSeverity());
         }
