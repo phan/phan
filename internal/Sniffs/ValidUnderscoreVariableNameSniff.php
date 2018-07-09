@@ -42,32 +42,10 @@ class ValidUnderscoreVariableNameSniff extends AbstractVariableSniff
         $objOperator = $phpcsFile->findNext([T_WHITESPACE], ($stackPtr + 1), null, true);
         if ($tokens[$objOperator]['code'] === T_OBJECT_OPERATOR) {
             // Check to see if we are using a variable from an object.
+            // TODO: This workaround doesn't check variables that are the expression of a member property access expression
             $var = $phpcsFile->findNext([T_WHITESPACE], ($objOperator + 1), null, true);
             if ($tokens[$var]['code'] === T_STRING) {
-                // Either a var name or a function call, so check for bracket.
-                $bracket = $phpcsFile->findNext([T_WHITESPACE], ($var + 1), null, true);
-
-                if ($tokens[$bracket]['code'] !== T_OPEN_PARENTHESIS) {
-                    $objVarName = $tokens[$var]['content'];
-
-                    // There is no way for us to know if the var is public or private,
-                    // so we have to ignore a leading underscore if there is one and just
-                    // check the main part of the variable name.
-                    $originalVarName = $objVarName;
-                    if (substr($objVarName, 0, 1) === '_') {
-                        $objVarName = substr($objVarName, 1);
-                    }
-
-                    if (self::isUnderscoreVariableName($originalVarName) === false) {
-                        $error = 'Variable "%s" is not in valid underscore format';
-                        $data  = [$originalVarName];
-                        $phpcsFile->addError($error, $var, 'NotCamelCaps', $data);
-                    } else if (preg_match('|\d|', $objVarName) === 1) {
-                        $warning = 'Variable "%s" contains numbers but this is discouraged';
-                        $data    = [$originalVarName];
-                        $phpcsFile->addWarning($warning, $stackPtr, 'ContainsNumbers', $data);
-                    }
-                }//end if
+                return;
             }//end if
         }//end if
 
@@ -76,18 +54,8 @@ class ValidUnderscoreVariableNameSniff extends AbstractVariableSniff
         // check the main part of the variable name.
         $originalVarName = $varName;
         if (substr($varName, 0, 1) === '_') {
-            $objOperator = $phpcsFile->findPrevious([T_WHITESPACE], ($stackPtr - 1), null, true);
-            if ($tokens[$objOperator]['code'] === T_DOUBLE_COLON) {
-                // The variable lives within a class, and is referenced like
-                // this: MyClass::$_variable, so we don't know its scope.
-                $inClass = true;
-            } else {
-                $inClass = $phpcsFile->hasCondition($stackPtr, [T_CLASS, T_INTERFACE, T_TRAIT]);
-            }
-
-            if ($inClass === true) {
-                $varName = substr($varName, 1);
-            }
+            // Let PSR-12 checks deal with this
+            return;
         }
 
         if (self::isUnderscoreVariableName($originalVarName) === false) {
