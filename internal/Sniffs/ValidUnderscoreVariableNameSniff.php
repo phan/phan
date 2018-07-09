@@ -31,6 +31,9 @@ class ValidUnderscoreVariableNameSniff extends AbstractVariableSniff
      */
     protected function processVariable(File $phpcsFile, $stackPtr)
     {
+        if ($this->isExcluded($phpcsFile)) {
+            return;
+        }
         $tokens  = $phpcsFile->getTokens();
         $varName = ltrim($tokens[$stackPtr]['content'], '$');
 
@@ -82,6 +85,9 @@ class ValidUnderscoreVariableNameSniff extends AbstractVariableSniff
      */
     protected function processMemberVar(File $phpcsFile, $stackPtr)
     {
+        if ($this->isExcluded($phpcsFile)) {
+            return;
+        }
         $tokens      = $phpcsFile->getTokens();
         $varName     = ltrim($tokens[$stackPtr]['content'], '$');
         $memberProps = $phpcsFile->getMemberProperties($stackPtr);
@@ -123,6 +129,9 @@ class ValidUnderscoreVariableNameSniff extends AbstractVariableSniff
      */
     protected function processVariableInString(File $phpcsFile, $stackPtr)
     {
+        if ($this->isExcluded($phpcsFile)) {
+            return;
+        }
         $tokens = $phpcsFile->getTokens();
 
         if (preg_match_all('|[^\\\]\$([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)|', $tokens[$stackPtr]['content'], $matches) !== 0) {
@@ -164,4 +173,8 @@ class ValidUnderscoreVariableNameSniff extends AbstractVariableSniff
         return true;
     }
 
+    // Can't get exclude-pattern to work in ruleset.xml, so just hardcode this
+    private function isExcluded(File $phpcsFile) : bool {
+        return preg_match('@[/\\\\]LanguageServer[/\\\\]@', $phpcsFile->path) > 0;
+    }
 }//end class
