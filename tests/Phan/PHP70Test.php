@@ -6,7 +6,7 @@ use Phan\Config;
 
 class PHP70Test extends AbstractPhanFileTest
 {
-    const overrides = [
+    const OVERRIDES = [
         'target_php_version' => '7.0',
         'use_polyfill_parser' => true, // We use the polyfill parser because it behaves consistently in all php versions.
         'backward_compatibility_checks' => false,
@@ -19,7 +19,7 @@ class PHP70Test extends AbstractPhanFileTest
     public function setUp()
     {
         parent::setUp();
-        foreach (self::overrides as $key => $value) {
+        foreach (self::OVERRIDES as $key => $value) {
             Config::setValue($key, $value);
         }
     }

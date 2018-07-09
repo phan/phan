@@ -23,7 +23,7 @@ function foo() {
 
 }
 EOT;
-        $this->_testFallbackFromParser($incomplete_contents, $valid_contents);
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents);
     }
 
     public function testIncompleteVarWithPlaceholderShort()
@@ -36,7 +36,7 @@ EOT;
 <?php
 $a = $__INCOMPLETE_VARIABLE__;
 EOT;
-        $this->_testFallbackFromParser($incomplete_contents, $valid_contents, true);
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, true);
     }
 
     public function testIncompleteVarWithPlaceholder()
@@ -53,7 +53,7 @@ function foo() {
   $a = $__INCOMPLETE_VARIABLE__;
 }
 EOT;
-        $this->_testFallbackFromParser($incomplete_contents, $valid_contents, true);
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, true);
     }
 
     public function testIncompleteProperty()
@@ -72,7 +72,7 @@ function foo() {
 
 }
 EOT;
-        $this->_testFallbackFromParser($incomplete_contents, $valid_contents);
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents);
     }
 
     public function testIncompletePropertyWithPlaceholder()
@@ -91,7 +91,7 @@ function foo() {
   $a = $b->__INCOMPLETE_PROPERTY__;
 }
 EOT;
-        $this->_testFallbackFromParser($incomplete_contents, $valid_contents, true);
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, true);
     }
 
     public function testIncompleteMethod()
@@ -110,7 +110,7 @@ function foo() {
 
 }
 EOT;
-        $this->_testFallbackFromParser($incomplete_contents, $valid_contents);
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents);
     }
 
     public function testIncompleteMethodWithPlaceholder()
@@ -129,7 +129,7 @@ function foo() {
   $a = Bar::__INCOMPLETE_CLASS_CONST__;
 }
 EOT;
-        $this->_testFallbackFromParser($incomplete_contents, $valid_contents, true);
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, true);
     }
 
     public function testMiscNoise()
@@ -148,7 +148,7 @@ function foo() {
 
 }
 EOT;
-        $this->_testFallbackFromParser($incomplete_contents, $valid_contents);
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents);
     }
 
     public function testMiscNoiseWithPlaceholders()
@@ -167,7 +167,7 @@ function foo() {
 
 }
 EOT;
-        $this->_testFallbackFromParser($incomplete_contents, $valid_contents, true);
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, true);
     }
 
     public function testIncompleteArithmeticWithPlaceholders()
@@ -184,7 +184,7 @@ function foo() {
   $b * $c + \__INCOMPLETE_EXPR__;
 }
 EOT;
-        $this->_testFallbackFromParser($incomplete_contents, $valid_contents, true);
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, true);
     }
 
     public function testIncompleteArithmeticWithoutPlaceholders()
@@ -201,7 +201,7 @@ function foo() {
   $b * $c;
 }
 EOT;
-        $this->_testFallbackFromParser($incomplete_contents, $valid_contents, false);
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
     }
 
     public function testMissingMember()
@@ -221,7 +221,7 @@ class Test {
 } notAFunction()[];
 function aFunction() {}
 EOT;
-        $this->_testFallbackFromParser($incomplete_contents, $valid_contents, false);
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
     }
 
     public function testEmptyConstList()
@@ -234,7 +234,7 @@ EOT;
 <?php
 class Test { }
 EOT;
-        $this->_testFallbackFromParser($incomplete_contents, $valid_contents, false);
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
     }
 
     public function testMissingSemicolon()
@@ -253,7 +253,7 @@ function foo() {
     $x = intdiv(3, 2);
 }
 EOT;
-        $this->_testFallbackFromParser($incomplete_contents, $valid_contents);
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents);
     }
 
 // Another test (Won't work with php-parser, might work with tolerant-php-parser
@@ -282,16 +282,16 @@ class C{
 EOT;
  */
 
-    private function _testFallbackFromParser(string $incomplete_contents, string $valid_contents, bool $should_add_placeholders = false)
+    private function runTestFallbackFromParser(string $incomplete_contents, string $valid_contents, bool $should_add_placeholders = false)
     {
         $supports50 = ConversionTest::hasNativeASTSupport(50);
         if (!$supports50) {
             $this->fail('No supported AST versions to test');
         }
-        $this->_testFallbackFromParserForASTVersion($incomplete_contents, $valid_contents, 50, $should_add_placeholders);
+        $this->runTestFallbackFromParserForASTVersion($incomplete_contents, $valid_contents, 50, $should_add_placeholders);
     }
 
-    private function _testFallbackFromParserForASTVersion(string $incomplete_contents, string $valid_contents, int $ast_version, bool $should_add_placeholders)
+    private function runTestFallbackFromParserForASTVersion(string $incomplete_contents, string $valid_contents, int $ast_version, bool $should_add_placeholders)
     {
         $ast = \ast\parse_code($valid_contents, $ast_version);
         $this->assertInstanceOf('\ast\Node', $ast, 'Examples(for validContents) must be syntactically valid PHP parseable by php-ast');

@@ -38,20 +38,20 @@ class FileCacheTest extends BaseTest
 
     public function testLRU()
     {
-        $expectedPaths = [];
+        $expected_paths = [];
         $this->assertGreaterThanOrEqual(5, FileCache::MINIMUM_CACHE_SIZE);
         for ($i = 0; $i < FileCache::MINIMUM_CACHE_SIZE; $i++) {
             $path = "/path/to/$i";
-            $expectedPaths[] = $path;
+            $expected_paths[] = $path;
             FileCache::addEntry($path, "contents of $i");
         }
-        $this->assertSame($expectedPaths, FileCache::getCachedFileList());
+        $this->assertSame($expected_paths, FileCache::getCachedFileList());
 
         $this->assertSame("contents of 0", FileCache::getEntry("/path/to/0")->getContents());
 
-        $firstEntry = array_shift($expectedPaths);
-        $expectedPaths[] = $firstEntry;
-        $this->assertSame($expectedPaths, FileCache::getCachedFileList());
+        $first_entry = array_shift($expected_paths);
+        $expected_paths[] = $first_entry;
+        $this->assertSame($expected_paths, FileCache::getCachedFileList());
 
         FileCache::addEntry("/path/to/extra", "Other contents");
         $this->assertNull(FileCache::getEntry("/path/to/1"), "Least recently used entry should be evicted");
@@ -63,9 +63,9 @@ class FileCacheTest extends BaseTest
     {
         $this->assertNull(FileCache::getEntry(__FILE__));
         $line = __LINE__;  // Comment placeholder
-        $expectedLineContents = "        \$line = __LINE__;  // Comment placeholder\n";
+        $expected_line_contents = "        \$line = __LINE__;  // Comment placeholder\n";
         $entry = FileCache::getOrReadEntry(__FILE__);
-        $this->assertSame($expectedLineContents, $entry->getLine($line));
+        $this->assertSame($expected_line_contents, $entry->getLine($line));
     }
 
     public function testGetOrReadEntryThrows()

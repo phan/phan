@@ -6,7 +6,7 @@ use Phan\Config;
 
 class PHP72Test extends AbstractPhanFileTest
 {
-    const overrides = [
+    const OVERRIDES = [
         'allow_method_param_type_widening' => true,
         'target_php_version' => '7.2',
     ];
@@ -14,7 +14,7 @@ class PHP72Test extends AbstractPhanFileTest
     public function setUp()
     {
         parent::setUp();
-        foreach (self::overrides as $key => $value) {
+        foreach (self::OVERRIDES as $key => $value) {
             Config::setValue($key, $value);
         }
     }

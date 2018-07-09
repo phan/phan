@@ -42,17 +42,17 @@ class ASTRewriterTest extends AbstractPhanFileTest
 
         $ast_version = Config::AST_VERSION;
         $expected = \ast\parse_code($expected_src, $ast_version);
-        $beforeTransform = \ast\parse_code($original_src, $ast_version);
+        $before_transform = \ast\parse_code($original_src, $ast_version);
 
         // We use identical files for testing ASTs which aren't expected to change.
         if (trim($expected_src) !== trim($original_src)) {
-            $this->assertNotEquals(Debug::astDump($expected), Debug::astDump($beforeTransform), 'Expected the input asts to be different');
+            $this->assertNotEquals(Debug::astDump($expected), Debug::astDump($before_transform), 'Expected the input asts to be different');
         }
-        $actual = ASTSimplifier::applyStatic($beforeTransform);
+        $actual = ASTSimplifier::applyStatic($before_transform);
         $this->assertInstanceOf(\ast\Node::class, $actual, 'should return an AST');
         $this->assertSame(\ast\AST_STMT_LIST, $actual->kind, 'should return an AST of kind AST_STMT_LIST');
-        $actualRepr = Debug::astDump($actual);
-        $expectedRepr = Debug::astDump($expected);
-        $this->assertEquals($expectedRepr, $actualRepr, 'Expected the AST representation to be the same as the expected source\'s after transformations');
+        $actual_repr = Debug::astDump($actual);
+        $expected_repr = Debug::astDump($expected);
+        $this->assertEquals($expected_repr, $actual_repr, 'Expected the AST representation to be the same as the expected source\'s after transformations');
     }
 }

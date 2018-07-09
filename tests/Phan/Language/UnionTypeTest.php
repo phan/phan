@@ -47,6 +47,7 @@ class UnionTypeTest extends BaseTest
      * TODO: Investigate instantiating CodeBase in a cheaper way (lazily?)
      * @suppress PhanReadOnlyProtectedProperty read by phpunit framework
      */
+    // phpcs:ignore
     protected $backupStaticAttributesBlacklist = [
         'Phan\AST\PhanAnnotationAdder' => [
             'closures_for_kind',

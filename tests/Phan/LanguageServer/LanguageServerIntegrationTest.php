@@ -206,9 +206,9 @@ EOT;
     public function testDefinitionInOtherFile(string $new_file_contents, Position $position, string $expected_definition_uri, $expected_definition_line, string $requested_uri = null)
     {
         if (function_exists('pcntl_fork')) {
-            $this->_testDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, true);
+            $this->runTestDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, true);
         }
-        $this->_testDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, false);
+        $this->runTestDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, false);
     }
 
     /**
@@ -220,9 +220,9 @@ EOT;
     public function testTypeDefinitionInOtherFile(string $new_file_contents, Position $position, string $expected_definition_uri, $expected_definition_line, string $requested_uri = null)
     {
         if (function_exists('pcntl_fork')) {
-            $this->_testTypeDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, true);
+            $this->runTestTypeDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, true);
         }
-        $this->_testTypeDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, false);
+        $this->runTestTypeDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, false);
     }
 
     /**
@@ -240,7 +240,7 @@ EOT;
      * @param ?int $expected_definition_line
      * @param ?string $requested_uri
      */
-    public function _testDefinitionInOtherFileWithPcntlSetting(
+    public function runTestDefinitionInOtherFileWithPcntlSetting(
         string $new_file_contents,
         Position $position,
         string $expected_definition_uri,
@@ -326,7 +326,7 @@ EOT;
      * @param ?int $expected_definition_line
      * @param ?string $requested_uri
      */
-    public function _testTypeDefinitionInOtherFileWithPcntlSetting(
+    public function runTestTypeDefinitionInOtherFileWithPcntlSetting(
         string $new_file_contents,
         Position $position,
         string $expected_definition_uri,

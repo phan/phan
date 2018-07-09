@@ -33,11 +33,11 @@ class CSVPrinterTest extends BaseTest
 
     /**
      * @param string $string String to check against
-     * @param string $messageExpected Message component of expected CSV line
+     * @param string $expected_message Message component of expected CSV line
      *
      * @dataProvider specialCharacterCasesProvider
      */
-    public function testSpecialCharactersAreProperlyEncoded($string, $messageExpected)
+    public function testSpecialCharactersAreProperlyEncoded($string, $expected_message)
     {
         $output = new BufferedOutput();
 
@@ -46,7 +46,7 @@ class CSVPrinterTest extends BaseTest
         $printer->print(new IssueInstance(Issue::fromType(Issue::SyntaxError), 'test.php', 0, [$string]));
         $printer->flush();
 
-        $expected = 'test.php,0,10,critical,Syntax,PhanSyntaxError,' . $messageExpected;
+        $expected = 'test.php,0,10,critical,Syntax,PhanSyntaxError,' . $expected_message;
         $actual = explode("\n", $output->fetch())[1]; // Ignore header
         $this->assertEquals($expected, $actual);
     }

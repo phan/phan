@@ -48,11 +48,11 @@ class TypeTest extends BaseTest
         $this->assertParsesAsType(ArrayType::instance(false), '((array))');
     }
 
-    const delimited_type_regex_or_this = '@^' . Type::type_regex_or_this . '$@';
+    const DELIMITED_TYPE_REGEX_OR_THIS = '@^' . Type::type_regex_or_this . '$@';
 
     public function assertParsesAsType(Type $expected_type, string $type_string)
     {
-        $this->assertTrue(\preg_match(self::delimited_type_regex_or_this, $type_string) > 0, "Failed to parse '$type_string'");
+        $this->assertTrue(\preg_match(self::DELIMITED_TYPE_REGEX_OR_THIS, $type_string) > 0, "Failed to parse '$type_string'");
         $this->assertSameType($expected_type, self::makePHPDocType($type_string));
     }
 
@@ -122,17 +122,17 @@ class TypeTest extends BaseTest
 
     public function testGenericArray()
     {
-        $genericArrayType = self::makePHPDocType('int[][]');
-        $expectedGenericArrayType = self::createGenericArrayTypeWithMixedKey(
+        $generic_array_type = self::makePHPDocType('int[][]');
+        $expected_generic_array_type = self::createGenericArrayTypeWithMixedKey(
             self::createGenericArrayTypeWithMixedKey(
                 IntType::instance(false),
                 false
             ),
             false
         );
-        $this->assertSameType($expectedGenericArrayType, $genericArrayType);
-        $this->assertSame('int[][]', (string)$expectedGenericArrayType);
-        $this->assertSameType($expectedGenericArrayType, self::makePHPDocType('(int)[][]'));
+        $this->assertSameType($expected_generic_array_type, $generic_array_type);
+        $this->assertSame('int[][]', (string)$expected_generic_array_type);
+        $this->assertSameType($expected_generic_array_type, self::makePHPDocType('(int)[][]'));
         // TODO: Parse (int[])[]?
     }
 
@@ -189,119 +189,119 @@ class TypeTest extends BaseTest
      */
     public function testGenericArrayNullable()
     {
-        $genericArrayType = self::makePHPDocType('?int[]');
-        $expectedGenericArrayType = self::createGenericArrayTypeWithMixedKey(
+        $generic_array_type = self::makePHPDocType('?int[]');
+        $expected_generic_array_type = self::createGenericArrayTypeWithMixedKey(
             IntType::instance(false),
             true
         );
-        $this->assertSameType($expectedGenericArrayType, $genericArrayType);
-        $genericArrayArrayType = self::makePHPDocType('?int[][]');
-        $expectedGenericArrayArrayType = self::createGenericArrayTypeWithMixedKey(
+        $this->assertSameType($expected_generic_array_type, $generic_array_type);
+        $generic_array_array_type = self::makePHPDocType('?int[][]');
+        $expected_generic_array_array_type = self::createGenericArrayTypeWithMixedKey(
             self::createGenericArrayTypeWithMixedKey(
                 IntType::instance(false),
                 false
             ),
             true
         );
-        $this->assertSameType($expectedGenericArrayArrayType, $genericArrayArrayType);
+        $this->assertSameType($expected_generic_array_array_type, $generic_array_array_type);
     }
 
     public function testIterable()
     {
-        $stringIterableType = self::makePHPDocType('iterable<string>');
-        $expectedStringIterableType = GenericIterableType::fromKeyAndValueTypes(
+        $string_iterable_type = self::makePHPDocType('iterable<string>');
+        $expected_string_iterable_type = GenericIterableType::fromKeyAndValueTypes(
             UnionType::empty(),
             StringType::instance(false)->asUnionType(),
             false
         );
-        $this->assertSameType($expectedStringIterableType, $stringIterableType);
+        $this->assertSameType($expected_string_iterable_type, $string_iterable_type);
 
-        $stringToStdClassArrayType = self::makePHPDocType('iterable<string,stdClass>');
-        $expectedStringToStdClassArrayType = GenericIterableType::fromKeyAndValueTypes(
+        $string_to_stdclass_array_type = self::makePHPDocType('iterable<string,stdClass>');
+        $expectedstring_to_std_class_array_type = GenericIterableType::fromKeyAndValueTypes(
             StringType::instance(false)->asUnionType(),
             UnionType::fromFullyQualifiedString('\stdClass'),
             false
         );
-        $this->assertSameType($expectedStringToStdClassArrayType, $stringToStdClassArrayType);
+        $this->assertSameType($expectedstring_to_std_class_array_type, $string_to_stdclass_array_type);
     }
 
     public function testArrayAlternate()
     {
-        $stringArrayType = self::makePHPDocType('array<string>');
-        $expectedStringArrayType = self::createGenericArrayTypeWithMixedKey(
+        $string_array_type = self::makePHPDocType('array<string>');
+        $expected_string_array_type = self::createGenericArrayTypeWithMixedKey(
             StringType::instance(false),
             false
         );
-        $this->assertSameType($expectedStringArrayType, $stringArrayType);
+        $this->assertSameType($expected_string_array_type, $string_array_type);
 
-        $stringArrayType2 = self::makePHPDocType('array<mixed,string>');
-        $this->assertSameType($expectedStringArrayType, $stringArrayType2);
+        $string_array_type2 = self::makePHPDocType('array<mixed,string>');
+        $this->assertSameType($expected_string_array_type, $string_array_type2);
 
         // We track key types.
-        $expectedStringArrayTypeWithIntKey = GenericArrayType::fromElementType(
+        $expected_string_array_type_with_int_key = GenericArrayType::fromElementType(
             StringType::instance(false),
             false,
             GenericArrayType::KEY_INT
         );
-        $stringArrayType3 = self::makePHPDocType('array<int,string>');
-        $this->assertSameType($expectedStringArrayTypeWithIntKey, $stringArrayType3);
+        $string_array_type3 = self::makePHPDocType('array<int,string>');
+        $this->assertSameType($expected_string_array_type_with_int_key, $string_array_type3);
 
         // Allow space
-        $stringArrayType4 = self::makePHPDocType('array<mixed, string>');
-        $this->assertSameType($expectedStringArrayType, $stringArrayType4);
+        $string_array_type4 = self::makePHPDocType('array<mixed, string>');
+        $this->assertSameType($expected_string_array_type, $string_array_type4);
 
         // Combination of int|string in array key results in mixed key
-        $stringArrayType5 = self::makePHPDocType('array<int|string, string>');
-        $this->assertSameType($expectedStringArrayType, $stringArrayType5);
+        $string_array_type5 = self::makePHPDocType('array<int|string, string>');
+        $this->assertSameType($expected_string_array_type, $string_array_type5);
 
         // Nested array types.
-        $expectedStringArrayArrayType = self::createGenericArrayTypeWithMixedKey(
-            $expectedStringArrayType,
+        $expected_string_array_array_type = self::createGenericArrayTypeWithMixedKey(
+            $expected_string_array_type,
             false
         );
-        $this->assertParsesAsType($expectedStringArrayArrayType, 'array<string[]>');
-        $this->assertParsesAsType($expectedStringArrayArrayType, 'array<string>[]');
-        $this->assertParsesAsType($expectedStringArrayArrayType, 'array<array<string>>');
-        $this->assertParsesAsType($expectedStringArrayArrayType, 'array<mixed,array<mixed,string>>');
+        $this->assertParsesAsType($expected_string_array_array_type, 'array<string[]>');
+        $this->assertParsesAsType($expected_string_array_array_type, 'array<string>[]');
+        $this->assertParsesAsType($expected_string_array_array_type, 'array<array<string>>');
+        $this->assertParsesAsType($expected_string_array_array_type, 'array<mixed,array<mixed,string>>');
     }
 
     public function testArrayNested()
     {
-        $deeplyNestedArray = self::makePHPDocType('array<int,array<mixed,array<mixed,stdClass>>>');
-        $this->assertSame('array<int,\stdClass[][]>', (string)$deeplyNestedArray);
+        $deeply_nested_array = self::makePHPDocType('array<int,array<mixed,array<mixed,stdClass>>>');
+        $this->assertSame('array<int,\stdClass[][]>', (string)$deeply_nested_array);
     }
 
     public function testArrayExtraBrackets()
     {
-        $stringArrayType = self::makePHPDocType('?(float[])');
-        $expectedStringArrayType = self::createGenericArrayTypeWithMixedKey(
+        $string_array_type = self::makePHPDocType('?(float[])');
+        $expected_string_array_type = self::createGenericArrayTypeWithMixedKey(
             FloatType::instance(false),
             true
         );
-        $this->assertSameType($expectedStringArrayType, $stringArrayType);
-        $this->assertSame('?float[]', (string)$stringArrayType);
+        $this->assertSameType($expected_string_array_type, $string_array_type);
+        $this->assertSame('?float[]', (string)$string_array_type);
     }
 
     public function testArrayExtraBracketsForElement()
     {
-        $stringArrayType = self::makePHPDocType('(?float)[]');
-        $expectedStringArrayType = self::createGenericArrayTypeWithMixedKey(
+        $string_array_type = self::makePHPDocType('(?float)[]');
+        $expected_string_array_type = self::createGenericArrayTypeWithMixedKey(
             FloatType::instance(true),
             false
         );
-        $this->assertSameType($expectedStringArrayType, $stringArrayType);
-        $this->assertSame('(?float)[]', (string)$stringArrayType);
+        $this->assertSameType($expected_string_array_type, $string_array_type);
+        $this->assertSame('(?float)[]', (string)$string_array_type);
     }
 
     public function testArrayExtraBracketsAfterNullable()
     {
-        $stringArrayType = self::makePHPDocType('?(float)[]');
-        $expectedStringArrayType = self::createGenericArrayTypeWithMixedKey(
+        $string_array_type = self::makePHPDocType('?(float)[]');
+        $expected_string_array_type = self::createGenericArrayTypeWithMixedKey(
             FloatType::instance(false),
             true
         );
-        $this->assertSameType($expectedStringArrayType, $stringArrayType);
-        $this->assertSame('?float[]', (string)$stringArrayType);
+        $this->assertSameType($expected_string_array_type, $string_array_type);
+        $this->assertSame('?float[]', (string)$string_array_type);
     }
 
     private static function makeBasicClosureParam(string $type_string) : ClosureDeclarationParameter
@@ -317,7 +317,7 @@ class TypeTest extends BaseTest
 
     private function verifyClosureParam(FunctionLikeDeclarationType $expected_closure_type, string $union_type_string, string $normalized_type_string)
     {
-        $this->assertTrue(\preg_match(self::delimited_type_regex_or_this, $union_type_string) > 0, "Failed to parse '$union_type_string'");
+        $this->assertTrue(\preg_match(self::DELIMITED_TYPE_REGEX_OR_THIS, $union_type_string) > 0, "Failed to parse '$union_type_string'");
         $parsed_closure_type = self::makePHPDocType($union_type_string);
         $this->assertSame(get_class($expected_closure_type), get_class($parsed_closure_type), "expected closure/callable class for $normalized_type_string");
         $this->assertSame($normalized_type_string, (string)$parsed_closure_type, "failed parsing $union_type_string");
@@ -440,11 +440,11 @@ class TypeTest extends BaseTest
     /**
      * @dataProvider canCastToTypeProvider
      */
-    public function testCanCastToType(string $fromTypeString, string $toTypeString)
+    public function testCanCastToType(string $from_type_string, string $to_type_string)
     {
-        $fromType = self::makePHPDocType($fromTypeString);
-        $toType = self::makePHPDocType($toTypeString);
-        $this->assertTrue($fromType->canCastToType($toType), "expected $fromTypeString to be able to cast to $toTypeString");
+        $from_type = self::makePHPDocType($from_type_string);
+        $to_type = self::makePHPDocType($to_type_string);
+        $this->assertTrue($from_type->canCastToType($to_type), "expected $from_type_string to be able to cast to $to_type_string");
     }
 
     public function canCastToTypeProvider() : array

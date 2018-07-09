@@ -102,6 +102,10 @@ class ValidUnderscoreVariableNameSniff extends AbstractVariableSniff
             return;
         }
 
+        if ($var_name === 'backupStaticAttributesBlacklist') {
+            // PHPUnit built-in
+            return;
+        }
         // Remove a potential underscore prefix for testing CamelCaps.
         if (self::isUnderscoreVariableName($var_name) === false) {
             $error = 'Member variable "%s" is not in valid underscore format';
