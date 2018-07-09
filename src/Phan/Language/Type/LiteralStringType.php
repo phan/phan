@@ -28,12 +28,13 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      */
     public static function instance(bool $unused_is_nullable)
     {
-        throw new RuntimeException('Call ' . __CLASS__ . '::instance_for_value() instead');
+        throw new RuntimeException('Call ' . __CLASS__ . '::instanceForValue() instead');
     }
 
     /**
      * @return StringType|LiteralStringType
      * @deprecated
+     * @suppress PhanUnreferencedPublicMethod
      */
     // phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps
     public static function instance_for_value(string $value, bool $is_nullable)
@@ -130,7 +131,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
             },
             $escaped_string
         );
-        return self::instance_for_value($escaped_string, $is_nullable);
+        return self::instanceForValue($escaped_string, $is_nullable);
     }
 
     /** @var StringType */
@@ -216,7 +217,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
             return $this;
         }
 
-        return self::instance_for_value(
+        return self::instanceForValue(
             $this->value,
             $is_nullable
         );

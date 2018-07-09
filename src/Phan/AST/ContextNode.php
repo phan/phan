@@ -405,7 +405,7 @@ class ContextNode
         $node = $this->node;
         if (!($node instanceof Node)) {
             if (\is_string($node)) {
-                return [LiteralStringType::instance_for_value($node, false)->asUnionType(), []];
+                return [LiteralStringType::instanceForValue($node, false)->asUnionType(), []];
             }
             return [UnionType::empty(), []];
         }
