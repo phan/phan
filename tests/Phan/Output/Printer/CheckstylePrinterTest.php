@@ -24,7 +24,12 @@ class CheckstylePrinterTest extends BaseTest
         $printer->configureOutput($output);
         $printer->print(new IssueInstance(Issue::fromType(Issue::SyntaxError), 'test.php', 0, [$string]));
         $printer->flush();
-        $this->assertContains('PhanSyntaxError', $output->fetch());
+
+        $issue_messages_text = $output->fetch();
+
+        // Note: assertContain would call iconv_strpos(), which would emit a notice if phpunit is using symfony/polyfill-mbstring.
+        // That notice would trigger phan_error_handler
+        $this->assertTrue(strpos($issue_messages_text, 'PhanSyntaxError') !== false, "output should contain PhanSyntaxError");
     }
 
     public function invalidUTF8StringsProvider()
