@@ -1457,9 +1457,9 @@ class Clazz extends AddressableElement
         }
         if ($method->getHasYield()) {
             // There's no phpdoc standard for template types of Generators at the moment.
-            $newType = UnionType::fromFullyQualifiedString('\\Generator');
-            if (!$newType->canCastToUnionType($method->getUnionType())) {
-                $method->setUnionType($newType);
+            $new_type = UnionType::fromFullyQualifiedString('\\Generator');
+            if (!$new_type->canCastToUnionType($method->getUnionType())) {
+                $method->setUnionType($new_type);
             }
         }
 

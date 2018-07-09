@@ -412,9 +412,9 @@ trait FunctionTrait
         if ($parameter) {
             return $parameter->asNonVariadic();
         }
-        $lastParameter = $list[count($list) - 1];
-        if ($lastParameter->isVariadic()) {
-            return $lastParameter->asNonVariadic();
+        $last_parameter = $list[count($list) - 1];
+        if ($last_parameter->isVariadic()) {
+            return $last_parameter->asNonVariadic();
         }
         return null;
     }
@@ -713,20 +713,20 @@ trait FunctionTrait
             // If there are no types on the parameter, the
             // default shouldn't be treated as the one
             // and only allowable type.
-            $wasEmpty = $parameter->getUnionType()->isEmpty();
+            $was_empty = $parameter->getUnionType()->isEmpty();
 
             // If we have no other type info about a parameter,
             // just because it has a default value of null
             // doesn't mean that is its type. Any type can default
             // to null
             if ($default_is_null) {
-                if ($wasEmpty) {
+                if ($was_empty) {
                     $parameter->addUnionType(MixedType::instance(false)->asUnionType());
                 }
                 // The parameter constructor or above check for wasEmpty already took care of null default case
             } else {
                 $default_type = $default_type->withFlattenedArrayShapeOrLiteralTypeInstances();
-                if ($wasEmpty) {
+                if ($was_empty) {
                     $parameter->addUnionType(self::inferNormalizedTypesOfDefault($default_type));
                     if (!Config::getValue('guess_unknown_parameter_type_using_default')) {
                         $parameter->addUnionType(MixedType::instance(false)->asUnionType());

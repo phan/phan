@@ -122,23 +122,23 @@ abstract class NativeType extends Type
      */
     private static function initializeTypeCastingMatrix() : array
     {
-        $generateRow = function (string ...$permittedCastTypeNames) {
+        $generate_row = function (string ...$permitted_cast_type_names) {
             return [
-                ArrayType::NAME    => in_array(ArrayType::NAME, $permittedCastTypeNames, true),
-                IterableType::NAME => in_array(IterableType::NAME, $permittedCastTypeNames, true),
-                BoolType::NAME     => in_array(BoolType::NAME, $permittedCastTypeNames, true),
-                CallableType::NAME => in_array(CallableType::NAME, $permittedCastTypeNames, true),
-                FalseType::NAME    => in_array(FalseType::NAME, $permittedCastTypeNames, true),
-                FloatType::NAME    => in_array(FloatType::NAME, $permittedCastTypeNames, true),
-                IntType::NAME      => in_array(IntType::NAME, $permittedCastTypeNames, true),
+                ArrayType::NAME    => in_array(ArrayType::NAME, $permitted_cast_type_names, true),
+                IterableType::NAME => in_array(IterableType::NAME, $permitted_cast_type_names, true),
+                BoolType::NAME     => in_array(BoolType::NAME, $permitted_cast_type_names, true),
+                CallableType::NAME => in_array(CallableType::NAME, $permitted_cast_type_names, true),
+                FalseType::NAME    => in_array(FalseType::NAME, $permitted_cast_type_names, true),
+                FloatType::NAME    => in_array(FloatType::NAME, $permitted_cast_type_names, true),
+                IntType::NAME      => in_array(IntType::NAME, $permitted_cast_type_names, true),
                 MixedType::NAME    => true,
-                NullType::NAME     => in_array(NullType::NAME, $permittedCastTypeNames, true),
-                ObjectType::NAME   => in_array(ObjectType::NAME, $permittedCastTypeNames, true),
-                ResourceType::NAME => in_array(ResourceType::NAME, $permittedCastTypeNames, true),
-                ScalarRawType::NAME => in_array(ScalarRawType::NAME, $permittedCastTypeNames, true),
-                StringType::NAME   => in_array(StringType::NAME, $permittedCastTypeNames, true),
-                TrueType::NAME     => in_array(TrueType::NAME, $permittedCastTypeNames, true),
-                VoidType::NAME     => in_array(VoidType::NAME, $permittedCastTypeNames, true),
+                NullType::NAME     => in_array(NullType::NAME, $permitted_cast_type_names, true),
+                ObjectType::NAME   => in_array(ObjectType::NAME, $permitted_cast_type_names, true),
+                ResourceType::NAME => in_array(ResourceType::NAME, $permitted_cast_type_names, true),
+                ScalarRawType::NAME => in_array(ScalarRawType::NAME, $permitted_cast_type_names, true),
+                StringType::NAME   => in_array(StringType::NAME, $permitted_cast_type_names, true),
+                TrueType::NAME     => in_array(TrueType::NAME, $permitted_cast_type_names, true),
+                VoidType::NAME     => in_array(VoidType::NAME, $permitted_cast_type_names, true),
             ];
         };
 
@@ -147,20 +147,20 @@ abstract class NativeType extends Type
         // (Represented in a readable format, with only the true entries (omitting Mixed, which is always true))
 
         return [
-            ArrayType::NAME    => $generateRow(ArrayType::NAME, IterableType::NAME, CallableType::NAME),
-            BoolType::NAME     => $generateRow(BoolType::NAME, FalseType::NAME, TrueType::NAME, ScalarRawType::NAME),
-            CallableType::NAME => $generateRow(CallableType::NAME),
-            FalseType::NAME    => $generateRow(FalseType::NAME, BoolType::NAME, ScalarRawType::NAME),
-            FloatType::NAME    => $generateRow(FloatType::NAME, ScalarRawType::NAME),
-            IntType::NAME      => $generateRow(IntType::NAME, FloatType::NAME, ScalarRawType::NAME),
-            IterableType::NAME => $generateRow(IterableType::NAME),
-            MixedType::NAME    => $generateRow(MixedType::NAME),  // MixedType overrides the methods which would use this
-            NullType::NAME     => $generateRow(NullType::NAME),
-            ObjectType::NAME   => $generateRow(ObjectType::NAME),
-            ResourceType::NAME => $generateRow(ResourceType::NAME),
-            StringType::NAME   => $generateRow(StringType::NAME, CallableType::NAME, ScalarRawType::NAME),
-            TrueType::NAME     => $generateRow(TrueType::NAME, BoolType::NAME, ScalarRawType::NAME),
-            VoidType::NAME     => $generateRow(VoidType::NAME),
+            ArrayType::NAME    => $generate_row(ArrayType::NAME, IterableType::NAME, CallableType::NAME),
+            BoolType::NAME     => $generate_row(BoolType::NAME, FalseType::NAME, TrueType::NAME, ScalarRawType::NAME),
+            CallableType::NAME => $generate_row(CallableType::NAME),
+            FalseType::NAME    => $generate_row(FalseType::NAME, BoolType::NAME, ScalarRawType::NAME),
+            FloatType::NAME    => $generate_row(FloatType::NAME, ScalarRawType::NAME),
+            IntType::NAME      => $generate_row(IntType::NAME, FloatType::NAME, ScalarRawType::NAME),
+            IterableType::NAME => $generate_row(IterableType::NAME),
+            MixedType::NAME    => $generate_row(MixedType::NAME),  // MixedType overrides the methods which would use this
+            NullType::NAME     => $generate_row(NullType::NAME),
+            ObjectType::NAME   => $generate_row(ObjectType::NAME),
+            ResourceType::NAME => $generate_row(ResourceType::NAME),
+            StringType::NAME   => $generate_row(StringType::NAME, CallableType::NAME, ScalarRawType::NAME),
+            TrueType::NAME     => $generate_row(TrueType::NAME, BoolType::NAME, ScalarRawType::NAME),
+            VoidType::NAME     => $generate_row(VoidType::NAME),
         ];
     }
 

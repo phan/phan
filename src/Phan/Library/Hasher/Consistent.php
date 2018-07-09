@@ -17,9 +17,9 @@ class Consistent implements Hasher
     /** @var array<int,int> - Groups corresponding to hash values in hash_ring_ids */
     protected $hash_ring_groups;
 
-    public function __construct(int $groupCount)
+    public function __construct(int $group_count)
     {
-        $map = self::generateMap($groupCount);
+        $map = self::generateMap($group_count);
         $hash_ring_ids = [];
         $hash_ring_groups = [];
         foreach ($map as $key => $group) {
@@ -37,10 +37,10 @@ class Consistent implements Hasher
     /**
      * @return array<int,int> maps points in the field to the corresponding group (for consistent hashing)
      */
-    private static function generateMap(int $groupCount)
+    private static function generateMap(int $group_count)
     {
         $map = [];
-        for ($group = 0; $group < $groupCount; $group++) {
+        for ($group = 0; $group < $group_count; $group++) {
             foreach (self::getHashesForGroup($group) as $hash) {
                 $map[$hash] = $group;
             }
@@ -50,7 +50,7 @@ class Consistent implements Hasher
     }
     /**
      * Do a binary search in the consistent hashing ring to find the group.
-     * @return int - an integer between 0 and $this->groupCount - 1, inclusive
+     * @return int - an integer between 0 and $this->group_count - 1, inclusive
      */
     public function getGroup(string $key) : int
     {

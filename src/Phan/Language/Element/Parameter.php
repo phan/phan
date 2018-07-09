@@ -471,9 +471,9 @@ class Parameter extends Variable
     {
         $string = '';
 
-        $typeObj = $this->getNonVariadicUnionType();
-        if (!$typeObj->isEmpty()) {
-            $string .= (string)$typeObj . ' ';
+        $union_type = $this->getNonVariadicUnionType();
+        if (!$union_type->isEmpty()) {
+            $string .= $union_type->__toString() . ' ';
         }
 
         if ($this->isPassByReference()) {
@@ -502,9 +502,9 @@ class Parameter extends Variable
     {
         $string = '';
 
-        $typeObj = $this->getNonVariadicUnionType();
-        if (!$typeObj->isEmpty()) {
-            $string .= (string)$typeObj . ' ';
+        $union_type = $this->getNonVariadicUnionType();
+        if (!$union_type->isEmpty()) {
+            $string .= $union_type->__toString() . ' ';
         }
 
         if ($this->isPassByReference()) {
