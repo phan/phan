@@ -2601,7 +2601,7 @@ class Clazz extends AddressableElement
         $class_constant = new ClassConstant(
             $this->getContext(),
             'class',
-            LiteralStringType::instance_for_value(
+            LiteralStringType::instanceForValue(
                 \ltrim($this->getFQSEN()->__toString(), '\\'),
                 false
             )->asUnionType(),

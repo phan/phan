@@ -28,13 +28,24 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      */
     public static function instance(bool $unused_is_nullable)
     {
-        throw new RuntimeException('Call ' . __CLASS__ . '::instance_for_value() instead');
+        throw new RuntimeException('Call ' . __CLASS__ . '::instanceForValue() instead');
+    }
+
+    /**
+     * @return StringType|LiteralStringType
+     * @deprecated
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    // phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps
+    public static function instance_for_value(string $value, bool $is_nullable)
+    {
+        return self::instanceForValue($value, $is_nullable);
     }
 
     /**
      * @return StringType|LiteralStringType
      */
-    public static function instance_for_value(string $value, bool $is_nullable)
+    public static function instanceForValue(string $value, bool $is_nullable)
     {
         if (\strlen($value) > self::MINIMUM_MAX_STRING_LENGTH && \strlen($value) > Config::getValue('max_literal_string_type_length')) {
             // The config can only be used to increase this limit, not decrease it.
@@ -120,7 +131,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
             },
             $escaped_string
         );
-        return self::instance_for_value($escaped_string, $is_nullable);
+        return self::instanceForValue($escaped_string, $is_nullable);
     }
 
     /** @var StringType */
@@ -206,7 +217,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
             return $this;
         }
 
-        return self::instance_for_value(
+        return self::instanceForValue(
             $this->value,
             $is_nullable
         );

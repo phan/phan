@@ -1,8 +1,4 @@
-<?php
-
-<<<PHAN
-@phan-file-suppress PhanPluginMixedKeyNoKey (read by Phan when analyzing this file)
-PHAN;
+<?php // phpcs:ignoreFile
 
 /**
  * This contains the information needed to convert the function signatures for php 7.1 to php 7.0 (and vice versa)
@@ -14,6 +10,8 @@ PHAN;
  *   Functions are expected to be removed only in major releases of php. (e.g. php 7.0 removed various functions that were deprecated in 5.6)
  *
  * @see FunctionSignatureMap.php
+ *
+ * @phan-file-suppress PhanPluginMixedKeyNoKey (read by Phan when analyzing this file)
  */
 return [
 'new' => [

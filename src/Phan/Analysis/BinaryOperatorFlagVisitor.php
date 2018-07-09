@@ -269,7 +269,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         if ($right_value === null) {
             return StringType::instance(false)->asUnionType();
         }
-        return LiteralStringType::instance_for_value($left_value . $right_value, false)->asUnionType();
+        return LiteralStringType::instanceForValue($left_value . $right_value, false)->asUnionType();
     }
 
     /**

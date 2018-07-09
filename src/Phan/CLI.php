@@ -1099,6 +1099,7 @@ EOB;
         }
         assert(
             extension_loaded('ast'),
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             'The php-ast extension must be loaded in order for Phan to work. See https://github.com/phan/phan#getting-it-running for more details. Alternately, invoke Phan with the CLI option --allow-polyfill-parser (which is noticeably slower)'
         );
 

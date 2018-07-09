@@ -79,38 +79,30 @@ class TypeTest extends BaseTest
 
     public function testLiteralIntType()
     {
-        $this->assertParsesAsType(LiteralIntType::instance_for_value(1, false), '1');
-        $this->assertParsesAsType(LiteralIntType::instance_for_value(0, false), '0');
-        $this->assertParsesAsType(LiteralIntType::instance_for_value(0, false), '-0');
-        $this->assertParsesAsType(LiteralIntType::instance_for_value(-1, false), '-1');
-        $this->assertParsesAsType(LiteralIntType::instance_for_value(9, false), '9');
-        $this->assertParsesAsType(LiteralIntType::instance_for_value(190, false), '190');
+        $this->assertParsesAsType(LiteralIntType::instanceForValue(1, false), '1');
+        $this->assertParsesAsType(LiteralIntType::instanceForValue(0, false), '0');
+        $this->assertParsesAsType(LiteralIntType::instanceForValue(0, false), '-0');
+        $this->assertParsesAsType(LiteralIntType::instanceForValue(-1, false), '-1');
+        $this->assertParsesAsType(LiteralIntType::instanceForValue(9, false), '9');
+        $this->assertParsesAsType(LiteralIntType::instanceForValue(190, false), '190');
         $this->assertParsesAsType(FloatType::instance(false), '1111111111111111111111111111111111');
-        $this->assertParsesAsType(LiteralIntType::instance_for_value(1, true), '?1');
-        $this->assertParsesAsType(LiteralIntType::instance_for_value(-1, true), '?-1');
+        $this->assertParsesAsType(LiteralIntType::instanceForValue(1, true), '?1');
+        $this->assertParsesAsType(LiteralIntType::instanceForValue(-1, true), '?-1');
     }
 
     public function testLiteralStringType()
     {
-        $this->assertParsesAsType(LiteralStringType::instance_for_value('a', false), "'a'");
-        $this->assertParsesAsType(LiteralStringType::instance_for_value('a', true), "?'a'");
-        $this->assertParsesAsType(LiteralStringType::instance_for_value('', false), "''");
-        $this->assertParsesAsType(LiteralStringType::instance_for_value('', true), "?''");
-        $this->assertParsesAsType(LiteralStringType::instance_for_value('\\', false), "'\\\\'");
-        $this->assertParsesAsType(LiteralStringType::instance_for_value("'", false), "'\\''");
-        $this->assertParsesAsType(LiteralStringType::instance_for_value('0', false), "'0'");
-        $this->assertParsesAsType(LiteralStringType::instance_for_value('abcdefghijklmnopqrstuvwxyz01234567889-,./?:;!#$%^&*_-=+', false), "'abcdefghijklmnopqrstuvwxyz01234567889-,./?:;!#\$%^&*_-=+'");
+        $this->assertParsesAsType(LiteralStringType::instanceForValue('a', false), "'a'");
+        $this->assertParsesAsType(LiteralStringType::instanceForValue('a', true), "?'a'");
+        $this->assertParsesAsType(LiteralStringType::instanceForValue('', false), "''");
+        $this->assertParsesAsType(LiteralStringType::instanceForValue('', true), "?''");
+        $this->assertParsesAsType(LiteralStringType::instanceForValue('\\', false), "'\\\\'");
+        $this->assertParsesAsType(LiteralStringType::instanceForValue("'", false), "'\\''");
+        $this->assertParsesAsType(LiteralStringType::instanceForValue('0', false), "'0'");
+        $this->assertParsesAsType(LiteralStringType::instanceForValue('abcdefghijklmnopqrstuvwxyz01234567889-,./?:;!#$%^&*_-=+', false), "'abcdefghijklmnopqrstuvwxyz01234567889-,./?:;!#\$%^&*_-=+'");
 
-        $this->assertParsesAsType(LiteralStringType::instance_for_value("<=>\n", false), "'\\x3c\\x3d\\x3e\\x0a'");
+        $this->assertParsesAsType(LiteralStringType::instanceForValue("<=>\n", false), "'\\x3c\\x3d\\x3e\\x0a'");
     }
-
-    /*
-    // Planned:
-    public function testLiteralStringType()
-    {
-        $this->assertParsesAsType(LiteralStringType::instance_for_value('x', false), '"x"');
-    }
-     */
 
     private function assertSameType(Type $expected, Type $actual, string $extra = '')
     {

@@ -348,12 +348,12 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     private static function literalIntUnionType(int $value) : UnionType
     {
-        return LiteralIntType::instance_for_value($value, false)->asUnionType();
+        return LiteralIntType::instanceForValue($value, false)->asUnionType();
     }
 
     private static function literalStringUnionType(string $value) : UnionType
     {
-        return LiteralStringType::instance_for_value($value, false)->asUnionType();
+        return LiteralStringType::instanceForValue($value, false)->asUnionType();
     }
 
     /**
@@ -1624,7 +1624,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
             $result .= $part_string;
         }
-        return LiteralStringType::instance_for_value($result, false)->asUnionType();
+        return LiteralStringType::instanceForValue($result, false)->asUnionType();
     }
 
     /**

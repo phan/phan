@@ -45,6 +45,7 @@ class UnionType implements \Serializable
      * A list of one or more types delimited by the '|'
      * character (e.g. 'int|DateTime|string[]')
      */
+    // phpcs:ignore Generic.NamingConventions.UpperCaseConstantName
     const union_type_regex =
         Type::type_regex
         . '(\|' . Type::type_regex . ')*';
@@ -57,6 +58,7 @@ class UnionType implements \Serializable
      *
      * TODO: Equivalent variants with no capturing? (May not improve performance much)
      */
+    // phpcs:ignore Generic.NamingConventions.UpperCaseConstantName
     const union_type_regex_or_this =
         Type::type_regex_or_this
         . '(\|' . Type::type_regex_or_this . ')*';
@@ -2766,7 +2768,7 @@ class UnionType implements \Serializable
         return $this->applyNumericOperation(function ($value) : ScalarType {
             $result = -$value;
             if (\is_int($result)) {
-                return LiteralIntType::instance_for_value($result, false);
+                return LiteralIntType::instanceForValue($result, false);
             }
             // -INT_MIN is a float.
             return FloatType::instance(false);
@@ -2782,9 +2784,9 @@ class UnionType implements \Serializable
         $type_set = UnionType::empty();
         foreach ($this->type_set as $type) {
             if ($type instanceof LiteralIntType) {
-                $type_set = $type_set->withType(LiteralIntType::instance_for_value(~$type->getValue(), false));
+                $type_set = $type_set->withType(LiteralIntType::instanceForValue(~$type->getValue(), false));
                 if ($type->getIsNullable()) {
-                    $type_set = $type_set->withType(LiteralIntType::instance_for_value(0, false));
+                    $type_set = $type_set->withType(LiteralIntType::instanceForValue(0, false));
                 }
             } elseif ($type instanceof StringType) {
                 // Not going to bother being more specific (this applies bitwise not to each character for LiteralStringType)
@@ -2806,7 +2808,7 @@ class UnionType implements \Serializable
         return $this->applyNumericOperation(function ($value) : ScalarType {
             $result = -$value;
             if (\is_int($result)) {
-                return LiteralIntType::instance_for_value($result, false);
+                return LiteralIntType::instanceForValue($result, false);
             }
             // -INT_MIN is a float.
             return FloatType::instance(false);
@@ -2824,7 +2826,7 @@ class UnionType implements \Serializable
             if ($type instanceof LiteralIntType) {
                 $type_set = $type_set->withType($operation($type->getValue()));
                 if ($type->getIsNullable()) {
-                    $type_set = $type_set->withType(LiteralIntType::instance_for_value(0, false));
+                    $type_set = $type_set->withType(LiteralIntType::instanceForValue(0, false));
                 }
             } else {
                 if ($added_fallbacks) {

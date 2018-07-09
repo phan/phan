@@ -22,13 +22,24 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
      */
     public static function instance(bool $unused_is_nullable)
     {
-        throw new RuntimeException('Call ' . __CLASS__ . '::instance_for_value() instead');
+        throw new RuntimeException('Call ' . __CLASS__ . '::instanceForValue() instead');
+    }
+
+    /**
+     * @return LiteralIntType
+     * @deprecated
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    // phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps
+    public static function instance_for_value(int $value, bool $is_nullable)
+    {
+        return self::instanceForValue($value, $is_nullable);
     }
 
     /**
      * @return LiteralIntType
      */
-    public static function instance_for_value(int $value, bool $is_nullable)
+    public static function instanceForValue(int $value, bool $is_nullable)
     {
         if ($is_nullable) {
             static $nullable_cache = [];
@@ -134,7 +145,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
             return $this;
         }
 
-        return self::instance_for_value(
+        return self::instanceForValue(
             $this->value,
             $is_nullable
         );

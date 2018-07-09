@@ -838,7 +838,8 @@ class Config
         return self::$configuration;
     }
 
-    // @codingStandardsIgnoreStart method naming is deliberate to make these getters easier to search.
+    // method naming is deliberate to make these getters easier to search.
+    // phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
 
     public static function get_null_casts_as_any_type() : bool
     {
@@ -889,7 +890,7 @@ class Config
     {
         return self::$closest_target_php_version_id;
     }
-    // @codingStandardsIgnoreEnd
+    // phpcs:enable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
 
     /**
      * @return mixed

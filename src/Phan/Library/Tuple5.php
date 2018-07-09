@@ -20,6 +20,8 @@ namespace Phan\Library;
  * The type of element four
  *
  * @inherits Tuple4<T0, T1, T2, T3>
+ *
+ * phpcs:disable PSR2.Classes.PropertyDeclaration.Underscore
  */
 class Tuple5 extends Tuple4
 {

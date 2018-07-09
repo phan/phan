@@ -745,7 +745,12 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      *
      * @param ClientCapabilities $capabilities The capabilities provided by the client (editor) @phan-unused-param
      * @param string|null $rootPath The rootPath of the workspace. Is null if no folder is open. @phan-unused-param
-     * @param int|null $processId The process Id of the parent process that started the server. Is null if the process has not been started by another process. If the parent process is not alive then the server should exit (see exit notification) its process. @phan-unused-param
+     * @param int|null $processId The process Id of the parent process that started the server. @phan-unused-param
+     *                            This is null if the process has not been started by another process.
+     *                            If the parent process is not alive,
+     *                            then the server should exit (see exit notification) its process.
+     *                            NOTE: For most use cases, we'll know about the disconnection because the connection hits the end of file or an error.
+     *
      * @return Promise <InitializeResult>
      */
     public function initialize(ClientCapabilities $capabilities, string $rootPath = null, int $processId = null): Promise

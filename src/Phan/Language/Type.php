@@ -54,6 +54,7 @@ use InvalidArgumentException;
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
+ * phpcs:disable Generic.NamingConventions.UpperCaseConstantName
  */
 class Type
 {
@@ -601,10 +602,10 @@ class Type
         switch (\gettype($object)) {
             case 'integer':
                 '@phan-var int $object';
-                return LiteralIntType::instance_for_value($object, false);
+                return LiteralIntType::instanceForValue($object, false);
             case 'string':
                 '@phan-var string $object';
-                return LiteralStringType::instance_for_value($object, false);
+                return LiteralStringType::instanceForValue($object, false);
             case 'NULL':
                 return NullType::instance(false);
             case 'double':
@@ -869,7 +870,7 @@ class Type
         }
         $value = filter_var($escaped_literal, FILTER_VALIDATE_INT);
         if (\is_int($value)) {
-            return LiteralIntType::instance_for_value($value, $is_nullable);
+            return LiteralIntType::instanceForValue($value, $is_nullable);
         }
         return FloatType::instance($is_nullable);
     }

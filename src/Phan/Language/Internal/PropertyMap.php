@@ -36,8 +36,14 @@ $ast_node_children_types = 'array{' . $ast_node_shape_inner . '}|ast\Node[]|arra
  *
  * ```sh
  * svn checkout https://svn.php.net/repository/phpdoc/en/trunk phpdoc;
+ *
  * cd phpdoc;
- * find . -type f -path '*.xml -exec cat {} \; | tr "\n" " " | grep -o "<type>[^<]*<\/type>\s*<varname linkend=\"[^\.]*\.props.[^\"]*\"" | while read l; do T=`echo $l | cut -d ">" -f2 | cut -d "<" -f1`; N=`echo $l | cut -d "\"" -f2 | cut -d "." -f1,3`; printf "$T $N\n"; done | tee types
+ *
+ * find . -type f -path '*.xml -exec cat {} \; \
+ *   | tr "\n" " " \
+ *   | grep -o "<type>[^<]*<\/type>\s*<varname linkend=\"[^\.]*\.props.[^\"]*\"" \
+ *   | while read l; do T=`echo $l | cut -d ">" -f2 | cut -d "<" -f1`; N=`echo $l | cut -d "\"" -f2 | cut -d "." -f1,3`; printf "$T $N\n"; done \
+ *   | tee types
  * ```
  *
  * and then pipe that through
@@ -62,6 +68,9 @@ $ast_node_children_types = 'array{' . $ast_node_shape_inner . '}|ast\Node[]|arra
  *     print "\n    ],\n";
  * }
  * ```
+ *
+ * TODO: Migrate the above scripts to be part of the existing php scripts
+ * for working with the phpdoc SVN repo
  */
 return [
     'arrayobject' => [

@@ -1,9 +1,5 @@
-<?php // @codingStandardsIgnoreFile (phpcs runs out of memory)
+<?php // phpcs:ignoreFile
 namespace Phan\Language\Internal;
-
-<<<PHAN
-@phan-file-suppress PhanPluginMixedKeyNoKey (read by Phan when analyzing this file)
-PHAN;
 
 /**
  * Format
@@ -72,6 +68,7 @@ PHAN;
  * 3. Various websites documenting individual extensions
  * 4. PHPStorm stubs (For anything missing from the above sources)
  *    See internal/internalsignatures.php
+ * @phan-file-suppress PhanPluginMixedKeyNoKey (read by Phan when analyzing this file)
  */
 return [
 '_' => ['string', 'message'=>'string'],

@@ -23,7 +23,7 @@ class SignatureMapTest extends BaseTest
         foreach ($map as $function_name => $signature) {
             if (!is_string($function_name)) {
                 $failures[] = "Expected array for entry $function_name with values " . var_export($signature, true);
-            } else if (!preg_match(self::FUNCTION_KEY_REGEX, $function_name)) {
+            } elseif (!preg_match(self::FUNCTION_KEY_REGEX, $function_name)) {
                 $failures[] = "Expected $function_name to match the regular expression " . self::FUNCTION_KEY_REGEX;
             }
             if (!is_array($signature)) {
@@ -49,12 +49,12 @@ class SignatureMapTest extends BaseTest
         $this->assertSame('', implode("\n", $failures), "Saw one or more issues for the signature for PHP_VERSION_ID " . $php_version_id);
     }
 
-    public function phpVersionIdProvider() {
+    public function phpVersionIdProvider()
+    {
         return [
             [70000],  // PHP 7.0
             [70100],  // PHP 7.1
             [70200],  // PHP 7.2
         ];
     }
-
 }

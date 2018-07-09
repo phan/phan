@@ -930,7 +930,7 @@ class TolerantASTConverter
                             $raw_string = static::tokenToRawString($part);
 
                             // Pass in '"\\n"' and get "\n" (somewhat inefficient)
-                            $represented_string = String_::parse($start_quote_text . $raw_string . $end_quote_text);
+                            $represented_string = StringUtil::parse($start_quote_text . $raw_string . $end_quote_text);
                             $inner_node_parts[] = $represented_string;
                         }
                     }
@@ -2544,14 +2544,14 @@ class TolerantASTConverter
             return $float;
         }
 
-        return String_::parse($str);
+        return StringUtil::parse($str);
     }
 
     private static function parseQuotedString(PhpParser\Node\StringLiteral $n) : string
     {
         $start = $n->getStart();
         $text = \substr(self::$file_contents, $start, $n->getEndPosition() - $start);
-        return String_::parse($text);
+        return StringUtil::parse($text);
     }
 
     /**
