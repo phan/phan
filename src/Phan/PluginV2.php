@@ -100,7 +100,13 @@ use Phan\PluginV2\IssueEmitter;
  */
 abstract class PluginV2
 {
+    use IssueEmitter {
+        emitPluginIssue as emitIssue;
+    }
+
     /**
+     * The above declares this function signature:
+     *
      * public function emitIssue(
      *     CodeBase $code_base,
      *     Context $context,
@@ -112,7 +118,4 @@ abstract class PluginV2
      *     int $issue_type_id = Issue::TYPE_ID_UNKNOWN
      * )
      */
-    use IssueEmitter {
-        emitPluginIssue as emitIssue;
-    }
 }

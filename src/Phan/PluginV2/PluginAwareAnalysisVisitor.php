@@ -38,7 +38,7 @@ abstract class PluginAwareAnalysisVisitor extends PluginAwareBaseAnalysisVisitor
      * 'class with fqsen {CLASS} is broken in some fashion' (preferred)
      * or 'class with fqsen %s is broken in some fashion'
      * The list of placeholders for between braces can be found
-     * in \Phan\Issue::uncolored_format_string_for_template.
+     * in \Phan\Issue::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE.
      *
      * @param array<int,string> $issue_message_args
      * The arguments for this issue format.

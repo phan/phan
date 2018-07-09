@@ -846,6 +846,7 @@ final class ConfigPluginSet extends PluginV2 implements
             if ($implemented_count > 1) {
                 throw new \TypeError(
                     sprintf(
+                        // phpcs:ignore
                         "plugin %s should implement only one of LegacyAnalyzeNodeCapability, AnalyzeNodeCapability, LegacyPostAnalyzeNodeCapability, or PostAnalyzeNodeCapability. PostAnalyzeNodeCapability is preferred.",
                         \get_class($plugin)
                     )

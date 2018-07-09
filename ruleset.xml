@@ -7,12 +7,13 @@
   <rule ref="PSR1" />
   <rule ref="PSR2">
     <exclude name="Generic.Files.LineLength.TooLong" />
+    <!-- We put class initialization in the same file as methods -->
     <exclude name="PSR1.Files.SideEffects.FoundWithSymbols" />
+    <exclude name="PSR1.Classes.ClassDeclaration.MultipleClasses" />
   </rule>
-  <exclude-pattern>*SignatureMap*.php</exclude-pattern>
 
   <rule ref="PSR12" />
-  <!-- Arbitrary increase of line length limit -->
+  <!-- Arbitrary increase of the line length limit -->
   <rule ref="Generic.Files.LineLength">
     <properties>
       <property name="lineLimit" value="150"/>

@@ -54,6 +54,7 @@ use InvalidArgumentException;
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
+ * phpcs:disable Generic.NamingConventions.UpperCaseConstantName
  */
 class Type
 {

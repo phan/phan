@@ -15,7 +15,8 @@ use Phan\Plugin\ConfigPluginSet;
  */
 class Issue
 {
-    // @codingStandardsIgnoreStart
+    // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
+    // this is deliberate for issue names
     // Issue::CATEGORY_SYNTAX
     const SyntaxError               = 'PhanSyntaxError';
 
@@ -83,15 +84,15 @@ class Issue
     const TypeInvalidInstanceof     = 'PhanTypeInvalidInstanceof';
     const TypeInvalidDimOffset      = 'PhanTypeInvalidDimOffset';
     const TypeInvalidDimOffsetArrayDestructuring = 'PhanTypeInvalidDimOffsetArrayDestructuring';
-    const TypeInvalidThrowsNonObject = 'PhanTypeInvalidThrowsNonObject';
-    const TypeInvalidThrowsNonThrowable = 'PhanTypeInvalidThrowsNonThrowable';
-    const TypeInvalidThrowsIsTrait = 'PhanTypeInvalidThrowsIsTrait';
-    const TypeInvalidThrowsIsInterface = 'PhanTypeInvalidThrowsIsInterface';
-    const TypeMagicVoidWithReturn   = 'PhanTypeMagicVoidWithReturn';
-    const TypeMismatchArgument      = 'PhanTypeMismatchArgument';
-    const TypeMismatchArgumentInternal = 'PhanTypeMismatchArgumentInternal';
-    const PartialTypeMismatchArgument = 'PhanPartialTypeMismatchArgument';
-    const PartialTypeMismatchArgumentInternal= 'PhanPartialTypeMismatchArgumentInternal';
+    const TypeInvalidThrowsNonObject             = 'PhanTypeInvalidThrowsNonObject';
+    const TypeInvalidThrowsNonThrowable          = 'PhanTypeInvalidThrowsNonThrowable';
+    const TypeInvalidThrowsIsTrait               = 'PhanTypeInvalidThrowsIsTrait';
+    const TypeInvalidThrowsIsInterface           = 'PhanTypeInvalidThrowsIsInterface';
+    const TypeMagicVoidWithReturn                = 'PhanTypeMagicVoidWithReturn';
+    const TypeMismatchArgument                   = 'PhanTypeMismatchArgument';
+    const TypeMismatchArgumentInternal           = 'PhanTypeMismatchArgumentInternal';
+    const PartialTypeMismatchArgument            = 'PhanPartialTypeMismatchArgument';
+    const PartialTypeMismatchArgumentInternal    = 'PhanPartialTypeMismatchArgumentInternal';
     const PossiblyNullTypeArgument  = 'PhanPossiblyNullTypeArgument';
     const PossiblyNullTypeArgumentInternal = 'PhanPossiblyNullTypeArgumentInternal';
     const PossiblyFalseTypeArgument  = 'PhanPossiblyFalseTypeArgument';
@@ -344,6 +345,8 @@ class Issue
     const ThrowTypeAbsentForCall           = 'PhanThrowTypeAbsentForCall';
     const ThrowTypeMismatch                = 'PhanThrowTypeMismatch';
     const ThrowTypeMismatchForCall         = 'PhanThrowTypeMismatchForCall';
+    // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
+    // end of issue name constants
 
 
     const CATEGORY_ACCESS            = 1 << 1;
@@ -409,7 +412,7 @@ class Issue
     const TYPE_ID_UNKNOWN = 999;
 
     // Keep sorted and in sync with Colorizing::default_color_for_template
-    const uncolored_format_string_for_template = [
+    const UNCOLORED_FORMAT_STRING_FOR_TEMPLATE = [
         'CLASS'         => '%s',
         'CLASSLIKE'     => '%s',
         'COMMENT'       => '%s',  // contents of a phpdoc comment
@@ -437,7 +440,6 @@ class Issue
         'TRAIT'         => '%s',
         'VARIABLE'      => '%s',
     ];
-    // @codingStandardsIgnoreEnd
 
     /** @var string */
     private $type;
@@ -491,17 +493,17 @@ class Issue
         /** @param array<int,string> $matches */
         return preg_replace_callback('/{([A-Z_]+)}/', function (array $matches) use ($template): string {
             $key = $matches[1];
-            $replacement_exists = \array_key_exists($key, self::uncolored_format_string_for_template);
+            $replacement_exists = \array_key_exists($key, self::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE);
             if (!$replacement_exists) {
                 error_log(sprintf(
                     "No coloring info for issue message (%s), key {%s}. Valid template types: %s",
                     $template,
                     $key,
-                    implode(', ', array_keys(self::uncolored_format_string_for_template))
+                    implode(', ', array_keys(self::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE))
                 ));
                 return '%s';
             }
-            return self::uncolored_format_string_for_template[$key];
+            return self::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE[$key];
         }, $template);
     }
 
@@ -516,6 +518,7 @@ class Issue
             return $error_map;
         }
 
+        // phpcs:disable Generic.Files.LineLength
         /**
          * @var array<int,Issue>
          * Note: All type ids should be unique, and be grouped by the category.
@@ -2911,6 +2914,7 @@ class Issue
                 16014
             ),
         ];
+        // phpcs:enable Generic.Files.LineLength
 
         self::sanityCheckErrorList($error_list);
         // Verified the error meets preconditions, now add it.

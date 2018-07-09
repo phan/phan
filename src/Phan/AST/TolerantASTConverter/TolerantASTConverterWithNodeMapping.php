@@ -150,7 +150,14 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
     {
         foreach ($parser_node->getChildNodesAndTokens() as $key => $node_or_token) {
             if ($node_or_token instanceof Token) {
-                // fprintf(STDERR, "Scanning over Token %s %d %d-%d\n", Token::getTokenKindNameFromValue($node_or_token->kind), $node_or_token->fullStart, $node_or_token->start, $node_or_token->getEndPosition());
+                // fprintf(
+                //     STDERR,
+                //     "Scanning over Token %s (fullStart=%d) %d-%d\n",
+                //     Token::getTokenKindNameFromValue($node_or_token->kind),
+                //     $node_or_token->fullStart,
+                //     $node_or_token->start,
+                //     $node_or_token->getEndPosition()
+                // );
                 if ($node_or_token->getEndPosition() > $offset) {
                     if ($node_or_token->start > $offset) {
                         if ($node_or_token->fullStart <= $offset) {

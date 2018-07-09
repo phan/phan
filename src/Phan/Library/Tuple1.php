@@ -6,6 +6,7 @@ namespace Phan\Library;
  *
  * @template T0
  * The type of element zero
+ * phpcs:disable PSR2.Classes.PropertyDeclaration.Underscore
  */
 class Tuple1 extends Tuple
 {

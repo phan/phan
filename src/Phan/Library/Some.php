@@ -6,6 +6,7 @@ namespace Phan\Library;
  * The type of the element
  *
  * @inherits Option<T>
+ * phpcs:disable PSR2.Classes.PropertyDeclaration.Underscore
  */
 class Some extends Option
 {

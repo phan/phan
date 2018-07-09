@@ -45,6 +45,7 @@ class UnionType implements \Serializable
      * A list of one or more types delimited by the '|'
      * character (e.g. 'int|DateTime|string[]')
      */
+    // phpcs:ignore Generic.NamingConventions.UpperCaseConstantName
     const union_type_regex =
         Type::type_regex
         . '(\|' . Type::type_regex . ')*';
@@ -57,6 +58,7 @@ class UnionType implements \Serializable
      *
      * TODO: Equivalent variants with no capturing? (May not improve performance much)
      */
+    // phpcs:ignore Generic.NamingConventions.UpperCaseConstantName
     const union_type_regex_or_this =
         Type::type_regex_or_this
         . '(\|' . Type::type_regex_or_this . ')*';
