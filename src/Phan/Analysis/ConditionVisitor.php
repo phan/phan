@@ -629,17 +629,17 @@ class ConditionVisitor extends KindVisitorImplementation
             // Change the type to match the is_a relationship
             // If we already have possible scalar types, then keep those
             // (E.g. T|false becomes bool, T becomes int|float|bool|string|null)
-            $newType = $variable->getUnionType()->scalarTypes();
-            if ($newType->containsNullable()) {
-                $newType = $newType->nonNullableClone();
+            $new_type = $variable->getUnionType()->scalarTypes();
+            if ($new_type->containsNullable()) {
+                $new_type = $new_type->nonNullableClone();
             }
-            if ($newType->isEmpty()) {
+            if ($new_type->isEmpty()) {
                 // If there are no inferred types, or the only type we saw was 'null',
                 // assume there this can be any possible scalar.
                 // (Excludes `resource`, which is technically a scalar)
-                $newType = UnionType::fromFullyQualifiedString('int|float|bool|string');
+                $new_type = UnionType::fromFullyQualifiedString('int|float|bool|string');
             }
-            $variable->setUnionType($newType);
+            $variable->setUnionType($new_type);
         };
         $callable_callback = static function (Variable $variable, array $args) {
             // Change the type to match the is_a relationship

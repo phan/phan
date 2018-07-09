@@ -56,11 +56,11 @@ class BlockExitStatusCheckerTest extends BaseTest
     /**
      * @dataProvider exitStatusProvider
      */
-    public function testExitStatus(string $expectedStatusRepresentation, string $codeSnippet)
+    public function testExitStatus(string $expected_status_representation, string $code_snippet)
     {
-        $ast = \ast\parse_code("<" . "?php " . $codeSnippet, Config::AST_VERSION);
+        $ast = \ast\parse_code("<" . "?php " . $code_snippet, Config::AST_VERSION);
         $status_code = (new BlockExitStatusChecker())($ast);
-        $this->assertSame($expectedStatusRepresentation, $this->representStatus($status_code), sprintf("Unexpected status 0x%x\nCode:\n%s\n", $status_code, $codeSnippet));
+        $this->assertSame($expected_status_representation, $this->representStatus($status_code), sprintf("Unexpected status 0x%x\nCode:\n%s\n", $status_code, $code_snippet));
     }
 
     public function exitStatusProvider() : array

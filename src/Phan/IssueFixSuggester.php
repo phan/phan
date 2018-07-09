@@ -423,7 +423,7 @@ class IssueFixSuggester
             return [];
         }
         $search_name = strtolower($target);
-        $N = strlen($search_name);
+        $target_length = strlen($search_name);
         $max_levenshtein_distance = (int)(1 + strlen($search_name) / 6);
         $best_matches = [];
         $min_found_distance = $max_levenshtein_distance;
@@ -431,7 +431,7 @@ class IssueFixSuggester
         foreach ($potential_candidates as $name => $_) {
             $name = (string)$name;
 
-            if (\abs(strlen($name) - $N) > $max_levenshtein_distance) {
+            if (\abs(strlen($name) - $target_length) > $max_levenshtein_distance) {
                 continue;
             }
             $distance = levenshtein(strtolower($name), $search_name);

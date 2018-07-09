@@ -137,9 +137,9 @@ class Debug
             $string .= ' #' . $node->lineno;
         }
 
-        $endLineno = $node->endLineno ?? null;
-        if (!\is_null($endLineno)) {
-            $string .= ':' . $endLineno;
+        $end_lineno = $node->endLineno ?? null;
+        if (!\is_null($end_lineno)) {
+            $string .= ':' . $end_lineno;
         }
 
         $string .= "\n";
@@ -166,13 +166,13 @@ class Debug
         list($exclusive, $combinable) = self::getFlagInfo();
         $flag_names = [];
         if (isset($exclusive[$kind])) {
-            $flagInfo = $exclusive[$kind];
-            if (isset($flagInfo[$flags])) {
-                $flag_names[] = $flagInfo[$flags];
+            $flag_info = $exclusive[$kind];
+            if (isset($flag_info[$flags])) {
+                $flag_names[] = $flag_info[$flags];
             }
         } elseif (isset($combinable[$kind])) {
-            $flagInfo = $combinable[$kind];
-            foreach ($flagInfo as $flag => $name) {
+            $flag_info = $combinable[$kind];
+            foreach ($flag_info as $flag => $name) {
                 if ($flags & $flag) {
                     $flag_names[] = $name;
                 }
@@ -192,14 +192,14 @@ class Debug
     {
         list($exclusive, $combinable) = self::getFlagInfo();
         if (isset($exclusive[$kind])) {
-            $flagInfo = $exclusive[$kind];
-            if (isset($flagInfo[$flags])) {
-                return "{$flagInfo[$flags]} ($flags)";
+            $flag_info = $exclusive[$kind];
+            if (isset($flag_info[$flags])) {
+                return "{$flag_info[$flags]} ($flags)";
             }
         } elseif (isset($combinable[$kind])) {
-            $flagInfo = $combinable[$kind];
+            $flag_info = $combinable[$kind];
             $names = [];
-            foreach ($flagInfo as $flag => $name) {
+            foreach ($flag_info as $flag => $name) {
                 if ($flags & $flag) {
                     $names[] = $name;
                 }
@@ -245,9 +245,9 @@ class Debug
 
             if ($options & self::AST_DUMP_LINENOS) {
                 $result .= " @ $ast->lineno";
-                $endLineno = $ast->endLineno ?? null;
-                if (!\is_null($endLineno)) {
-                    $result .= "-$endLineno";
+                $end_lineno = $ast->endLineno ?? null;
+                if (!\is_null($end_lineno)) {
+                    $result .= "-$end_lineno";
                 }
             }
 
@@ -277,6 +277,7 @@ class Debug
      */
     private static function getFlagInfo() : array
     {
+        // TODO: Use AST's built in flag info if available.
         static $exclusive, $combinable;
         if ($exclusive !== null) {
             return [$exclusive, $combinable];
@@ -304,12 +305,12 @@ class Debug
             flags\TYPE_VOID => 'TYPE_VOID',
             flags\TYPE_ITERABLE => 'TYPE_ITERABLE',
         ];
-        $useTypes = [
+        $use_types = [
             flags\USE_NORMAL => 'USE_NORMAL',
             flags\USE_FUNCTION => 'USE_FUNCTION',
             flags\USE_CONST => 'USE_CONST',
         ];
-        $sharedBinaryOps = [
+        $shared_binary_ops = [
             flags\BINARY_BITWISE_OR => 'BINARY_BITWISE_OR',
             flags\BINARY_BITWISE_AND => 'BINARY_BITWISE_AND',
             flags\BINARY_BITWISE_XOR => 'BINARY_BITWISE_XOR',
@@ -350,7 +351,7 @@ class Debug
                 flags\UNARY_PLUS => 'UNARY_PLUS',
                 flags\UNARY_SILENCE => 'UNARY_SILENCE',
             ],
-            \ast\AST_BINARY_OP => $sharedBinaryOps + [
+            \ast\AST_BINARY_OP => $shared_binary_ops + [
                 flags\BINARY_BOOL_AND => 'BINARY_BOOL_AND',
                 flags\BINARY_BOOL_OR => 'BINARY_BOOL_OR',
                 flags\BINARY_BOOL_XOR => 'BINARY_BOOL_XOR',
@@ -365,7 +366,7 @@ class Debug
                 flags\BINARY_SPACESHIP => 'BINARY_SPACESHIP',
                 flags\BINARY_COALESCE => 'BINARY_COALESCE',
             ],
-            \ast\AST_ASSIGN_OP => $sharedBinaryOps + [
+            \ast\AST_ASSIGN_OP => $shared_binary_ops + [
                 // Old version 10 flags
                 flags\ASSIGN_BITWISE_OR => 'ASSIGN_BITWISE_OR',
                 flags\ASSIGN_BITWISE_AND => 'ASSIGN_BITWISE_AND',
@@ -390,9 +391,9 @@ class Debug
                 flags\MAGIC_CLASS => 'MAGIC_CLASS',
                 flags\MAGIC_TRAIT => 'MAGIC_TRAIT',
             ],
-            \ast\AST_USE => $useTypes,
-            \ast\AST_GROUP_USE => $useTypes,
-            \ast\AST_USE_ELEM => $useTypes,
+            \ast\AST_USE => $use_types,
+            \ast\AST_GROUP_USE => $use_types,
+            \ast\AST_USE_ELEM => $use_types,
             \ast\AST_INCLUDE_OR_EVAL => [
                 flags\EXEC_EVAL => 'EXEC_EVAL',
                 flags\EXEC_INCLUDE => 'EXEC_INCLUDE',

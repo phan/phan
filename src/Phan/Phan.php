@@ -40,14 +40,14 @@ class Phan implements IgnoredFilesFilterInterface
     }
 
     /**
-     * @param IssueCollectorInterface $issueCollector
+     * @param IssueCollectorInterface $issue_collector
      *
      * @return void
      */
     public static function setIssueCollector(
-        IssueCollectorInterface $issueCollector
+        IssueCollectorInterface $issue_collector
     ) {
-        self::$issue_collector = $issueCollector;
+        self::$issue_collector = $issue_collector;
     }
 
     /**

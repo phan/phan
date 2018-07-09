@@ -4,6 +4,7 @@
 <!-- phpcbf.phar can be used to automatically fix many issues -->
 <!-- Use this with PHP_CodeSniffer 3.3.0 or newer -->
 <ruleset name="Custom Standard">
+  <description>Coding standard for Phan</description>
   <rule ref="PSR1" />
   <rule ref="PSR2">
     <exclude name="Generic.Files.LineLength.TooLong" />
@@ -19,5 +20,10 @@
       <property name="lineLimit" value="150"/>
       <property name="absoluteLineLimit" value="200"/>
     </properties>
+  </rule>
+
+  <!-- Phan's coding style is to always use underscores for variable names and property declarations -->
+  <rule ref="./internal">
+    <exclude name="Phan.NamingConventions.ValidUnderscoreVariableName.ContainsNumbers" />
   </rule>
 </ruleset>

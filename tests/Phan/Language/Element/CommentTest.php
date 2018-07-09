@@ -18,7 +18,7 @@ class CommentTest extends BaseTest
     /** @var CodeBase */
     protected $code_base;
 
-    const overrides = [
+    const OVERRIDES = [
         'read_type_annotations' => true,
         'read_magic_property_annotations' => true,
         'read_magic_method_annotations' => true,
@@ -30,7 +30,7 @@ class CommentTest extends BaseTest
     protected function setUp()
     {
         $this->code_base = new CodeBase([], [], [], [], []);
-        foreach (self::overrides as $key => $value) {
+        foreach (self::OVERRIDES as $key => $value) {
             $this->old_values[$key] = Config::getValue($key);
             Config::setValue($key, $value);
         }
@@ -194,32 +194,32 @@ class CommentTest extends BaseTest
 
     public function testGetMagicMethod()
     {
-        $commentText = <<<'EOT'
+        $comment_text = <<<'EOT'
 /**
  * @method static int|string my_method(int $x, stdClass ...$rest) description
  * @method myInstanceMethod2(int, $other = 'myString') description
  */
 EOT;
         $comment = Comment::fromStringInContext(
-            $commentText,
+            $comment_text,
             $this->code_base,
             new Context(),
             1,
             Comment::ON_CLASS
         );
-        $methodMap = $comment->getMagicMethodMap();
-        $this->assertSame(['my_method', 'myInstanceMethod2'], \array_keys($methodMap));
-        $methodDefinition = $methodMap['my_method'];
-        $this->assertSame('static function my_method(int $x, \stdClass ...$rest) : int|string', (string)$methodDefinition);
-        $this->assertSame('my_method', $methodDefinition->getName());
-        $instanceMethodDefinition = $methodMap['myInstanceMethod2'];
-        $this->assertSame('function myInstanceMethod2(int $p1, $other = default) : void', (string)$instanceMethodDefinition);
-        $this->assertSame('myInstanceMethod2', $instanceMethodDefinition->getName());
+        $method_map = $comment->getMagicMethodMap();
+        $this->assertSame(['my_method', 'myInstanceMethod2'], \array_keys($method_map));
+        $method_definition = $method_map['my_method'];
+        $this->assertSame('static function my_method(int $x, \stdClass ...$rest) : int|string', (string)$method_definition);
+        $this->assertSame('my_method', $method_definition->getName());
+        $instance_method_definition = $method_map['myInstanceMethod2'];
+        $this->assertSame('function myInstanceMethod2(int $p1, $other = default) : void', (string)$instance_method_definition);
+        $this->assertSame('myInstanceMethod2', $instance_method_definition->getName());
     }
 
     public function testGetTemplateType()
     {
-        $commentText = <<<'EOT'
+        $comment_text = <<<'EOT'
 /**
  * The check for template is case sensitive.
  * @template T1
@@ -228,31 +228,31 @@ EOT;
  */
 EOT;
         $comment = Comment::fromStringInContext(
-            $commentText,
+            $comment_text,
             $this->code_base,
             new Context(),
             1,
             Comment::ON_CLASS
         );
-        $templateTypes = $comment->getTemplateTypeList();
-        $this->assertCount(2, $templateTypes);
-        $t1Info = $templateTypes[0];
-        $this->assertSame('T1', $t1Info->getName());
-        $uInfo = $templateTypes[1];
-        $this->assertSame('u', $uInfo->getName());
+        $template_types = $comment->getTemplateTypeList();
+        $this->assertCount(2, $template_types);
+        $t1_info = $template_types[0];
+        $this->assertSame('T1', $t1_info->getName());
+        $u_info = $template_types[1];
+        $this->assertSame('u', $u_info->getName());
     }
 
     public function testGetParameterArrayNew()
     {
         // Currently, we ignore the array key. This may change in a future release.
-        $commentText = <<<'EOT'
+        $comment_text = <<<'EOT'
 /**
  * @param array<mixed, string> $myParam
  * @param array<string , stdClass> ...$rest
  */
 EOT;
         $comment = Comment::fromStringInContext(
-            $commentText,
+            $comment_text,
             $this->code_base,
             new Context(),
             1,
@@ -269,18 +269,18 @@ EOT;
         $this->assertSame('myParam', $my_param_doc->getName());
 
         // Argument #2, #3, etc. passed by callers are arrays of stdClasses
-        $restDoc = $parameter_map['rest'];
-        $this->assertSame('array<string,\stdClass> ...$rest', (string)$restDoc);
-        $this->assertTrue($restDoc->isOptional());
-        $this->assertFalse($restDoc->isRequired());
-        $this->assertTrue($restDoc->isVariadic());
-        $this->assertSame('rest', $restDoc->getName());
+        $rest_doc = $parameter_map['rest'];
+        $this->assertSame('array<string,\stdClass> ...$rest', (string)$rest_doc);
+        $this->assertTrue($rest_doc->isOptional());
+        $this->assertFalse($rest_doc->isRequired());
+        $this->assertTrue($rest_doc->isVariadic());
+        $this->assertSame('rest', $rest_doc->getName());
     }
 
     public function testGetVarArrayNew()
     {
         // Currently, we ignore the array key. This may change in a future release.
-        $commentText = <<<'EOT'
+        $comment_text = <<<'EOT'
 /**
  * @var int $my_int
  * @var array<string , stdClass> $array
@@ -288,7 +288,7 @@ EOT;
  */
 EOT;
         $comment = Comment::fromStringInContext(
-            $commentText,
+            $comment_text,
             $this->code_base,
             new Context(),
             1,

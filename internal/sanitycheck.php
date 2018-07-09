@@ -16,44 +16,44 @@ function load_internal_function(string $function_name) : ReflectionFunctionAbstr
 
 function getParametersCountsFromPhan(array $fields)
 {
-    $numRequired = 0;
+    $num_required = 0;
     unset($fields[0]);
-    $numOptional = count($fields);
-    $sawOptional = false;
-    $sawOptionalAfterRequired = false;
+    $num_optional = count($fields);
+    $saw_optional = false;
+    $saw_optional_after_required = false;
     foreach ($fields as $type => $_) {
         assert(is_string($type));
         if (strpos($type, '...') !== false) {
-            $numOptional = 10000;
+            $num_optional = 10000;
             break;
         } elseif (strpos($type, '=') === false) {
-            $numRequired++;
-            if ($sawOptional) {
-                $sawOptionalAfterRequired = true;
+            $num_required++;
+            if ($saw_optional) {
+                $saw_optional_after_required = true;
             }
         } else {
-            $sawOptional = true;
+            $saw_optional = true;
         }
     }
-    return [$numRequired, $numOptional, $sawOptionalAfterRequired];
+    return [$num_required, $num_optional, $saw_optional_after_required];
 }
 /**
  * @param ReflectionParameter[] $args
  */
 function getParameterCountsFromReflection(array $args)
 {
-    $numRequired = 0;
-    $numOptional = count($args);
+    $num_required = 0;
+    $num_optional = count($args);
     foreach ($args as $reflection_parameter) {
         if ($reflection_parameter->isVariadic()) {
-            $numOptional = 10000;
+            $num_optional = 10000;
             break;
         } elseif ($reflection_parameter->isOptional() || $reflection_parameter->isDefaultValueAvailable()) {
         } else {
-            $numRequired++;
+            $num_required++;
         }
     }
-    return [$numRequired, $numOptional];
+    return [$num_required, $num_optional];
 }
 
 // TODO: reuse code?
@@ -171,6 +171,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
                     echo "(Has alternate): ";
                 }
                 if ($reflection_is_by_reference) {
+                    // TODO: Switch to printf
                     echo "Found mismatch for $original_function_name param \${$reflection_parameter->getName()} and phan param \${$phan_parameter->name}: PHP says param is by reference, but phan doesn't: " . json_encode($fields) . "\n";
                 } else {
                     echo "Found mismatch for $original_function_name param \${$reflection_parameter->getName()} and phan param \${$phan_parameter->name}: PHP says param is not by reference, but phan does: " . json_encode($fields) . "\n";

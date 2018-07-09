@@ -974,14 +974,14 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Statement\BreakOrContinueStatement' => function (PhpParser\Node\Statement\BreakOrContinueStatement $n, int $start_line) : ast\Node {
                 $kind = $n->breakOrContinueKeyword->kind === TokenKind::ContinueKeyword ? ast\AST_CONTINUE : ast\AST_BREAK;
                 if ($n->breakoutLevel !== null) {
-                    $breakoutLevel = static::phpParserNodeToAstNode($n->breakoutLevel);
-                    if (!\is_int($breakoutLevel)) {
-                        $breakoutLevel = null;
+                    $breakout_level = static::phpParserNodeToAstNode($n->breakoutLevel);
+                    if (!\is_int($breakout_level)) {
+                        $breakout_level = null;
                     }
                 } else {
-                    $breakoutLevel = null;
+                    $breakout_level = null;
                 }
-                return new ast\Node($kind, 0, ['depth' => $breakoutLevel], $start_line);
+                return new ast\Node($kind, 0, ['depth' => $breakout_level], $start_line);
             },
             'Microsoft\PhpParser\Node\CatchClause' => function (PhpParser\Node\CatchClause $n, int $start_line) : ast\Node {
                 $qualified_name = $n->qualifiedName;
@@ -2613,10 +2613,10 @@ class TolerantASTConverter
      */
     private static function phpParserNameToString(PhpParser\Node\QualifiedName $name) : string
     {
-        $nameParts = $name->nameParts;
+        $name_parts = $name->nameParts;
         // TODO: Handle error case (can there be missing parts?)
         $result = '';
-        foreach ($nameParts as $part) {
+        foreach ($name_parts as $part) {
             $part_as_string = static::tokenToString($part);
             if ($part_as_string !== '') {
                 $result .= \trim($part_as_string);
@@ -2637,14 +2637,14 @@ class TolerantASTConverter
      */
     private static function newAstDecl(int $kind, int $flags, array $children, int $lineno, string $doc_comment = null, string $name = null, int $end_lineno = 0, int $decl_id = -1) : ast\Node
     {
-        $children50 = [];
-        $children50['name'] = $name;
-        $children50['docComment'] = $doc_comment;
-        $children50 += $children;
+        $decl_children = [];
+        $decl_children['name'] = $name;
+        $decl_children['docComment'] = $doc_comment;
+        $decl_children += $children;
         if ($decl_id >= 0) {
-            $children50['__declId'] = $decl_id;
+            $decl_children['__declId'] = $decl_id;
         }
-        $node = new ast\Node($kind, $flags, $children50, $lineno);
+        $node = new ast\Node($kind, $flags, $decl_children, $lineno);
         if (\is_int($end_lineno)) {
             $node->endLineno = $end_lineno;
         }

@@ -49,13 +49,13 @@ class Daemon
         // TODO: Limit the maximum number of active processes to a small number(4?)
         // TODO: accept SIGCHLD when child terminates, somehow?
         try {
-            $gotSignal = false;
-            pcntl_signal(SIGCHLD, function (...$args) use (&$gotSignal) {
-                $gotSignal = true;
+            $got_signal = false;
+            pcntl_signal(SIGCHLD, function (...$args) use (&$got_signal) {
+                $got_signal = true;
                 Request::childSignalHandler(...$args);
             });
             while (true) {
-                $gotSignal = false;  // reset this.
+                $got_signal = false;  // reset this.
                 // We get an error from stream_socket_accept. After the RuntimeException is thrown, pcntl_signal is called.
                 /**
                  * @param int $severity
@@ -64,10 +64,10 @@ class Daemon
                  * @param int $line
                  * @return bool
                  * @phan-suppress-next-line PhanPluginUnusedVariable https://github.com/mattriverm/PhanUnusedVariable/issues/30 */
-                $previousErrorHandler = set_error_handler(function ($severity, $message, $file, $line) use (&$previousErrorHandler) {
+                $previous_error_handler = set_error_handler(function ($severity, $message, $file, $line) use (&$previous_error_handler) {
                     self::debugf("In new error handler '$message'");
                     if (!preg_match('/stream_socket_accept/i', $message)) {
-                        return $previousErrorHandler($severity, $message, $file, $line);
+                        return $previous_error_handler($severity, $message, $file, $line);
                     }
                     throw new \RuntimeException("Got signal");
                 });
@@ -79,7 +79,7 @@ class Daemon
                     self::debugf("Got signal");
                     pcntl_signal_dispatch();
                     self::debugf("done processing signals");
-                    if ($gotSignal) {
+                    if ($got_signal) {
                         continue;  // Ignore notices from stream_socket_accept if it's due to being interrupted by a child process terminating.
                     }
                 } finally {
@@ -117,13 +117,13 @@ class Daemon
         $socket_server = self::createDaemonStreamSocketServer();
         try {
             while (true) {
-                $gotSignal = false;  // reset this.
+                $got_signal = false;  // reset this.
                 // We get an error from stream_socket_accept. After the RuntimeException is thrown, pcntl_signal is called.
                 // @phan-suppress-next-line PhanPluginUnusedVariable
-                $previousErrorHandler = set_error_handler(function ($severity, $message, $file, $line) use (&$previousErrorHandler) {
+                $previous_error_handler = set_error_handler(function ($severity, $message, $file, $line) use (&$previous_error_handler) {
                     self::debugf("In new error handler '$message'");
                     if (!preg_match('/stream_socket_accept/i', $message)) {
-                        return $previousErrorHandler($severity, $message, $file, $line);
+                        return $previous_error_handler($severity, $message, $file, $line);
                     }
                     throw new \RuntimeException("Got signal");
                 });
@@ -135,7 +135,7 @@ class Daemon
                     self::debugf("Got signal");
                     pcntl_signal_dispatch();
                     self::debugf("done processing signals");
-                    if ($gotSignal) {
+                    if ($got_signal) {
                         continue;  // Ignore notices from stream_socket_accept if it's due to being interrupted by a child process terminating.
                     }
                 } finally {

@@ -65,28 +65,28 @@ final class StringUtil
      * Parses a string token.
      *
      * @param string $str String token content
-     * @param bool $parseUnicodeEscape Whether to parse PHP 7 \u escapes
+     * @param bool $parse_unicode_escape Whether to parse PHP 7 \u escapes
      *
      * @return string The parsed string
      */
-    public static function parse(string $str, bool $parseUnicodeEscape = true) : string
+    public static function parse(string $str, bool $parse_unicode_escape = true) : string
     {
-        $bLength = 0;
+        $binary_length = 0;
         if ('b' === $str[0] || 'B' === $str[0]) {
-            $bLength = 1;
+            $binary_length = 1;
         }
 
-        if ('\'' === $str[$bLength]) {
+        if ('\'' === $str[$binary_length]) {
             return \str_replace(
                 ['\\\\', '\\\''],
                 ['\\', '\''],
-                \substr($str, $bLength + 1, -1)
+                \substr($str, $binary_length + 1, -1)
             );
         } else {
             return self::parseEscapeSequences(
-                substr($str, $bLength + 1, -1),
+                substr($str, $binary_length + 1, -1),
                 '"',
-                $parseUnicodeEscape
+                $parse_unicode_escape
             );
         }
     }
@@ -98,18 +98,18 @@ final class StringUtil
      *
      * @param string      $str   String without quotes
      * @param null|string $quote Quote type
-     * @param bool $parseUnicodeEscape Whether to parse PHP 7 \u escapes
+     * @param bool $parse_unicode_escape Whether to parse PHP 7 \u escapes
      *
      * @return string String with escape sequences parsed
      */
-    public static function parseEscapeSequences(string $str, $quote, bool $parseUnicodeEscape = true) : string
+    public static function parseEscapeSequences(string $str, $quote, bool $parse_unicode_escape = true) : string
     {
         if (null !== $quote) {
             $str = \str_replace('\\' . $quote, $quote, $str);
         }
 
         $extra = '';
-        if ($parseUnicodeEscape) {
+        if ($parse_unicode_escape) {
             $extra = '|u\{([0-9a-fA-F]+)\}';
         }
 

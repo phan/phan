@@ -1047,7 +1047,7 @@ class CodeBase
             $signature = [(string)$function_or_method->getUnionType()];
             foreach ($function_or_method->getParameterList() as $param) {
                 $name = $param->getName();
-                $paramType = (string)$param->getUnionType();
+                $param_type = (string)$param->getUnionType();
                 if ($param->isVariadic()) {
                     $name = '...' . $name;
                 }
@@ -1057,7 +1057,7 @@ class CodeBase
                 if ($param->isOptional()) {
                     $name = $name . '=';
                 }
-                $signature[$name] = $paramType;
+                $signature[$name] = $param_type;
             }
             $result[$function_or_method_name] = $signature;
         }

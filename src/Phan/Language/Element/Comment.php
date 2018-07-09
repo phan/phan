@@ -386,15 +386,15 @@ class Comment
         $comment_lines_count = \count($lines);
 
         /**
-         * @param array<int,int> $validTypes
+         * @param array<int,int> $valid_types
          * @return void
          */
-        $check_compatible = function (string $paramName, array $validTypes, int $i, string $line) use ($code_base, $context, $comment_type, $lineno, $comment_lines_count) {
-            if (!\in_array($comment_type, $validTypes, true)) {
+        $check_compatible = function (string $param_name, array $valid_types, int $i, string $line) use ($code_base, $context, $comment_type, $lineno, $comment_lines_count) {
+            if (!\in_array($comment_type, $valid_types, true)) {
                 self::emitInvalidCommentForDeclarationType(
                     $code_base,
                     $context,
-                    $paramName,
+                    $param_name,
                     $comment_type,
                     self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line)
                 );

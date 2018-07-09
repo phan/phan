@@ -363,8 +363,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // pass it down into the closure
         if ($context->getScope()->hasVariableWithName('this')) {
             // Normal case: Closures inherit $this from parent scope.
-            $thisVarFromScope = $context->getScope()->getVariableByName('this');
-            $func->getInternalScope()->addVariable($thisVarFromScope);
+            $this_var_from_scope = $context->getScope()->getVariableByName('this');
+            $func->getInternalScope()->addVariable($this_var_from_scope);
         }
     }
 

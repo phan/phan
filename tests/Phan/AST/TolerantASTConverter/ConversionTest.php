@@ -24,7 +24,7 @@ class ConversionTest extends BaseTest
     /**
      * @return array<int,string>
      */
-    protected function _scanSourceDirForPHP(string $source_dir) : array
+    protected function scanSourceDirForPHP(string $source_dir) : array
     {
         $files = [];
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($source_dir)) as $file_path => $file_info) {
@@ -82,7 +82,7 @@ class ConversionTest extends BaseTest
     {
         $tests = [];
         $source_dir = dirname(dirname(dirname(realpath(__DIR__)))) . '/misc/fallback_ast_src';
-        $paths = $this->_scanSourceDirForPHP($source_dir);
+        $paths = $this->scanSourceDirForPHP($source_dir);
 
         self::sortByTokenCount($paths);
         $supports50 = self::hasNativeASTSupport(50);
