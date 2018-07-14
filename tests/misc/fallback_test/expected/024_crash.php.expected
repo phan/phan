@@ -1,0 +1,2 @@
+src/024_crash.php:5 PhanInvalidConstantExpression Constant expression contains invalid operations
+src/024_crash.php:5 PhanSyntaxError syntax error, unexpected '$notAFunction' (T_VARIABLE)

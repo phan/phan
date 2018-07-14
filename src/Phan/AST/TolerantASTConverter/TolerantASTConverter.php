@@ -370,7 +370,7 @@ class TolerantASTConverter
 
     /**
      * @param PhpParser\Node|Token $n - The node from PHP-Parser
-     * @return ast\Node|ast\Node[]|string|int|float|bool|null - whatever ast\parse_code would return as the equivalent.
+     * @return ast\Node|ast\Node[]|string|int|float|null - whatever ast\parse_code would return as the equivalent.
      */
     protected static function phpParserNodeToAstNode($n)
     {
@@ -884,13 +884,14 @@ class TolerantASTConverter
             },
             'Microsoft\PhpParser\Node\Parameter' => function (PhpParser\Node\Parameter $n, int $start_line) : ast\Node {
                 $type_line = static::getEndLine($n->typeDeclaration) ?: $start_line;
+                $default_node = $n->default !== null ? static::phpParserNodeToAstNode($n->default) : null;
                 return static::astNodeParam(
                     $n->questionToken !== null,
                     $n->byRefToken !== null,
                     $n->dotDotDotToken !== null,
                     static::phpParserTypeToAstNode($n->typeDeclaration, $type_line),
                     static::variableTokenToString($n->variableName),
-                    $n->default !== null ? static::phpParserNodeToAstNode($n->default) : null,
+                    $default_node,
                     $start_line
                 );
             },
@@ -1052,12 +1053,22 @@ class TolerantASTConverter
                 // This node type is generated for something that isn't a function/constant/property. e.g. "public example();"
                 return null;
             },
+            /**
+             * @throws InvalidNodeException
+             */
             'Microsoft\PhpParser\Node\MethodDeclaration' => function (PhpParser\Node\MethodDeclaration $n, int $start_line) : ast\Node {
                 $statements = $n->compoundStatementOrSemicolon;
                 $ast_return_type = static::phpParserTypeToAstNode($n->returnType, static::getEndLine($n->returnType) ?: $start_line);
                 if (($ast_return_type->children['name'] ?? null) === '') {
                     $ast_return_type = null;
                 }
+                $original_method_name = $n->name;
+                if (($original_method_name->kind ?? null) === TokenKind::Name) {
+                    $method_name = static::tokenToString($original_method_name);
+                } else {
+                    $method_name = 'placeholder_' . $original_method_name->fullStart;
+                }
+
                 if ($n->questionToken !== null && $ast_return_type !== null) {
                     $ast_return_type = new ast\Node(ast\AST_NULLABLE_TYPE, 0, ['type' => $ast_return_type], $start_line);
                 }
@@ -1072,7 +1083,7 @@ class TolerantASTConverter
                     ],
                     $start_line,
                     $n->getDocCommentText(),
-                    static::variableTokenToString($n->name),
+                    $method_name,
                     static::getEndLine($n),
                     self::nextDeclId()
                 );
