@@ -195,8 +195,11 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      */
     protected function canCastToNonNullableType(Type $type) : bool
     {
-        if ($type instanceof LiteralStringType) {
-            return $type->getValue() === $this->getValue();
+        if ($type instanceof StringType) {
+            if ($type instanceof LiteralStringType) {
+                return $type->getValue() === $this->getValue();
+            }
+            return true;
         }
 
         return parent::canCastToNonNullableType($type);

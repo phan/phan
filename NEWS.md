@@ -3,6 +3,15 @@ Phan NEWS
 08 Jul 2018, Phan 0.12.15 (dev)
 -------------------------
 
+Bug fixes:
++ Fix a bug in checking if nullable versions of specialized type were compatible with other nullable types. (#1839, #1852)
+  Phan now correctly allows the following type casts:
+
+  - `?1`               can cast to `?int`
+  - `?'a string'`      can cast to `?string`
+  - `?Closure(T1):T2`  can cast to `?Closure`
+  - `?callable(T1):T2` can cast to `?callable`,
+
 08 Jul 2018, Phan 0.12.14
 -------------------------
 

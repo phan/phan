@@ -123,8 +123,11 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
      */
     protected function canCastToNonNullableType(Type $type) : bool
     {
-        if ($type instanceof LiteralIntType) {
-            return $type->getValue() === $this->getValue();
+        if ($type instanceof IntType) {
+            if ($type instanceof LiteralIntType) {
+                return $type->getValue() === $this->getValue();
+            }
+            return true;
         }
 
         return parent::canCastToNonNullableType($type);
