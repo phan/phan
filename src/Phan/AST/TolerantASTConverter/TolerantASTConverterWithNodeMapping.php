@@ -62,20 +62,20 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
     private $instance_expected_byte_offset;
 
     /**
-     * @var null|Closure(ast\Node):void
+     * @var ?Closure(ast\Node):void
      * @see $this->instance_handle_selected_node
      */
     private static $handle_selected_node;
 
     /**
-     * @var null|Closure(ast\Node):void This is optional. If it is set, this is invoked on the Node we marked.
+     * @var ?Closure(ast\Node):void This is optional. If it is set, this is invoked on the Node we marked.
      * Currently, this is used to add plugin methods at runtime (limited to what is needed to handle that node's kind)
      */
     private $instance_handle_selected_node;
 
     /**
      * @param int $expected_byte_offset the byte offset of the cursor
-     * @param null|Closure(ast\Node):void $handle_selected_node this can be passed in.
+     * @param ?Closure(ast\Node):void $handle_selected_node this can be passed in.
      *                      If a node corresponding to a reference was found, then this closure will be invoked once with that node.
      */
     public function __construct(int $expected_byte_offset, Closure $handle_selected_node = null)

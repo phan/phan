@@ -88,7 +88,7 @@ class IssueFixSuggester
     /**
      * Returns a message suggesting a class name that is similar to the provided undeclared class
      *
-     * @param null|Closure(FullyQualifiedClassName|string):bool $filter
+     * @param ?Closure(FullyQualifiedClassName):bool $filter
      * @param int $class_suggest_type whether to include non-classes such as 'int', 'callable', etc.
      * @return ?Suggestion
      */

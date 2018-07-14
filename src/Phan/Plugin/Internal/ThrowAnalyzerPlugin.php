@@ -58,7 +58,6 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
         }
         $code_base = $this->code_base;
 
-        // TODO: Does phan warn about invalid throw statement types in visitThrow already?
         $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node->children['expr']);
         $union_type = $this->withoutCaughtUnionTypes($union_type);
         if ($union_type->isEmpty()) {
