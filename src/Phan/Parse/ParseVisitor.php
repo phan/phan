@@ -101,11 +101,6 @@ class ParseVisitor extends ScopeVisitor
             $this->context
         );
 
-        \assert(
-            $class_fqsen instanceof FullyQualifiedClassName,
-            "The class FQSEN must be a FullyQualifiedClassName"
-        );
-
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
         while ($this->code_base->hasClassWithFQSEN($class_fqsen)) {
@@ -395,12 +390,11 @@ class ParseVisitor extends ScopeVisitor
 
         foreach ($node->children as $i => $child_node) {
             // Ignore children which are not property elements
-            if (!$child_node
+            if (!($child_node instanceof Node)
                 || $child_node->kind != \ast\AST_PROP_ELEM
             ) {
                 continue;
             }
-            \assert($child_node instanceof Node, 'expected property element to be Node');
 
             // If something goes wrong will getting the type of
             // a property, we'll store it as a future union
@@ -860,13 +854,8 @@ class ParseVisitor extends ScopeVisitor
             $this->code_base
         );
 
-        \assert(
-            !empty($method),
-            "We're supposed to be in either method or closure scope."
-        );
-
-        // Mark the method as returning something
-        if (($node->children['expr'] ?? null) !== null) {
+        // Mark the method as returning something if expr is not null
+        if (isset($node->children['expr'])) {
             $method->setHasReturn(true);
         }
 
@@ -928,11 +917,6 @@ class ParseVisitor extends ScopeVisitor
         // Get the method/function/closure we're in
         $method = $this->context->getFunctionLikeInScope(
             $this->code_base
-        );
-
-        \assert(
-            !empty($method),
-            "We're supposed to be in either method or closure scope."
         );
 
         // Mark the method as yielding something (and returning a generator)
