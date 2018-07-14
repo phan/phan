@@ -78,9 +78,6 @@ final class ClosureType extends Type
     protected function canCastToNonNullableType(Type $type) : bool
     {
         if ($type->isCallable()) {
-            if ($this->getIsNullable() && !$type->getIsNullable()) {
-                return false;
-            }
             if ($type instanceof FunctionLikeDeclarationType) {
                 // Check if the function declaration is known and available. It's not available for the generic \Closure.
                 if ($this->func) {

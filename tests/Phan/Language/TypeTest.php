@@ -451,11 +451,64 @@ class TypeTest extends BaseTest
     {
         return [
             ['int', 'int'],
+            ['1', 'int'],
+            ['int', '1'],
+            ['1', '?int'],
+            ['?1', '?int'],
+            ['?string', "?''"],
+            ["?''", '?string'],
+            ["''", '?string'],
+            ["?'a string'", '?string'],
+            ["?'a string'", "?'a string'"],
             ['int', 'float'],
             ['int', 'mixed'],
             ['mixed', 'int'],
             ['null', 'mixed'],
             ['null[]', 'mixed[]'],
+            ['?Closure(int):int', '?Closure'],
+            ['?Closure(int):int', '?callable'],
+            ['?Closure', '?Closure(int):int'],
+            ['?callable(int):int', '?callable'],
+            ['?callable', '?callable(int):int'],
+        ];
+    }
+
+    /**
+     * @dataProvider cannotCastToTypeProvider
+     */
+    public function testCannotCastToType(string $from_type_string, string $to_type_string)
+    {
+        $from_type = self::makePHPDocType($from_type_string);
+        $to_type = self::makePHPDocType($to_type_string);
+        $this->assertFalse($from_type->canCastToType($to_type), "expected $from_type_string to be unable to cast to $to_type_string");
+    }
+
+    public function cannotCastToTypeProvider() : array
+    {
+        return [
+            ['?int', 'int'],
+            ['?1', 'int'],
+            ['?int', '1'],
+            ['0', '1'],
+            ['float', 'int'],
+            ['callable', 'Closure'],
+            ['?Closure(int):int', '?Closure(int):void'],
+            ['?Closure(int):int', 'Closure(int):int'],
+            ['?Closure(int):int', '?Closure(string):int'],
+            ['?callable(int):int', '?callable(int):void'],
+            ['?callable(int):int', 'callable(int):int'],
+            ['?callable(int):int', '?callable(string):int'],
+
+            ['?float', 'float'],
+            ['?string', 'string'],
+            ['?bool', 'bool'],
+            ['?true', 'true'],
+            ['?true', 'bool'],
+            ['?false', 'false'],
+            ['?object', 'object'],
+            ['?iterable', 'iterable'],
+            ['?array', 'array'],
+            // not sure about desired semantics of ['?mixed', 'mixed'],
         ];
     }
 
