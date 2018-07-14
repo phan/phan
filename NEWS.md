@@ -3,7 +3,10 @@ Phan NEWS
 08 Jul 2018, Phan 0.12.15 (dev)
 -------------------------
 
-New features(CLI, Configs)
+New features(Analysis)
++ Make Phan's unused variable detection also treat exception variables as variable definitions,
+  and warn if the caught exception is unused. (#1810)
+  New issue types: `PhanUnusedVariableCaughtException`
 + Be more aggressive about inferring that a method has a void return type, when it is safe to do so
 + Emit `PhanInvalidConstantExpression` in some places where PHP would emit `"Constant expression contains invalid operations"`
 
@@ -42,6 +45,8 @@ New features(CLI, Configs)
   Phan will not warn about lack of documentation of `@throws` for any of the configured classes or their subclasses.
   The default is the empty array (Don't suppress any warnings.)
   (E.g. Phan suppresses `['RuntimeException', 'AssertionError', 'TypeError']` for self-analysis)
+
+New Features (Analysis):
 + Warn when string literals refer to invalid class names (E.g. `$myClass::SOME_CONSTANT`). (#1794)
   New issue types: `PhanTypeExpectedObjectOrClassNameInvalidName` (emitted if the name can't be used as a class)
   This will also emit `PhanUndeclaredClass` if the class name could not be found.

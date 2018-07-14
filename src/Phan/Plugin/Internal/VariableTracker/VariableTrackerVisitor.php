@@ -623,4 +623,28 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         return $outer_scope->mergeBranchScopeList($inner_scope_list, false, []);
     }
+
+    /**
+     * @param Node $node a node of kind AST_CATCH_LIST
+     * Analyzes catch statement lists.
+     * @return VariableTrackingScope
+     *
+     * @see BlockAnalysisVisitor->visitTry (TODO: Use BlockExitStatusChecker)
+     * @override
+     */
+    public function visitCatch(Node $node)
+    {
+        $var_node = $node->children['var'];
+
+        $scope = $this->scope;
+        if ($var_node->kind === \ast\AST_VAR) {
+            $name = $var_node->children['name'];
+            if (is_string($name)) {
+                self::$variable_graph->recordVariableDefinition($name, $var_node, $scope);
+                self::$variable_graph->markAsCaughtException($var_node);
+                $scope->recordDefinition($name, $var_node);
+            }
+        }
+        return $this->analyze($scope, $node->children['stmts']);
+    }
 }

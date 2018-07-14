@@ -259,6 +259,7 @@ class Issue
     const UnusedClosureParameter                = 'PhanUnusedClosureParameter';
     const UnusedGlobalFunctionParameter         = 'PhanUnusedGlobalFunctionParameter';
     const UnusedVariableValueOfForeachWithKey   = 'PhanUnusedVariableValueOfForeachWithKey';  // has higher false positive rates than UnusedVariable
+    const UnusedVariableCaughtException         = 'PhanUnusedVariableCaughtException';  // has higher false positive rates than UnusedVariable
 
     // Issue::CATEGORY_REDEFINE
     const RedefineClass             = 'PhanRedefineClass';
@@ -2300,6 +2301,14 @@ class Issue
                 'Unused definition of variable ${VARIABLE} as the value of a foreach loop that included keys',
                 self::REMEDIATION_B,
                 6045
+            ),
+            new Issue(
+                self::UnusedVariableCaughtException,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                'Unused definition of variable ${VARIABLE} as a caught exception',
+                self::REMEDIATION_B,
+                6046
             ),
 
 
