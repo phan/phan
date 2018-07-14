@@ -3,6 +3,9 @@ Phan NEWS
 08 Jul 2018, Phan 0.12.15 (dev)
 -------------------------
 
+New features(CLI, Configs)
++ Be more aggressive about inferring that a method has a void return type, when it is safe to do so
+
 Bug fixes:
 + Fix a bug in checking if nullable versions of specialized type were compatible with other nullable types. (#1839, #1852)
   Phan now correctly allows the following type casts:

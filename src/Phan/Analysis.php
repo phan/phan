@@ -187,7 +187,6 @@ class Analysis
             $context->withLineNumberStart($node->lineno ?? 0)
         ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
-        \assert(!empty($context), 'Context cannot be null');
         $kind = $node->kind;
 
         // \ast\AST_GROUP_USE has \ast\AST_USE as a child.
@@ -209,14 +208,12 @@ class Analysis
             // Step into each child node and get an
             // updated context for the node
             $child_context = self::parseNodeInContext($code_base, $child_context, $child_node);
-
-            \assert(!empty($child_context), 'Context cannot be null');
         }
 
         // For closed context elements (that have an inner scope)
         // return the outer context instead of their inner context
         // after we finish parsing their children.
-        if (in_array($kind, [
+        if (\in_array($kind, [
             \ast\AST_CLASS,
             \ast\AST_METHOD,
             \ast\AST_FUNC_DECL,
