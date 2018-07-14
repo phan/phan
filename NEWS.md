@@ -11,6 +11,7 @@ Bug fixes:
   - `?'a string'`      can cast to `?string`
   - `?Closure(T1):T2`  can cast to `?Closure`
   - `?callable(T1):T2` can cast to `?callable`,
++ Make `exclude_file_list` work more consistently on Windows
 
 08 Jul 2018, Phan 0.12.14
 -------------------------

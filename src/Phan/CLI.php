@@ -568,13 +568,16 @@ class CLI
         if (count(Config::getValue('exclude_file_list')) > 0) {
             $exclude_file_set = [];
             foreach (Config::getValue('exclude_file_list') as $file) {
-                $exclude_file_set[$file] = true;
+                $normalized_file = str_replace('\\', '/', $file);
+                $exclude_file_set[$normalized_file] = true;
+                $exclude_file_set["./$normalized_file"] = true;
             }
 
             $this->file_list = array_filter(
                 $this->file_list,
                 function (string $file) use ($exclude_file_set) : bool {
-                    return empty($exclude_file_set[$file]);
+                    // Handle edge cases such as 'mydir/subdir\subsubdir' on Windows, if mydir/subdir was in the Phan config.
+                    return !isset($exclude_file_set[\str_replace('\\', '/', $file)]);
                 }
             );
         }
