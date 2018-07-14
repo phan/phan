@@ -78,7 +78,7 @@ class Parser
             $errors = [];
             try {
                 $node = $converter->parseCodeAsPHPAST($file_contents, Config::AST_VERSION, $errors);
-            } catch (\Exception $e) {
+            } catch (\Exception $_) {
                 // Generic fallback. TODO: log.
                 throw $native_parse_error;
             }

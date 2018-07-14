@@ -120,7 +120,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
     // echo $function_name . "\n";
     try {
         $function = load_internal_function($function_name);
-    } catch (ReflectionException $e) {
+    } catch (ReflectionException $_) {
         return;
     }
     assert($function instanceof ReflectionFunctionAbstract);

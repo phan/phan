@@ -106,7 +106,7 @@ class Property extends ClassElement
             if ($union_type !== '') {
                 $string .= "$union_type ";
             } // Don't emit 2 spaces if there is no union type
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // do nothing
         }
 

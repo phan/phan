@@ -391,7 +391,7 @@ EOT;
         }
         try {
             $version_constraint = self::parseConstraintsForRange($php_version_constraint);
-        } catch (\UnexpectedValueException $e) {
+        } catch (\UnexpectedValueException $_) {
             return [null, ['TODO: Choose a target_php_version for this project, or leave as null and remove this comment']];
         }
         if ($version_constraint->matches(self::parseConstraintsForRange('<7.1-dev'))) {
@@ -489,9 +489,9 @@ EOT;
             }
             $node = $child_nodes[0];
             return $node->kind !== \ast\AST_ECHO || !is_string($node->children['expr']);
-        } catch (\ParseError $e) {
+        } catch (\ParseError $_) {
             return false;
-        } catch (\Phan\AST\TolerantASTConverter\ParseException $e) {
+        } catch (\Phan\AST\TolerantASTConverter\ParseException $_) {
             return false;
         }
     }

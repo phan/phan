@@ -604,7 +604,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if ($node->kind === \ast\AST_CONST || $node->kind === \ast\AST_CLASS_CONST) {
                 try {
                     return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node, false);
-                } catch (IssueException $e) {
+                } catch (IssueException $_) {
                     return null;
                 }
             }
@@ -1158,7 +1158,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     );
                 }
             }
-        } catch (TypeException $exception) {
+        } catch (TypeException $_) {
             // TODO: log it?
         }
 
@@ -1332,7 +1332,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                         return $element_types;
                     }
                 }
-            } catch (CodeBaseException $exception) {
+            } catch (CodeBaseException $_) {
             }
 
             if (!$union_type->hasArrayLike()) {
@@ -1712,7 +1712,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             ))->getClassConst();
 
             return $constant->getUnionType();
-        } catch (NodeException $exception) {
+        } catch (NodeException $_) {
             // ignore, this should warn elsewhere
         }
 
@@ -1801,10 +1801,10 @@ class UnionTypeVisitor extends AnalysisVisitor
                 ["{$exception_fqsen}->{$property_name}"],
                 $suggestion
             );
-        } catch (UnanalyzableException $exception) {
+        } catch (UnanalyzableException $_) {
             // Swallow it. There are some constructs that we
             // just can't figure out.
-        } catch (NodeException $exception) {
+        } catch (NodeException $_) {
             // Swallow it. There are some constructs that we
             // just can't figure out.
         }
@@ -1970,7 +1970,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     return UnionType::empty();
                 }
             }
-        } catch (IssueException $exception) {
+        } catch (IssueException $_) {
             // Swallow it
         } catch (CodeBaseException $exception) {
             $exception_fqsen = $exception->getFQSEN();

@@ -155,7 +155,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             try {
                 $class = $context->getClassInScope($this->code_base);
                 return $class->isFinal();
-            } catch (CodeBaseException $e) {
+            } catch (CodeBaseException $_) {
             }
         }
         return false;

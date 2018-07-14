@@ -268,7 +268,7 @@ class TolerantASTConverter
         foreach ($parser_nodes as $parser_node) {
             try {
                 $child_node = static::phpParserNodeToAstNode($parser_node);
-            } catch (InvalidNodeException $e) {
+            } catch (InvalidNodeException $_) {
                 continue;
             }
             if (\is_array($child_node)) {
@@ -459,7 +459,7 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Expression\AssignmentExpression' => function (PhpParser\Node\Expression\AssignmentExpression $n, int $start_line) {
                 try {
                     $var_node = static::phpParserNodeToAstNode($n->leftOperand);
-                } catch (InvalidNodeException $e) {
+                } catch (InvalidNodeException $_) {
                     if (self::$should_add_placeholders) {
                         $var_node = new ast\Node(ast\AST_VAR, 0, ['name' => '__INCOMPLETE_VARIABLE__'], $start_line);
                     } else {
@@ -2166,7 +2166,7 @@ class TolerantASTConverter
     {
         try {
             $left_node = static::phpParserNodeToAstNode($n->leftOperand);
-        } catch (InvalidNodeException $e) {
+        } catch (InvalidNodeException $_) {
             if (self::$should_add_placeholders) {
                 $left_node = static::newPlaceholderExpression($n->leftOperand);
             } else {
@@ -2176,7 +2176,7 @@ class TolerantASTConverter
         }
         try {
             $right_node = static::phpParserNodeToAstNode($n->rightOperand);
-        } catch (InvalidNodeException $e) {
+        } catch (InvalidNodeException $_) {
             if (self::$should_add_placeholders) {
                 $right_node = static::newPlaceholderExpression($n->rightOperand);
             } else {
@@ -2201,7 +2201,7 @@ class TolerantASTConverter
     {
         try {
             $var_node = static::phpParserNodeToAstNode($n->leftOperand);
-        } catch (InvalidNodeException $e) {
+        } catch (InvalidNodeException $_) {
             if (self::$should_add_placeholders) {
                 $var_node = new ast\Node(ast\AST_VAR, 0, ['name' => '__INCOMPLETE_VARIABLE__'], $start_line);
             } else {

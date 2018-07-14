@@ -493,7 +493,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                                 break;
                             }
                         }
-                    } catch (CodeBaseException $e) {
+                    } catch (CodeBaseException $_) {
                         // Swallow "Cannot find class", go on to emit issue.
                     }
                     if ($can_cast_to_string) {

@@ -143,11 +143,11 @@ class DefinitionResolver
         $is_static = $node->kind === ast\AST_STATIC_PROP;
         try {
             $property = (new ContextNode($code_base, $context, $node))->getProperty($is_static);
-        } catch (NodeException $e) {
+        } catch (NodeException $_) {
             return; // ignore
-        } catch (IssueException $e) {
+        } catch (IssueException $_) {
             return; // ignore
-        } catch (CodeBaseException $e) {
+        } catch (CodeBaseException $_) {
             return; // ignore
         }
         $request->recordDefinitionElement($code_base, $property, true);
@@ -169,11 +169,11 @@ class DefinitionResolver
         }
         try {
             $class_const = (new ContextNode($code_base, $context, $node))->getClassConst();
-        } catch (NodeException $e) {
+        } catch (NodeException $_) {
             return; // ignore
-        } catch (IssueException $e) {
+        } catch (IssueException $_) {
             return; // ignore
-        } catch (CodeBaseException $e) {
+        } catch (CodeBaseException $_) {
             return; // ignore
         }
         // Class constants can't be objects, so there's no point in "Go To Type Definition" for now.
@@ -188,11 +188,11 @@ class DefinitionResolver
     {
         try {
             $global_const = (new ContextNode($code_base, $context, $node))->getConst();
-        } catch (NodeException $e) {
+        } catch (NodeException $_) {
             return; // ignore
-        } catch (IssueException $e) {
+        } catch (IssueException $_) {
             return; // ignore
-        } catch (CodeBaseException $e) {
+        } catch (CodeBaseException $_) {
             return; // ignore
         }
         $request->recordDefinitionElement($code_base, $global_const, false);
@@ -231,10 +231,10 @@ class DefinitionResolver
         }
         try {
             $method = (new ContextNode($code_base, $context, $node))->getMethod($method_name, $is_static);
-        } catch (NodeException $e) {
+        } catch (NodeException $_) {
             // ignore
             return;
-        } catch (IssueException $e) {
+        } catch (IssueException $_) {
             // ignore
             return;
         }
@@ -250,10 +250,10 @@ class DefinitionResolver
             foreach ((new ContextNode($code_base, $context, $node->children['expr']))->getFunctionFromNode() as $function_interface) {
                 $request->recordDefinitionElement($code_base, $function_interface, true);
             }
-        } catch (NodeException $e) {
+        } catch (NodeException $_) {
             // ignore
             return;
-        } catch (IssueException $e) {
+        } catch (IssueException $_) {
             // ignore
             return;
         }
@@ -298,8 +298,8 @@ class DefinitionResolver
             if (is_string($name)) {
                 try {
                     $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\' . ltrim($name, '\\'));
-                } catch (AssertionError $e) {
-                    return;  // ignore, probably still typing it
+                } catch (AssertionError $_) {
+                    return;  // ignore, probably still typing the requested definition
                 }
                 if ($code_base->hasClassWithFQSEN($class_fqsen)) {
                     $class = $code_base->getClassByFQSEN($class_fqsen);

@@ -51,7 +51,7 @@ class ArgumentType
         if ($method->hasFunctionCallAnalyzer()) {
             try {
                 $method->analyzeFunctionCall($code_base, $context->withLineNumberStart($node->lineno ?? 0), $node->children['args']->children);
-            } catch (StopParamAnalysisException $e) {
+            } catch (StopParamAnalysisException $_) {
                 return;
             }
         }
@@ -531,7 +531,7 @@ class ArgumentType
                             return;
                         }
                     }
-                } catch (CodeBaseException $e) {
+                } catch (CodeBaseException $_) {
                     // Swallow "Cannot find class", go on to emit issue
                 }
             }
@@ -702,7 +702,7 @@ class ArgumentType
                             return true;
                         }
                     }
-                } catch (IssueException $e) {
+                } catch (IssueException $_) {
                     // Swallow any issue esceptions here. They'll be caught elsewhere.
                 }
             }

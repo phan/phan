@@ -75,7 +75,7 @@ class Daemon
                 $conn = false;
                 try {
                     $conn = stream_socket_accept($socket_server, -1);
-                } catch (\RuntimeException $e) {
+                } catch (\RuntimeException $_) {
                     self::debugf("Got signal");
                     pcntl_signal_dispatch();
                     self::debugf("done processing signals");
@@ -131,7 +131,7 @@ class Daemon
                 $conn = false;
                 try {
                     $conn = stream_socket_accept($socket_server, -1);
-                } catch (\RuntimeException $e) {
+                } catch (\RuntimeException $_) {
                     self::debugf("Got signal");
                     pcntl_signal_dispatch();
                     self::debugf("done processing signals");
@@ -190,7 +190,7 @@ class Daemon
 
         try {
             Phan::finishAnalyzingRemainingStatements($code_base, $request, $analyze_file_path_list, $temporary_file_mapping);
-        } catch (ExitException $e) {
+        } catch (ExitException $_) {
             // This is normal and expected, do nothing
         } finally {
             $code_base->restoreFromRestorePoint($restore_point);

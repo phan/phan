@@ -159,7 +159,7 @@ trait ConditionVisitorUtil
             if (!$suppress_issues) {
                 Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
             }
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // Swallow it
         }
         return $context;
@@ -194,7 +194,7 @@ trait ConditionVisitorUtil
             if (!$suppress_issues) {
                 Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
             }
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // Swallow it
         }
         return $context;
@@ -234,7 +234,7 @@ trait ConditionVisitorUtil
                     );
                     return $context;
                 }
-            } catch (\Exception $e) {
+            } catch (\Exception $_) {
                 // Swallow it (E.g. IssueException for undefined variable)
             }
         }
@@ -269,7 +269,7 @@ trait ConditionVisitorUtil
                         }
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (\Exception $_) {
                 // Swallow it (E.g. IssueException for undefined variable)
             }
         }
@@ -316,7 +316,7 @@ trait ConditionVisitorUtil
                 } elseif ($expr == true) {  // e.g. 1, "1", -1
                     return $this->removeTrueFromVariable($var_node, $context);
                 }
-            } catch (\Exception $e) {
+            } catch (\Exception $_) {
                 // Swallow it (E.g. IssueException for undefined variable)
             }
         }

@@ -1112,7 +1112,7 @@ EOB;
                 '<' . '?php 42;',
                 Config::AST_VERSION
             );
-        } catch (\LogicException $throwable) {
+        } catch (\LogicException $_) {
             assert(
                 false,
                 'Unknown AST version ('
@@ -1137,7 +1137,7 @@ EOB;
                 . 'You may need to rebuild the latest '
                 . 'version of the php-ast extension.'
             );
-        } catch (\ParseError $throwable) {
+        } catch (\ParseError $_) {
             // error message may validate with locale and version, don't validate that.
         }
     }
