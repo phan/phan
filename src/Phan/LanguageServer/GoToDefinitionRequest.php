@@ -105,7 +105,7 @@ final class GoToDefinitionRequest
             }
             try {
                 $this->recordDefinitionOfTypeFQSEN($code_base, $type_fqsen);
-            } catch (CodeBaseException $e) {
+            } catch (CodeBaseException $_) {
                 continue;
             }
         }

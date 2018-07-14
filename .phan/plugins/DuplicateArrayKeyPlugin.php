@@ -180,9 +180,9 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                 $this->context,
                 $e->getIssueInstance()
             );
-        } catch (CodeBaseException $e) {
+        } catch (CodeBaseException $_) {
             // e.g. Can't find the class (ignore)
-        } catch (NodeException $e) {
+        } catch (NodeException $_) {
             // E.g. Can't figure out constant class in node
             // (ignore)
         }

@@ -155,7 +155,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             try {
                 $class = $context->getClassInScope($this->code_base);
                 return $class->isFinal();
-            } catch (CodeBaseException $e) {
+            } catch (CodeBaseException $_) {
             }
         }
         return false;
@@ -201,10 +201,10 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                         break;
                     }
                     $issue_type = $this->getParameterCategory($method_node);
-                } else {
-                    if ($graph->isLoopValueDefinitionId($definition_id)) {
-                        $issue_type = Issue::UnusedVariableValueOfForeachWithKey;
-                    }
+                } elseif ($graph->isLoopValueDefinitionId($definition_id)) {
+                    $issue_type = Issue::UnusedVariableValueOfForeachWithKey;
+                } elseif ($graph->isCaughtException($definition_id)) {
+                    $issue_type = Issue::UnusedVariableCaughtException;
                 }
                 Issue::maybeEmit(
                     $this->code_base,

@@ -267,7 +267,7 @@ class ParameterTypesAnalyzer
         //      then this has to check two different overrides (Subclass overriding parent class, and subclass overriding abstract method in interface)
         try {
             $o_method_list = $method->getOverriddenMethods($code_base);
-        } catch (CodeBaseException $e) {
+        } catch (CodeBaseException $_) {
             // TODO: Remove if no edge cases are seen.
             Issue::maybeEmit(
                 $code_base,

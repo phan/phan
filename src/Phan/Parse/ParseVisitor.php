@@ -467,7 +467,7 @@ class ParseVisitor extends ScopeVisitor
                         $original_union_type = $future_union_type->get()->asNonLiteralType();
                         // We successfully resolved the union type. We no longer need $future_union_type
                         $future_union_type = null;
-                    } catch (IssueException $e) {
+                    } catch (IssueException $_) {
                         // Do nothing
                     }
                     if ($future_union_type === null) {
@@ -592,7 +592,7 @@ class ParseVisitor extends ScopeVisitor
                             $value_node
                         )
                     );
-                } catch (InvalidArgumentException $e) {
+                } catch (InvalidArgumentException $_) {
                     $constant->setUnionType(MixedType::instance(false)->asUnionType());
                     $this->emitIssue(
                         Issue::InvalidConstantExpression,
@@ -631,7 +631,7 @@ class ParseVisitor extends ScopeVisitor
             $value_node = $child_node->children['value'];
             try {
                 self::checkIsAllowedInConstExpr($value_node);
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $_) {
                 $this->emitIssue(
                     Issue::InvalidConstantExpression,
                     $value_node->lineno

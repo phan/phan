@@ -301,7 +301,7 @@ class Parameter extends Variable
                 // We can't figure out default values during the
                 // parsing phase, unfortunately
                 $has_error = false;
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $_) {
                 // If the parameter default is an invalid constant expression,
                 // then don't use that value elsewhere.
                 Issue::maybeEmit(

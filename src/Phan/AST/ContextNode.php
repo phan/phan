@@ -453,7 +453,7 @@ class ContextNode
                 $result = [$union_type, $class_list];
                 $context->setCachedClassListOfNode($node_id, $result);
                 return $result;
-            } catch (CodeBaseException $exception) {
+            } catch (CodeBaseException $_) {
                 // swallow it
                 // TODO: Is it appropriate to return class_list
                 return [$union_type, $class_list];
@@ -1037,7 +1037,7 @@ class ContextNode
     {
         try {
             return $this->getVariable();
-        } catch (IssueException $exception) {
+        } catch (IssueException $_) {
             // Swallow it
         }
 
@@ -1933,7 +1933,7 @@ class ContextNode
             }
             try {
                 $constant = (new ContextNode($this->code_base, $this->context, $node))->getConst();
-            } catch (\Exception $e) {
+            } catch (\Exception $_) {
                 return $node;
             }
             // TODO: Recurse, but don't try to resolve constants again
@@ -1949,7 +1949,7 @@ class ContextNode
             }
             try {
                 $constant = (new ContextNode($this->code_base, $this->context, $node))->getClassConst();
-            } catch (\Exception $e) {
+            } catch (\Exception $_) {
                 return $node;
             }
             // TODO: Recurse, but don't try to resolve constants again

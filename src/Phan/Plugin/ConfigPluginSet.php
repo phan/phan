@@ -981,7 +981,7 @@ final class ConfigPluginSet extends PluginV2 implements
         try {
             new ReflectionProperty($plugin_analysis_class, 'parent_node_list');
             $has_parent_node_list = true;
-        } catch (ReflectionException $e) {
+        } catch (ReflectionException $_) {
             $has_parent_node_list = false;
         }
 

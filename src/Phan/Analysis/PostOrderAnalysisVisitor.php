@@ -374,7 +374,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         return;
                     }
                 }
-            } catch (CodeBaseException $e) {
+            } catch (CodeBaseException $_) {
                 // Swallow "Cannot find class", go on to emit issue
             }
             $this->emitIssue(
@@ -560,7 +560,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                             return $context;
                         }
                     }
-                } catch (CodeBaseException $e) {
+                } catch (CodeBaseException $_) {
                     // Swallow "Cannot find class", go on to emit issue
                 }
             }
@@ -744,7 +744,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $context,
                 $exception->getIssueInstance()
             );
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // Swallow any other types of exceptions. We'll log the errors
             // elsewhere.
         }
@@ -783,7 +783,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $exception->getIssueInstance()
             );
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // Swallow any other types of exceptions. We'll log the errors
             // elsewhere.
         }
@@ -1437,7 +1437,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $node
                 );
             }
-        } catch (CodeBaseException $e) {
+        } catch (CodeBaseException $_) {
             // ignore it.
         }
 
@@ -1547,7 +1547,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $exception->getIssueInstance()
             );
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // If we can't figure out what kind of a call
             // this is, don't worry about it
             return $this->context;
@@ -1720,7 +1720,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $exception->getIssueInstance()
             );
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.
@@ -1830,7 +1830,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $exception->getIssueInstance()
             );
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.
@@ -1873,12 +1873,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             "Function found where method expected"
         );
 
-        $has_interface_class = false;
         if ($method instanceof Method) {
+            $has_interface_class = false;
             try {
                 $class = $method->getClass($this->code_base);
                 $has_interface_class = $class->isInterface();
-            } catch (\Exception $exception) {
+            } catch (\Exception $_) {
             }
 
             if (!$method->isAbstract()
@@ -2013,7 +2013,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $exception->getIssueInstance()
             );
             return $this->context;
-        } catch (NodeException $exception) {
+        } catch (NodeException $_) {
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.
@@ -2082,7 +2082,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             );
             // TODO: check if array_type has array but not ArrayAccess.
             // If that is true, then assert that $dim_type can cast to `int|string`
-        } catch (IssueException $exception) {
+        } catch (IssueException $_) {
             // Detect this elsewhere, e.g. want to detect PhanUndeclaredVariableDim but not PhanUndeclaredVariable
         }
         return $context;
@@ -2407,7 +2407,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                             $context,
                             $argument
                         ))->getOrCreateVariable();
-                    } catch (NodeException $e) {
+                    } catch (NodeException $_) {
                         // E.g. `function_accepting_reference(${$varName})` - Phan can't analyze outer type of ${$varName}
                         continue;
                     }
@@ -2523,7 +2523,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $context,
                     $argument
                 ))->getOrCreateVariable();
-            } catch (NodeException $e) {
+            } catch (NodeException $_) {
                 // E.g. `function_accepting_reference(${$varName})` - Phan can't analyze outer type of ${$varName}
                 return;
             }
@@ -2548,7 +2548,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $context,
                         $exception->getIssueInstance()
                     );
-                } catch (\Exception $exception) {
+                } catch (\Exception $_) {
                     // If we can't figure out what kind of a call
                     // this is, don't worry about it
                 }
@@ -2652,7 +2652,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             ))->getClosure();
 
             $method->addReference($inner_context);
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // Swallow it
         }
     }
@@ -2960,7 +2960,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $argument->children['prop'] ?? '',
                     true
                 );
-            } catch (UnanalyzableException $exception) {
+            } catch (UnanalyzableException $_) {
                 // Ignore it. There's nothing we can do. (E.g. the class name for the static property fetch couldn't be determined.
             }
         }

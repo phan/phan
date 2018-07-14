@@ -384,7 +384,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
             );
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance($code_base, $context, $exception->getIssueInstance());
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // Swallow it
         }
 

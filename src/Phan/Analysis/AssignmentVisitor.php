@@ -358,9 +358,9 @@ class AssignmentVisitor extends AnalysisVisitor
                 // Set the element type on each element of
                 // the list
                 $property->setUnionType($element_type);
-            } catch (UnanalyzableException $exception) {
+            } catch (UnanalyzableException $_) {
                 // Ignore it. There's nothing we can do.
-            } catch (NodeException $exception) {
+            } catch (NodeException $_) {
                 // Ignore it. There's nothing we can do.
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
@@ -704,7 +704,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 ))->getOrCreateProperty($property_name, false);
 
                 $this->addTypesToProperty($property, $node);
-            } catch (\Exception $exception) {
+            } catch (\Exception $_) {
                 // swallow it
             }
         } elseif (!empty($class_list)) {

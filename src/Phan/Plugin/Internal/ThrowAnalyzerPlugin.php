@@ -230,7 +230,7 @@ class ThrowRecursiveVisitor extends ThrowVisitor
                     $this->withoutCaughtUnionTypes($invoked_function->getThrowsUnionType())
                 );
             }
-        } catch (CodeBaseException $e) {
+        } catch (CodeBaseException $_) {
             // ignore it.
         }
     }
@@ -262,10 +262,10 @@ class ThrowRecursiveVisitor extends ThrowVisitor
                 $this->context,
                 $node
             ))->getMethod($method_name, false);
-        } catch (IssueException $exception) {
+        } catch (IssueException $_) {
             // do nothing, PostOrderAnalysisVisitor should catch this
             return;
-        } catch (NodeException $exception) {
+        } catch (NodeException $_) {
             return;
         }
         // Check the types that can be thrown by this call.
@@ -296,7 +296,7 @@ class ThrowRecursiveVisitor extends ThrowVisitor
                 $this->context,
                 $node
             ))->getMethod($method_name, true, true);  // @phan-suppress-current-line PhanPartialTypeMismatchArgument
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // Ignore IssueException, unexpected exceptions, etc.
             return;
         }

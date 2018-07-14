@@ -528,7 +528,7 @@ class ConditionVisitor extends KindVisitorImplementation
             );
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // Swallow it
         }
 
@@ -754,7 +754,7 @@ class ConditionVisitor extends KindVisitorImplementation
             );
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // Swallow it (E.g. IssueException for undefined variable)
         }
 
