@@ -1,4 +1,5 @@
 src/015_class_const_declaration9.php:2 PhanRedefineClass Class \A defined at src/015_class_const_declaration9.php:2 was previously defined as Class \A at src/007_class_base_clause_2.php:3
+src/015_class_const_declaration9.php:3 PhanInvalidConstantExpression Constant expression contains invalid operations
 src/015_class_const_declaration9.php:3 PhanSyntaxError syntax error, unexpected '=', expecting ',' or ';'
 src/015_class_const_declaration9.php:3 PhanUnanalyzable Expression is unanalyzable or feature is unimplemented. Please create an issue at https://github.com/phan/phan/issues/new.
 src/015_class_const_declaration9.php:3 PhanUndeclaredConstant Reference to undeclared constant \b

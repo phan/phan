@@ -5,6 +5,11 @@ Phan NEWS
 
 New features(CLI, Configs)
 + Be more aggressive about inferring that a method has a void return type, when it is safe to do so
++ Emit `PhanInvalidConstantExpression` in some places where PHP would emit `"Constant expression contains invalid operations"`
+
+  Phan will replace the default parameter type (or constant type) with `mixed` for constants and class constants.
+
+  Previously, this could cause Phan to crash, especially with `--use-fallback-parser` on invalid ASTs.
 
 Bug fixes:
 + Fix a bug in checking if nullable versions of specialized type were compatible with other nullable types. (#1839, #1852)

@@ -20,7 +20,9 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
+use Phan\Parse\ParseVisitor;
 use ast\Node;
+use InvalidArgumentException;
 
 /**
  * @phan-file-suppress PhanPartialTypeMismatchArgument
@@ -288,13 +290,30 @@ class Parameter extends Variable
         }
 
         // If there is a default value, store it and its type
-        if (($default_node = $node->children['default']) !== null) {
+        $default_node = $node->children['default'];
+        if ($default_node !== null) {
             // Set the actual value of the default
             $parameter->setDefaultValue($default_node);
+            try {
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                ParseVisitor::checkIsAllowedInConstExpr($default_node);
 
-            // We can't figure out default values during the
-            // parsing phase, unfortunately
-            $default_value_union_type = self::maybeGetKnownDefaultValueForNode($default_node);
+                // We can't figure out default values during the
+                // parsing phase, unfortunately
+                $has_error = false;
+            } catch (InvalidArgumentException $e) {
+                // If the parameter default is an invalid constant expression,
+                // then don't use that value elsewhere.
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::InvalidConstantExpression,
+                    $default_node->lineno ?? 0
+                );
+                $has_error = true;
+            }
+            $default_value_union_type = $has_error ? null : self::maybeGetKnownDefaultValueForNode($default_node);
+
             if ($default_value_union_type !== null) {
                 // Set the default value
                 $parameter->setDefaultValueType($default_value_union_type);
@@ -321,11 +340,13 @@ class Parameter extends Variable
                     $default_value_union_type = $possible_parameter_default_union_type;
                 }
                 $parameter->setDefaultValueType($default_value_union_type);
-                $parameter->setDefaultValueFutureType(new FutureUnionType(
-                    $code_base,
-                    clone($context)->withLineNumberStart($default_node->lineno ?? 0),
-                    $default_node
-                ));
+                if (!$has_error) {
+                    $parameter->setDefaultValueFutureType(new FutureUnionType(
+                        $code_base,
+                        clone($context)->withLineNumberStart($default_node->lineno ?? 0),
+                        $default_node
+                    ));
+                }
             }
             $parameter->handleDefaultValueOfNull();
         }

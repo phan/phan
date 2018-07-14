@@ -3014,6 +3014,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function declOnlyThrows(Node $node) : bool
     {
-        return BlockExitStatusChecker::willUnconditionallyThrowOrReturn($node->children['stmts']);
+        // Work around fallback parser generating methods without statements list.
+        // Otherwise, 'stmts' would always be a Node due to preconditions.
+        $stmts_node = $node->children['stmts'];
+        return $stmts_node instanceof Node && BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node);
     }
 }

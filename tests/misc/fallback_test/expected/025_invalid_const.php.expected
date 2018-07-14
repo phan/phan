@@ -1,0 +1,3 @@
+src/025_invalid_const.php:3 PhanInvalidConstantExpression Constant expression contains invalid operations
+src/025_invalid_const.php:4 PhanUndeclaredConstant Reference to undeclared constant \X25
+src/025_invalid_const.php:8 PhanInvalidConstantExpression Constant expression contains invalid operations
