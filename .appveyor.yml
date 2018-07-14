@@ -13,10 +13,10 @@ environment:
       PHP_VERSION: '7.0.30'
       VC_VERSION: 14
     - PHP_EXT_VERSION: '7.1'
-      PHP_VERSION: '7.1.17'
+      PHP_VERSION: '7.1.19'
       VC_VERSION: 14
     - PHP_EXT_VERSION: '7.2'
-      PHP_VERSION: '7.2.5'
+      PHP_VERSION: '7.2.7'
       VC_VERSION: 15
 
 init:
@@ -33,7 +33,6 @@ branches:
     - master
     - 0.8
     - 0.9
-    - php72
 
 install:
 - cmd: choco feature enable -n=allowGlobalConfirmation
