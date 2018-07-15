@@ -28,10 +28,10 @@ class Debug
     }
 
     /**
+     * Print an AST node
+     *
      * @param string|int|float|Node|null $node
      * An AST node
-     *
-     * Print an AST node
      *
      * @return void
      *
@@ -55,7 +55,7 @@ class Debug
     }
 
     /**
-     * Print a thing with the given indent level
+     * Print $message with the given indent level
      *
      * @suppress PhanUnreferencedPublicMethod
      */
@@ -66,9 +66,10 @@ class Debug
     }
 
     /**
+     * Return the name of a node
+     *
      * @param Node|string|null $node
-     * @return string
-     * The name of the node
+     * @return string The name of the node
      */
     public static function nodeName($node) : string
     {
@@ -89,6 +90,8 @@ class Debug
     }
 
     /**
+     * Convert an AST node to a compact string representation of that node.
+     *
      * @param string|int|float|Node|null $node
      * An AST node
      *
@@ -156,9 +159,11 @@ class Debug
     }
 
     /**
-     * @return string
-     * Get a string representation of AST node flags such as
+     * Computes a string representation of AST node flags such as
      * 'ASSIGN_DIV|TYPE_ARRAY'
+     *
+     * @return string
+     *
      * @see self::formatFlags for a similar function also printing the integer flag value.
      */
     public static function astFlagDescription(int $flags, int $kind) : string
@@ -272,8 +277,11 @@ class Debug
 
     /**
      * Source: https://github.com/nikic/php-ast/blob/master/util.php
+     *
+     * Returns the information necessary to map the node id to the flag id to the name.
+     *
      * @return array<int,array<int,array<int,string>>>
-     * Return value is [string[][] $exclusive, string[][] $combinable]. Maps node id to flag id to name.
+     * Returns [string[][] $exclusive, string[][] $combinable].
      */
     private static function getFlagInfo() : array
     {

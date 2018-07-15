@@ -260,6 +260,9 @@ function example(MyClass $arg) {
     $arg->myMethod();  // line 5
     $arg->myInstanceMethod();
     global_function_with_comment(0, '');
+    $c = new ExampleClass();
+    $c->counter += 1;
+    var_export(ExampleClass::HTTP_500);  // line 10
 }
 EOT;
         return [
@@ -337,6 +340,31 @@ This has a mix of comments and annotations, annotations are excluded from hover
 - Markup in comments is preserved,
   and leading whitespace is as well.
 EOT
+            ],
+            [
+                $example_file_contents,
+                new Position(9, 10),  // ExampleClass->counter
+                <<<'EOT'
+```php
+public $counter
+```
+
+@var int this tracks a count
+EOT
+            ],
+            [
+                $example_file_contents,
+                new Position(10, 30),  // ExampleClass->counter
+                <<<'EOT'
+```php
+const HTTP_500 = 500
+```
+
+@var int value of an HTTP response code
+EOT
+                ,
+                null,
+                true
             ],
         ];
     }

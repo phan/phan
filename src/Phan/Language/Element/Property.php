@@ -160,7 +160,15 @@ class Property extends ClassElement
 
     public function getMarkupDescription() : string
     {
-        return $this->toStub();
+        $string = $this->getVisibilityName() . ' ';
+
+        if ($this->isStatic()) {
+            $string .= 'static ';
+        }
+
+        $string .= "\${$this->getName()}";
+
+        return $string;
     }
 
 

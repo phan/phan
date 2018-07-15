@@ -10,7 +10,13 @@ class MarkupDescription
         $result = "```php\n$markup\n```";
         $doc_comment = $element->getDocComment();
         if ($doc_comment) {
-            $extracted_doc_comment = self::extractDocComment($doc_comment);
+            $comment_category = null;
+            if ($element instanceof Property) {
+                $comment_category = Comment::ON_PROPERTY;
+            } elseif ($element instanceof ConstantInterface) {
+                $comment_category = Comment::ON_CONST;
+            }
+            $extracted_doc_comment = self::extractDocComment($doc_comment, $comment_category);
             if ($extracted_doc_comment) {
                 $result .= "\n\n" . $extracted_doc_comment;
             }
@@ -23,7 +29,7 @@ class MarkupDescription
      * @return string non-empty on success
      * @internal
      */
-    public static function extractDocComment(string $doc_comment) : string
+    public static function extractDocComment(string $doc_comment, int $comment_category = null) : string
     {
         $doc_comment = preg_replace('@(^/\*\*)|(\*/$)@', '', $doc_comment);
 
@@ -37,6 +43,15 @@ class MarkupDescription
                 $line = \ltrim(rtrim($line), "\n\t ");
             }
             if (!is_string($line) || preg_match('/^\s*@/', $line) > 0) {
+                if (count($results) === 0) {
+                    // Special case: Treat `@var T description of T` as a valid single-line comment of constants and properties.
+                    // Variables don't currently have associated comments
+                    if (\in_array($comment_category, [Comment::ON_PROPERTY, Comment::ON_CONST])) {
+                        if (preg_match('/^\s*@var\b/', $line) > 0) {
+                            $results[] = trim($line);
+                        }
+                    }
+                }
                 // Assume that the description stopped after the first phpdoc tag.
                 break;
             }

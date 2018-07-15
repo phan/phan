@@ -47,4 +47,12 @@ namespace {
  */
 function global_function_with_comment(int $x, $y) {
 }
+
+class ExampleClass {
+    /** @var int this tracks a count */
+    public $counter;
+
+    /** @var int value of an HTTP response code */
+    const HTTP_500 = 500;
 }
+}  // end namespace
