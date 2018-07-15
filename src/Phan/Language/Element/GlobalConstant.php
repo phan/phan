@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\AST\ASTReverter;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\Type;
@@ -77,6 +78,14 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         list($namespace, $string) = $this->toStubInfo();
         $namespace_text = $namespace === '' ? '' : "$namespace ";
         $string = sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
+        return $string;
+    }
+
+    public function getMarkupDescription() : string
+    {
+        $string = 'const ' . $this->getName() . ' = ';
+        $value_node = $this->getNodeForValue();
+        $string .= ASTReverter::toShortString($value_node);
         return $string;
     }
 

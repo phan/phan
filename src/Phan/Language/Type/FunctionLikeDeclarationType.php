@@ -654,6 +654,32 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return Type::fromFullyQualifiedString('\Generator');
     }
 
+    public function getDocComment()
+    {
+        return null;
+    }
+
+    public function getMarkupDescription() : string
+    {
+        $parts = $this->toFunctionSignatureArray();
+        $return_type = $parts[0];
+        unset($parts[0]);
+
+        $fragments = [];
+        foreach ($parts as $name => $signature) {
+            $fragment = '\$' . $name;
+            if ($signature) {
+                $fragment = "$signature $fragment";
+            }
+        }
+        $signature = static::NAME . '(' . implode(',', $fragments) . ')';
+        if ($return_type) {
+            // TODO: Make this unambiguous
+            $signature .= ':' . $return_type;
+        }
+        return $signature;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
     // End FunctionInterface overrides
     ////////////////////////////////////////////////////////////////////////////////

@@ -20,6 +20,9 @@ abstract class BaseTest extends TestCase
         'Phan\AST\PhanAnnotationAdder' => [
             'closures_for_kind',
         ],
+        'Phan\AST\ASTReverter' => [
+            'closure_map',
+        ],
         'Phan\Language\Type' => [
             'canonical_object_map',
             'internal_fn_cache',

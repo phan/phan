@@ -2526,6 +2526,32 @@ class Clazz extends AddressableElement
         return $string;
     }
 
+    public function getMarkupDescription() : string
+    {
+        $string = '';
+
+        if ($this->isFinal()) {
+            $string .= 'final ';
+        }
+
+        if ($this->isAbstract() && !$this->isInterface()) {
+            $string .= 'abstract ';
+        }
+
+        if ($this->isInterface()) {
+            $string .= 'interface ';
+        } elseif ($this->isTrait()) {
+            $string .= 'trait ';
+        } else {
+            $string .= 'class ';
+        }
+
+        // TODO: Also render the namespace?
+        $string .= (string)$this->getFQSEN()->getName();
+        return $string;
+    }
+
+
     /**
      * @suppress PhanUnreferencedPublicMethod (toStubInfo is used by callers for more flexibility)
      */

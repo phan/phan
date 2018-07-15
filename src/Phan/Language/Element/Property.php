@@ -158,6 +158,20 @@ class Property extends ClassElement
         return $this->fqsen;
     }
 
+    public function getMarkupDescription() : string
+    {
+        $string = $this->getVisibilityName() . ' ';
+
+        if ($this->isStatic()) {
+            $string .= 'static ';
+        }
+
+        $string .= "\${$this->getName()}";
+
+        return $string;
+    }
+
+
     public function toStub()
     {
         $string = '    ' . $this->getVisibilityName() . ' ';

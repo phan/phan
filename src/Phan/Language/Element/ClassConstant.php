@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\AST\ASTReverter;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\UnionType;
@@ -117,6 +118,22 @@ class ClassConstant extends ClassElement implements ConstantInterface
         );
     }
 
+    public function getMarkupDescription() : string
+    {
+        $string = '';
+
+        if ($this->isProtected()) {
+            $string .= 'protected ';
+        } elseif ($this->isPrivate()) {
+            $string .= 'private ';
+        }
+
+        $string .= 'const ' . $this->getName() . ' = ';
+        $value_node = $this->getNodeForValue();
+        $string .= ASTReverter::toShortString($value_node);
+        return $string;
+    }
+
     private function getVisibilityName() : string
     {
         if ($this->isPrivate()) {
@@ -130,12 +147,21 @@ class ClassConstant extends ClassElement implements ConstantInterface
 
     public function toStub() : string
     {
-        $string = '    ' . $this->getVisibilityName() . ' ';
+        $string = '    ';
+        if ($this->isPrivate()) {
+            $string .= 'private ';
+        } elseif ($this->isProtected()) {
+            $string .= 'protected ';
+        }
 
+        // For PHP 7.0 compatibility of stubs,
+        // show public class constants as 'const', not 'public const'.
+        // Also, PHP modules probably won't have private/protected constants.
         $string .= 'const ' . $this->getName() . ' = ';
-        $fqsen = (string)$this->getFQSEN();
+        $fqsen = $this->getFQSEN()->__toString();
         if (defined($fqsen)) {
             // TODO: Could start using $this->getNodeForValue()?
+            // NOTE: This is used by tool/make_stub, which is why it uses reflection instead of getting a node.
             $string .= var_export(constant($fqsen), true) . ';';
         } else {
             $string .= "null;  // could not find";

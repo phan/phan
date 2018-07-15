@@ -37,6 +37,13 @@ class ServerCapabilities
     public $typeDefinitionProvider;
 
     /**
+     * The server provides hover support.
+     *
+     * @var bool|null
+     */
+    public $hoverProvider;
+
+    /**
      * The server provides find references support.
      *
      * @var bool|null

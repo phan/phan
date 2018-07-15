@@ -2,6 +2,7 @@
 
 namespace Phan\LanguageServer\Server;
 
+use Phan\Config;
 use Phan\LanguageServer\FileMapping;
 use Phan\LanguageServer\LanguageClient;
 use Phan\LanguageServer\LanguageServer;
@@ -183,13 +184,27 @@ class TextDocument
     }
 
     /**
-     * Placeholder to avoid a crash on malformed clients
+     * Implements textDocument/hover, to show a preview of the element being hovered over.
+     *
+     * TODO: This can probably be optimized for references to constants, static methods, or tokens that obviously have no corresponding element.
+     * TODO: Implement support for the cancel request LSP operation?
+     *
      * @param TextDocumentIdentifier $textDocument @phan-unused-param
      * @param Position $position @phan-unused-param
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
     public function hover(TextDocumentIdentifier $textDocument, Position $position)
     {
-        return null;
+        // Some clients (e.g. emacs-lsp, the last time I checked)
+        // don't respect the server's reported hover capability, and send this unconditionally.
+        if (!Config::getValue('language_server_enable_hover')) {
+            // Placeholder to avoid a performance degradation on clients
+            // that aren't respecting the configuration.
+            //
+            // (computing hover response may or may not slow down those clients)
+            return null;
+        }
+        $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
+        return $this->server->awaitHover($uri, $position);
     }
 }

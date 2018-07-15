@@ -11,7 +11,7 @@ class ClassAliasRecord
     /** @var FullyQualifiedClassName the FQSEN of the alias that will be created. */
     public $alias_fqsen;
 
-    /** @var Context - the context of the class_alias() call*/
+    /** @var Context - the context of the class_alias() call */
     public $context;
 
     /** @var int - the line number of the class_alias() call */

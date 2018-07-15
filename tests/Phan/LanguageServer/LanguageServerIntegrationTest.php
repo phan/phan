@@ -6,6 +6,7 @@ use Phan\Tests\BaseTest;
 use Phan\Issue;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Protocol\ClientCapabilities;
+use Phan\LanguageServer\Protocol\MarkupContent;
 use Phan\LanguageServer\Protocol\Position;
 use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
 use Phan\LanguageServer\ProtocolStreamReader;
@@ -57,7 +58,7 @@ class LanguageServerIntegrationTest extends BaseTest
             $this->markTestSkipped('requires pcntl extension');
         }
         $command = sprintf(
-            '%s -d %s --quick --language-server-on-stdin --language-server-enable-go-to-definition %s',
+            '%s -d %s --quick --language-server-on-stdin --language-server-enable-hover --language-server-enable-go-to-definition %s',
             escapeshellarg(__DIR__ . '/../../../phan'),
             escapeshellarg(self::getLSPFolder()),
             ($pcntlEnabled ? '' : '--language-server-force-missing-pcntl')
@@ -212,7 +213,6 @@ EOT;
     }
 
     /**
-     * @param int $expected_definition_line 0-based line number
      * @param ?int $expected_definition_line null for nothing
      *
      * @dataProvider typeDefinitionInOtherFileProvider
@@ -223,6 +223,150 @@ EOT;
             $this->runTestTypeDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, true);
         }
         $this->runTestTypeDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, false);
+    }
+
+    /**
+     * @dataProvider hoverInOtherFileProvider
+     */
+    public function testHoverInOtherFile(string $new_file_contents, Position $position, $expected_hover_markup, string $requested_uri = null, bool $require_php71_or_newer = false)
+    {
+        if (PHP_VERSION_ID < 70100 && $require_php71_or_newer) {
+            $this->markTestSkipped('This test requires php 7.1');
+        }
+        if (function_exists('pcntl_fork')) {
+            $this->runTestHoverInOtherFileWithPcntlSetting(
+                $new_file_contents,
+                $position,
+                $expected_hover_markup,
+                $requested_uri,
+                true
+            );
+        }
+        $this->runTestHoverInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_hover_markup, $requested_uri, false);
+    }
+
+    /**
+     * @return array<int,array{0:string,1:Position,2:?string,3?:?string,4?:bool}>
+     */
+    public function hoverInOtherFileProvider() : array
+    {
+        // Refers to elements defined in ../../misc/lsp/src/definitions.php
+        $example_file_contents = <<<'EOT'
+<?php // line 0
+
+function example(MyClass $arg) {
+    echo \MY_GLOBAL_CONST;
+    echo \MyNS\SubNS\MY_NAMESPACED_CONST;
+    $arg->myMethod();  // line 5
+    $arg->myInstanceMethod();
+    global_function_with_comment(0, '');
+    $c = new ExampleClass();
+    $c->counter += 1;
+    var_export(ExampleClass::HTTP_500);  // line 10
+}
+EOT;
+        return [
+            // Failure tests
+            [
+                $example_file_contents,
+                new Position(2, 20),  // MyClass (Points to MyClass)
+                <<<'EOT'
+```php
+class MyClass
+```
+
+A description of MyClass
+EOT
+            ],
+            [
+                $example_file_contents,
+                new Position(2, 1),  // Points to nothing
+                null,
+            ],
+            // Global constant without a description
+            [
+                $example_file_contents,
+                new Position(3, 12),  // MY_GLOBAL_CONST
+                <<<'EOT'
+```php
+const MY_GLOBAL_CONST = 2
+```
+EOT
+            ],
+            [
+                $example_file_contents,
+                new Position(4, 22),  // MY_NAMESPACED_CONST
+                <<<'EOT'
+```php
+const MY_NAMESPACED_CONST = 2
+```
+
+This constant is equal to 1+1
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(5, 12),  // MY_NAMESPACED_CONST
+                <<<'EOT'
+```php
+public static function myMethod() : \MyOtherClass
+```
+EOT
+            ],
+            [
+                $example_file_contents,
+                new Position(6, 12),  // MY_NAMESPACED_CONST
+                <<<'EOT'
+```php
+public function myInstanceMethod()
+```
+
+myInstanceMethod echoes a string
+EOT
+            ],
+            [
+                $example_file_contents,
+                new Position(7, 4),  // MY_NAMESPACED_CONST
+                <<<'EOT'
+```php
+function global_function_with_comment(int $x, $y)
+```
+
+This has a mix of comments and annotations, annotations are excluded from hover
+
+- Markup in comments is preserved,
+  and leading whitespace is as well.
+EOT
+            ],
+            [
+                $example_file_contents,
+                new Position(9, 10),  // ExampleClass->counter
+                <<<'EOT'
+```php
+public $counter
+```
+
+@var int this tracks a count
+EOT
+            ],
+            [
+                $example_file_contents,
+                new Position(10, 30),  // ExampleClass->counter
+                <<<'EOT'
+```php
+const HTTP_500 = 500
+```
+
+@var int value of an HTTP response code
+EOT
+                ,
+                null,
+                true
+            ],
+        ];
     }
 
     /**
@@ -291,9 +435,6 @@ EOT;
             $cur_line = explode("\n", $new_file_contents)[$position->line] ?? '';
 
             $message = "Unexpected definition for {$position->line}:{$position->character} (0-based) on line \"" . $cur_line . '"';
-            if ($expected_definition_response != $definition_response) {
-                var_export($definition_response);
-            }
             $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_definition_response, $definition_response, $message);
 
@@ -377,9 +518,6 @@ EOT;
             $cur_line = explode("\n", $new_file_contents)[$position->line] ?? '';
 
             $message = "Unexpected type definition for {$position->line}:{$position->character} (0-based) on line " . json_encode($cur_line);
-            if ($expected_definition_response != $definition_response) {
-                var_export($definition_response);
-            }
             $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_definition_response, $definition_response, $message);
 
@@ -391,6 +529,84 @@ EOT;
             $definition_response = $perform_definition_request();
             $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_definition_response, $definition_response, $message);
+
+            $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
+            $this->writeExitNotification($proc_in);
+        } catch (\Throwable $e) {
+            fwrite(STDERR, "Unexpected exception in " . __METHOD__ . ": " . $e->getMessage());
+            throw $e;
+        } finally {
+            fclose($proc_in);
+            // TODO: Make these pipes async if they aren't already
+            $unread_contents = fread($proc_out, 10000);
+            $this->assertSame('', $unread_contents);
+            fclose($proc_out);
+            proc_close($proc);
+        }
+    }
+
+    /**
+     * @param ?string $expected_hover_string
+     * @param ?string $requested_uri
+     */
+    public function runTestHoverInOtherFileWithPcntlSetting(
+        string $new_file_contents,
+        Position $position,
+        $expected_hover_string,
+        $requested_uri,
+        bool $pcntl_enabled
+    ) {
+        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
+
+        $this->messageId = 0;
+        // TODO: Move this into an OOP abstraction, add time limits, etc.
+        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon($pcntl_enabled);
+        try {
+            $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
+            $this->writeInitializedNotification($proc_in);
+            $this->writeDidChangeNotificationToFile($proc_in, $requested_uri, $new_file_contents);
+            if (self::shouldExpectDiagnosticNotificationForURI($requested_uri)) {
+                $this->assertHasEmptyPublishDiagnosticsNotification($proc_out, $requested_uri);
+            }
+
+            // Request the definition of the class "MyExample" with the cursor in the middle of that word
+            // NOTE: Line numbers are 0-based for Position
+            $perform_hover_request = function () use ($proc_in, $proc_out, $position, $requested_uri) {
+                return $this->writeHoverRequestAndAwaitResponse($proc_in, $proc_out, $position, $requested_uri);
+            };
+            $hover_response = $perform_hover_request();
+
+            if ($expected_hover_string) {
+                $expected_hover_result = [
+                    'contents' => [
+                        'kind' => MarkupContent::MARKDOWN,
+                        'value' => $expected_hover_string,
+                    ],
+                    'range' => null,
+                ];
+            } else {
+                $expected_hover_result = null;
+            }
+            $expected_hover_response = [
+                'result' => $expected_hover_result,
+                'id' => 2,
+                'jsonrpc' => '2.0',
+            ];
+
+            $cur_line = explode("\n", $new_file_contents)[$position->line] ?? '';
+
+            $message = "Unexpected type definition for {$position->line}:{$position->character} (0-based) on line " . json_encode($cur_line);
+            $this->assertEquals($expected_hover_response, $hover_response, $message);  // slightly better diff view than assertSame
+            $this->assertSame($expected_hover_response, $hover_response, $message);
+
+            // This operation should be idempotent.
+            // If it's repeated, it should give the same response
+            // (and it shouldn't crash the server)
+            $expected_hover_response['id'] = 3;
+
+            $hover_response = $perform_hover_request();
+            $this->assertEquals($expected_hover_response, $hover_response, $message);  // slightly better diff view than assertSame
+            $this->assertSame($expected_hover_response, $hover_response, $message);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
@@ -714,6 +930,7 @@ EOT;
                     ],
                     'definitionProvider' => true,
                     'typeDefinitionProvider' => true,
+                    'hoverProvider' => true,
                 ]
             ],
             'id' => 1,
@@ -767,6 +984,33 @@ EOT;
             'position' => $position,
         ];
         $this->writeMessage($proc_in, 'textDocument/typeDefinition', $params);
+        if (self::shouldExpectDiagnosticNotificationForURI($requested_uri)) {
+            $this->assertHasEmptyPublishDiagnosticsNotification($proc_out, $requested_uri);
+        }
+
+        $response = $this->awaitResponse($proc_out);
+
+        return $response;
+    }
+
+    /**
+     * @param resource $proc_in
+     * @param resource $proc_out
+     * @return array the response
+     * @throws InvalidArgumentException
+     */
+    private function writeHoverRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null)
+    {
+        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
+        // Implementation detail: We simultaneously emit a notification with new diagnostics
+        // and the response for the definition request at the same time, even if files didn't change.
+
+        // NOTE: That could probably be refactored, but there's not much benefit to doing that.
+        $params = [
+            'textDocument' => new TextDocumentIdentifier($requested_uri),
+            'position' => $position,
+        ];
+        $this->writeMessage($proc_in, 'textDocument/hover', $params);
         if (self::shouldExpectDiagnosticNotificationForURI($requested_uri)) {
             $this->assertHasEmptyPublishDiagnosticsNotification($proc_out, $requested_uri);
         }

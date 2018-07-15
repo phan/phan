@@ -11,7 +11,7 @@ use Phan\Language\Type\StaticType;
 use Phan\Library\None;
 
 /**
- * Unit tests of Type
+ * Unit tests of Comment
  */
 class CommentTest extends BaseTest
 {

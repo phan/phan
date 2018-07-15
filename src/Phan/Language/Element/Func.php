@@ -167,11 +167,13 @@ class Func extends AddressableElement implements FunctionInterface
             $fqsen,
             $parameter_list
         );
+        $doc_comment = $node->children['docComment'] ?? '';
+        $func->setDocComment($doc_comment);
 
         // Parse the comment above the function to get
         // extra meta information about the function.
         $comment = Comment::fromStringInContext(
-            (string)$node->children['docComment'],
+            $doc_comment,
             $code_base,
             $context,
             $node->lineno ?? 0,
@@ -343,6 +345,12 @@ class Func extends AddressableElement implements FunctionInterface
         $namespace_text = $namespace === '' ? '' : "$namespace ";
         $string = sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
         return $string;
+    }
+
+    public function getMarkupDescription() : string
+    {
+        list($unused_namespace, $text) = $this->toStubInfo();
+        return rtrim($text, "\n {}");
     }
 
     /** @return array{0:string,1:string} [string $namespace, string $text] */

@@ -118,6 +118,7 @@ class CLI
                 'language-server-require-pcntl',
                 'language-server-enable',
                 'language-server-enable-go-to-definition',
+                'language-server-enable-hover',
                 'markdown-issue-messages',
                 'memory-limit:',
                 'minimum-severity:',
@@ -429,6 +430,9 @@ class CLI
                     break;
                 case 'language-server-enable-go-to-definition':
                     Config::setValue('language_server_enable_go_to_definition', true);
+                    break;
+                case 'language-server-enable-hover':
+                    Config::setValue('language_server_enable_hover', true);
                     break;
                 case 'language-server-verbose':
                     Config::setValue('language_server_debug_level', 'info');
@@ -855,6 +859,10 @@ Extended help:
 
  --language-server-enable-go-to-definition
   Enables support for "Go To Definition" and "Go To Type Definition" in the Phan Language Server.
+  Disabled by default.
+
+ --language-server-enable-hover
+  Enables support for "Hover" in the Phan Language Server.
   Disabled by default.
 
  --language-server-verbose

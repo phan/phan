@@ -73,4 +73,14 @@ interface AddressableElementInterface extends TypedElementInterface
     public function getReferenceCount(
         CodeBase $code_base
     ) : int;
+
+    /**
+     * @return string For use in the language server protocol.
+     */
+    public function getMarkupDescription() : string;
+
+    /**
+     * @return ?string the 'docComment' for this element, if any exists.
+     */
+    public function getDocComment();
 }

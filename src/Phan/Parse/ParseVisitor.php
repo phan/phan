@@ -134,6 +134,9 @@ class ParseVisitor extends ScopeVisitor
                 $class->getInternalScope()
             );
 
+            $doc_comment = $node->children['docComment'] ?? '';
+            $class->setDocComment($doc_comment);
+
             // Add the class to the code base as a globally
             // accessible object
             // This must be done before Comment::fromStringInContext
@@ -142,7 +145,7 @@ class ParseVisitor extends ScopeVisitor
 
             // Get a comment on the class declaration
             $comment = Comment::fromStringInContext(
-                $node->children['docComment'] ?? '',
+                $doc_comment,
                 $this->code_base,
                 $class_context,
                 $node->lineno ?? 0,
@@ -449,6 +452,7 @@ class ParseVisitor extends ScopeVisitor
                 $node->flags ?? 0,
                 $property_fqsen
             );
+            $property->setDocComment($doc_comment);
 
             // Add the property to the class
             $class->addProperty($this->code_base, $property, new None());
@@ -557,8 +561,9 @@ class ParseVisitor extends ScopeVisitor
             );
 
             // Get a comment on the declaration
+            $doc_comment = $child_node->children['docComment'] ?? '';
             $comment = Comment::fromStringInContext(
-                $child_node->children['docComment'] ?? '',
+                $doc_comment,
                 $this->code_base,
                 $this->context,
                 $child_node->lineno ?? 0,
@@ -576,6 +581,7 @@ class ParseVisitor extends ScopeVisitor
                 $fqsen
             );
 
+            $constant->setDocComment($doc_comment);
             $constant->setIsDeprecated($comment->isDeprecated());
             $constant->setIsNSInternal($comment->isNSInternal());
             $constant->setIsOverrideIntended($comment->isOverrideIntended());
@@ -1150,6 +1156,7 @@ class ParseVisitor extends ScopeVisitor
         }
 
         $constant->setNodeForValue($value);
+        $constant->setDocComment($comment_string);
 
         $constant->setIsDeprecated($comment->isDeprecated());
         $constant->setIsNSInternal($comment->isNSInternal());
@@ -1297,7 +1304,8 @@ class ParseVisitor extends ScopeVisitor
      *
      * @internal
      */
-    public static function checkIsAllowedInConstExpr($n) {
+    public static function checkIsAllowedInConstExpr($n)
+    {
         if (!($n instanceof Node)) {
             if (\is_array($n)) {
                 foreach ($n as $child_node) {
