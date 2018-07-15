@@ -58,7 +58,7 @@ class ASTReverter
                 switch ($node->flags) {
                     case ast\flags\NAME_FQ:
                         return '\\' . $result;
-                    case ast\flags\NAME_RELATIVE;
+                    case ast\flags\NAME_RELATIVE:
                         return 'namespace\\' . $result;
                     default:
                         return (string)$result;

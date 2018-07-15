@@ -234,7 +234,7 @@ EOT;
             $this->markTestSkipped('This test requires php 7.1');
         }
         if (function_exists('pcntl_fork')) {
-            $this->_testHoverInOtherFileWithPcntlSetting(
+            $this->runTestHoverInOtherFileWithPcntlSetting(
                 $new_file_contents,
                 $position,
                 $expected_hover_markup,
@@ -242,7 +242,7 @@ EOT;
                 true
             );
         }
-        $this->_testHoverInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_hover_markup, $requested_uri, false);
+        $this->runTestHoverInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_hover_markup, $requested_uri, false);
     }
 
     /**
@@ -549,7 +549,7 @@ EOT
      * @param ?string $expected_hover_string
      * @param ?string $requested_uri
      */
-    public function _testHoverInOtherFileWithPcntlSetting(
+    public function runTestHoverInOtherFileWithPcntlSetting(
         string $new_file_contents,
         Position $position,
         $expected_hover_string,

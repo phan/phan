@@ -89,7 +89,6 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         return $string;
     }
 
-
     /** @return array{0:string,1:string} [string $namespace, string $text] */
     public function toStubInfo() : array
     {

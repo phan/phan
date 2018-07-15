@@ -74,7 +74,8 @@ class MarkupDescription
      * @param array<int,string> $lines
      * @return array<int,string>
      */
-    private static function trimLeadingWhitespace(array $lines) : array {
+    private static function trimLeadingWhitespace(array $lines) : array
+    {
         if (count($lines) === 0) {
             return [];
         }
