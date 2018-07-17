@@ -29,6 +29,82 @@ class CLI
     const PHAN_VERSION = '0.12.15-dev';
 
     /**
+     * List of short flags passed to getopt
+     * still available: g,n,t,u,w
+     * @internal
+     */
+    const GETOPT_SHORT_OPTIONS = "f:m:o:c:k:aeqbr:pid:3:y:l:xj:zhvs:";
+
+    /**
+     * List of long flags passed to getopt
+     * @internal
+     */
+    const GETOPT_LONG_OPTIONS = [
+        'allow-polyfill-parser',
+        'backward-compatibility-checks',
+        'color',
+        'config-file:',
+        'daemonize-socket:',
+        'daemonize-tcp-port:',
+        'dead-code-detection',
+        'directory:',
+        'disable-plugins',
+        'dump-ast',
+        'dump-parsed-file-list',
+        'dump-signatures-file:',
+        'exclude-directory-list:',
+        'exclude-file:',
+        'extended-help',
+        'file-list:',
+        'file-list-only:',
+        'force-polyfill-parser',
+        'help',
+        'ignore-undeclared',
+        'include-analysis-file-list:',
+        'init',
+        'init-level:',
+        'init-analyze-dir:',
+        'init-analyze-file:',
+        'init-no-composer',
+        'init-overwrite',
+        'language-server-analyze-only-on-save',
+        'language-server-on-stdin',
+        'language-server-tcp-connect:',
+        'language-server-tcp-server:',
+        'language-server-verbose',
+        'language-server-hide-category',
+        'language-server-allow-missing-pcntl',
+        'language-server-force-missing-pcntl',
+        'language-server-require-pcntl',
+        'language-server-enable',
+        'language-server-enable-go-to-definition',
+        'language-server-enable-hover',
+        'markdown-issue-messages',
+        'memory-limit:',
+        'minimum-severity:',
+        'output:',
+        'output-mode:',
+        'parent-constructor-required:',
+        'polyfill-parse-all-element-doc-comments',
+        'plugin:',
+        'print-memory-usage-summary',
+        'processes:',
+        'progress-bar',
+        'project-root-directory:',
+        'quick',
+        'require-config-exists',
+        'signature-compatibility',
+        'strict-param-checking',
+        'strict-property-checking',
+        'strict-return-checking',
+        'strict-type-checking',
+        'target-php-version',
+        'unused-variable-detection',
+        'use-fallback-parser',
+        'version',
+    ];
+
+    /**
      * @var OutputInterface
      */
     private $output;
@@ -76,74 +152,7 @@ class CLI
         global $argv;
 
         // Parse command line args
-        // still available: g,n,t,u,w
-        $opts = getopt(
-            "f:m:o:c:k:aeqbr:pid:3:y:l:xj:zhvs:",
-            [
-                'allow-polyfill-parser',
-                'backward-compatibility-checks',
-                'color',
-                'config-file:',
-                'daemonize-socket:',
-                'daemonize-tcp-port:',
-                'dead-code-detection',
-                'directory:',
-                'disable-plugins',
-                'dump-ast',
-                'dump-parsed-file-list',
-                'dump-signatures-file:',
-                'exclude-directory-list:',
-                'exclude-file:',
-                'extended-help',
-                'file-list:',
-                'file-list-only:',
-                'force-polyfill-parser',
-                'help',
-                'ignore-undeclared',
-                'include-analysis-file-list:',
-                'init',
-                'init-level:',
-                'init-analyze-dir:',
-                'init-analyze-file:',
-                'init-no-composer',
-                'init-overwrite',
-                'language-server-analyze-only-on-save',
-                'language-server-on-stdin',
-                'language-server-tcp-connect:',
-                'language-server-tcp-server:',
-                'language-server-verbose',
-                'language-server-hide-category',
-                'language-server-allow-missing-pcntl',
-                'language-server-force-missing-pcntl',
-                'language-server-require-pcntl',
-                'language-server-enable',
-                'language-server-enable-go-to-definition',
-                'language-server-enable-hover',
-                'markdown-issue-messages',
-                'memory-limit:',
-                'minimum-severity:',
-                'output:',
-                'output-mode:',
-                'parent-constructor-required:',
-                'polyfill-parse-all-element-doc-comments',
-                'plugin:',
-                'print-memory-usage-summary',
-                'processes:',
-                'progress-bar',
-                'project-root-directory:',
-                'quick',
-                'require-config-exists',
-                'signature-compatibility',
-                'strict-param-checking',
-                'strict-property-checking',
-                'strict-return-checking',
-                'strict-type-checking',
-                'target-php-version',
-                'unused-variable-detection',
-                'use-fallback-parser',
-                'version',
-            ]
-        );
+        $opts = getopt(self::GETOPT_SHORT_OPTIONS, self::GETOPT_LONG_OPTIONS);
         $opts = $opts ?? [];
 
         if (\array_key_exists('extended-help', $opts)) {
@@ -476,105 +485,7 @@ class CLI
                     Config::setValue('color_issue_messages', true);
                     break;
                 default:
-                    $knownFlags = [
-                        'allow-polyfill-parser',
-                        'backward-compatibility-checks',
-                        'color',
-                        'config-file',
-                        'daemonize-socket',
-                        'daemonize-tcp-port',
-                        'dead-code-detection',
-                        'directory',
-                        'disable-plugins',
-                        'dump-ast',
-                        'dump-parsed-file-list',
-                        'dump-signatures-file',
-                        'exclude-directory-list',
-                        'exclude-file',
-                        'extended-help',
-                        'file-list',
-                        'file-list-only',
-                        'force-polyfill-parser',
-                        'help',
-                        'ignore-undeclared',
-                        'include-analysis-file-list',
-                        'init',
-                        'init-level',
-                        'init-analyze-dir',
-                        'init-analyze-file',
-                        'init-no-composer',
-                        'init-overwrite',
-                        'language-server-analyze-only-on-save',
-                        'language-server-on-stdin',
-                        'language-server-tcp-connect',
-                        'language-server-tcp-server',
-                        'language-server-verbose',
-                        'language-server-hide-category',
-                        'language-server-allow-missing-pcntl',
-                        'language-server-force-missing-pcntl',
-                        'language-server-require-pcntl',
-                        'language-server-enable',
-                        'language-server-enable-go-to-definition',
-                        'language-server-enable-hover',
-                        'markdown-issue-messages',
-                        'memory-limit',
-                        'minimum-severity',
-                        'output',
-                        'output-mode',
-                        'parent-constructor-required',
-                        'polyfill-parse-all-element-doc-comments',
-                        'plugin',
-                        'print-memory-usage-summary',
-                        'processes',
-                        'progress-bar',
-                        'project-root-directory',
-                        'quick',
-                        'require-config-exists',
-                        'signature-compatibility',
-                        'strict-param-checking',
-                        'strict-property-checking',
-                        'strict-return-checking',
-                        'strict-type-checking',
-                        'target-php-version',
-                        'unused-variable-detection',
-                        'use-fallback-parser',
-                        'version',
-                    ];
-
-                    $similarities = [];
-
-                    // if outside the for loop for efficiency
-                    if (strlen($key) == 1) {
-                        foreach ($knownFlags as $flag) {
-                            if (strlen($flag) == 1) {
-                                $distance = abs(ord(strtolower($key)) - ord($flag));
-                                // -1 is for error, distance > 5 is to far off to be a typo
-                                if ($distance <= 3) {
-                                    $similarities[$flag] = $distance;
-                                }
-                            }
-                        }
-                    } else {
-                        foreach ($knownFlags as $flag) {
-                            $distance = \levenshtein($key, $flag);
-                            // -1 is for error, distance > 5 is to far off to be a typo
-                            if ($distance !== -1 && $distance <= 5) {
-                                $similarities[$flag] = $distance;
-                            }
-                        }
-                    }
-
-                    arsort($similarities); // retain keys and sort descending
-                    $similarities = array_keys($similarities);
-
-                    $suggestionStr = "";
-                    if (count($similarities) >= 2) {
-                        $suggestionStr .= " (did you mean ".$similarities[0]." or ".$similarities[1]."?)";
-                    } elseif (count($similarities) >= 1) {
-                        $suggestionStr .= " (did you mean ".$similarities[0]."?)";
-                    }
-
-                    $this->usage("Unknown option '-$key'".$suggestionStr, EXIT_FAILURE);
+                    $this->usage("Unknown option '-$key'".self::getFlagSuggestionString($key), EXIT_FAILURE);
                     break;
             }
         }
@@ -991,6 +902,48 @@ EOB;
     }
 
     /**
+     * Finds potentially mispelled flags and returns them as a string
+     *
+     * This will use levenshtein distance, showing the first one or two flags
+     * which match with a distance of <= 5
+     * 
+     * @param string $key Mispelled key to attempt to correct
+     * @return string
+     */
+    protected static function getFlagSuggestionString(
+        string $key
+    ) : string {
+        // include short options incase a typo is made like -aa instead of -a
+        $knownFlags = array_merge(self::GETOPT_LONG_OPTIONS, str_split(self::GETOPT_SHORT_OPTIONS));
+
+        $knownFlags = array_map(function (string $s) : string {
+            return rtrim($s, ":");
+        }, $knownFlags);
+        $knownFlags = array_filter($knownFlags); // remove negative effects from the str_split
+
+        $similarities = [];
+
+        // if outside the for loop for efficiency
+        foreach ($knownFlags as $flag) {
+            $distance = levenshtein($key, $flag);
+            // -1 is for error, distance > 5 is to far off to be a typo
+            if ($distance !== -1 && $distance <= 5) {
+                $similarities[$flag] = $distance;
+            }
+        }
+
+        asort($similarities); // retain keys and sort descending
+        $similarities = array_keys($similarities);
+
+        if (count($similarities) >= 2) {
+            return " (did you mean ".$similarities[0]." or ".$similarities[1]."?)";
+        } elseif (count($similarities) >= 1) {
+            return " (did you mean ".$similarities[0]."?)";
+        }
+        return "";
+    }
+
+    /**
      * @param string $directory_name
      * The name of a directory to scan for files ending in `.php`.
      *
@@ -1248,3 +1201,4 @@ EOB;
         }
     }
 }
+
