@@ -476,7 +476,105 @@ class CLI
                     Config::setValue('color_issue_messages', true);
                     break;
                 default:
-                    $this->usage("Unknown option '-$key'", EXIT_FAILURE);
+                    $knownFlags = [
+                        'allow-polyfill-parser',
+                        'backward-compatibility-checks',
+                        'color',
+                        'config-file',
+                        'daemonize-socket',
+                        'daemonize-tcp-port',
+                        'dead-code-detection',
+                        'directory',
+                        'disable-plugins',
+                        'dump-ast',
+                        'dump-parsed-file-list',
+                        'dump-signatures-file',
+                        'exclude-directory-list',
+                        'exclude-file',
+                        'extended-help',
+                        'file-list',
+                        'file-list-only',
+                        'force-polyfill-parser',
+                        'help',
+                        'ignore-undeclared',
+                        'include-analysis-file-list',
+                        'init',
+                        'init-level',
+                        'init-analyze-dir',
+                        'init-analyze-file',
+                        'init-no-composer',
+                        'init-overwrite',
+                        'language-server-analyze-only-on-save',
+                        'language-server-on-stdin',
+                        'language-server-tcp-connect',
+                        'language-server-tcp-server',
+                        'language-server-verbose',
+                        'language-server-hide-category',
+                        'language-server-allow-missing-pcntl',
+                        'language-server-force-missing-pcntl',
+                        'language-server-require-pcntl',
+                        'language-server-enable',
+                        'language-server-enable-go-to-definition',
+                        'language-server-enable-hover',
+                        'markdown-issue-messages',
+                        'memory-limit',
+                        'minimum-severity',
+                        'output',
+                        'output-mode',
+                        'parent-constructor-required',
+                        'polyfill-parse-all-element-doc-comments',
+                        'plugin',
+                        'print-memory-usage-summary',
+                        'processes',
+                        'progress-bar',
+                        'project-root-directory',
+                        'quick',
+                        'require-config-exists',
+                        'signature-compatibility',
+                        'strict-param-checking',
+                        'strict-property-checking',
+                        'strict-return-checking',
+                        'strict-type-checking',
+                        'target-php-version',
+                        'unused-variable-detection',
+                        'use-fallback-parser',
+                        'version',
+                    ];
+
+                    $similarities = [];
+
+                    // if outside the for loop for efficiency
+                    if (strlen($key) == 1) {
+                        foreach ($knownFlags as $flag) {
+                            if (strlen($flag) == 1) {
+                                $distance = abs(ord(strtolower($key)) - ord($flag));
+                                // -1 is for error, distance > 5 is to far off to be a typo
+                                if ($distance <= 3) {
+                                    $similarities[$flag] = $distance;
+                                }
+                            }
+                        }
+                    } else {
+                        foreach ($knownFlags as $flag) {
+                            $distance = \levenshtein($key, $flag);
+                            // -1 is for error, distance > 5 is to far off to be a typo
+                            if ($distance !== -1 && $distance <= 5) {
+                                $similarities[$flag] = $distance;
+                            }
+                        }
+                    }
+
+                    arsort($similarities); // retain keys and sort descending
+                    $similarities = array_keys($similarities);
+
+                    $suggestionStr = "";
+                    if (count($similarities) >= 2) {
+                        $suggestionStr .= " (did you mean ".$similarities[0]." or ".$similarities[1]."?)";
+                    } elseif (count($similarities) >= 1) {
+                        $suggestionStr .= " (did you mean ".$similarities[0]."?)";
+                    }
+
+                    $this->usage("Unknown option '-$key'".$suggestionStr, EXIT_FAILURE);
                     break;
             }
         }
