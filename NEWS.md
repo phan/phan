@@ -13,6 +13,7 @@ New features(Analysis)
   Phan will replace the default parameter type (or constant type) with `mixed` for constants and class constants.
 
   Previously, this could cause Phan to crash, especially with `--use-fallback-parser` on invalid ASTs.
++ Improve analysis of arguments passed to `implode()`
 
 Language Server/Daemon mode:
 + Implement support for hover requests in the Language Server (#1738)

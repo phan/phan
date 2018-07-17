@@ -18,6 +18,9 @@ sed -i "s/ syntax error, unexpected return (T_RETURN)/ syntax error, unexpected 
 sed -i "s/ syntax error, unexpected new (T_NEW)/ syntax error, unexpected 'new' (T_NEW)/" $ACTUAL_PATH
 # This warns in php 7.0 only, but the important thing to test is that the fallback doesn't crash.
 sed -i "/src\/018_list_expression_18\.php:2 PhanSyntaxError syntax error, unexpected '0'/d" $ACTUAL_PATH
+# This has a varying order for src/020_issue.php
+sed -i "s/anonymous_class_\w\+/anonymous_class_%s/g" $ACTUAL_PATH $EXPECTED_PATH
+
 # diff returns a non-zero exit code if files differ or are missing
 echo
 echo "Comparing the output:"
