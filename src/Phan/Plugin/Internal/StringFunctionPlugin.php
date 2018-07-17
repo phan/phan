@@ -114,8 +114,6 @@ final class StringFunctionPlugin extends PluginV2 implements
             'explode'                   => $var_2_const_1,
             'htmlspecialchars_decode'   => $var_1_const_2,
             'htmlspecialchars_encode'   => $var_1_const_2,
-            'implode'                   => $var_2_const_1,
-            'join'                      => $var_2_const_1,
             'ltrim'                     => $var_1_const_2,
             'md5_file'                  => $var_1_const_2,
             'md5'                       => $var_1_const_2,

@@ -123,6 +123,7 @@ final class MiscParamPlugin extends PluginV2 implements
                 );
             }
         };
+
         /**
          * @return void
          * @throws StopParamAnalysisException
@@ -135,16 +136,15 @@ final class MiscParamPlugin extends PluginV2 implements
             array $args
         ) use ($stop_exception) {
             $argcount = \count($args);
-            // (string glue, array pieces),
-            // (array pieces, string glue) or
-            // (array pieces)
+            // (string glue, string[] pieces),
+            // (string[] pieces, string glue) or
+            // (string[] pieces)
             if ($argcount == 1) {
-                self::analyzeNodeUnionTypeCast(
+                self::analyzeNodeUnionTypeCastStringArrayLike(
                     $args[0],
                     $context,
                     $code_base,
-                    ArrayType::instance(false)->asUnionType(),
-                    function (UnionType $unused_node_type) use ($context, $function) {
+                    function (UnionType $node_type) use ($context, $function) {
                         // "arg#1(pieces) is %s but {$function->getFQSEN()}() takes array when passed only 1 arg"
                         return Issue::fromType(Issue::ParamSpecial2)(
                             $context->getFile(),
@@ -152,13 +152,14 @@ final class MiscParamPlugin extends PluginV2 implements
                             [
                                 1,
                                 'pieces',
+                                $node_type->asNonLiteralType(),
                                 (string)$function->getFQSEN(),
-                                'string',
-                                'array'
+                                'string[]'
                             ]
                         );
                     }
                 );
+                throw $stop_exception;
             } elseif ($argcount == 2) {
                 $arg1_type = UnionTypeVisitor::unionTypeFromNode(
                     $code_base,
@@ -184,11 +185,24 @@ final class MiscParamPlugin extends PluginV2 implements
                             $context->getLineNumberStart(),
                             2,
                             'glue',
-                            (string)$arg2_type,
-                            (string)$function->getFQSEN(),
+                            (string)$arg2_type->asNonLiteralType(),
+                            (string)$function->getRepresentationForIssue(),
                             'string',
                             1,
                             'array'
+                        );
+                    }
+                    if (!self::canCastToStringArrayLike($code_base, $context, $arg1_type)) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TypeMismatchArgumentInternal,
+                            $context->getLineNumberStart(),
+                            1,
+                            'pieces',
+                            $arg1_type,
+                            $function->getRepresentationForIssue(),
+                            'string[]'
                         );
                     }
                     throw $stop_exception;
@@ -203,13 +217,26 @@ final class MiscParamPlugin extends PluginV2 implements
                             $context->getLineNumberStart(),
                             2,
                             'pieces',
-                            (string)$arg2_type,
+                            (string)$arg2_type->asNonLiteralType(),
                             (string)$function->getFQSEN(),
-                            'array',
+                            'string[]',
                             1,
                             'string'
                         );
+                    } elseif (!self::canCastToStringArrayLike($code_base, $context, $arg2_type)) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TypeMismatchArgumentInternal,
+                            $context->getLineNumberStart(),
+                            2,
+                            'pieces',
+                            $arg2_type,
+                            $function->getRepresentationForIssue(),
+                            'string[]'
+                        );
                     }
+                    throw $stop_exception;
                 }
             }
         };
@@ -474,5 +501,48 @@ final class MiscParamPlugin extends PluginV2 implements
         }
 
         return $can_cast;
+    }
+
+    private static function analyzeNodeUnionTypeCastStringArrayLike(
+        $node,
+        Context $context,
+        CodeBase $code_base,
+        \Closure $issue_instance
+    ) : bool {
+
+        // Get the type of the node
+        $node_type = UnionTypeVisitor::unionTypeFromNode(
+            $code_base,
+            $context,
+            $node,
+            true
+        );
+
+        // See if it can be cast to the given type
+        if (self::canCastToStringArrayLike($code_base, $context, $node_type)) {
+            return true;
+        }
+
+        // If it can't, emit the log message
+        Issue::maybeEmitInstance(
+            $code_base,
+            $context,
+            $issue_instance($node_type)
+        );
+
+        return false;
+    }
+
+    /**
+     * Sadly, MyStringable[] is frequently used
+     */
+    private static function canCastToStringArrayLike(CodeBase $code_base, Context $context, UnionType $union_type)
+    {
+        if ($union_type->canCastToUnionType(
+            UnionType::fromFullyQualifiedString('string[]|int[]')
+        )) {
+            return true;
+        }
+        return $union_type->genericArrayElementTypes()->hasClassWithToStringMethod($code_base, $context);
     }
 }

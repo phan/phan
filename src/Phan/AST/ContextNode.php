@@ -1618,10 +1618,9 @@ class ContextNode
         );
 
         $class_name = 'anonymous_class_'
-            . \substr(\md5(\implode('|', [
-                $this->context->getFile(),
-                $this->context->getLineNumberStart()
-            ])), 0, 8);
+            . \substr(\md5(
+                $this->context->getFile() . $this->context->getLineNumberStart()
+            ), 0, 8);
 
         return $class_name;
     }
