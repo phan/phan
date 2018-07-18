@@ -33,7 +33,7 @@ class CLI
      * still available: g,n,t,u,w
      * @internal
      */
-    const GETOPT_SHORT_OPTIONS = "f:m:o:c:k:aeqbr:pid:3:y:l:xj:zhvs:";
+    const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:xj:zhvs:';
 
     /**
      * List of long flags passed to getopt
@@ -485,7 +485,7 @@ class CLI
                     Config::setValue('color_issue_messages', true);
                     break;
                 default:
-                    $this->usage("Unknown option '-$key'".self::getFlagSuggestionString($key), EXIT_FAILURE);
+                    $this->usage("Unknown option '-$key'" . self::getFlagSuggestionString($key), EXIT_FAILURE);
                     break;
             }
         }
@@ -906,41 +906,65 @@ EOB;
      *
      * This will use levenshtein distance, showing the first one or two flags
      * which match with a distance of <= 5
-     * 
+     *
      * @param string $key Mispelled key to attempt to correct
      * @return string
+     * @internal
      */
-    protected static function getFlagSuggestionString(
+    public static function getFlagSuggestionString(
         string $key
     ) : string {
+        $trim = function (string $s) : string {
+            return rtrim($s, ':');
+        };
+        $generate_suggestion = function (string $suggestion) {
+            return (strlen($suggestion) === 1 ? '-' : '--') . $suggestion;
+        };
+        $generate_suggestion_text = function (string $suggestion, string ...$other_suggestions) use ($generate_suggestion) {
+            $suggestions = array_merge([$suggestion], $other_suggestions);
+            return ' (did you mean ' . implode(' or ', array_map($generate_suggestion, $suggestions)) . '?)';
+        };
+        $short_options = array_filter(array_map($trim, str_split(self::GETOPT_SHORT_OPTIONS)));
+        if (strlen($key) === 1) {
+            $alternate = ctype_lower($key) ? strtoupper($key) : strtolower($key);
+            if (in_array($alternate, $short_options)) {
+                return $generate_suggestion_text($alternate);
+            }
+            return '';
+        } elseif ($key === '') {
+            return '';
+        }
         // include short options incase a typo is made like -aa instead of -a
-        $knownFlags = array_merge(self::GETOPT_LONG_OPTIONS, str_split(self::GETOPT_SHORT_OPTIONS));
+        $known_flags = array_merge(self::GETOPT_LONG_OPTIONS, $short_options);
 
-        $knownFlags = array_map(function (string $s) : string {
-            return rtrim($s, ":");
-        }, $knownFlags);
-        $knownFlags = array_filter($knownFlags); // remove negative effects from the str_split
+        $known_flags = array_map($trim, $known_flags);
 
         $similarities = [];
 
-        // if outside the for loop for efficiency
-        foreach ($knownFlags as $flag) {
-            $distance = levenshtein($key, $flag);
-            // -1 is for error, distance > 5 is to far off to be a typo
-            if ($distance !== -1 && $distance <= 5) {
+        $key_lower = strtolower($key);
+        foreach ($known_flags as $flag) {
+            if (strlen($flag) === 1 && stripos($key, $flag) === false) {
+                // Skip over suggestions of flags that have no common characters
+                continue;
+            }
+            $distance = levenshtein($key_lower, strtolower($flag));
+            // distance > 5 is to far off to be a typo
+            if ($distance <= 5) {
                 $similarities[$flag] = $distance;
             }
         }
 
         asort($similarities); // retain keys and sort descending
-        $similarities = array_keys($similarities);
+        $similar_flags = array_keys($similarities);
+        $similarity_values = array_values($similarities);
 
-        if (count($similarities) >= 2) {
-            return " (did you mean ".$similarities[0]." or ".$similarities[1]."?)";
-        } elseif (count($similarities) >= 1) {
-            return " (did you mean ".$similarities[0]."?)";
+        if (count($similar_flags) >= 2 && ($similarity_values[1] <= $similarity_values[0] + 1)) {
+            // If the next-closest suggestion isn't close to as similar as the closest suggestion, just return the closest suggestion
+            return $generate_suggestion_text($similar_flags[0], $similar_flags[1]);
+        } elseif (count($similar_flags) >= 1) {
+            return $generate_suggestion_text($similar_flags[0]);
         }
-        return "";
+        return '';
     }
 
     /**
@@ -1201,4 +1225,3 @@ EOB;
         }
     }
 }
-
