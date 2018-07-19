@@ -14,6 +14,7 @@ use Phan\Language\Type\FalseType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
@@ -40,7 +41,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
         $array_type  = ArrayType::instance(false);
         $int_type    = IntType::instance(false);
         $string_type = StringType::instance(false);
+        $null_type   = NullType::instance(false);
         $int_or_string_or_false = new UnionType([$int_type, $string_type, $false_type]);
+        $int_or_string_or_null = new UnionType([$int_type, $string_type, $null_type]);
         $int_or_string = new UnionType([$int_type, $string_type]);
 
         $get_element_type_of_first_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type, $false_type) : UnionType {
@@ -63,6 +66,17 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
                 }
             }
             return $int_or_string_or_false;
+        };
+        $get_key_type_of_first_arg_or_null = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($int_or_string_or_null, $null_type) : UnionType {
+            if (\count($args) >= 1) {
+                $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+                $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($array_type);
+                if ($key_type_enum !== GenericArrayType::KEY_MIXED) {
+                    $key_type = GenericArrayType::unionTypeForKeyType($key_type_enum);
+                    return $key_type->withType($null_type);
+                }
+            }
+            return $int_or_string_or_null;
         };
         $get_key_type_of_second_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($int_or_string_or_false, $false_type) : UnionType {
             if (\count($args) >= 2) {
@@ -309,6 +323,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             'each'        => $each_callback,
 
             'key'          => $get_key_type_of_first_arg,
+            'array_key_first' => $get_key_type_of_first_arg_or_null,
+            'array_key_last' => $get_key_type_of_first_arg_or_null,
+
             'array_search' => $get_key_type_of_second_arg,
 
             // array_filter and array_map
