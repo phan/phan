@@ -723,8 +723,15 @@ class Config
         // Path to a unix socket for a daemon to listen to files to analyze. Use command line option instead.
         'daemonize_socket' => false,
 
-        // TCP port(from 1024 to 65535) for a daemon to listen to files to analyze. Use command line option instead.
-        'daemonize_tcp_port' => false,
+        // If a daemon should listen to files to analyze over TCP.
+        // This setting is mutually exclusive with 'daemonize_socket'.
+        'daemonize_tcp' => false,
+
+        // TCP host for a daemon to listen to files to analyze.
+        'daemonize_tcp_host' => '127.0.0.1',
+
+        // TCP port (from 1024 to 65535) for a daemon to listen to files to analyze.
+        'daemonize_tcp_port' => 4846,
 
         // If this is an array, it configures the way clients will communicate with the Phan language server.
         // Possibilities: Exactly one of

@@ -26,6 +26,7 @@ class CLITest extends BaseTest
             ['HELP', $wrap_suggestion('--help')],
             ['ALLOW-POLYFILL-PARSER', $wrap_suggestion('--allow-polyfill-parser')],
             ['allce-polyfill-parser', $wrap_suggestion('--allow-polyfill-parser or --force-polyfill-parser')],
+            ['daemonizetcphost', $wrap_suggestion('--daemonize-tcp-host')],
             ['daemonizetcpport', $wrap_suggestion('--daemonize-tcp-port')],
             ['strict-prop-checking', $wrap_suggestion('--strict-param-checking or --strict-property-checking')],
             ['process', $wrap_suggestion('--processes')],

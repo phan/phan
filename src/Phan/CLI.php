@@ -45,6 +45,7 @@ class CLI
         'color',
         'config-file:',
         'daemonize-socket:',
+        'daemonize-tcp-host:',
         'daemonize-tcp-port:',
         'dead-code-detection',
         'directory:',
@@ -401,7 +402,7 @@ class CLI
                     break;
                 case 's':
                 case 'daemonize-socket':
-                    $this->checkCanDaemonize('unix');
+                    $this->checkCanDaemonize('unix', $key);
                     $socket_dirname = realpath(dirname($value));
                     if (!file_exists($socket_dirname) || !is_dir($socket_dirname)) {
                         $msg = sprintf('Requested to create unix socket server in %s, but folder %s does not exist', json_encode($value), json_encode($socket_dirname));
@@ -411,17 +412,26 @@ class CLI
                     }
                     break;
                     // TODO: HTTP server binding to 127.0.0.1, daemonize-port.
-                case 'daemonize-tcp-port':
-                    $this->checkCanDaemonize('tcp');
-                    if (strcasecmp($value, 'default') === 0) {
-                        $port = 4846;
-                    } else {
-                        $port = filter_var($value, FILTER_VALIDATE_INT);
+                case 'daemonize-tcp-host':
+                    $this->checkCanDaemonize('tcp', $key);
+                    Config::setValue('daemonize_tcp', true);
+                    $host = filter_var($value, FILTER_VALIDATE_IP);
+                    if (strcasecmp($value, 'default') !== 0 && !$host) {
+                        $this->usage("daemonize-tcp-host must be the string 'default' or a valid hostname, got '$value'", 1);
                     }
-                    if ($port >= 1024 && $port <= 65535) {
-                        Config::setValue('daemonize_tcp_port', $port);
-                    } else {
+                    if ($host) {
+                        Config::setValue('daemonize_tcp_host', $host);
+                    }
+                    break;
+                case 'daemonize-tcp-port':
+                    $this->checkCanDaemonize('tcp', $key);
+                    Config::setValue('daemonize_tcp', true);
+                    $port = filter_var($value, FILTER_VALIDATE_INT);
+                    if (strcasecmp($value, 'default') !== 0 && !($port >= 1024 && $port <= 65535)) {
                         $this->usage("daemonize-tcp-port must be the string 'default' or a value between 1024 and 65535, got '$value'", 1);
+                    }
+                    if ($port) {
+                        Config::setValue('daemonize_tcp_port', $port);
                     }
                     break;
                 case 'language-server-on-stdin':
@@ -597,17 +607,19 @@ class CLI
     }
 
     /** @return void - exits on usage error */
-    private function checkCanDaemonize(string $protocol)
+    private function checkCanDaemonize(string $protocol, string $opt)
     {
-        $opt = $protocol === 'unix' ? '--daemonize-socket' : '--daemonize-tcp-port';
+        $opt = "--$opt";
         if (!in_array($protocol, stream_get_transports())) {
             $this->usage("The $protocol:///path/to/file schema is not supported on this system, cannot create a daemon with $opt", 1);
         }
         if (!Config::getValue('language_server_use_pcntl_fallback') && !function_exists('pcntl_fork')) {
             $this->usage("The pcntl extension is not available to fork a new process, so $opt will not be able to create workers to respond to requests.", 1);
         }
-        if (Config::getValue('daemonize_socket') || Config::getValue('daemonize_tcp_port')) {
+        if ($opt === '--daemonize-socket' && Config::getValue('daemonize_tcp')) {
             $this->usage('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
+        } else if (($opt === '--daemonize-tcp-host' || $opt === '--daemonize-tcp-port') && Config::getValue('daemonize_socket')) {
+            $this->usage("Can specify --daemonize-socket or $opt only once", 1);
         }
     }
 
@@ -803,6 +815,11 @@ Usage: {$argv[0]} [options] [files...]
 
  -s, --daemonize-socket </path/to/file.sock>
   Unix socket for Phan to listen for requests on, in daemon mode.
+
+ --daemonize-tcp-host
+  TCP host for Phan to listen for JSON requests on, in daemon mode.
+  (e.g. 'default', which is an alias for host 127.0.0.1.)
+  `phan_client` can be used to communicate with the Phan Daemon.
 
  --daemonize-tcp-port <default|1024-65535>
   TCP port for Phan to listen for JSON requests on, in daemon mode.
@@ -1046,7 +1063,7 @@ EOB;
     {
         return Config::getValue('progress_bar') &&
             !Config::getValue('dump_ast') &&
-            !Config::getValue('daemonize_tcp_port') &&
+            !Config::getValue('daemonize_tcp') &&
             !Config::getValue('daemonize_socket');
     }
 

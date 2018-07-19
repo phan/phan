@@ -206,8 +206,8 @@ class Daemon
         $listen_url = null;
         if (Config::getValue('daemonize_socket')) {
             $listen_url = 'unix://' . Config::getValue('daemonize_socket');
-        } elseif (Config::getValue('daemonize_tcp_port')) {
-            $listen_url = sprintf('tcp://127.0.0.1:%d', Config::getValue('daemonize_tcp_port'));
+        } elseif (Config::getValue('daemonize_tcp')) {
+            $listen_url = sprintf('tcp://%s:%d', Config::getValue('daemonize_tcp_host'), Config::getValue('daemonize_tcp_port'));
         } else {
             throw new InvalidArgumentException("Should not happen, no port/socket for daemon to listen on.");
         }
