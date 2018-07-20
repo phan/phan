@@ -1,5 +1,12 @@
 Phan NEWS
 
+20 Jul 2018, Phan 0.12.16 (dev)
+-------------------------
+New features(CLI)
++ Add `--daemonize-tcp-host` CLI option for specifying the hostname for daemon mode (#1868).
+  The default will remain `127.0.0.1` when not specified, but can be overidden to
+  `0.0.0.0` for example, for usage with Docker.
+
 08 Jul 2018, Phan 0.12.15 (dev)
 -------------------------
 
