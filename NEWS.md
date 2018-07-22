@@ -1,6 +1,6 @@
 Phan NEWS
 
-?? ??? 2018, Phan 0.12.15 (dev)
+21 Jul 2018, Phan 0.12.15
 -------------------------
 
 New features(Analysis)
@@ -30,6 +30,9 @@ Language Server/Daemon mode:
 
   - Note that this implementation assumes that clients sanitize the mix of markdown and HTML before rendering it.
   - Note that this may slow down some language server clients if they pause while waiting for the hover request to finish.
+
+Maintenance:
++ Add a workaround for around a notice in PHP 7.3alpha4  (that Phan treats as fatal) (#1870)
 
 Bug fixes:
 + Fix a bug in checking if nullable versions of specialized type were compatible with other nullable types. (#1839, #1852)
