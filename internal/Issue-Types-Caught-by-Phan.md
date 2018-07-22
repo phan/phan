@@ -781,6 +781,12 @@ to detect if a variable or parameter is unused.
 Unused definition of variable ${VARIABLE}
 ```
 
+## PhanUnusedVariableCaughtException
+
+```
+Unused definition of variable ${VARIABLE} as a caught exception
+```
+
 ## PhanUnusedVariableValueOfForeachWithKey
 
 ```
@@ -2415,6 +2421,12 @@ Saw a token Phan may have failed to parse after '{COMMENT}': after {TYPE}, saw '
 # Syntax
 
 Emitted for syntax errors.
+
+## PhanInvalidConstantExpression
+
+```
+Constant expression contains invalid operations
+```
 
 ## PhanSyntaxError
 
