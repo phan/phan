@@ -171,6 +171,13 @@ class TolerantASTConverter
      */
     public static function phpParserParse(string $file_contents, array &$errors = null) : PhpParser\Node
     {
+        if (PHP_VERSION_ID >= 70300) {
+            // TODO: Remove after upgrading to tolerant-php-parser 0.0.13 (https://github.com/Microsoft/tolerant-php-parser/pull/250)
+            with_disabled_phan_error_handler(function() {
+                @class_exists(\Microsoft\PhpParser\PhpTokenizer::class);
+                @class_exists(\Microsoft\PhpParser\Parser::class);
+            });
+        }
         $parser = new Parser();  // TODO: In php 7.3, we might need to provide a version, due to small changes in lexing?
         $result = $parser->parseSourceFile($file_contents);
         $errors = DiagnosticsProvider::getDiagnostics($result);
