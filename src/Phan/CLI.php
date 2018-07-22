@@ -609,7 +609,7 @@ class CLI
     /** @return void - exits on usage error */
     private function checkCanDaemonize(string $protocol, string $opt)
     {
-        $opt = "--$opt";
+        $opt = strlen($opt) >= 2 ? "--$opt" : "-$opt";
         if (!in_array($protocol, stream_get_transports())) {
             $this->usage("The $protocol:///path/to/file schema is not supported on this system, cannot create a daemon with $opt", 1);
         }

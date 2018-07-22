@@ -353,6 +353,11 @@ Usage: ./phan [options] [files...]
  -s, --daemonize-socket </path/to/file.sock>
   Unix socket for Phan to listen for requests on, in daemon mode.
 
+ --daemonize-tcp-host
+  TCP hostname for Phan to listen for JSON requests on, in daemon mode.
+  (e.g. 'default', which is an alias for host 127.0.0.1, or `0.0.0.0` for
+  usage with Docker). `phan_client` can be used to communicate with the Phan Daemon.
+
  --daemonize-tcp-port <default|1024-65535>
   TCP port for Phan to listen for JSON requests on, in daemon mode.
   (e.g. 'default', which is an alias for port 4846.)

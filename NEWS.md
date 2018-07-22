@@ -1,13 +1,6 @@
 Phan NEWS
 
-20 Jul 2018, Phan 0.12.16 (dev)
--------------------------
-New features(CLI)
-+ Add `--daemonize-tcp-host` CLI option for specifying the hostname for daemon mode (#1868).
-  The default will remain `127.0.0.1` when not specified, but can be overidden to
-  `0.0.0.0` for example, for usage with Docker.
-
-08 Jul 2018, Phan 0.12.15 (dev)
+?? ??? 2018, Phan 0.12.15 (dev)
 -------------------------
 
 New features(Analysis)
@@ -21,6 +14,11 @@ New features(Analysis)
 
   Previously, this could cause Phan to crash, especially with `--use-fallback-parser` on invalid ASTs.
 + Improve analysis of arguments passed to `implode()`
+
+New features(CLI)
++ Add `--daemonize-tcp-host` CLI option for specifying the hostname for daemon mode (#1868).
+  The default will remain `127.0.0.1` when not specified.
+  It can be overidden to values such as `0.0.0.0` (publicly accessible, e.g. for usage with Docker)
 
 Language Server/Daemon mode:
 + Implement support for hover requests in the Language Server (#1738)
