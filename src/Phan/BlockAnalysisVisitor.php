@@ -173,6 +173,21 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         return $context;
     }
 
+    /**
+     * For non-special nodes such as statement lists (AST_STMT_LIST),
+     * we propagate the context and scope from the parent,
+     * through the individual statements, and return a Context with the modified scope.
+     *
+     *          │
+     *          ▼
+     *       ┌──●
+     *       │
+     *       ●──●──●
+     *             │
+     *          ●──┘
+     *          │
+     *          ▼
+     */
     public function visitStmtList(Node $node) : Context
     {
         $context = $this->context;
@@ -315,7 +330,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     /**
      * For non-special nodes, we propagate the context and scope
      * from the parent, through the children and return the
-     * modified scope
+     * modified scope,
      *
      *          │
      *          ▼
@@ -405,8 +420,41 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * For "for loop" nodes, we analyze the components in the following order as a heuristic:
+     *
+     * 1. propagate the context and scope from the parent,
+     * 2. Update the scope with the initializer of the loop,
+     * 3. Update the scope with the side effects (e.g. assignments) of the condition of the loop
+     * 4. Update the scope with the child statements both inside and outside the the loop (ignoring branches which will continue/break),
+     * 5. Update the scope with the statment evaluated after the loop
+     *
+     * Then, Phan returns the context with the modified scope.
+     *
+     * TODO: merge the contexts together, for better analysis of possibly undefined variables
+     *
+     *               │
+     *        cond   ▼
+     *   ●──────●────● init
+     *   │
+     *   │         (TODO: merge contexts instead)
+     *   ●──●──▶●
+     *   stmts  │
+     *          │
+     *          ● 'loop' child node (after inner statments)
+     *          │
+     *          ▼
+     *
+     * Note: Loop analysis uses heuristics for performance and simplicity.
+     * If we analyzed the stmts of the inner loop body another time,
+     * we might discover even more possible types of input/resulting variables.
+     *
+     * Current limitations:
+     *
+     * - contexts from individual break/continue stmts aren't merged
+     * - contexts from individual break/continue stmts aren't merged
+     *
      * @param Node $node
-     * An AST node we'd like to analyze the statements for
+     * An AST node (for a for loop) we'd like to analyze the statements for
      *
      * @return Context
      * The updated context after visiting the node
@@ -431,7 +479,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $condition_node = $node->children['cond'];
         if ($condition_node instanceof Node) {
             // The typical case is `for (init; $x; loop) {}`
-            // But `for (init; $x; loop) {}` is rare but possible, which requires evaluating those in order.
+            // But `for (init; $x, $y; loop) {}` is rare but possible, which requires evaluating those in order.
             // Evaluate the list of cond expressions in order.
             \assert($condition_node->kind === \ast\AST_EXPR_LIST);
             foreach ($condition_node->children as $condition_subnode) {
@@ -478,8 +526,34 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * For "while loop" nodes, we analyze the components in the following order as a heuristic:
+     * (This is pretty much the same as analyzing a for loop with the 'init' and 'loop' nodes left blank)
+     *
+     * 1. propagate the context and scope from the parent,
+     * 2. Update the scope with the side effects (e.g. assignments) of the condition of the loop
+     * 3. Update the scope with the child statements both inside and outside the the loop (ignoring branches which will continue/break),
+     *
+     * Then, Phan returns the context with the modified scope.
+     *
+     * TODO: merge the contexts together, for better analysis of possibly undefined variables
+     *
+     * NOTE: "Do while" loops are just handled by visit(), Phan sees and analyzes 'stmts' before 'cond'.
+     *
+     *
+     *          │
+     *          ▼
+     *   ●──────● cond
+     *   │
+     *   │         (TODO: merge contexts instead)
+     *   ●──●──▶●
+     *   stmts  │
+     *          │
+     *          │
+     *          │
+     *          ▼
+     *
      * @param Node $node
-     * An AST node we'd like to analyze the statements for
+     * An AST node (for a while loop) we'd like to analyze the statements for
      *
      * @return Context
      * The updated context after visiting the node
@@ -1225,6 +1299,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @return Context
      * The updated context after visiting the node
+     *
+     * @see $this->visitClosedContext()
      */
     public function visitClass(Node $node) : Context
     {
@@ -1237,6 +1313,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @return Context
      * The updated context after visiting the node
+     *
+     * @see $this->visitClosedContext()
      */
     public function visitMethod(Node $node) : Context
     {
@@ -1249,6 +1327,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @return Context
      * The updated context after visiting the node
+     *
+     * @see $this->visitClosedContext()
      */
     public function visitFuncDecl(Node $node) : Context
     {
@@ -1261,6 +1341,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @return Context
      * The updated context after visiting the node
+     *
+     * @see $this->visitClosedContext()
      */
     public function visitClosure(Node $node) : Context
     {
@@ -1268,8 +1350,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * Common options for pre-order analysis phase of a Node.
-     * Run pre-order analysis steps, then run plugins.
+     * Run the common steps for pre-order analysis phase of a Node.
+     *
+     * 1. Run the pre-order analysis steps, updating the context and scope
+     * 2. Run plugins with pre-order steps, usually (but not always) updating the context and scope.
      *
      * @param Context $context - The context before pre-order analysis
      *
@@ -1303,7 +1387,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
     /**
      * Common options for post-order analysis phase of a Node.
-     * Run analysis steps and run plugins.
+     *
+     * 1. Run analysis steps and update the scope and context
+     * 2. Run plugins (usually (but not always) without updating the scope)
      *
      * @param Context $context - The context before post-order analysis
      *
