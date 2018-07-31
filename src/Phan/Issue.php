@@ -2665,7 +2665,7 @@ class Issue
                 self::CompatibleVoidTypePHP70,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
-                "Return type '{TYPE}' means the absense of a return value starting in PHP 7.1. In PHP 7.0, void refers to a class/interface with the name 'void'",
+                "Return type '{TYPE}' means the absence of a return value starting in PHP 7.1. In PHP 7.0, void refers to a class/interface with the name 'void'",
                 self::REMEDIATION_B,
                 3005
             ),
@@ -2689,7 +2689,7 @@ class Issue
                 self::CompatibleUseVoidPHP70,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_CRITICAL,
-                "Using '{TYPE}' as void will be a syntax error in PHP 7.1 (void becomes the absense of a return type).",
+                "Using '{TYPE}' as void will be a syntax error in PHP 7.1 (void becomes the absence of a return type).",
                 self::REMEDIATION_B,
                 3008
             ),

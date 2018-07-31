@@ -145,7 +145,7 @@ final class AlwaysReturnPlugin extends PluginV2 implements
 
     /**
      * @param FunctionInterface $func
-     * @return bool - Is void(absense of a return type) an acceptable return type.
+     * @return bool - Is void(absence of a return type) an acceptable return type.
      * NOTE: projects can customize this as needed.
      */
     private function returnTypeOfFunctionLikeAllowsNullNull(FunctionInterface $func) : bool

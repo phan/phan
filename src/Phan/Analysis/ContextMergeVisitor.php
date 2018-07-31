@@ -256,7 +256,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
             }
         }
 
-        // A function that determins if a variable is defined on
+        // A function that determines if a variable is defined on
         // every branch
         $is_defined_on_all_branches =
             function (string $variable_name) use ($scope_list) {

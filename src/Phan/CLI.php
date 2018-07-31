@@ -169,14 +169,14 @@ class CLI
 
         // Determine the root directory of the project from which
         // we route all relative paths passed in as args
-        $overriden_project_root_directory = $opts['d'] ?? $opts['project-root-directory'] ?? null;
-        if (\is_string($overriden_project_root_directory)) {
-            if (!\is_dir($overriden_project_root_directory)) {
-                $this->usage(\json_encode($overriden_project_root_directory) . ' is not a directory', EXIT_FAILURE);
+        $overridden_project_root_directory = $opts['d'] ?? $opts['project-root-directory'] ?? null;
+        if (\is_string($overridden_project_root_directory)) {
+            if (!\is_dir($overridden_project_root_directory)) {
+                $this->usage(\json_encode($overridden_project_root_directory) . ' is not a directory', EXIT_FAILURE);
             }
             // Set the current working directory so that relative paths within the project will work.
             // TODO: Add an option to allow searching ancestor directories?
-            \chdir($overriden_project_root_directory);
+            \chdir($overridden_project_root_directory);
         }
         $cwd = \getcwd();
         if (!is_string($cwd)) {
@@ -919,12 +919,12 @@ EOB;
     }
 
     /**
-     * Finds potentially mispelled flags and returns them as a string
+     * Finds potentially misspelled flags and returns them as a string
      *
      * This will use levenshtein distance, showing the first one or two flags
      * which match with a distance of <= 5
      *
-     * @param string $key Mispelled key to attempt to correct
+     * @param string $key Misspelled key to attempt to correct
      * @return string
      * @internal
      */

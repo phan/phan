@@ -426,7 +426,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * 2. Update the scope with the initializer of the loop,
      * 3. Update the scope with the side effects (e.g. assignments) of the condition of the loop
      * 4. Update the scope with the child statements both inside and outside the the loop (ignoring branches which will continue/break),
-     * 5. Update the scope with the statment evaluated after the loop
+     * 5. Update the scope with the statement evaluated after the loop
      *
      * Then, Phan returns the context with the modified scope.
      *

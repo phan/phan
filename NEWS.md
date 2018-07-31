@@ -583,7 +583,7 @@ After upgrading Phan, projects using phan should add a `target_php_version` sett
 New Features(CLI, Configs)
 + Add a `target_php_version` config setting, which can be set to `'7.0'`, `'7.1'`, `'7.2'`, or `null`/`'native'`. (#1174)
   This defaults to the same PHP minor version as the PHP binary used to run Phan.
-  `target_php_version` can be overriden via the CLI option `--target-php-version {7.0,7.1,7.2,native}`
+  `target_php_version` can be overridden via the CLI option `--target-php-version {7.0,7.1,7.2,native}`
 
   NOTE: This setting does not let a PHP 7.0 installation parse PHP 7.1 nullable syntax or PHP 7.1 array destructuring syntax.
 
@@ -1012,7 +1012,7 @@ New Features (Analysis)
   Infer the negation of type assertions from if statements that unconditionally throw/return/break/continue.
   (E.g. `if (!is_string($x)) { return false; } functionUsingX($x);`)
 
-  When checking if a variable is defined by all branches of an if statement, ignore branches which inconditionally throw/return/break/continue.
+  When checking if a variable is defined by all branches of an if statement, ignore branches which unconditionally throw/return/break/continue.
 + To reduce the false positives from analysis of the negation of type assertions,
   normalize nullable/boolean union types after analyzing code branches (E.g. if/else) affecting the types of those variables.
   (e.g. convert "bool|false|null" to "?bool")
@@ -1161,7 +1161,7 @@ New Features (Analysis)
 + Supports magic instance/static `@method` annotations. (Issue #467)
   This is enabled by default.
 + Change the behavior of non-quick recursion (Affects emitted issues in large projects).
-  Improve perfomance of non-quick analysis by checking for redundant analysis steps
+  Improve performance of non-quick analysis by checking for redundant analysis steps
   (E.g. calls from two different places passing the same union types for each parameter),
   continuing to recurse when passing by reference.
 + Support for checking for misuses of "@internal" annotations. Phan assumes this means it is internal to a namespace. (Issue #353)

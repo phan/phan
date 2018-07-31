@@ -146,7 +146,7 @@ class Daemon
                     // If we didn't get a connection, and it wasn't due to a signal from a child process, then stop the daemon.
                     break;
                 }
-                // We **are** the only process. Imitate the worker proces
+                // We **are** the only process. Imitate the worker process
                 $request = Request::accept(
                     $code_base,
                     $file_path_lister,

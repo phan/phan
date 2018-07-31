@@ -1022,7 +1022,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             } else {
                 $yield_key_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $yield_key_node);
             }
-            // TODO: finalize syntax to indicate the absense of a key or value (e.g. use void instead?)
+            // TODO: finalize syntax to indicate the absence of a key or value (e.g. use void instead?)
             $expected_key_type = $template_type_list[0];
             if (!$yield_key_type->asExpandedTypes($code_base)->canCastToUnionType($expected_key_type)) {
                 $this->emitIssue(
@@ -1116,7 +1116,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         if ($type_list_count > 1 && $actual_type_list_count > 1) {
-            // TODO: finalize syntax to indicate the absense of a key or value (e.g. use void instead?)
+            // TODO: finalize syntax to indicate the absence of a key or value (e.g. use void instead?)
             $yield_key_type = $actual_template_type_list[0];
             $expected_key_type = $template_type_list[0];
             if (!$yield_key_type->asExpandedTypes($code_base)->canCastToUnionType($expected_key_type)) {
