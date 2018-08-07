@@ -14,6 +14,8 @@ Backwards Incompatible Changes
 + API: Remove various methods that were deprecated. (#249)
   Any plugins using those methods will need to be updated.
   (e.g. `Config::getValue('config_value')` should be used instead of `Config::get()->config_value`)
++ Config: Remove `progress_bar_sample_rate` (#249)
+  (`progress_bar_sample_interval` should be used instead if you want the progress bar to be faster or slower)
 
 21 Jul 2018, Phan 0.12.15
 -------------------------

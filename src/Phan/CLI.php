@@ -411,7 +411,7 @@ class CLI
                         Config::setValue('daemonize_socket', $value);  // Daemonize. Assumes the file list won't change. Accepts requests over a Unix socket, or some other IPC mechanism.
                     }
                     break;
-                    // TODO: HTTP server binding to 127.0.0.1, daemonize-port.
+                    // TODO(possible idea): HTTP server binding to 127.0.0.1, daemonize-http-port.
                 case 'daemonize-tcp-host':
                     $this->checkCanDaemonize('tcp', $key);
                     Config::setValue('daemonize_tcp', true);
@@ -1115,15 +1115,10 @@ EOB;
         $time = microtime(true);
 
 
-        // Don't update every time when we're moving
-        // super fast
-        if ($p > 0.0
-            && $p < 1.0
-            && (
-                // If it hasn't been enough time and we're unlucky, then stop early
-                ($time - $previous_update_time < Config::getValue('progress_bar_sample_interval'))
-              && (rand(0, 1000) > (1000 * Config::getValue('progress_bar_sample_rate')))
-            )) {
+        // If not enough time has elapsed, then don't update the progress bar.
+        // Making the update frequency based on time (instead of the number of files)
+        // prevents the terminal from rapidly flickering while processing small files.
+        if ($time - $previous_update_time < Config::getValue('progress_bar_sample_interval')) {
             return;
         }
         $previous_update_time = $time;
