@@ -173,7 +173,7 @@ class TolerantASTConverter
     {
         if (PHP_VERSION_ID >= 70300) {
             // TODO: Remove after upgrading to tolerant-php-parser 0.0.13 (https://github.com/Microsoft/tolerant-php-parser/pull/250)
-            with_disabled_phan_error_handler(function() {
+            with_disabled_phan_error_handler(function () {
                 @class_exists(\Microsoft\PhpParser\PhpTokenizer::class);
                 @class_exists(\Microsoft\PhpParser\Parser::class);
             });

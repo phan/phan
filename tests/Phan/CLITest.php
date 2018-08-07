@@ -15,8 +15,9 @@ class CLITest extends BaseTest
         $this->assertSame($expected_message, CLI::getFlagSuggestionString($flag));
     }
 
-    public function getFlagSuggestionStringProvider() {
-        $wrap_suggestion = function(string $text) {
+    public function getFlagSuggestionStringProvider()
+    {
+        $wrap_suggestion = function (string $text) {
             return " (did you mean $text?)";
         };
         return [

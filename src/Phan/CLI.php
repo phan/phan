@@ -618,7 +618,7 @@ class CLI
         }
         if ($opt === '--daemonize-socket' && Config::getValue('daemonize_tcp')) {
             $this->usage('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
-        } else if (($opt === '--daemonize-tcp-host' || $opt === '--daemonize-tcp-port') && Config::getValue('daemonize_socket')) {
+        } elseif (($opt === '--daemonize-tcp-host' || $opt === '--daemonize-tcp-port') && Config::getValue('daemonize_socket')) {
             $this->usage("Can specify --daemonize-socket or $opt only once", 1);
         }
     }
