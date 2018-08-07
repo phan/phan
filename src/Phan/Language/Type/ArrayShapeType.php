@@ -177,12 +177,6 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return $this->generic_array_element_union_type ?? ($this->generic_array_element_union_type = UnionType::merge($this->field_types));
     }
 
-    public function genericArrayElementType() : Type
-    {
-        // FIXME Deprecate genericArrayElementType
-        return MixedType::instance(false);
-    }
-
     /**
      * @override
      * @param Type[] $target_type_set

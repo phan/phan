@@ -2062,10 +2062,10 @@ class UnionType implements \Serializable
         $type_set = $this->type_set;
         foreach ($type_set as $type) {
             if ($type instanceof GenericArrayInterface) {
-                if ($type instanceof ArrayShapeType) {
-                    $builder->addUnionType($type->genericArrayElementUnionType());
-                } else {
+                if ($type instanceof GenericArrayType) {
                     $builder->addType($type->genericArrayElementType());
+                } else {
+                    $builder->addUnionType($type->genericArrayElementUnionType());
                 }
             }
         }
