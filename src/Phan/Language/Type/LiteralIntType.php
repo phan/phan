@@ -27,17 +27,6 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
 
     /**
      * @return LiteralIntType
-     * @deprecated
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    // phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps
-    public static function instance_for_value(int $value, bool $is_nullable)
-    {
-        return self::instanceForValue($value, $is_nullable);
-    }
-
-    /**
-     * @return LiteralIntType
      */
     public static function instanceForValue(int $value, bool $is_nullable)
     {

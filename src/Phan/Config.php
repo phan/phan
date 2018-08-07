@@ -9,6 +9,9 @@ namespace Phan;
  * Some configuration can be overridden on the command line.
  * See `./phan -h` for command line usage, or take a
  * look at \Phan\CLI.php for more details on CLI usage.
+ *
+ * For efficiency, all of these methods are static methods.
+ * Configuration is fetched frequently, and static methods were much faster than magic __get().
  */
 class Config
 {
@@ -782,7 +785,7 @@ class Config
     ];
 
     /**
-     * Disallow the constructor to force a singleton
+     * Disallow the constructor.
      */
     private function __construct()
     {
@@ -813,26 +816,19 @@ class Config
     }
 
     /**
-     * @return Config
-     * Get a Configuration singleton
-     */
-    public static function get() : Config
-    {
-        static $instance;
-
-        if ($instance) {
-            return $instance;
-        }
-
-        $instance = new Config();
-        $instance->init();
-        return $instance;
-    }
-
-    /**
      * @return void
      */
-    private function init()
+    public static function init()
+    {
+        static $did_init = false;
+        if ($did_init) {
+            return;
+        }
+        $did_init = true;
+        self::init_once();
+    }
+
+    private static function init_once()
     {
         // Trigger magic setters
         foreach (self::$configuration as $name => $v) {
@@ -905,37 +901,20 @@ class Config
 
     /**
      * @return mixed
-     * @deprecated
-     */
-    public function __get(string $name)
-    {
-        return self::getValue($name);
-    }
-
-    /**
-     * @return mixed
      */
     public static function getValue(string $name)
     {
         return self::$configuration[$name];
     }
 
+    /**
+     * @internal - this should only be used in unit tests.
+     */
     public static function reset()
     {
         self::$configuration = self::DEFAULT_CONFIGURATION;
         // Trigger magic behavior
-        self::get()->init();
-    }
-
-    /**
-     * @param string $name
-     * @param mixed $value
-     * @return void
-     * @deprecated
-     */
-    public function __set(string $name, $value)
-    {
-        self::setValue($name, $value);
+        self::init_once();
     }
 
     /**
@@ -1032,4 +1011,4 @@ class Config
 }
 
 // Call init() to trigger the magic setters.
-Config::get();
+Config::init();

@@ -957,12 +957,6 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
-    /** @override */
-    public function withFlattenedArrayShapeTypeInstances() : UnionType
-    {
-        return $this;
-    }
-
     public function hasPossiblyObjectTypes() : bool
     {
         return false;

@@ -11,6 +11,9 @@ Backwards Incompatible Changes
 
   - `AnalyzeNodeCapability`, `LegacyAnalyzeNodeCapability`, `LegacyPostAnalyzeNodeCapability` (use `PostAnalyzeNodeCapability` instead)
   - `LegacyPreAnalyzeNodeCapability` (use `PreAnalyzeNodeCapability` instead)
++ API: Remove various methods that were deprecated. (#249)
+  Any plugins using those methods will need to be updated.
+  (e.g. `Config::getValue('config_value')` should be used instead of `Config::get()->config_value`)
 
 21 Jul 2018, Phan 0.12.15
 -------------------------
