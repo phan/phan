@@ -1,7 +1,16 @@
 Phan NEWS
 
-?? ??? 2018, Phan 0.12.16 (dev)
--------------------------
+?? ??? 2018, Phan 1.0.0 (dev)
+-----------------------
+
+Backwards Incompatible Changes
++ Plugins: Remove V1 plugins (and V1 plugin examples), as well as legacy plugin capabilities. (#249)
+  Third party plugin authors should be using V2 of the plugin system.
+
+  Removed capabilities:
+
+  - `AnalyzeNodeCapability`, `LegacyAnalyzeNodeCapability`, `LegacyPostAnalyzeNodeCapability` (use `PostAnalyzeNodeCapability` instead)
+  - `LegacyPreAnalyzeNodeCapability` (use `PreAnalyzeNodeCapability` instead)
 
 21 Jul 2018, Phan 0.12.15
 -------------------------

@@ -10,6 +10,8 @@ use Phan\AST\Visitor\Element;
  * (which will run all of the plugins)
  *
  * - If no closures were added for a given node kind, then there will be no entry in that array.
+ *
+ * @internal
  */
 class ClosuresForKind
 {
@@ -46,15 +48,6 @@ class ClosuresForKind
         foreach ($kinds as $kind) {
             $this->record($kind, $c);
         }
-    }
-
-    /**
-     * Record the fact that a Closure needs to be executed for all possible valid values of Node->kind
-     * @param \Closure $c - The closure to execute on all valid values of Node->kind
-     */
-    public function recordForAllKinds(\Closure $c)
-    {
-        $this->recordForKinds(\array_keys(Element::VISIT_LOOKUP_TABLE), $c);
     }
 
     /**
