@@ -146,14 +146,6 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
             ));
     }
 
-    /**
-     * @unused (hopefully)
-     */
-    public function genericArrayElementType() : Type
-    {
-        return MixedType::instance(false);
-    }
-
     public function __toString() : string
     {
         $string = 'array<' . \implode('|', $this->element_types) . '>';

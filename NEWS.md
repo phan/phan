@@ -1,7 +1,21 @@
 Phan NEWS
 
-?? ??? 2018, Phan 0.12.16 (dev)
--------------------------
+?? ??? 2018, Phan 1.0.0 (dev)
+-----------------------
+
+Backwards Incompatible Changes
++ Plugins: Remove V1 plugins (and V1 plugin examples), as well as legacy plugin capabilities. (#249)
+  Third party plugin authors should be using V2 of the plugin system.
+
+  Removed capabilities:
+
+  - `AnalyzeNodeCapability`, `LegacyAnalyzeNodeCapability`, `LegacyPostAnalyzeNodeCapability` (use `PostAnalyzeNodeCapability` instead)
+  - `LegacyPreAnalyzeNodeCapability` (use `PreAnalyzeNodeCapability` instead)
++ API: Remove various methods that were deprecated. (#249)
+  Any plugins using those methods will need to be updated.
+  (e.g. `Config::getValue('config_value')` should be used instead of `Config::get()->config_value`)
++ Config: Remove `progress_bar_sample_rate` (#249)
+  (`progress_bar_sample_interval` should be used instead if you want the progress bar to be faster or slower)
 
 21 Jul 2018, Phan 0.12.15
 -------------------------

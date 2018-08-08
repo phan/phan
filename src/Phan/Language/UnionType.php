@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
-use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
@@ -30,7 +29,6 @@ use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
-use ast\Node;
 use Closure;
 use Generator;
 
@@ -331,44 +329,6 @@ class UnionType implements \Serializable
             }  // otherwise ignore unparseable data such as ">" (should be impossible)
         }
         return $results;
-    }
-
-    /**
-     * @param Context $context
-     * The context of the parser at the node for which we'd
-     * like to determine a type
-     *
-     * @param CodeBase $code_base
-     * The code base within which we're operating
-     *
-     * @param Node|string|bool|int|float|null $node
-     * The node for which we'd like to determine its type
-     *
-     * @param bool $should_catch_issue_exception
-     * Set to true to cause loggable issues to be thrown
-     * instead of emitted as issues to the log.
-     *
-     * @return UnionType
-     *
-     * @throws IssueException
-     * If $should_catch_issue_exception is false an IssueException may
-     * be thrown for optional issues.
-     *
-     * @deprecated - Use UnionTypeVisitor::unionTypeFromNode
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    public static function fromNode(
-        Context $context,
-        CodeBase $code_base,
-        $node,
-        bool $should_catch_issue_exception = true
-    ) : UnionType {
-        return UnionTypeVisitor::unionTypeFromNode(
-            $code_base,
-            $context,
-            $node,
-            $should_catch_issue_exception
-        );
     }
 
     /**
@@ -2102,10 +2062,10 @@ class UnionType implements \Serializable
         $type_set = $this->type_set;
         foreach ($type_set as $type) {
             if ($type instanceof GenericArrayInterface) {
-                if ($type instanceof ArrayShapeType) {
-                    $builder->addUnionType($type->genericArrayElementUnionType());
-                } else {
+                if ($type instanceof GenericArrayType) {
                     $builder->addType($type->genericArrayElementType());
+                } else {
+                    $builder->addUnionType($type->genericArrayElementUnionType());
                 }
             }
         }
@@ -2603,15 +2563,6 @@ class UnionType implements \Serializable
             }
         }
         return false;
-    }
-
-    /**
-     * @deprecated alias of withFlattenedArrayShapeOrLiteralTypeInstances
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    public function withFlattenedArrayShapeTypeInstances() : UnionType
-    {
-        return $this->withFlattenedArrayShapeOrLiteralTypeInstances();
     }
 
     /**

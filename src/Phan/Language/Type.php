@@ -1362,20 +1362,6 @@ class Type
     }
 
     /**
-     * @return FullyQualifiedClassName
-     * A fully-qualified class name derived from this type
-     * (This differs from asFQSEN() in ClosureType)
-     *
-     * @deprecated
-     * @suppress PhanUnreferencedPublicMethod (just use FullyQualifiedClassName::fromType($this))
-     */
-    public function asClassFQSEN() : FullyQualifiedClassName
-    {
-        // Note: some subclasses, such as CallableType, return different subtypes of FQSEN
-        return FullyQualifiedClassName::fromType($this);
-    }
-
-    /**
      * @return string
      * The name associated with this type
      */
@@ -2529,15 +2515,6 @@ class Type
     {
         // Could check for final classes such as stdClass here, but not much of a reason to.
         return true;
-    }
-
-    /**
-     * @deprecated - Use withFlattenedArrayShapeOrLiteralTypeInstances
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    final public function withFlattenedArrayShapeInstances() : array
-    {
-        return $this->withFlattenedArrayShapeOrLiteralTypeInstances();
     }
 
     /**

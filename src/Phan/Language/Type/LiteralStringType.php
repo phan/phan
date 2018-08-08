@@ -33,17 +33,6 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
 
     /**
      * @return StringType|LiteralStringType
-     * @deprecated
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    // phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps
-    public static function instance_for_value(string $value, bool $is_nullable)
-    {
-        return self::instanceForValue($value, $is_nullable);
-    }
-
-    /**
-     * @return StringType|LiteralStringType
      */
     public static function instanceForValue(string $value, bool $is_nullable)
     {

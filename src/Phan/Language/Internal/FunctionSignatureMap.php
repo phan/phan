@@ -48,7 +48,7 @@ namespace Phan\Language\Internal;
  *
  * - This started using array shapes for union types (array{...}).
  *
- *   \Phan\Language\UnionType->withFlattenedArrayShapeTypeInstances() may be of help to programatically convert these to array<string,T1>|array<string,T2>
+ *   \Phan\Language\UnionType->withFlattenedArrayShapeOrLiteralTypeInstances() may be of help to programatically convert these to array<string,T1>|array<string,T2>
  *
  * - This started using array shapes with optional fields for union types (array{key?:int}).
  *   A `?` after the array shape field's key indicates that the field is optional.

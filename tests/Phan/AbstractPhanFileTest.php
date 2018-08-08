@@ -30,7 +30,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     {
         parent::setUpBeforeClass();
         // Reset the config file
-        Config::reset();
+        Config::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
         // Clear the plugins
         ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
     }
@@ -39,7 +39,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     {
         parent::tearDownAfterClass();
         // Reset the config file
-        Config::reset();
+        Config::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
         // Clear the plugins
         ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
     }

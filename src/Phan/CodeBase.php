@@ -876,18 +876,6 @@ class CodeBase
 
     /**
      * @return Map
-     * A list of all classes
-     *
-     * @deprecated - use hasClassWithFQSEN and getClassByFQSEN or getUserDefinedClassMap instead
-     */
-    public function getClassMap() : Map
-    {
-        $this->getInternalClassMap(); // Force initialization of remaining internal php classes
-        return $this->fqsen_class_map;
-    }
-
-    /**
-     * @return Map
      * A map from FQSENs to classes which are internal.
      */
     public function getUserDefinedClassMap() : Map
@@ -1007,9 +995,9 @@ class CodeBase
      * @return Set
      * The set of all methods and functions
      *
-     * @deprecated - Use getFunctionMap and getMethodSet instead, this is slow and may be removed in a future release.
+     * @internal - this is slow and should be used only for debugging.
      */
-    public function getFunctionAndMethodSet() : Set
+    private function getFunctionAndMethodSet() : Set
     {
         $set = clone($this->method_set);
         foreach ($this->fqsen_func_map as $value) {
