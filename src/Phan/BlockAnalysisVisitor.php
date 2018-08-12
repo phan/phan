@@ -12,6 +12,7 @@ use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\PreOrderAnalysisVisitor;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment;
+use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Type;
@@ -240,7 +241,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     const PHAN_FILE_SUPPRESS_REGEX =
-        '/@phan-file-suppress\s+' . Comment::SUPPRESS_ISSUE_LIST . '/';
+        '/@phan-file-suppress\s+' . Builder::SUPPRESS_ISSUE_LIST . '/';  // @phan-suppress-current-line PhanAccessClassConstantInternal
 
 
     const PHAN_VAR_REGEX =
