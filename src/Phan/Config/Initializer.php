@@ -491,6 +491,8 @@ EOT;
             return $node->kind !== \ast\AST_ECHO || !is_string($node->children['expr']);
         } catch (\ParseError $_) {
             return false;
+        } catch (\CompileError $_) {
+            return false;
         } catch (\Phan\AST\TolerantASTConverter\ParseException $_) {
             return false;
         }

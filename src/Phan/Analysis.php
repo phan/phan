@@ -23,8 +23,10 @@ use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
 
 use ast\Node;
+use CompileError;
 use InvalidArgumentException;
 use ParseError;
+use Throwable;
 
 /**
  * This class is the entry point into the static analyzer.
@@ -99,6 +101,8 @@ class Analysis
         try {
             $node = Parser::parseCode($code_base, $context, null, $file_path, $file_contents, $suppress_parse_errors);
         } catch (ParseError $e) {
+            return $context;
+        } catch (CompileError $e) {
             return $context;
         } catch (ParseException $e) {
             return $context;
@@ -482,18 +486,15 @@ class Analysis
                 $code_base,
                 $context,
                 Issue::SyntaxError,
-                $parse_error->getLineNumberStart(),
+                $parse_error->getLineNumberStart(),  // getLineNumberStart() is what differs from emitSyntaxError
                 $parse_error->getMessage()
             );
             return $context;
         } catch (ParseError $parse_error) {
-            Issue::maybeEmit(
-                $code_base,
-                $context,
-                Issue::SyntaxError,
-                $parse_error->getLine(),
-                $parse_error->getMessage()
-            );
+            self::emitSyntaxError($code_base, $context, $parse_error);
+            return $context;
+        } catch (CompileError $parse_error) {
+            self::emitSyntaxError($code_base, $context, $parse_error);
             return $context;
         }
 
@@ -514,13 +515,8 @@ class Analysis
                 // Transform the original AST, and if successful, then analyze the new AST instead of the original
                 $node = ASTSimplifier::applyStatic($node);
             } catch (\Exception $e) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::SyntaxError,  // Not the right kind of error. I don't think it would throw, anyway.
-                    $e->getLine(),
-                    $e->getMessage()
-                );
+                // Not the right kind of Issue to show to the user. I don't think it would throw, anyway.
+                self::emitSyntaxError($code_base, $context, $e);
             }
         }
         PhanAnnotationAdder::applyFull($node);
@@ -532,5 +528,22 @@ class Analysis
 
         ConfigPluginSet::instance()->afterAnalyzeFile($code_base, $context, $file_contents, $node);
         return $context;
+    }
+
+    /**
+     * @return void
+     */
+    private static function emitSyntaxError(
+        CodeBase $code_base,
+        Context $context,
+        Throwable $e
+    ) {
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            Issue::SyntaxError,
+            $e->getLine(),
+            $e->getMessage()
+        );
     }
 }

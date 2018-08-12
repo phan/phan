@@ -33,6 +33,8 @@ do {
         eval($input . ';');
     } catch (\ParseError $exception) {
         print "Parse error in `$input`\n";
+    } catch (\CompileError $exception) {
+        print "Compile error in `$input`\n";
     } catch (\Throwable $exception) {
         print $exception->getMessage() . "\n";
         print $exception->getTraceAsString() . "\n";
