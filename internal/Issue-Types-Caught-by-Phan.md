@@ -371,13 +371,13 @@ Using '{TYPE}' as object will be a syntax error in PHP 7.2 (object becomes a nat
 ## PhanCompatibleUseVoidPHP70
 
 ```
-Using '{TYPE}' as void will be a syntax error in PHP 7.1 (void becomes the absence of a return type).
+Using '{TYPE}' as void will be a syntax error in PHP 7.1 (void becomes the absense of a return type).
 ```
 
 ## PhanCompatibleVoidTypePHP70
 
 ```
-Return type '{TYPE}' means the absence of a return value starting in PHP 7.1. In PHP 7.0, void refers to a class/interface with the name 'void'
+Return type '{TYPE}' means the absense of a return value starting in PHP 7.1. In PHP 7.0, void refers to a class/interface with the name 'void'
 ```
 
 # Context
@@ -2326,7 +2326,7 @@ Cannot access internal property {PROPERTY} of namespace {NAMESPACE} defined at {
 
 # CommentError
 
-This is emitted for some (but not all) comments which Phan thinks are invalid or unparseable.
+This is emitted for some (but not all) comments which Phan thinks are invalid or unparsable.
 
 ## PhanCommentOverrideOnNonOverrideConstant
 
@@ -2430,5 +2430,5 @@ Constant expression contains invalid operations
 
 ## PhanSyntaxError
 
-This emits warnings for unparseable PHP files (detected by `php-ast`).
-Note: This is not the same thing as running `php -l` on a file - PhanSyntaxError checks for syntax errors, but not sematics such as where certain expressions can occur (Which `php -l` would check for).
+This emits warnings for unparsable PHP files (detected by `php-ast`).
+Note: This is not the same thing as running `php -l` on a file - PhanSyntaxError checks for syntax errors, but not semantics such as where certain expressions can occur (Which `php -l` would check for).
