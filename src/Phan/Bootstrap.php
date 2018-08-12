@@ -101,6 +101,7 @@ if (!class_exists(CompileError::class)) {
      *
      * @suppress PhanRedefineClassInternal
      */
-    class CompileError extends Error {
+    class CompileError extends Error
+    {
     }
 }

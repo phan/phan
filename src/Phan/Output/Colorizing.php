@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Phan\Output;
 
@@ -113,6 +114,9 @@ class Colorizing
                 return '(MISSING)';
             }
             $arg = $template_parameters[$j];
+            if (\is_object($arg)) {
+                $arg = (string)$arg;
+            }
             $format_str = $matches[0];
             if ($format_str[0] === '%') {
                 return sprintf($format_str, $arg);
