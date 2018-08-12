@@ -21,7 +21,7 @@ With Phan installed, you'll want to [create a `.phan/config.php` file](https://g
 your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
 
 This version (branch) of Phan depends on PHP 7.x with the [php-ast](https://github.com/nikic/php-ast) extension (0.1.5 or newer, uses AST version 50) and supports PHP version 7.0-7.2 syntax.
-The master branch is the basis for the 0.12.x releases.
+The master branch is the basis for the 1.x.y releases.
 Installation instructions for php-ast can be found [here](https://github.com/nikic/php-ast#installation).
 Having PHP's `pcntl` extension installed is strongly recommended (not available on Windows), in order to support using parallel processes for analysis
 (`pcntl` is recommended for daemon mode and LSP to work efficiently, but both should work without that extension).
@@ -69,7 +69,7 @@ Phan is able to perform the following kinds of analysis.
 * Supports [magic @method annotations](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code#method) (`@method <union_type> <method_name>(<union_type> <param1_name>)`)
 * Supports [`class_alias` annotations (experimental, off by default)](https://github.com/phan/phan/pull/586)
 * Supports indicating the class to which a closure will be bound, via `@phan-closure-scope` ([example](tests/files/src/0264_closure_override_context.php))
-* Supports analysis of closures and return types passed to `array_map`, `array_filter`, and other internal array functions. (as of Phan 0.10.1+/0.8.9+)
+* Supports analysis of closures and return types passed to `array_map`, `array_filter`, and other internal array functions.
 * Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
 * Can be run on many cores. (requires `pcntl`)
 * [Can run in the background (daemon mode)](https://github.com/phan/phan/wiki/Using-Phan-Daemon-Mode), to then quickly respond to requests to analyze the latest version of a file.
@@ -103,7 +103,7 @@ Additional analysis features have been provided by [plugins](https://github.com/
 - [Checking coding style conventions](https://github.com/phan/phan/tree/master/.phan/plugins#3-plugins-specific-to-code-styles)
 - [Others](https://github.com/phan/phan/tree/master/.phan/plugins#plugins)
 
-Example: [Phan's plugins for self-analysis.](https://github.com/phan/phan/blob/0.12.12/.phan/config.php#L521-L529)
+Example: [Phan's plugins for self-analysis.](https://github.com/phan/phan/blob/1.0.0/.phan/config.php#L542-L563)
 
 # Usage
 

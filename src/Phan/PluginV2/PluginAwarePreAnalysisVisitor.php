@@ -20,5 +20,10 @@ namespace Phan\PluginV2;
  */
 abstract class PluginAwarePreAnalysisVisitor extends PluginAwareBaseAnalysisVisitor
 {
-    // For backwards compatibility reasons, parent_node isn't available in PreAnalysis visitors
+    // Subclasses should declare protected $parent_node_list as an instance property if they need to know the list.
+
+    // @var array<int,Node> - Set after the constructor is called if an instance property with this name is declared
+    // protected $parent_node_list;
+
+    // Implementations should omit the constructor or call parent::__construct(CodeBase $code_base, Context $context)
 }

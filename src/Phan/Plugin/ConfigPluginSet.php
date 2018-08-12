@@ -50,10 +50,11 @@ use Phan\PluginV2\SuppressionCapability;
 use Phan\Suggestion;
 
 use Closure;
-use ast\Node;
 use ReflectionException;
 use ReflectionProperty;
+use Throwable;
 use UnusedSuppressionPlugin;
+use ast\Node;
 
 /**
  * The root plugin that calls out each hook
@@ -137,16 +138,43 @@ final class ConfigPluginSet extends PluginV2 implements
     /**
      * @return ConfigPluginSet
      * A shared single instance of this plugin
-     * @suppress PhanDeprecatedInterface
      */
     public static function instance() : ConfigPluginSet
     {
         static $instance = null;
         if ($instance === null) {
-            $instance = new self();
-            $instance->ensurePluginsExist();
+            $instance = self::new_instance();
         }
         return $instance;
+    }
+
+    /**
+     * Returns a brand new ConfigPluginSet where all plugins are initialized.
+     *
+     * If one of the plugins could not be instantiated, this prints an error message and terminates the program.
+     *
+     * @suppress PhanDeprecatedInterface
+     */
+    private static function new_instance() : ConfigPluginSet
+    {
+        try {
+            $instance = new self();
+            $instance->ensurePluginsExist();
+            return $instance;
+        } catch (Throwable $e) {
+            // An unexpected error.
+            // E.g. a third party plugin class threw when building the list of return types to analyze.
+            $message = sprintf(
+                "Failed to initialize plugins, exiting: %s: %s at %s:%d\nStack Trace:\n%s",
+                get_class($e),
+                $e->getMessage(),
+                $e->getFile(),
+                $e->getLine(),
+                $e->getTraceAsString()
+            );
+            error_log($message);
+            exit(EXIT_FAILURE);
+        }
     }
 
     /**
@@ -645,8 +673,23 @@ final class ConfigPluginSet extends PluginV2 implements
                     $plugin_file_name = __DIR__ . '/../../../.phan/plugins/' . $plugin_file_name . '.php';
                 }
 
-                $plugin_instance =
-                    require($plugin_file_name);
+                try {
+                    $plugin_instance = require($plugin_file_name);
+                } catch (Throwable $e) {
+                    // An unexpected error.
+                    // E.g. a plugin class threw a SyntaxError because it required PHP 7.1 or newer but 7.0 was used.
+                    $message = sprintf(
+                        "Failed to initialize plugin %s, exiting: %s: %s at %s:%d\nStack Trace:\n%s",
+                        $plugin_file_name,
+                        get_class($e),
+                        $e->getMessage(),
+                        $e->getFile(),
+                        $e->getLine(),
+                        $e->getTraceAsString()
+                    );
+                    error_log($message);
+                    exit(EXIT_FAILURE);
+                }
 
                 \assert(
                     !empty($plugin_instance),
@@ -756,15 +799,8 @@ final class ConfigPluginSet extends PluginV2 implements
                 )
             );
         }
-        /**
-         * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
-         *
-         * @phan-closure-scope PluginAwarePreAnalysisVisitor
-         */
-        $closure = (static function (CodeBase $code_base, Context $context, Node $node) {
-            $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
-            return (new static($code_base, $context))->{$fn_name}($node);
-        })->bindTo(null, $plugin_analysis_class);
+        // @see PreAnalyzeNodeCapability (magic to create parent_node_list)
+        $closure = self::getGenericClosureForPluginAwarePreAnalysisVisitor($plugin_analysis_class);
         $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
         if (\count($handled_node_kinds) === 0) {
             fprintf(
@@ -776,6 +812,47 @@ final class ConfigPluginSet extends PluginV2 implements
             );
         }
         $closures_for_kind->recordForKinds($handled_node_kinds, $closure);
+    }
+
+    /**
+     * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
+     *
+     * @return Closure(CodeBase,Context,Node,array=)
+     */
+    private static function getGenericClosureForPluginAwarePreAnalysisVisitor(string $plugin_analysis_class) : Closure
+    {
+        try {
+            new ReflectionProperty($plugin_analysis_class, 'parent_node_list');
+            $has_parent_node_list = true;
+        } catch (ReflectionException $_) {
+            $has_parent_node_list = false;
+        }
+
+        if ($has_parent_node_list) {
+            /**
+             * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
+             *
+             * @phan-closure-scope PluginAwarePreAnalysisVisitor
+             */
+            return (static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) {
+                $visitor = new static($code_base, $context);
+                // @phan-suppress-next-line PhanUndeclaredProperty checked via $has_parent_node_list
+                $visitor->parent_node_list = $parent_node_list;
+                $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
+                $visitor->{$fn_name}($node);
+            })->bindTo(null, $plugin_analysis_class);
+        } else {
+            /**
+             * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
+             *
+             * @phan-closure-scope PluginAwarePreAnalysisVisitor
+             */
+            return (static function (CodeBase $code_base, Context $context, Node $node, array $unused_parent_node_list = []) {
+                $visitor = new static($code_base, $context);
+                $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
+                $visitor->{$fn_name}($node);
+            })->bindTo(null, $plugin_analysis_class);
+        }
     }
 
 
@@ -835,6 +912,8 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
+     * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
+     *
      * @return Closure(CodeBase,Context,Node,array=)
      */
     private static function getGenericClosureForPluginAwarePostAnalysisVisitor(string $plugin_analysis_class) : Closure
