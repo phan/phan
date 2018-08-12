@@ -90,3 +90,17 @@ function phan_error_handler($errno, $errstr, $errfile, $errline)
     exit(EXIT_FAILURE);
 }
 set_error_handler('phan_error_handler');
+
+if (!class_exists(CompileError::class)) {
+    /**
+     * For self-analysis, add CompileError if it was not already declared.
+     *
+     * In PHP 7.3, a new CompileError class was introduced, and ParseError was turned into a subclass of CompileError.
+     *
+     * Phan handles both of those separately, so that Phan will work with 7.0-7.3.
+     *
+     * @suppress PhanRedefineClassInternal
+     */
+    class CompileError extends Error {
+    }
+}
