@@ -1,11 +1,16 @@
 Phan NEWS
 
-?? ??? 2018, Phan 1.0.0 (dev)
+12 Aug 2018, Phan 1.0.0
 -----------------------
 
-Backwards Incompatible Changes
+The Phan 1.0.0 release supports analysis of php 7.0-7.2, and can be executed with php 7.0+.
+This release replaces the previous 0.12.x releases.
+Because Phan uses PHP's Reflection APIs, it's recommended to use the same PHP minor version for analyzing the code as would be used to run the code.
+(For the small number of function/method signatures, etc., that were added or changed in each minor release of PHP.)
+
+Plugins:
 + Plugins: Remove V1 plugins (and V1 plugin examples), as well as legacy plugin capabilities. (#249)
-  Third party plugin authors should be using V2 of the plugin system.
+  Third party plugin authors must use V2 of the plugin system.
 
   Removed capabilities:
 
@@ -13,9 +18,11 @@ Backwards Incompatible Changes
   - `LegacyPreAnalyzeNodeCapability` (use `PreAnalyzeNodeCapability` instead)
 + API: Remove various methods that were deprecated. (#249)
   Any plugins using those methods will need to be updated.
-  (e.g. `Config::getValue('config_value')` should be used instead of `Config::get()->config_value`)
+  (e.g. `Config::getValue('config_value')` must be used instead of `Config::get()->config_value`)
 + Config: Remove `progress_bar_sample_rate` (#249)
-  (`progress_bar_sample_interval` should be used instead if you want the progress bar to be faster or slower)
+  (`progress_bar_sample_interval` must be used instead if you want the progress bar to be faster or slower)
++ Maintenance: Immediately report the exception and exit if any plugins threw an uncaught `Throwable` during initialization.
+  (E.g. this results in a better error message when a third party plugin requires PHP 7.1 syntax but PHP 7.0 is used to run Phan)
 
 21 Jul 2018, Phan 0.12.15
 -------------------------

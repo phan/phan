@@ -153,7 +153,7 @@ return [
     // This setting maps case insensitive strings to union types.
     // This is useful if a project uses phpdoc that differs from the phpdoc2 standard.
     // If the corresponding value is the empty string, Phan will ignore that union type (E.g. can ignore 'the' in `@return the value`)
-    // If the corresponding value is not empty, Phan will act as though it saw the corresponding unionTypes(s) when the keys show up in a UnionType of @param, @return, @var, @property, etc.
+    // If the corresponding value is not empty, Phan will act as though it saw the corresponding union type when the keys show up in a UnionType of @param, @return, @var, @property, etc.
     //
     // This matches the **entire string**, not parts of the string.
     // (E.g. `@return the|null` will still look for a class with the name `the`, but `@return the` will be ignored with the below setting)
@@ -544,7 +544,6 @@ return [
         'DemoPlugin',
         'DollarDollarPlugin',
         'UnreachableCodePlugin',
-        // NOTE: src/Phan/Language/Internal/FunctionSignatureMap.php mixes value without keys (as return type) with values having keys deliberately.
         'DuplicateArrayKeyPlugin',
         'PregRegexCheckerPlugin',
         'PrintfCheckerPlugin',
@@ -555,7 +554,7 @@ return [
         // Using this can cause phan's overall analysis time to more than double.
         // 'InvokePHPNativeSyntaxCheckPlugin',
 
-        // 'PHPUnitNotDeadCodePlugin',  // Marks phpunit test case subclasses and test cases as refernced code. only useful for runs when dead code detection is enabled
+        // 'PHPUnitNotDeadCodePlugin',  // Marks PHPUnit test case subclasses and test cases as referenced code. This is only useful for runs when dead code detection is enabled.
 
         // NOTE: This plugin only produces correct results when
         //       Phan is run on a single core (-j1).
