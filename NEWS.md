@@ -3,6 +3,12 @@ Phan NEWS
 ?? ??? 2018, Phan 1.0.1 (dev)
 -----------------------
 
+New features(CLI,Configs)
++ Support setting a `target_php_version` of PHP 7.3 in config file or through `--target-php-version`.
+
+New features(Analysis)
++ Add function signatures for functions added/modified in PHP 7.3. (#1537)
+
 Bug fixes:
 + Properly handle `CompileError` (that are not the subclass `ParseError`). CompileError was added in PHP 7.3.
   (Phan now logs these the same way it would log other syntax errors, instead of treating this like an unexpected Error.)

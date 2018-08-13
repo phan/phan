@@ -102,10 +102,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         );
 
         $var_node = $node->children['var'];
-        \assert(
-            $var_node instanceof Node,
-            "Expected left side of assignment to be a var"
-        );
+        if (!($var_node instanceof Node)) {
+            // Give up, this should be impossible except with the fallback
+            $this->emitIssue(
+                Issue::InvalidNode,
+                $node->lineno ?? 0,
+                "Expected left side of assignment to be a variable"
+            );
+            return $this->context;
+        }
 
         if ($right_type->isType(VoidType::instance(false))) {
             $this->emitIssue(

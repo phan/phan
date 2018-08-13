@@ -2287,6 +2287,13 @@ class UnionType implements \Serializable
         if (!$php72_map) {
             $php72_map = self::computeLatestFunctionSignatureMap();
         }
+        if ($target_php_version >= 70300) {
+            static $php73_map = [];
+            if (!$php73_map) {
+                $php73_map = self::computePHP73FunctionSignatureMap($php72_map);
+            }
+            return $php73_map;
+        }
         if ($target_php_version >= 70200) {
             return $php72_map;
         }
@@ -2318,6 +2325,16 @@ class UnionType implements \Serializable
      * @param array<string,array<int|string,string>> $php72_map
      * @return array<string,array<int|string,string>>
      */
+    private static function computePHP73FunctionSignatureMap(array $php72_map) : array
+    {
+        $delta_raw = require(__DIR__ . '/Internal/FunctionSignatureMap_php73_delta.php');
+        return self::applyDeltaToGetNewerSignatures($php72_map, $delta_raw);
+    }
+
+    /**
+     * @param array<string,array<int|string,string>> $php72_map
+     * @return array<string,array<int|string,string>>
+     */
     private static function computePHP71FunctionSignatureMap(array $php72_map) : array
     {
         $delta_raw = require(__DIR__ . '/Internal/FunctionSignatureMap_php72_delta.php');
@@ -2332,6 +2349,21 @@ class UnionType implements \Serializable
     {
         $delta_raw = require(__DIR__ . '/Internal/FunctionSignatureMap_php71_delta.php');
         return self::applyDeltaToGetOlderSignatures($php71_map, $delta_raw);
+    }
+
+    /**
+     * @param array<string,array<int|string,string>> $older_map
+     * @param array{new:array<string,array<int|string,string>>,old:array<string,array<int|string,string>>} $delta
+     * @return array<string,array<int|string,string>>
+     *
+     * @see applyDeltaToGetOlderSignatures - This is doing the exact same thing in reverse.
+     */
+    private static function applyDeltaToGetNewerSignatures(array $older_map, array $delta) : array
+    {
+        return self::applyDeltaToGetOlderSignatures($older_map, [
+            'old' => $delta['new'],
+            'new' => $delta['old'],
+        ]);
     }
 
     /**

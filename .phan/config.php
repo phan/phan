@@ -25,7 +25,7 @@ use \Phan\Issue;
  * '-d' flag.
  */
 return [
-    // Supported values: '7.0', '7.1', '7.2', null.
+    // Supported values: '7.0', '7.1', '7.2', '7.3', null.
     // If this is set to null,
     // then Phan assumes the PHP version which is closest to the minor version
     // of the php executable used to execute phan.
