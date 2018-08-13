@@ -77,7 +77,7 @@ class Config
     private static $closest_target_php_version_id;
 
     const DEFAULT_CONFIGURATION = [
-        // Supported values: '7.0', '7.1', '7.2', null.
+        // Supported values: '7.0', '7.1', '7.2', '7.3', null.
         // If this is set to null,
         // then Phan assumes the PHP version which is closest to the minor version
         // of the php executable used to execute phan.
@@ -965,8 +965,10 @@ class Config
                     self::$closest_target_php_version_id = 70000;
                 } elseif (version_compare($value, '7.2') < 0) {
                     self::$closest_target_php_version_id = 70100;
-                } else {
+                } elseif (version_compare($value, '7.3') < 0) {
                     self::$closest_target_php_version_id = 70200;
+                } else {
+                    self::$closest_target_php_version_id = 70300;
                 }
                 if ((self::$configuration['allow_method_param_type_widening_original'] ?? null) === null) {
                     self::$configuration['allow_method_param_type_widening'] = self::$closest_target_php_version_id >= 70200;

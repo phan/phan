@@ -20,6 +20,7 @@ class Issue
     // Issue::CATEGORY_SYNTAX
     const SyntaxError               = 'PhanSyntaxError';
     const InvalidConstantExpression = 'PhanInvalidConstantExpression';
+    const InvalidNode               = 'PhanInvalidNode';
 
     // Issue::CATEGORY_UNDEFINED
     const AmbiguousTraitAliasSource = 'PhanAmbiguousTraitAliasSource';
@@ -544,6 +545,14 @@ class Issue
                 "Constant expression contains invalid operations",
                 self::REMEDIATION_A,
                 17001
+            ),
+            new Issue(
+                self::InvalidNode,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                "%s",
+                self::REMEDIATION_A,
+                17002
             ),
 
             // Issue::CATEGORY_UNDEFINED

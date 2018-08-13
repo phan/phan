@@ -1,0 +1,2 @@
+%s:3 PhanTypeMismatchArgumentInternal Argument 1 (array) is 'not an array' but \array_key_first() takes array
+%s:4 PhanTypeMismatchArgumentInternal Argument 1 (array) is 2 but \array_key_last() takes array

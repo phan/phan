@@ -1,0 +1,2 @@
+src/026_invalid_assign.php:2 PhanInvalidNode Expected left side of assignment to be a variable
+src/026_invalid_assign.php:2 PhanSyntaxError syntax error, unexpected '='
