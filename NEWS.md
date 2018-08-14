@@ -8,6 +8,7 @@ New features(CLI,Configs)
 
 New features(Analysis)
 + Add function signatures for functions added/modified in PHP 7.3. (#1537)
++ Improve the line number for warnings about unextractable `@property*` annotations.
 
 Bug fixes:
 + Properly handle `CompileError` (that are not the subclass `ParseError`). CompileError was added in PHP 7.3.
