@@ -172,9 +172,21 @@ function check_fields(string $function_name, array $fields, array $signatures)
                 }
                 if ($reflection_is_by_reference) {
                     // TODO: Switch to printf
-                    echo "Found mismatch for $original_function_name param \${$reflection_parameter->getName()} and phan param \${$phan_parameter->name}: PHP says param is by reference, but phan doesn't: " . json_encode($fields) . "\n";
+                    printf(
+                        "Found mismatch for %s param %s and phan param %s: PHP says param is by reference, but phan doesn't: %s\n",
+                        $original_function_name,
+                        $reflection_parameter->getName(),
+                        $phan_parameter->name,
+                        json_encode($fields)
+                    );
                 } else {
-                    echo "Found mismatch for $original_function_name param \${$reflection_parameter->getName()} and phan param \${$phan_parameter->name}: PHP says param is not by reference, but phan does: " . json_encode($fields) . "\n";
+                    printf(
+                        "Found mismatch for %s param %s and phan param %s: PHP says param is not by reference, but phan does: %s\n",
+                        $original_function_name,
+                        $reflection_parameter->getName(),
+                        $phan_parameter->name,
+                        json_encode($fields)
+                    );
                 }
             }
             $reflection_is_variadic = $reflection_parameter->isVariadic();
@@ -183,9 +195,21 @@ function check_fields(string $function_name, array $fields, array $signatures)
                     echo "(Has alternate): ";
                 }
                 if ($reflection_is_variadic) {
-                    echo "Found mismatch for $original_function_name param \${$reflection_parameter->getName()} and phan param \${$phan_parameter->name}: PHP says param is variadic, but phan doesn't: " . json_encode($fields) . "\n";
+                    printf(
+                        "Found mismatch for %s param %s and phan param %s: PHP says param is variadic, but phan doesn't: %s\n",
+                        $original_function_name,
+                        $reflection_parameter->getName(),
+                        $phan_parameter->name,
+                        json_encode($fields)
+                    );
                 } else {
-                    echo "Found mismatch for $original_function_name param \${$reflection_parameter->getName()} and phan param \${$phan_parameter->name}: PHP says param is not variadic, but phan does: " . json_encode($fields) . "\n";
+                    printf(
+                        "Found mismatch for %s param %s and phan param %s: PHP says param is not variadic, but phan does: %s\n",
+                        $original_function_name,
+                        $reflection_parameter->getName(),
+                        $phan_parameter->name,
+                        json_encode($fields)
+                    );
                 }
             }
 
@@ -195,9 +219,21 @@ function check_fields(string $function_name, array $fields, array $signatures)
                     echo "(Has alternate): ";
                 }
                 if ($reflection_is_optional) {
-                    echo "Found mismatch for $original_function_name param \${$reflection_parameter->getName()} and phan param \${$phan_parameter->name}: PHP says param is optional, but phan doesn't: " . json_encode($fields) . "\n";
+                    printf(
+                        "Found mismatch for %s param %s and phan param %s: PHP says param is optional, but phan doesn't: %s\n",
+                        $original_function_name,
+                        $reflection_parameter->getName(),
+                        $phan_parameter->name,
+                        json_encode($fields)
+                    );
                 } else {
-                    echo "Found mismatch for $original_function_name param \${$reflection_parameter->getName()} and phan param \${$phan_parameter->name}: PHP says param is not optional, but phan does: " . json_encode($fields) . "\n";
+                    printf(
+                        "Found mismatch for %s param %s and phan param %s: PHP says param is not optional, but phan does: %s\n",
+                        $original_function_name,
+                        $reflection_parameter->getName(),
+                        $phan_parameter->name,
+                        json_encode($fields)
+                    );
                 }
             }
 
@@ -211,7 +247,15 @@ function check_fields(string $function_name, array $fields, array $signatures)
                         if ($has_alternate) {
                             echo "(Has alternate): ";
                         }
-                        echo "Found mismatch for $original_function_name param \${$reflection_parameter->getName()} and phan param \${$phan_parameter->name}: PHP says param is type '$reflection_representation', but phan says '{$phan_representation}: " . json_encode($fields) . "\n";
+                        printf(
+                            "Found mismatch for %s param %s and phan param %s: PHP says param is type '%s', but phan says '%s': %s\n",
+                            $original_function_name,
+                            $reflection_parameter->getName(),
+                            $phan_parameter->name,
+                            $reflection_representation,
+                            $phan_representation,
+                            json_encode($fields)
+                        );
                     }
                 }
             }

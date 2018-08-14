@@ -816,10 +816,10 @@ class Config
             return;
         }
         $did_init = true;
-        self::init_once();
+        self::initOnce();
     }
 
-    private static function init_once()
+    private static function initOnce()
     {
         // Trigger magic setters
         foreach (self::$configuration as $name => $v) {
@@ -905,7 +905,7 @@ class Config
     {
         self::$configuration = self::DEFAULT_CONFIGURATION;
         // Trigger magic behavior
-        self::init_once();
+        self::initOnce();
     }
 
     /**

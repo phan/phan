@@ -1,8 +1,6 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
-<<<PHAN
-@phan-file-suppress PhanNativePHPSyntaxCheckPlugin
-PHAN;
+// @phan-file-suppress PhanNativePHPSyntaxCheckPlugin
 
 use Phan\Analysis;
 use Phan\CodeBase;
@@ -22,9 +20,9 @@ define('ORIGINAL_SIGNATURE_PATH', dirname(__DIR__) . '/src/Phan/Language/Interna
 
 abstract class IncompatibleSignatureDetectorBase
 {
-    const FUNCTIONLIKE_BLACKLIST = '@(^___PHPSTORM_HELPERS)|PS_UNRESERVE_PREFIX@';
-
     use Memoize;
+
+    const FUNCTIONLIKE_BLACKLIST = '@(^___PHPSTORM_HELPERS)|PS_UNRESERVE_PREFIX@';
 
     protected static function printUsageAndExit(int $exit_code = 1)
     {
@@ -494,6 +492,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
             case '--help':
             case '-h':
                 static::printUsageAndExit(0);
+                return;  // unreachable
             default:
                 fwrite(STDERR, "Invalid command '$command'\n");
                 static::printUsageAndExit(1);

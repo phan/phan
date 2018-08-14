@@ -143,7 +143,7 @@ final class ConfigPluginSet extends PluginV2 implements
     {
         static $instance = null;
         if ($instance === null) {
-            $instance = self::new_instance();
+            $instance = self::newInstance();
         }
         return $instance;
     }
@@ -155,7 +155,7 @@ final class ConfigPluginSet extends PluginV2 implements
      *
      * @suppress PhanDeprecatedInterface
      */
-    private static function new_instance() : ConfigPluginSet
+    private static function newInstance() : ConfigPluginSet
     {
         try {
             $instance = new self();
