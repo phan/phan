@@ -12,6 +12,7 @@ New features(Analysis)
 Bug fixes:
 + Properly handle `CompileError` (that are not the subclass `ParseError`). CompileError was added in PHP 7.3.
   (Phan now logs these the same way it would log other syntax errors, instead of treating this like an unexpected Error.)
++ Make sure that private methods that are generators, that are inherited from a trait, aren't treated like a `void`.
 
 12 Aug 2018, Phan 1.0.0
 -----------------------
