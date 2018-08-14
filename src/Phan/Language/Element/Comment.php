@@ -58,9 +58,9 @@ class Comment
     ];
 
     /**
-     * @deprecated
+     * @deprecated use Builder::WORD_REGEX
      */
-    const WORD_REGEX = Builder::WORD_REGEX; // @phan-suppress-current-line PhanAccessClassConstantInternal
+    const WORD_REGEX = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)';
 
     /**
      * @var int - contains a subset of flags to set on elements

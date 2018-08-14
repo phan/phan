@@ -25,9 +25,8 @@ use Phan\Library\Some;
  *
  * @internal - For use only by Comment.php
  */
-final class Builder {
-    /** @var string */
-    public $comment;
+final class Builder
+{
     /** @var array<int,string> */
     public $lines;
     /** @var int */
@@ -50,7 +49,10 @@ final class Builder {
     public $inherited_type;
     /** @var UnionType */
     public $return_union_type;
-    /** @var array<int,string> */
+    /**
+     * @var array<int,string>
+     * @suppress PhanReadOnlyPublicProperty FIXME: array_push doesn't count as a write-reference
+     */
     public $suppress_issue_list = [];
     /** @var array<int,Parameter> */
     public $magic_property_list = [];
@@ -72,7 +74,6 @@ final class Builder {
         int $lineno,
         int $comment_type
     ) {
-        $this->comment = $comment;
         // @phan-suppress-next-line PhanPossiblyFalseTypeMismatchProperty
         $this->lines = \explode("\n", $comment);
         $this->comment_lines_count = \count($this->lines);
@@ -164,9 +165,7 @@ final class Builder {
         // TODO: Use the right for the name of the comment parameter?
         //       (don't see a benefit, would create a type if it was (at)var on a function-like)
         if (!\preg_match('/@(param|var)\s+(\.\.\.)?\s*(\\$\S+)/', $line)) {
-            Issue::maybeEmit(
-                $this->code_base,
-                $this->context,
+            $this->emitIssue(
                 Issue::UnextractableAnnotation,
                 $this->guessActualLineLocation($i),
                 \trim($line)
@@ -270,194 +269,13 @@ final class Builder {
         );
     }
 
-
-
-    public function build() {
+    public function build()
+    {
         foreach ($this->lines as $i => $line) {
             if (\strpos($line, '@') === false) {
                 continue;
             }
-            $line = \trim($line);
-            // https://secure.php.net/manual/en/regexp.reference.internal-options.php
-            // (?i) makes this case sensitive, (?-1) makes it case insensitive
-            if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|suppress|phan-[a-z0-9_-]*(?-i)|method|property|template|PhanClosureScope)\b/', $line, $matches)) {
-                $case_sensitive_type = $matches[1];
-                $type = \strtolower($case_sensitive_type);
-
-                if ($type === 'param') {
-                    $this->checkCompatible('@param', Comment::FUNCTION_LIKE, $i);
-                    $this->parameter_list[] =
-                        self::parameterFromCommentLine($line, false, $i);
-                } elseif ($type === 'var') {
-                    $this->checkCompatible('@var', Comment::HAS_VAR_ANNOTATION, $i);
-                    $comment_var = self::parameterFromCommentLine($line, true, $i);
-                    if ($comment_var->getName() !== '' || !\in_array($this->comment_type, Comment::FUNCTION_LIKE)) {
-                        $this->variable_list[] = $comment_var;
-                    }
-                } elseif ($type === 'template') {
-                    // Make sure support for generic types is enabled
-                    if (Config::getValue('generic_types_enabled')) {
-                        $this->checkCompatible('@template', [Comment::ON_CLASS], $i);
-                        $template_type = $this->templateTypeFromCommentLine($line);
-                        if ($template_type) {
-                            $this->template_type_list[] = $template_type;
-                        }
-                    }
-                } elseif ($type === 'inherits') {
-                    $this->checkCompatible('@inherits', [Comment::ON_CLASS], $i);
-                    // Make sure support for generic types is enabled
-                    if (Config::getValue('generic_types_enabled')) {
-                        $this->inherited_type =
-                            $this->inheritsFromCommentLine($line);
-                    }
-                } elseif ($type === 'return') {
-                    $this->checkCompatible('@return', Comment::FUNCTION_LIKE, $i);
-                    $type = $this->returnTypeFromCommentLine($line, $i)->withUnionType($this->return_union_type);
-                    if (!$type->isEmpty()) {
-                        $this->return_union_type = $type;
-                    }
-                } elseif ($type === 'returns') {
-                    $this->emitIssue(
-                        Issue::MisspelledAnnotation,
-                        $this->guessActualLineLocation($i),
-                        '@returns',
-                        '@return'
-                    );
-                } elseif ($type === 'throws') {
-                    $this->checkCompatible('@throws', Comment::FUNCTION_LIKE, $i);
-                    $this->throw_union_type = $this->throw_union_type->withUnionType(
-                        $this->returnTypeFromCommentLine($line, $i)
-                    );
-                } elseif ($type === 'throw') {
-                    $this->emitIssue(
-                        Issue::MisspelledAnnotation,
-                        $this->guessActualLineLocation($i),
-                        '@throw',
-                        '@throws'
-                    );
-                } elseif ($type === 'suppress') {
-                    $suppress_issue_types = $this->suppressIssuesFromCommentLine($line);
-                    if (count($suppress_issue_types) > 0) {
-                        array_push($this->suppress_issue_list, ...$suppress_issue_types);
-                    } else {
-                        $this->emitIssue(
-                            Issue::UnextractableAnnotation,
-                            $this->guessActualLineLocation($i),
-                            trim($line)
-                        );
-                    }
-                } elseif ($type === 'property') {
-                    $this->checkCompatible('@property', [Comment::ON_CLASS], $i);
-                    // Make sure support for magic properties is enabled.
-                    if (Config::getValue('read_magic_property_annotations')) {
-                        $magic_property = $this->magicPropertyFromCommentLine($line, $i);
-                        if ($magic_property !== null) {
-                            $this->magic_property_list[] = $magic_property;
-                        }
-                    }
-                } elseif ($type === 'method') {
-                    // Make sure support for magic methods is enabled.
-                    if (Config::getValue('read_magic_method_annotations')) {
-                        $this->checkCompatible('@method', [Comment::ON_CLASS], $i);
-                        $magic_method = $this->magicMethodFromCommentLine($line, $i);
-                        if ($magic_method !== null) {
-                            $this->magic_method_list[] = $magic_method;
-                        }
-                    }
-                } elseif ($type === 'phanclosurescope' || $type === 'phan-closure_scope') {
-                    // TODO: different type for closures
-                    $this->checkCompatible('@PhanClosureScope', Comment::FUNCTION_LIKE, $i);
-                    $this->closure_scope = $this->getPhanClosureScopeFromCommentLine($line, $i);
-                } elseif (\strpos($type, 'phan-') === 0) {
-                    if ($type === 'phan-forbid-undeclared-magic-properties') {
-                        $this->checkCompatible('@phan-forbid-undeclared-magic-properties', [Comment::ON_CLASS], $i);
-                        $this->comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
-                    } elseif ($type === 'phan-forbid-undeclared-magic-methods') {
-                        $this->checkCompatible('@phan-forbid-undeclared-magic-methods', [Comment::ON_CLASS], $i);
-                        $this->comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS;
-                    } elseif ($type === 'phan-closure-scope') {
-                        $this->checkCompatible('@phan-closure-scope', Comment::FUNCTION_LIKE, $i);
-                        $this->closure_scope = $this->getPhanClosureScopeFromCommentLine($line, $i);
-                    } elseif ($type === 'phan-param') {
-                        $this->checkCompatible('@phan-param', Comment::FUNCTION_LIKE, $i);
-                        $this->phan_overrides['param'][] =
-                            $this->parameterFromCommentLine($line, false, $i);
-                    } elseif ($type === 'phan-return') {
-                        $this->checkCompatible('@phan-return', Comment::FUNCTION_LIKE, $i);
-                        $this->phan_overrides['return'] = $this->returnTypeFromCommentLine($line, $i);
-                    } elseif ($type === 'phan-override') {
-                        $this->checkCompatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i);
-                        $this->comment_flags |= Flags::IS_OVERRIDE_INTENDED;
-                    } elseif ($type === 'phan-var') {
-                        $this->checkCompatible('@phan-var', Comment::HAS_VAR_ANNOTATION, $i);
-                        $comment_var = $this->parameterFromCommentLine($line, true, $i);
-                        if ($comment_var->getName() !== '' || !\in_array($this->comment_type, Comment::FUNCTION_LIKE)) {
-                            $this->phan_overrides['var'][] = $comment_var;
-                        }
-                    } elseif ($type === 'phan-file-suppress') {
-                        // See BuiltinSuppressionPlugin
-                        continue;
-                    } elseif ($type === 'phan-suppress') {
-                        $suppress_issue_types = $this->suppressIssuesFromCommentLine($line);
-                        if (count($suppress_issue_types) > 0) {
-                            array_push($this->suppress_issue_list, ...$suppress_issue_types);
-                        } else {
-                            $this->emitIssue(
-                                Issue::UnextractableAnnotation,
-                                $this->guessActualLineLocation($i),
-                                trim($line)
-                            );
-                        }
-                    } elseif ($type === 'phan-property' || $type === 'phan-property-read' || $type === 'phan-property-write') {
-                        $this->checkCompatible('@phan-property', [Comment::ON_CLASS], $i);
-                        // Make sure support for magic properties is enabled.
-                        if (Config::getValue('read_magic_property_annotations')) {
-                            $magic_property = $this->magicPropertyFromCommentLine($line, $i);
-                            if ($magic_property !== null) {
-                                $this->phan_overrides['property'][] = $magic_property;
-                            }
-                        }
-                    } elseif ($type === 'phan-method') {
-                        // Make sure support for magic methods is enabled.
-                        if (Config::getValue('read_magic_method_annotations')) {
-                            $this->checkCompatible('@phan-method', [Comment::ON_CLASS], $i);
-                            $magic_method = $this->magicMethodFromCommentLine($line, $i);
-                            if ($magic_method !== null) {
-                                $this->phan_overrides['method'][] = $magic_method;
-                            }
-                        }
-                    } elseif ($case_sensitive_type === 'phan-suppress-next-line' || $case_sensitive_type === 'phan-suppress-current-line') {
-                        // Do nothing, see BuiltinSuppressionPlugin
-                    } else {
-                        $this->emitIssue(
-                            Issue::MisspelledAnnotation,
-                            $this->guessActualLineLocation($i),
-                            '@' . $matches[1],
-                            '@phan-forbid-undeclared-magic-methods @phan-forbid-undeclared-magic-properties @phan-closure-scope @phan-override'
-                        );
-                    }
-                }
-            }
-
-            if (\strpos($line, '@deprecated') !== false) {
-                if (\preg_match('/@deprecated\b/', $line, $match)) {
-                    $this->comment_flags |= Flags::IS_DEPRECATED;
-                }
-            }
-
-            if (\strpos($line, '@internal') !== false) {
-                if (\preg_match('/@internal\b/', $line, $match)) {
-                    $this->comment_flags |= Flags::IS_NS_INTERNAL;
-                }
-            }
-
-            if (\stripos($line, 'override') !== false) {
-                if (\preg_match('/@([Oo]verride)\b/', $line, $match)) {
-                    // TODO: split class const and global const.
-                    $this->checkCompatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i);
-                    $this->comment_flags |= Flags::IS_OVERRIDE_INTENDED;
-                }
-            }
+            $this->parseCommentLine($i, \trim($line));
         }
 
         // @phan-suppress-next-line PhanAccessMethodInternal
@@ -475,6 +293,262 @@ final class Builder {
             $this->closure_scope,  // @phan-suppress-current-line PhanPartialTypeMismatchArgument
             $this->throw_union_type
         );
+    }
+
+    /**
+     * @return void
+     */
+    private function parseCommentLine(int $i, string $line)
+    {
+        // https://secure.php.net/manual/en/regexp.reference.internal-options.php
+        // (?i) makes this case sensitive, (?-1) makes it case insensitive
+        if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|suppress|phan-[a-z0-9_-]*(?-i)|method|property|template|PhanClosureScope)\b/', $line, $matches)) {
+            $case_sensitive_type = $matches[1];
+            $type = \strtolower($case_sensitive_type);
+
+            if ($type === 'param') {
+                $this->parseParamLine($i, $line);
+            } elseif ($type === 'var') {
+                $this->maybeParseVarLine($i, $line);
+            } elseif ($type === 'template') {
+                $this->maybeParseTemplateType($i, $line);
+            } elseif ($type === 'inherits') {
+                $this->maybeParseInherits($i, $line);
+            } elseif ($type === 'return') {
+                $this->maybeParseReturn($i, $line);
+            } elseif ($type === 'returns') {
+                $this->emitIssue(
+                    Issue::MisspelledAnnotation,
+                    $this->guessActualLineLocation($i),
+                    '@returns',
+                    '@return'
+                );
+            } elseif ($type === 'throws') {
+                $this->maybeParseThrows($i, $line);
+            } elseif ($type === 'throw') {
+                $this->emitIssue(
+                    Issue::MisspelledAnnotation,
+                    $this->guessActualLineLocation($i),
+                    '@throw',
+                    '@throws'
+                );
+            } elseif ($type === 'suppress') {
+                $this->maybeParseSuppress($i, $line);
+            } elseif ($type === 'property') {
+                $this->maybeParseProperty($i, $line);
+            } elseif ($type === 'method') {
+                $this->maybeParseMethod($i, $line);
+            } elseif ($type === 'phanclosurescope' || $type === 'phan-closure_scope') {
+                $this->maybeParsePhanClosureScope($i, $line);
+            } elseif (\strpos($type, 'phan-') === 0) {
+                $this->maybeParsePhanCustomAnnotation($i, $line, $type, $case_sensitive_type);
+            }
+        }
+
+        if (\strpos($line, '@deprecated') !== false) {
+            if (\preg_match('/@deprecated\b/', $line, $match)) {
+                $this->comment_flags |= Flags::IS_DEPRECATED;
+            }
+        }
+
+        if (\strpos($line, '@internal') !== false) {
+            if (\preg_match('/@internal\b/', $line, $match)) {
+                $this->comment_flags |= Flags::IS_NS_INTERNAL;
+            }
+        }
+
+        if (\stripos($line, 'override') !== false) {
+            if (\preg_match('/@([Oo]verride)\b/', $line, $match)) {
+                // TODO: split class const and global const.
+                $this->checkCompatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i);
+                $this->comment_flags |= Flags::IS_OVERRIDE_INTENDED;
+            }
+        }
+    }
+
+    private function parseParamLine(int $i, string $line)
+    {
+        $this->checkCompatible('@param', Comment::FUNCTION_LIKE, $i);
+        $this->parameter_list[] =
+            self::parameterFromCommentLine($line, false, $i);
+    }
+
+    private function maybeParseVarLine(int $i, string $line)
+    {
+        $this->checkCompatible('@var', Comment::HAS_VAR_ANNOTATION, $i);
+        $comment_var = self::parameterFromCommentLine($line, true, $i);
+        if ($comment_var->getName() !== '' || !\in_array($this->comment_type, Comment::FUNCTION_LIKE)) {
+            $this->variable_list[] = $comment_var;
+        }
+    }
+
+    private function maybeParseTemplateType(int $i, string $line)
+    {
+        // Make sure support for generic types is enabled
+        if (Config::getValue('generic_types_enabled')) {
+            $this->checkCompatible('@template', [Comment::ON_CLASS], $i);
+            $template_type = $this->templateTypeFromCommentLine($line);
+            if ($template_type) {
+                $this->template_type_list[] = $template_type;
+            }
+        }
+    }
+
+    private function maybeParseInherits(int $i, string $line)
+    {
+        $this->checkCompatible('@inherits', [Comment::ON_CLASS], $i);
+        // Make sure support for generic types is enabled
+        if (Config::getValue('generic_types_enabled')) {
+            $this->inherited_type = $this->inheritsFromCommentLine($line);
+        }
+    }
+
+    private function maybeParseReturn(int $i, string $line)
+    {
+        $this->checkCompatible('@return', Comment::FUNCTION_LIKE, $i);
+        $type = $this->returnTypeFromCommentLine($line, $i)->withUnionType($this->return_union_type);
+        if (!$type->isEmpty()) {
+            $this->return_union_type = $type;
+        }
+    }
+
+    private function maybeParseThrows(int $i, string $line)
+    {
+        $this->checkCompatible('@throws', Comment::FUNCTION_LIKE, $i);
+        $this->throw_union_type = $this->throw_union_type->withUnionType(
+            $this->returnTypeFromCommentLine($line, $i)
+        );
+    }
+
+    private function maybeParseSuppress(int $i, string $line)
+    {
+        $suppress_issue_types = $this->suppressIssuesFromCommentLine($line);
+        if (count($suppress_issue_types) > 0) {
+            array_push($this->suppress_issue_list, ...$suppress_issue_types);
+        } else {
+            $this->emitIssue(
+                Issue::UnextractableAnnotation,
+                $this->guessActualLineLocation($i),
+                trim($line)
+            );
+        }
+    }
+
+    private function maybeParseProperty(int $i, string $line)
+    {
+        $this->checkCompatible('@property', [Comment::ON_CLASS], $i);
+        // Make sure support for magic properties is enabled.
+        if (Config::getValue('read_magic_property_annotations')) {
+            $magic_property = $this->magicPropertyFromCommentLine($line, $i);
+            if ($magic_property !== null) {
+                $this->magic_property_list[] = $magic_property;
+            }
+        }
+    }
+
+    private function maybeParseMethod(int $i, string $line)
+    {
+        // Make sure support for magic methods is enabled.
+        if (Config::getValue('read_magic_method_annotations')) {
+            $this->checkCompatible('@method', [Comment::ON_CLASS], $i);
+            $magic_method = $this->magicMethodFromCommentLine($line, $i);
+            if ($magic_method !== null) {
+                $this->magic_method_list[] = $magic_method;
+            }
+        }
+    }
+
+    private function maybeParsePhanClosureScope(int $i, string $line)
+    {
+        // TODO: different type for closures
+        $this->checkCompatible('@PhanClosureScope', Comment::FUNCTION_LIKE, $i);
+        $this->closure_scope = $this->getPhanClosureScopeFromCommentLine($line, $i);
+    }
+
+    private function maybeParsePhanCustomAnnotation(int $i, string $line, string $type, string $case_sensitive_type)
+    {
+        if ($type === 'phan-forbid-undeclared-magic-properties') {
+            $this->checkCompatible('@phan-forbid-undeclared-magic-properties', [Comment::ON_CLASS], $i);
+            $this->comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
+        } elseif ($type === 'phan-forbid-undeclared-magic-methods') {
+            $this->checkCompatible('@phan-forbid-undeclared-magic-methods', [Comment::ON_CLASS], $i);
+            $this->comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS;
+        } elseif ($type === 'phan-closure-scope') {
+            $this->checkCompatible('@phan-closure-scope', Comment::FUNCTION_LIKE, $i);
+            $this->closure_scope = $this->getPhanClosureScopeFromCommentLine($line, $i);
+        } elseif ($type === 'phan-param') {
+            $this->checkCompatible('@phan-param', Comment::FUNCTION_LIKE, $i);
+            $this->phan_overrides['param'][] =
+                $this->parameterFromCommentLine($line, false, $i);
+        } elseif ($type === 'phan-return') {
+            $this->checkCompatible('@phan-return', Comment::FUNCTION_LIKE, $i);
+            $this->phan_overrides['return'] = $this->returnTypeFromCommentLine($line, $i);
+        } elseif ($type === 'phan-override') {
+            $this->checkCompatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i);
+            $this->comment_flags |= Flags::IS_OVERRIDE_INTENDED;
+        } elseif ($type === 'phan-var') {
+            $this->checkCompatible('@phan-var', Comment::HAS_VAR_ANNOTATION, $i);
+            $comment_var = $this->parameterFromCommentLine($line, true, $i);
+            if ($comment_var->getName() !== '' || !\in_array($this->comment_type, Comment::FUNCTION_LIKE)) {
+                $this->phan_overrides['var'][] = $comment_var;
+            }
+        } elseif ($type === 'phan-file-suppress') {
+            // See BuiltinSuppressionPlugin
+            return;
+        } elseif ($type === 'phan-suppress') {
+            $this->parsePhanSuppress($i, $line);
+        } elseif ($type === 'phan-property' || $type === 'phan-property-read' || $type === 'phan-property-write') {
+            $this->parsePhanProperty($i, $line);
+        } elseif ($type === 'phan-method') {
+            $this->parsePhanMethod($i, $line);
+        } elseif ($case_sensitive_type === 'phan-suppress-next-line' || $case_sensitive_type === 'phan-suppress-current-line') {
+            // Do nothing, see BuiltinSuppressionPlugin
+        } else {
+            $this->emitIssue(
+                Issue::MisspelledAnnotation,
+                $this->guessActualLineLocation($i),
+                '@' . $case_sensitive_type,
+                '@phan-forbid-undeclared-magic-methods @phan-forbid-undeclared-magic-properties @phan-closure-scope @phan-override'
+            );
+        }
+    }
+
+    private function parsePhanSuppress(int $i, string $line)
+    {
+        $suppress_issue_types = $this->suppressIssuesFromCommentLine($line);
+        if (count($suppress_issue_types) > 0) {
+            array_push($this->suppress_issue_list, ...$suppress_issue_types);
+        } else {
+            $this->emitIssue(
+                Issue::UnextractableAnnotation,
+                $this->guessActualLineLocation($i),
+                trim($line)
+            );
+        }
+    }
+
+    private function parsePhanProperty(int $i, string $line)
+    {
+        $this->checkCompatible('@phan-property', [Comment::ON_CLASS], $i);
+        // Make sure support for magic properties is enabled.
+        if (Config::getValue('read_magic_property_annotations')) {
+            $magic_property = $this->magicPropertyFromCommentLine($line, $i);
+            if ($magic_property !== null) {
+                $this->phan_overrides['property'][] = $magic_property;
+            }
+        }
+    }
+
+    private function parsePhanMethod(int $i, string $line)
+    {
+        // Make sure support for magic methods is enabled.
+        if (Config::getValue('read_magic_method_annotations')) {
+            $this->checkCompatible('@phan-method', [Comment::ON_CLASS], $i);
+            $magic_method = $this->magicMethodFromCommentLine($line, $i);
+            if ($magic_method !== null) {
+                $this->phan_overrides['method'][] = $magic_method;
+            }
+        }
     }
 
     private function guessActualLineLocation(int $i) : int
@@ -531,9 +605,7 @@ final class Builder {
         string $annotation_type,
         int $issue_lineno
     ) {
-        Issue::maybeEmit(
-            $this->code_base,
-            $this->context,
+        $this->emitIssue(
             Issue::InvalidCommentForDeclarationType,
             $issue_lineno,
             $annotation_type,
