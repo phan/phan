@@ -2238,7 +2238,9 @@ class TolerantASTConverter
     {
         if ($n instanceof PhpParser\Node\Expression\AssignmentExpression) {
             $name_node = $n->leftOperand;
-            assert($name_node instanceof PhpParser\Node\Expression\Variable);
+            if (!($name_node instanceof PhpParser\Node\Expression\Variable)) {
+                throw new InvalidNodeException();
+            }
             $children = [
                 'name' => static::phpParserNodeToAstNode($name_node->name),
                 'default' => $n->rightOperand ? static::phpParserNodeToAstNode($n->rightOperand) : null,
@@ -2349,6 +2351,9 @@ class TolerantASTConverter
         return new ast\Node(ast\AST_CLASS_CONST_DECL, $flags, $const_elems, $const_elems[0]->lineno ?? $start_line);
     }
 
+    /**
+     * @throws InvalidNodeException
+     */
     private static function phpParserConstToAstNode(PhpParser\Node\Statement\ConstDeclaration $n, int $start_line) : ast\Node
     {
         $const_elems = [];
@@ -2357,7 +2362,9 @@ class TolerantASTConverter
             if ($prop instanceof Token) {
                 continue;
             }
-            assert($prop instanceof PhpParser\Node\ConstElement);
+            if (!($prop instanceof PhpParser\Node\ConstElement)) {
+                throw new InvalidNodeException();
+            }
             $const_elems[] = static::phpParserConstelemToAstConstelem($prop, $i === 0 ? $doc_comment : null);
         }
 
