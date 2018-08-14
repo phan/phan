@@ -452,6 +452,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     public static function main()
     {
         error_reporting(E_ALL);
+        ini_set('memory_limit', '2G');
         global $argv;
         if (\count($argv) < 2) {
             // TODO: CLI flags
