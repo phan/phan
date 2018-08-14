@@ -132,6 +132,12 @@ class CLI
     private $file_list = [];
 
     /**
+     * @var array<int,string>
+     * The set of reference file names to analyze
+     */
+    private $refer_file_list = [];
+
+    /**
      * @var bool
      * Set to true to ignore all files and directories
      * added by means other than -file-list-only on the CLI
@@ -557,6 +563,16 @@ class CLI
             || !Config::getValue('dead_code_detection'),
             "We cannot run dead code detection on more than one core."
         );
+    }
+
+    public function getReferFileList() {
+        foreach (Config::getValue('reference_directory_list') as $directory_name) {
+            $this->refer_file_list = array_merge(
+                $this->refer_file_list,
+                array_values($this->directoryNameToFileList($directory_name))
+            );
+        }
+        return $this->refer_file_list;
     }
 
     /**

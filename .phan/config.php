@@ -496,6 +496,16 @@ return [
         'vendor/'
     ],
 
+    // A directory list that defines files that will be included
+    // from static analysis, but files will not be analyzing
+    //
+    // Generally, you'll want to include the directories for
+    // third-party code (such as "vendor/") in this list.
+    // Or you'll want to analyze some files those reference it.
+    //
+    "reference_directory_list" => [
+    ],
+
     // By default, Phan will log error messages to stdout if PHP is using options that slow the analysis.
     // (e.g. PHP is compiled with --enable-debug or when using XDebug)
     'skip_slow_php_options_warning' => false,

@@ -158,7 +158,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         Phan::setIssueCollector(new BufferingCollector());
 
         Phan::analyzeFileList($this->code_base, function () use ($test_file_list) {
-            return $test_file_list;
+            return array('files' => $test_file_list, 'refer_files' => array());
         });
 
         $output = $stream->fetch();

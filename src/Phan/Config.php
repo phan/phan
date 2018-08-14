@@ -141,6 +141,16 @@ class Config
         //       to `excluce_analysis_directory_list`.
         'exclude_analysis_directory_list' => [],
 
+        // A directory list that defines files that will be included
+        // from static analysis, but files will not be analyzing
+        //
+        // Generally, you'll want to include the directories for
+        // third-party code (such as "vendor/") in this list.
+        // Or you'll want to analyze some files those reference it.
+        //
+        "reference_directory_list" => [
+        ],
+
         // A file list that defines files that will be included
         // in static analysis, to the exclusion of others.
         'include_analysis_file_list' => [],
