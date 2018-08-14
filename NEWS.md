@@ -4,7 +4,7 @@ Phan NEWS
 -----------------------
 
 New features(CLI,Configs)
-+ Support setting a `target_php_version` of PHP 7.3 in config file or through `--target-php-version`.
++ Support setting a `target_php_version` of PHP 7.3 in the config file or through `--target-php-version`.
 
 New features(Analysis)
 + Add function signatures for functions added/modified in PHP 7.3. (#1537)
