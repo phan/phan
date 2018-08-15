@@ -14,7 +14,7 @@ function load_internal_function(string $function_name) : ReflectionFunctionAbstr
     }
 }
 
-function getParametersCountsFromPhan(array $fields)
+function getParametersCountsFromPhan(array $fields) : array
 {
     $num_required = 0;
     unset($fields[0]);
@@ -40,7 +40,7 @@ function getParametersCountsFromPhan(array $fields)
 /**
  * @param ReflectionParameter[] $args
  */
-function getParameterCountsFromReflection(array $args)
+function getParameterCountsFromReflection(array $args) : array
 {
     $num_required = 0;
     $num_optional = count($args);
@@ -74,6 +74,7 @@ class PhanParameterInfo
     /** @var bool */
     public $is_variadic;
 
+    /** @var string */
     public $value;
 
     public function __construct(string $original_name_spec, string $value_spec)

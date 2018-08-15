@@ -85,7 +85,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
     /**
      * Used for generating issue messages
      */
-    public function asVisibilityAndFQSENString()
+    public function asVisibilityAndFQSENString() : string
     {
         return $this->getVisibilityName() . ' ' .
             $this->getClassFQSEN()->__toString() .

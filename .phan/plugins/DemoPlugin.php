@@ -50,8 +50,6 @@ use ast\Node;
  *
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
- *
- * Compare this with DemoLegacyPlugin.php to see how to upgrade a subclass of the deprecated PluginImplementation to PluginV2.
  */
 class DemoPlugin extends PluginV2 implements
     AnalyzeClassCapability,

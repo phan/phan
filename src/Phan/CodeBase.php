@@ -395,6 +395,9 @@ class CodeBase
         throw new \RuntimeException("Calling replaceFileContents without undo tracker");
     }
 
+    /**
+     * @return void
+     */
     public function eagerlyLoadAllSignatures()
     {
         $this->getInternalClassMap();  // Force initialization of remaining internal php classes to reduce latency of future analysis requests.
@@ -1502,6 +1505,9 @@ class CodeBase
         $this->class_names_near_strlen_in_namespace = null;
     }
 
+    /**
+     * @return array<string,array<string,string>>
+     */
     private function getNamespacesForClassNames()
     {
         return $this->namespaces_for_class_names ?? ($this->namespaces_for_class_names = $this->computeNamespacesForClassNames());
@@ -1578,6 +1584,7 @@ class CodeBase
     /**
      * For use with IssueFixSuggester::getSuggestionsForStringSet
      * @param array<string,string> $class_names
+     * @return array<string,string> similar matches
      */
     private function computeSimilarLengthClassNamesForNamespace(array $class_names, int $strlen)
     {

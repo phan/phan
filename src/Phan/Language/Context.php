@@ -11,6 +11,7 @@ use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionLikeName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -481,7 +482,7 @@ class Context extends FileRef
         );
     }
 
-    /*
+    /**
      * @return FullyQualifiedFunctionLikeName|FullyQualifiedMethodName|FullyQualifiedFunctionName
      * A fully-qualified structural element name describing
      * the current function or method in scope.
@@ -750,6 +751,7 @@ class Context extends FileRef
     }
 
     /**
+     * @return void
      * @internal
      * @suppress PhanAccessMethodInternal
      */

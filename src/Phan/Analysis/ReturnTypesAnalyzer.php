@@ -124,7 +124,7 @@ class ReturnTypesAnalyzer
             }
         }
         if ($return_type->isEmpty() && !$method->getHasReturn()) {
-            if ($method instanceof Func || ($method instanceof Method && ($method->isPrivate() || $method->isFinal()))) {
+            if ($method instanceof Func || ($method instanceof Method && ($method->isPrivate() || $method->isFinal() || $method->getIsMagicAndVoid() || $method->getClass($code_base)->isFinal()))) {
                 $method->setUnionType(VoidType::instance(false)->asUnionType());
             }
         }

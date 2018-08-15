@@ -63,6 +63,7 @@ function with_disabled_phan_error_handler(Closure $closure)
  *
  * @suppress PhanUnreferencedFunction
  * @suppress PhanAccessMethodInternal
+ * @return bool
  */
 function phan_error_handler($errno, $errstr, $errfile, $errline)
 {

@@ -90,7 +90,7 @@ class ContextNode
             return [];
         }
 
-        return \array_map(function ($name_node) {
+        return \array_map(function ($name_node) : string {
             return (new ContextNode(
                 $this->code_base,
                 $this->context,
@@ -1970,6 +1970,10 @@ class ContextNode
         return $node_type->asSingleScalarValueOrNull() ?? $node;
     }
 
+    /**
+     * @return array|string|int|float|bool|null|Node the value of the corresponding PHP constant,
+     * or the original node if that could not be determined
+     */
     public function getValueForMagicConst()
     {
         $node = $this->node;
@@ -1977,6 +1981,10 @@ class ContextNode
         return $this->getValueForMagicConstByNode($node);
     }
 
+    /**
+     * @return array|string|int|float|bool|null|Node the value of the corresponding PHP constant,
+     * or the original node if that could not be determined
+     */
     public function getValueForMagicConstByNode(Node $node)
     {
         // TODO: clean up or refactor?

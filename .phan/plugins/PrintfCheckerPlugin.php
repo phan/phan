@@ -552,12 +552,12 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      */
     private function getSpecStringsRepresentation(array $specs) : string
     {
-        return \implode(',', \array_unique(\array_map(function (ConversionSpec $spec) {
+        return \implode(',', \array_unique(\array_map(function (ConversionSpec $spec) : string {
             return $spec->directive;
         }, $specs)));
     }
 
-    private function canWeakCast(UnionType $actual_union_type, array $expected_set)
+    private function canWeakCast(UnionType $actual_union_type, array $expected_set) : bool
     {
         if (isset($expected_set['string'])) {
             static $string_weak_types;

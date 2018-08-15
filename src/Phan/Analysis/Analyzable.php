@@ -38,9 +38,9 @@ trait Analyzable
 
     /**
      * @param Node $node
-     * The AST Node defining this object. We keep a
-     * reference to this so that we can come to it
-     * and
+     * The AST Node defining this object.
+     * We keep a reference to this so that we can use it later.
+     * @return void
      */
     public function setNode(Node $node)
     {

@@ -451,6 +451,9 @@ EOT;
         return [array_unique($directory_list), array_unique($file_list)];
     }
 
+    /**
+     * @return array
+     */
     private static function getArrayOption(array $opts, string $key)
     {
         $values = $opts[$key] ?? [];

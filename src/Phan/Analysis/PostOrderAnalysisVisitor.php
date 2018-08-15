@@ -1138,7 +1138,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         return $context;
     }
 
-    private function checkCanCastToReturnType(CodeBase $code_base, UnionType $expression_type, UnionType $method_return_type)
+    private function checkCanCastToReturnType(CodeBase $code_base, UnionType $expression_type, UnionType $method_return_type) : bool
     {
         if ($method_return_type->hasTemplateParameterTypes()) {
             // TODO: Better casting logic for template types (E.g. should be able to cast None to Option<MyClass>, but not Some<int> to Option<MyClass>
@@ -2616,6 +2616,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Variable|Property $variable
+     * @return void
      */
     private function analyzePregMatch(array $argument_list, $variable)
     {
@@ -2635,12 +2636,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $offset_flags_node = $argument_list[3];
         $bit = (new ContextNode($this->code_base, $this->context, $offset_flags_node))->getEquivalentPHPScalarValue();
         if (!\is_int($bit)) {
-            return $array_type;
+            $variable->setUnionType($array_type);
+            return;
         }
         if ($bit & PREG_OFFSET_CAPTURE) {
-            return $shape_array_type;
+            $variable->setUnionType($shape_array_type);
+            return;
         }
-        return $string_array_type;
+        $variable->setUnionType($string_array_type);
     }
 
     /**
@@ -2698,7 +2701,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         try {
             // Even though we don't modify the parameter list, we still need to know the types
             // -- as an optimization, we don't run quick mode again if the types didn't change?
-            $parameter_list = \array_map(function (Parameter $parameter) {
+            $parameter_list = \array_map(/** @return Parameter */ function (Parameter $parameter) {
                 return clone($parameter);
             }, $method->getParameterList());
 

@@ -19,7 +19,7 @@ use ast\Node;
 use Closure;
 
 // TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed
-class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
+final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 {
 
     /**
@@ -46,6 +46,9 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     /**
      * @param Node $node
      * A node to visit
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
      */
     public function __invoke(Node $node)
     {
@@ -689,6 +692,10 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         return $this->getTypeOfNumericArithmeticOp($node);
     }
 
+    /**
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
     public function visitBinaryMod(Node $unused_node)
     {
         // TODO: Warn about invalid left or right side

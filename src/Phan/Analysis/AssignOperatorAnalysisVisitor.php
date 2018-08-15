@@ -25,8 +25,6 @@ use Closure;
 /**
  * TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed
  *
- * TODO: Move many of these checks to AssignOperatorAnalysisVisitor
- *
  * @phan-file-suppress PhanUnusedPublicMethodParameter this is a WIP. TODO: Finish implementing.
  */
 class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
@@ -56,6 +54,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     /**
      * @param Node $node
      * A node to visit
+     * @return Context
      */
     public function __invoke(Node $node)
     {
@@ -69,6 +68,8 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
      *
      * @param Node $node
      * A node to check types on
+     *
+     * @return Context
      */
     public function visit(Node $node)
     {
@@ -368,21 +369,33 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         });
     }
 
+    /**
+     * @return Context
+     */
     public function visitBinaryBitwiseAnd(Node $node)
     {
         return $this->analyzeBitwiseOperation($node);
     }
 
+    /**
+     * @return Context
+     */
     public function visitBinaryBitwiseOr(Node $node)
     {
         return $this->analyzeBitwiseOperation($node);
     }
 
+    /**
+     * @return Context
+     */
     public function visitBinaryBitwiseXor(Node $node)
     {
         return $this->analyzeBitwiseOperation($node);
     }
 
+    /**
+     * @return Context
+     */
     public function visitBinaryConcat(Node $node)
     {
         return $this->updateTargetWithType($node, function (UnionType $unused_left) : UnionType {
@@ -391,6 +404,9 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         });
     }
 
+    /**
+     * @return Context
+     */
     public function visitBinaryDiv(Node $node)
     {
         return $this->updateTargetWithType($node, function (UnionType $unused_left) : UnionType {
@@ -398,6 +414,10 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             return UnionType::fromFullyQualifiedString('int|float');
         });
     }
+
+    /**
+     * @return Context
+     */
     public function visitBinaryMod(Node $node)
     {
         return $this->updateTargetWithType($node, function (UnionType $unused_left) : UnionType {
@@ -406,18 +426,27 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         });
     }
 
+    /**
+     * @return Context
+     */
     public function visitBinaryMul(Node $node)
     {
         return $this->analyzeNumericArithmeticOp($node);
     }
 
+    /**
+     * @return Context
+     */
     public function visitBinaryPow(Node $node)
     {
         // TODO: 2 ** (-2)  is a float
         return $this->analyzeNumericArithmeticOp($node);
     }
 
-    // TODO: There's an RFC to make binary shift left/right apply to strings.
+    /**
+     * @return Context
+     * TODO: There's an RFC to make binary shift left/right apply to strings.
+     */
     public function visitBinaryShiftLeft(Node $node)
     {
         return $this->updateTargetWithType($node, function (UnionType $unused_left) : UnionType {
@@ -427,6 +456,9 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         });
     }
 
+    /**
+     * @return Context
+     */
     public function visitBinaryShiftRight(Node $node)
     {
         return $this->updateTargetWithType($node, function (UnionType $unused_left) : UnionType {
@@ -436,6 +468,9 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         });
     }
 
+    /**
+     * @return Context
+     */
     public function visitBinarySub(Node $node)
     {
         return $this->analyzeNumericArithmeticOp($node);

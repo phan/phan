@@ -116,7 +116,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         \assert(\count($this->child_context_list) >= 2);  // first context is the try
         // Get the list of scopes for each branch of the
         // conditional
-        $scope_list = \array_map(function (Context $context) {
+        $scope_list = \array_map(function (Context $context) : Scope {
             return $context->getScope();
         }, $this->child_context_list);
 
@@ -197,20 +197,11 @@ class ContextMergeVisitor extends KindVisitorImplementation
     {
         // Get the list of scopes for each branch of the
         // conditional
-        $scope_list = \array_map(function (Context $context) {
+        $scope_list = \array_map(function (Context $context) : Scope {
             return $context->getScope();
         }, $this->child_context_list);
 
-        $has_else = \array_reduce(
-            $node->children,
-            function (bool $carry, $child_node) {
-                return $carry || (
-                    $child_node instanceof Node
-                    && \is_null($child_node->children['cond'])
-                );
-            },
-            false
-        );
+        $has_else = $this->hasElse($node->children);
 
         // If we're not guaranteed to hit at least one
         // branch, mark the incoming scope as a possibility
@@ -228,6 +219,17 @@ class ContextMergeVisitor extends KindVisitorImplementation
         return $this->combineScopeList($scope_list);
     }
 
+    private function hasElse(array $children) : bool
+    {
+        foreach ($children as $child_node) {
+            if ($child_node instanceof Node
+                && \is_null($child_node->children['cond'])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * A generic helper method to merge multiple Contexts. (e.g. for use outside of BlockAnalysisVisitor)
      * If you wish to include the base context, add it to $child_context_list in the constructor of ContextMergeVisitor.
@@ -236,7 +238,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
     {
         $child_context_list = $this->child_context_list;
         \assert(\count($child_context_list) >= 2);
-        $scope_list = \array_map(function (Context $context) {
+        $scope_list = \array_map(function (Context $context) : Scope {
             return $context->getScope();
         }, $child_context_list);
         return $this->combineScopeList($scope_list);
@@ -259,6 +261,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // A function that determines if a variable is defined on
         // every branch
         $is_defined_on_all_branches =
+            /** @return bool */
             function (string $variable_name) use ($scope_list) {
                 foreach ($scope_list as $scope) {
                     if (!$scope->hasVariableWithName($variable_name)) {
@@ -271,6 +274,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // Get the intersection of all types for all versions of
         // the variable from every side of the branch
         $union_type =
+            /** @return UnionType */
             function (string $variable_name) use ($scope_list) {
                 $previous_type = null;
                 $type_list = [];

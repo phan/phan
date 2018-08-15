@@ -87,6 +87,7 @@ abstract class ClassElement extends AddressableElement
      * @param FullyQualifiedClassElement $defining_fqsen
      * The FQSEN of this class element in the location in which
      * it was originally defined
+     * @return void
      */
     public function setDefiningFQSEN(
         FullyQualifiedClassElement $defining_fqsen

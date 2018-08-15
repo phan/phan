@@ -45,8 +45,9 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
     private static $did_warn_unused = false;
 
     /**
-     * @override
      * This is called after the parse phase is completely finished, so $this->code_base contains all class definitions
+     * @return void
+     * @override
      */
     public function visitClass(Node $unused_node)
     {
@@ -125,6 +126,9 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
         return false;
     }
 
+    /**
+     * @return void
+     */
     public static function init()
     {
         $fqsen = FullyQualifiedClassName::make('\\PHPUnit\Framework', 'TestCase');

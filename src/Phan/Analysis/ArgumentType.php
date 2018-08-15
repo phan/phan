@@ -23,7 +23,7 @@ use ast\Node;
 /**
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
-class ArgumentType
+final class ArgumentType
 {
 
     /**
