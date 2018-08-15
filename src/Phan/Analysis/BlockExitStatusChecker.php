@@ -77,6 +77,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
 
     /**
      * If we don't know how to analyze a node type (or left it out), assume it always proceeds
+     * @return int - The status bitmask corresponding to always proceeding
      */
     public function visit(Node $node)
     {
@@ -100,24 +101,37 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return (bool)$cond;
     }
 
-    // A break statement unconditionally breaks out of a loop/switch
+    /**
+     * A break statement unconditionally breaks out of a loop/switch
+     * @return int the corresponding status code
+     */
     public function visitBreak(Node $node)
     {
         return self::STATUS_BREAK;
     }
 
-    // A continue statement unconditionally continues out of a loop.
+    /**
+     * A continue statement unconditionally continues out of a loop/switch.
+     * TODO: Make this account for levels
+     * @return int the corresponding status code
+     */
     public function visitContinue(Node $node)
     {
         return self::STATUS_CONTINUE;
     }
 
-    // A throw statement unconditionally throws
+    /**
+     * A throw statement unconditionally throws
+     * @return int the corresponding status code
+     */
     public function visitThrow(Node $node)
     {
         return self::STATUS_THROW;
     }
 
+    /**
+     * @return int the corresponding status code for the try/catch/finally block
+     */
     public function visitTry(Node $node)
     {
         $status = $node->flags & self::STATUS_BITMASK;

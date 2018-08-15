@@ -21,6 +21,7 @@ class Debug
      * see if a thing is called
      *
      * @suppress PhanUnreferencedPublicMethod
+     * @return void
      */
     public static function mark()
     {
@@ -46,6 +47,7 @@ class Debug
      * Print the name of a node to the terminal
      *
      * @suppress PhanUnreferencedPublicMethod
+     * @return void
      */
     public static function printNodeName($node, $indent = 0)
     {
@@ -57,6 +59,7 @@ class Debug
     /**
      * Print $message with the given indent level
      *
+     * @return void
      * @suppress PhanUnreferencedPublicMethod
      */
     public static function print(string $message, int $indent = 0)

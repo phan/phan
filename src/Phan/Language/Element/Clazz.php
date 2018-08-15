@@ -2406,11 +2406,11 @@ class Clazz extends AddressableElement
 
         // A function that maps a list of elements to the
         // total reference count for all elements
-        $list_count = function (array $list) use ($code_base) {
+        $list_count = function (array $list) use ($code_base) : int {
             return \array_reduce($list, function (
                 int $count,
                 AddressableElement $element
-            ) use ($code_base) {
+            ) use ($code_base) : int {
                 return (
                     $count
                     + $element->getReferenceCount($code_base)
@@ -2575,7 +2575,7 @@ class Clazz extends AddressableElement
         $constant_map = $this->getConstantMap($code_base);
         if (count($constant_map) > 0) {
             $stub .= "\n\n    // constants\n";
-            $stub .= implode("\n", array_map(function (ClassConstant $constant) {
+            $stub .= implode("\n", array_map(function (ClassConstant $constant) : string {
                 return $constant->toStub();
             }, $constant_map));
         }
@@ -2584,7 +2584,7 @@ class Clazz extends AddressableElement
         if (count($property_map) > 0) {
             $stub .= "\n\n    // properties\n";
 
-            $stub .= implode("\n", array_map(function (Property $property) {
+            $stub .= implode("\n", array_map(function (Property $property) : string {
                 return $property->toStub();
             }, $property_map));
         }
@@ -2603,7 +2603,7 @@ class Clazz extends AddressableElement
             $stub .= "\n\n    // methods\n";
 
             $is_interface = $this->isInterface();
-            $stub .= implode("\n", array_map(function (Method $method) use ($is_interface) {
+            $stub .= implode("\n", array_map(function (Method $method) use ($is_interface) : string {
                 return $method->toStub($is_interface);
             }, $method_map));
         }
@@ -2613,6 +2613,9 @@ class Clazz extends AddressableElement
         return [$namespace, $stub];
     }
 
+    /**
+     * @return void
+     */
     protected function hydrateConstantsOnce(CodeBase $code_base)
     {
         foreach ($this->getAncestorFQSENList() as $fqsen) {

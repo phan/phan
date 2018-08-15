@@ -492,9 +492,13 @@ class ASTSimplifier
     private function normalizeCatchesList(Node $catches) : Node
     {
         $list = $catches->children;
-        $new_list = array_map(function (Node $node) {
-            return $this->applyToStmts($node);
-        }, $list);
+        $new_list = array_map(
+            /** @return mixed */
+            function (Node $node) {
+                return $this->applyToStmts($node);
+            },
+            $list
+        );
         if ($new_list === $list) {
             return $catches;
         }

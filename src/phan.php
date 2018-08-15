@@ -33,7 +33,7 @@ $cli = new CLI();
 $is_issue_found =
     Phan::analyzeFileList(
         $code_base,
-        function (bool $recompute_file_list = false) use ($cli) {
+        function (bool $recompute_file_list = false) use ($cli) : array {
             if ($recompute_file_list) {
                 $cli->recomputeFileList();
             }

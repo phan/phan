@@ -151,7 +151,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param int|string|float|array|Node $key (not actually an array)
-     * @return int|string|float|Node|array - If possible, converted to a scalar.
+     * @return int|string|float|Node|array|bool|null - If possible, converted to a scalar.
      */
     private function tryToResolveKey($key)
     {
@@ -193,7 +193,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      * Converts a key to the value it would be if used as an array key.
      * E.g. 0, 0.5, and "0" all become the same value(0) when used as an array key.
      *
-     * @param int|string|float $key - The array key literal to be normalized.
+     * @param int|string|float|bool|null $key - The array key literal to be normalized.
      * @return string - The normalized representation.
      */
     private static function normalizeKey($key) : string

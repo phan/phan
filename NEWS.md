@@ -5,10 +5,15 @@ Phan NEWS
 
 New features(CLI,Configs)
 + Support setting a `target_php_version` of PHP 7.3 in the config file or through `--target-php-version`.
++ Assume that `__construct`, `__destruct`, `__set`, `__get`, `__unset`, `__clone`, and `__wakeup` have return types of void if unspecified.
 
 New features(Analysis)
 + Add function signatures for functions added/modified in PHP 7.3. (#1537)
 + Improve the line number for warnings about unextractable `@property*` annotations.
+
+Plugins:
++ Add `UnknownElementTypePlugin` (currently a work in progress).
++ Improve types inferred for `$matches` for PregRegexCheckerPlugin.
 
 Bug fixes:
 + Properly handle `CompileError` (that are not the subclass `ParseError`). CompileError was added in PHP 7.3.

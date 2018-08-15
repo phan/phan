@@ -179,7 +179,7 @@ class Parser
         return $node;
     }
 
-    private static function shouldUsePolyfill(string $file_path, Request $request = null)
+    private static function shouldUsePolyfill(string $file_path, Request $request = null) : bool
     {
         if (Config::getValue('use_polyfill_parser')) {
             return true;

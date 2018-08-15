@@ -74,6 +74,7 @@ class Config
     private static $quick_mode = false;
     // End of the 4 most commonly accessed configs.
 
+    /** @var int */
     private static $closest_target_php_version_id;
 
     const DEFAULT_CONFIGURATION = [
@@ -899,6 +900,7 @@ class Config
     }
 
     /**
+     * @return void
      * @internal - this should only be used in unit tests.
      */
     public static function reset()

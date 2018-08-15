@@ -2,6 +2,8 @@
 namespace Phan\AST\Visitor;
 
 use Phan\Debug;
+
+use AssertionError;
 use ast\Node;
 
 class Element
@@ -134,6 +136,7 @@ class Element
      * NOTE: This was turned into a static method for performance
      * because it was called extremely frequently.
      *
+     * @return mixed - The type depends on the subclass of KindVisitor being used.
      * @suppress PhanUnreferencedPublicMethod Phan's code inlines this, but may be useful for some plugins
      */
     public static function acceptNodeAndKindVisitor(Node $node, KindVisitor $visitor)
@@ -143,7 +146,7 @@ class Element
             return $visitor->{$fn_name}($node);
         } else {
             Debug::printNode($node);
-            \assert(false, 'All node kinds must match');
+            throw new AssertionError('All node kinds must match');
         }
     }
 
@@ -178,6 +181,7 @@ class Element
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
+     * @return mixed - The type depends on the subclass of FlagVisitor
      */
     public static function acceptBinaryFlagVisitor(Node $node, FlagVisitor $visitor)
     {
@@ -186,7 +190,7 @@ class Element
             return $visitor->{$fn_name}($node);
         } else {
             Debug::printNode($node);
-            \assert(false, "All flags must match. Found " . self::flagDescription($node));
+            throw new AssertionError("All flags must match. Found " . self::flagDescription($node));
         }
     }
 
@@ -194,6 +198,7 @@ class Element
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
      *
+     * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
      */
     public function acceptClassFlagVisitor(FlagVisitor $visitor)
@@ -210,12 +215,7 @@ class Element
             case \ast\flags\CLASS_ANONYMOUS:
                 return $visitor->visitClassAnonymous($this->node);
             default:
-                \assert(
-                    false,
-                    "All flags must match. Found "
-                    . self::flagDescription($this->node)
-                );
-                break;
+                throw new AssertionError("All flags must match. Found " . self::flagDescription($this->node));
         }
     }
 
@@ -223,6 +223,7 @@ class Element
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
      *
+     * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
      */
     public function acceptNameFlagVisitor(FlagVisitor $visitor)
@@ -235,12 +236,7 @@ class Element
             case \ast\flags\NAME_RELATIVE:
                 return $visitor->visitNameRelative($this->node);
             default:
-                \assert(
-                    false,
-                    "All flags must match. Found "
-                    . self::flagDescription($this->node)
-                );
-                break;
+                throw new AssertionError("All flags must match. Found " . self::flagDescription($this->node));
         }
     }
 
@@ -248,31 +244,7 @@ class Element
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
      *
-     * TODO: This is wrong, a parameter can be neither ref nor variadic, or both.
-     *
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    public function acceptParamFlagVisitor(FlagVisitor $visitor)
-    {
-        switch ($this->node->flags) {
-            case \ast\flags\PARAM_REF:
-                return $visitor->visitParamRef($this->node);
-            case \ast\flags\PARAM_VARIADIC:
-                return $visitor->visitParamVariadic($this->node);
-            default:
-                \assert(
-                    false,
-                    "All flags must match. Found "
-                    . self::flagDescription($this->node)
-                );
-                break;
-        }
-    }
-
-    /**
-     * Accepts a visitor that differentiates on the flag value
-     * of the AST node.
-     *
+     * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
      */
     public function acceptTypeFlagVisitor(FlagVisitor $visitor)
@@ -295,12 +267,7 @@ class Element
             case \ast\flags\TYPE_STRING:
                 return $visitor->visitUnionTypeString($this->node);
             default:
-                \assert(
-                    false,
-                    "All flags must match. Found "
-                    . self::flagDescription($this->node)
-                );
-                break;
+                throw new AssertionError("All flags must match. Found " . self::flagDescription($this->node));
         }
     }
 
@@ -308,6 +275,7 @@ class Element
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
      *
+     * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
      */
     public function acceptUnaryFlagVisitor(FlagVisitor $visitor)
@@ -324,12 +292,7 @@ class Element
             case \ast\flags\UNARY_SILENCE:
                 return $visitor->visitUnarySilence($this->node);
             default:
-                \assert(
-                    false,
-                    "All flags must match. Found "
-                    . self::flagDescription($this->node)
-                );
-                break;
+                throw new AssertionError("All flags must match. Found " . self::flagDescription($this->node));
         }
     }
 
@@ -337,6 +300,7 @@ class Element
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
      *
+     * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
      */
     public function acceptExecFlagVisitor(FlagVisitor $visitor)
@@ -353,12 +317,7 @@ class Element
             case \ast\flags\EXEC_REQUIRE_ONCE:
                 return $visitor->visitExecRequireOnce($this->node);
             default:
-                \assert(
-                    false,
-                    "All flags must match. Found "
-                    . self::flagDescription($this->node)
-                );
-                break;
+                throw new AssertionError("All flags must match. Found " . self::flagDescription($this->node));
         }
     }
 
@@ -366,6 +325,7 @@ class Element
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
      *
+     * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
      */
     public function acceptMagicFlagVisitor(FlagVisitor $visitor)
@@ -388,12 +348,7 @@ class Element
             case \ast\flags\MAGIC_TRAIT:
                 return $visitor->visitMagicTrait($this->node);
             default:
-                \assert(
-                    false,
-                    "All flags must match. Found "
-                    . self::flagDescription($this->node)
-                );
-                break;
+                throw new AssertionError("All flags must match. Found " . self::flagDescription($this->node));
         }
     }
 
@@ -401,6 +356,7 @@ class Element
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
      *
+     * @return mixed - The type depends on the subclass of FlagVisitor
      * @suppress PhanUnreferencedPublicMethod
      */
     public function acceptUseFlagVisitor(FlagVisitor $visitor)
@@ -413,12 +369,7 @@ class Element
             case \ast\flags\USE_NORMAL:
                 return $visitor->visitUseNormal($this->node);
             default:
-                \assert(
-                    false,
-                    "All flags must match. Found "
-                    . self::flagDescription($this->node)
-                );
-                break;
+                throw new AssertionError("All flags must match. Found " . self::flagDescription($this->node));
         }
     }
 

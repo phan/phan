@@ -32,6 +32,9 @@ class ASTReverter
     {
     }
 
+    /**
+     * @return string
+     */
     public static function toShortString($node)
     {
         if (!($node instanceof Node)) {
@@ -41,9 +44,12 @@ class ASTReverter
         return (self::$closure_map[$node->kind] ?? self::$noop)($node);
     }
 
+    /**
+     * @return void
+     */
     public static function init()
     {
-        self::$noop = function (Node $_) {
+        self::$noop = function (Node $_) : string {
             return '(unknown)';
         };
         self::$closure_map = [

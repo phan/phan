@@ -295,6 +295,9 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         return $context;
     }
 
+    /**
+     * @return Context
+     */
     public function visitVar(Node $node)
     {
         $this->checkVariablesDefined($node);
@@ -651,6 +654,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
 
     /**
      * Analyze expressions such as $x['offset'] inside of a negated isset type check
+     * @return Context
      */
     public function checkComplexIsset(Node $var_node)
     {

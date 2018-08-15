@@ -269,6 +269,9 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         $this->hydrateOnce($code_base);
     }
 
+    /**
+     * @return void
+     */
     protected function hydrateOnce(CodeBase $unused_code_base)
     {
         // Do nothing unless overridden
@@ -291,6 +294,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
 
     /**
      * @param ?string $doc_comment the 'docComment' for this element, if any exists.
+     * @return void
      */
     public function setDocComment(string $doc_comment = null)
     {

@@ -57,6 +57,12 @@ class PhanPHPLinter
         }
     }
 
+	/**
+	 * The main function of the phan_client binary.
+	 * See the doc comment of this file.
+	 *
+	 * @return void
+	 */
     public static function run()
     {
         error_reporting(E_ALL);

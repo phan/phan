@@ -31,6 +31,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
     {
         /**
          * @suppress PhanParamSuspiciousOrder 100% deliberate use of varying regex and constant $subject for preg_match
+         * @return ?array
          */
         $err = with_disabled_phan_error_handler(function () use ($pattern) {
             $old_error_reporting = error_reporting();
@@ -40,11 +41,10 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
             try {
                 // Annoyingly, preg_match would not warn about the `/e` modifier, removed in php 7.
                 // Use `preg_replace` instead (The eval body is empty and phan requires 7.0+ to run)
+                // @phan-suppress-next-line PhanParamSuspiciousOrder
                 $result = @\preg_replace($pattern, '', '');
                 if ($result === false || $result === null) {
-                    $err = \error_get_last() ?? [];
-                    var_export($err);
-                    return $err;
+                    return \error_get_last() ?? [];
                 }
                 return null;
             } finally {

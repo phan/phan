@@ -120,13 +120,16 @@ class Daemon
                 $got_signal = false;  // reset this.
                 // We get an error from stream_socket_accept. After the RuntimeException is thrown, pcntl_signal is called.
                 // @phan-suppress-next-line PhanPluginUnusedVariable
-                $previous_error_handler = set_error_handler(function ($severity, $message, $file, $line) use (&$previous_error_handler) {
-                    self::debugf("In new error handler '$message'");
-                    if (!preg_match('/stream_socket_accept/i', $message)) {
-                        return $previous_error_handler($severity, $message, $file, $line);
+                $previous_error_handler = set_error_handler(
+                    /** @return bool */
+                    function ($severity, $message, $file, $line) use (&$previous_error_handler) {
+                        self::debugf("In new error handler '$message'");
+                        if (!preg_match('/stream_socket_accept/i', $message)) {
+                            return $previous_error_handler($severity, $message, $file, $line);
+                        }
+                        throw new \RuntimeException("Got signal");
                     }
-                    throw new \RuntimeException("Got signal");
-                });
+                );
 
                 $conn = false;
                 try {

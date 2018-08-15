@@ -39,6 +39,7 @@ class PhanAnnotationAdder
     /** @var array<int,Closure(Node):void> */
     private static $closures_for_kind;
 
+    /** @return void */
     public static function init()
     {
         if (\is_array(self::$closures_for_kind)) {

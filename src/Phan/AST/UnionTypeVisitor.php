@@ -1063,7 +1063,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // For any types that are templates, map them to concrete
         // types based on the parameters passed in.
-        return UnionType::of(\array_map(function (Type $type) use ($node) {
+        return UnionType::of(\array_map(function (Type $type) use ($node) : Type {
 
             // Get a fully qualified name for the type
             $fqsen = $type->asFQSEN();
@@ -1098,7 +1098,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $class->getMethodByName($this->code_base, '__construct');
 
             // Map each argument to its type
-            $arg_type_list = \array_map(function ($arg_node) {
+            $arg_type_list = \array_map(function ($arg_node) : UnionType {
                 return UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
                     $this->context,
@@ -2034,7 +2034,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         if ($flags === \ast\flags\UNARY_MINUS) {
             $this->warnAboutInvalidUnaryOp(
                 $node,
-                function (Type $type) {
+                function (Type $type) : bool {
                     // TODO: Stricten this to warn about strings based on user config.
                     return $type->isValidNumericOperand();
                 },
@@ -2046,7 +2046,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         } elseif ($flags === \ast\flags\UNARY_PLUS) {
             $this->warnAboutInvalidUnaryOp(
                 $node,
-                function (Type $type) {
+                function (Type $type) : bool {
                     // NOTE: Don't be as strict because this is a way to cast to a number
                     return $type->isValidNumericOperand();
                 },
@@ -2058,7 +2058,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         } elseif ($flags === \ast\flags\UNARY_BITWISE_NOT) {
             $this->warnAboutInvalidUnaryOp(
                 $node,
-                function (Type $type) {
+                function (Type $type) : bool {
                     // Adding $type instanceof StringType in case it becomes necessary later
                     return $type->isValidNumericOperand() || $type instanceof StringType;
                 },

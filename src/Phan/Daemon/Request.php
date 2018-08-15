@@ -107,6 +107,7 @@ class Request
     }
 
     /**
+     * @return void (unreachable)
      * @throws ExitException to imitate an exit without actually exiting
      */
     public function exit(int $exit_code)
@@ -259,6 +260,9 @@ class Request
         return $this->most_recent_definition_request;
     }
 
+    /**
+     * @return void
+     */
     public function rejectLanguageServerRequestsRequiringAnalysis()
     {
         $most_recent_definition_request = $this->most_recent_definition_request;

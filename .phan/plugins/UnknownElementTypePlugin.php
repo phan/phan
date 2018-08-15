@@ -1,18 +1,13 @@
 <?php declare(strict_types=1);
 
 use Phan\CodeBase;
-use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\PluginV2;
-use Phan\PluginV2\AnalyzeClassCapability;
 use Phan\PluginV2\AnalyzeFunctionCapability;
 use Phan\PluginV2\AnalyzeMethodCapability;
 use Phan\PluginV2\AnalyzePropertyCapability;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
-use ast\Node;
 
 /**
  * This file checks if any elements in the codebase have undeclared types.
@@ -37,6 +32,9 @@ class UnknownElementTypePlugin extends PluginV2 implements
         CodeBase $code_base,
         Method $method
     ) {
+        if ($method->getFQSEN() !== $method->getRealDefiningFQSEN()) {
+            return;
+        }
         // As an example, we test to see if the name of the
         // method is `function`, and emit an issue if it is.
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
@@ -70,13 +68,23 @@ class UnknownElementTypePlugin extends PluginV2 implements
         // method is `function`, and emit an issue if it is.
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
         if ($function->getUnionType()->isEmpty()) {
-            $this->emitIssue(
-                $code_base,
-                $function->getContext(),
-                'UnknownFunctionReturnType',
-                "Function {FUNCTION} has no declared or inferred return type",
-                [(string)$function->getFQSEN()]
-            );
+            if ($function->getFQSEN()->isClosure()) {
+                $this->emitIssue(
+                    $code_base,
+                    $function->getContext(),
+                    'UnknownClosureReturnType',
+                    "Closure {FUNCTION} has no declared or inferred return type",
+                    [(string)$function->getFQSEN()]
+                );
+            } else {
+                $this->emitIssue(
+                    $code_base,
+                    $function->getContext(),
+                    'UnknownFunctionReturnType',
+                    "Function {FUNCTION} has no declared or inferred return type",
+                    [(string)$function->getFQSEN()]
+                );
+            }
         }
     }
 
@@ -95,6 +103,9 @@ class UnknownElementTypePlugin extends PluginV2 implements
         CodeBase $code_base,
         Property $property
     ) {
+        if ($property->getFQSEN() !== $property->getRealDefiningFQSEN()) {
+            return;
+        }
         // As an example, we test to see if the name of the
         // function is `foo`, and emit an issue if it is.
         if ($property->getUnionType()->isEmpty()) {
