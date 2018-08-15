@@ -9,6 +9,7 @@ interface IssueCollectorInterface
     /**
      * Collect issue
      * @param IssueInstance $issue
+     * @return void
      */
     public function collectIssue(IssueInstance $issue);
 
@@ -28,6 +29,7 @@ interface IssueCollectorInterface
 
     /**
      * Remove all collected issues.
+     * @return void
      */
     public function reset();
 }

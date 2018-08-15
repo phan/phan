@@ -260,7 +260,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         });
     }
 
-    private function analyzeNumericArithmeticOp(Node $node)
+    private function analyzeNumericArithmeticOp(Node $node) : Context
     {
         return $this->updateTargetWithType($node, function (UnionType $left) use ($node) : UnionType {
             $code_base = $this->code_base;
@@ -352,7 +352,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         }
     }
 
-    private function analyzeBitwiseOperation(Node $node)
+    private function analyzeBitwiseOperation(Node $node) : Context
     {
         return $this->updateTargetWithType($node, function (UnionType $left) use ($node) : UnionType {
             // TODO: Warn about invalid left and right hand sides here and in BinaryOperatorFlagVisitor.

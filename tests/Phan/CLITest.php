@@ -4,7 +4,7 @@ namespace Phan\Tests;
 
 use Phan\CLI;
 
-class CLITest extends BaseTest
+final class CLITest extends BaseTest
 {
     /**
      * @dataProvider getFlagSuggestionStringProvider
@@ -15,9 +15,9 @@ class CLITest extends BaseTest
         $this->assertSame($expected_message, CLI::getFlagSuggestionString($flag));
     }
 
-    public function getFlagSuggestionStringProvider()
+    public function getFlagSuggestionStringProvider() : array
     {
-        $wrap_suggestion = function (string $text) {
+        $wrap_suggestion = function (string $text) : string {
             return " (did you mean $text?)";
         };
         return [

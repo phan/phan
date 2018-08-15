@@ -411,7 +411,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             $recursion_depth < 20,
             "Recursion has gotten out of hand"
         );
-        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) {
+        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
             $result_fields = [];
             foreach ($this->field_types as $key => $union_type) {
                 // UnionType already increments recursion_depth before calling asExpandedTypes on a subclass of Type,

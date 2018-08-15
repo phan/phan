@@ -1299,6 +1299,8 @@ class ParseVisitor extends ScopeVisitor
      *
      * @param Node|string|float|int|bool|null $n
      *
+     * @return void - If this doesn't throw, then $n is a valid constant AST.
+     *
      * @throws InvalidArgumentException if this is not allowed in a constant expression
      * Based on zend_bool zend_is_allowed_in_const_expr from Zend/zend_compile.c
      *

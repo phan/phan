@@ -23,6 +23,8 @@ trait Profile
      * @param \Closure $closure
      * Any closure to measure how long it takes to run
      *
+     * @return mixed
+     *
      * @suppress PhanUnreferencedProtectedMethod (unused, may use something similar in the future)
      */
     protected static function time(string $label, \Closure $closure)
@@ -74,17 +76,16 @@ trait Profile
                 ];
             }
 
-
             // Sort such that the highest metric value is on top
-            uasort($label_metric_map, function ($a, $b) {
-                return ($b[1] <=> $a[1]);
+            uasort($label_metric_map, function ($a, $b) : int {
+                return $b[1] <=> $a[1];
             });
 
             // Print it all out
             foreach ($label_metric_map as $label => $metrics) {
                 print $label
                     . "\t"
-                    . implode("\t", array_map(function (float $v) {
+                    . implode("\t", array_map(function (float $v) : string {
                         return sprintf("%0.6f", $v);
                     }, $metrics))
                     . "\n";

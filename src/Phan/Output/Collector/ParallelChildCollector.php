@@ -44,6 +44,7 @@ class ParallelChildCollector implements IssueCollectorInterface
     /**
      * Collect issue
      * @param IssueInstance $issue
+     * @return void
      */
     public function collectIssue(IssueInstance $issue)
     {
@@ -100,7 +101,8 @@ class ParallelChildCollector implements IssueCollectorInterface
     }
 
     /**
-     * This method has not effect on a ParallelChildCollector.
+     * This method has no effect on a ParallelChildCollector.
+     * @return void
      */
     public function reset()
     {

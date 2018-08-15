@@ -4,7 +4,7 @@ namespace Phan\Tests;
 /**
  * @requires extension soap
  */
-class SoapTest extends AbstractPhanFileTest
+final class SoapTest extends AbstractPhanFileTest
 {
 
     /**

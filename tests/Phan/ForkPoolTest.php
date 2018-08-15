@@ -6,7 +6,7 @@ use Phan\ForkPool;
 /**
  * @requires extension pcntl
  */
-class ForkPoolTest extends BaseTest
+final class ForkPoolTest extends BaseTest
 {
     /**
      * Test that workers are able to send their data back

@@ -33,7 +33,7 @@ use Phan\Language\UnionType;
 /**
  * Unit tests of Type
  */
-class TypeTest extends BaseTest
+final class TypeTest extends BaseTest
 {
     private function makePHPDocType(string $type_string) : Type
     {
@@ -167,7 +167,7 @@ class TypeTest extends BaseTest
         $this->assertCount(2, $parts);
         $this->assertTrue($parts[0]->isType(self::makePHPDocType('T1<int,string[]>')), "Unexpected value for " . (string)$parts[0]);
         $this->assertTrue($parts[1]->isType(self::makePHPDocType('T2')));
-        $inner_parts = $parts[0]->getTemplateParameterTypeList();
+        $inner_parts = $parts[0]->getTypeSet()[0]->getTemplateParameterTypeList();
         $this->assertCount(2, $inner_parts);
         $this->assertTrue($inner_parts[0]->isType(self::makePHPDocType('int')));
         $this->assertTrue($inner_parts[1]->isType(self::makePHPDocType('string[]')));
@@ -527,7 +527,7 @@ class TypeTest extends BaseTest
         $this->assertTrue($expected_flattened_type->isEqualTo($actual_flattened_type), "expected $actual_flattened_type to equal $expected_flattened_type");
     }
 
-    public function arrayShapeProvider()
+    public function arrayShapeProvider() : array
     {
         return [
             [
@@ -588,7 +588,7 @@ class TypeTest extends BaseTest
         $this->assertFalse(\preg_match('@^' . Type::type_regex_or_this . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex_or_this");
     }
 
-    public function unparseableTypeProvider()
+    public function unparseableTypeProvider() : array
     {
         return [
             ['array{'],

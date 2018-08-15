@@ -116,17 +116,6 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
-     * @return UnionType[]
-     * A map from template type identifiers to the UnionType
-     * to replace it with
-     * @override
-     */
-    public function getTemplateParameterTypeList() : array
-    {
-        return [];
-    }
-
-    /**
      * @param CodeBase $code_base
      * The code base to look up classes against
      *

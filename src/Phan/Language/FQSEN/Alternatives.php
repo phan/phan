@@ -19,8 +19,8 @@ trait Alternatives
     abstract public function getName() : string;
 
     /**
-     * Implementers should use the \Phan\Memoize
-     * trait
+     * Implementers should use the \Phan\Memoize trait
+     * @return void
      */
     abstract protected function memoizeFlushAll();
 

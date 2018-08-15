@@ -31,6 +31,9 @@ class VariableTrackingScope
      */
     protected $uses = [];
 
+    /**
+     * @return void
+     */
     public function recordDefinition(string $variable_name, Node $node)
     {
         // Create a new definition for variable_name.
@@ -38,6 +41,9 @@ class VariableTrackingScope
         $this->defs[$variable_name] = [spl_object_id($node) => true];
     }
 
+    /**
+     * @return void
+     */
     public function recordDefinitionById(string $variable_name, int $node_id)
     {
         // Create a new definition for variable_name.
@@ -47,6 +53,7 @@ class VariableTrackingScope
 
     /**
      * @suppress PhanUnreferencedPublicMethod used by reference
+     * @return void
      */
     public function recordUsage(string $variable_name, Node $node)
     {
@@ -58,6 +65,9 @@ class VariableTrackingScope
         }
     }
 
+    /**
+     * @return void
+     */
     public function recordUsageById(string $variable_name, int $node_id)
     {
         // Create a new usage for variable_name.

@@ -7,11 +7,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 interface IssuePrinterInterface
 {
 
-    /** @param IssueInstance $instance */
+    /**
+     * @param IssueInstance $instance
+     * @return void
+     */
     public function print(IssueInstance $instance);
 
     /**
      * @param OutputInterface $output
+     * @return void
      */
     public function configureOutput(OutputInterface $output);
 }

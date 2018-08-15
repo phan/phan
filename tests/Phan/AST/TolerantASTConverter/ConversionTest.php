@@ -19,7 +19,7 @@ use ast;
  *
  * @phan-file-suppress PhanThrowTypeAbsent it's a test
  */
-class ConversionTest extends BaseTest
+final class ConversionTest extends BaseTest
 {
     /**
      * @return array<int,string>
@@ -68,7 +68,7 @@ class ConversionTest extends BaseTest
         foreach ($files as $file) {
             $token_counts[$file] = count(token_get_all(file_get_contents($file)));
         }
-        usort($files, function (string $path1, string $path2) use ($token_counts) {
+        usort($files, function (string $path1, string $path2) use ($token_counts) : int {
             return $token_counts[$path1] <=> $token_counts[$path2];
         });
     }

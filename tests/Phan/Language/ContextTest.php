@@ -15,7 +15,7 @@ use Phan\Parse\ParseVisitor;
 /**
  * @phan-file-suppress PhanPartialTypeMismatchArgument TODO: phpunit lib
  */
-class ContextTest extends BaseTest
+final class ContextTest extends BaseTest
 {
 
     /** @var CodeBase|null */
@@ -23,11 +23,14 @@ class ContextTest extends BaseTest
 
     protected function setUp()
     {
+        // Deliberately not calling parent::setUp()
         $this->code_base = new CodeBase([], [], [], [], []);
     }
 
     protected function tearDown()
     {
+        // Deliberately not calling parent::tearDown()
+        $this->code_base = new CodeBase([], [], [], [], []);
         $this->code_base = null;
     }
 

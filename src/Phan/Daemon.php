@@ -233,6 +233,7 @@ class Daemon
      *
      * @param string $format - printf style format string @phan-unused-param
      * @param mixed ...$args - printf args @phan-unused-param
+     * @return void
      */
     public static function debugf(string $format, ...$args)
     {

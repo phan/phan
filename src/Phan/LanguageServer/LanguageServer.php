@@ -847,6 +847,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
     /**
      * @suppress PhanUnreferencedPublicMethod this is called by the client through AdvancedJsonRpc
+     * @return void
      */
     public function initialized()
     {

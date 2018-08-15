@@ -93,6 +93,7 @@ class UnionType implements \Serializable
         }
     }
 
+    /** @return UnionType */
     protected static function ofUniqueTypes(array $type_list)
     {
         $n = \count($type_list);
@@ -584,27 +585,6 @@ class UnionType implements \Serializable
     }
 
     /**
-     * @return array<int,UnionType>
-     * A map from template type identifiers to the UnionType
-     * to replace it with
-     * TODO: Is anything using this? This makes sense for Type but not UnionType.
-     */
-    public function getTemplateParameterTypeList() : array
-    {
-        return \array_reduce(
-            $this->type_set,
-            function (array $map, Type $type) {
-                return \array_merge(
-                    $type->getTemplateParameterTypeList(),
-                    $map
-                );
-            },
-            []
-        );
-    }
-
-
-    /**
      * @param CodeBase $code_base
      * The code base to look up classes against
      *
@@ -623,6 +603,7 @@ class UnionType implements \Serializable
 
         return \array_reduce(
             $this->type_set,
+            /** @return array<string,UnionType> */
             function (array $map, Type $type) use ($code_base) {
                 return \array_merge(
                     $type->getTemplateParameterTypeMap($code_base),
@@ -1580,7 +1561,7 @@ class UnionType implements \Serializable
      */
     public function nonNativeTypes() : UnionType
     {
-        return $this->makeFromFilter(function (Type $type) {
+        return $this->makeFromFilter(function (Type $type) : bool {
             return !$type->isNativeType();
         });
     }

@@ -269,7 +269,7 @@ final class Builder
         );
     }
 
-    public function build()
+    public function build() : Comment
     {
         foreach ($this->lines as $i => $line) {
             if (\strpos($line, '@') === false) {

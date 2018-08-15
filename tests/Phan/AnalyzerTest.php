@@ -14,7 +14,7 @@ use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
-class AnalyzerTest extends BaseTest
+final class AnalyzerTest extends BaseTest
 {
     /**
      * @var CodeBase

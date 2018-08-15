@@ -6,6 +6,7 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Exception\IssueException;
 use Phan\Issue;
+use Phan\IssueInstance;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type\ArrayType;
@@ -54,8 +55,8 @@ final class MiscParamPlugin extends PluginV2 implements
                 $context,
                 $code_base,
                 ArrayType::instance(false)->asUnionType(),
-                function (UnionType $node_type) use ($context, $function) {
-                // "arg#1(values) is %s but {$function->getFQSEN()}() takes array when passed only one arg"
+                function (UnionType $node_type) use ($context, $function) : IssueInstance {
+                    // "arg#1(values) is %s but {$function->getFQSEN()}() takes array when passed only one arg"
                     return Issue::fromType(Issue::ParamSpecial2)(
                         $context->getFile(),
                         $context->getLineNumberStart(),
@@ -88,7 +89,7 @@ final class MiscParamPlugin extends PluginV2 implements
                 $context,
                 $code_base,
                 CallableType::instance(false)->asUnionType(),
-                function (UnionType $unused_node_type) use ($context, $function) {
+                function (UnionType $unused_node_type) use ($context, $function) : IssueInstance {
                     // "The last argument to {$function->getFQSEN()} must be a callable"
                     return Issue::fromType(Issue::ParamSpecial3)(
                         $context->getFile(),
@@ -107,7 +108,7 @@ final class MiscParamPlugin extends PluginV2 implements
                     $context,
                     $code_base,
                     ArrayType::instance(false)->asUnionType(),
-                    function (UnionType $node_type) use ($context, $function, $i) {
+                    function (UnionType $node_type) use ($context, $function, $i) : IssueInstance {
                         // "arg#".($i+1)." is %s but {$function->getFQSEN()}() takes array"
                         return Issue::fromType(Issue::ParamTypeMismatch)(
                             $context->getFile(),
@@ -144,7 +145,7 @@ final class MiscParamPlugin extends PluginV2 implements
                     $args[0],
                     $context,
                     $code_base,
-                    function (UnionType $node_type) use ($context, $function) {
+                    function (UnionType $node_type) use ($context, $function) : IssueInstance {
                         // "arg#1(pieces) is %s but {$function->getFQSEN()}() takes array when passed only 1 arg"
                         return Issue::fromType(Issue::ParamSpecial2)(
                             $context->getFile(),
@@ -261,7 +262,7 @@ final class MiscParamPlugin extends PluginV2 implements
                 $context,
                 $code_base,
                 CallableType::instance(false)->asUnionType(),
-                function (UnionType $unused_node_type) use ($context, $function) {
+                function (UnionType $unused_node_type) use ($context, $function) : IssueInstance {
                     // "The last argument to {$function->getFQSEN()} must be a callable"
                     return Issue::fromType(Issue::ParamSpecial3)(
                         $context->getFile(),
@@ -279,7 +280,7 @@ final class MiscParamPlugin extends PluginV2 implements
                 $context,
                 $code_base,
                 CallableType::instance(false)->asUnionType(),
-                function (UnionType $unused_node_type) use ($context, $function) {
+                function (UnionType $unused_node_type) use ($context, $function) : IssueInstance {
                     // "The second last argument to {$function->getFQSEN()} must be a callable"
                     return Issue::fromType(Issue::ParamSpecial4)(
                         $context->getFile(),
@@ -298,7 +299,7 @@ final class MiscParamPlugin extends PluginV2 implements
                     $context,
                     $code_base,
                     ArrayType::instance(false)->asUnionType(),
-                    function (UnionType $node_type) use ($context, $function, $i) {
+                    function (UnionType $node_type) use ($context, $function, $i) : IssueInstance {
                     // "arg#".($i+1)." is %s but {$function->getFQSEN()}() takes array"
                         return Issue::fromType(Issue::ParamTypeMismatch)(
                             $context->getFile(),
@@ -470,12 +471,15 @@ final class MiscParamPlugin extends PluginV2 implements
         return $analyzers;
     }
 
+    /**
+     * @param Closure(UnionType):IssueInstance $issue_instance
+     */
     private static function analyzeNodeUnionTypeCast(
         $node,
         Context $context,
         CodeBase $code_base,
         UnionType $cast_type,
-        \Closure $issue_instance
+        Closure $issue_instance
     ) : bool {
 
         // Get the type of the node
@@ -503,11 +507,14 @@ final class MiscParamPlugin extends PluginV2 implements
         return $can_cast;
     }
 
+    /**
+     * @param Closure(UnionType):IssueInstance $issue_instance
+     */
     private static function analyzeNodeUnionTypeCastStringArrayLike(
         $node,
         Context $context,
         CodeBase $code_base,
-        \Closure $issue_instance
+        Closure $issue_instance
     ) : bool {
 
         // Get the type of the node
@@ -534,9 +541,9 @@ final class MiscParamPlugin extends PluginV2 implements
     }
 
     /**
-     * Sadly, MyStringable[] is frequently used
+     * Sadly, MyStringable[] is frequently used, so we need this check.
      */
-    private static function canCastToStringArrayLike(CodeBase $code_base, Context $context, UnionType $union_type)
+    private static function canCastToStringArrayLike(CodeBase $code_base, Context $context, UnionType $union_type) : bool
     {
         if ($union_type->canCastToUnionType(
             UnionType::fromFullyQualifiedString('string[]|int[]')

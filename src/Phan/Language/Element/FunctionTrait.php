@@ -485,7 +485,7 @@ trait FunctionTrait
     public function getRealParameterList()
     {
         // Excessive cloning, to ensure that this stays immutable.
-        return array_map(function (Parameter $param) {
+        return array_map(/** @return Parameter */ function (Parameter $param) {
             return clone($param);
         }, $this->real_parameter_list);
     }
@@ -498,7 +498,7 @@ trait FunctionTrait
      */
     public function setRealParameterList(array $parameter_list)
     {
-        $this->real_parameter_list = array_map(function (Parameter $param) {
+        $this->real_parameter_list = array_map(/** @return Parameter */ function (Parameter $param) {
             return clone($param);
         }, $parameter_list);
 
@@ -1003,6 +1003,7 @@ trait FunctionTrait
         }
     }
 
+    /** @return void */
     public abstract function memoizeFlushAll();
 
     public abstract function getUnionType() : UnionType;

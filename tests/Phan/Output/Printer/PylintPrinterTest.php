@@ -8,7 +8,7 @@ use Phan\Output\Printer\PylintPrinter;
 use Phan\Tests\BaseTest;
 use Symfony\Component\Console\Output\BufferedOutput;
 
-class PylintPrinterTest extends BaseTest
+final class PylintPrinterTest extends BaseTest
 {
 
     public function testPrintOutput()

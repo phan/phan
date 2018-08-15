@@ -12,7 +12,7 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Tests\BaseTest;
 
-class FQSENTest extends BaseTest
+final class FQSENTest extends BaseTest
 {
 
     /** @var Context|null */

@@ -9,7 +9,7 @@ use Phan\Output\Printer\PlainTextPrinter;
 use Phan\Tests\BaseTest;
 use Symfony\Component\Console\Output\BufferedOutput;
 
-class PlainTextPrinterTest extends BaseTest
+final class PlainTextPrinterTest extends BaseTest
 {
 
     public function tearDown()

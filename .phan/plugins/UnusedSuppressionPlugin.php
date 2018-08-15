@@ -257,6 +257,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
     }
 
     /**
+     * @return void
      * @internal
      */
     public function recordPluginSuppression(

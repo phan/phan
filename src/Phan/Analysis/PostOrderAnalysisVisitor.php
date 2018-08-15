@@ -14,6 +14,7 @@ use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
+use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
@@ -2201,13 +2202,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if (!$is_static) {
                 // Find out of any of them have a __get magic method
                 // (Only check if looking for instance properties)
-                $has_getter =
-                    \array_reduce($class_list, function ($carry, $class) {
-                        return (
-                            $carry ||
-                            $class->hasGetMethod($this->code_base)
-                        );
-                    }, false);
+                $has_getter = $this->hasGetter($class_list);
 
                 // If they don't, then analyze for Noops.
                 if (!$has_getter) {
@@ -2225,6 +2220,17 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         return $this->context;
+    }
+
+    /** @param Clazz[] $class_list */
+    private function hasGetter(array $class_list) : bool
+    {
+        foreach ($class_list as $class) {
+            if ($class->hasGetMethod($this->code_base)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

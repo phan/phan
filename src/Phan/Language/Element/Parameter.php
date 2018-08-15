@@ -142,6 +142,7 @@ class Parameter extends Variable
      * If the value's default is null, or a constant evaluating to null,
      * then the parameter type should be converted to nullable
      * (E.g. `int $x = null` and `?int $x = null` are equivalent.
+     * @return void
      */
     public function handleDefaultValueOfNull()
     {
@@ -204,9 +205,7 @@ class Parameter extends Variable
     public static function listFromReflectionParameterList(
         array $reflection_parameters
     ) : array {
-        return \array_map(function (\ReflectionParameter $reflection_parameter) {
-            return self::fromReflectionParameter($reflection_parameter);
-        }, $reflection_parameters);
+        return \array_map([__CLASS__, 'fromReflectionParameter'], $reflection_parameters);
     }
 
     public static function fromReflectionParameter(

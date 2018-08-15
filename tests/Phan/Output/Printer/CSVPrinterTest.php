@@ -8,7 +8,7 @@ use Phan\Output\Printer\CSVPrinter;
 use Phan\Tests\BaseTest;
 use Symfony\Component\Console\Output\BufferedOutput;
 
-class CSVPrinterTest extends BaseTest
+final class CSVPrinterTest extends BaseTest
 {
 
     public function testHeaderCorrespondsToData()
@@ -51,7 +51,7 @@ class CSVPrinterTest extends BaseTest
         $this->assertEquals($expected, $actual);
     }
 
-    public function specialCharacterCasesProvider()
+    public function specialCharacterCasesProvider() : array
     {
         return [
             // Valid ASCII

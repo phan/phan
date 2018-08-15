@@ -7,8 +7,9 @@ use Phan\IssueInstance;
 use Phan\Exception\IssueException;
 
 /**
+ * Tests of IssueException
  */
-class IssueExceptionTest extends BaseTest
+final class IssueExceptionTest extends BaseTest
 {
     public function testToString()
     {

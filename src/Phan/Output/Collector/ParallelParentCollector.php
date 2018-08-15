@@ -79,6 +79,7 @@ class ParallelParentCollector implements IssueCollectorInterface
     /**
      * Collect issue
      * @param IssueInstance $issue
+     * @return void
      */
     public function collectIssue(IssueInstance $issue)
     {
@@ -86,7 +87,7 @@ class ParallelParentCollector implements IssueCollectorInterface
     }
 
     /**
-     *
+     * @return void
      */
     public function readQueuedIssues()
     {

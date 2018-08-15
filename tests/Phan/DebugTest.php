@@ -4,7 +4,7 @@ namespace Phan\Tests;
 
 use Phan\Debug;
 
-class DebugTest extends BaseTest
+final class DebugTest extends BaseTest
 {
     public function testNodeToString()
     {

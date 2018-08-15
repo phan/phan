@@ -125,6 +125,9 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         return $result;
     }
 
+    /**
+     * @return string
+     */
     private function getParameterCategory(Node $method_node)
     {
         $kind = $method_node->kind;

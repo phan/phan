@@ -15,6 +15,7 @@ class NodeSelectionPlugin extends PluginV2 implements PostAnalyzeNodeCapability
 {
     /**
      * @param ?Closure(Context,Node):void $closure
+     * @return void
      * TODO: Fix false positive TypeMismatchDeclaredParam with Closure $closure = null in this method
      */
     public function setNodeSelectorClosure($closure)
@@ -40,6 +41,7 @@ class NodeSelectionPlugin extends PluginV2 implements PostAnalyzeNodeCapability
  */
 class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
 {
+    /** @var ?Closure(Context,Node):void $closure */
     public static $closure = null;
 
     // A plugin's visitors should not override visit() unless they need to.

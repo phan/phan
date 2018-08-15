@@ -5,7 +5,7 @@ use Phan\Analysis\BlockExitStatusChecker;
 use Phan\Config;
 use Phan\Tests\BaseTest;
 
-class BlockExitStatusCheckerTest extends BaseTest
+final class BlockExitStatusCheckerTest extends BaseTest
 {
 
     /**
@@ -14,7 +14,7 @@ class BlockExitStatusCheckerTest extends BaseTest
      *
      * This shouldn't be used outside of tests.
      */
-    private function representStatus(int $status)
+    private function representStatus(int $status) : string
     {
         if ($status === 0) {
             return "invalid(0)";

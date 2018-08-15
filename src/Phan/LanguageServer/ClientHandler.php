@@ -50,7 +50,7 @@ class ClientHandler
             new Protocol\Message(
                 new AdvancedJsonRpc\Request($id, $method, (object)$params)
             )
-        )->then(function () use ($id) {
+        )->then(function () use ($id) : Promise {
             $promise = new Promise();
             /**
              * @suppress PhanUndeclaredProperty taken care of by isResponse checks on msg->body

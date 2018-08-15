@@ -6,7 +6,7 @@ use Phan\Config;
 use Phan\Tests\BaseTest;
 use Phan\Language\UnionType;
 
-class ParameterTypesAnalyzerTest extends BaseTest
+final class ParameterTypesAnalyzerTest extends BaseTest
 {
     public function setUp()
     {

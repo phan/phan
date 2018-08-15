@@ -19,7 +19,7 @@ use PHPUnit\Framework\Test;
  * @suppress PhanUnreferencedClass
  * This class is referenced in phpunit.xml
  */
-class PhanTestListener extends BaseTestListener
+final class PhanTestListener extends BaseTestListener
 {
     public function startTest(Test $test)
     {

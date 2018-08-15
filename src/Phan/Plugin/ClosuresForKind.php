@@ -27,6 +27,7 @@ class ClosuresForKind
     /**
      * @param int $kind - A valid value of a node kind
      * @param \Closure $c
+     * @return void
      */
     public function record(int $kind, \Closure $c)
     {
@@ -38,10 +39,11 @@ class ClosuresForKind
     }
 
     /**
+     * Record the fact that a Closure needs to be the given subset of values of node->kind
+     *
      * @param array<int,int> $kinds - A list of unique values of node kinds
      * @param \Closure $c - The closure to execute on each of those kinds
-     *
-     * Record the fact that a Closure needs to be the given subset of values of node->kind
+     * @return void
      */
     public function recordForKinds(array $kinds, \Closure $c)
     {
