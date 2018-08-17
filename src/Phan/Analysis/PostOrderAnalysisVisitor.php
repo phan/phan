@@ -1633,7 +1633,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $static_class = (string)$node->children['class']->children['name'];
         }
 
-        $method = $this->getStaticMethodOrEmitIssue($node);
+        $method = $this->getStaticMethodOrEmitIssue($node, $method_name);
 
         if ($method === null) {
             // Short circuit on a constructor being called statically
@@ -1816,12 +1816,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * gets the static method, or emits an issue.
-     * @return Method|null
+     * @param Node $node
+     * @param string $method_name - NOTE: The caller should convert constants/class constants/etc in $node->children['method'] to a string.
+     * @return ?Method
      */
-    private function getStaticMethodOrEmitIssue(Node $node)
+    private function getStaticMethodOrEmitIssue(Node $node, string $method_name)
     {
-        $method_name = $node->children['method'];
-
         try {
             // Get a reference to the method being called
             return (new ContextNode(
@@ -1852,6 +1852,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // If we can't figure out what kind of a call
             // this is, don't worry about it
         }
+        return null;
     }
 
     /**
