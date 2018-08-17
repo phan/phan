@@ -31,6 +31,9 @@ if (!class_exists('\ast\Node')) {
 
 class StubsGenerator {
 
+    /**
+     * @return void (does not return)
+     */
     public static function printHelpAndExit(string $message = '', int $exit_code = 1)
     {
         if ($message) {
@@ -60,6 +63,12 @@ EOT;
         return [$namespace, $name];
     }
 
+    /**
+     * The main function of the `make_stubs` script.
+     * See `make_stubs --help` for usage.
+     *
+     * @return void
+     */
     public static function main() {
         global $argv;
         $options = getopt('he:', ['help', 'extension:']);

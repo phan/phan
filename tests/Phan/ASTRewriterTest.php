@@ -6,7 +6,7 @@ use Phan\AST\ASTSimplifier;
 use Phan\Config;
 use Phan\Debug;
 
-class ASTRewriterTest extends AbstractPhanFileTest
+final class ASTRewriterTest extends AbstractPhanFileTest
 {
     /**
      * @suppress PhanUndeclaredConstant

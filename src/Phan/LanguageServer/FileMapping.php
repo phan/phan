@@ -27,6 +27,9 @@ class FileMapping
     {
     }
 
+    /**
+     * @return array<string,string> maps the absolute paths on disks to the currently edited versions of those files.
+     */
     public function getOverrides()
     {
         return $this->overrides;

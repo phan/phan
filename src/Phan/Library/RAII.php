@@ -12,16 +12,20 @@ use Closure;
  */
 class RAII
 {
+    /** @var Closure():void */
     private $finalizer;
 
     /**
-     * @param Closure $finalizer - Should not throw an exception. It may be called in __destruct()
+     * @param Closure():void $finalizer - Should not throw an exception. It may be called in __destruct()
      */
     public function __construct(Closure $finalizer)
     {
         $this->finalizer = $finalizer;
     }
 
+    /**
+     * @return void
+     */
     public function callFinalizerOnce()
     {
         $finalizer = $this->finalizer;

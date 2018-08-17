@@ -54,6 +54,8 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      * @param int $alternate_id
      * An alternate ID for the element for use when
      * there are multiple definitions of the element
+     *
+     * @return static
      */
     public static function make(
         FullyQualifiedClassName $fully_qualified_class_name,
@@ -252,7 +254,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      */
     public function __toString() : string
     {
-        $fqsen_string = $this->memoize(__METHOD__, function () {
+        $fqsen_string = $this->memoize(__METHOD__, /** @return string */ function () {
             return self::toString(
                 $this->getFullyQualifiedClassName(),
                 $this->getName(),

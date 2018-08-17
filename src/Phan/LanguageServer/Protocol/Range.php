@@ -51,7 +51,7 @@ class Range
         return new Range(new Position($lineno - 1, 0), new Position($lineno, 0));
     }
 
-    public static function fromArray(array $data)
+    public static function fromArray(array $data) : Range
     {
         return new self(
             Position::fromArray($data['start']),

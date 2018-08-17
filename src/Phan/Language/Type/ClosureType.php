@@ -31,7 +31,7 @@ final class ClosureType extends Type
         return $instance;
     }
 
-    public static function instanceWithClosureFQSEN(FQSEN $fqsen, FunctionInterface $func = null)
+    public static function instanceWithClosureFQSEN(FQSEN $fqsen, FunctionInterface $func = null) : ClosureType
     {
         static $original_instance = null;
         if ($original_instance === null) {

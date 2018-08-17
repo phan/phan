@@ -289,7 +289,7 @@ class Phan implements IgnoredFilesFilterInterface
             // analysis
             $analyze_file_path_list = array_filter(
                 $analyze_file_path_list,
-                function ($file_path) {
+                function ($file_path) : bool {
                     return !self::isExcludedAnalysisFile($file_path);
                 }
             );

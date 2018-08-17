@@ -192,6 +192,7 @@ class TextDocument
      * @param TextDocumentIdentifier $textDocument @phan-unused-param
      * @param Position $position @phan-unused-param
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
+     * @return ?Promise
      */
     public function hover(TextDocumentIdentifier $textDocument, Position $position)
     {

@@ -4,7 +4,7 @@ namespace Phan\Tests;
 
 use Phan\Config;
 
-class PHP73Test extends AbstractPhanFileTest
+final class PHP73Test extends AbstractPhanFileTest
 {
     const OVERRIDES = [
         'allow_method_param_type_widening' => true,

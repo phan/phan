@@ -151,7 +151,7 @@ class Set extends \SplObjectStorage
     }
 
     /**
-     * @param \Closure $closure
+     * @param \Closure(object):object $closure
      * A closure that maps each element of this set
      * to a new element
      *
@@ -173,9 +173,15 @@ class Set extends \SplObjectStorage
      */
     public function deepCopy() : Set
     {
-        return $this->map(function ($element) {
-            return clone($element);
-        });
+        return $this->map(
+            /**
+             * @param object $element
+             * @return object
+             */
+            function ($element) {
+                return clone($element);
+            }
+        );
     }
 
     /**
@@ -205,12 +211,8 @@ class Set extends \SplObjectStorage
      */
     public function __toString() : string
     {
-        $string = '['
-            . \implode(',', \array_map(function ($element) {
-                return (string)$element;
-            }, \iterator_to_array($this)))
+        return '['
+            . \implode(',', \array_map('strval', \iterator_to_array($this)))
             . ']';
-
-        return $string;
     }
 }

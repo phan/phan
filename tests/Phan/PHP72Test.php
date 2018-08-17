@@ -27,6 +27,7 @@ class PHP72Test extends AbstractPhanFileTest
      * @param string[] $test_file_list
      * @param string $expected_file_path
      * @param ?string $config_file_path
+     * @return void
      *
      * @dataProvider getTestFiles
      * @override

@@ -2767,6 +2767,7 @@ class Clazz extends AddressableElement
         $this->did_finish_parsing = $did_finish_parsing;
     }
 
+    /** @var bool */
     protected $are_constants_hydrated;
 
     /**

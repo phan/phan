@@ -301,7 +301,7 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
             "Recursion has gotten out of hand"
         );
 
-        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) {
+        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
             $union_type = $this->asUnionType();
 
             $class_fqsen = $this->genericArrayElementType()->asFQSEN();

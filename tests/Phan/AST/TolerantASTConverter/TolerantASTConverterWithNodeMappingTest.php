@@ -15,7 +15,7 @@ use ast\Node;
  *
  * @phan-file-suppress PhanThrowTypeAbsent it's a test
  */
-class TolerantASTConverterWithNodeMappingTest extends BaseTest
+final class TolerantASTConverterWithNodeMappingTest extends BaseTest
 {
     public static function setUpBeforeClass()
     {
@@ -73,6 +73,9 @@ class TolerantASTConverterWithNodeMappingTest extends BaseTest
         }
     }
 
+    /**
+     * @return Node
+     */
     private function parseASTWithDefaultOptions(string $file_contents, int $byte_offset)
     {
         $converter = new TolerantASTConverterWithNodeMapping($byte_offset);

@@ -13,7 +13,7 @@ use Phan\Library\None;
 /**
  * Unit tests of Comment
  */
-class CommentTest extends BaseTest
+final class CommentTest extends BaseTest
 {
     /** @var CodeBase */
     protected $code_base;

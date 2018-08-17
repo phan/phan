@@ -399,7 +399,7 @@ class Type
         $key = ($is_nullable ? '?' : '') . static::KEY_PREFIX . $namespace . '\\' . $type_name;
 
         if ($template_parameter_type_list) {
-            $key .= '<' . \implode(',', \array_map(function (UnionType $union_type) {
+            $key .= '<' . \implode(',', \array_map(function (UnionType $union_type) : string {
                 return (string)$union_type;
             }, $template_parameter_type_list)) . '>';
         }
@@ -1062,7 +1062,7 @@ class Type
         // Map the names of the types to actual types in the
         // template parameter type list
         $template_parameter_type_list =
-            array_map(function (string $type_name) use ($context, $source) {
+            \array_map(function (string $type_name) use ($context, $source) : UnionType {
                 return UnionType::fromStringInContext($type_name, $context, $source);
             }, $template_parameter_type_name_list);
 
@@ -1831,7 +1831,7 @@ class Type
      */
     public function getTemplateParameterTypeMap(CodeBase $code_base)
     {
-        return $this->memoize(__METHOD__, function () use ($code_base) {
+        return $this->memoize(__METHOD__, function () use ($code_base) : array {
             $fqsen = $this->asFQSEN();
 
             if (!($fqsen instanceof FullyQualifiedClassName)) {
@@ -1884,7 +1884,7 @@ class Type
             $recursion_depth < 20,
             "Recursion has gotten out of hand"
         );
-        $union_type = $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) {
+        $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) {
             $union_type = $this->asUnionType();
 
             $class_fqsen = $this->asFQSEN();
@@ -2226,7 +2226,7 @@ class Type
      */
     public function __toString()
     {
-        return $this->memoize(__METHOD__, function () {
+        return $this->memoize(__METHOD__, function () : string {
             $string = $this->asFQSENString();
 
             if (\count($this->template_parameter_type_list) > 0) {
@@ -2248,8 +2248,8 @@ class Type
     private function templateParameterTypeListAsString() : string
     {
         return '<' .
-            \implode(',', \array_map(function (UnionType $type) {
-                return (string)$type;
+            \implode(',', \array_map(function (UnionType $type) : string {
+                return $type->__toString();
             }, $this->template_parameter_type_list)) . '>';
     }
 
@@ -2415,7 +2415,10 @@ class Type
         );
     }
 
-    private static function closureParams(string $arg_list)
+    /**
+     * @return array<int,string>
+     */
+    private static function closureParams(string $arg_list) : array
     {
         // Special check if param list has 0 params.
         if ($arg_list === '') {
@@ -2511,7 +2514,7 @@ class Type
     /**
      * @internal - Used to check for quick mode
      */
-    public function shouldBeReplacedBySpecificTypes()
+    public function shouldBeReplacedBySpecificTypes() : bool
     {
         // Could check for final classes such as stdClass here, but not much of a reason to.
         return true;

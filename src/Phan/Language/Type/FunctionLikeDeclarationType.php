@@ -44,6 +44,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     /** @var int see FunctionTrait */
     private $optional_param_count;
 
+    /** @var bool */
     private $is_variadic;
     // end computed properties
 
@@ -84,7 +85,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
      */
     public function __toString() : string
     {
-        return $this->memoize(__FUNCTION__, function () {
+        return $this->memoize(__FUNCTION__, function () : string {
             $parts = [];
             foreach ($this->params as $value) {
                 $parts[] = $value->__toString();
@@ -494,6 +495,10 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return $this->returns_reference;
     }
 
+    /**
+     * @return void
+     * @unused
+     */
     public function setComment(Comment $comment)
     {
         throw new \AssertionError('unexpected call to ' . __METHOD__);

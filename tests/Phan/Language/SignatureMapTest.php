@@ -5,7 +5,7 @@ namespace Phan\Tests\Language;
 use Phan\Tests\BaseTest;
 use Phan\Language\UnionType;
 
-class SignatureMapTest extends BaseTest
+final class SignatureMapTest extends BaseTest
 {
     const FUNCTION_KEY_REGEX = '/^[a-z_][a-z0-9_]*(\\\\[a-z_][a-z0-9_]*)*(::[a-z_][a-z0-9_]*)?(\'[1-9][0-9]*)?$/i';
     const PARAM_KEY_REGEX = '/^\&?(\.\.\.)?[a-z_][a-z0-9_]*=?$/i';
@@ -49,7 +49,7 @@ class SignatureMapTest extends BaseTest
         $this->assertSame('', implode("\n", $failures), "Saw one or more issues for the signature for PHP_VERSION_ID " . $php_version_id);
     }
 
-    public function phpVersionIdProvider()
+    public function phpVersionIdProvider() : array
     {
         return [
             [70000],  // PHP 7.0

@@ -36,8 +36,7 @@ $internal_interface_name_list = get_declared_interfaces();
 $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
-
-class UnionTypeTest extends BaseTest
+final class UnionTypeTest extends BaseTest
 {
     /** @var CodeBase|null */
     protected static $code_base = null;

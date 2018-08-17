@@ -8,7 +8,7 @@ use Phan\Output\Printer\CodeClimatePrinter;
 use Phan\Tests\BaseTest;
 use Symfony\Component\Console\Output\BufferedOutput;
 
-class CodeClimatePrinterTest extends BaseTest
+final class CodeClimatePrinterTest extends BaseTest
 {
 
     public function testPrintOutput()

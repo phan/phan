@@ -7,7 +7,7 @@ use Phan\Library\Tuple2;
 
 /**
  */
-class TupleTest extends BaseTest
+final class TupleTest extends BaseTest
 {
     public function testSimple1()
     {

@@ -72,7 +72,7 @@ class Position
         return ((int)array_sum(array_map('strlen', $slice))) + count($slice) + $this->character;
     }
 
-    public static function fromArray(array $data)
+    public static function fromArray(array $data) : Position
     {
         return new self(
             $data['line'],

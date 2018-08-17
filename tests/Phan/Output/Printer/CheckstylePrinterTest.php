@@ -8,7 +8,7 @@ use Phan\Output\Printer\CheckstylePrinter;
 use Phan\Tests\BaseTest;
 use Symfony\Component\Console\Output\BufferedOutput;
 
-class CheckstylePrinterTest extends BaseTest
+final class CheckstylePrinterTest extends BaseTest
 {
 
     /**
@@ -32,7 +32,7 @@ class CheckstylePrinterTest extends BaseTest
         $this->assertTrue(strpos($issue_messages_text, 'PhanSyntaxError') !== false, "output should contain PhanSyntaxError");
     }
 
-    public function invalidUTF8StringsProvider()
+    public function invalidUTF8StringsProvider() : array
     {
         return [
             // Valid ASCII

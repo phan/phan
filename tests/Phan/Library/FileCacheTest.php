@@ -6,7 +6,7 @@ use Phan\Library\FileCache;
 
 /**
  */
-class FileCacheTest extends BaseTest
+final class FileCacheTest extends BaseTest
 {
     const MOCK_PATH = '/path/to/a';
     const MOCK_CONTENTS = "Mock contents\nOther lines\n";

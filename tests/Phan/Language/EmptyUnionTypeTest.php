@@ -27,7 +27,7 @@ use TypeError;
  * Checks that EmptyUnionType behaves the same way as an empty UnionType instance
  * @phan-file-suppress PhanThrowTypeAbsent it's a test
  */
-class EmptyUnionTypeTest extends BaseTest
+final class EmptyUnionTypeTest extends BaseTest
 {
     const SKIPPED_METHOD_NAMES = [
         'unserialize',  // throws
@@ -58,7 +58,8 @@ class EmptyUnionTypeTest extends BaseTest
         $this->assertSame('', $failures);
     }
 
-    public function checkHasSameImplementationForEmpty(ReflectionMethod $method)
+    // Returns the test errors to show as a string, or the empty string on success
+    public function checkHasSameImplementationForEmpty(ReflectionMethod $method) : string
     {
         $method_name = $method->getName();
         if (!method_exists(UnionType::class, $method_name)) {
@@ -158,10 +159,10 @@ class EmptyUnionTypeTest extends BaseTest
                 ];
             case Closure::class:
                 return [
-                    function (...$unused_args) {
+                    function (...$unused_args) : bool {
                         return false;
                     },
-                    function (...$unused_args) {
+                    function (...$unused_args) : bool {
                         return true;
                     },
                 ];

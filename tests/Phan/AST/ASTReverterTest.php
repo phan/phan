@@ -7,7 +7,7 @@ use Phan\Tests\BaseTest;
 use Phan\AST\ASTReverter;
 use Phan\Config;
 
-class ASTReverterTest extends BaseTest
+final class ASTReverterTest extends BaseTest
 {
     /**
      * @param string $snippet
@@ -25,7 +25,7 @@ class ASTReverterTest extends BaseTest
         $this->assertSame($expected, $reverter->toShortString($snippet_node));
     }
 
-    public function revertShorthandProvider()
+    public function revertShorthandProvider() : array
     {
         return [
             ["'2'"],

@@ -77,7 +77,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
      */
     public function asIndividualTypeInstances() : array
     {
-        return \array_map(function (Type $type) {
+        return \array_map(function (Type $type) : GenericArrayType {
             return GenericArrayType::fromElementType($type, $this->is_nullable, $this->key_type);
         }, UnionType::normalizeMultiTypes($this->element_types));
     }

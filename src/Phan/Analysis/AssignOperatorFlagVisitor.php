@@ -46,6 +46,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
     /**
      * @param Node $node
      * A node to visit
+     * @return UnionType
      */
     public function __invoke(Node $node)
     {
@@ -109,6 +110,9 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         ]));
     }
 
+    /**
+     * @return UnionType for the `&` operator
+     */
     public function visitBinaryBitwiseAnd(Node $node)
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
@@ -134,6 +138,9 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         return IntType::instance(false)->asUnionType();
     }
 
+    /**
+     * @return UnionType for the `|` operator
+     */
     public function visitBinaryBitwiseOr(Node $node)
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
@@ -159,7 +166,13 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         return IntType::instance(false)->asUnionType();
     }
 
-    // Code can bitwise xor strings byte by byte in PHP
+    /**
+     * Analyze the bitwise xor operator.
+     *
+     * NOTE: Code can bitwise xor strings byte by byte in PHP
+     *
+     * @return UnionType for the `^` operator
+     */
     public function visitBinaryBitwiseXor(Node $node)
     {
         $left = UnionTypeVisitor::unionTypeFromNode(

@@ -8,7 +8,7 @@ use Phan\Output\Printer\JSONPrinter;
 use Phan\Tests\BaseTest;
 use Symfony\Component\Console\Output\BufferedOutput;
 
-class JSONPrinterTest extends BaseTest
+final class JSONPrinterTest extends BaseTest
 {
 
     public function testPrintOutput()

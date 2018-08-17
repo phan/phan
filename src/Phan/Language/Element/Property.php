@@ -172,7 +172,7 @@ class Property extends ClassElement
     }
 
 
-    public function toStub()
+    public function toStub() : string
     {
         $string = '    ' . $this->getVisibilityName() . ' ';
 
@@ -294,6 +294,9 @@ class Property extends ClassElement
         return $this->getPhanFlagsHasState(Flags::IS_DYNAMIC_PROPERTY);
     }
 
+    /**
+     * @return void
+     */
     public function setIsDynamicProperty(bool $is_dynamic)
     {
         $this->setPhanFlags(

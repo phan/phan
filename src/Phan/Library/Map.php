@@ -30,11 +30,11 @@ class Map extends \SplObjectStorage
     }
 
     /**
-     * @param \Closure $key_closure
+     * @param \Closure(object):object $key_closure
      * A closure that maps each key of this map
      * to a new key
      *
-     * @param \Closure $value_closure
+     * @param \Closure(object):object $value_closure
      * A closure that maps each value of this map
      * to a new value.
      *
@@ -59,9 +59,14 @@ class Map extends \SplObjectStorage
      */
     public function deepCopy() : Map
     {
-        $clone = function ($element) {
-            return clone($element);
-        };
+        $clone =
+            /**
+             * @param object $element
+             * @return object
+             */
+            function ($element) {
+                return clone($element);
+            };
         return $this->keyValueMap($clone, $clone);
     }
 

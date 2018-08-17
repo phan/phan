@@ -8,7 +8,7 @@ use Phan\Language\Element\MarkupDescription;
 /**
  * Unit tests of MarkupDescription functionality
  */
-class MarkupDescriptionTest extends BaseTest
+final class MarkupDescriptionTest extends BaseTest
 {
     /**
      * @dataProvider extractDocCommentProvider

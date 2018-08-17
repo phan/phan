@@ -113,7 +113,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
                 $code_base,
                 $property->getContext(),
                 'UnknownPropertyType',
-                "Property {PROPERTY} should not be called `property`",
+                "Property {PROPERTY} has an initial type that cannot be inferred",
                 [(string)$property->getFQSEN()]
             );
         }

@@ -44,6 +44,7 @@ trait IssueEmitter
      * Issue::REMEDIATION_F} with F being the hardest.
      *
      * @param int $issue_type_id An issue id for pylint
+     * @return void
      */
     public function emitPluginIssue(
         CodeBase $code_base,

@@ -76,7 +76,7 @@ abstract class Scope
     }
 
     /**
-     *
+     * @return FQSEN
      */
     public function getFQSEN()
     {

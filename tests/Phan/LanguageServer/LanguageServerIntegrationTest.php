@@ -22,7 +22,7 @@ use stdClass;
  *
  * @phan-file-suppress PhanThrowTypeAbsent, PhanThrowTypeAbsentForCall it's a test
  */
-class LanguageServerIntegrationTest extends BaseTest
+final class LanguageServerIntegrationTest extends BaseTest
 {
     // Uncomment to enable debug logging within this test.
     // There are separate config settings to make the language server emit debug messages.
@@ -407,7 +407,7 @@ EOT
 
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
             // NOTE: Line numbers are 0-based for Position
-            $perform_definition_request = function () use ($proc_in, $proc_out, $position, $requested_uri) {
+            $perform_definition_request = /** @return array */ function () use ($proc_in, $proc_out, $position, $requested_uri) {
                 return $this->writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, $position, $requested_uri);
             };
             $definition_response = $perform_definition_request();
@@ -490,7 +490,7 @@ EOT
 
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
             // NOTE: Line numbers are 0-based for Position
-            $perform_definition_request = function () use ($proc_in, $proc_out, $position, $requested_uri) {
+            $perform_definition_request = /** @return array */ function () use ($proc_in, $proc_out, $position, $requested_uri) {
                 return $this->writeTypeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, $position, $requested_uri);
             };
             $definition_response = $perform_definition_request();
@@ -571,7 +571,7 @@ EOT
 
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
             // NOTE: Line numbers are 0-based for Position
-            $perform_hover_request = function () use ($proc_in, $proc_out, $position, $requested_uri) {
+            $perform_hover_request = /** @return array */ function () use ($proc_in, $proc_out, $position, $requested_uri) {
                 return $this->writeHoverRequestAndAwaitResponse($proc_in, $proc_out, $position, $requested_uri);
             };
             $hover_response = $perform_hover_request();
