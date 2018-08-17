@@ -1,0 +1,3 @@
+src/047_crash.php:6 PhanUnusedPublicMethodParameter Parameter $arg is never used
+src/047_crash.php:11 PhanUnreferencedFunction Possibly zero references to function \example
+src/047_crash.php:12 PhanTypeMismatchArgument Argument 1 (arg) is 'my arg' but \X47::myMethod() takes int defined at src/047_crash.php:6
