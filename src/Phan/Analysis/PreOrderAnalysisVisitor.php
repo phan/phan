@@ -995,29 +995,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         ))->__invoke($cond);
     }
 
-    /**
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitWhile(Node $node) : Context
-    {
-        $cond = $node->children['cond'];
-        if (!($cond instanceof Node)) {
-            return $this->context;
-        }
-
-        // Look to see if any proofs we do within the condition of the while
-        // can say anything about types within the statement
-        // list.
-        return (new ConditionVisitor(
-            $this->code_base,
-            $this->context
-        ))->__invoke($cond);
-    }
+    // visitWhile is unnecessary, this has special logic in BlockAnalysisVisitor to handle conditions assigning variables to the loop
 
     /**
      * @param Node $node

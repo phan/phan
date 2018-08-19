@@ -1,0 +1,4 @@
+%s:12 PhanTypeMismatchArgument Argument 1 (arg) is true but \x516() takes array defined at %s:6
+%s:17 PhanTypeMismatchArgument Argument 1 (arg) is 1 but \x516() takes array defined at %s:6
+%s:24 PhanTypeMismatchArgument Argument 1 (arg) is false but \x516() takes array defined at %s:6
+%s:29 PhanTypeMismatchArgument Argument 1 (arg) is 0 but \x516() takes array defined at %s:6
