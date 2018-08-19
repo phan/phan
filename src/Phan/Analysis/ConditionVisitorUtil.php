@@ -13,7 +13,9 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Element\Variable;
 use Phan\Language\UnionType;
+
 use ast\Node;
+use Closure;
 
 /**
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
@@ -327,17 +329,23 @@ trait ConditionVisitorUtil
      * @param Node|int|float|string $left
      * @param Node|int|float|string $right
      * @return Context - Constant after inferring type from an expression such as `if ($x !== false)`
+     *
+     * TODO: Could improve analysis by adding analyzeAndUpdateToBeEqual for `==`
      */
     protected function analyzeAndUpdateToBeIdentical($left, $right) : Context
     {
-        if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
-            // e.g. `if (!($x !== null))` or `if ($x === null)`
-            return $this->updateVariableToBeIdentical($left, $right, $this->context);
-        } elseif (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
-            // e.g. if (!(null !== $x))
-            return $this->updateVariableToBeIdentical($right, $left, $this->context);
-        }
-        return $this->context;
+        return $this->analyzeBinaryConditionPattern(
+            $left,
+            $right,
+            /**
+             * @param Node $var
+             * @param Node|int|string|float $expr
+             * @return Context
+             */
+            function ($var, $expr) {
+                return $this->updateVariableToBeIdentical($var, $expr, $this->context);
+            }
+        );
     }
 
     /**
@@ -347,12 +355,60 @@ trait ConditionVisitorUtil
      */
     protected function analyzeAndUpdateToBeNotIdentical($left, $right) : Context
     {
-        if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
-            // e.g. if ($x !== null)
-            return $this->updateVariableToBeNotIdentical($left, $right, $this->context);
-        } elseif (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
-            // e.g. if (null !== $x)
-            return $this->updateVariableToBeNotIdentical($right, $left, $this->context);
+        return $this->analyzeBinaryConditionPattern(
+            $left,
+            $right,
+            /**
+             * @param Node $var
+             * @param Node|int|string|float $expr
+             * @return Context
+             */
+            function ($var, $expr) {
+                return $this->updateVariableToBeNotIdentical($var, $expr, $this->context);
+            }
+        );
+    }
+
+    /**
+     * @param Node|int|float|string $left
+     * @param Node|int|float|string $right
+     * @param Closure(Node,Node|int|float|string):Context $analyzer
+     */
+    private function analyzeBinaryConditionPattern($left, $right, Closure $analyzer) : Context
+    {
+        if ($left instanceof Node) {
+            $kind = $left->kind;
+            if ($kind === \ast\AST_VAR) {
+                return $analyzer($left, $right);
+            }
+            $tmp = $left;
+            while (\in_array($kind, [\ast\AST_ASSIGN, \ast\AST_ASSIGN_OP, \ast\AST_ASSIGN_REF], true)) {
+                $tmp = $tmp->children['var'];
+                if (!$tmp instanceof Node) {
+                    break;
+                }
+                $kind = $tmp->kind;
+                if ($kind === \ast\AST_VAR) {
+                    return $analyzer($tmp, $right);
+                }
+            }
+        }
+        if ($right instanceof Node) {
+            $kind = $right->kind;
+            if ($kind === \ast\AST_VAR) {
+                return $analyzer($right, $left);
+            }
+            $tmp = $right;
+            while (\in_array($kind, [\ast\AST_ASSIGN, \ast\AST_ASSIGN_OP, \ast\AST_ASSIGN_REF], true)) {
+                $tmp = $right->children['var'];
+                if (!$tmp instanceof Node) {
+                    break;
+                }
+                $kind = $tmp->kind;
+                if ($kind === \ast\AST_VAR) {
+                    return $analyzer($tmp, $left);
+                }
+            }
         }
         return $this->context;
     }
@@ -364,14 +420,18 @@ trait ConditionVisitorUtil
      */
     protected function analyzeAndUpdateToBeNotEqual($left, $right) : Context
     {
-        if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
-            // e.g. if (!($x == null))
-            return $this->updateVariableToBeNotEqual($left, $right, $this->context);
-        } elseif (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
-            // e.g. if (!(null == $x))
-            return $this->updateVariableToBeNotEqual($right, $left, $this->context);
-        }
-        return $this->context;
+        return $this->analyzeBinaryConditionPattern(
+            $left,
+            $right,
+            /**
+             * @param Node $var
+             * @param Node|int|string|float $expr
+             * @return Context
+             */
+            function ($var, $expr) {
+                return $this->updateVariableToBeNotEqual($var, $expr, $this->context);
+            }
+        );
     }
 
     /**
