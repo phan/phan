@@ -922,7 +922,13 @@ class NegatedConditionVisitor extends KindVisitorImplementation
      */
     public function visitAssign(Node $node) : Context
     {
-        return (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssign($node);
+        $context = (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssign($node);
+        $left = $node->children['var'];
+        if ($left instanceof Node) {
+            return $this->__invoke($left);
+        }
+
+        return $context;
     }
 
     /**
@@ -937,6 +943,12 @@ class NegatedConditionVisitor extends KindVisitorImplementation
      */
     public function visitAssignRef(Node $node) : Context
     {
-        return (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssignRef($node);
+        $context = (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssignRef($node);
+        $left = $node->children['var'];
+        if ($left instanceof Node) {
+            return $this->__invoke($left);
+        }
+
+        return $context;
     }
 }
