@@ -10,7 +10,8 @@ New features(CLI,Configs)
 New features(Analysis)
 + Add function signatures for functions added/modified in PHP 7.3. (#1537)
 + Improve the line number for warnings about unextractable `@property*` annotations.
-+ Make Phan aware that `$x` is not false inside of loops such as `while ($x = dynamic_value())` (#1646)
++ Make Phan aware that `$x` is not false inside of loops such as `while ($x = dynamic_value()) {...}` (#1646)
++ Improve inferred types of `$x` in complex equality/inequality checks such as `if (($x = dynamic_value()) !== false) {...}`
 
 Plugins:
 + Add `UnknownElementTypePlugin` (currently a work in progress).
