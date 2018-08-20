@@ -449,39 +449,49 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         };
         $remove_float_callback = $make_basic_negated_assertion_callback(FloatType::class);
         $remove_int_callback = $make_basic_negated_assertion_callback(IntType::class);
-        $remove_scalar_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
-            return $cv->updateVariableWithConditionalFilter(
-                $var_node,
-                $context,
-                // if (!is_scalar($x)) removes scalar types from $x, but $x can still be null.
-                function (UnionType $union_type) : bool {
-                    return $union_type->hasTypeMatchingCallback(function (Type $type) : bool {
-                        return ($type instanceof ScalarType) && !($type instanceof NullType);
-                    });
-                },
-                function (UnionType $union_type) : UnionType {
-                    $new_type_builder = new UnionTypeBuilder();
-                    $has_null = false;
-                    $has_other_nullable_types = false;
-                    // Add types which are not scalars
-                    foreach ($union_type->getTypeSet() as $type) {
-                        if ($type instanceof ScalarType && !($type instanceof NullType)) {
-                            $has_null = $has_null || $type->getIsNullable();
-                            continue;
+        /**
+         * @param Closure(Type):bool $type_filter
+         * @return Closure(NegatedConditionVisitor,Node,Context):Context
+         */
+        $remove_conditional_function_callback = static function (Closure $type_filter) : Closure {
+            return static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) use ($type_filter) : Context {
+                return $cv->updateVariableWithConditionalFilter(
+                    $var_node,
+                    $context,
+                    function (UnionType $union_type) use($type_filter) : bool {
+                        return $union_type->hasTypeMatchingCallback($type_filter);
+                    },
+                    function (UnionType $union_type) use ($type_filter) : UnionType {
+                        $new_type_builder = new UnionTypeBuilder();
+                        $has_null = false;
+                        $has_other_nullable_types = false;
+                        // Add types which are not scalars
+                        foreach ($union_type->getTypeSet() as $type) {
+                            if ($type_filter($type)) {
+                                $has_null = $has_null || $type->getIsNullable();
+                                continue;
+                            }
+                            assert($type instanceof Type);
+                            $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
+                            $new_type_builder->addType($type);
                         }
-                        assert($type instanceof Type);
-                        $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
-                        $new_type_builder->addType($type);
-                    }
-                    // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
-                    if ($has_null && !$has_other_nullable_types) {
-                        $new_type_builder->addType(NullType::instance(false));
-                    }
-                    return $new_type_builder->getUnionType();
-                },
-                false
-            );
+                        // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
+                        if ($has_null && !$has_other_nullable_types) {
+                            $new_type_builder->addType(NullType::instance(false));
+                        }
+                        return $new_type_builder->getUnionType();
+                    },
+                    false
+                );
+            };
+
         };
+        $remove_scalar_callback = $remove_conditional_function_callback(function (Type $type) : bool {
+            return $type instanceof ScalarType && !($type instanceof NullType);
+        });
+        $remove_numeric_callback = $remove_conditional_function_callback(function (Type $type) : bool {
+            return $type instanceof IntType || $type instanceof FloatType;
+        });
         $remove_callable_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
             return $cv->updateVariableWithConditionalFilter(
                 $var_node,
@@ -608,7 +618,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
             'is_integer' => $remove_int_callback,
             'is_iterable' => $make_basic_negated_assertion_callback(IterableType::class),  // TODO: Could keep basic array types and classes extending iterable
             'is_long' => $remove_int_callback,
-            // 'is_numeric' => $make_basic_assertion_callback('string|int|float'),
+            'is_numeric' => $remove_numeric_callback,
             'is_object' => $remove_object_callback,
             'is_real' => $remove_float_callback,
             'is_resource' => $make_basic_negated_assertion_callback(ResourceType::class),

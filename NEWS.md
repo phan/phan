@@ -12,6 +12,7 @@ New features(Analysis)
 + Improve the line number for warnings about unextractable `@property*` annotations.
 + Make Phan aware that `$x` is not false inside of loops such as `while ($x = dynamic_value()) {...}` (#1646)
 + Improve inferred types of `$x` in complex equality/inequality checks such as `if (($x = dynamic_value()) !== false) {...}`
++ Make `!is_numeric` assertions remove `int` and `float` from the union type of an expression. (#1895)
 
 Plugins:
 + Add `UnknownElementTypePlugin` (currently a work in progress).

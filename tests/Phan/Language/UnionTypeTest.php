@@ -157,6 +157,11 @@ final class UnionTypeTest extends BaseTest
         // Evaluating this should result in '0'
         $this->assertUnionTypeStringEqual('$x=(new stdClass()); $x &= 2; $x', 'int');
         $this->assertUnionTypeStringEqual('$x = stdClass::class; new $x();', '\stdClass');
+
+        // !is_numeric removes integers from the type
+        $this->assertUnionTypeStringEqual('$x = rand() ? "a string" : 1; assert(!is_numeric($x)); $x', "'a string'");
+        $this->assertUnionTypeStringEqual('$x = rand() ? 2.4 : new stdClass(); assert(!is_numeric($x)); $x', '\stdClass');
+        $this->assertUnionTypeStringEqual('$x = rand() ? $argv[0] : $argc; assert(!is_numeric($x)); $x', 'string');
     }
 
     public function testString()
