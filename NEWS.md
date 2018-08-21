@@ -13,6 +13,8 @@ New features(Analysis)
 + Make Phan aware that `$x` is not false inside of loops such as `while ($x = dynamic_value()) {...}` (#1646)
 + Improve inferred types of `$x` in complex equality/inequality checks such as `if (($x = dynamic_value()) !== false) {...}`
 + Make `!is_numeric` assertions remove `int` and `float` from the union type of an expression. (#1895)
++ Preserve any matching original types in scalar type assertions (#1896)
+  (e.g. a variable `$x` of type `?int|?MyClass` will have type `int` after `assert(is_numeric($x))`)
 
 Plugins:
 + Add `UnknownElementTypePlugin` (currently a work in progress).
