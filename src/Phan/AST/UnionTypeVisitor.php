@@ -948,7 +948,8 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         return (new BinaryOperatorFlagVisitor(
             $this->code_base,
-            $this->context
+            $this->context,
+            $this->should_catch_issue_exception
         ))->__invoke($node);
     }
 
