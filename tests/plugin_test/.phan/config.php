@@ -114,5 +114,6 @@ return [
         'UnreachableCodePlugin',
         'UnusedSuppressionPlugin',
         'SleepCheckerPlugin',
+        'DuplicateExpressionPlugin',
     ],
 ];
