@@ -66,6 +66,7 @@ class Colorizing
     const DEFAULT_COLOR_FOR_TEMPLATE = [
         'CLASS'         => 'green',
         'CLASSLIKE'     => 'green',
+        'CODE'          => 'light_magenta',
         'COMMENT'       => 'light_green',
         'CONST'         => 'light_red',
         'COUNT'         => 'light_magenta',

@@ -550,6 +550,7 @@ return [
 
         // UnknownElementTypePlugin warns about unknown types in element signatures.
         'UnknownElementTypePlugin',
+        'DuplicateExpressionPlugin',
         // TODO: warn about the usage of assert() for Phan's self-analysis. See https://github.com/phan/phan/issues/288
         // 'NoAssertPlugin',
 

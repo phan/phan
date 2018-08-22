@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\AST;
 
+use Phan\Analysis\PostOrderAnalysisVisitor;
 use ast\Node;
 use ast;
 use function implode;
@@ -59,6 +60,10 @@ class ASTReverter
             ast\AST_CONST => function (Node $node) : string {
                 return self::toShortString($node->children['name']);
             },
+            ast\AST_VAR => function (Node $node) : string {
+                $name_node = $node->children['name'];
+                return '$' . (is_string($name_node) ? $name_node : ('{' . self::toShortString($name_node) . '}'));
+            },
             ast\AST_NAME => function (Node $node) : string {
                 $result = $node->children['name'];
                 switch ($node->flags) {
@@ -93,6 +98,31 @@ class ASTReverter
                     case ast\flags\ARRAY_SYNTAX_LIST:
                         return "list($string)";
                 }
+            },
+            /** @suppress PhanAccessClassConstantInternal */
+            ast\AST_BINARY_OP => function (Node $node) : string {
+                return \sprintf(
+                    "(%s %s %s)",
+                    self::toShortString($node->children['left']),
+                    PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags] ?? ' unknown ',
+                    self::toShortString($node->children['right'])
+                );
+            },
+            ast\AST_PROP => function (Node $node) : string {
+                $prop_node = $node->children['prop'];
+                return \sprintf(
+                    '%s->%s',
+                    self::toShortString($node->children['expr']),
+                    $prop_node instanceof Node ? '{' . self::toShortString($prop_node) . '}' : (string)$prop_node
+                );
+            },
+            ast\AST_STATIC_PROP => function (Node $node) : string {
+                $prop_node = $node->children['prop'];
+                return \sprintf(
+                    '%s::$%s',
+                    self::toShortString($node->children['class']),
+                    $prop_node instanceof Node ? '{' . self::toShortString($prop_node) . '}' : (string)$prop_node
+                );
             },
         ];
     }

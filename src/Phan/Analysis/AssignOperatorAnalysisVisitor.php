@@ -354,13 +354,13 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
 
     private function analyzeBitwiseOperation(Node $node) : Context
     {
-        return $this->updateTargetWithType($node, function (UnionType $left) use ($node) : UnionType {
+        return $this->updateTargetWithType($node, function (UnionType $left_type) use ($node) : UnionType {
             // TODO: Warn about invalid left and right hand sides here and in BinaryOperatorFlagVisitor.
             // Expect int|string
 
             $right_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
-            if ($right_type->hasStringType() || $right_type->hasStringType()) {
-                if ($right_type->isNonNullStringType() && $left->isNonNullStringType()) {
+            if ($right_type->hasStringType() || $left_type->hasStringType()) {
+                if ($right_type->isNonNullStringType() && $left_type->isNonNullStringType()) {
                     return StringType::instance(false)->asUnionType();
                 }
                 return UnionType::fromFullyQualifiedString('int|string');
