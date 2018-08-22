@@ -9420,7 +9420,7 @@ return [
 'rectObj::project' => ['int', 'in'=>'projectionObj', 'out'=>'projectionObj'],
 'rectObj::set' => ['int', 'property_name'=>'string', 'new_value'=>''],
 'rectObj::setextent' => ['void', 'minx'=>'float', 'miny'=>'float', 'maxx'=>'float', 'maxy'=>'float'],
-'RecursiveArrayIterator::__construct' => ['void'],
+'RecursiveArrayIterator::__construct' => ['void', 'array'=>'array|object','flags='=>'int'],
 'RecursiveArrayIterator::append' => ['void', 'value'=>'mixed'],
 'RecursiveArrayIterator::asort' => ['void'],
 'RecursiveArrayIterator::count' => ['int'],
