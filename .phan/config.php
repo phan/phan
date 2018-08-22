@@ -548,8 +548,10 @@ return [
         'PregRegexCheckerPlugin',
         'PrintfCheckerPlugin',
 
-        // UnknownElementTypePlugin is a WIP plugin for warning about unknown types in element signatures.
+        // UnknownElementTypePlugin warns about unknown types in element signatures.
         'UnknownElementTypePlugin',
+        // TODO: warn about the usage of assert() for Phan's self-analysis. See https://github.com/phan/phan/issues/288
+        // 'NoAssertPlugin',
 
         // 'SleepCheckerPlugin' is useful for projects which heavily use the __sleep() method. Phan doesn't use __sleep().
 

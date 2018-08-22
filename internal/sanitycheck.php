@@ -14,6 +14,9 @@ function load_internal_function(string $function_name) : ReflectionFunctionAbstr
     }
 }
 
+/**
+ * @throws InvalidArgumentException for invalid fields
+ */
 function getParametersCountsFromPhan(array $fields) : array
 {
     $num_required = 0;
@@ -22,7 +25,10 @@ function getParametersCountsFromPhan(array $fields) : array
     $saw_optional = false;
     $saw_optional_after_required = false;
     foreach ($fields as $type => $_) {
-        assert(is_string($type));
+        if (!is_string($type)) {
+            throw new InvalidArgumentException("Invalid parameter description $type");
+        }
+
         if (strpos($type, '...') !== false) {
             $num_optional = 10000;
             break;
@@ -109,12 +115,15 @@ function get_parameters_from_phan($fields)
 
 /**
  * @return void
+ * @throws InvalidArgumentException for invalid return types
  * TODO: consistent naming
  */
 function check_fields(string $function_name, array $fields, array $signatures)
 {
     $return_type = $fields[0];  // TODO: Check type
-    assert(is_string($return_type));
+    if (!is_string($return_type)) {
+        throw new InvalidArgumentException("Invalid return type: " . json_encode($return_type));
+    }
 
     $original_function_name = $function_name;
     $function_name = preg_replace("/'\\d+$/", "", $function_name);
@@ -124,7 +133,6 @@ function check_fields(string $function_name, array $fields, array $signatures)
     } catch (ReflectionException $_) {
         return;
     }
-    assert($function instanceof ReflectionFunctionAbstract);
     $real_return_type = (string)$function->getReturnType();
     // TODO: Account for alternate signatures, check for $function_name . "\1"
     $has_alternate = isset($signatures[$function_name . "'1"]);

@@ -139,7 +139,6 @@ final class AlwaysReturnPlugin extends PluginV2 implements
         if (!$node) {
             return null;
         }
-        assert($node->kind === \ast\AST_FUNC_DECL || $node->kind === \ast\AST_CLOSURE || $node->kind === \ast\AST_METHOD);
         return $node->children['stmts'];
     }
 
