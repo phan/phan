@@ -15,6 +15,8 @@ use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\StringType;
 use Phan\Issue;
+
+use AssertionError;
 use ast\Node;
 use Closure;
 
@@ -33,14 +35,21 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     private $context;
 
     /**
+     * @var bool
+     */
+    private $should_catch_issue_exception;
+
+    /**
      * Create a new BinaryOperatorFlagVisitor
      */
     public function __construct(
         CodeBase $code_base,
-        Context $context
+        Context $context,
+        bool $should_catch_issue_exception = false
     ) {
         $this->code_base = $code_base;
         $this->context = $context;
+        $this->should_catch_issue_exception = $should_catch_issue_exception;
     }
 
     /**
@@ -52,7 +61,16 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function __invoke(Node $node)
     {
-        return Element::acceptBinaryFlagVisitor($node, $this);
+        return $this->{Element::VISIT_BINARY_LOOKUP_TABLE[$node->flags] ?? 'handleMissing'}($node);
+    }
+
+    /**
+     * @throws AssertionError
+     * @suppress PhanUnreferencedPrivateMethod this is referenced by __invoke
+     */
+    private function handleMissing(Node $node)
+    {
+        throw new AssertionError("All flags must match. Found " . Element::flagDescription($node));
     }
 
     /**
@@ -72,13 +90,15 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['left']
+            $node->children['left'],
+            $this->should_catch_issue_exception
         );
 
         $right = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['right']
+            $node->children['right'],
+            $this->should_catch_issue_exception
         );
         static $int_or_float = null;
 
@@ -173,13 +193,15 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['left']
+            $node->children['left'],
+            $this->should_catch_issue_exception
         );
 
         $right = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['right']
+            $node->children['right'],
+            $this->should_catch_issue_exception
         );
 
         if ($left->isType(ArrayType::instance(false))
@@ -258,7 +280,8 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         $left_value = $left_node instanceof Node ? UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $left_node
+            $left_node,
+            $this->should_catch_issue_exception
         )->asSingleScalarValueOrNull() : $left_node;
         if ($left_value === null) {
             return StringType::instance(false)->asUnionType();
@@ -267,7 +290,8 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         $right_value = $right_node instanceof Node ? UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $right_node
+            $right_node,
+            $this->should_catch_issue_exception
         )->asSingleScalarValueOrNull() : $right_node;
         if ($right_value === null) {
             return StringType::instance(false)->asUnionType();
@@ -287,13 +311,15 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['left']
+            $node->children['left'],
+            $this->should_catch_issue_exception
         );
 
         $right = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['right']
+            $node->children['right'],
+            $this->should_catch_issue_exception
         );
 
         $left_is_array_like = $left->isExclusivelyArrayLike();
@@ -488,13 +514,15 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         $left = UnionTypeVisitor::unionTypeFromNode(
             $code_base,
             $context,
-            $node->children['left']
+            $node->children['left'],
+            $this->should_catch_issue_exception
         );
 
         $right = UnionTypeVisitor::unionTypeFromNode(
             $code_base,
             $context,
-            $node->children['right']
+            $node->children['right'],
+            $this->should_catch_issue_exception
         );
 
         // fast-track common cases
@@ -607,13 +635,15 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         $left = UnionTypeVisitor::unionTypeFromNode(
             $code_base,
             $context,
-            $node->children['left']
+            $node->children['left'],
+            $this->should_catch_issue_exception
         );
 
         $right = UnionTypeVisitor::unionTypeFromNode(
             $code_base,
             $context,
-            $node->children['right']
+            $node->children['right'],
+            $this->should_catch_issue_exception
         );
 
         // fast-track common cases
@@ -717,13 +747,15 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         $unused_left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['left']
+            $node->children['left'],
+            $this->should_catch_issue_exception
         );
 
         $unused_right = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['right']
+            $node->children['right'],
+            $this->should_catch_issue_exception
         );
 
         return BoolType::instance(false)->asUnionType();
@@ -744,7 +776,8 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         $left_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $left_node
+            $left_node,
+            $this->should_catch_issue_exception
         );
         if (!($left_node instanceof Node)) {
             // TODO: Warn about this being an unnecessary coalesce operation
@@ -755,7 +788,8 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         $right_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['right']
+            $node->children['right'],
+            $this->should_catch_issue_exception
         );
 
         // On the left side, remove null and replace '?T' with 'T'

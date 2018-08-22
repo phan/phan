@@ -458,7 +458,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                 return $cv->updateVariableWithConditionalFilter(
                     $var_node,
                     $context,
-                    function (UnionType $union_type) use($type_filter) : bool {
+                    function (UnionType $union_type) use ($type_filter) : bool {
                         return $union_type->hasTypeMatchingCallback($type_filter);
                     },
                     function (UnionType $union_type) use ($type_filter) : UnionType {
@@ -484,7 +484,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                     false
                 );
             };
-
         };
         $remove_scalar_callback = $remove_conditional_function_callback(function (Type $type) : bool {
             return $type instanceof ScalarType && !($type instanceof NullType);

@@ -25,6 +25,7 @@ Bug fixes:
   (Phan now logs these the same way it would log other syntax errors, instead of treating this like an unexpected Error.)
 + Make sure that private methods that are generators, that are inherited from a trait, aren't treated like a `void`.
 + Fix a crash analyzing a dynamic call to a static method, which occurred when dead code detection or reference tracking was enabled. (#1889)
++ Don't accidentally emit false positive issues about operands of binary operators in certain contexts (#1898)
 
 12 Aug 2018, Phan 1.0.0
 -----------------------
