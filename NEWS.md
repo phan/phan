@@ -17,7 +17,13 @@ New features(Analysis)
   (e.g. a variable `$x` of type `?int|?MyClass` will have type `int` after `assert(is_numeric($x))`)
 
 Plugins:
-+ Add `UnknownElementTypePlugin` (currently a work in progress).
++ Add `UnknownElementTypePlugin` to warn about functions/methods
+  that have param/return types that Phan can't infer anything about.
+  (it can still infer some things in non-quick mode about parameters)
++ Add `DuplicateElementPlugin` to warn about duplicated expressions such as:
+  - `X == X`, `X || X`, and many other binary operators (for operators where it is likely to be a bug)
+  - `X ? X : Y` (can often simplify to `X ?: Y`)
+  - `isset(X) ? X : Y` (can simplify to `??` in PHP 7)
 + Improve types inferred for `$matches` for PregRegexCheckerPlugin.
 
 Bug fixes:
