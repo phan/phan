@@ -184,12 +184,17 @@ EOT;
         }
         return $phan_signatures_lc;
     }
-    /** @return ?array */
+    /**
+     * @return ?array
+     * @throws InvalidArgumentException
+     */
     public function parseFunctionLikeSignature(string $method_name)
     {
         if (stripos($method_name, '::') !== false) {
             $parts = \explode('::', $method_name);
-            \assert(\count($parts) === 2, new Error("Too many parts"));
+            if (\count($parts) !== 2) {
+                throw new InvalidArgumentException("Wrong number of parts in $method_name");
+            }
 
             return $this->parseMethodSignature($parts[0], $parts[1]);
         }
@@ -1057,7 +1062,9 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
             $code_base = $this->code_base;
             $function_name_map = [];
             foreach ($code_base->getFunctionMap() as $func) {
-                assert($func instanceof Func);
+                if (!($func instanceof Func)) {
+                    throw new AssertionError('expected $func to be a Func');
+                }
                 $function_name = $func->getFQSEN()->getNamespacedName();
                 $func->ensureScopeInitialized($code_base);
                 $function_name_map[$function_name] = $func->toFunctionSignatureArray();
@@ -1076,7 +1083,9 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
             $code_base = $this->code_base;
             $function_name_map = [];
             foreach ($code_base->getMethodSet() as $method) {
-                assert($method instanceof Method);
+                if (!($method instanceof Method)) {
+                    throw new AssertionError('expected $method to be a Method');
+                }
                 $function_name = $method->getClassFQSEN()->getNamespacedName() . '::' . $method->getName();
                 $method->ensureScopeInitialized($code_base);
                 $function_name_map[$function_name] = $method->toFunctionSignatureArray();

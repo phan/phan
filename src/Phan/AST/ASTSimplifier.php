@@ -2,6 +2,7 @@
 namespace Phan\AST;
 
 use ast\Node;
+use AssertionError;
 
 /**
  * This simplifies a PHP AST into a form which is easier to analyze,
@@ -144,8 +145,9 @@ class ASTSimplifier
      */
     private static function replaceLastNodeWithNodeList(array &$nodes, Node... $new_statements)
     {
-        \assert(count($nodes) > 0);
-        \array_pop($nodes);
+        if (\array_pop($nodes) === false) {
+            throw new AssertionError("Saw an unexpected empty node list");
+        }
         foreach ($new_statements as $stmt) {
             $nodes[] = $stmt;
         }

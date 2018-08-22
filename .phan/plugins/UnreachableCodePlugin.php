@@ -72,7 +72,9 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
 
         $last_node_index = count($child_nodes) - 1;
         foreach ($child_nodes as $i => $node) {
-            \assert(\is_int($i));
+            if (!\is_int($i)) {
+                throw new AssertionError("Expected integer index");
+            }
             if ($i >= $last_node_index) {
                 break;
             }
