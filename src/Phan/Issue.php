@@ -418,6 +418,7 @@ class Issue
     const UNCOLORED_FORMAT_STRING_FOR_TEMPLATE = [
         'CLASS'         => '%s',
         'CLASSLIKE'     => '%s',
+        'CODE'          => '%s',  // A snippet from the code
         'COMMENT'       => '%s',  // contents of a phpdoc comment
         'CONST'         => '%s',
         'COUNT'         => '%d',

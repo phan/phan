@@ -99,6 +99,7 @@ class ASTReverter
                         return "list($string)";
                 }
             },
+            /** @suppress PhanAccessClassConstantInternal */
             ast\AST_BINARY_OP => function (Node $node) : string {
                 return \sprintf(
                     "(%s %s %s)",

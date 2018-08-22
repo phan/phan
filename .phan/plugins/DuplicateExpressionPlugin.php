@@ -10,7 +10,10 @@ use ast\flags;
 use ast\Node;
 
 /**
- * This plugin checks for duplicate expressions in a statement that is likely to be a bug.
+ * This plugin checks for duplicate expressions in a statement
+ * that are likely to be a bug.
+ *
+ * - E.g. `expr1 == expr1`
  *
  * This file demonstrates plugins for Phan. Plugins hook into various events.
  * DuplicateExpressionPlugin hooks into one event:
@@ -74,7 +77,7 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param Node $node
-     * A node to analyze
+     * A binary operation node to analyze
      *
      * @return void
      * @override
@@ -91,12 +94,48 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
                 $this->code_base,
                 $this->context,
                 'PhanPluginDuplicateExpressionBinaryOp',
-                'Both sides of the binary operator {OPERATOR} are the same: {DETAILS}',
+                'Both sides of the binary operator {OPERATOR} are the same: {CODE}',
                 [
                     PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
                     ASTReverter::toShortString($node->children['left']),
                 ]
             );
+        }
+    }
+
+    /**
+     * @param Node $node
+     * A binary operation node to analyze
+     *
+     * @return void
+     * @override
+     * @suppress PhanAccessClassConstantInternal
+     */
+    public function visitConditional(Node $node)
+    {
+        $cond_node = $node->children['cond'];
+        $true_node_hash = ASTHasher::hash($node->children['true']);
+
+        if (ASTHasher::hash($cond_node) === $true_node_hash) {
+            $this->emitPluginIssue(
+                $this->code_base,
+                $this->context,
+                'PhanPluginDuplicateConditionalTernaryDuplication',
+                '"X ? X : Y" can usually be simplified to "X ?: Y". The duplicated expression X was {CODE}',
+                [ASTReverter::toShortString($cond_node)]
+            );
+            return;
+        }
+        if ($cond_node->kind === ast\AST_ISSET) {
+            if (ASTHasher::hash($cond_node->children['var']) === $true_node_hash) {
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    $this->context,
+                    'PhanPluginDuplicateConditionalNullCoalescing',
+                    '"isset(X) ? X : Y" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was {CODE}',
+                    [ASTReverter::toShortString($cond_node->children['var'])]
+                );
+            }
         }
     }
 }

@@ -52,6 +52,10 @@ class ASTHasher
     private static function compute_hash($node) {
         $str = 'N' . $node->kind . ':' . ($node->flags & 0xfffff);
         foreach ($node->children as $key => $child) {
+            // added in PhanAnnotationAdder
+            if ($key === 'phan_nf') {
+                continue;
+            }
             $str .= self::hash_key($key);
             $str .= self::hash($child);
         }
