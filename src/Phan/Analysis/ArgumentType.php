@@ -411,7 +411,7 @@ final class ArgumentType
             // If this is a pass-by-reference parameter, make sure
             // we're passing an allowable argument
             if ($parameter->isPassByReference()) {
-                if ((!$argument instanceof \ast\Node)
+                if ((!$argument instanceof Node)
                     || ($argument_kind !== \ast\AST_VAR
                         && $argument_kind !== \ast\AST_DIM
                         && $argument_kind !== \ast\AST_PROP

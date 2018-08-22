@@ -631,7 +631,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         // If there's a key, make a variable out of that too
         $key_node = $node->children['key'];
-        if ($key_node instanceof \ast\Node) {
+        if ($key_node instanceof Node) {
             if ($key_node->kind == \ast\AST_LIST) {
                 throw new NodeException(
                     $node,

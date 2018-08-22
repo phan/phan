@@ -248,7 +248,7 @@ class Debug
      */
     public static function astDump($ast, int $options = 0) : string
     {
-        if ($ast instanceof \ast\Node) {
+        if ($ast instanceof Node) {
             $result = \ast\get_kind_name($ast->kind);
 
             if ($options & self::AST_DUMP_LINENOS) {

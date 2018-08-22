@@ -508,7 +508,7 @@ class Parameter extends Variable
 
         if ($this->hasDefaultValue() && !$this->isVariadic()) {
             $default_value = $this->getDefaultValue();
-            if ($default_value instanceof \ast\Node) {
+            if ($default_value instanceof Node) {
                 $string .= ' = null';
             } else {
                 $string .= ' = ' . var_export($default_value, true);
@@ -549,7 +549,7 @@ class Parameter extends Variable
 
         if ($this->hasDefaultValue() && !$this->isVariadic()) {
             $default_value = $this->getDefaultValue();
-            if ($default_value instanceof \ast\Node) {
+            if ($default_value instanceof Node) {
                 $kind = $default_value->kind;
                 if ($kind === \ast\AST_NAME) {
                     $default_repr = $default_value->children['name'];

@@ -2280,7 +2280,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // For simple nodes or very complicated nodes,
         // recurse
-        if (!($node instanceof \ast\Node)
+        if (!($node instanceof Node)
             || $node->kind != \ast\AST_NAME
         ) {
             return self::unionTypeFromNode(
