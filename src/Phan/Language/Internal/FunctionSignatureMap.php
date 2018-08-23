@@ -9727,7 +9727,7 @@ return [
 'Redis::setBit' => ['int', 'key'=>'string', 'offset'=>'int', 'value'=>'int'],
 'Redis::setEx' => ['bool', 'key'=>'string', 'ttl'=>'int', 'value'=>'string'],
 'Redis::setNx' => ['bool', 'key'=>'string', 'value'=>'string'],
-'Redis::setOption' => ['bool', 'name'=>'int', 'value'=>'string'],
+'Redis::setOption' => ['bool', 'name'=>'int', 'value'=>'int|string'],
 'Redis::setRange' => ['int', 'key'=>'string', 'offset'=>'int', 'end'=>'int'],
 'Redis::setTimeout' => ['', 'key'=>'string', 'ttl'=>'int'],
 'Redis::sGetMembers' => ['', 'key'=>'string'],
