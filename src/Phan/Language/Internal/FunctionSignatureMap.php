@@ -9644,7 +9644,7 @@ return [
 'Redis::getOption' => ['int', 'name'=>'int'],
 'Redis::getRange' => ['int', 'key'=>'string', 'start'=>'int', 'end'=>'int'],
 'Redis::getSet' => ['string', 'key'=>'string', 'string'=>'string'],
-'Redis::hDel' => ['bool|int', 'key'=>'string', 'hashKey1'=>'string', 'hashKey2='=>'string', 'hashKeyN='=>'string'],
+'Redis::hDel' => ['int|false', 'key'=>'string', 'hashKey1'=>'string', 'hashKey2='=>'string', 'hashKeyN='=>'string'],
 'Redis::hExists' => ['bool', 'key'=>'string', 'hashKey'=>'string'],
 'Redis::hGet' => ['string', 'key'=>'string', 'hashKey'=>'string'],
 'Redis::hGetAll' => ['array', 'key'=>'string'],
