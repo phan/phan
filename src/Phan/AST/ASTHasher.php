@@ -16,7 +16,8 @@ class ASTHasher
     /**
      * @return string a 16-byte binary key
      */
-    public static function hash_key($node) {
+    public static function hash_key($node)
+    {
         if (is_string($node)) {
             return md5('s' . $node, true);
         }
@@ -49,7 +50,8 @@ class ASTHasher
     /**
      * @return string a 16-byte binary key
      */
-    private static function compute_hash($node) {
+    private static function compute_hash($node)
+    {
         $str = 'N' . $node->kind . ':' . ($node->flags & 0xfffff);
         foreach ($node->children as $key => $child) {
             // added in PhanAnnotationAdder
