@@ -347,7 +347,7 @@ class UnionType implements \Serializable
     }
 
     /**
-     * @return string[]
+     * @return array<string,string>
      * Get a map from property name to its type for the given
      * class name.
      */
