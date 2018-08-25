@@ -24,6 +24,13 @@ $ast_node_shape_inner = \implode(',', [
 
 $ast_node_children_types = 'array{' . $ast_node_shape_inner . '}|ast\Node[]|array[]|int[]|string[]|float[]|null[]';
 
+$standard_exception_types = [
+    'message' => 'string',
+    'code' => 'int',
+    'file' => 'string',
+    'line' => 'int',
+];
+
 /**
  * A mapping from class name to property name to property type.
  *
@@ -118,8 +125,8 @@ return [
     ],
     'ziparchive' => [
         'status' => 'int',
-        'statussys' => 'int',
-        'numfiles' => 'int',
+        'statusSys' => 'int',
+        'numFiles' => 'int',
         'filename' => 'string',
         'comment' => 'string'
     ],
@@ -157,7 +164,8 @@ return [
         'name' => 'string'
     ],
     'recursiveregexiterator' => [
-        'name' => 'string'
+        'name' => 'string',
+        'replacement' => 'mixed',  // TODO: is this documented
     ],
     'error' => [
         'message' => 'string',
@@ -184,7 +192,7 @@ return [
         'context' => 'resource'
     ],
     'pdostatement' => [
-        'querystring' => 'string'
+        'queryString' => 'string'
     ],
     'domnotation' => [
         'publicId' => 'string',
@@ -281,7 +289,7 @@ return [
         'internalSubset' => 'string'
     ],
     'errorexception' => [
-        'severity' => 'int'
+        'severity' => 'int',
     ],
     'recursivedirectoryiterator' => [
         'name' => 'string'
@@ -305,7 +313,8 @@ return [
         'name' => 'string'
     ],
     'regexiterator' => [
-        'name' => 'string'
+        'name' => 'string',
+        'replacement' => 'mixed',
     ],
     'domelement' => [
         'schemaTypeInfo' => 'bool',
@@ -340,8 +349,53 @@ return [
     'domnamednodemap' => [
         'length' => 'int'
     ],
+    'mysqli' => [
+        'affected_rows' => 'int',
+        'connect_errno' => 'int',
+        'connect_error' => 'string',
+        'errno' => 'int',
+        'error_list' => 'array',
+        'error' => 'string',
+        'field_count' => 'int',
+        'client_info' => 'string',
+        'client_version' => 'int',
+        'host_info' => 'string',
+        'protocol_version' => 'string',
+        'server_info' => 'string',
+        'server_version' => 'int',
+        'info' => 'string',
+        'insert_id' => 'mixed',
+        'sqlstate' => 'string',
+        'stat' => 'mixed',
+        'thread_id' => 'int',
+        'warning_count' => 'int',
+    ],
+    'mysqli_result' => [
+        'current_field'  => 'int',
+        'field_count' => 'int',
+        'lengths' => 'array',
+        'num_rows' => 'int',
+        'type' => 'mixed',
+    ],
+    'mysqli_stmt' => [
+        'affected_rows' => 'int',
+        'errno' => 'int',
+        'error_list' => 'array',
+        'error' => 'string',
+        'field_count' => 'int',
+        'id' => 'mixed',
+        'insert_id' => 'int',
+        'num_rows' => 'int',
+        'param_count' => 'int',
+        'sqlstate' => 'string',
+    ],
     'mysqli_sql_exception' => [
         'sqlstate' => 'string'
+    ],
+    'mysqli_warning' => [
+        'message' => 'string',
+        'sqlstate' => 'mixed',
+        'errno' => 'int',
     ],
     'splstack' => [
         'name' => 'string'
@@ -354,7 +408,7 @@ return [
         'local_pk' => 'string'
     ],
     'pdoexception' => [
-        'errorinfo' => 'array',
+        'errorInfo' => 'array',
         'code' => 'string'
     ],
     'domnode' => [
@@ -452,4 +506,21 @@ return [
         'flags' => 'array<int,string>',
         'flagsCombinable' => 'bool',
     ],
+    'curlfile' => [
+        'name' => 'string',
+        'mime' => 'string',
+        'postname' => 'string',
+    ],
+    'reflectionclass' => ['name' => 'string'],
+    'reflectionclassconstant' => ['name' => 'string', 'class' => 'string'],
+    'reflectionextension' => ['name' => 'string'],
+    'reflectionfunction' => ['name' => 'string'],
+    'reflectionfunctionabstract' => ['name' => 'string'],
+    'reflectionmethod' => ['name' => 'string', 'class' => 'string'],
+    'reflectionobject' => ['name' => 'string'],
+    'reflectionparameter' => ['name' => 'string'],
+    'reflectionproperty' => ['name' => 'string', 'class' => 'string'],
+    'reflectionzendextension' => ['name' => 'string'],
+    'transliterator' => ['id' => 'string'],
+    'php_user_filter' => ['filtername' => 'string', 'params' => 'mixed'],
 ];
