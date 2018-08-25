@@ -34,7 +34,8 @@ class ReflectionCompletenessCheck
     {
         foreach (get_defined_functions() as $unused_ext => $group) {
             foreach ($group as $function_name) {
-                if (!(new ReflectionFunction($function_name))->isInternal()) {
+                $reflection_function = new ReflectionFunction($function_name);
+                if (!$reflection_function->isInternal()) {
                     continue;
                 }
                 if (array_key_exists($function_name, self::EXCLUDED_FUNCTIONS)) {
@@ -43,7 +44,8 @@ class ReflectionCompletenessCheck
                 $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($function_name);
                 $map_list = UnionType::internalFunctionSignatureMapForFQSEN($fqsen);
                 if (!$map_list) {
-                    echo "Missing signatures for $function_name\n";
+                    $stub_signature = self::stubSignatureToString(self::createStubSignature($reflection_function));
+                    echo "Missing signatures for $function_name : should be $stub_signature\n";
                 }
             }
         }
@@ -79,10 +81,45 @@ class ReflectionCompletenessCheck
                 $method_fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($class_name . '::' . $method_name);
                 $map_list = UnionType::internalFunctionSignatureMapForFQSEN($method_fqsen);
                 if (!$map_list) {
-                    echo "Missing signatures for $method_fqsen\n";
+                    $stub_signature = self::stubSignatureToString(self::createStubSignature($reflection_method));
+                    echo "Missing signatures for $method_fqsen : Should be $stub_signature\n";
                 }
             }
         }
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function createStubSignature(ReflectionFunctionAbstract $reflection_method) {
+        $signature = [];
+        $signature[] = (string)UnionType::fromReflectionType($reflection_method->getReturnType());
+        foreach ($reflection_method->getParameters() as $parameter) {
+            $key = $parameter->getName();
+            if ($parameter->isVariadic()) {
+                $key = "...$key";
+            } elseif ($parameter->isOptional()) {
+                $key = "$key=";
+            }
+            if ($parameter->isPassedByReference()) {
+                $key = "&$key";
+            }
+            $type = (string)UnionType::fromReflectionType($reflection_method->getReturnType());
+            $signature[$key] = $type;
+        }
+        return $signature;
+    }
+
+    // TODO: Deduplicate this code.
+    private static function stubSignatureToString(array $stub) : string {
+        $result = "['$stub[0]'";
+        unset($stub[0]);
+        foreach ($stub as $key => $value) {
+            $result .= ", '$key'=>'$value'";
+        }
+
+        $result .= ']';
+        return $result;
     }
 
     private static function checkForUndeclaredTypeProperties()
@@ -93,7 +130,7 @@ class ReflectionCompletenessCheck
                 $property_name = $reflection_property->getName();
                 if (!array_key_exists($property_name, $map_for_class)) {
                     printf(
-                        "Failed to find signature for property %s%s%s\n",
+                        "Failed to find signature for property %s%s%s.\n",
                         $class_name,
                         $reflection_property->isStatic() ? '::$' : '->',
                         $property_name
