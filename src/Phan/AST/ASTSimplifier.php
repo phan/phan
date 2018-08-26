@@ -282,10 +282,14 @@ class ASTSimplifier
     private function applyAssignInLeftSideOfBinaryOpReduction(Node $node) : array
     {
         $inner_assign_statement = $node->children[0]->children['cond']->children['left'];
-        \assert($inner_assign_statement instanceof Node);  // already checked
+        if (!($inner_assign_statement instanceof Node)) {
+            throw new AssertionError('Expected $inner_assign_statement instanceof Node');
+        }
         $inner_assign_var = $inner_assign_statement->children['var'];
 
-        \assert($inner_assign_var->kind === \ast\AST_VAR);
+        if ($inner_assign_var->kind !== \ast\AST_VAR) {
+            throw new AssertionError('Expected $inner_assign_var->kind === \ast\AST_VAR');
+        }
 
         $new_node_elem = clone($node->children[0]);
         $new_node_elem->children['cond']->children['left'] = $inner_assign_var;
@@ -307,9 +311,6 @@ class ASTSimplifier
         $inner_assign_statement = $node->children[0]->children['cond']->children['right'];
         $inner_assign_var = $inner_assign_statement->children['var'];
 
-        \assert($inner_assign_statement instanceof Node);
-        \assert($inner_assign_var->kind === \ast\AST_VAR);
-
         $new_node_elem = clone($node->children[0]);
         $new_node_elem->children['cond']->children['right'] = $inner_assign_var;
         $new_node_elem->flags = 0;
@@ -325,8 +326,6 @@ class ASTSimplifier
      */
     private function buildIfNode(Node $l, Node $r) : Node
     {
-        \assert($l->kind === \ast\AST_IF_ELEM);
-        \assert($r->kind === \ast\AST_IF_ELEM);
         return new Node(
             \ast\AST_IF,
             0,
@@ -344,11 +343,12 @@ class ASTSimplifier
         if (count($children) <= 2) {
             return $node;
         }
-        \assert(\is_array($children));
         while (count($children) > 2) {
             $r = array_pop($children);
             $l = array_pop($children);
-            assert($l instanceof Node && $r instanceof Node);
+            if (!($l instanceof Node && $r instanceof Node)) {
+                throw new AssertionError("Expected to have AST_IF_ELEM nodes");
+            }
             $l->children['stmts']->flags = 0;
             $r->children['stmts']->flags = 0;
             $inner_if_node = self::buildIfNode($l, $r);
@@ -373,7 +373,9 @@ class ASTSimplifier
      */
     private function applyIfAndReduction(Node $node) : Node
     {
-        \assert(count($node->children) == 1);
+        if (count($node->children) != 1) {
+            throw new AssertionError("Expected an if statement with no else/elseif statements");
+        }
         $inner_node_elem = clone($node->children[0]);  // AST_IF_ELEM
         $inner_node_elem->children['cond'] = $inner_node_elem->children['cond']->children['right'];
         $inner_node_elem->flags = 0;

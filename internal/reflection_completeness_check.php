@@ -91,7 +91,8 @@ class ReflectionCompletenessCheck
     /**
      * @return string[]
      */
-    public static function createStubSignature(ReflectionFunctionAbstract $reflection_method) {
+    public static function createStubSignature(ReflectionFunctionAbstract $reflection_method)
+    {
         $signature = [];
         $signature[] = (string)UnionType::fromReflectionType($reflection_method->getReturnType());
         foreach ($reflection_method->getParameters() as $parameter) {
@@ -111,7 +112,8 @@ class ReflectionCompletenessCheck
     }
 
     // TODO: Deduplicate this code.
-    private static function stubSignatureToString(array $stub) : string {
+    private static function stubSignatureToString(array $stub) : string
+    {
         $result = "['$stub[0]'";
         unset($stub[0]);
         foreach ($stub as $key => $value) {

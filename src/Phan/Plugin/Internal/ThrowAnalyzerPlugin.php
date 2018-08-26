@@ -222,7 +222,6 @@ class ThrowRecursiveVisitor extends ThrowVisitor
             ))->getFunctionFromNode();
 
             foreach ($function_list_generator as $invoked_function) {
-                \assert($invoked_function instanceof FunctionInterface);
                 // Check the types that can be thrown by this call.
                 $this->warnAboutPossiblyThrownType(
                     $node,

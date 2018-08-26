@@ -30,6 +30,8 @@ use Phan\Output\Collector\BufferingCollector;
 use Phan\Phan;
 use Phan\Tests\BaseTest;
 
+use AssertionError;
+
 // Grab these before we define our own classes
 $internal_class_name_list = get_declared_classes();
 $internal_interface_name_list = get_declared_interfaces();
@@ -246,7 +248,9 @@ final class UnionTypeTest extends BaseTest
     public function testGenericArrayTypeFromString()
     {
         $type = Type::fromFullyQualifiedString("int[][]");
-        assert($type instanceof GenericArrayType);
+        if (!($type instanceof GenericArrayType)) {
+            throw new AssertionError("Expected $type to be GenericArrayType");
+        }
 
         $this->assertEquals(
             $type->genericArrayElementType()->__toString(),
@@ -532,7 +536,9 @@ final class UnionTypeTest extends BaseTest
 
         $this->assertSame('array{key:int|string[]}', (string)$type);
         $this->assertSame('array<string,int>|array<string,string[]>', (string)$union_type->withFlattenedArrayShapeOrLiteralTypeInstances());
-        \assert($type instanceof ArrayShapeType);
+        if (!($type instanceof ArrayShapeType)) {
+            throw new AssertionError("Expected $type to be ArrayShapeType");
+        }
         $field_union_type = $type->getFieldTypes()['key'];
         $this->assertFalse($field_union_type->getIsPossiblyUndefined());
     }
@@ -546,7 +552,9 @@ final class UnionTypeTest extends BaseTest
         $type = reset($types);
 
         $this->assertSame('array{key?:int|string}', (string)$type);
-        \assert($type instanceof ArrayShapeType);
+        if (!($type instanceof ArrayShapeType)) {
+            throw new AssertionError("Expected $type to be an ArrayShapeType");
+        }
         $this->assertSame('array<string,int>|array<string,string>', (string)$union_type->withFlattenedArrayShapeOrLiteralTypeInstances());
         $field_union_type = $type->getFieldTypes()['key'];
         $this->assertTrue($field_union_type->getIsPossiblyUndefined());

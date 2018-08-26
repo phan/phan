@@ -7,6 +7,7 @@ use Phan\AST\Visitor\Element;
 use ast\Node;
 use ast;  // TODO: Figure out why Phan isn't warning about Phan\Plugin\Internal\VariableTracker\ast\AST_VAR without this.
 
+use AssertionError;
 use function is_string;
 
 /**
@@ -529,7 +530,9 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         $inner_exiting_scope_list = [];
         $merge_parent_scope = true;
         foreach ($node->children as $i => $case_node) {
-            \assert($case_node instanceof Node);
+            if (!($case_node instanceof Node)) {
+                throw new AssertionError("Expected case statements to be nodes");
+            }
             $cond_node = $case_node->children['cond'];
             $stmts_node = $case_node->children['stmts'];
 

@@ -10,6 +10,8 @@ use Phan\PluginV2;
 use Phan\Plugin\Internal\VariableTracker\VariableGraph;
 use Phan\Plugin\Internal\VariableTracker\VariableTrackingScope;
 use Phan\Plugin\Internal\VariableTracker\VariableTrackerVisitor;
+
+use AssertionError;
 use ast\Node;
 use ast;
 
@@ -96,7 +98,9 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         $result = [];
         // AST_PARAM_LIST of AST_PARAM
         foreach ($node->children['params']->children as $parameter) {
-            \assert($parameter instanceof Node);
+            if (!($parameter instanceof Node)) {
+                throw new AssertionError("Expected params to be Nodes");
+            }
             $parameter_name = $parameter->children['name'];
             if (!is_string($parameter_name)) {
                 continue;
@@ -110,7 +114,9 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             }
         }
         foreach ($node->children['uses']->children ?? [] as $closure_use) {
-            \assert($closure_use instanceof Node);
+            if (!($closure_use instanceof Node)) {
+                throw new AssertionError("Expected uses to be nodes");
+            }
             $name = $closure_use->children['name'];
             if (!is_string($name)) {
                 continue;
