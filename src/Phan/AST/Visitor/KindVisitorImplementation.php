@@ -1,9 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\AST\Visitor;
 
-use ast\Node;
 use Phan\AST\Visitor\Element;
 use Phan\Debug;
+
+use AssertionError;
+use ast\Node;
 
 /**
  * A visitor of AST nodes based on the node's kind value
@@ -31,7 +33,7 @@ abstract class KindVisitorImplementation implements KindVisitor
     public function handleMissingNodeKind(Node $node)
     {
         fprintf(STDERR, "Unexpected Node kind. Node:\n%s\n", Debug::nodeToString($node));
-        assert(false, 'All node kinds must match');
+        throw new AssertionError('All node kinds must match');
     }
 
     public function visitArgList(Node $node)

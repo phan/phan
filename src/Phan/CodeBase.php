@@ -64,6 +64,7 @@ use function strlen;
  * for a background daemon analyzing single files. (Phan\CodeBase\UndoTracker)
  *
  * @phan-file-suppress PhanPartialTypeMismatchReturn the way generic objects is type hinted is inadequate, etc.
+ * @phan-file-suppress PhanPluginNoAssert
  */
 class CodeBase
 {

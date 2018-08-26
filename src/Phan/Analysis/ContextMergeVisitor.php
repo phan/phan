@@ -8,6 +8,12 @@ use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use ast\Node;
 
+/**
+ * This will merge inferred variable types from multiple contexts in branched control structures
+ * (E.g. if/elseif/else, try/catch, loops, ternary operators, etc.
+ *
+ * @phan-file-suppress PhanPluginNoAssert
+ */
 class ContextMergeVisitor extends KindVisitorImplementation
 {
     /**

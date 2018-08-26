@@ -18,6 +18,8 @@ use Phan\Language\Type\FalseType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use Phan\PluginV2\StopParamAnalysisException;
+
+use AssertionError;
 use ast\Node;
 
 /**
@@ -396,7 +398,9 @@ final class ArgumentType
         }
 
         foreach ($node->children as $i => $argument) {
-            \assert(\is_int($i));
+            if (!\is_int($i)) {
+                throw new AssertionError("Expected argument index to be an integer");
+            }
 
             // Get the parameter associated with this argument
             $parameter = $method->getParameterForCaller($i);
@@ -492,7 +496,9 @@ final class ArgumentType
             }
 
             $alternate_parameter = $candidate_alternate_parameter;
-            \assert($alternate_parameter instanceof Variable);
+            if (!($alternate_parameter instanceof Variable)) {
+                throw new AssertionError('Expected alternate_parameter to be Variable or subclass');
+            }
 
             // See if the argument can be cast to the
             // parameter
@@ -566,7 +572,9 @@ final class ArgumentType
     private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, Variable $alternate_parameter, int $lineno, int $i)
     {
         $type_set = $argument_type->getTypeSet();
-        \assert(\count($type_set) >= 2);
+        if (\count($type_set) < 2)  {
+            throw new AssertionError("Expected to have at least two parameter types when checking if parameter types match in strict mode");
+        }
 
         $parameter_type = $alternate_parameter->getNonVariadicUnionType();
 

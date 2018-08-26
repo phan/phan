@@ -1,8 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
-use ast\Node;
 use Phan\AST\Visitor\KindVisitorImplementation;
+
+use AssertionError;
+use ast\Node;
 
 /**
  * This simplifies a PHP AST into a form which is easier to analyze.
@@ -70,8 +72,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             return self::STATUS_PROCEED;
         }
         $result = $this->__invoke($node);
-        \assert(\is_int($result), 'Expected int');
-        \assert($result > 0, 'Expected positive int');
+        if (!\is_int($result) || $result <= 0) {
+            throw new AssertionError('Expected positive int');
+        }
         return $result;
     }
 
