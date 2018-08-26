@@ -933,11 +933,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
     {
         $context = (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssign($node);
         $left = $node->children['var'];
-        if ($left instanceof Node) {
-            return $this->__invoke($left);
-        }
-
-        return $context;
+        return (new self($this->code_base, $context))->__invoke($left);
     }
 
     /**
@@ -954,10 +950,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
     {
         $context = (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssignRef($node);
         $left = $node->children['var'];
-        if ($left instanceof Node) {
-            return $this->__invoke($left);
-        }
-
-        return $context;
+        return (new self($this->code_base, $context))->__invoke($left);
     }
 }
