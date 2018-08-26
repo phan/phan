@@ -206,8 +206,12 @@ class ContextNode
         $trait_original_class_name_node = $trait_method_node->children['class'];
         $trait_original_method_name = $trait_method_node->children['method'];
         $trait_new_method_name = $adaptation_node->children['alias'] ?? $trait_original_method_name;
-        \assert(\is_string($trait_original_method_name));
-        \assert(\is_string($trait_new_method_name));
+        if (!\is_string($trait_original_method_name)) {
+            throw new AssertionError("Expected original method name of a trait use to be a string");
+        }
+        if (!\is_string($trait_new_method_name)) {
+            throw new AssertionError("Expected new method name of a trait use to be a string");
+        }
         $trait_fqsen = (new ContextNode(
             $this->code_base,
             $this->context,
@@ -267,6 +271,9 @@ class ContextNode
         // $trait_chosen_class_name_node = $trait_method_node->children['class'];
         $trait_chosen_method_name = $trait_method_node->children['method'];
         $trait_chosen_class_name_node = $trait_method_node->children['class'];
+        if (!is_string($trait_chosen_method_name)) {
+            throw new AssertionError("Expected the insteadof method's name to be a string");
+        }
 
         $trait_chosen_fqsen = (new ContextNode(
             $this->code_base,
@@ -295,7 +302,6 @@ class ContextNode
 
         // This is the class which will have the method hidden
         foreach ($adaptation_node->children['insteadof']->children as $trait_insteadof_class_name) {
-            \assert(\is_string($trait_chosen_method_name));
             $trait_insteadof_fqsen = (new ContextNode(
                 $this->code_base,
                 $this->context,
@@ -940,7 +946,9 @@ class ContextNode
                 if ($context->hasNamespaceMapFor(\ast\flags\USE_FUNCTION, $function_name)) {
                     // If we already have `use function_name;`
                     $function_fqsen = $context->getNamespaceMapFor(\ast\flags\USE_FUNCTION, $function_name);
-                    \assert($function_fqsen instanceof FullyQualifiedFunctionName);
+                    if (!($function_fqsen instanceof FullyQualifiedFunctionName)) {
+                        throw new AssertionError("Expected to fetch a fully qualified function name for this namespace use");
+                    }
 
                     // Make sure the method we're calling actually exists
                     if (!$code_base->hasFunctionWithFQSEN($function_fqsen)) {
@@ -1511,12 +1519,12 @@ class ContextNode
      */
     public function getClassConst() : ClassConstant
     {
-        \assert(
-            $this->node instanceof Node,
-            '$this->node must be a node'
-        );
+        $node = $this->node;
+        if (!($node instanceof Node)) {
+            throw new AssertionError('$this->node must be a node');
+        }
 
-        $constant_name = $this->node->children['const'];
+        $constant_name = $node->children['const'];
         if (!\strcasecmp($constant_name, 'class')) {
             $constant_name = 'class';
         }
@@ -1527,14 +1535,14 @@ class ContextNode
             $class_list = (new ContextNode(
                 $this->code_base,
                 $this->context,
-                $this->node->children['class']
+                $node->children['class']
             ))->getClassList(false, self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
         } catch (CodeBaseException $exception) {
             $exception_fqsen = $exception->getFQSEN();
             throw new IssueException(
                 Issue::fromType(Issue::UndeclaredClassConstant)(
                     $this->context->getFile(),
-                    $this->node->lineno ?? 0,
+                    $node->lineno ?? 0,
                     [$constant_name, (string)$exception_fqsen],
                     IssueFixSuggester::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception_fqsen)
                 )
@@ -1568,7 +1576,7 @@ class ContextNode
                 throw new IssueException(
                     Issue::fromType(Issue::AccessClassConstantInternal)(
                         $this->context->getFile(),
-                        $this->node->lineno ?? 0,
+                        $node->lineno ?? 0,
                         [
                             (string)$constant->getFQSEN(),
                             $constant->getFileRef()->getFile(),
@@ -1587,7 +1595,7 @@ class ContextNode
             throw new IssueException(
                 Issue::fromType(Issue::UndeclaredConstant)(
                     $this->context->getFile(),
-                    $this->node->lineno ?? 0,
+                    $node->lineno ?? 0,
                     [ "$class_fqsen::$constant_name" ],
                     IssueFixSuggester::suggestSimilarClassConstant($this->code_base, $this->context, $class_constant_fqsen)
                 )
@@ -1595,7 +1603,7 @@ class ContextNode
         }
 
         throw new NodeException(
-            $this->node,
+            $node,
             "Can't figure out constant {$constant_name} in node"
         );
     }
@@ -1606,15 +1614,14 @@ class ContextNode
      */
     public function getUnqualifiedNameForAnonymousClass() : string
     {
-        \assert(
-            $this->node instanceof Node,
-            '$this->node must be a node'
-        );
+        $node = $this->node;
+        if (!($node instanceof Node)) {
+            throw new AssertionError('$this->node must be a node');
+        }
 
-        \assert(
-            (bool)($this->node->flags & ast\flags\CLASS_ANONYMOUS),
-            "Node must be an anonymous class node"
-        );
+        if (!($node->flags & ast\flags\CLASS_ANONYMOUS)) {
+            throw new AssertionError('Node must be an anonymous class node');
+        }
 
         $class_name = 'anonymous_class_'
             . \substr(\md5(

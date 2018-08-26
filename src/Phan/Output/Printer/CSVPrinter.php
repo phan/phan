@@ -4,6 +4,8 @@ namespace Phan\Output\Printer;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Output\BufferedPrinterInterface;
+
+use AssertionError;
 use Symfony\Component\Console\Output\OutputInterface;
 
 final class CSVPrinter implements BufferedPrinterInterface
@@ -52,7 +54,9 @@ final class CSVPrinter implements BufferedPrinterInterface
         // Because fputcsv works on file pointers we need to do a bit
         // of dancing around with a memory stream.
         $stream = fopen("php://memory", "rw");
-        \assert(\is_resource($stream), 'php://memory should always be openable');
+        if (!\is_resource($stream)) {
+            throw new AssertionError('php://memory should always be openable');
+        }
         $this->stream = $stream;
         fputcsv($this->stream, [
             "filename", "line", "severity_ord", "severity_name",
