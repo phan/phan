@@ -22,6 +22,7 @@ use InvalidArgumentException;
  * Implementations such as `./phan` or the code climate integration call into this.
  *
  * @see self::analyzeFileList
+ * @phan-file-suppress PhanPluginNoAssert
  */
 class Phan implements IgnoredFilesFilterInterface
 {

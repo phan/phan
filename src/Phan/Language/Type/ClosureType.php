@@ -5,6 +5,8 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 
+use AssertionError;
+
 final class ClosureType extends Type
 {
     /** Not an override */
@@ -48,7 +50,9 @@ final class ClosureType extends Type
 
     public function __clone()
     {
-        assert($this->fqsen === null, 'should only clone null fqsen');
+        if ($this->fqsen !== null) {
+            throw new AssertionError('should only clone null fqsen');
+        }
         $this->singleton_union_type = null;
         // same as new static($this->namespace, $this->name, $this->template_parameter_type_list, $this->is_nullable);
     }
@@ -101,10 +105,12 @@ final class ClosureType extends Type
         if ($is_nullable) {
             static $nullable_instance = null;
 
-            if (empty($nullable_instance)) {
+            if (!$nullable_instance) {
                 $nullable_instance = self::make('\\', self::NAME, [], true, Type::FROM_NODE);
             }
-            \assert($nullable_instance instanceof self);
+            if (!($nullable_instance instanceof self)) {
+                throw new AssertionError("Expected ClosureType::make to return ClosureType");
+            }
 
             return $nullable_instance;
         }
@@ -115,7 +121,9 @@ final class ClosureType extends Type
             $instance = self::make('\\', self::NAME, [], false, Type::FROM_NODE);
         }
 
-        \assert($instance instanceof self);
+        if (!($instance instanceof self)) {
+            throw new AssertionError("Expected ClosureType::make to return ClosureType");
+        }
         return $instance;
     }
 

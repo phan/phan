@@ -10,6 +10,8 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Issue;
+
+use AssertionError;
 use ast\Node;
 
 /**

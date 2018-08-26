@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use AssertionError;
+use InvalidArgumentException;
+
 /**
  * Fork off to n-processes and divide up tasks between
  * each process.
@@ -31,6 +34,8 @@ class ForkPool
      *
      * @param \Closure $shutdown_closure
      * A closure to execute upon shutting down a child
+     * @throws InvalidArgumentException if count($process_task_data_iterator) < 2
+     * @throws AssertionError if pcntl is disabled before using this
      */
     public function __construct(
         array $process_task_data_iterator,
@@ -41,15 +46,13 @@ class ForkPool
 
         $pool_size = count($process_task_data_iterator);
 
-        \assert(
-            $pool_size > 1,
-            'The pool size must be >= 2 to use the fork pool.'
-        );
+        if ($pool_size < 2) {
+            throw new InvalidArgumentException('The pool size must be >= 2 to use the fork pool.');
+        }
 
-        \assert(
-            extension_loaded('pcntl'),
-            'The pcntl extension must be loaded in order for Phan to be able to fork.'
-        );
+        if (!extension_loaded('pcntl')) {
+            throw new AssertionError('The pcntl extension must be loaded in order for Phan to be able to fork.');
+        }
 
         // We'll keep track of if this is the parent process
         // so that we can tell who will be doing the waiting

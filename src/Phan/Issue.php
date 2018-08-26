@@ -10,6 +10,9 @@ use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Plugin\ConfigPluginSet;
 
+use AssertionError;
+use InvalidArgumentException;
+
 /**
  * An issue emitted during the course of analysis
  */
@@ -2964,19 +2967,24 @@ class Issue
         $unique_type_id_set = [];
         foreach ($error_list as $error) {
             $error_type = $error->getType();
-            \assert(!\array_key_exists($error_type, $error_map), "Issue of type $error_type has multiple definitions");
-            \assert(\strncmp($error_type, 'Phan', 4) === 0, "Issue of type $error_type should begin with 'Phan'");
+            if (\array_key_exists($error_type, $error_map)) {
+                throw new AssertionError("Issue of type $error_type has multiple definitions");
+            }
+
+            if (\strncmp($error_type, 'Phan', 4) !== 0) {
+                throw new AssertionError("Issue of type $error_type should begin with 'Phan'");
+            }
 
             $error_type_id = $error->getTypeId();
             if (\array_key_exists($error_type_id, $unique_type_id_set)) {
-                throw new \AssertionError("Multiple issues exist with pylint error id $error_type_id");
+                throw new AssertionError("Multiple issues exist with pylint error id $error_type_id");
             }
             $unique_type_id_set[$error_type_id] = $error;
             $category = $error->getCategory();
             $expected_category_for_type_id_bitpos = (int)floor($error_type_id / 1000);
             $expected_category_for_type_id = 1 << $expected_category_for_type_id_bitpos;
             if ($category !== $expected_category_for_type_id) {
-                assert(false, sprintf(
+                throw new AssertionError(sprintf(
                     "Expected error %s of type %d to be category %d(1<<%d), got 1<<%d\n",
                     $error_type,
                     $error_type_id,
@@ -3104,16 +3112,15 @@ class Issue
     }
 
     /**
-     * return Issue
+     * @throws InvalidArgumentException
      */
     public static function fromType(string $type) : Issue
     {
         $error_map = self::issueMap();
 
-        \assert(
-            !empty($error_map[$type]),
-            "Undefined error type $type"
-        );
+        if (empty($error_map[$type])) {
+            throw new InvalidArgumentException("Undefined error type $type");
+        }
 
         return $error_map[$type];
     }

@@ -5,6 +5,7 @@ use Phan\Daemon\Request;
 use Phan\Daemon\Transport\StreamResponder;
 use Phan\Daemon\ExitException;
 
+use AssertionError;
 use Closure;
 use InvalidArgumentException;
 
@@ -38,7 +39,9 @@ class Daemon
             // Not reachable
             exit(0);
         }
-        \assert($code_base->isUndoTrackingEnabled());
+        if (!$code_base->isUndoTrackingEnabled()) {
+            throw new AssertionError("Expected undo tracking to be enabled when starting daemon mode");
+        }
 
         // example requests over TCP
         // Assumes that clients send and close the their requests quickly, then wait for a response.

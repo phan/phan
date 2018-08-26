@@ -29,11 +29,12 @@ use Phan\LanguageServer\ProtocolReader;
 use Phan\LanguageServer\ProtocolWriter;
 use Phan\LanguageServer\ProtocolStreamReader;
 use Phan\LanguageServer\ProtocolStreamWriter;
+
+use AssertionError;
 use Sabre\Event\Loop;
 use Sabre\Event\Promise;
-
-use function Sabre\Event\coroutine;
 use Throwable;
+use function Sabre\Event\coroutine;
 
 /**
  * Based on https://github.com/felixfbecker/php-language-server/blob/master/bin/php-language-server.php
@@ -226,7 +227,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     public static function run(CodeBase $code_base, \Closure $file_path_lister, array $options)
     {
-        \assert($code_base->isUndoTrackingEnabled());
+        if (!$code_base->isUndoTrackingEnabled()) {
+            throw new AssertionError("Expected undo tracking to be enabled");
+        }
 
         $make_language_server = function (ProtocolStreamReader $in, ProtocolStreamWriter $out) use ($code_base, $file_path_lister) : LanguageServer {
             return new LanguageServer(
@@ -364,7 +367,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                 /* } */
             }
         } else {
-            assert($options['stdin'] === true);
+            if ($options['stdin'] !== true) {
+                throw new AssertionError("Expected either 'stdin', 'tcp-server', or 'tcp' as the language server communication option");
+            }
             // Use STDIO
             stream_set_blocking(STDIN, false);
             $ls = $make_language_server(

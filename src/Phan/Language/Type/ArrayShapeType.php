@@ -8,6 +8,8 @@ use Phan\Language\UnionTypeBuilder;
 use Phan\CodeBase;
 use Phan\Config;
 
+use RuntimeException;
+
 /**
  * This is generated from phpdoc such as array{field:int}
  */
@@ -253,7 +255,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             return $this->canCastToGenericIterableType($type);
         }
 
-        $d = \strtolower((string)$type);
+        $d = \strtolower($type->__toString());
         if ($d[0] == '\\') {
             $d = \substr($d, 1);
         }
@@ -398,6 +400,8 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      *
      * TODO: Once Phan has full support for ArrayShapeType in the type system,
      * make asExpandedTypes return a UnionType with a single ArrayShapeType?
+     *
+     * @throws RuntimeException if the maximum recursion depth is exceeded
      * @override
      */
     public function asExpandedTypes(
@@ -407,10 +411,9 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
         // and should bail out.
-        \assert(
-            $recursion_depth < 20,
-            "Recursion has gotten out of hand"
-        );
+        if ($recursion_depth >= 20) {
+            throw new RuntimeException("Recursion has gotten out of hand");
+        }
         return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
             $result_fields = [];
             foreach ($this->field_types as $key => $union_type) {

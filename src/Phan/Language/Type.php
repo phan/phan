@@ -1355,6 +1355,8 @@ class Type
      * @return FQSEN
      * A fully-qualified structural element name derived
      * from this type
+     *
+     * @see FullyQualifiedClassName::fromType() for a method that always returns FullyQualifiedClassName
      */
     public function asFQSEN() : FQSEN
     {

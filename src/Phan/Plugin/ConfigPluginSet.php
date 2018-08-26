@@ -62,6 +62,7 @@ use ast\Node;
  *
  * (Note: This is called almost once per each AST node being analyzed.
  * Speed is preferred over using Phan\Memoize.)
+ * @phan-file-suppress PhanPluginNoAssert
  */
 final class ConfigPluginSet extends PluginV2 implements
     AfterAnalyzeFileCapability,

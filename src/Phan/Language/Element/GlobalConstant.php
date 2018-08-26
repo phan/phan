@@ -33,7 +33,6 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
      */
     public function getFQSEN() : FullyQualifiedGlobalConstantName
     {
-        \assert(!empty($this->fqsen), "FQSEN must be defined");
         return $this->fqsen;
     }
 

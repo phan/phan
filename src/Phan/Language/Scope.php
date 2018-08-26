@@ -10,6 +10,9 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Type\TemplateType;
 
+/**
+ * @phan-file-suppress PhanPluginNoAssert
+ */
 abstract class Scope
 {
     /**

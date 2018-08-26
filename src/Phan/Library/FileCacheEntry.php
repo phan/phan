@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Library;
 
+use AssertionError;
+
 class FileCacheEntry
 {
     /** @var string contents of the file */
@@ -30,8 +32,10 @@ class FileCacheEntry
             return $lines;
         }
         $lines = \preg_split("/^/m", $this->contents);
-        // TODO: Use a better way to not warn about false when arguments are both valid
-        \assert(\is_array($lines));
+        // TODO: Use a better way to not include false when arguments are both valid
+        if (!\is_array($lines)) {
+            throw new AssertionError("Expected lines to be an array");
+        }
         unset($lines[0]);
         $this->lines = $lines;
         return $lines;

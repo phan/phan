@@ -8,6 +8,8 @@ use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FileRef;
 use Phan\Language\UnionType;
+
+use AssertionError;
 use Closure;
 
 abstract class AddressableElement extends TypedElement implements AddressableElementInterface
@@ -76,7 +78,9 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      */
     public function getFQSEN()
     {
-        \assert(!empty($this->fqsen), "FQSEN must be defined");
+        if (!$this->fqsen) {
+            throw new AssertionError("FQSEN must be defined");
+        }
         return $this->fqsen;
     }
 
@@ -280,7 +284,9 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     public function getElementNamespace() : string
     {
         $element_fqsen = $this->getFQSEN();
-        \assert($element_fqsen instanceof FullyQualifiedGlobalStructuralElement);
+        if (!$element_fqsen instanceof FullyQualifiedGlobalStructuralElement) {
+            throw new AssertionError('Expected $this->element_fqsen to be FullyQualifiedGlobalStructuralElement');
+        }
 
         // Figure out which namespace this element is within
         return $element_fqsen->getNamespace();

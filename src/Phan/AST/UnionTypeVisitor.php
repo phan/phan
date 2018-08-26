@@ -2466,7 +2466,6 @@ class UnionTypeVisitor extends AnalysisVisitor
             } else {
                 if (!($fqsen instanceof FullyQualifiedFunctionName)) {
                     throw new TypeError('Expected fqsen to be a FullyQualifiedFunctionName or FullyQualifiedMethodName');
-
                 }
                 if (!$code_base->hasFunctionWithFQSEN($fqsen)) {
                     // TODO: error PhanArrayMapClosure
@@ -2804,7 +2803,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if ($type instanceof ClosureType && $type->hasKnownFQSEN()) {
                 // TODO: Support class instances with __invoke()
                 $fqsen = $type->asFQSEN();
-                if (!($fqsen instanceof FullyQualifiedFunctionLikeName))  {
+                if (!($fqsen instanceof FullyQualifiedFunctionLikeName)) {
                     throw new AssertionError('Expected fqsen of closure to be a FullyQualifiedFunctionLikeName');
                 }
                 $closure_types[] = $fqsen;

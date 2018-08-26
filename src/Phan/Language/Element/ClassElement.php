@@ -9,6 +9,8 @@ use Phan\Language\FQSEN\FullyQualifiedClassElement;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\UnionType;
 
+use TypeError;
+
 abstract class ClassElement extends AddressableElement
 {
     /** @var FullyQualifiedClassName */
@@ -33,7 +35,9 @@ abstract class ClassElement extends AddressableElement
      */
     public function setFQSEN(FQSEN $fqsen)
     {
-        \assert($fqsen instanceof FullyQualifiedClassElement);
+        if (!($fqsen instanceof FullyQualifiedClassElement)) {
+            throw new TypeError('Expected $fqsen to be a subclass of Phan\Language\Element\FullyQualifiedClassElement');
+        }
         parent::setFQSEN($fqsen);
         $this->class_fqsen = $fqsen->getFullyQualifiedClassName();
     }

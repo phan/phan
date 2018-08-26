@@ -572,7 +572,7 @@ final class ArgumentType
     private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, Variable $alternate_parameter, int $lineno, int $i)
     {
         $type_set = $argument_type->getTypeSet();
-        if (\count($type_set) < 2)  {
+        if (\count($type_set) < 2) {
             throw new AssertionError("Expected to have at least two parameter types when checking if parameter types match in strict mode");
         }
 
