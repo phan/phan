@@ -8,6 +8,8 @@ New features(Analysis):
 
   e.g. `@param (int|string)[] $paramName`, `@return (int|string)[]`
 + Support spaces after commas in array shapes (#1966)
++ Emit warnings when using non-strings as dynamic method names (e.g. `$o->{$notAString}()`)
+  New issue types: `PhanTypeInvalidMethodName`, `PhanTypeInvalidStaticMethodName`, `PhanTypeInvalidCallableMethodName`
 
 Plugins:
 + In HasPHPDocPlugin, use a more compact representation to show what Phan sees from the raw doc comment.

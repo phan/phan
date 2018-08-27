@@ -149,8 +149,11 @@ class Issue
     const TypeExpectedObjectStaticPropAccess = 'PhanTypeExpectedObjectStaticPropAccess';
 
     const TypeMismatchGeneratorYieldValue = 'PhanTypeMismatchGeneratorYieldValue';
-    const TypeMismatchGeneratorYieldKey = 'PhanTypeMismatchGeneratorYieldKey';
-    const TypeInvalidYieldFrom      = 'PhanTypeInvalidYieldFrom';
+    const TypeMismatchGeneratorYieldKey   = 'PhanTypeMismatchGeneratorYieldKey';
+    const TypeInvalidYieldFrom            = 'PhanTypeInvalidYieldFrom';
+    const TypeInvalidMethodName           = 'PhanTypeInvalidMethodName';
+    const TypeInvalidStaticMethodName     = 'PhanTypeInvalidStaticMethodName';
+    const TypeInvalidCallableMethodName   = 'PhanTypeInvalidCallableMethodName';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -1564,6 +1567,31 @@ class Issue
                 self::REMEDIATION_B,
                 10066
             ),
+            new Issue(
+                self::TypeInvalidMethodName,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Instance method name must be a string, got {TYPE}",
+                self::REMEDIATION_B,
+                10078
+            ),
+            new Issue(
+                self::TypeInvalidStaticMethodName,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Static method name must be a string, got {TYPE}",
+                self::REMEDIATION_B,
+                10079
+            ),
+            new Issue(
+                self::TypeInvalidCallableMethodName,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Method name of callable must be a string, got {TYPE}",
+                self::REMEDIATION_B,
+                10080
+            ),
+
             // Issue::CATEGORY_VARIABLE
             new Issue(
                 self::VariableUseClause,

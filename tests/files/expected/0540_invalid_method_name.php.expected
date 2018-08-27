@@ -1,0 +1,7 @@
+%s:4 PhanTypeInvalidMethodName Instance method name must be a string, got \ArrayObject
+%s:5 PhanTypeInvalidMethodName Instance method name must be a string, got \ArrayObject
+%s:6 PhanTypeInvalidStaticMethodName Static method name must be a string, got \ArrayObject
+%s:7 PhanTypeInvalidStaticMethodName Static method name must be a string, got \ArrayObject
+%s:8 PhanTypeInvalidStaticMethodName Static method name must be a string, got \ArrayObject
+%s:9 PhanTypeInvalidCallableMethodName Method name of callable must be a string, got \ArrayObject
+%s:10 PhanTypeInvalidCallableMethodName Method name of callable must be a string, got \ArrayObject

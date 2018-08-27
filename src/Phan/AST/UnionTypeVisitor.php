@@ -1942,7 +1942,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Method names can some times turn up being
         // other method calls.
         if (!is_string($method_name)) {
-            throw new TypeError("Method name must be a string or Node. Something else was given.");
+            $method_name = (string)$method_name;
         }
 
         try {
@@ -2695,7 +2695,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /**
      * @param string|Node $class_or_expr
-     * @param string $method_name
+     * @param string|Node $method_name
      *
      * @return array<int,FullyQualifiedMethodName>
      * A list of CallableTypes associated with the given node
@@ -2707,12 +2707,20 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         if (!is_string($method_name)) {
             if (!($method_name instanceof Node)) {
-                // TODO: Warn about int/float here
-                return [];
+                $method_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $method_name);
             }
             $method_name = (new ContextNode($code_base, $context, $method_name))->getEquivalentPHPScalarValue();
             if (!is_string($method_name)) {
-                // TODO: Check if union type is sane, e.g. callable ['MyClass', new stdClass()] is nonsense.
+                $method_name_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $method_name);
+                if (!$method_name_type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+                    Issue::maybeEmit(
+                        $this->code_base,
+                        $this->context,
+                        Issue::TypeInvalidCallableMethodName,
+                        $method_name->lineno ?? $this->context->getLineNumberStart(),
+                        $method_name_type
+                    );
+                }
                 return [];
             }
         }
