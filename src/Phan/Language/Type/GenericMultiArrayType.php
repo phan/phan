@@ -6,6 +6,9 @@ use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
 use Phan\CodeBase;
 
+use InvalidArgumentException;
+use RuntimeException;
+
 /**
  * Callers should split this up into multiple GenericArrayType instances.
  *
@@ -37,10 +40,14 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
      *
      * @param int $key_type
      * Corresponds to the type of the array keys. Set this to a GenericArrayType::KEY_* constant.
+     *
+     * @throws InvalidArgumentException if there are less than 2 types in $types
      */
     protected function __construct(array $types, bool $is_nullable, int $key_type)
     {
-        \assert(\count($types) >= 2);
+        if (\count($types) < 2) {
+            throw new InvalidArgumentException('Expected $types to have at least 2 array elements');
+        }
         // Could de-duplicate, but callers should be able to do that as well when converting to UnionType.
         // E.g. array<int|int> is int[].
         parent::__construct('\\', self::NAME, [], false);
@@ -176,10 +183,10 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
         // and should bail out.
-        \assert(
-            $recursion_depth < 20,
-            "Recursion has gotten out of hand"
-        );
+        if ($recursion_depth >= 20) {
+            throw new RuntimeException("Recursion has gotten out of hand");
+        }
+
         // TODO: Use UnionType::merge from a future change?
         $result = new UnionTypeBuilder();
         foreach ($this->element_types as $type) {

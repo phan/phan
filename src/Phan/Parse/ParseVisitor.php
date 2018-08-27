@@ -49,6 +49,7 @@ use InvalidArgumentException;
  * @phan-file-suppress PhanPluginUnusedPublicMethodArgument, PhanUnusedPublicMethodParameter implementing faster no-op methods for common visit*
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
+ * @phan-file-suppress PhanPluginNoAssert
  */
 class ParseVisitor extends ScopeVisitor
 {

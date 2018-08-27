@@ -11,6 +11,7 @@ use Phan\Language\Context;
 use ast\Node;
 use Composer\Semver\VersionParser;
 use Composer\Semver\Constraint\ConstraintInterface;
+use TypeError;
 
 /**
  * This class is used by 'phan --init' to generate a phan config for a composer project.
@@ -133,7 +134,9 @@ class Initializer
             if (count($setting_value) > 0) {
                 $source .= "[\n";
                 foreach ($setting_value as $key => $element) {
-                    assert(is_int($key));
+                    if (!is_int($key)) {
+                        throw new TypeError("Expected setting default for $setting_name to have consecutive integer keys");
+                    }
                     $source .= '        ' . var_export($element, true) . ",\n";
                 }
                 $source .= "    ],\n";

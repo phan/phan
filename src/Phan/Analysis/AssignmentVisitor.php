@@ -28,6 +28,8 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
+
+use AssertionError;
 use ast\Node;
 
 /**
@@ -821,7 +823,9 @@ class AssignmentVisitor extends AnalysisVisitor
     private function analyzePropertyAssignmentStrict(Clazz $clazz, Property $property, UnionType $assignment_type, Node $node)
     {
         $type_set = $assignment_type->getTypeSet();
-        \assert(\count($type_set) >= 2);
+        if (\count($type_set) < 2) {
+            throw new AssertionError('Expected to have at least two types when checking if types match in strict mode');
+        }
 
         $property_union_type = $property->getUnionType();
         if ($property_union_type->hasTemplateType()) {

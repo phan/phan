@@ -3,6 +3,8 @@ namespace Phan\Daemon\Transport;
 
 use Phan\Daemon;
 
+use TypeError;
+
 /**
  * Sends json encoded data over a socket stream.
  */
@@ -19,7 +21,9 @@ class StreamResponder implements Responder
     /** @param resource $connection a stream */
     public function __construct($connection, bool $expect_request)
     {
-        \assert(is_resource($connection));
+        if (!is_resource($connection)) {
+            throw new TypeError("Expected connection to be resource, saw " . gettype($connection));
+        }
         $this->connection = $connection;
         if (!$expect_request) {
             $this->did_read_request_data = true;

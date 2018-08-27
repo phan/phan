@@ -20,6 +20,8 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
+
+use AssertionError;
 use ast\Node;
 use Closure;
 
@@ -998,7 +1000,9 @@ trait FunctionTrait
         $comment = $this->comment;
         // $comment can be null for magic methods from `@method`
         if ($comment !== null) {
-            \assert($this instanceof FunctionInterface);
+            if (!($this instanceof FunctionInterface)) {
+                throw new AssertionError('Expected any class using FunctionTrait to implement FunctionInterface');
+            }
             FunctionTrait::addParamsToScopeOfFunctionOrMethod($this->getContext(), $code_base, $this, $comment);
         }
     }

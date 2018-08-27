@@ -4,6 +4,8 @@ namespace Phan\Language\Type;
 use Phan\Config;
 use Phan\Language\Type;
 
+use AssertionError;
+
 // Not sure if it made sense to extend BoolType, so not doing that.
 final class TrueType extends ScalarType
 {
@@ -32,7 +34,9 @@ final class TrueType extends ScalarType
 
     public function asNonTrueType() : Type
     {
-        assert($this->is_nullable, 'should only call on ?true');
+        if (!$this->is_nullable) {
+            throw new AssertionError('should only call asNonTrueType on ?true');
+        }
         return NullType::instance(true);
     }
 

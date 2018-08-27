@@ -49,10 +49,14 @@ use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
+
+use AssertionError;
 use ast\Node;
 use ast;
 use Closure;
-use AssertionError;
+use TypeError;
+use function is_scalar;
+use function is_string;
 
 /**
  * Determine the UnionType associated with a
@@ -611,7 +615,9 @@ class UnionTypeVisitor extends AnalysisVisitor
             return null;
         }
         // Otherwise, this is an int/float/string.
-        \assert(\is_scalar($node), 'node must be Node or scalar');
+        if (!is_scalar($node)) {
+            throw new TypeError('node must be Node or scalar');
+        }
         return Type::fromObject($node)->asUnionType();
     }
 
@@ -645,7 +651,9 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Otherwise, this is an int/float/string.
         // Use the exact same truthiness rules as PHP to check if the conditional is truthy.
         // (e.g. "0" and 0.0 and '' are false)
-        \assert(\is_scalar($cond), 'cond must be Node or scalar');
+        if (!is_scalar($cond)) {
+            throw new TypeError('$cond must be Node or scalar');
+        }
         return (bool)$cond;
     }
 
@@ -887,14 +895,14 @@ class UnionTypeVisitor extends AnalysisVisitor
             // NOTE: this has some overlap with DuplicateKeyPlugin
             if ($key_node === null) {
                 $elements[] = true;
-            } elseif (\is_scalar($key_node)) {
+            } elseif (is_scalar($key_node)) {
                 $elements[$key_node] = true;  // Check for float?
             } else {
                 if ($context_node === null) {
                     $context_node = new ContextNode($this->code_base, $this->context, null);
                 }
                 $key = $context_node->getEquivalentPHPValueForNode($key_node, ContextNode::RESOLVE_CONSTANTS);
-                if (\is_scalar($key)) {
+                if (is_scalar($key)) {
                     $elements[$key] = true;
                 } else {
                     return null;
@@ -1366,7 +1374,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         $dim_node = $node->children['dim'];
         $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $this->context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
         // TODO: detect and warn about null
-        if (!\is_scalar($dim_value)) {
+        if (!is_scalar($dim_value)) {
             return null;
         }
 
@@ -1852,7 +1860,6 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         $possible_types = UnionType::empty();
         foreach ($function_list_generator as $function) {
-            assert($function instanceof FunctionInterface);
             if ($function->hasDependentReturnType()) {
                 $function_types = $function->getDependentReturnType($this->code_base, $this->context, $node->children['args']->children);
             } else {
@@ -1898,16 +1905,17 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Give up on any complicated nonsense where the
         // method name is a variable such as in
         // `$variable->$function_name()`.
+        //
+        // TODO:
         if ($method_name instanceof Node) {
             return UnionType::empty();
         }
 
         // Method names can some times turn up being
         // other method calls.
-        \assert(
-            \is_string($method_name),
-            "Method name must be a string. Something else given."
-        );
+        if (!is_string($method_name)) {
+            throw new TypeError("Method name must be a string or Node. Something else was given.");
+        }
 
         try {
             foreach ($this->classListFromNode(
@@ -2456,7 +2464,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
                 $functions[] = $code_base->getMethodByFQSEN($fqsen);
             } else {
-                assert($fqsen instanceof FullyQualifiedFunctionName);
+                if (!($fqsen instanceof FullyQualifiedFunctionName)) {
+                    throw new TypeError('Expected fqsen to be a FullyQualifiedFunctionName or FullyQualifiedMethodName');
+                }
                 if (!$code_base->hasFunctionWithFQSEN($fqsen)) {
                     // TODO: error PhanArrayMapClosure
                     continue;
@@ -2642,13 +2652,13 @@ class UnionTypeVisitor extends AnalysisVisitor
         $code_base = $this->code_base;
         $context = $this->context;
 
-        if (!\is_string($method_name)) {
+        if (!is_string($method_name)) {
             if (!($method_name instanceof Node)) {
                 // TODO: Warn about int/float here
                 return [];
             }
             $method_name = (new ContextNode($code_base, $context, $method_name))->getEquivalentPHPScalarValue();
-            if (!\is_string($method_name)) {
+            if (!is_string($method_name)) {
                 // TODO: Check if union type is sane, e.g. callable ['MyClass', new stdClass()] is nonsense.
                 return [];
             }
@@ -2746,7 +2756,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         if ($node instanceof Node) {
             $node = (new ContextNode($this->code_base, $this->context, $node))->getEquivalentPHPValue();
         }
-        if (\is_string($node)) {
+        if (is_string($node)) {
             if (\stripos($node, '::') !== false) {
                 list($class_name, $method_name) = \explode('::', $node, 2);
                 return $this->methodFQSENListFromParts($class_name, $method_name);
@@ -2793,7 +2803,9 @@ class UnionTypeVisitor extends AnalysisVisitor
             if ($type instanceof ClosureType && $type->hasKnownFQSEN()) {
                 // TODO: Support class instances with __invoke()
                 $fqsen = $type->asFQSEN();
-                assert($fqsen instanceof FullyQualifiedFunctionLikeName);
+                if (!($fqsen instanceof FullyQualifiedFunctionLikeName)) {
+                    throw new AssertionError('Expected fqsen of closure to be a FullyQualifiedFunctionLikeName');
+                }
                 $closure_types[] = $fqsen;
             }
         }
@@ -2864,7 +2876,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         $node
     ) {
         if (!($node instanceof Node)) {
-            return \is_string($node) ? $node : null;
+            return is_string($node) ? $node : null;
         }
         $node_type = self::unionTypeFromNode(
             $code_base,

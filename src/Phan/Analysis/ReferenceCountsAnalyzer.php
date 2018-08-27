@@ -22,6 +22,8 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 
+use TypeError;
+
 /**
  * This emits PhanUnreferenced* issues for classlikes, constants, properties, and functions/methods.
  *
@@ -191,7 +193,9 @@ class ReferenceCountsAnalyzer
             }
             // Currently, deferred analysis is only needed for class elements, which can be inherited
             // (And we may track the references to the inherited version of the original)
-            assert($element instanceof ClassElement);
+            if (!$element instanceof ClassElement) {
+                throw new TypeError("Expected an iterable of ClassElement values");
+            }
             if ($element instanceof ClassConstant) {
                 // should not warn about self::class
                 if (strcasecmp($element->getName(), 'class') === 0) {

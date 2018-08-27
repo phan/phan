@@ -9,6 +9,7 @@ use AssertionError;
 
 /**
  * A Fully-Qualified Global Structural Element
+ * @phan-file-suppress PhanPluginNoAssert
  */
 abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
 {

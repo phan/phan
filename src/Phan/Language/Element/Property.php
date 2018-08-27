@@ -8,6 +8,7 @@ use Phan\Language\Scope\PropertyScope;
 use Phan\Language\UnionType;
 
 use Closure;
+use TypeError;
 
 class Property extends ClassElement
 {
@@ -154,7 +155,6 @@ class Property extends ClassElement
      */
     public function getFQSEN() : FullyQualifiedPropertyName
     {
-        \assert(!empty($this->fqsen), "FQSEN must be defined");
         return $this->fqsen;
     }
 
@@ -253,7 +253,9 @@ class Property extends ClassElement
             // Should be impossible
             return;
         }
-        \assert($element instanceof Property);
+        if (!($element instanceof Property)) {
+            throw new TypeError('Expected $element to be Phan\Language\Element\Property in ' . __METHOD__);
+        }
         foreach ($element->reference_list as $key => $file_ref) {
             $this->reference_list[$key] = $file_ref;
         }

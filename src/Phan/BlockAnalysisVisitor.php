@@ -34,6 +34,7 @@ use ast\Node;
  * @see $this->visit
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPluginNoAssert
  */
 class BlockAnalysisVisitor extends AnalysisVisitor
 {

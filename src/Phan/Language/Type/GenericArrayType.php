@@ -2,16 +2,17 @@
 namespace Phan\Language\Type;
 
 use Phan\AST\UnionTypeVisitor;
-use Phan\Language\Type;
-use Phan\Language\Context;
-use Phan\Language\UnionType;
-use Phan\Language\UnionTypeBuilder;
-use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Language\Context;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Type;
+use Phan\Language\UnionType;
+use Phan\Language\UnionTypeBuilder;
 
 use ast\Node;
 use InvalidArgumentException;
+use RuntimeException;
 
 final class GenericArrayType extends ArrayType implements GenericArrayInterface
 {
@@ -296,10 +297,9 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
         // and should bail out.
-        \assert(
-            $recursion_depth < 20,
-            "Recursion has gotten out of hand"
-        );
+        if ($recursion_depth >= 20) {
+            throw new RuntimeException("Recursion has gotten out of hand");
+        }
 
         return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
             $union_type = $this->asUnionType();

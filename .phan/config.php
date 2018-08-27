@@ -552,7 +552,7 @@ return [
         'UnknownElementTypePlugin',
         'DuplicateExpressionPlugin',
         // TODO: warn about the usage of assert() for Phan's self-analysis. See https://github.com/phan/phan/issues/288
-        // 'NoAssertPlugin',
+        'NoAssertPlugin',
 
         // 'SleepCheckerPlugin' is useful for projects which heavily use the __sleep() method. Phan doesn't use __sleep().
 

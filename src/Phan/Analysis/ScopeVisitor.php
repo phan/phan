@@ -10,6 +10,8 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Issue;
+
+use AssertionError;
 use ast\Node;
 
 /**
@@ -211,10 +213,9 @@ abstract class ScopeVisitor extends AnalysisVisitor
         string $prefix = '',
         int $flags = 0
     ) : array {
-        \assert(
-            $node->kind == \ast\AST_USE,
-            'Method takes AST_USE nodes'
-        );
+        if ($node->kind !== \ast\AST_USE) {
+            throw new AssertionError('Method takes AST_USE nodes');
+        }
 
         $map = [];
         foreach ($node->children as $child_node) {

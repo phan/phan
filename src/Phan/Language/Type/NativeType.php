@@ -101,9 +101,6 @@ abstract class NativeType extends Type
             return parent::canCastToNonNullableType($type);
         }
 
-        // Cast this to a native type
-        \assert($type instanceof NativeType);
-
         static $matrix;
         if ($matrix === null) {
             $matrix = self::initializeTypeCastingMatrix();

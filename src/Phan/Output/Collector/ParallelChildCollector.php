@@ -9,6 +9,8 @@ use Phan\Output\IssueCollectorInterface;
  * but will send them all to a message queue for collection
  * by a ParallelParentCollector instead of holding on to
  * them itself.
+ *
+ * @phan-file-suppress PhanPluginNoAssert
  */
 class ParallelChildCollector implements IssueCollectorInterface
 {

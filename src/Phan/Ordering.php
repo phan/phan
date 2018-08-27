@@ -4,6 +4,8 @@ namespace Phan;
 use Phan\Library\Hasher\Consistent;
 use Phan\Library\Hasher\Sequential;
 
+use InvalidArgumentException;
+
 /**
  * This determines the order in which files will be analyzed.
  * Affected by `consistent_hashing_file_order` and `randomize_file_order`.
@@ -37,16 +39,16 @@ class Ordering
      * @return array<int,array<int,string>>
      * A map from process_id to a list of files to be analyzed
      * on that process in stable ordering.
+     * @throws InvalidArgumentException if $process_count isn't positive.
      */
     public function orderForProcessCount(
         int $process_count,
         array $analysis_file_list
     ) : array {
 
-        \assert(
-            $process_count > 0,
-            "The process count must be greater than zero."
-        );
+        if ($process_count <= 0) {
+            throw new InvalidArgumentException("The process count must be greater than zero.");
+        }
 
         if (Config::getValue('randomize_file_order')) {
             $random_proc_file_map = [];

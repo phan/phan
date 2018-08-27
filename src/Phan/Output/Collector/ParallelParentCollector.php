@@ -9,6 +9,8 @@ use Phan\Output\IssueCollectorInterface;
  * them on to a given base collector, but will also listen to
  * a message queue for issues emitted by other processes (via
  * a ParallelChildCollector).
+ *
+ * @phan-file-suppress PhanPluginNoAssert
  */
 class ParallelParentCollector implements IssueCollectorInterface
 {

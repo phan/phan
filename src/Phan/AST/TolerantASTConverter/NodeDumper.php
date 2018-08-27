@@ -5,6 +5,8 @@ namespace Phan\AST\TolerantASTConverter;
 use Microsoft\PhpParser\Node;
 use Microsoft\PhpParser\Token;
 
+use function substr;
+
 /**
  * Source: https://github.com/TysonAndre/tolerant-php-parser-to-php-ast
  *
@@ -76,8 +78,7 @@ class NodeDumper
         $name = get_class($ast_node);
         if (stripos($name, 'Microsoft\\PhpParser\\') === 0) {
             // Remove the PhpParser namespace
-            $name = substr($name, 20);
-            \assert(\is_string($name));
+            $name = (string)substr($name, 20);
         }
         return $name;
     }
@@ -87,8 +88,7 @@ class NodeDumper
         $name = get_class($ast_node);
         if (stripos($name, 'Microsoft\\PhpParser\\') === 0) {
             // Remove the PhpParser namespace
-            $name = substr($name, 20);
-            \assert(\is_string($name));
+            $name = (string)substr($name, 20);
         }
         return $name;
     }

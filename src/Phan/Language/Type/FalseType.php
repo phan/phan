@@ -4,6 +4,8 @@ namespace Phan\Language\Type;
 use Phan\Config;
 use Phan\Language\Type;
 
+use AssertionError;
+
 final class FalseType extends ScalarType
 {
     /** @phan-override */
@@ -41,7 +43,9 @@ final class FalseType extends ScalarType
 
     public function asNonFalseType() : Type
     {
-        assert($this->is_nullable, 'should only call on ?false');
+        if (!($this->is_nullable)) {
+            throw new AssertionError('should only call FalseType->asNonFalseType on ?false');
+        }
         return NullType::instance(false);
     }
 
