@@ -498,7 +498,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             if ($condition_node instanceof Node) {
                 $context = (new ConditionVisitor(
                     $this->code_base,
-                    $this->context
+                    $context
                 ))->__invoke($condition_node);
             }
             if ($stmts_node instanceof Node) {
