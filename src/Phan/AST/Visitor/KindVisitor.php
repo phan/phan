@@ -5,7 +5,7 @@ use ast\Node;
 
 /**
  * A visitor of AST nodes based on the node's kind value
- * @phan-file-suppress UnknownMethodReturnType - TODO: Make this and FlagVisitorImplementation use Phan templates?
+ * @phan-file-suppress PhanPluginUnknownMethodReturnType - TODO: Make this and FlagVisitorImplementation use Phan templates?
  */
 interface KindVisitor
 {

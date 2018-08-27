@@ -20,10 +20,14 @@ Plugins:
 + Add `UnknownElementTypePlugin` to warn about functions/methods
   that have param/return types that Phan can't infer anything about.
   (it can still infer some things in non-quick mode about parameters)
-+ Add `DuplicateElementPlugin` to warn about duplicated expressions such as:
+
+  New issue types: `PhanPluginUnknownMethodReturnType`, `PhanPluginUnknownClosureReturnType`, `PhanPluginUnknownFunctionReturnType`, `PhanPluginUnknownPropertyType`
++ Add `DuplicateExpressionPlugin` to warn about duplicated expressions such as:
   - `X == X`, `X || X`, and many other binary operators (for operators where it is likely to be a bug)
   - `X ? X : Y` (can often simplify to `X ?: Y`)
   - `isset(X) ? X : Y` (can simplify to `??` in PHP 7)
+
+  New issue types: `PhanPluginDuplicateExpressionBinaryOp`, `PhanPluginDuplicateConditionalTernaryOperation`, `PhanPluginDuplicateConditionalNullCoalescing`
 + Improve types inferred for `$matches` for PregRegexCheckerPlugin.
 
 Bug fixes:
@@ -31,7 +35,7 @@ Bug fixes:
   (Phan now logs these the same way it would log other syntax errors, instead of treating this like an unexpected Error.)
 + Make sure that private methods that are generators, that are inherited from a trait, aren't treated like a `void`.
 + Fix a crash analyzing a dynamic call to a static method, which occurred when dead code detection or reference tracking was enabled. (#1889)
-+ Don't accidentally emit false positive issues about operands of binary operators in certain contexts (#1898)
++ Don't accidentally emit false positive issues about operands of binary operators in certain contexts. (#1898)
 
 12 Aug 2018, Phan 1.0.0
 -----------------------
