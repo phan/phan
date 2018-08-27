@@ -42,7 +42,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
             $this->emitIssue(
                 $code_base,
                 $method->getContext(),
-                'UnknownMethodReturnType',
+                'PhanPluginUnknownMethodReturnType',
                 "Method {METHOD} has no declared or inferred return type",
                 [(string)$method->getFQSEN()]
             );
@@ -72,7 +72,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
                 $this->emitIssue(
                     $code_base,
                     $function->getContext(),
-                    'UnknownClosureReturnType',
+                    'PhanPluginUnknownClosureReturnType',
                     "Closure {FUNCTION} has no declared or inferred return type",
                     [(string)$function->getFQSEN()]
                 );
@@ -80,7 +80,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
                 $this->emitIssue(
                     $code_base,
                     $function->getContext(),
-                    'UnknownFunctionReturnType',
+                    'PhanPluginUnknownFunctionReturnType',
                     "Function {FUNCTION} has no declared or inferred return type",
                     [(string)$function->getFQSEN()]
                 );
@@ -112,7 +112,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
             $this->emitIssue(
                 $code_base,
                 $property->getContext(),
-                'UnknownPropertyType',
+                'PhanPluginUnknownPropertyType',
                 "Property {PROPERTY} has an initial type that cannot be inferred",
                 [(string)$property->getFQSEN()]
             );

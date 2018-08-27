@@ -6,7 +6,7 @@ use ast\Node;
 /**
  * A visitor of AST nodes based on the node's flag value
  * which does nothing upon visiting a node
- * @phan-file-suppress UnknownMethodReturnType - TODO: Make this and FlagVisitorImplementation use Phan templates?
+ * @phan-file-suppress PhanPluginUnknownMethodReturnType - TODO: Make this and FlagVisitorImplementation use Phan templates?
  */
 abstract class FlagVisitorImplementation implements FlagVisitor
 {

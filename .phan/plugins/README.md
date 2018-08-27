@@ -183,6 +183,24 @@ as well as about returning array values with invalid property names in `__sleep`
 - **SleepCheckerMagicPropName**: `__sleep is returning an array that includes {PROPERTY}, which is a magic property`
 - **SleepCheckerDynamicPropName**: `__sleep is returning an array that includes {PROPERTY}, which is a dynamically added property (but not a declared property)`
 
+#### UnknownElementTypePlugin.php
+
+Warns about elements containing unknown types (function/method/closure return types, parameter types)
+
+- **PhanPluginUnknownMethodReturnType**: `Method {METHOD} has no declared or inferred return type`
+- **PhanPluginUnknownFunctionReturnType**: `Function {FUNCTION} has no declared or inferred return type`
+- **PhanPluginUnknownClosureReturnType**: `Closure {FUNCTION} has no declared or inferred return type`
+- **PhanPluginUnknownPropertyType**: `Property {PROPERTY} has an initial type that cannot be inferred`
+
+#### DuplicateExpressionPlugin.php
+
+This plugin checks for duplicate expressions in a statement
+that are likely to be a bug. (e.g. `expr1 == expr`)
+
+- **PhanPluginDuplicateExpressionBinaryOp**: `Both sides of the binary operator {OPERATOR} are the same: {CODE}`
+- **PhanPluginDuplicateConditionalTernaryDuplication**: `"X ? X : Y" can usually be simplified to "X ?: Y". The duplicated expression X was {CODE}`
+- **PhanPluginDuplicateConditionalNullCoalescing**: `"isset(X) ? X : Y" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was {CODE}`
+
 ### 4. Demo plugins:
 
 These files demonstrate plugins for Phan.
