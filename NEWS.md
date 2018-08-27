@@ -1,6 +1,6 @@
 Phan NEWS
 
-?? ??? 2018, Phan 1.0.1 (dev)
+26 Aug 2018, Phan 1.0.1
 -----------------------
 
 New features(CLI,Configs)
@@ -15,6 +15,9 @@ New features(Analysis)
 + Make `!is_numeric` assertions remove `int` and `float` from the union type of an expression. (#1895)
 + Preserve any matching original types in scalar type assertions (#1896)
   (e.g. a variable `$x` of type `?int|?MyClass` will have type `int` after `assert(is_numeric($x))`)
+
+Maintenance:
++ Add/modify various function, methods, and property type signatures.
 
 Plugins:
 + Add `UnknownElementTypePlugin` to warn about functions/methods
