@@ -4,6 +4,8 @@ Phan NEWS
 -----------------------
 
 New features(Analysis)
++ Allow spaces on either side of `|` in union types
+  (e.g. `@param array | ArrayAccess $x`)
 + Warn about array destructuring assignments from non-arrays (#1818)
   (E.g. `[$x] = 2`)
   New issue type: `PhanTypeInvalidExpressionArrayDestructuring`
