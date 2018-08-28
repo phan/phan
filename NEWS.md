@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 2018, Phan 1.0.2 (dev)
 -----------------------
 
+Bug fixes
++ Fix a crash seen when using a temporary expression in a write context. (#1915)
+
 26 Aug 2018, Phan 1.0.1
 -----------------------
 

@@ -21,9 +21,10 @@ class Issue
     // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     // this is deliberate for issue names
     // Issue::CATEGORY_SYNTAX
-    const SyntaxError               = 'PhanSyntaxError';
-    const InvalidConstantExpression = 'PhanInvalidConstantExpression';
-    const InvalidNode               = 'PhanInvalidNode';
+    const SyntaxError                    = 'PhanSyntaxError';
+    const InvalidConstantExpression      = 'PhanInvalidConstantExpression';
+    const InvalidNode                    = 'PhanInvalidNode';
+    const InvalidWriteToTemporaryExpression = 'PhanInvalidWriteToTemporaryExpression';
 
     // Issue::CATEGORY_UNDEFINED
     const AmbiguousTraitAliasSource = 'PhanAmbiguousTraitAliasSource';
@@ -557,6 +558,14 @@ class Issue
                 "%s",
                 self::REMEDIATION_A,
                 17002
+            ),
+            new Issue(
+                self::InvalidWriteToTemporaryExpression,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                "Cannot use temporary expression (of type {TYPE}) in write context",
+                self::REMEDIATION_A,
+                17003
             ),
 
             // Issue::CATEGORY_UNDEFINED

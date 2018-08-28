@@ -1,0 +1,1 @@
+%s:4 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (of type 'test literal') in write context

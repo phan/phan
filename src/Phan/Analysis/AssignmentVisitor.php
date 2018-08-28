@@ -524,6 +524,14 @@ class AssignmentVisitor extends AnalysisVisitor
     public function visitDim(Node $node) : Context
     {
         $expr_node = $node->children['expr'];
+        if (!($expr_node instanceof Node)) {
+            $this->emitIssue(
+                Issue::InvalidWriteToTemporaryExpression,
+                $node->lineno,
+                Type::fromObject($expr_node)
+            );
+            return $this->context;
+        }
         if ($expr_node->kind == \ast\AST_VAR) {
             $variable_name = (new ContextNode(
                 $this->code_base,
