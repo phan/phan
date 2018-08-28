@@ -57,6 +57,7 @@ class Issue
     const UndeclaredMethodInCallable = 'PhanUndeclaredMethodInCallable';
     const EmptyFQSENInCallable      = 'PhanEmptyFQSENInCallable';
     const EmptyFQSENInClasslike     = 'PhanEmptyFQSENInClasslike';
+    const AutoloaderMissingFile     = 'PhanAutoloaderMissingFile';
 
     // Issue::CATEGORY_TYPE
     const NonClassMethodCall        = 'PhanNonClassMethodCall';
@@ -798,6 +799,14 @@ class Issue
                 "Possible use of a classlike '{CLASSLIKE}' with an empty FQSEN.",
                 self::REMEDIATION_B,
                 11036
+            ),
+            new Issue(
+                self::AutoloaderMissingFile,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_CRITICAL,
+                "Expected autoloaded file to exist for '{CLASSLIKE}' but no such file exists.",
+                self::REMEDIATION_B,
+                11037
             ),
 
             // Issue::CATEGORY_ANALYSIS

@@ -1,9 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use Phan\ClassResolver\ClassResolverInterface;
+use Phan\ClassResolver\ComposerResolver;
 use Phan\CodeBase\ClassMap;
 use Phan\CodeBase\UndoTracker;
 use Phan\Exception\FileNotFoundException;
+use Phan\Exception\ClassNotFoundException;
 use Phan\Language\Context;
 use Phan\Language\Element\ClassAliasRecord;
 use Phan\Language\Element\ClassConstant;
@@ -14,6 +17,7 @@ use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Property;
+use Phan\Language\FileRef;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassElement;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -181,7 +185,7 @@ class CodeBase
      * for Phan to skip analyzing the entire codebase and rather, use the ClassResolver to attempt to resolve classes
      * at evaluation time, and dynamically analyze new classes as they are found.
      *
-     * @var ClassResolver\ClassResolverInterface|null
+     * @var ClassResolverInterface|null
      */
     private $class_resolver;
 
@@ -201,7 +205,7 @@ class CodeBase
      * @param string[] $internal_trait_name_list
      * @param string[] $internal_constant_name_list
      * @param string[] $internal_function_name_list
-     * @param ClassResolver\ClassResolverInterface|null $class_resolver Optional class to resolve class => file name
+     * @param ClassResolverInterface|null $class_resolver Optional class to resolve class => file name
      */
     public function __construct(
         array $internal_class_name_list,
@@ -209,7 +213,7 @@ class CodeBase
         array $internal_trait_name_list,
         array $internal_constant_name_list,
         array $internal_function_name_list,
-        ClassResolver\ClassResolverInterface $class_resolver = null
+        ClassResolverInterface $class_resolver = null
     ) {
         $this->fqsen_class_map = new Map;
         $this->fqsen_class_map_internal = new Map;
@@ -232,6 +236,58 @@ class CodeBase
         // We initialize the FQSENs early on so that they show up
         // in the proper casing.
         $this->addInternalFunctionsByNames($internal_function_name_list);
+    }
+
+    /**
+     * Initialization hook called after the CLI args are parsed and Config has been initialized
+     *
+     * @throws FileNotFoundException If the configured
+     */
+    public function init()
+    {
+        $class_loader_class = Config::getValue('class_resolver');
+
+        // Check class is defined
+        if ($class_loader_class && !class_exists($class_loader_class)) {
+            throw new ClassNotFoundException(
+                sprintf('The configured `class_resolver` "%s" does not exist or is not loaded', $class_loader_class)
+            );
+        }
+
+        // Check if composer class loader is being used
+        if (\Phan\Config::getValue('use_project_composer_autoloader')) {
+            $autoload_path = Config::getProjectRootDirectory() . '/' . Config::getValue('composer_autoloader_path');
+            $class_loader_class = $class_loader_class ?: ComposerResolver::class;
+
+            if (!file_exists($autoload_path)) {
+                throw new FileNotFoundException(
+                    sprintf('The composer autoload file was not found in "%s"', $autoload_path)
+                );
+            }
+
+            $autoloader = require $autoload_path;
+            $this->setClassResolver(new $class_loader_class($autoloader));
+
+        // Check for a custom class resolver
+        } elseif ($class_loader_class) {
+            $this->setClassResolver(new $class_loader_class);
+        }
+    }
+
+    /**
+     * @return null|ClassResolverInterface
+     */
+    public function getClassResolver()
+    {
+        return $this->class_resolver;
+    }
+
+    /**
+     * @param ClassResolverInterface $class_resolver
+     */
+    protected function setClassResolver(ClassResolverInterface $class_resolver)
+    {
+        $this->class_resolver = $class_resolver;
     }
 
     /**
@@ -808,11 +864,16 @@ class CodeBase
             return true;
         }
 
-        if ($autoload && $this->lazyLoadClassWithFQSEN($fqsen)) {
+//        echo "---- {$fqsen->getNamespacedName()} -----\n";
+        if ($this->lazyLoadPHPInternalClassWithFQSEN($fqsen)) {
             return true;
         }
 
-        return $this->lazyLoadPHPInternalClassWithFQSEN($fqsen);
+        if (!$autoload) {
+            return false;
+        }
+
+        return $this->lazyLoadClassWithFQSEN($fqsen);
     }
 
     /**
@@ -832,41 +893,57 @@ class CodeBase
             return false;
         }
 
+        // Resolve the file for the class
         $file = $this->class_resolver->fileForClass($fqsen);
+
         if (!$file) {
-            unset($this->class_resolver_parsing[$class]);
             return false;
         }
 
-        $this->class_resolver_parsing[$class] = true;
-
         $file_path = realpath($file);
+//        echo "--- $class - $file_path ---\n";
 
-        if (!file_exists($file) || !$file_path) {
-            throw new FileNotFoundException(
-                sprintf(
-                    'The path returned from the class resolver for the classs "%s" does not exist: "%s"',
-                    $fqsen->getNamespacedName(),
-                    $file_path
-                )
+        // Ensure path exists
+        if (!$file_path || !file_exists($file_path)) {
+            Issue::maybeEmit(
+                $this,
+                (new Context())->withFile($file_path),
+                Issue::AutoloaderMissingFile,
+                0,
+                $class,
+                $file
             );
         }
 
-        // Attempt to make file relative to cwd
-        $cwd = getcwd();
-        if (strpos($file_path, $cwd) === 0) {
-            $file_path = substr($file_path, strlen($cwd) + 1);
-        }
+        Daemon::debugf("Autoloaded class %s", $class);
+
+        // Attempt to make file relative to project
+        $file_path = FileRef::getProjectRelativePathForPath($file_path);
+
+        // Cache that we're in the process of resolving this file
+        $this->class_resolver_parsing[$class] = true;
 
         $this->setCurrentParsedFile($file_path);
         $this->flushDependenciesForFile($file_path);
 
         // Parse the file
-        $context = Analysis::parseFile($this, $file_path);
+        Phan::analyzeFileList(
+            $this,
+            function () use ($file_path) {
+                return [$file_path];
+            }
+        );
+//        $context = Analysis::parseFile($this, $file_path);
+
+        // Reset temp state
         unset($this->class_resolver_parsing[$class]);
         $this->setCurrentParsedFile(null);
 
-        return $context->getFile() === $file_path;
+//        echo "----- Done -----\n";
+
+        $tmp = $this->fqsen_class_map->offsetExists($fqsen);
+
+        return true;
     }
 
     /**

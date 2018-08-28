@@ -137,6 +137,7 @@ class CLI
                 'target-php-version',
                 'unused-variable-detection',
                 'use-fallback-parser',
+                'use-project-composer-autoloader',
                 'version',
             ]
         );
@@ -370,6 +371,9 @@ class CLI
                 case 'use-fallback-parser':
                     Config::setValue('use_fallback_parser', true);
                     break;
+                case 'use-project-composer-autoloader':
+                    Config::setValue('use_project_composer_autoloader', true);
+                    break;
                 case 'strict-param-checking':
                     Config::setValue('strict_param_checking', true);
                     break;
@@ -509,12 +513,19 @@ class CLI
                 $this->usage("Unknown option '{$arg}'", EXIT_FAILURE);
             }
         }
+
         if (!$this->file_list_only) {
-            // Merge in any remaining args on the CLI
-            $this->file_list_in_config = array_merge(
-                $this->file_list_in_config,
-                array_slice($argv, 1)
-            );
+            if (Config::getValue('use_project_composer_autoloader')) {
+                // Set files as any remaining args on the CLI
+                $this->file_list_in_config = array_slice($argv, 1);
+                $this->file_list_only = true;
+            } else {
+                // Merge in any remaining args on the CLI
+                $this->file_list_in_config = array_merge(
+                    $this->file_list_in_config,
+                    array_slice($argv, 1)
+                );
+            }
         }
 
         $this->recomputeFileList();
@@ -768,6 +779,14 @@ Usage: {$argv[0]} [options] [files...]
   (And phan will then analyze what could be parsed).
   This flag is experimental and may result in unexpected exceptions or errors.
   This flag does not affect excluded files and directories.
+  
+ --use-project-composer-autoloader
+  If set, the project's composer autoloader will be used to locate unknown classes.
+  This is especially useful if you have a large codebase and it takes a long time
+  to analyze files. In this mode, pathing directly to a file with
+  `phan --use-project-composer-autoloader path/to/file.php` will cause phan to skip
+  analyzing all the files at startup, and instead only analyze files as they are
+  required, much like how autoloading works.
 
  --allow-polyfill-parser
   If the `php-ast` extension isn't available or is an outdated version,

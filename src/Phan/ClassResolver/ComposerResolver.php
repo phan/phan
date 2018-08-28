@@ -16,6 +16,13 @@ class ComposerResolver implements ClassResolverInterface
     private $composer_class_loader;
 
     /**
+     * Map of previously resolved classes
+     *
+     * @var <string,string>
+     */
+    private $class_map = [];
+
+    /**
      * ClassResolver constructor.
      *
      * @param ClassLoader $composer_class_loader
@@ -31,12 +38,18 @@ class ComposerResolver implements ClassResolverInterface
      */
     public function fileForClass(FullyQualifiedClassName $fqsen): string
     {
-        $file_path = $this->composer_class_loader->findFile($fqsen->getNamespacedName());
-
-        if (!$file_path) {
-            return '';
+        $class = $fqsen->getNamespacedName();
+        if (isset($this->class_map[$class])) {
+            return $this->class_map[$class];
         }
 
-        return $file_path;
+        $file = $this->composer_class_loader->findFile($class);
+
+        if (!$file) {
+            $file = '';
+        }
+
+        $this->class_map[$class] = $file;
+        return $this->class_map[$class];
     }
 }

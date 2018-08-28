@@ -29,6 +29,9 @@ if (extension_loaded('ast')) {
 // Create our CLI interface and load arguments
 $cli = new CLI();
 
+// Initialize the codebase, allows for pre-run setup
+$code_base->init();
+
 // Analyze the file list provided via the CLI
 $is_issue_found =
     Phan::analyzeFileList(
