@@ -55,6 +55,11 @@ abstract class NativeType extends Type
         return false;
     }
 
+    public function isArrayOrArrayAccessSubType(CodeBase $unused_code_base) : bool
+    {
+        return false;
+    }
+
     public function isTraversable() : bool
     {
         return false;

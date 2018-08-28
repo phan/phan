@@ -32,6 +32,11 @@ class ArrayType extends IterableType
         return true;  // Overrides Type
     }
 
+    public function isArrayOrArrayAccessSubType(CodeBase $unused_code_base) : bool
+    {
+        return true;  // Overrides Type
+    }
+
     /**
      * @return UnionType with ArrayType subclass(es)
      * @suppress PhanUnreferencedPublicMethod may be used in the future or for plugins as array shape support improves.

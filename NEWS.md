@@ -3,8 +3,14 @@ Phan NEWS
 ?? ??? 2018, Phan 1.0.2 (dev)
 -----------------------
 
+New features(Analysis)
++ Warn about array destructuring assignments from non-arrays (#1818)
+  (E.g. `[$x] = 2`)
+  New issue type: `PhanTypeInvalidExpressionArrayDestructuring`
+
 Bug fixes
 + Fix a crash seen when using a temporary expression in a write context. (#1915)
+  New issue type: `PhanInvalidWriteToTemporaryExpression`
 
 26 Aug 2018, Phan 1.0.1
 -----------------------

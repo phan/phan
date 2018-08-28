@@ -1664,6 +1664,11 @@ class Type
             && $this->getNamespace() === '\\');
     }
 
+    public function isArrayOrArrayAccessSubType(CodeBase $code_base) : bool
+    {
+        return $this->asExpandedTypes($code_base)->hasArrayAccess();
+    }
+
     /**
      * @return bool - Returns true if this is \Traversable (nullable or not)
      */

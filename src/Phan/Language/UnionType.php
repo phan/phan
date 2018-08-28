@@ -1511,6 +1511,19 @@ class UnionType implements \Serializable
     }
 
     /**
+     * @return UnionType
+     */
+    public function asArrayOrArrayAccessSubTypes(CodeBase $code_base) : UnionType {
+        $result = UnionType::empty();
+        foreach ($this->type_set as $type) {
+            if ($type->isArrayOrArrayAccessSubType($code_base)) {
+                $result = $result->withType($type);
+            }
+        }
+        return $result;
+    }
+
+    /**
      * @return bool
      * True if this union contains the Traversable type.
      * (Call asExpandedTypes() first to check for subclasses of Traversable)

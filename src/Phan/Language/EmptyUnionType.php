@@ -494,6 +494,11 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
+    public function asArrayOrArrayAccessSubTypes(CodeBase $unused_code_base) : UnionType
+    {
+        return $this;
+    }
+
     /**
      * @return bool
      * True if this union has array-like types (is of type array, is
