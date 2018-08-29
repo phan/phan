@@ -27,7 +27,7 @@ use ast\Node;
  * TODO: Change to AnalysisVisitor if this ever emits issues.
  * TODO: Analyze switch (if there is a default) in another PR (And handle fallthrough)
  *
- * @phan-file-suppress PhanPluginUnusedPublicFinalMethodArgument, PhanUnusedPublicFinalMethodParameter
+ * @phan-file-suppress PhanUnusedPublicFinalMethodParameter
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 final class BlockExitStatusChecker extends KindVisitorImplementation

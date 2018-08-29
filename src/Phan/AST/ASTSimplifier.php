@@ -9,7 +9,6 @@ use AssertionError;
  * and returns the new Node.
  * The original \ast\Node objects are not modified.
  *
- * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * @phan-file-suppress PhanPluginNoAssert
  */

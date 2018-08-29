@@ -226,7 +226,6 @@ class PhanPHPLinter
      * @param array[] $response
      * @param string[] $file_mapping
      * @return void
-     * @suppress PhanPluginUnusedVariable $did_debug false positive
      */
     private static function dumpJSONIssues(array $response, array $file_mapping)
     {

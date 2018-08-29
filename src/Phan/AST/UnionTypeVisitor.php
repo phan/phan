@@ -1975,7 +1975,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                         // Find the static type on the list
                         $static_type = $union_type->findTypeMatchingCallback(function (Type $type) : bool {
                             return $type instanceof GenericArrayInterface
-                                && $type->genericArrayElementUnionType()->hasStaticType();  // @phan-suppress-current-line PhanUndeclaredMethod TODO: Support intersection types
+                                && $type->genericArrayElementUnionType()->hasStaticType();
                         });
 
                         // Remove it from the list

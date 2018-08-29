@@ -2480,7 +2480,6 @@ class TolerantASTConverter
                 $prev_was_element = false;
                 continue;
             } else {
-                // @phan-suppress-next-line PhanPluginUnusedVariable
                 $prev_was_element = true;
             }
             assert($item instanceof PhpParser\Node\ArrayElement);
@@ -2508,7 +2507,6 @@ class TolerantASTConverter
                 $prev_was_element = false;
                 continue;
             } else {
-                // @phan-suppress-next-line PhanPluginUnusedVariable
                 $prev_was_element = true;
             }
             assert($item instanceof PhpParser\Node\ArrayElement);
