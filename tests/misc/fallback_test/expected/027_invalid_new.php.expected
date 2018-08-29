@@ -1,0 +1,2 @@
+src/027_invalid_new.php:2 PhanInvalidNode Invalid ClassName for new ClassName()
+src/027_invalid_new.php:2 PhanSyntaxError syntax error, unexpected ''invalid name'' (T_CONSTANT_ENCAPSED_STRING)

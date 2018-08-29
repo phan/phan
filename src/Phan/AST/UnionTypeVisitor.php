@@ -1065,7 +1065,16 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitNew(Node $node) : UnionType
     {
-        $union_type = $this->visitClassNode($node->children['class']);
+        $class_node = $node->children['class'];
+        if (!($class_node instanceof Node)) {
+            $this->emitIssue(
+                Issue::InvalidNode,
+                $node->lineno ?? 0,
+                "Invalid ClassName for new ClassName()"
+            );
+            return UnionType::empty();
+        }
+        $union_type = $this->visitClassNode($class_node);
 
         // TODO: re-use the underlying type set in the common case
         // Maybe UnionType::fromMap
