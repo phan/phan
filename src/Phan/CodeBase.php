@@ -869,7 +869,6 @@ class CodeBase
             return true;
         }
 
-//        echo "---- {$fqsen->getNamespacedName()} -----\n";
         if ($this->lazyLoadPHPInternalClassWithFQSEN($fqsen)) {
             return true;
         }
@@ -906,7 +905,6 @@ class CodeBase
         }
 
         $file_path = realpath($file);
-//        echo "--- $class - $file_path ---\n";
 
         // Ensure path exists
         if (!$file_path || !file_exists($file_path)) {
@@ -918,9 +916,15 @@ class CodeBase
                 $class,
                 $file
             );
+            return false;
         }
 
         Daemon::debugf("Autoloaded class %s", $class);
+
+        // As we're adding missing classes, we don't want to continue hydrating them
+        // so cache the current value and reset after we're done
+        $should_hydrate_requested_elements = $this->should_hydrate_requested_elements;
+        $this->setShouldHydrateRequestedElements(false);
 
         // Attempt to make file relative to project
         $file_path = FileRef::getProjectRelativePathForPath($file_path);
@@ -931,24 +935,29 @@ class CodeBase
         $this->setCurrentParsedFile($file_path);
         $this->flushDependenciesForFile($file_path);
 
-        // Parse the file
-        Phan::analyzeFileList(
-            $this,
-            function () use ($file_path) {
-                return [$file_path];
-            }
-        );
-//        $context = Analysis::parseFile($this, $file_path);
+        try {
+            // Parse the file
+            Analysis::parseFile($this, $file_path);
+
+            // Save this to the set of files to analyze
+            $analyze_file_path_list[] = $file_path;
+        } catch (\AssertionError $assertion_error) {
+            error_log("While parsing $file_path...\n");
+            error_log("$assertion_error\n");
+            exit(EXIT_FAILURE);
+        } catch (\Throwable $throwable) {
+            // Catch miscellaneous errors such as $throwable and print their stack traces.
+            error_log("While parsing $file_path, caught: " . $throwable . "\n");
+            $this->recordUnparseableFile($file_path);
+            return false;
+        }
 
         // Reset temp state
         unset($this->class_resolver_parsing[$class]);
         $this->setCurrentParsedFile(null);
+        $this->setShouldHydrateRequestedElements($should_hydrate_requested_elements);
 
-//        echo "----- Done -----\n";
-
-        $tmp = $this->fqsen_class_map->offsetExists($fqsen);
-
-        return true;
+        return $this->fqsen_class_map->offsetExists($fqsen);
     }
 
     /**

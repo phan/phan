@@ -796,14 +796,6 @@ class Issue
                 11027
             ),
             new Issue(
-                self::UndeclaredVariableAssignOp,
-                self::CATEGORY_UNDEFINED,
-                self::SEVERITY_LOW,
-                "Variable \${VARIABLE} was undeclared, but it is being used as the left hand side of an assignment operation",
-                self::REMEDIATION_B,
-                11037
-            ),
-            new Issue(
                 self::UndeclaredTypeReturnType,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
@@ -876,12 +868,20 @@ class Issue
                 11036
             ),
             new Issue(
+                self::UndeclaredVariableAssignOp,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_LOW,
+                "Variable \${VARIABLE} was undeclared, but it is being used as the left hand side of an assignment operation",
+                self::REMEDIATION_B,
+                11037
+            ),
+            new Issue(
                 self::AutoloaderMissingFile,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
                 "Expected autoloaded file to exist for '{CLASSLIKE}' but no such file exists.",
                 self::REMEDIATION_B,
-                11037
+                11038
             ),
 
             // Issue::CATEGORY_ANALYSIS
