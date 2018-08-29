@@ -4,6 +4,9 @@ namespace Phan\Language\FQSEN;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
 
+use AssertionError;
+use InvalidArgumentException;
+
 /**
  * A Fully-Qualified Class Name
  * @phan-file-suppress PhanPluginNoAssert
@@ -98,41 +101,31 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
     /**
      * @param $fully_qualified_string
      * An FQSEN string like '\Namespace\Class::methodName'
+     *
+     * @throws InvalidArgumentException if the $fully_qualified_string doesn't have a '::' delimeter
      */
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
     ) {
-        \assert(
-            false !== \strpos(
-                $fully_qualified_string,
-                '::'
-            ),
-            "Fully qualified class element lacks '::' delimiter"
-        );
+        $parts = explode('::', $fully_qualified_string);
+        if (\count($parts) !== 2) {
+            throw new InvalidArgumentException("Fully qualified class element lacks '::' delimiter");
+        }
 
         list(
             $fully_qualified_class_name_string,
             $name_string
-        ) = explode('::', $fully_qualified_string);
+        ) = $parts;
 
         $fully_qualified_class_name =
             FullyQualifiedClassName::fromFullyQualifiedString(
                 $fully_qualified_class_name_string
             );
 
-        // Make sure that we're actually getting a class
-        // name reference back
-        \assert(
-            $fully_qualified_class_name instanceof FullyQualifiedClassName,
-            "FQSEN must be an instanceof FullyQualifiedClassName"
-        );
-
         // Split off the alternate ID
         $parts = explode(',', $name_string);
         $name = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
-
-        \assert(\is_int($alternate_id), "Alternate must be an integer");
 
         return static::make(
             $fully_qualified_class_name,
@@ -149,32 +142,30 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      * The context in which the FQSEN string was found
      *
      * @return static
+     *
+     * @throws InvalidArgumentException if $fqsen_string is invalid in $context
      */
     public static function fromStringInContext(
         string $fqsen_string,
         Context $context
     ) {
+        $parts = \explode('::', $fqsen_string);
+
         // Test to see if we have a class defined
-        if (false === \strpos($fqsen_string, '::')) {
-            \assert(
-                $context->isInClassScope(),
-                "Cannot reference class element without class name when not in class scope."
-            );
+        if (\count($parts) === 1) {
+            if (!$context->isInClassScope()) {
+                throw new InvalidArgumentException("Cannot reference class element without class name when not in class scope.");
+            }
 
             $fully_qualified_class_name = $context->getClassFQSEN();
         } else {
-            \assert(
-                false !== \strpos(
-                    $fqsen_string,
-                    '::'
-                ),
-                "Fully qualified class element lacks '::' delimiter"
-            );
-
+            if (\count($parts) > 2) {
+                throw new InvalidArgumentException("Too many '::' in $fqsen_string");
+            }
             list(
                 $class_name_string,
                 $fqsen_string
-            ) = \explode('::', $fqsen_string);
+            ) = $parts;
 
             $fully_qualified_class_name =
                 FullyQualifiedClassName::fromStringInContext(
@@ -187,11 +178,6 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         $parts = \explode(',', $fqsen_string);
         $name = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
-
-        \assert(
-            \is_int($alternate_id),
-            "Alternate must be an integer"
-        );
 
         return static::make(
             $fully_qualified_class_name,
@@ -218,10 +204,9 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         int $alternate_id
     ) {
 
-        \assert(
-            $alternate_id < 1000,
-            "Your alternate IDs have run away"
-        );
+        if ($alternate_id >= 1000) {
+            throw new AssertionError("Your alternate IDs have run away");
+        }
 
         return static::make(
             $this->getFullyQualifiedClassName(),

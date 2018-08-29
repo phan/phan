@@ -43,9 +43,10 @@ use Phan\Library\Option;
 use Phan\Library\Some;
 use Phan\Library\Tuple5;
 
-use Error;
 use AssertionError;
+use Error;
 use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * The base class for all of Phan's types.
@@ -769,10 +770,9 @@ class Type
     public static function fromFullyQualifiedStringInner(
         string $fully_qualified_string
     ) : Type {
-        \assert(
-            $fully_qualified_string !== '',
-            "Type cannot be empty"
-        );
+        if ($fully_qualified_string === '') {
+            throw new InvalidArgumentException("Type cannot be empty");
+        }
         while (\substr($fully_qualified_string, -1) === ')') {
             if ($fully_qualified_string[0] === '?') {
                 $fully_qualified_string = '?' . \substr($fully_qualified_string, 2, -1);
@@ -993,10 +993,9 @@ class Type
         int $source,
         CodeBase $code_base = null
     ) : Type {
-        \assert(
-            $string !== '',
-            "Type cannot be empty"
-        );
+        if ($string === '') {
+            throw new AssertionError("Type cannot be empty");
+        }
         while (\substr($string, -1) === ')') {
             if ($string[0] === '?') {
                 if ($string[1] !== '(') {
@@ -1846,8 +1845,6 @@ class Type
                 return [];
             }
 
-            \assert($fqsen instanceof FullyQualifiedClassName);
-
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 return [];
             }
@@ -1888,10 +1885,9 @@ class Type
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
         // and should bail out.
-        \assert(
-            $recursion_depth < 20,
-            "Recursion has gotten out of hand"
-        );
+        if ($recursion_depth >= 20) {
+            throw new RuntimeException("Recursion has gotten out of hand");
+        }
         $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) {
             $union_type = $this->asUnionType();
 
@@ -1900,8 +1896,6 @@ class Type
             if (!($class_fqsen instanceof FullyQualifiedClassName)) {
                 return $union_type;
             }
-
-            \assert($class_fqsen instanceof FullyQualifiedClassName);
 
             if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
                 return $union_type;
@@ -1964,15 +1958,13 @@ class Type
      */
     public function isSubclassOf(CodeBase $code_base, Type $parent) : bool
     {
-        $fqsen = $this->asFQSEN();
-        \assert($fqsen instanceof FullyQualifiedClassName);
+        $fqsen = FullyQualifiedClassName::fromType($this);
 
         $this_clazz = $code_base->getClassByFQSEN(
             $fqsen
         );
 
-        $parent_fqsen = $parent->asFQSEN();
-        \assert($parent_fqsen instanceof FullyQualifiedClassName);
+        $parent_fqsen = FullyQualifiedClassName::fromType($parent);
 
         $parent_clazz = $code_base->getClassByFQSEN(
             $parent_fqsen

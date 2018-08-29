@@ -6,6 +6,7 @@ use Phan\Language\Context;
 use Phan\Language\Type;
 
 use AssertionError;
+use InvalidArgumentException;
 
 /**
  * A Fully-Qualified Global Structural Element
@@ -35,6 +36,12 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      *
      * @throws EmptyFQSENException
      * if the name component of this FullyQualifiedGlobalStructuralElement is empty
+     *
+     * @throws EmptyFQSENException
+     * if the namespace of this FullyQualifiedGlobalStructuralElement is empty
+     *
+     * @throws InvalidArgumentException
+     * if the namespace begins with an invalid character
      */
     protected function __construct(
         string $namespace,
@@ -45,12 +52,13 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             throw new EmptyFQSENException("The name of an FQSEN cannot be empty", rtrim($namespace, '\\') . '\\');
         }
 
-        \assert($namespace !== '', "The namespace cannot be empty");
+        if ($namespace === '') {
+            throw new EmptyFQSENException("The namespace cannot be empty", $name);
+        }
 
-        \assert(
-            $namespace[0] === '\\',
-            "The first character of a namespace must be \\"
-        );
+        if ($namespace[0] !== '\\') {
+            throw new InvalidArgumentException("The first character of a namespace must be \\");
+        }
 
         parent::__construct($name);
         $this->namespace = $namespace;
@@ -197,7 +205,9 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         // Split the parts into the namespace(0 or more components) and the last name.
         $name = \array_pop($parts);
 
-        \assert(!empty($name), "The name cannot be empty");
+        if (empty($name)) {
+            throw new AssertionError("The name cannot be empty");
+        }
 
         // Check for a name map
         if ($context->hasNamespaceMapFor($namespace_map_type, $fqsen_string)) {
@@ -275,10 +285,9 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             return $this;
         }
 
-        \assert(
-            $alternate_id < 1000,
-            "Your alternate IDs have run away"
-        );
+        if ($alternate_id >= 1000) {
+            throw new AssertionError("Your alternate IDs have run away");
+        }
 
         return static::make(
             $this->getNamespace(),
