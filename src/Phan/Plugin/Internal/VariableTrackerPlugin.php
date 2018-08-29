@@ -10,6 +10,8 @@ use Phan\PluginV2;
 use Phan\Plugin\Internal\VariableTracker\VariableGraph;
 use Phan\Plugin\Internal\VariableTracker\VariableTrackingScope;
 use Phan\Plugin\Internal\VariableTracker\VariableTrackerVisitor;
+
+use AssertionError;
 use ast\Node;
 use ast;
 
@@ -31,6 +33,9 @@ final class VariableTrackerPlugin extends PluginV2 implements
 }
 
 /**
+ * This will analyze any variable definition and uses within function-like scopes,
+ * and warn about unused variable definitions.
+ *
  * TODO: Hook into the global scope as well?
  */
 final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
@@ -93,7 +98,9 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         $result = [];
         // AST_PARAM_LIST of AST_PARAM
         foreach ($node->children['params']->children as $parameter) {
-            \assert($parameter instanceof Node);
+            if (!($parameter instanceof Node)) {
+                throw new AssertionError("Expected params to be Nodes");
+            }
             $parameter_name = $parameter->children['name'];
             if (!is_string($parameter_name)) {
                 continue;
@@ -107,7 +114,9 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             }
         }
         foreach ($node->children['uses']->children ?? [] as $closure_use) {
-            \assert($closure_use instanceof Node);
+            if (!($closure_use instanceof Node)) {
+                throw new AssertionError("Expected uses to be nodes");
+            }
             $name = $closure_use->children['name'];
             if (!is_string($name)) {
                 continue;
@@ -122,6 +131,9 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         return $result;
     }
 
+    /**
+     * @return string
+     */
     private function getParameterCategory(Node $method_node)
     {
         $kind = $method_node->kind;
@@ -152,7 +164,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             try {
                 $class = $context->getClassInScope($this->code_base);
                 return $class->isFinal();
-            } catch (CodeBaseException $e) {
+            } catch (CodeBaseException $_) {
             }
         }
         return false;
@@ -192,16 +204,16 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                 $issue_type = $issue_overrides_for_definition_ids[$definition_id] ?? Issue::UnusedVariable;
                 if ($issue_type === Issue::UnusedPublicMethodParameter) {
                     // Narrow down issues about parameters into more specific issues
-                    $docComment = $method_node->children['docComment'] ?? null;
-                    if ($docComment && preg_match('/@param[^$]*\$' . preg_quote($variable_name) . '\b.*@phan-unused-param\b/', $docComment)) {
+                    $doc_comment = $method_node->children['docComment'] ?? null;
+                    if ($doc_comment && preg_match('/@param[^$]*\$' . preg_quote($variable_name) . '\b.*@phan-unused-param\b/', $doc_comment)) {
                         // Don't warn about parameters marked with phan-unused-param
                         break;
                     }
                     $issue_type = $this->getParameterCategory($method_node);
-                } else {
-                    if ($graph->isLoopValueDefinitionId($definition_id)) {
-                        $issue_type = Issue::UnusedVariableValueOfForeachWithKey;
-                    }
+                } elseif ($graph->isLoopValueDefinitionId($definition_id)) {
+                    $issue_type = Issue::UnusedVariableValueOfForeachWithKey;
+                } elseif ($graph->isCaughtException($definition_id)) {
+                    $issue_type = Issue::UnusedVariableCaughtException;
                 }
                 Issue::maybeEmit(
                     $this->code_base,

@@ -8,6 +8,7 @@ use Phan\Language\Scope\PropertyScope;
 use Phan\Language\UnionType;
 
 use Closure;
+use TypeError;
 
 class Property extends ClassElement
 {
@@ -80,17 +81,20 @@ class Property extends ClassElement
         return $this->real_defining_fqsen ?? $this->getDefiningFQSEN();
     }
 
+    private function getVisibilityName() : string
+    {
+        if ($this->isPrivate()) {
+            return 'private';
+        } elseif ($this->isProtected()) {
+            return 'protected';
+        } else {
+            return 'public';
+        }
+    }
+
     public function __toString() : string
     {
-        $string = '';
-
-        if ($this->isPublic()) {
-            $string .= 'public ';
-        } elseif ($this->isProtected()) {
-            $string .= 'protected ';
-        } elseif ($this->isPrivate()) {
-            $string .= 'private ';
-        }
+        $string = $this->getVisibilityName() . ' ';
 
         if ($this->isStatic()) {
             $string .= 'static ';
@@ -99,15 +103,35 @@ class Property extends ClassElement
         // Since the UnionType can be a future, and that
         // can throw an exception, we catch it and ignore it
         try {
-            $union_type = $this->getUnionType();
-        } catch (\Exception $exception) {
-            $union_type = UnionType::empty();
+            $union_type = $this->getUnionType()->__toString();
+            if ($union_type !== '') {
+                $string .= "$union_type ";
+            } // Don't emit 2 spaces if there is no union type
+        } catch (\Exception $_) {
+            // do nothing
         }
 
-        $string .= "$union_type \${$this->getName()}";
-
+        $string .= "\${$this->getName()}";
 
         return $string;
+    }
+
+    /**
+     * Used for generating issue messages
+     */
+    public function asVisibilityAndFQSENString() : string
+    {
+        return $this->getVisibilityName() . ' ' . $this->asPropertyFQSENString();
+    }
+
+    /**
+     * Used for generating issue messages
+     */
+    public function asPropertyFQSENString() : string
+    {
+        return $this->getClassFQSEN()->__toString() .
+            ($this->isStatic() ? '::$' : '->') .
+            $this->getName();
     }
 
     /**
@@ -118,7 +142,7 @@ class Property extends ClassElement
     public function getUnionType() : UnionType
     {
         if (null !== ($union_type = $this->getFutureUnionType())) {
-            $this->setUnionType(parent::getUnionType()->withUnionType($union_type));
+            $this->setUnionType(parent::getUnionType()->withUnionType($union_type->asNonLiteralType()));
         }
 
         return parent::getUnionType();
@@ -131,21 +155,26 @@ class Property extends ClassElement
      */
     public function getFQSEN() : FullyQualifiedPropertyName
     {
-        \assert(!empty($this->fqsen), "FQSEN must be defined");
         return $this->fqsen;
     }
 
-    public function toStub()
+    public function getMarkupDescription() : string
     {
-        $string = '    ';
+        $string = $this->getVisibilityName() . ' ';
 
-        if ($this->isPublic()) {
-            $string .= 'public ';
-        } elseif ($this->isProtected()) {
-            $string .= 'protected ';
-        } elseif ($this->isPrivate()) {
-            $string .= 'private ';
+        if ($this->isStatic()) {
+            $string .= 'static ';
         }
+
+        $string .= "\${$this->getName()}";
+
+        return $string;
+    }
+
+
+    public function toStub() : string
+    {
+        $string = '    ' . $this->getVisibilityName() . ' ';
 
         if ($this->isStatic()) {
             $string .= 'static ';
@@ -224,7 +253,9 @@ class Property extends ClassElement
             // Should be impossible
             return;
         }
-        \assert($element instanceof Property);
+        if (!($element instanceof Property)) {
+            throw new TypeError('Expected $element to be Phan\Language\Element\Property in ' . __METHOD__);
+        }
         foreach ($element->reference_list as $key => $file_ref) {
             $this->reference_list[$key] = $file_ref;
         }
@@ -265,6 +296,9 @@ class Property extends ClassElement
         return $this->getPhanFlagsHasState(Flags::IS_DYNAMIC_PROPERTY);
     }
 
+    /**
+     * @return void
+     */
     public function setIsDynamicProperty(bool $is_dynamic)
     {
         $this->setPhanFlags(

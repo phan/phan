@@ -7,6 +7,7 @@ use Phan\AST\Visitor\Element;
 use ast\Node;
 use ast;  // TODO: Figure out why Phan isn't warning about Phan\Plugin\Internal\VariableTracker\ast\AST_VAR without this.
 
+use AssertionError;
 use function is_string;
 
 /**
@@ -98,7 +99,37 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      */
     public function visitAssignOp(Node $node)
     {
-        return $this->analyzeAssign($node, true);
+        $expr = $node->children['expr'];
+        if ($expr instanceof Node) {
+            $this->scope = $this->analyze($this->scope, $expr);
+        }
+        $var_node = $node->children['var'];
+        if (!($var_node instanceof Node)) {
+            return $this->scope;
+        }
+        switch ($var_node->kind) {
+            case ast\AST_VAR:
+                $name = $var_node->children['name'];
+                if (!is_string($name)) {
+                    break;
+                }
+                // The left hand node ($var_node) is the usage of this variable
+                self::$variable_graph->recordVariableUsage($name, $var_node, $this->scope);
+                // And the whole assignment operation is the redefinition of this variable
+                self::$variable_graph->recordVariableDefinition($name, $node, $this->scope);
+                $this->scope->recordDefinition($name, $node);
+                return $this->scope;
+            case ast\AST_PROP:
+                return $this->analyzePropAssignmentTarget($var_node);
+            case ast\AST_DIM:
+                return $this->analyzeDimAssignmentTarget($var_node);
+                // TODO: Analyze array access and param/return references of function/method calls.
+            default:
+                // Static property or an unexpected target.
+                // Analyze this normally.
+                return $this->analyze($this->scope, $var_node);
+        }
+        return $this->scope;
     }
 
     /**
@@ -107,19 +138,11 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      */
     public function visitAssign(Node $node)
     {
-        return $this->analyzeAssign($node, false);
-    }
-
-    /**
-     * @return VariableTrackingScope
-     */
-    private function analyzeAssign(Node $node, bool $is_ref)
-    {
         $expr = $node->children['expr'];
         if ($expr instanceof Node) {
             $this->scope = $this->analyze($this->scope, $expr);
         }
-        return $this->analyzeAssignmentTarget($node->children['var'], $is_ref);
+        return $this->analyzeAssignmentTarget($node->children['var'], false);
     }
 
     private function analyzeAssignmentTarget($node, bool $is_ref) : VariableTrackingScope
@@ -128,8 +151,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         if (!($node instanceof Node)) {
             return $this->scope;
         }
-        $kind = $node->kind;
-        switch ($kind) {
+        switch ($node->kind) {
             case ast\AST_VAR:
                 $name = $node->children['name'];
                 if (!is_string($name)) {
@@ -508,7 +530,9 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         $inner_exiting_scope_list = [];
         $merge_parent_scope = true;
         foreach ($node->children as $i => $case_node) {
-            \assert($case_node instanceof Node);
+            if (!($case_node instanceof Node)) {
+                throw new AssertionError("Expected case statements to be nodes");
+            }
             $cond_node = $case_node->children['cond'];
             $stmts_node = $case_node->children['stmts'];
 
@@ -601,5 +625,29 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         // Merge inner scope into outer scope
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         return $outer_scope->mergeBranchScopeList($inner_scope_list, false, []);
+    }
+
+    /**
+     * @param Node $node a node of kind AST_CATCH_LIST
+     * Analyzes catch statement lists.
+     * @return VariableTrackingScope
+     *
+     * @see BlockAnalysisVisitor->visitTry (TODO: Use BlockExitStatusChecker)
+     * @override
+     */
+    public function visitCatch(Node $node)
+    {
+        $var_node = $node->children['var'];
+
+        $scope = $this->scope;
+        if ($var_node->kind === \ast\AST_VAR) {
+            $name = $var_node->children['name'];
+            if (is_string($name)) {
+                self::$variable_graph->recordVariableDefinition($name, $var_node, $scope);
+                self::$variable_graph->markAsCaughtException($var_node);
+                $scope->recordDefinition($name, $var_node);
+            }
+        }
+        return $this->analyze($scope, $node->children['stmts']);
     }
 }

@@ -38,7 +38,7 @@ class CompositionAnalyzer
         foreach ($class->getPropertyMap($code_base) as $property) {
             try {
                 $property_union_type = $property->getUnionType();
-            } catch (IssueException $exception) {
+            } catch (IssueException $_) {
                 $property_union_type = UnionType::empty();
             }
 
@@ -68,7 +68,7 @@ class CompositionAnalyzer
                 // inherited definition's type.
                 try {
                     $inherited_property_union_type = $inherited_property->getUnionType();
-                } catch (IssueException $exception) {
+                } catch (IssueException $_) {
                     $inherited_property_union_type = UnionType::empty();
                 }
                 $can_cast =

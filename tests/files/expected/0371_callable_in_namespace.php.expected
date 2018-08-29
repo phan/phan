@@ -8,7 +8,7 @@
 %s:80 PhanUndeclaredClassInCallable Reference to undeclared class \C371 in callable \C371::createObject
 %s:86 PhanUndeclaredClassConstant Reference to constant class from undeclared class \Foo\Bar\Missing371
 %s:86 PhanUndeclaredClassInCallable Reference to undeclared class \Foo\Bar\Missing371 in callable \Foo\Bar\Missing371::createObject
-%s:92 PhanTypeMismatchArgument Argument 1 (x) is string but \Foo\Bar\C371::createArray() takes int defined at %s:54
+%s:92 PhanTypeMismatchArgument Argument 1 (x) is 'x' but \Foo\Bar\C371::createArray() takes int defined at %s:54
 %s:92 PhanTypeMismatchReturn Returning type array<int,int[]> but test371D() is declared to return string[]
 %s:101 PhanParamTooManyCallable Call with 1 arg(s) to \Foo\Bar\accepts_no_args() (As a provided callable) which only takes 0 arg(s) defined at %s:95
 %s:111 PhanParamTooFewCallable Call with 1 arg(s) to \Foo\Bar\accepts_twoargs() (as a provided callable) which requires 2 arg(s) defined at %s:104

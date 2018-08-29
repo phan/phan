@@ -1,12 +1,11 @@
 <?php
 
-//
-function Example( int $x ) : bool {
+function Example299( int $x ) : bool {
     echo "x = $x\n";
     print "Done printing\n";
 }
 
-class X{
+class X299{
     function helper() : void {}
 
     function Example( int $x ) : bool {
@@ -18,4 +17,4 @@ class X{
     }
 }
 
-Example( 1 );
+Example299( 1 );

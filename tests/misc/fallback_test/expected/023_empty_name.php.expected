@@ -1,0 +1,1 @@
+src/023_empty_name.php:4 PhanSyntaxError syntax error, unexpected '}', expecting identifier (T_STRING)

@@ -73,6 +73,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
      * @param Node $node the node @phan-unused-param
      * @return void
      * @override
+     * @throws Error if a process fails to shut down
      */
     public function afterAnalyzeFile(
         CodeBase $code_base,
@@ -87,6 +88,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
 
     /**
      * @suppress PhanPartialTypeMismatchArgument
+     * @throws Error if a syntax check process fails to shut down
      */
     private function awaitIncompleteProcesses(CodeBase $code_base, int $max_incomplete_processes)
     {
@@ -108,6 +110,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
 
     /**
      * @override
+     * @throws Error if a syntax check process fails to shut down.
      */
     public function finalizeProcess(CodeBase $code_base)
     {
@@ -302,6 +305,7 @@ class InvokeExecutionPromise
 
     /**
      * @return void
+     * @throws Error if reading failed
      */
     public function blockingRead()
     {
@@ -318,6 +322,7 @@ class InvokeExecutionPromise
 
     /**
      * @return ?string
+     * @throws RangeException if this was called before the process finished
      */
     public function getError()
     {
@@ -340,4 +345,4 @@ class InvokeExecutionPromise
 
 // Every plugin needs to return an instance of itself at the
 // end of the file in which its defined.
-return new InvokePHPNativeSyntaxCheckPlugin;
+return new InvokePHPNativeSyntaxCheckPlugin();

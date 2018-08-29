@@ -6,6 +6,8 @@ use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
+use AssertionError;
+
 final class StaticType extends Type
 {
     /** Not an override */
@@ -27,17 +29,19 @@ final class StaticType extends Type
                 $nullable_instance = static::make('\\', static::NAME, [], true, Type::FROM_TYPE);
             }
 
-            \assert($nullable_instance instanceof static);
+            if (!($nullable_instance instanceof static)) {
+                throw new AssertionError('Expected StaticType::make to return StaticType');
+            }
             return $nullable_instance;
         }
 
         static $instance;
 
-        if (empty($instance)) {
+        if (!$instance) {
             $instance = static::make('\\', static::NAME, [], false, Type::FROM_TYPE);
-            \assert($instance instanceof static);
-        } else {
-            \assert($instance instanceof static);
+            if (!($instance instanceof static)) {
+                throw new AssertionError('Expected StaticType::make to return StaticType');
+            }
         }
         return $instance;
     }

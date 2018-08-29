@@ -1,6 +1,6 @@
 %s:2 PhanUnreferencedUseFunction Possibly zero references to use statement for function parse_file (\ast\parse_file)
 %s:4 PhanUnreferencedUseConstant Possibly zero references to use statement for constant MAGIC_NAMESPACE (\ast\flags\MAGIC_NAMESPACE)
-%s:6 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:6 PhanTypeMismatchArgumentInternal Argument 1 (string) is 516 but \strlen() takes string
 %s:7 PhanUndeclaredConstant Reference to undeclared constant \ast\flags\MISSING_NAMESPACE
 %s:8 PhanUndeclaredFunction Call to undeclared function \ast\printf()
 %s:9 PhanUndeclaredFunction Call to undeclared function \ast\sprintf()

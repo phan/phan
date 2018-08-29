@@ -1,9 +1,9 @@
-%s:7 PhanTypeMismatchArgument Argument 1 (x) is string but \closure_%s() takes int defined at %s:7
+%s:7 PhanTypeMismatchArgument Argument 1 (x) is 'x' but \closure_%s() takes int defined at %s:7
 %s:7 PhanTypeMismatchReturn Returning type array<int,int> but test365A() is declared to return string[]
 %s:13 PhanTypeMismatchReturn Returning type array<int,int> but test365B() is declared to return string[]
 %s:32 PhanTypeMismatchReturn Returning type array<int,\stdClass> but test365C() is declared to return string[]
 %s:38 PhanUndeclaredClassInCallable Reference to undeclared class \Missing365 in callable \Missing365::createObject
-%s:44 PhanTypeMismatchArgument Argument 1 (x) is string but \C365::createArray() takes int defined at %s:24
+%s:44 PhanTypeMismatchArgument Argument 1 (x) is 'x' but \C365::createArray() takes int defined at %s:24
 %s:44 PhanTypeMismatchReturn Returning type array<int,int[]> but test365D() is declared to return string[]
 %s:53 PhanParamTooManyCallable Call with 1 arg(s) to \accepts_no_args() (As a provided callable) which only takes 0 arg(s) defined at %s:47
 %s:63 PhanParamTooFewCallable Call with 1 arg(s) to \accepts_twoargs() (as a provided callable) which requires 2 arg(s) defined at %s:56

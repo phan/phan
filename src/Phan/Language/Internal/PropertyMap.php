@@ -12,8 +12,10 @@ $ast_node_shape_inner = \implode(',', [
     "dim?:$ordinary_ast_node",
     "docComment?:?string",
     "expr?:$ordinary_ast_node",
+    "insteadof?:ast\Node",
     "key?:$ordinary_ast_node",
     "left?:$ordinary_ast_node",
+    "method?:ast\Node|string",
     "name?:$ordinary_ast_node",
     "right?:$ordinary_ast_node",
     "var?:ast\Node",
@@ -22,7 +24,14 @@ $ast_node_shape_inner = \implode(',', [
     "stmts?:?ast\Node",
 ]);
 
-$ast_node_children_types = 'array{' . $ast_node_shape_inner . '}|ast\Node[]|array[]|int[]|string[]|float[]|bool[]|null[]';
+$ast_node_children_types = 'array{' . $ast_node_shape_inner . '}|ast\Node[]|array[]|int[]|string[]|float[]|null[]';
+
+$standard_exception_types = [
+    'message' => 'string',
+    'code' => 'int',
+    'file' => 'string',
+    'line' => 'int',
+];
 
 /**
  * A mapping from class name to property name to property type.
@@ -36,8 +45,14 @@ $ast_node_children_types = 'array{' . $ast_node_shape_inner . '}|ast\Node[]|arra
  *
  * ```sh
  * svn checkout https://svn.php.net/repository/phpdoc/en/trunk phpdoc;
+ *
  * cd phpdoc;
- * find . -type f -path '*.xml -exec cat {} \; | tr "\n" " " | grep -o "<type>[^<]*<\/type>\s*<varname linkend=\"[^\.]*\.props.[^\"]*\"" | while read l; do T=`echo $l | cut -d ">" -f2 | cut -d "<" -f1`; N=`echo $l | cut -d "\"" -f2 | cut -d "." -f1,3`; printf "$T $N\n"; done | tee types
+ *
+ * find . -type f -path '*.xml -exec cat {} \; \
+ *   | tr "\n" " " \
+ *   | grep -o "<type>[^<]*<\/type>\s*<varname linkend=\"[^\.]*\.props.[^\"]*\"" \
+ *   | while read l; do T=`echo $l | cut -d ">" -f2 | cut -d "<" -f1`; N=`echo $l | cut -d "\"" -f2 | cut -d "." -f1,3`; printf "$T $N\n"; done \
+ *   | tee types
  * ```
  *
  * and then pipe that through
@@ -62,6 +77,9 @@ $ast_node_children_types = 'array{' . $ast_node_shape_inner . '}|ast\Node[]|arra
  *     print "\n    ],\n";
  * }
  * ```
+ *
+ * TODO: Migrate the above scripts to be part of the existing php scripts
+ * for working with the phpdoc SVN repo
  */
 return [
     'arrayobject' => [
@@ -109,8 +127,8 @@ return [
     ],
     'ziparchive' => [
         'status' => 'int',
-        'statussys' => 'int',
-        'numfiles' => 'int',
+        'statusSys' => 'int',
+        'numFiles' => 'int',
         'filename' => 'string',
         'comment' => 'string'
     ],
@@ -148,7 +166,8 @@ return [
         'name' => 'string'
     ],
     'recursiveregexiterator' => [
-        'name' => 'string'
+        'name' => 'string',
+        'replacement' => 'mixed',  // TODO: is this documented
     ],
     'error' => [
         'message' => 'string',
@@ -175,7 +194,7 @@ return [
         'context' => 'resource'
     ],
     'pdostatement' => [
-        'querystring' => 'string'
+        'queryString' => 'string'
     ],
     'domnotation' => [
         'publicId' => 'string',
@@ -272,7 +291,7 @@ return [
         'internalSubset' => 'string'
     ],
     'errorexception' => [
-        'severity' => 'int'
+        'severity' => 'int',
     ],
     'recursivedirectoryiterator' => [
         'name' => 'string'
@@ -296,7 +315,8 @@ return [
         'name' => 'string'
     ],
     'regexiterator' => [
-        'name' => 'string'
+        'name' => 'string',
+        'replacement' => 'mixed',
     ],
     'domelement' => [
         'schemaTypeInfo' => 'bool',
@@ -331,8 +351,53 @@ return [
     'domnamednodemap' => [
         'length' => 'int'
     ],
+    'mysqli' => [
+        'affected_rows' => 'int',
+        'connect_errno' => 'int',
+        'connect_error' => 'string',
+        'errno' => 'int',
+        'error_list' => 'array',
+        'error' => 'string',
+        'field_count' => 'int',
+        'client_info' => 'string',
+        'client_version' => 'int',
+        'host_info' => 'string',
+        'protocol_version' => 'string',
+        'server_info' => 'string',
+        'server_version' => 'int',
+        'info' => 'string',
+        'insert_id' => 'mixed',
+        'sqlstate' => 'string',
+        'stat' => 'mixed',
+        'thread_id' => 'int',
+        'warning_count' => 'int',
+    ],
+    'mysqli_result' => [
+        'current_field'  => 'int',
+        'field_count' => 'int',
+        'lengths' => 'array',
+        'num_rows' => 'int',
+        'type' => 'mixed',
+    ],
+    'mysqli_stmt' => [
+        'affected_rows' => 'int',
+        'errno' => 'int',
+        'error_list' => 'array',
+        'error' => 'string',
+        'field_count' => 'int',
+        'id' => 'mixed',
+        'insert_id' => 'int',
+        'num_rows' => 'int',
+        'param_count' => 'int',
+        'sqlstate' => 'string',
+    ],
     'mysqli_sql_exception' => [
         'sqlstate' => 'string'
+    ],
+    'mysqli_warning' => [
+        'message' => 'string',
+        'sqlstate' => 'mixed',
+        'errno' => 'int',
     ],
     'splstack' => [
         'name' => 'string'
@@ -345,7 +410,7 @@ return [
         'local_pk' => 'string'
     ],
     'pdoexception' => [
-        'errorinfo' => 'array',
+        'errorInfo' => 'array',
         'code' => 'string'
     ],
     'domnode' => [
@@ -443,4 +508,21 @@ return [
         'flags' => 'array<int,string>',
         'flagsCombinable' => 'bool',
     ],
+    'curlfile' => [
+        'name' => 'string',
+        'mime' => 'string',
+        'postname' => 'string',
+    ],
+    'reflectionclass' => ['name' => 'string'],
+    'reflectionclassconstant' => ['name' => 'string', 'class' => 'string'],
+    'reflectionextension' => ['name' => 'string'],
+    'reflectionfunction' => ['name' => 'string'],
+    'reflectionfunctionabstract' => ['name' => 'string'],
+    'reflectionmethod' => ['name' => 'string', 'class' => 'string'],
+    'reflectionobject' => ['name' => 'string'],
+    'reflectionparameter' => ['name' => 'string'],
+    'reflectionproperty' => ['name' => 'string', 'class' => 'string'],
+    'reflectionzendextension' => ['name' => 'string'],
+    'transliterator' => ['id' => 'string'],
+    'php_user_filter' => ['filtername' => 'string', 'params' => 'mixed'],
 ];

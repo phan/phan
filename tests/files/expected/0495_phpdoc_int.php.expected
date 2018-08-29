@@ -1,0 +1,7 @@
+%s:11 PhanTypeMismatchReturn Returning type 5 but testSingleInt() is declared to return 4
+%s:13 PhanUndeclaredFunction Call to undeclared function \testSingle()
+%s:14 PhanUndeclaredFunction Call to undeclared function \testSingle()
+%s:25 PhanTypeMismatchReturn Returning type 6 but testDoubleInt() is declared to return 4|5
+%s:31 PhanTypeMismatchArgument Argument 1 (x) is -1 but \testDoubleInt() takes 1|2 defined at %s:20
+%s:43 PhanTypeMismatchReturn Returning type 2 but testNullableInt() is declared to return ?4
+%s:48 PhanTypeMismatchArgument Argument 1 (x) is 1 but \testNullableInt() takes ?-1 defined at %s:38

@@ -2,6 +2,7 @@
 namespace Phan\AST;
 
 use ast\Node;
+use AssertionError;
 
 /**
  * This simplifies a PHP AST into a form which is easier to analyze,
@@ -10,6 +11,7 @@ use ast\Node;
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
+ * @phan-file-suppress PhanPluginNoAssert
  */
 class ASTSimplifier
 {
@@ -113,7 +115,7 @@ class ASTSimplifier
 
     /**
      * @param array<int,?Node|?float|?int|?string|?float|?bool> $statements
-     * @return array{0:array<int,\ast\Node>,1:bool} - [New/old list, bool $modified] An equivalent list after simplifying (or the original list)
+     * @return array{0:array<int,Node>,1:bool} - [New/old list, bool $modified] An equivalent list after simplifying (or the original list)
      */
     private function normalizeStatementList(array $statements) : array
     {
@@ -139,13 +141,14 @@ class ASTSimplifier
     /**
      * Replaces the last node in a list with a list of 0 or more nodes
      * @param array<int,Node> $nodes
-     * @param \ast\Node ...$new_statements
+     * @param Node ...$new_statements
      * @return void
      */
     private static function replaceLastNodeWithNodeList(array &$nodes, Node... $new_statements)
     {
-        \assert(count($nodes) > 0);
-        \array_pop($nodes);
+        if (\array_pop($nodes) === false) {
+            throw new AssertionError("Saw an unexpected empty node list");
+        }
         foreach ($new_statements as $stmt) {
             $nodes[] = $stmt;
         }
@@ -193,7 +196,7 @@ class ASTSimplifier
      * E.g. repeatedly makes these conversions
      * if (A && B) {X} -> if (A) { if (B) {X}}
      * if ($var = A) {X} -> $var = A; if ($var) {X}
-     * @return array<int,\ast\Node> - One or more nodes created from $original_node.
+     * @return array<int,Node> - One or more nodes created from $original_node.
      *        Will return [$original_node] if no modifications were made.
      */
     private function normalizeIfStatement(Node $original_node) : array
@@ -280,10 +283,14 @@ class ASTSimplifier
     private function applyAssignInLeftSideOfBinaryOpReduction(Node $node) : array
     {
         $inner_assign_statement = $node->children[0]->children['cond']->children['left'];
-        \assert($inner_assign_statement instanceof Node);  // already checked
+        if (!($inner_assign_statement instanceof Node)) {
+            throw new AssertionError('Expected $inner_assign_statement instanceof Node');
+        }
         $inner_assign_var = $inner_assign_statement->children['var'];
 
-        \assert($inner_assign_var->kind === \ast\AST_VAR);
+        if ($inner_assign_var->kind !== \ast\AST_VAR) {
+            throw new AssertionError('Expected $inner_assign_var->kind === \ast\AST_VAR');
+        }
 
         $new_node_elem = clone($node->children[0]);
         $new_node_elem->children['cond']->children['left'] = $inner_assign_var;
@@ -305,9 +312,6 @@ class ASTSimplifier
         $inner_assign_statement = $node->children[0]->children['cond']->children['right'];
         $inner_assign_var = $inner_assign_statement->children['var'];
 
-        \assert($inner_assign_statement instanceof Node);
-        \assert($inner_assign_var->kind === \ast\AST_VAR);
-
         $new_node_elem = clone($node->children[0]);
         $new_node_elem->children['cond']->children['right'] = $inner_assign_var;
         $new_node_elem->flags = 0;
@@ -323,8 +327,6 @@ class ASTSimplifier
      */
     private function buildIfNode(Node $l, Node $r) : Node
     {
-        \assert($l->kind === \ast\AST_IF_ELEM);
-        \assert($r->kind === \ast\AST_IF_ELEM);
         return new Node(
             \ast\AST_IF,
             0,
@@ -342,11 +344,12 @@ class ASTSimplifier
         if (count($children) <= 2) {
             return $node;
         }
-        \assert(\is_array($children));
         while (count($children) > 2) {
             $r = array_pop($children);
             $l = array_pop($children);
-            assert($l instanceof Node && $r instanceof Node);
+            if (!($l instanceof Node && $r instanceof Node)) {
+                throw new AssertionError("Expected to have AST_IF_ELEM nodes");
+            }
             $l->children['stmts']->flags = 0;
             $r->children['stmts']->flags = 0;
             $inner_if_node = self::buildIfNode($l, $r);
@@ -371,7 +374,9 @@ class ASTSimplifier
      */
     private function applyIfAndReduction(Node $node) : Node
     {
-        \assert(count($node->children) == 1);
+        if (count($node->children) != 1) {
+            throw new AssertionError("Expected an if statement with no else/elseif statements");
+        }
         $inner_node_elem = clone($node->children[0]);  // AST_IF_ELEM
         $inner_node_elem->children['cond'] = $inner_node_elem->children['cond']->children['right'];
         $inner_node_elem->flags = 0;
@@ -492,9 +497,13 @@ class ASTSimplifier
     private function normalizeCatchesList(Node $catches) : Node
     {
         $list = $catches->children;
-        $new_list = array_map(function (Node $node) {
-            return $this->applyToStmts($node);
-        }, $list);
+        $new_list = array_map(
+            /** @return mixed */
+            function (Node $node) {
+                return $this->applyToStmts($node);
+            },
+            $list
+        );
         if ($new_list === $list) {
             return $catches;
         }

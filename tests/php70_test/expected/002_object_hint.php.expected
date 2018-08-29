@@ -1,2 +1,0 @@
-src/002_object_hint.php:3 PhanCompatibleNullableTypePHP71 Type 'object' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
-src/002_object_hint.php:18 PhanCompatibleNullableTypePHP71 Type 'object' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'

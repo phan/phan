@@ -33,7 +33,7 @@ class PropertyTypesAnalyzer
             }
 
             // Look at each type in the parameter's Union Type
-            foreach ($union_type->withFlattenedArrayShapeTypeInstances()->getTypeSet() as $outer_type) {
+            foreach ($union_type->withFlattenedArrayShapeOrLiteralTypeInstances()->getTypeSet() as $outer_type) {
                 $type = $outer_type;
                 // TODO: Expand this to ArrayShapeType
                 while ($type instanceof GenericArrayType) {
@@ -58,8 +58,7 @@ class PropertyTypesAnalyzer
                     }
                 } else {
                     // Make sure the class exists
-                    $type_fqsen = $type->asFQSEN();
-                    \assert($type_fqsen instanceof FullyQualifiedClassName, 'fqsens of non-native types must be class names');
+                    $type_fqsen = FullyQualifiedClassName::fromType($type);
 
                     if (!$code_base->hasClassWithFQSEN($type_fqsen)
                         && !($type instanceof TemplateType)

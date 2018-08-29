@@ -14,7 +14,11 @@ use Phan\Language\Type\StringType;
 use Phan\Issue;
 use ast\Node;
 
-// TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed
+/**
+ * TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed
+ *
+ * TODO: Move many of these checks to AssignOperatorAnalysisVisitor
+ */
 class AssignOperatorFlagVisitor extends FlagVisitorImplementation
 {
 
@@ -29,7 +33,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
     private $context;
 
     /**
-     * Create a new BinaryOperatorFlagVisitor
+     * Create a new AssignOperatorFlagVisitor
      */
     public function __construct(
         CodeBase $code_base,
@@ -42,10 +46,10 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
     /**
      * @param Node $node
      * A node to visit
+     * @return UnionType
      */
     public function __invoke(Node $node)
     {
-        // AST_ASSIGN_OP uses \ast\flags\BINARY_* in ast versions >= 20.
         // NOTE: Some operations currently don't exist in any php version, such as `$x ||= 2;`, `$x xor= 2;`
         return Element::acceptBinaryFlagVisitor($node, $this);
     }
@@ -89,8 +93,8 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             );
 
             return UnionType::empty();
-        } elseif ($left->hasType(IntType::instance(false))
-            && $right->hasType(IntType::instance(false))
+        } elseif ($left->hasNonNullIntType()
+            && $right->hasNonNullIntType()
         ) {
             return IntType::instance(false)->asUnionType();
         } elseif ($left->hasType(FloatType::instance(false))
@@ -106,6 +110,9 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         ]));
     }
 
+    /**
+     * @return UnionType for the `&` operator
+     */
     public function visitBinaryBitwiseAnd(Node $node)
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
@@ -119,18 +126,21 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             $this->context,
             $node->children['expr']
         );
-        if ($left->hasType(IntType::instance(false))
-            && $right->hasType(IntType::instance(false))
+        if ($left->hasNonNullIntType()
+            && $right->hasNonNullIntType()
         ) {
             return IntType::instance(false)->asUnionType();
-        } elseif ($left->hasType(StringType::instance(false)) &&
-            $right->hasType(StringType::instance(false))) {
+        } elseif ($left->hasNonNullStringType() &&
+            $right->hasNonNullStringType()) {
             // $x = 'a'; $x &= 'c';
             return StringType::instance(false)->asUnionType();
         }
         return IntType::instance(false)->asUnionType();
     }
 
+    /**
+     * @return UnionType for the `|` operator
+     */
     public function visitBinaryBitwiseOr(Node $node)
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
@@ -144,19 +154,25 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             $this->context,
             $node->children['expr']
         );
-        if ($left->hasType(IntType::instance(false))
-            && $right->hasType(IntType::instance(false))
+        if ($left->hasNonNullIntType()
+            && $right->hasNonNullIntType()
         ) {
             return IntType::instance(false)->asUnionType();
-        } elseif ($left->hasType(StringType::instance(false)) &&
-            $right->hasType(StringType::instance(false))) {
+        } elseif ($left->hasNonNullStringType() &&
+            $right->hasNonNullStringType()) {
             // $x = 'a'; $x |= 'c';
             return StringType::instance(false)->asUnionType();
         }
         return IntType::instance(false)->asUnionType();
     }
 
-    // Code can bitwise xor strings byte by byte in PHP
+    /**
+     * Analyze the bitwise xor operator.
+     *
+     * NOTE: Code can bitwise xor strings byte by byte in PHP
+     *
+     * @return UnionType for the `^` operator
+     */
     public function visitBinaryBitwiseXor(Node $node)
     {
         $left = UnionTypeVisitor::unionTypeFromNode(
@@ -185,12 +201,12 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             );
 
             return UnionType::empty();
-        } elseif ($left->hasType(IntType::instance(false))
-            && $right->hasType(IntType::instance(false))
+        } elseif ($left->hasNonNullIntType()
+            && $right->hasNonNullIntType()
         ) {
             return IntType::instance(false)->asUnionType();
-        } elseif ($left->hasType(StringType::instance(false))
-            && $right->hasType(StringType::instance(false))
+        } elseif ($left->hasNonNullStringType()
+            && $right->hasNonNullStringType()
         ) {
             return StringType::instance(false)->asUnionType();
         }
@@ -232,8 +248,8 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         );
 
         // fast-track common cases
-        if ($left->isType(IntType::instance(false))
-            && $right->isType(IntType::instance(false))
+        if ($left->isNonNullIntType()
+            && $right->isNonNullIntType()
         ) {
             return IntType::instance(false)->asUnionType();
         }
@@ -248,9 +264,10 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             return ArrayType::instance(false)->asUnionType();
         }
 
-        if (($left->isType(IntType::instance(false))
+        // TODO: isNonNullNumberType
+        if (($left->isNonNullIntType()
             || $left->isType(FloatType::instance(false)))
-            && ($right->isType(IntType::instance(false))
+            && ($right->isNonNullIntType()
             || $right->isType(FloatType::instance(false)))
         ) {
             return FloatType::instance(false)->asUnionType();

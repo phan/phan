@@ -33,6 +33,6 @@ function example409Reassign($scalar) {
 /** @param int|string $scalar */
 function exampleReassign($scalar) {
     if (is_string($scalar) || ($scalar = false)) {
-        echo intdiv($scalar, 2);  // should warn because the condition ensures $scalar becomes a string|false
+        echo intdiv($scalar, 2);  // should warn because the condition ensures $scalar becomes a string. The inside of the loop won't be executed with `false`.
     }
 }

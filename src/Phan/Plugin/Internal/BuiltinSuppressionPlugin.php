@@ -107,6 +107,9 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
         CodeBase $code_base,
         string $file_path
     ) : array {
+        if ($file_path === 'internal') {
+            return [];
+        }
         $absolute_file_path = Config::projectPath($file_path);
         $file_contents = FileCache::getOrReadEntry($absolute_file_path)->getContents();  // This is the recommended way to fetch the file contents
 
@@ -154,7 +157,8 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
                     continue;
                 }
                 $is_next_line = $comment_name === 'suppress-next-line';
-                $line = $comment_start_line;
+                // TODO: Why isn't the type of $comment_start_line inferred?
+                $line = (int)$comment_start_line;
                 if ($is_next_line) {
                     $line++;
                 }

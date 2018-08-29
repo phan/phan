@@ -7,16 +7,21 @@ use Phan\AST\Visitor\FlagVisitorImplementation;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
+use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FloatType;
+use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\StringType;
 use Phan\Issue;
+
+use AssertionError;
 use ast\Node;
+use Closure;
 
 // TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed
-class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
+final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 {
 
     /**
@@ -30,23 +35,42 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     private $context;
 
     /**
+     * @var bool
+     */
+    private $should_catch_issue_exception;
+
+    /**
      * Create a new BinaryOperatorFlagVisitor
      */
     public function __construct(
         CodeBase $code_base,
-        Context $context
+        Context $context,
+        bool $should_catch_issue_exception = false
     ) {
         $this->code_base = $code_base;
         $this->context = $context;
+        $this->should_catch_issue_exception = $should_catch_issue_exception;
     }
 
     /**
      * @param Node $node
      * A node to visit
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
      */
     public function __invoke(Node $node)
     {
-        return Element::acceptBinaryFlagVisitor($node, $this);
+        return $this->{Element::VISIT_BINARY_LOOKUP_TABLE[$node->flags] ?? 'handleMissing'}($node);
+    }
+
+    /**
+     * @throws AssertionError
+     * @suppress PhanUnreferencedPrivateMethod this is referenced by __invoke
+     */
+    private function handleMissing(Node $node)
+    {
+        throw new AssertionError("All flags must match. Found " . Element::flagDescription($node));
     }
 
     /**
@@ -61,20 +85,25 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visit(Node $node) : UnionType
     {
+        // TODO: % operator always returns int.
+
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['left']
+            $node->children['left'],
+            $this->should_catch_issue_exception
         );
 
         $right = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['right']
+            $node->children['right'],
+            $this->should_catch_issue_exception
         );
+        static $int_or_float = null;
 
-        if ($left->isType(ArrayType::instance(false))
-            || $right->isType(ArrayType::instance(false))
+        if ($left->isExclusivelyArray()
+            || $right->isExclusivelyArray()
         ) {
             Issue::maybeEmit(
                 $this->code_base,
@@ -86,17 +115,31 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             );
 
             return UnionType::empty();
-        } elseif ($left->hasType(IntType::instance(false))
-            && $right->hasType(IntType::instance(false))
+        } elseif ($left->hasType(FloatType::instance(false))
+            || $right->hasType(FloatType::instance(false))
+        ) {
+            if ($left->hasTypeMatchingCallback(
+                function (Type $type) : bool {
+                    return !($type instanceof FloatType);
+                }
+            ) && $right->hasTypeMatchingCallback(
+                function (Type $type) : bool {
+                    return !($type instanceof FloatType);
+                }
+            )) {
+                return $int_or_float ?? ($int_or_float = new UnionType([
+                    IntType::instance(false),
+                    FloatType::instance(false)
+                ]));
+            }
+
+            return FloatType::instance(false)->asUnionType();
+        } elseif ($left->hasNonNullIntType()
+            && $right->hasNonNullIntType()
         ) {
             return IntType::instance(false)->asUnionType();
-        } elseif ($left->hasType(FloatType::instance(false))
-            && $right->hasType(FloatType::instance(false))
-        ) {
-            return FloatType::instance(false)->asUnionType();
         }
 
-        static $int_or_float = null;
         return $int_or_float ?? ($int_or_float = new UnionType([
             IntType::instance(false),
             FloatType::instance(false)
@@ -150,13 +193,15 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['left']
+            $node->children['left'],
+            $this->should_catch_issue_exception
         );
 
         $right = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['right']
+            $node->children['right'],
+            $this->should_catch_issue_exception
         );
 
         if ($left->isType(ArrayType::instance(false))
@@ -172,12 +217,12 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             );
 
             return UnionType::empty();
-        } elseif ($left->hasType(IntType::instance(false))
-            && $right->hasType(IntType::instance(false))
+        } elseif ($left->hasNonNullIntType()
+            && $right->hasNonNullIntType()
         ) {
             return IntType::instance(false)->asUnionType();
-        } elseif ($left->hasType(StringType::instance(false))
-            && $right->hasType(StringType::instance(false))
+        } elseif ($left->hasNonNullStringType()
+            && $right->hasNonNullStringType()
         ) {
             return StringType::instance(false)->asUnionType();
         }
@@ -231,7 +276,27 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryConcat(Node $node) : UnionType
     {
-        return StringType::instance(false)->asUnionType();
+        $left_node = $node->children['left'];
+        $left_value = $left_node instanceof Node ? UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $left_node,
+            $this->should_catch_issue_exception
+        )->asSingleScalarValueOrNull() : $left_node;
+        if ($left_value === null) {
+            return StringType::instance(false)->asUnionType();
+        }
+        $right_node = $node->children['right'];
+        $right_value = $right_node instanceof Node ? UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $right_node,
+            $this->should_catch_issue_exception
+        )->asSingleScalarValueOrNull() : $right_node;
+        if ($right_value === null) {
+            return StringType::instance(false)->asUnionType();
+        }
+        return LiteralStringType::instanceForValue($left_value . $right_value, false)->asUnionType();
     }
 
     /**
@@ -246,13 +311,15 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['left']
+            $node->children['left'],
+            $this->should_catch_issue_exception
         );
 
         $right = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['right']
+            $node->children['right'],
+            $this->should_catch_issue_exception
         );
 
         $left_is_array_like = $left->isExclusivelyArrayLike();
@@ -278,7 +345,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $this->context,
                 Issue::TypeComparisonFromArray,
                 $node->lineno ?? 0,
-                (string)$right
+                (string)$right->asNonLiteralType()
             );
         } elseif ($right_is_array_like
             && !$left->hasArrayLike()
@@ -293,7 +360,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $this->context,
                 Issue::TypeComparisonToArray,
                 $node->lineno ?? 0,
-                (string)$left
+                (string)$left->asNonLiteralType()
             );
         }
 
@@ -397,6 +464,43 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     }
 
     /**
+     * @param Node $node with type AST_BINARY_OP
+     * @param Closure(Type):bool $is_valid_type
+     * @return void
+     */
+    private function warnAboutInvalidUnionType(
+        Node $node,
+        Closure $is_valid_type,
+        UnionType $left,
+        UnionType $right,
+        string $left_issue_type,
+        string $right_issue_type
+    ) {
+        if (!$left->isEmpty()) {
+            if (!$left->hasTypeMatchingCallback($is_valid_type)) {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    $left_issue_type,
+                    $node->children['left']->lineno ?? $node->lineno,
+                    $left
+                );
+            }
+        }
+        if (!$right->isEmpty()) {
+            if (!$right->hasTypeMatchingCallback($is_valid_type)) {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    $right_issue_type,
+                    $node->children['right']->lineno ?? $node->lineno,
+                    $right
+                );
+            }
+        }
+    }
+
+    /**
      * @param Node $node
      * A node to check types on
      *
@@ -405,38 +509,28 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryAdd(Node $node) : UnionType
     {
+        $code_base = $this->code_base;
+        $context = $this->context;
         $left = UnionTypeVisitor::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $node->children['left']
+            $code_base,
+            $context,
+            $node->children['left'],
+            $this->should_catch_issue_exception
         );
 
         $right = UnionTypeVisitor::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $node->children['right']
+            $code_base,
+            $context,
+            $node->children['right'],
+            $this->should_catch_issue_exception
         );
 
-        static $int_type = null;
-        static $float_type = null;
-        static $array_type = null;
-        static $int_or_float_union_type = null;
-        if ($int_type === null) {
-            $int_type = IntType::instance(false);
-            $float_type = FloatType::instance(false);
-            $array_type = ArrayType::instance(false);
-            $int_or_float_union_type = new UnionType([
-                $int_type,
-                $float_type
-            ]);
-        }
-
         // fast-track common cases
-        if ($left->isType($int_type) && $right->isType($int_type)) {
+        if ($left->isNonNullIntType() && $right->isNonNullIntType()) {
             return IntType::instance(false)->asUnionType();
         }
 
-        // If both left and right are arrays, then this is array
+        // If both left and right union types are arrays, then this is array
         // concatenation.
         if ($left->isGenericArray() && $right->isGenericArray()) {
             if ($left->isEqualTo($right)) {
@@ -445,12 +539,35 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             return ArrayType::combineArrayTypesOverriding($left, $right);
         }
 
-        if (($left->isType($int_type)
-            || $left->isType($float_type))
-            && ($right->isType($int_type)
-            || $right->isType($float_type))
-        ) {
-            return $float_type->asUnionType();
+        $this->warnAboutInvalidUnionType(
+            $node,
+            static function (Type $type) : bool {
+                return $type->isValidNumericOperand() || $type instanceof ArrayType;
+            },
+            $left,
+            $right,
+            Issue::TypeInvalidLeftOperandOfAdd,
+            Issue::TypeInvalidRightOperandOfAdd
+        );
+
+        static $float_type = null;
+        static $array_type = null;
+        static $int_or_float_union_type = null;
+        if ($int_or_float_union_type === null) {
+            $float_type = FloatType::instance(false);
+            $array_type = ArrayType::instance(false);
+            $int_or_float_union_type = new UnionType([
+                IntType::instance(false),
+                $float_type
+            ]);
+        }
+
+        if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
+            if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
+                // Heuristic: If one or more of the sides is a float, the result is always a float.
+                return $float_type->asUnionType();
+            }
+            return $int_or_float_union_type;
         }
 
         $left_is_array = (
@@ -475,8 +592,8 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 )
             ) {
                 Issue::maybeEmit(
-                    $this->code_base,
-                    $this->context,
+                    $code_base,
+                    $context,
                     Issue::TypeInvalidRightOperand,
                     $node->lineno ?? 0
                 );
@@ -485,8 +602,8 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 && !$left->canCastToUnionType($array_type->asUnionType())
             ) {
                 Issue::maybeEmit(
-                    $this->code_base,
-                    $this->context,
+                    $code_base,
+                    $context,
                     Issue::TypeInvalidLeftOperand,
                     $node->lineno ?? 0
                 );
@@ -499,6 +616,120 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         }
 
         return $int_or_float_union_type;
+    }
+
+    /**
+     * Analyzes the result of a floating-point or integer arithmetic operation.
+     * The result will be a combination of 'int' or 'float'
+     *
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    private function getTypeOfNumericArithmeticOp(Node $node) : UnionType
+    {
+        $code_base = $this->code_base;
+        $context = $this->context;
+        $left = UnionTypeVisitor::unionTypeFromNode(
+            $code_base,
+            $context,
+            $node->children['left'],
+            $this->should_catch_issue_exception
+        );
+
+        $right = UnionTypeVisitor::unionTypeFromNode(
+            $code_base,
+            $context,
+            $node->children['right'],
+            $this->should_catch_issue_exception
+        );
+
+        // fast-track common cases
+        if ($left->isNonNullIntType() && $right->isNonNullIntType()) {
+            return IntType::instance(false)->asUnionType();
+        }
+
+        $this->warnAboutInvalidUnionType(
+            $node,
+            static function (Type $type) : bool {
+                // TODO: Stricten this to warn about strings based on user config.
+                return $type->isValidNumericOperand();
+            },
+            $left,
+            $right,
+            Issue::TypeInvalidLeftOperandOfNumericOp,
+            Issue::TypeInvalidRightOperandOfNumericOp
+        );
+
+        static $float_type = null;
+        static $int_or_float_union_type = null;
+        if ($int_or_float_union_type === null) {
+            $float_type = FloatType::instance(false);
+            $int_or_float_union_type = new UnionType([
+                IntType::instance(false),
+                $float_type
+            ]);
+        }
+
+        if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
+            if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
+                // Heuristic: If one or more of the sides is a float, the result is always a float.
+                return $float_type->asUnionType();
+            }
+            return $int_or_float_union_type;
+        }
+
+        // TODO: warn about subtracting to/from non-number
+
+        return $int_or_float_union_type;
+    }
+
+    /**
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinarySub(Node $node) : UnionType
+    {
+        return $this->getTypeOfNumericArithmeticOp($node);
+    }
+
+    /**
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryMul(Node $node) : UnionType
+    {
+        return $this->getTypeOfNumericArithmeticOp($node);
+    }
+
+    /**
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryPow(Node $node) : UnionType
+    {
+        return $this->getTypeOfNumericArithmeticOp($node);
+    }
+
+    /**
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryMod(Node $unused_node)
+    {
+        // TODO: Warn about invalid left or right side
+        return IntType::instance(false)->asUnionType();
     }
 
     /**
@@ -516,13 +747,15 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         $unused_left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['left']
+            $node->children['left'],
+            $this->should_catch_issue_exception
         );
 
         $unused_right = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['right']
+            $node->children['right'],
+            $this->should_catch_issue_exception
         );
 
         return BoolType::instance(false)->asUnionType();
@@ -539,16 +772,24 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryCoalesce(Node $node) : UnionType
     {
+        $left_node = $node->children['left'];
         $left_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['left']
+            $left_node,
+            $this->should_catch_issue_exception
         );
+        if (!($left_node instanceof Node)) {
+            // TODO: Warn about this being an unnecessary coalesce operation
+            // TODO: Be more aggressive for constants, etc, when we are very sure the type is accurate.
+            return $left_type;
+        }
 
         $right_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['right']
+            $node->children['right'],
+            $this->should_catch_issue_exception
         );
 
         // On the left side, remove null and replace '?T' with 'T'

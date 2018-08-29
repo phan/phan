@@ -15,7 +15,7 @@ final class Suggestion
         $this->message = $message;
     }
 
-    public static function fromString(string $message)
+    public static function fromString(string $message) : Suggestion
     {
         return new self($message);
     }

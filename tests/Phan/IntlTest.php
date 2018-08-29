@@ -4,14 +4,14 @@ namespace Phan\Tests;
 /**
  * @requires extension intl
  */
-class IntlTest extends AbstractPhanFileTest
+final class IntlTest extends AbstractPhanFileTest
 {
 
     /**
-     * This reads all files in `tests/files/src`, runs
+     * This reads all files in `tests/intl_files/src`, runs
      * the analyzer on each and compares the output
      * to the files's counterpart in
-     * `tests/files/expected`
+     * `tests/intl_files/expected`
      *
      * @param string[] $test_file_list
      * @param string $expected_file_path

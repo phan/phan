@@ -10,11 +10,17 @@ use InvalidArgumentException;
 use ast;
 use ast\Node;
 
-class TolerantASTConverterWithNodeMappingTest extends BaseTest
+/**
+ * Tests that the fallback works with ASTs, and can point an ast\Node to the original.
+ *
+ * @phan-file-suppress PhanThrowTypeAbsent it's a test
+ */
+final class TolerantASTConverterWithNodeMappingTest extends BaseTest
 {
     public static function setUpBeforeClass()
     {
         parent::setUpBeforeClass();
+        // @phan-suppress-next-line PhanAccessMethodInternal
         Config::reset();
     }
 
@@ -67,6 +73,9 @@ class TolerantASTConverterWithNodeMappingTest extends BaseTest
         }
     }
 
+    /**
+     * @return Node
+     */
     private function parseASTWithDefaultOptions(string $file_contents, int $byte_offset)
     {
         $converter = new TolerantASTConverterWithNodeMapping($byte_offset);

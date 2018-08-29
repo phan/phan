@@ -12,6 +12,7 @@ use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\PreOrderAnalysisVisitor;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment;
+use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Type;
@@ -33,6 +34,7 @@ use ast\Node;
  * @see $this->visit
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPluginNoAssert
  */
 class BlockAnalysisVisitor extends AnalysisVisitor
 {
@@ -80,8 +82,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $node
         );
 
-        \assert(!empty($context), 'Context cannot be null');
-
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
         // node.
@@ -110,6 +110,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     /**
      * Analyzes a namespace block or statement (e.g. `namespace NS\SubNS;` or `namespace OtherNS { ... }`)
      * @param Node $node a node of type AST_NAMESPACE
+     * @suppress PhanAccessMethodInternal
      */
     public function visitNamespace(Node $node) : Context
     {
@@ -130,8 +131,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $this->code_base,
             $context
         ))->visitNamespace($node);
-
-        \assert(!empty($context), 'Context cannot be null');
 
         // We already imported namespace constants earlier; use those.
         $context->importNamespaceMapFromParsePhase($this->code_base);
@@ -173,6 +172,21 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         return $context;
     }
 
+    /**
+     * For non-special nodes such as statement lists (AST_STMT_LIST),
+     * we propagate the context and scope from the parent,
+     * through the individual statements, and return a Context with the modified scope.
+     *
+     *          │
+     *          ▼
+     *       ┌──●
+     *       │
+     *       ●──●──●
+     *             │
+     *          ●──┘
+     *          │
+     *          ▼
+     */
     public function visitStmtList(Node $node) : Context
     {
         $context = $this->context;
@@ -195,7 +209,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                             $context,
                             Issue::NoopStringLiteral,
                             $context->getLineNumberStart(),
-                            json_encode($child_node, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)
+                            json_encode($child_node, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
                         );
                     }
                 } elseif (\is_scalar($child_node)) {
@@ -225,7 +239,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     const PHAN_FILE_SUPPRESS_REGEX =
-        '/@phan-file-suppress\s+' . Comment::SUPPRESS_ISSUE_LIST . '/';
+        '/@phan-file-suppress\s+' . Builder::SUPPRESS_ISSUE_LIST . '/';  // @phan-suppress-current-line PhanAccessClassConstantInternal
 
 
     const PHAN_VAR_REGEX =
@@ -315,7 +329,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     /**
      * For non-special nodes, we propagate the context and scope
      * from the parent, through the children and return the
-     * modified scope
+     * modified scope,
      *
      *          │
      *          ▼
@@ -355,8 +369,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context,
             $node
         );
-
-        \assert(!empty($context), 'Context cannot be null');
 
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
@@ -405,8 +417,41 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * For "for loop" nodes, we analyze the components in the following order as a heuristic:
+     *
+     * 1. propagate the context and scope from the parent,
+     * 2. Update the scope with the initializer of the loop,
+     * 3. Update the scope with the side effects (e.g. assignments) of the condition of the loop
+     * 4. Update the scope with the child statements both inside and outside the the loop (ignoring branches which will continue/break),
+     * 5. Update the scope with the statement evaluated after the loop
+     *
+     * Then, Phan returns the context with the modified scope.
+     *
+     * TODO: merge the contexts together, for better analysis of possibly undefined variables
+     *
+     *               │
+     *        cond   ▼
+     *   ●──────●────● init
+     *   │
+     *   │         (TODO: merge contexts instead)
+     *   ●──●──▶●
+     *   stmts  │
+     *          │
+     *          ● 'loop' child node (after inner statments)
+     *          │
+     *          ▼
+     *
+     * Note: Loop analysis uses heuristics for performance and simplicity.
+     * If we analyzed the stmts of the inner loop body another time,
+     * we might discover even more possible types of input/resulting variables.
+     *
+     * Current limitations:
+     *
+     * - contexts from individual break/continue stmts aren't merged
+     * - contexts from individual break/continue stmts aren't merged
+     *
      * @param Node $node
-     * An AST node we'd like to analyze the statements for
+     * An AST node (for a for loop) we'd like to analyze the statements for
      *
      * @return Context
      * The updated context after visiting the node
@@ -425,13 +470,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $init_node
             );
         }
-        $context = $this->preOrderAnalyze($context, $node);
-        \assert(!empty($context), 'Context cannot be null');
 
         $condition_node = $node->children['cond'];
         if ($condition_node instanceof Node) {
             // The typical case is `for (init; $x; loop) {}`
-            // But `for (init; $x; loop) {}` is rare but possible, which requires evaluating those in order.
+            // But `for (init; $x, $y; loop) {}` is rare but possible, which requires evaluating those in order.
             // Evaluate the list of cond expressions in order.
             \assert($condition_node->kind === \ast\AST_EXPR_LIST);
             foreach ($condition_node->children as $condition_subnode) {
@@ -446,6 +489,18 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
 
         if ($stmts_node = $node->children['stmts']) {
+            // Look to see if any proofs we do within the condition of the for
+            // can say anything about types within the statement
+            // list.
+            // TODO: Distinguish between inner and outer context.
+            //   E.g. `for (; $x = cond(); ) {}` will have truthy $x within the loop
+            //   but falsey outside the loop, if there are no breaks.
+            if ($condition_node instanceof Node) {
+                $context = (new ConditionVisitor(
+                    $this->code_base,
+                    $context
+                ))->__invoke($condition_node);
+            }
             if ($stmts_node instanceof Node) {
                 $context = $this->analyzeAndGetUpdatedContext(
                     $context->withScope(
@@ -478,8 +533,34 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * For "while loop" nodes, we analyze the components in the following order as a heuristic:
+     * (This is pretty much the same as analyzing a for loop with the 'init' and 'loop' nodes left blank)
+     *
+     * 1. propagate the context and scope from the parent,
+     * 2. Update the scope with the side effects (e.g. assignments) of the condition of the loop
+     * 3. Update the scope with the child statements both inside and outside the the loop (ignoring branches which will continue/break),
+     *
+     * Then, Phan returns the context with the modified scope.
+     *
+     * TODO: merge the contexts together, for better analysis of possibly undefined variables
+     *
+     * NOTE: "Do while" loops are just handled by visit(), Phan sees and analyzes 'stmts' before 'cond'.
+     *
+     *
+     *          │
+     *          ▼
+     *   ●──────● cond
+     *   │
+     *   │         (TODO: merge contexts instead)
+     *   ●──●──▶●
+     *   stmts  │
+     *          │
+     *          │
+     *          │
+     *          ▼
+     *
      * @param Node $node
-     * An AST node we'd like to analyze the statements for
+     * An AST node (for a while loop) we'd like to analyze the statements for
      *
      * @return Context
      * The updated context after visiting the node
@@ -490,15 +571,17 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $node->lineno ?? 0
         );
 
-        $context = $this->preOrderAnalyze($context, $node);
-
-        \assert(!empty($context), 'Context cannot be null');
+        // Let any configured plugins do a pre-order
+        // analysis of the node.
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
 
         $condition_node = $node->children['cond'];
         if ($condition_node instanceof Node) {
-            // The typical case is `for (init; $x; loop) {}`
-            // But `for (init; $x; loop) {}` is rare but possible, which requires evaluating those in order.
-            // Evaluate the list of cond expressions in order.
+            // Analyze the cond expression.
             $context = $this->analyzeAndGetUpdatedContext(
                 $context->withLineNumberStart($condition_node->lineno ?? 0),
                 $node,
@@ -507,6 +590,19 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
 
         if ($stmts_node = $node->children['stmts']) {
+            // Look to see if any proofs we do within the condition of the while
+            // can say anything about types within the statement
+            // list.
+            // TODO: Distinguish between inner and outer context.
+            //   E.g. `while ($x = cond()) {}` will have truthy $x within the loop
+            //   but falsey outside the loop, if there are no breaks.
+            if ($condition_node instanceof Node) {
+                $context = (new ConditionVisitor(
+                    $this->code_base,
+                    $this->context
+                ))->__invoke($condition_node);
+            }
+
             if ($stmts_node instanceof Node) {
                 $context = $this->analyzeAndGetUpdatedContext(
                     $context->withScope(
@@ -567,8 +663,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         $context = $this->preOrderAnalyze($context, $node);
 
-        \assert(!empty($context), 'Context cannot be null');
-
         if ($stmts_node = $node->children['stmts']) {
             if ($stmts_node instanceof Node) {
                 $context = $this->analyzeAndGetUpdatedContext(
@@ -624,8 +718,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         ));
 
         $context = $this->preOrderAnalyze($context, $node);
-
-        \assert(!empty($context), 'Context cannot be null');
 
         // We collect all child context so that the
         // PostOrderAnalysisVisitor can optionally operate on
@@ -743,8 +835,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         $context = $this->preOrderAnalyze($context, $node);
 
-        \assert(!empty($context), 'Context cannot be null');
-
         // We collect all child context so that the
         // PostOrderAnalysisVisitor can optionally operate on
         // them
@@ -839,8 +929,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         );
 
         $context = $this->preOrderAnalyze($context, $node);
-
-        \assert(!empty($context), 'Context cannot be null');
 
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
@@ -1160,8 +1248,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $node
         );
 
-        \assert(!empty($context), 'Context cannot be null');
-
         $true_node = $node->children['true'] ?? null;
         $false_node = $node->children['false'] ?? null;
 
@@ -1225,6 +1311,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @return Context
      * The updated context after visiting the node
+     *
+     * @see $this->visitClosedContext()
      */
     public function visitClass(Node $node) : Context
     {
@@ -1237,6 +1325,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @return Context
      * The updated context after visiting the node
+     *
+     * @see $this->visitClosedContext()
      */
     public function visitMethod(Node $node) : Context
     {
@@ -1249,6 +1339,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @return Context
      * The updated context after visiting the node
+     *
+     * @see $this->visitClosedContext()
      */
     public function visitFuncDecl(Node $node) : Context
     {
@@ -1261,6 +1353,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @return Context
      * The updated context after visiting the node
+     *
+     * @see $this->visitClosedContext()
      */
     public function visitClosure(Node $node) : Context
     {
@@ -1268,8 +1362,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * Common options for pre-order analysis phase of a Node.
-     * Run pre-order analysis steps, then run plugins.
+     * Run the common steps for pre-order analysis phase of a Node.
+     *
+     * 1. Run the pre-order analysis steps, updating the context and scope
+     * 2. Run plugins with pre-order steps, usually (but not always) updating the context and scope.
      *
      * @param Context $context - The context before pre-order analysis
      *
@@ -1303,7 +1399,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
     /**
      * Common options for post-order analysis phase of a Node.
-     * Run analysis steps and run plugins.
+     *
+     * 1. Run analysis steps and update the scope and context
+     * 2. Run plugins (usually (but not always) without updating the scope)
      *
      * @param Context $context - The context before post-order analysis
      *
@@ -1368,8 +1466,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $node
         );
 
-        \assert(!empty($context), 'Context cannot be null');
-
         $context = $this->postOrderAnalyze($context, $node);
 
         return $context;
@@ -1397,8 +1493,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         ))->withLineNumberStart(
             $node->lineno ?? 0
         );
-
-        \assert(!empty($context), 'Context cannot be null');
 
         // Don't bother calling PreOrderAnalysisVisitor, it does nothing
 

@@ -139,13 +139,12 @@ final class AlwaysReturnPlugin extends PluginV2 implements
         if (!$node) {
             return null;
         }
-        assert($node->kind === \ast\AST_FUNC_DECL || $node->kind === \ast\AST_CLOSURE || $node->kind === \ast\AST_METHOD);
         return $node->children['stmts'];
     }
 
     /**
      * @param FunctionInterface $func
-     * @return bool - Is void(absense of a return type) an acceptable return type.
+     * @return bool - Is void(absence of a return type) an acceptable return type.
      * NOTE: projects can customize this as needed.
      */
     private function returnTypeOfFunctionLikeAllowsNullNull(FunctionInterface $func) : bool
@@ -164,4 +163,4 @@ final class AlwaysReturnPlugin extends PluginV2 implements
 
 // Every plugin needs to return an instance of itself at the
 // end of the file in which its defined.
-return new AlwaysReturnPlugin;
+return new AlwaysReturnPlugin();

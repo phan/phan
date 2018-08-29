@@ -29,11 +29,12 @@ use Phan\LanguageServer\ProtocolReader;
 use Phan\LanguageServer\ProtocolWriter;
 use Phan\LanguageServer\ProtocolStreamReader;
 use Phan\LanguageServer\ProtocolStreamWriter;
+
+use AssertionError;
 use Sabre\Event\Loop;
 use Sabre\Event\Promise;
-
-use function Sabre\Event\coroutine;
 use Throwable;
+use function Sabre\Event\coroutine;
 
 /**
  * Based on https://github.com/felixfbecker/php-language-server/blob/master/bin/php-language-server.php
@@ -226,7 +227,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     public static function run(CodeBase $code_base, \Closure $file_path_lister, array $options)
     {
-        \assert($code_base->isUndoTrackingEnabled());
+        if (!$code_base->isUndoTrackingEnabled()) {
+            throw new AssertionError("Expected undo tracking to be enabled");
+        }
 
         $make_language_server = function (ProtocolStreamReader $in, ProtocolStreamWriter $out) use ($code_base, $file_path_lister) : LanguageServer {
             return new LanguageServer(
@@ -364,7 +367,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                 /* } */
             }
         } else {
-            assert($options['stdin'] === true);
+            if ($options['stdin'] !== true) {
+                throw new AssertionError("Expected either 'stdin', 'tcp-server', or 'tcp' as the language server communication option");
+            }
             // Use STDIO
             stream_set_blocking(STDIN, false);
             $ls = $make_language_server(
@@ -411,7 +416,35 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             // Discard the previous request silently
             $prev_definition_request->finalize();
         }
-        $request = new GoToDefinitionRequest($uri, $position, $is_type_definition_request);
+        $type = $is_type_definition_request ? GoToDefinitionRequest::REQUEST_TYPE_DEFINITION : GoToDefinitionRequest::REQUEST_DEFINITION;
+        $request = new GoToDefinitionRequest($uri, $position, $type);
+        $this->most_recent_definition_request = $request;
+
+        // We analyze this url so that Phan is aware enough of the types and namespace maps to trigger "Go to definition"
+        // E.g. going to the definition of `Bar` in `use Foo as Bar; Bar::method();` requires parsing other statements in this file, not just the name in question.
+        //
+        // NOTE: This also ensures that we will run analysis, because of the check for analyze_request_set being non-empty
+        $this->analyze_request_set[$path_to_analyze] = $uri;
+        return $request->getPromise();
+    }
+
+    /**
+     * Asynchronously generates the definition for a given URL
+     * @return Promise <Location|Location[]|null>
+     */
+    public function awaitHover(
+        string $uri,
+        Position $position
+    ) : Promise {
+        // TODO: Add a way to "go to definition" without emitting analysis results as a side effect
+        $path_to_analyze = Utils::uriToPath($uri);
+        Logger::logInfo("Called LanguageServer->awaitHover, uri=$uri, position=" . json_encode($position));
+        $prev_definition_request = $this->most_recent_definition_request;
+        if ($prev_definition_request) {
+            // Discard the previous request silently
+            $prev_definition_request->finalize();
+        }
+        $request = new GoToDefinitionRequest($uri, $position, GoToDefinitionRequest::REQUEST_HOVER);
         $this->most_recent_definition_request = $request;
 
         // We analyze this url so that Phan is aware enough of the types and namespace maps to trigger "Go to definition"
@@ -586,7 +619,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
         try {
             Phan::finishAnalyzingRemainingStatements($this->code_base, $analysis_request, $analyze_file_path_list, $temporary_file_mapping);
-        } catch (ExitException $e) {
+        } catch (ExitException $_) {
             // This is normal, do nothing
         }
 
@@ -606,7 +639,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
         $code_base->restoreFromRestorePoint($restore_point);
 
-        Logger::logInfo("Response from non-pcntl server: " . json_encode($response_data, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
+        Logger::logInfo("Response from non-pcntl server: " . json_encode($response_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 
     /**
@@ -658,6 +691,10 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         }
         //$check_name = $issue['check_name'];
         $description = $issue['description'];
+        if (Config::getValue('language_server_hide_category_of_issues')) {
+            // See JSONPrinter.php for how $description is built
+            $description = explode(' ', $description, 2)[1];
+        }
         if (isset($issue['suggestion'])) {
             $description .= ' (' . $issue['suggestion'] . ')';
         }
@@ -674,7 +711,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $range = new Range(new Position($start_line - 1, 0), new Position($start_line, 0));
         $diagnostic_severity = self::diagnosticSeverityFromPhanSeverity($severity);
         // TODO: copy issue code in 'json' format
-        return [$issue_uri, new Diagnostic($description, $range, $issue['type_id'], $diagnostic_severity, 'Phan')];
+        return [$issue_uri, new Diagnostic($description, $range, null, $diagnostic_severity, 'Phan')];
     }
 
     /**
@@ -741,7 +778,12 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      *
      * @param ClientCapabilities $capabilities The capabilities provided by the client (editor) @phan-unused-param
      * @param string|null $rootPath The rootPath of the workspace. Is null if no folder is open. @phan-unused-param
-     * @param int|null $processId The process Id of the parent process that started the server. Is null if the process has not been started by another process. If the parent process is not alive then the server should exit (see exit notification) its process. @phan-unused-param
+     * @param int|null $processId The process Id of the parent process that started the server. @phan-unused-param
+     *                            This is null if the process has not been started by another process.
+     *                            If the parent process is not alive,
+     *                            then the server should exit (see exit notification) its process.
+     *                            NOTE: For most use cases, we'll know about the disconnection because the connection hits the end of file or an error.
+     *
      * @return Promise <InitializeResult>
      */
     public function initialize(ClientCapabilities $capabilities, string $rootPath = null, int $processId = null): Promise
@@ -772,17 +814,15 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             // TODO: Support "Find all symbols in workspace"?
             //$serverCapabilities->workspaceSymbolProvider = true;
             // XXX do this next?
-            // TODO: Support "Go to definition" (reasonably practical, should be able to infer types in many cases)
-            // TODO: Support "Goto type definition" (e.g. for variables, properties) (since LSP 3.6.0)
 
             $supports_go_to_definition = (bool)Config::getValue('language_server_enable_go_to_definition');
             $serverCapabilities->definitionProvider = $supports_go_to_definition;
             $serverCapabilities->typeDefinitionProvider = $supports_go_to_definition;
+            $serverCapabilities->hoverProvider = (bool)Config::getValue('language_server_enable_hover');
+
             // TODO: (probably impractical, slow) Support "Find all references"? (We don't track this, except when checking for dead code elimination possibilities.
             // $serverCapabilities->referencesProvider = false;
             // Can't support "Hover" without phpdoc for internal functions, such as those from phpstorm
-            // Also redundant if php.
-            // $serverCapabilities->hoverProvider = false;
             // XXX support completion next?
             // Requires php-parser-to-php-ast (or tolerant php-parser)
             // Support "Completion"
@@ -812,6 +852,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
     /**
      * @suppress PhanUnreferencedPublicMethod this is called by the client through AdvancedJsonRpc
+     * @return void
      */
     public function initialized()
     {

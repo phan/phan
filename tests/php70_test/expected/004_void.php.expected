@@ -1,1 +1,0 @@
-src/004_void.php:4 PhanCompatibleVoidTypePHP70 Return type 'void' means the absense of a return value starting in PHP 7.1. In PHP 7.0, void refers to a class/interface with the name 'void'

@@ -333,6 +333,7 @@ interface FunctionInterface extends AddressableElementInterface
 
     /**
      * @param Comment $comment
+     * @return void
      */
     public function setComment(Comment $comment);
 

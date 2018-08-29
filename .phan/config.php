@@ -25,7 +25,7 @@ use \Phan\Issue;
  * '-d' flag.
  */
 return [
-    // Supported values: '7.0', '7.1', '7.2', null.
+    // Supported values: '7.0', '7.1', '7.2', '7.3', null.
     // If this is set to null,
     // then Phan assumes the PHP version which is closest to the minor version
     // of the php executable used to execute phan.
@@ -153,7 +153,7 @@ return [
     // This setting maps case insensitive strings to union types.
     // This is useful if a project uses phpdoc that differs from the phpdoc2 standard.
     // If the corresponding value is the empty string, Phan will ignore that union type (E.g. can ignore 'the' in `@return the value`)
-    // If the corresponding value is not empty, Phan will act as though it saw the corresponding unionTypes(s) when the keys show up in a UnionType of @param, @return, @var, @property, etc.
+    // If the corresponding value is not empty, Phan will act as though it saw the corresponding union type when the keys show up in a UnionType of @param, @return, @var, @property, etc.
     //
     // This matches the **entire string**, not parts of the string.
     // (E.g. `@return the|null` will still look for a class with the name `the`, but `@return the` will be ignored with the below setting)
@@ -209,6 +209,26 @@ return [
     // class types.
     'generic_types_enabled' => true,
 
+    // If enabled, warn about throw statement where the exception types
+    // are not documented in the PHPDoc of functions, methods, and closures.
+    'warn_about_undocumented_throw_statements' => true,
+
+    // If enabled (and warn_about_undocumented_throw_statements is enabled),
+    // warn about function/closure/method calls that have (at)throws
+    // without the invoking method documenting that exception.
+    // TODO: Enable for self-analysis
+    'warn_about_undocumented_exceptions_thrown_by_invoked_functions' => false,
+
+    // If this is a list, Phan will not warn about lack of documentation of (at)throws
+    // for any of the listed classes or their subclasses.
+    // This setting only matters when warn_about_undocumented_throw_statements is true.
+    // The default is the empty array (Warn about every kind of Throwable)
+    'exception_classes_with_optional_throws_phpdoc' => [
+        'RuntimeException',
+        'AssertionError',
+        'TypeError',
+    ],
+
     // Setting this to true makes the process assignment for file analysis
     // as predictable as possible, using consistent hashing.
     // Even if files are added or removed, or process counts change,
@@ -238,7 +258,6 @@ return [
         'PhanPossiblyNullTypeArgument',
         'PhanPossiblyNullTypeArgumentInternal',
         'PhanPossiblyNullTypeReturn',
-        // 'PhanUndeclaredMethod',
     ],
 
     // If empty, no filter against issues types will be applied.
@@ -426,7 +445,9 @@ return [
     //
     // This is useful for excluding hopelessly unanalyzable
     // files that can't be removed for whatever reason.
-    'exclude_file_list' => [],
+    'exclude_file_list' => [
+        'internal/Sniffs/ValidUnderscoreVariableNameSniff.php',
+    ],
 
     // The number of processes to fork off during the analysis
     // phase.
@@ -523,10 +544,15 @@ return [
         'DemoPlugin',
         'DollarDollarPlugin',
         'UnreachableCodePlugin',
-        // NOTE: src/Phan/Language/Internal/FunctionSignatureMap.php mixes value without keys (as return type) with values having keys deliberately.
         'DuplicateArrayKeyPlugin',
         'PregRegexCheckerPlugin',
         'PrintfCheckerPlugin',
+
+        // UnknownElementTypePlugin warns about unknown types in element signatures.
+        'UnknownElementTypePlugin',
+        'DuplicateExpressionPlugin',
+        // TODO: warn about the usage of assert() for Phan's self-analysis. See https://github.com/phan/phan/issues/288
+        'NoAssertPlugin',
 
         // 'SleepCheckerPlugin' is useful for projects which heavily use the __sleep() method. Phan doesn't use __sleep().
 
@@ -534,7 +560,7 @@ return [
         // Using this can cause phan's overall analysis time to more than double.
         // 'InvokePHPNativeSyntaxCheckPlugin',
 
-        // 'PHPUnitNotDeadCodePlugin',  // Marks phpunit test case subclasses and test cases as refernced code. only useful for runs when dead code detection is enabled
+        // 'PHPUnitNotDeadCodePlugin',  // Marks PHPUnit test case subclasses and test cases as referenced code. This is only useful for runs when dead code detection is enabled.
 
         // NOTE: This plugin only produces correct results when
         //       Phan is run on a single core (-j1).

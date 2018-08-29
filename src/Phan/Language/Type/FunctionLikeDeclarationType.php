@@ -3,6 +3,7 @@ namespace Phan\Language\Type;
 
 use Phan\CodeBase;
 use Phan\Language\Context;
+use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Parameter;
@@ -43,6 +44,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     /** @var int see FunctionTrait */
     private $optional_param_count;
 
+    /** @var bool */
     private $is_variadic;
     // end computed properties
 
@@ -83,7 +85,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
      */
     public function __toString() : string
     {
-        return $this->memoize(__FUNCTION__, function () {
+        return $this->memoize(__FUNCTION__, function () : string {
             $parts = [];
             foreach ($this->params as $value) {
                 $parts[] = $value->__toString();
@@ -229,6 +231,15 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function isPublic() : bool
     {
         return true;
+    }
+
+    /**
+     * @return bool true if this element's visibility
+     *                   is strictly more visible than $other (public > protected > private)
+     */
+    public function isStrictlyMoreVisibileThan(AddressableElementInterface $other) : bool
+    {
+        return false;
     }
 
     /** @override */
@@ -484,6 +495,10 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return $this->returns_reference;
     }
 
+    /**
+     * @return void
+     * @unused
+     */
     public function setComment(Comment $comment)
     {
         throw new \AssertionError('unexpected call to ' . __METHOD__);
@@ -619,10 +634,6 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function toFunctionSignatureArray() : array
     {
         // no need for returns ref yet
-        $stub .= '(' . implode(', ', array_map(function (Parameter $parameter) : string {
-            return $parameter->toStubString();
-        }, $this->getRealParameterList())) . ')';
-
         $return_type = $this->return_type;
         $stub = [$return_type->__toString()];
         foreach ($this->params as $i => $parameter) {
@@ -646,6 +657,32 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     {
         // Probably unused
         return Type::fromFullyQualifiedString('\Generator');
+    }
+
+    public function getDocComment()
+    {
+        return null;
+    }
+
+    public function getMarkupDescription() : string
+    {
+        $parts = $this->toFunctionSignatureArray();
+        $return_type = $parts[0];
+        unset($parts[0]);
+
+        $fragments = [];
+        foreach ($parts as $name => $signature) {
+            $fragment = '\$' . $name;
+            if ($signature) {
+                $fragment = "$signature $fragment";
+            }
+        }
+        $signature = static::NAME . '(' . implode(',', $fragments) . ')';
+        if ($return_type) {
+            // TODO: Make this unambiguous
+            $signature .= ':' . $return_type;
+        }
+        return $signature;
     }
 
     ////////////////////////////////////////////////////////////////////////////////

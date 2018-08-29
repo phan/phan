@@ -38,7 +38,7 @@ function test298() {
     $intVar = 42;
     expect_int_298($strVar .= 'suffix');
     expect_string_298($intVar ^= 2);  // warn, this is an int
-    expect_int_298($strVar ^= "\x01\x02");  // warn, this is a string
+    expect_int_298($strVar ^= "\x01\x02");  // warn, this is a string (and the new value is not used later in this function)
     expect_string_298($intVar |= 1);
     expect_string_298($intVar ^= 2);
     expect_string_298($intVar &= 0xffff);
@@ -46,10 +46,12 @@ function test298() {
     expect_string_298($intVar *= 2);
     expect_string_298($intVar **= 2);
     expect_string_298($intVar %= 5);
+    $intVar = 42;
     expect_string_298($intVar += 2);
     expect_string_298($intVar -= 5);
     expect_string_298($intVar <<= 1);
     expect_string_298($intVar >>= 1);
 
     expect_int_298("0" | "1");  // warn - this binary ors the bytes of the two strings into a new string.
+    echo $intVar;
 }

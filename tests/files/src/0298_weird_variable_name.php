@@ -4,7 +4,7 @@ error_reporting(E_ALL);
 function testIrregularVar128() {
     ${42} = ['value'];
     try {
-    echo intdiv(${42}, 3);  // intdiv takes int but this is string[]
+        echo intdiv(${42}, 3);  // intdiv takes int but this is string[]
     } catch(Throwable $e) {}
     echo "Next\n";
     ${true} = ['value'];

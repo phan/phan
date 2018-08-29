@@ -517,7 +517,7 @@ class ConditionVisitor extends KindVisitorImplementation
                         $context,
                         Issue::TypeInvalidInstanceof,
                         $context->getLineNumberStart(),
-                        (string)$type
+                        (string)$type->asNonLiteralType()
                     );
                 }
                 self::analyzeIsObjectAssertion($variable);
@@ -528,7 +528,7 @@ class ConditionVisitor extends KindVisitorImplementation
             );
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // Swallow it
         }
 
@@ -569,15 +569,36 @@ class ConditionVisitor extends KindVisitorImplementation
     private static function initTypeModifyingClosuresForVisitCall() : array
     {
         $make_basic_assertion_callback = static function (string $union_type_string) : Closure {
-            $type = UnionType::fromFullyQualifiedString(
+            $asserted_union_type = UnionType::fromFullyQualifiedString(
                 $union_type_string
             );
+            $asserted_union_type_set = $asserted_union_type->getTypeSet();
+            $empty_type = UnionType::empty();
 
             /** @return void */
-            return static function (Variable $variable, array $args) use ($type) {
+            return static function (Variable $variable, array $args) use ($asserted_union_type, $asserted_union_type_set, $empty_type) {
+                $new_types = $empty_type;
+                foreach ($variable->getUnionType()->getTypeSet() as $type) {
+                    $type = $type->withIsNullable(false);
+                    if ($type->canCastToAnyTypeInSet($asserted_union_type_set)) {
+                        $new_types = $new_types->withType($type);
+                    }
+                }
+
                 // Otherwise, overwrite the type for any simple
                 // primitive types.
-                $variable->setUnionType($type);
+                $variable->setUnionType($new_types->isEmpty() ? $asserted_union_type : $new_types);
+            };
+        };
+        $make_direct_assertion_callback = static function (string $union_type_string) : Closure {
+            $asserted_union_type = UnionType::fromFullyQualifiedString(
+                $union_type_string
+            );
+            /** @return void */
+            return static function (Variable $variable, array $args) use ($asserted_union_type) {
+                // Otherwise, overwrite the type for any simple
+                // primitive types.
+                $variable->setUnionType($asserted_union_type);
             };
         };
 
@@ -589,7 +610,8 @@ class ConditionVisitor extends KindVisitorImplementation
             // (E.g. T[]|false becomes T[], ?array|null becomes array
             $new_type_builder = new UnionTypeBuilder();
             foreach ($variable->getUnionType()->getTypeSet() as $type) {
-                if ($type->isGenericArray()) {
+                if ($type instanceof ArrayType) {
+                    // @phan-suppress-next-line PhanUndeclaredMethod TODO: Support intersection types
                     $new_type_builder->addType($type->withIsNullable(false));
                     continue;
                 }
@@ -628,17 +650,17 @@ class ConditionVisitor extends KindVisitorImplementation
             // Change the type to match the is_a relationship
             // If we already have possible scalar types, then keep those
             // (E.g. T|false becomes bool, T becomes int|float|bool|string|null)
-            $newType = $variable->getUnionType()->scalarTypes();
-            if ($newType->containsNullable()) {
-                $newType = $newType->nonNullableClone();
+            $new_type = $variable->getUnionType()->scalarTypes();
+            if ($new_type->containsNullable()) {
+                $new_type = $new_type->nonNullableClone();
             }
-            if ($newType->isEmpty()) {
+            if ($new_type->isEmpty()) {
                 // If there are no inferred types, or the only type we saw was 'null',
                 // assume there this can be any possible scalar.
                 // (Excludes `resource`, which is technically a scalar)
-                $newType = UnionType::fromFullyQualifiedString('int|float|bool|string');
+                $new_type = UnionType::fromFullyQualifiedString('int|float|bool|string');
             }
-            $variable->setUnionType($newType);
+            $variable->setUnionType($new_type);
         };
         $callable_callback = static function (Variable $variable, array $args) {
             // Change the type to match the is_a relationship
@@ -656,9 +678,10 @@ class ConditionVisitor extends KindVisitorImplementation
             $variable->setUnionType($new_type);
         };
 
-        $float_callback = $make_basic_assertion_callback('float');
+        // Note: LiteralIntType exists, but LiteralFloatType doesn't, which is why these are different.
         $int_callback = $make_basic_assertion_callback('int');
-        $null_callback = $make_basic_assertion_callback('null');
+        $float_callback = $make_direct_assertion_callback('float');
+        $null_callback = $make_direct_assertion_callback('null');
         // Note: isset() is handled in visitIsset()
 
         return [
@@ -676,7 +699,7 @@ class ConditionVisitor extends KindVisitorImplementation
             'is_numeric' => $make_basic_assertion_callback('string|int|float'),
             'is_object' => $object_callback,
             'is_real' => $float_callback,
-            'is_resource' => $make_basic_assertion_callback('resource'),
+            'is_resource' => $make_direct_assertion_callback('resource'),
             'is_scalar' => $scalar_callback,
             'is_string' => $make_basic_assertion_callback('string'),
             'empty' => $null_callback,
@@ -753,7 +776,7 @@ class ConditionVisitor extends KindVisitorImplementation
             );
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // Swallow it (E.g. IssueException for undefined variable)
         }
 
@@ -853,7 +876,9 @@ class ConditionVisitor extends KindVisitorImplementation
      */
     public function visitAssign(Node $node) : Context
     {
-        return (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssign($node);
+        $context = (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssign($node);
+        $left = $node->children['var'];
+        return (new self($this->code_base, $context))->__invoke($left);
     }
 
     /**
@@ -868,6 +893,8 @@ class ConditionVisitor extends KindVisitorImplementation
      */
     public function visitAssignRef(Node $node) : Context
     {
-        return (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssignRef($node);
+        $context = (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssignRef($node);
+        $left = $node->children['var'];
+        return (new self($this->code_base, $context))->__invoke($left);
     }
 }

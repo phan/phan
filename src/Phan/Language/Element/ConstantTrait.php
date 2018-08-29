@@ -6,10 +6,10 @@ use Closure;
 
 trait ConstantTrait
 {
+    use ElementFutureUnionType;
+
     /** @var Node|string|float|int */
     protected $defining_node;
-
-    use ElementFutureUnionType;
 
     /**
      * @return string

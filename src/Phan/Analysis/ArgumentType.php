@@ -16,15 +16,16 @@ use Phan\Language\Element\Variable;
 use Phan\Language\Type;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\PluginV2\StopParamAnalysisException;
+
+use AssertionError;
 use ast\Node;
 
 /**
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
-class ArgumentType
+final class ArgumentType
 {
 
     /**
@@ -52,7 +53,7 @@ class ArgumentType
         if ($method->hasFunctionCallAnalyzer()) {
             try {
                 $method->analyzeFunctionCall($code_base, $context->withLineNumberStart($node->lineno ?? 0), $node->children['args']->children);
-            } catch (StopParamAnalysisException $e) {
+            } catch (StopParamAnalysisException $_) {
                 return;
             }
         }
@@ -397,7 +398,9 @@ class ArgumentType
         }
 
         foreach ($node->children as $i => $argument) {
-            \assert(\is_int($i));
+            if (!\is_int($i)) {
+                throw new AssertionError("Expected argument index to be an integer");
+            }
 
             // Get the parameter associated with this argument
             $parameter = $method->getParameterForCaller($i);
@@ -412,7 +415,7 @@ class ArgumentType
             // If this is a pass-by-reference parameter, make sure
             // we're passing an allowable argument
             if ($parameter->isPassByReference()) {
-                if ((!$argument instanceof \ast\Node)
+                if ((!$argument instanceof Node)
                     || ($argument_kind !== \ast\AST_VAR
                         && $argument_kind !== \ast\AST_DIM
                         && $argument_kind !== \ast\AST_PROP
@@ -427,7 +430,7 @@ class ArgumentType
                             $context,
                             Issue::TypeNonVarPassByRef,
                             $node->lineno ?? 0,
-                            ($i+1),
+                            ($i + 1),
                             $method->getRepresentationForIssue()
                         );
                     }
@@ -493,7 +496,9 @@ class ArgumentType
             }
 
             $alternate_parameter = $candidate_alternate_parameter;
-            \assert($alternate_parameter instanceof Variable);
+            if (!($alternate_parameter instanceof Variable)) {
+                throw new AssertionError('Expected alternate_parameter to be Variable or subclass');
+            }
 
             // See if the argument can be cast to the
             // parameter
@@ -525,14 +530,14 @@ class ArgumentType
         if ($method->isPHPInternal()) {
             // If we are not in strict mode and we accept a string parameter
             // and the argument we are passing has a __toString method then it is ok
-            if (!$context->getIsStrictTypes() && $parameter_type->hasType(StringType::instance(false))) {
+            if (!$context->getIsStrictTypes() && $parameter_type->hasNonNullStringType()) {
                 try {
                     foreach ($argument_type_expanded->asClassList($code_base, $context) as $clazz) {
                         if ($clazz->hasMethodWithName($code_base, "__toString")) {
                             return;
                         }
                     }
-                } catch (CodeBaseException $e) {
+                } catch (CodeBaseException $_) {
                     // Swallow "Cannot find class", go on to emit issue
                 }
             }
@@ -541,7 +546,7 @@ class ArgumentType
                 $context,
                 Issue::TypeMismatchArgumentInternal,
                 $lineno,
-                ($i+1),
+                ($i + 1),
                 $alternate_parameter->getName(),
                 $argument_type_expanded,
                 $method->getRepresentationForIssue(),
@@ -554,7 +559,7 @@ class ArgumentType
             $context,
             Issue::TypeMismatchArgument,
             $lineno,
-            ($i+1),
+            ($i + 1),
             $alternate_parameter->getName(),
             $argument_type_expanded,
             $method->getRepresentationForIssue(),
@@ -567,7 +572,9 @@ class ArgumentType
     private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, Variable $alternate_parameter, int $lineno, int $i)
     {
         $type_set = $argument_type->getTypeSet();
-        \assert(\count($type_set) >= 2);
+        if (\count($type_set) < 2) {
+            throw new AssertionError("Expected to have at least two parameter types when checking if parameter types match in strict mode");
+        }
 
         $parameter_type = $alternate_parameter->getNonVariadicUnionType();
 
@@ -587,7 +594,7 @@ class ArgumentType
                 if ($method->isPHPInternal()) {
                     // If we are not in strict mode and we accept a string parameter
                     // and the argument we are passing has a __toString method then it is ok
-                    if (!$context->getIsStrictTypes() && $parameter_type->hasType(StringType::instance(false))) {
+                    if (!$context->getIsStrictTypes() && $parameter_type->hasNonNullStringType()) {
                         if ($individual_type_expanded->hasClassWithToStringMethod($code_base, $context)) {
                             continue;  // don't warn about $type
                         }
@@ -613,7 +620,7 @@ class ArgumentType
                 $context,
                 self::getStrictIssueType($mismatch_type_set, true),
                 $lineno,
-                ($i+1),
+                ($i + 1),
                 $alternate_parameter->getName(),
                 $argument_type,
                 $method->getRepresentationForIssue(),
@@ -627,7 +634,7 @@ class ArgumentType
             $context,
             self::getStrictIssueType($mismatch_type_set, false),
             $lineno,
-            ($i+1),
+            ($i + 1),
             $alternate_parameter->getName(),
             $argument_type,
             $method->getRepresentationForIssue(),
@@ -703,7 +710,7 @@ class ArgumentType
                             return true;
                         }
                     }
-                } catch (IssueException $e) {
+                } catch (IssueException $_) {
                     // Swallow any issue esceptions here. They'll be caught elsewhere.
                 }
             }

@@ -1,9 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\EmptyFQSENException;
+use Phan\Exception\IssueException;
 use Phan\Language\Element\Comment;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
@@ -20,6 +22,8 @@ use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\GenericIterableType;
 use Phan\Language\Type\GenericMultiArrayType;
+use Phan\Language\Type\LiteralIntType;
+use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
@@ -28,6 +32,7 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\ScalarRawType;
+use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
@@ -39,7 +44,9 @@ use Phan\Library\Some;
 use Phan\Library\Tuple5;
 
 use AssertionError;
+use Error;
 use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * The base class for all of Phan's types.
@@ -48,6 +55,8 @@ use InvalidArgumentException;
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
+ * @phan-file-suppress PhanPluginNoAssert
+ * phpcs:disable Generic.NamingConventions.UpperCaseConstantName
  */
 class Type
 {
@@ -72,6 +81,16 @@ class Type
 
     const shape_key_regex =
         '[-._a-zA-Z0-9\x7f-\xff]+\??';
+
+    /**
+     * A literal integer or string.
+     *
+     * Note that string literals can only contain a whitelist of characters.
+     * NOTE: The / is escaped
+     */
+    const noncapturing_literal_regex =
+        '\??(?:-?(?:0|[1-9][0-9]*)|\'(?:[- ,.\/?:;"!#$%^&*_+=a-zA-Z0-9_\x80-\xff]|\\\\(?:[\'\\\\]|x[0-9a-fA-F]{2}))*\')';
+        // '\??(?:-?(?:0|[1-9][0-9]*)|\'(?:[a-zA-Z0-9_])*\')';
 
     /**
      * @var string
@@ -103,6 +122,7 @@ class Type
             . ')'
           . ')?'
         . ')|'
+        . self::noncapturing_literal_regex . '|'
         . '(' . self::simple_type_regex . ')'  // ?T or T. TODO: Get rid of pattern for '?'?
         . '(?:'
           . '<'
@@ -145,6 +165,7 @@ class Type
                 . ')'
               . ')?'
             . ')|'
+            . self::noncapturing_literal_regex . '|'
             . '(' . self::simple_type_regex_or_this . ')'  // 3 patterns
             . '(?:<'
               . '('
@@ -289,14 +310,18 @@ class Type
     // Override two magic methods to ensure that Type isn't being cloned accidentally.
     // (It has previously been accidentally cloned in unit tests by phpunit (global_state helper),
     //  which saves and restores some static properties)
+
+    /** @throws Error this should not be called accidentally */
     public function __wakeup()
     {
-        throw new \Error("Cannot unserialize Type");
+        debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        throw new Error("Cannot unserialize Type");
     }
 
+    /** @throws Error this should not be called accidentally */
     public function __clone()
     {
-        throw new \Error("Cannot clone Type");
+        throw new Error("Cannot clone Type");
     }
 
     /**
@@ -320,6 +345,8 @@ class Type
      *
      * @return Type
      * A single canonical instance of the given type.
+     *
+     * @throws AssertionError if an unparseable string is passed in
      */
     protected static function make(
         string $namespace,
@@ -374,7 +401,7 @@ class Type
         $key = ($is_nullable ? '?' : '') . static::KEY_PREFIX . $namespace . '\\' . $type_name;
 
         if ($template_parameter_type_list) {
-            $key .= '<' . \implode(',', \array_map(function (UnionType $union_type) {
+            $key .= '<' . \implode(',', \array_map(function (UnionType $union_type) : string {
                 return (string)$union_type;
             }, $template_parameter_type_list)) . '>';
         }
@@ -404,6 +431,8 @@ class Type
                     $template_parameter_type_list,
                     $is_nullable
                 );
+                // FIXME Phan warns that array<string,static> can't be assigned to array<string,Type>
+                '@phan-var Type $value';
             }
             self::$canonical_object_map[$key] = $value;
         }
@@ -467,7 +496,7 @@ class Type
         if (isset($result)) {
             return new Some($result);
         }
-        return new None;
+        return new None();
     }
 
     /**
@@ -544,16 +573,16 @@ class Type
 
     /**
      * @return Type
-     * Get a type for the given object
+     * Get a type for the given object. Equivalent to Type::fromObject($object)->asNonLiteralType()
      */
-    public static function fromObject($object) : Type
+    public static function nonLiteralFromObject($object) : Type
     {
         static $type_map = null;
         if ($type_map === null) {
             $type_map = [
                 'integer' => IntType::instance(false),
                 'boolean' => BoolType::instance(false),
-                'double'   => FloatType::instance(false),
+                'double'  => FloatType::instance(false),
                 'string'  => StringType::instance(false),
                 'object'  => ObjectType::instance(false),
                 'NULL'    => NullType::instance(false),
@@ -563,6 +592,39 @@ class Type
         }
         // gettype(2) doesn't return 'int', it returns 'integer', so use FROM_PHPDOC
         return $type_map[\gettype($object)];
+    }
+
+    /**
+     * @return Type
+     * Get a type for the given object
+     * @throws AssertionError if the type was unexpected
+     */
+    public static function fromObject($object) : Type
+    {
+        switch (\gettype($object)) {
+            case 'integer':
+                '@phan-var int $object';
+                return LiteralIntType::instanceForValue($object, false);
+            case 'string':
+                '@phan-var string $object';
+                return LiteralStringType::instanceForValue($object, false);
+            case 'NULL':
+                return NullType::instance(false);
+            case 'double':
+                return FloatType::instance(false);
+            case 'object':
+                return ObjectType::instance(false);
+            case 'boolean':
+                // TODO: Does this have many side effects?
+                // Probably not, 'false' is an AST_CONST Node.
+                return $object ? TrueType::instance(false) : FalseType::instance(false);
+            case 'array':
+                return ArrayType::instance(false);
+            case 'resource':
+                return ResourceType::instance(false);  // For inferring the type of constants STDIN, etc.
+            default:
+                throw new \AssertionError("Unknown type " . gettype($object));
+        }
     }
 
     /**
@@ -577,6 +639,8 @@ class Type
      *
      * @return Type
      * Get a type for the given type name
+     *
+     * @throws AssertionError if the type was unexpected
      */
     public static function fromInternalTypeName(
         string $type_name,
@@ -699,13 +763,16 @@ class Type
         return $type_cache[$fully_qualified_string] ?? ($type_cache[$fully_qualified_string] = self::fromFullyQualifiedStringInner($fully_qualified_string));
     }
 
+    /**
+     * @throws EmptyFQSENException if the type name was the empty string
+     * @throws InvalidArgumentException if namespace is missing from something that should have a namespace
+     */
     public static function fromFullyQualifiedStringInner(
         string $fully_qualified_string
     ) : Type {
-        \assert(
-            !empty($fully_qualified_string),
-            "Type cannot be empty"
-        );
+        if ($fully_qualified_string === '') {
+            throw new InvalidArgumentException("Type cannot be empty");
+        }
         while (\substr($fully_qualified_string, -1) === ')') {
             if ($fully_qualified_string[0] === '?') {
                 $fully_qualified_string = '?' . \substr($fully_qualified_string, 2, -1);
@@ -735,6 +802,9 @@ class Type
         $template_parameter_type_name_list = $tuple->_2;
         $is_nullable = $tuple->_3;
         $shape_components = $tuple->_4;
+        if (\preg_match('/^(' . self::noncapturing_literal_regex . ')$/', $type_name)) {
+            return self::fromEscapedLiteralScalar($type_name);
+        }
         if (\is_array($shape_components)) {
             if (\strcasecmp($type_name, 'array') === 0) {
                 return ArrayShapeType::fromFieldTypes(
@@ -790,6 +860,22 @@ class Type
         );
     }
 
+    private static function fromEscapedLiteralScalar(string $escaped_literal) : ScalarType
+    {
+        $is_nullable = $escaped_literal[0] === '?';
+        if ($is_nullable) {
+            $escaped_literal = \substr($escaped_literal, 1);
+        }
+        if ($escaped_literal[0] === "'") {
+            return LiteralStringType::fromEscapedString($escaped_literal, $is_nullable);
+        }
+        $value = filter_var($escaped_literal, FILTER_VALIDATE_INT);
+        if (\is_int($value)) {
+            return LiteralIntType::instanceForValue($value, $is_nullable);
+        }
+        return FloatType::instance($is_nullable);
+    }
+
     /**
      * @param array<int,string> $template_parameter_type_name_list
      * @return array<int,UnionType>
@@ -805,17 +891,19 @@ class Type
      * @param bool $is_closure_type
      * @param array<int,string> $shape_components
      * @param bool $is_nullable
+     * @throws AssertionError if creating a closure/callable from the arguments failed
      */
     private static function fromFullyQualifiedFunctionLike(
         bool $is_closure_type,
         array $shape_components,
         bool $is_nullable
     ) : FunctionLikeDeclarationType {
-        $return_type = \array_pop($shape_components);
-        if (!$return_type) {
+        if (\count($shape_components) === 0) {
+            // The literal int '0' is a valid union type, but it's falsey, so check the count instead.
             // shouldn't happen
             throw new AssertionError("Expected at least one component of a closure phpdoc type");
         }
+        $return_type = \array_pop($shape_components);
         if ($return_type[0] === '(' && \substr($return_type, -1) === ')') {
             // TODO: Maybe catch that in UnionType parsing instead
             $return_type = \substr($return_type, 1, -1);
@@ -891,18 +979,23 @@ class Type
      * @param int $source
      * Type::FROM_NODE, Type::FROM_TYPE, or Type::FROM_PHPDOC
      *
+     * @param ?CodeBase $code_base
+     * May be provided to resolve 'parent' in the context
+     * (e.g. if parsing complex phpdoc).
+     * Unnecessary in most use cases.
+     *
      * @return Type
      * Parse a type from the given string
      */
     public static function fromStringInContext(
         string $string,
         Context $context,
-        int $source
+        int $source,
+        CodeBase $code_base = null
     ) : Type {
-        \assert(
-            $string !== '',
-            "Type cannot be empty"
-        );
+        if ($string === '') {
+            throw new AssertionError("Type cannot be empty");
+        }
         while (\substr($string, -1) === ')') {
             if ($string[0] === '?') {
                 if ($string[1] !== '(') {
@@ -933,7 +1026,8 @@ class Type
                 self::fromStringInContext(
                     $substring,
                     $context,
-                    $source
+                    $source,
+                    $code_base
                 ),
                 $is_nullable,
                 GenericArrayType::KEY_MIXED
@@ -948,10 +1042,15 @@ class Type
         $template_parameter_type_name_list = $tuple->_2;
         $is_nullable = $tuple->_3;
         $shape_components = $tuple->_4;
+
+        if (\preg_match('/^(' . self::noncapturing_literal_regex . ')$/', $type_name)) {
+            return self::fromEscapedLiteralScalar($type_name);
+        }
+
         if (\is_array($shape_components)) {
             if (\strcasecmp($type_name, 'array') === 0) {
                 return ArrayShapeType::fromFieldTypes(
-                    self::shapeComponentStringsToTypes($shape_components, $context, $source),
+                    self::shapeComponentStringsToTypes($shape_components, $context, $source, $code_base),
                     $is_nullable
                 );
             }
@@ -963,7 +1062,7 @@ class Type
         // Map the names of the types to actual types in the
         // template parameter type list
         $template_parameter_type_list =
-            array_map(function (string $type_name) use ($context, $source) {
+            \array_map(function (string $type_name) use ($context, $source) : UnionType {
                 return UnionType::fromStringInContext($type_name, $context, $source);
             }, $template_parameter_type_name_list);
 
@@ -1066,19 +1165,19 @@ class Type
             && self::isSelfTypeString($non_generic_array_type_name)
             && $context->isInClassScope()
         ) {
-            // Callers of this method should be checking on their own
-            // to see if this type is a reference to 'parent' and
-            // dealing with it there. We don't want to have this
-            // method be dependent on the code base
-            \assert(
-                'parent' !== $non_generic_array_type_name,
-                __METHOD__ . " does not know how to handle the type name 'parent'"
-            );
+            // The element type can be nullable.
+            // Independently, the array of elements can also be nullable.
+            if (stripos($non_generic_array_type_name, 'parent') !== false) {
+                // Will throw if $code_base is null or there is no parent type
+                $element_type = self::maybeFindParentType($non_generic_array_type_name[0] === '?', $context, $code_base);
+            } else {
+                $element_type = static::fromFullyQualifiedString(
+                    (string)$context->getClassFQSEN()
+                );
+            }
 
             return GenericArrayType::fromElementType(
-                static::fromFullyQualifiedString(
-                    (string)$context->getClassFQSEN()
-                ),
+                $element_type,
                 $is_nullable,
                 GenericArrayType::KEY_MIXED
             );
@@ -1089,15 +1188,10 @@ class Type
         if (self::isSelfTypeString($type_name)
             && $context->isInClassScope()
         ) {
-            // Callers of this method should be checking on their own
-            // to see if this type is a reference to 'parent' and
-            // dealing with it there. We don't want to have this
-            // method be dependent on the code base
-            \assert(
-                'parent' !== $type_name,
-                __METHOD__ . " does not know how to handle the type name 'parent'"
-            );
-
+            if (stripos($type_name, 'parent') !== false) {
+                // Will throw if $code_base is null or there is no parent type
+                return self::maybeFindParentType($is_nullable, $context, $code_base);
+            }
             return static::fromFullyQualifiedString(
                 (string)$context->getClassFQSEN()
             )->withIsNullable($is_nullable);
@@ -1124,11 +1218,28 @@ class Type
     }
 
     /**
+     * @throws IssueException (TODO: Catch, emit, and proceed?
+     */
+    private static function maybeFindParentType(bool $is_nullable, Context $context, CodeBase $code_base = null) : Type
+    {
+        if ($code_base === null) {
+            return MixedType::instance($is_nullable);
+        }
+        $parent_type = UnionTypeVisitor::findParentType($context, $code_base);
+        if (!$parent_type) {
+            return MixedType::instance($is_nullable);
+        }
+
+        return $parent_type->withIsNullable($is_nullable);
+    }
+
+    /**
      * @param bool $is_closure_type
      * @param array<int,string> $shape_components
      * @param Context $context
      * @param int $source
      * @param bool $is_nullable
+     * @throws AssertionError if the components were somehow invalid
      */
     private static function fromFunctionLikeInContext(
         bool $is_closure_type,
@@ -1157,9 +1268,10 @@ class Type
      * @param array<string|int,string> $shape_components Maps field keys (integers or strings) to the corresponding type representations
      * @param Context $context
      * @param int $source
+     * @param ?CodeBase $code_base for resolving 'parent'
      * @return array<string|int,UnionType> The types for the representations of types, in the given $context
      */
-    private static function shapeComponentStringsToTypes(array $shape_components, Context $context, int $source) : array
+    private static function shapeComponentStringsToTypes(array $shape_components, Context $context, int $source, CodeBase $code_base = null) : array
     {
         $result = [];
         foreach ($shape_components as $key => $component_string) {
@@ -1168,12 +1280,12 @@ class Type
                     $component_string = \substr($component_string, 0, -1);
                 }
                 $key = \substr($key, 0, -1);
-                $result[$key] = UnionType::fromStringInContext($component_string, $context, $source)->withIsPossiblyUndefined(true);
+                $result[$key] = UnionType::fromStringInContext($component_string, $context, $source, $code_base)->withIsPossiblyUndefined(true);
             } elseif (\substr($component_string, -1) === '=') {
                 $component_string = \substr($component_string, 0, -1);
-                $result[$key] = UnionType::fromStringInContext($component_string, $context, $source)->withIsPossiblyUndefined(true);
+                $result[$key] = UnionType::fromStringInContext($component_string, $context, $source, $code_base)->withIsPossiblyUndefined(true);
             } else {
-                $result[$key] = UnionType::fromStringInContext($component_string, $context, $source);
+                $result[$key] = UnionType::fromStringInContext($component_string, $context, $source, $code_base);
             }
         }
         return $result;
@@ -1242,22 +1354,10 @@ class Type
      * @return FQSEN
      * A fully-qualified structural element name derived
      * from this type
+     *
+     * @see FullyQualifiedClassName::fromType() for a method that always returns FullyQualifiedClassName
      */
     public function asFQSEN() : FQSEN
-    {
-        // Note: some subclasses, such as CallableType, return different subtypes of FQSEN
-        return FullyQualifiedClassName::fromType($this);
-    }
-
-    /**
-     * @return FullyQualifiedClassName
-     * A fully-qualified class name derived from this type
-     * (This differs from asFQSEN() in ClosureType)
-     *
-     * @deprecated
-     * @suppress PhanUnreferencedPublicMethod (just use FullyQualifiedClassName::fromType($this))
-     */
-    public function asClassFQSEN() : FullyQualifiedClassName
     {
         // Note: some subclasses, such as CallableType, return different subtypes of FQSEN
         return FullyQualifiedClassName::fromType($this);
@@ -1545,8 +1645,9 @@ class Type
 
     /**
      * @return bool
-     * True if this is a generic type such as 'int[]' or
-     * 'string[]'.
+     * True if this is a generic type such as 'int[]' or 'string[]'.
+     * Currently, this is the same as `$type instanceof GenericArrayInterface`
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function isGenericArray() : bool
     {
@@ -1560,6 +1661,11 @@ class Type
     {
         return (\strcasecmp($this->getName(), 'ArrayAccess') === 0
             && $this->getNamespace() === '\\');
+    }
+
+    public function isArrayOrArrayAccessSubType(CodeBase $code_base) : bool
+    {
+        return $this->asExpandedTypes($code_base)->hasArrayAccess();
     }
 
     /**
@@ -1595,16 +1701,6 @@ class Type
             return $type_name !== '[]';
         }
         return false;
-    }
-
-    /**
-     * @return Type
-     * A variation of this type that is not generic.
-     * i.e. 'int[]' becomes 'int'.
-     */
-    public function genericArrayElementType() : Type
-    {
-        throw new \Error("genericArrayElementType should not be called on Type base class");
     }
 
     /**
@@ -1667,9 +1763,9 @@ class Type
     private function valueTypeOfTraversable()
     {
         $template_type_list = $this->template_parameter_type_list;
-        $N = \count($template_type_list);
-        if ($N >= 1 && $N <= 2) {
-            return $template_type_list[$N - 1];
+        $count = \count($template_type_list);
+        if ($count >= 1 && $count <= 2) {
+            return $template_type_list[$count - 1];
         }
         return null;
     }
@@ -1693,16 +1789,6 @@ class Type
             return $template_type_list[1];
         }
         return null;
-    }
-
-    /**
-     * @return UnionType
-     * A variation of this type that is not generic.
-     * i.e. 'int[]' becomes 'int'.
-     */
-    public function genericArrayElementUnionType() : UnionType
-    {
-        throw new \Error("genericArrayElementUnionType should not be called on Type base class");
     }
 
     /**
@@ -1752,14 +1838,12 @@ class Type
      */
     public function getTemplateParameterTypeMap(CodeBase $code_base)
     {
-        return $this->memoize(__METHOD__, function () use ($code_base) {
+        return $this->memoize(__METHOD__, function () use ($code_base) : array {
             $fqsen = $this->asFQSEN();
 
             if (!($fqsen instanceof FullyQualifiedClassName)) {
                 return [];
             }
-
-            \assert($fqsen instanceof FullyQualifiedClassName);
 
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 return [];
@@ -1801,11 +1885,10 @@ class Type
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
         // and should bail out.
-        \assert(
-            $recursion_depth < 20,
-            "Recursion has gotten out of hand"
-        );
-        $union_type = $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) {
+        if ($recursion_depth >= 20) {
+            throw new RuntimeException("Recursion has gotten out of hand");
+        }
+        $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) {
             $union_type = $this->asUnionType();
 
             $class_fqsen = $this->asFQSEN();
@@ -1813,8 +1896,6 @@ class Type
             if (!($class_fqsen instanceof FullyQualifiedClassName)) {
                 return $union_type;
             }
-
-            \assert($class_fqsen instanceof FullyQualifiedClassName);
 
             if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
                 return $union_type;
@@ -1877,15 +1958,13 @@ class Type
      */
     public function isSubclassOf(CodeBase $code_base, Type $parent) : bool
     {
-        $fqsen = $this->asFQSEN();
-        \assert($fqsen instanceof FullyQualifiedClassName);
+        $fqsen = FullyQualifiedClassName::fromType($this);
 
         $this_clazz = $code_base->getClassByFQSEN(
             $fqsen
         );
 
-        $parent_fqsen = $parent->asFQSEN();
-        \assert($parent_fqsen instanceof FullyQualifiedClassName);
+        $parent_fqsen = FullyQualifiedClassName::fromType($parent);
 
         $parent_clazz = $code_base->getClassByFQSEN(
             $parent_fqsen
@@ -2002,18 +2081,18 @@ class Type
     private function canCastTraversableToIterable(GenericIterableType $type) : bool
     {
         $template_types = $this->template_parameter_type_list;
-        $N = \count($template_types);
+        $count = \count($template_types);
         $name = $this->name;
         if ($name === 'Traversable' || $name === 'Iterator') {
             // Phan supports Traversable<TValue> and Traversable<TKey, TValue>
-            if ($N > 2 || $N < 1) {
+            if ($count > 2 || $count < 1) {
                 // No idea what this means, assume it passes.
                 return true;
             }
-            if (!$this->template_parameter_type_list[$N - 1]->canCastToUnionType($type->getElementUnionType())) {
+            if (!$this->template_parameter_type_list[$count - 1]->canCastToUnionType($type->getElementUnionType())) {
                 return false;
             }
-            if ($N === 2) {
+            if ($count === 2) {
                 if (!$this->template_parameter_type_list[0]->canCastToUnionType($type->getKeyUnionType())) {
                     return false;
                 }
@@ -2027,15 +2106,15 @@ class Type
             // 4. Generator<TKey, TValue, TYield, TReturn> (PHP generators can return a final value, but HHVM cannot)
 
             // TODO: Handle casting Generator to a Generator with a different number of template parameters
-            if ($N > 4 || $N < 1) {
+            if ($count > 4 || $count < 1) {
                 // No idea what this means, assume it passes
                 return true;
             }
 
-            if (!$this->template_parameter_type_list[\min(1, $N - 1)]->canCastToUnionType($type->getElementUnionType())) {
+            if (!$this->template_parameter_type_list[\min(1, $count - 1)]->canCastToUnionType($type->getElementUnionType())) {
                 return false;
             }
-            if ($N >= 2) {
+            if ($count >= 2) {
                 if (!$this->template_parameter_type_list[0]->canCastToUnionType($type->getKeyUnionType())) {
                     return false;
                 }
@@ -2147,7 +2226,7 @@ class Type
      */
     public function __toString()
     {
-        return $this->memoize(__METHOD__, function () {
+        return $this->memoize(__METHOD__, function () : string {
             $string = $this->asFQSENString();
 
             if (\count($this->template_parameter_type_list) > 0) {
@@ -2169,8 +2248,8 @@ class Type
     private function templateParameterTypeListAsString() : string
     {
         return '<' .
-            \implode(',', \array_map(function (UnionType $type) {
-                return (string)$type;
+            \implode(',', \array_map(function (UnionType $type) : string {
+                return $type->__toString();
             }, $this->template_parameter_type_list)) . '>';
     }
 
@@ -2237,16 +2316,27 @@ class Type
 
         $match = [];
         $is_nullable = false;
-        if (\preg_match('/^' . self::type_regex_or_this. '$/', $type_string, $match)) {
-            if ($match[3] !== '') {
-                return self::closureTypeStringComponents($type_string, $match[3]);
+        if (\preg_match('/^' . self::type_regex_or_this . '$/', $type_string, $match)) {
+            $closure_components = $match[3] ?? '';
+            if ($closure_components !== '') {
+                return self::closureTypeStringComponents($type_string, $closure_components);
             }
             if (!isset($match[2])) {
                 // Parse '(X)' as 'X'
                 return self::typeStringComponents(\substr($match[1], 1, -1));
             } elseif (!isset($match[4])) {
-                // Parse '?(X[]) as '?X[]'
-                return self::typeStringComponents('?' . \substr($match[2], 2, -1));
+                if (\substr($type_string, -1) === ')') {
+                    // Parse '?(X[]) as '?X[]'
+                    return self::typeStringComponents('?' . \substr($match[2], 2, -1));
+                } else {
+                    return new Tuple5(
+                        '',
+                        $match[0],
+                        [],
+                        false,
+                        null
+                    );
+                }
             }
             $type_string = $match[4];
 
@@ -2325,7 +2415,10 @@ class Type
         );
     }
 
-    private static function closureParams(string $arg_list)
+    /**
+     * @return array<int,string>
+     */
+    private static function closureParams(string $arg_list) : array
     {
         // Special check if param list has 0 params.
         if ($arg_list === '') {
@@ -2361,7 +2454,6 @@ class Type
     /**
      * Extracts the inner parts of a template name list (i.e. within <>) or a shape component list (i.e. within {})
      * @return array<int,string>
-     * @suppress PhanPluginUnusedVariable
      */
     private static function extractNameList(string $list_string) : array
     {
@@ -2409,6 +2501,11 @@ class Type
         return $this->is_nullable ? self::_bit_nullable : 0;
     }
 
+    public function hasArrayShapeOrLiteralTypeInstances() : bool
+    {
+        return false;
+    }
+
     public function hasArrayShapeTypeInstances() : bool
     {
         return false;
@@ -2417,7 +2514,7 @@ class Type
     /**
      * @internal - Used to check for quick mode
      */
-    public function shouldBeReplacedBySpecificTypes()
+    public function shouldBeReplacedBySpecificTypes() : bool
     {
         // Could check for final classes such as stdClass here, but not much of a reason to.
         return true;
@@ -2426,8 +2523,21 @@ class Type
     /**
      * @return Type[]
      */
-    public function withFlattenedArrayShapeTypeInstances() : array
+    public function withFlattenedArrayShapeOrLiteralTypeInstances() : array
     {
         return [$this];
+    }
+
+    /**
+     * Overridden in subclasses such as LiteralIntType
+     */
+    public function asNonLiteralType() : Type
+    {
+        return $this;
+    }
+
+    public function isValidNumericOperand() : bool
+    {
+        return false;
     }
 }

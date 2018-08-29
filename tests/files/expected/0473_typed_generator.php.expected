@@ -1,11 +1,11 @@
-%s:7 PhanTypeMismatchGeneratorYieldValue Yield statement has a value with type int but test_key_generator() is declared to yield values of type string in \Generator<int,string>
-%s:8 PhanTypeMismatchGeneratorYieldKey Yield statement has a key with type string but test_key_generator() is declared to yield keys of type int in \Generator<int,string>
-%s:10 PhanTypeMismatchGeneratorYieldKey Yield statement has a key with type string but test_key_generator() is declared to yield keys of type int in \Generator<int,string>
+%s:7 PhanTypeMismatchGeneratorYieldValue Yield statement has a value with type 3 but test_key_generator() is declared to yield values of type string in \Generator<int,string>
+%s:8 PhanTypeMismatchGeneratorYieldKey Yield statement has a key with type 'x' but test_key_generator() is declared to yield keys of type int in \Generator<int,string>
+%s:10 PhanTypeMismatchGeneratorYieldKey Yield statement has a key with type 'y' but test_key_generator() is declared to yield keys of type int in \Generator<int,string>
 %s:10 PhanTypeMismatchGeneratorYieldValue Yield statement has a value with type \stdClass but test_key_generator() is declared to yield values of type string in \Generator<int,string>
 %s:18 PhanTypeMismatchGeneratorYieldValue Yield statement has a value with type void but test_generator() is declared to yield values of type \stdClass in \Generator<\stdClass>
 %s:19 PhanTypeMismatchGeneratorYieldValue Yield statement has a value with type null but test_generator() is declared to yield values of type \stdClass in \Generator<\stdClass>
-%s:21 PhanTypeMismatchGeneratorYieldValue Yield statement has a value with type int but test_generator() is declared to yield values of type \stdClass in \Generator<\stdClass>
+%s:21 PhanTypeMismatchGeneratorYieldValue Yield statement has a value with type 2 but test_generator() is declared to yield values of type \stdClass in \Generator<\stdClass>
 %s:23 PhanTypeMismatchGeneratorYieldValue Yield statement has a value with type string but test_generator() is declared to yield values of type \stdClass in \Generator<\stdClass>
-%s:30 PhanTypeMismatchGeneratorYieldKey Yield statement has a key with type string but test_void_generator() is declared to yield keys of type void in \Generator<void,\stdClass>
+%s:30 PhanTypeMismatchGeneratorYieldKey Yield statement has a key with type 'x' but test_void_generator() is declared to yield keys of type void in \Generator<void,\stdClass>
 %s:38 PhanTypeMismatchGeneratorYieldValue Yield statement has a value with type void but test_alternate_generator_syntax() is declared to yield values of type int in \Generator<int>
 %s:39 PhanTypeMismatchGeneratorYieldValue Yield statement has a value with type null but test_alternate_generator_syntax() is declared to yield values of type int in \Generator<int>

@@ -16,8 +16,8 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
     /**
      * This is an empty visit() body.
      * Don't override this unless you need to, analysis is more efficient if Phan knows it doesn't need to call a plugin on a node type.
-     * @see self::isDefinedInSubclass
-     * @param $node @phan-unused-param (unused because the body is empty)
+     * @see self::isDefinedInSubclass()
+     * @param Node $node @phan-unused-param (unused because the body is empty)
      *
      * @return void
      */
@@ -34,7 +34,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
      * 'class with fqsen {CLASS} is broken in some fashion' (preferred)
      * or 'class with fqsen %s is broken in some fashion'
      * The list of placeholders for between braces can be found
-     * in \Phan\Issue::uncolored_format_string_for_template.
+     * in \Phan\Issue::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE.
      *
      * @param array<int,string> $issue_message_args
      * The arguments for this issue format.
@@ -49,6 +49,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
      * set {Issue:REMEDIATION_A, Issue:REMEDIATION_B, ...
      * Issue::REMEDIATION_F} with F being the hardest.
      * @suppress PhanUnreferencedPublicMethod (this plugin type is deprecated)
+     * @return void
      */
     public function emit(
         string $issue_type,

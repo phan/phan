@@ -8,10 +8,12 @@ use Phan\Language\UnionTypeBuilder;
 use Phan\CodeBase;
 use Phan\Config;
 
+use RuntimeException;
+
 /**
  * This is generated from phpdoc such as array{field:int}
  */
-final class ArrayShapeType extends ArrayType
+final class ArrayShapeType extends ArrayType implements GenericArrayInterface
 {
     /** @phan-override */
     const NAME = 'array';
@@ -75,11 +77,11 @@ final class ArrayShapeType extends ArrayType
     public function withoutField($field_key) : ArrayShapeType
     {
         $field_types = $this->field_types;
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
-        if (!\array_key_exists($field_key, $field_types)) {
+        // This check is written this way to avoid https://github.com/phan/phan/issues/1831
+        unset($field_types[$field_key]);
+        if (\count($field_types) === \count($this->field_types)) {
             return $this;
         }
-        unset($field_types[$field_key]);
         return self::fromFieldTypes($field_types, $this->is_nullable);
     }
 
@@ -105,13 +107,19 @@ final class ArrayShapeType extends ArrayType
     }
 
     /** @override */
+    public function hasArrayShapeOrLiteralTypeInstances() : bool
+    {
+        return true;
+    }
+
+    /** @override */
     public function hasArrayShapeTypeInstances() : bool
     {
         return true;
     }
 
     /**
-     * @return array<int,ArrayType>
+     * @return array<int,ArrayType> the array shape transformed to remove literal keys and values.
      */
     private function computeGenericArrayTypeInstances() : array
     {
@@ -124,7 +132,11 @@ final class ArrayShapeType extends ArrayType
         $union_type_builder = new UnionTypeBuilder();
         foreach ($field_types as $key => $field_union_type) {
             foreach ($field_union_type->getTypeSet() as $type) {
-                $union_type_builder->addType(GenericArrayType::fromElementType($type, $this->is_nullable, \is_string($key) ? GenericArrayType::KEY_STRING : GenericArrayType::KEY_INT));
+                $union_type_builder->addType(GenericArrayType::fromElementType(
+                    $type->asNonLiteralType(),
+                    $this->is_nullable,
+                    \is_string($key) ? GenericArrayType::KEY_STRING : GenericArrayType::KEY_INT
+                ));
             }
         }
         // @phan-suppress-next-line PhanPartialTypeMismatchReturn
@@ -165,12 +177,6 @@ final class ArrayShapeType extends ArrayType
     public function genericArrayElementUnionType() : UnionType
     {
         return $this->generic_array_element_union_type ?? ($this->generic_array_element_union_type = UnionType::merge($this->field_types));
-    }
-
-    public function genericArrayElementType() : Type
-    {
-        // FIXME Deprecate genericArrayElementType
-        return MixedType::instance(false);
     }
 
     /**
@@ -249,7 +255,7 @@ final class ArrayShapeType extends ArrayType
             return $this->canCastToGenericIterableType($type);
         }
 
-        $d = \strtolower((string)$type);
+        $d = \strtolower($type->__toString());
         if ($d[0] == '\\') {
             $d = \substr($d, 1);
         }
@@ -394,6 +400,8 @@ final class ArrayShapeType extends ArrayType
      *
      * TODO: Once Phan has full support for ArrayShapeType in the type system,
      * make asExpandedTypes return a UnionType with a single ArrayShapeType?
+     *
+     * @throws RuntimeException if the maximum recursion depth is exceeded
      * @override
      */
     public function asExpandedTypes(
@@ -403,11 +411,10 @@ final class ArrayShapeType extends ArrayType
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
         // and should bail out.
-        \assert(
-            $recursion_depth < 20,
-            "Recursion has gotten out of hand"
-        );
-        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) {
+        if ($recursion_depth >= 20) {
+            throw new RuntimeException("Recursion has gotten out of hand");
+        }
+        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
             $result_fields = [];
             foreach ($this->field_types as $key => $union_type) {
                 // UnionType already increments recursion_depth before calling asExpandedTypes on a subclass of Type,
@@ -428,7 +435,7 @@ final class ArrayShapeType extends ArrayType
      * @return array<int,ArrayType>
      * @override
      */
-    public function withFlattenedArrayShapeTypeInstances() : array
+    public function withFlattenedArrayShapeOrLiteralTypeInstances() : array
     {
         $instances = $this->as_generic_array_type_instances;
         if (\is_array($instances)) {

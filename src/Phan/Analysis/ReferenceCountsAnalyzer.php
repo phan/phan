@@ -22,6 +22,8 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 
+use TypeError;
+
 /**
  * This emits PhanUnreferenced* issues for classlikes, constants, properties, and functions/methods.
  *
@@ -159,7 +161,7 @@ class ReferenceCountsAnalyzer
         int &$i
     ) {
         foreach ($element_list as $element) {
-            CLI::progress('dead code', (++$i)/$total_count);
+            CLI::progress('dead code', (++$i) / $total_count);
             // Don't worry about internal elements
             if ($element->isPHPInternal()) {
                 continue;
@@ -184,14 +186,16 @@ class ReferenceCountsAnalyzer
         int &$i
     ) {
         foreach ($element_list as $element) {
-            CLI::progress('dead code', (++$i)/$total_count);
+            CLI::progress('dead code', (++$i) / $total_count);
             // Don't worry about internal elements
             if ($element->isPHPInternal()) {
                 continue;
             }
             // Currently, deferred analysis is only needed for class elements, which can be inherited
             // (And we may track the references to the inherited version of the original)
-            assert($element instanceof ClassElement);
+            if (!$element instanceof ClassElement) {
+                throw new TypeError("Expected an iterable of ClassElement values");
+            }
             if ($element instanceof ClassConstant) {
                 // should not warn about self::class
                 if (strcasecmp($element->getName(), 'class') === 0) {

@@ -6,6 +6,7 @@ use ast\Node;
 /**
  * A visitor of AST nodes based on the node's flag value
  * which does nothing upon visiting a node
+ * @phan-file-suppress PhanPluginUnknownMethodReturnType - TODO: Make this and FlagVisitorImplementation use Phan templates?
  */
 abstract class FlagVisitorImplementation implements FlagVisitor
 {
@@ -108,6 +109,31 @@ abstract class FlagVisitorImplementation implements FlagVisitor
     }
 
     public function visitBinarySub(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitBinaryBoolAnd(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitBinaryBoolOr(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitBinaryCoalesce(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitBinaryIsGreater(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitBinaryIsGreaterOrEqual(Node $node)
     {
         return $this->visit($node);
     }
@@ -238,31 +264,6 @@ abstract class FlagVisitorImplementation implements FlagVisitor
     }
 
     public function visitUnaryBoolNot(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitBinaryBoolAnd(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitBinaryBoolOr(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitBinaryCoalesce(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitBinaryIsGreater(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitBinaryIsGreaterOrEqual(Node $node)
     {
         return $this->visit($node);
     }

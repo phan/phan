@@ -1,0 +1,1 @@
+src/042_param_default.php:12 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \Example42::test() takes string defined at src/042_param_default.php:5

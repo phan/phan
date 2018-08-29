@@ -1,0 +1,9 @@
+%s:3 PhanParamTooFewInternal Call with 0 arg(s) to \implode() which requires 2 arg(s)
+%s:4 PhanParamSpecial2 Argument 1 (pieces) is string but \implode() takes string[] when passed only one argument
+%s:8 PhanParamSpecial1 Argument 2 (glue) is float but \implode() takes string when argument 1 is array
+%s:9 PhanTypeMismatchArgumentInternal Argument 2 (pieces) is array{0:\stdClass} but \implode() takes string[]
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 (pieces) is array{0:\stdClass} but \implode() takes string[]
+%s:12 PhanTypeMismatchArgumentInternal Argument 2 (pieces) is array{0:\stdClass} but \implode() takes string[]
+%s:13 PhanParamSpecial1 Argument 2 (glue) is array{0:'hello',1:'world'} but \implode() takes string when argument 1 is array
+%s:14 PhanParamTooManyInternal Call with 3 arg(s) to \implode() which only takes 2 arg(s)
+%s:15 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{} but \strlen() takes string

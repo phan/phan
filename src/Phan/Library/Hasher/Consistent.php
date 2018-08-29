@@ -13,34 +13,34 @@ class Consistent implements Hasher
     const VIRTUAL_COPY_COUNT = 16;  // Larger number means a more balanced distribution.
     const MAX = 0x40000000;  // i.e. (1 << 30)
     /** @var array<int,int> - Sorted list of hash values, for binary search. */
-    protected $hashRingIds;
-    /** @var array<int,int> - Groups corresponding to hash values in hashRingIds */
-    protected $hashRingGroups;
+    protected $hash_ring_ids;
+    /** @var array<int,int> - Groups corresponding to hash values in hash_ring_ids */
+    protected $hash_ring_groups;
 
-    public function __construct(int $groupCount)
+    public function __construct(int $group_count)
     {
-        $map = self::generateMap($groupCount);
-        $hashRingIds = [];
-        $hashRingGroups = [];
+        $map = self::generateMap($group_count);
+        $hash_ring_ids = [];
+        $hash_ring_groups = [];
         foreach ($map as $key => $group) {
-            $hashRingIds[] = $key;
-            $hashRingGroups[] = $group;
+            $hash_ring_ids[] = $key;
+            $hash_ring_groups[] = $group;
         }
         // ... and make the map wrap around.
-        $hashRingIds[] = self::MAX - 1;
-        $hashRingGroups[] = \reset($map) ?: 0;
+        $hash_ring_ids[] = self::MAX - 1;
+        $hash_ring_groups[] = \reset($map) ?: 0;
 
-        $this->hashRingIds = $hashRingIds;
-        $this->hashRingGroups = $hashRingGroups;
+        $this->hash_ring_ids = $hash_ring_ids;
+        $this->hash_ring_groups = $hash_ring_groups;
     }
 
     /**
      * @return array<int,int> maps points in the field to the corresponding group (for consistent hashing)
      */
-    private static function generateMap(int $groupCount)
+    private static function generateMap(int $group_count)
     {
         $map = [];
-        for ($group = 0; $group < $groupCount; $group++) {
+        for ($group = 0; $group < $group_count; $group++) {
             foreach (self::getHashesForGroup($group) as $hash) {
                 $map[$hash] = $group;
             }
@@ -50,26 +50,26 @@ class Consistent implements Hasher
     }
     /**
      * Do a binary search in the consistent hashing ring to find the group.
-     * @return int - an integer between 0 and $this->groupCount - 1, inclusive
+     * @return int - an integer between 0 and $this->group_count - 1, inclusive
      */
     public function getGroup(string $key) : int
     {
-        $searchHash = self::generateKeyHash($key);
+        $search_hash = self::generateKeyHash($key);
         $begin = 0;
-        $end = count($this->hashRingIds) - 1;
+        $end = count($this->hash_ring_ids) - 1;
         while ($begin <= $end) {
             $pos = $begin + (($end - $begin) >> 1);
-            $curVal = $this->hashRingIds[$pos];
-            if ($searchHash > $curVal) {
+            $cur_val = $this->hash_ring_ids[$pos];
+            if ($search_hash > $cur_val) {
                 $begin = $pos + 1;
             } else {
                 $end = $pos - 1;
             }
         }
-        // Postcondition: $this->hashRingIds[$begin] >= $searchHash, and $this->hashRingIds[$begin - 1] does not exist or is less than $searchHash.
+        // Postcondition: $this->hash_ring_ids[$begin] >= $search_hash, and $this->hash_ring_ids[$begin - 1] does not exist or is less than $search_hash.
 
         // Fetch the group corresponding to that hash in the hash ring.
-        return $this->hashRingGroups[$begin];
+        return $this->hash_ring_groups[$begin];
     }
 
     /**

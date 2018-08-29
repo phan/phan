@@ -7,6 +7,7 @@ use Phan\Language\Context;
 use Phan\Language\FileRef;
 use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\MarkupDescription;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -15,6 +16,8 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 use Phan\LanguageServer\Protocol\Location;
+use Phan\LanguageServer\Protocol\Hover;
+use Phan\LanguageServer\Protocol\MarkupContent;
 use Phan\LanguageServer\Protocol\Position;
 
 use Exception;
@@ -35,19 +38,33 @@ final class GoToDefinitionRequest
     private $position;
     /** @var Promise|null */
     private $promise;
+    /** @var int self::REQUEST_* */
+    private $request_type;
     /** @var bool true if this is "Go to Type Definition" */
     private $is_type_definition_request;
 
-    /** @var array<int,Location> */
+    /**
+     * @var array<string,Location> the list of locations for a "Go to [Type] Definition" request
+     */
     private $locations = [];
 
-    public function __construct(string $uri, Position $position, bool $is_type_definition_request)
+    /**
+     * @var ?Hover the list of locations for a "Hover" request
+     */
+    private $hover_response = null;
+
+    const REQUEST_DEFINITION = 0;
+    const REQUEST_TYPE_DEFINITION = 1;
+    const REQUEST_HOVER = 2;
+
+    public function __construct(string $uri, Position $position, int $request_type)
     {
         $this->uri = $uri;
         $this->path = Utils::uriToPath($uri);
         $this->position = $position;
         $this->promise = new Promise();
-        $this->is_type_definition_request = $is_type_definition_request;
+        $this->is_type_definition_request = $request_type === self::REQUEST_TYPE_DEFINITION;
+        $this->request_type = $request_type;
     }
 
     /**
@@ -64,6 +81,23 @@ final class GoToDefinitionRequest
                 $this->recordTypeOfElement($code_base, $element->getContext(), $element->getUnionType());
                 return;
             }
+        }
+        $this->recordFinalDefinitionElement($element);
+    }
+
+    private function recordFinalDefinitionElement(
+        AddressableElementInterface $element
+    ) {
+        if ($this->request_type === self::REQUEST_HOVER) {
+            if ($this->hover_response === null) {
+                $this->hover_response = new Hover(
+                    new MarkupContent(
+                        MarkupContent::MARKDOWN,
+                        MarkupDescription::buildForElement($element)
+                    )
+                );
+            }
+            return;
         }
         $this->recordDefinitionContext($element->getContext());
     }
@@ -105,7 +139,7 @@ final class GoToDefinitionRequest
             }
             try {
                 $this->recordDefinitionOfTypeFQSEN($code_base, $type_fqsen);
-            } catch (CodeBaseException $e) {
+            } catch (CodeBaseException $_) {
                 continue;
             }
         }
@@ -193,7 +227,12 @@ final class GoToDefinitionRequest
     {
         $promise = $this->promise;
         if ($promise) {
-            $promise->fulfill($this->locations ? array_values($this->locations) : null);
+            if ($this->request_type === self::REQUEST_HOVER) {
+                $result = $this->hover_response;
+            } else {
+                $result = $this->locations ? array_values($this->locations) : null;
+            }
+            $promise->fulfill($result);
             $this->promise = null;
         }
     }

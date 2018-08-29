@@ -1,0 +1,1 @@
+%s:3 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array<string,string> but \intdiv() takes int

@@ -1,0 +1,3 @@
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:19 PhanTypeMismatchArgumentInternal Argument 1 (string) is float but \strlen() takes string
+%s:28 PhanTypeMismatchArgumentInternal Argument 1 (var) is string but \count() takes \Countable|array

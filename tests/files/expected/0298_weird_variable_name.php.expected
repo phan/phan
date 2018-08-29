@@ -1,5 +1,6 @@
-%s:7 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array{0:string} but \intdiv() takes int
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array{0:'value'} but \intdiv() takes int
+%s:8 PhanUnusedVariableCaughtException Unused definition of variable $e as a caught exception
 %s:10 PhanTypeSuspiciousIndirectVariable Indirect variable ${(expr)} has invalid inner expression type true, expected string/integer
 %s:11 PhanTypeSuspiciousIndirectVariable Indirect variable ${(expr)} has invalid inner expression type bool, expected string/integer
-%s:12 PhanTypeSuspiciousIndirectVariable Indirect variable ${(expr)} has invalid inner expression type array{0:int}, expected string/integer
-%s:13 PhanTypeSuspiciousIndirectVariable Indirect variable ${(expr)} has invalid inner expression type array{0:int}, expected string/integer
+%s:12 PhanTypeSuspiciousIndirectVariable Indirect variable ${(expr)} has invalid inner expression type array{0:2}, expected string/integer
+%s:13 PhanTypeSuspiciousIndirectVariable Indirect variable ${(expr)} has invalid inner expression type array{0:3}, expected string/integer

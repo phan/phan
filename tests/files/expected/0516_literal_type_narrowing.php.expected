@@ -1,0 +1,2 @@
+%s:6 PhanTypeMismatchArgumentInternal Argument 1 (string) is 2 but \strlen() takes string
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is 'a string' but \intdiv() takes int

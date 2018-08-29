@@ -14,16 +14,16 @@ use Phan\LanguageServer\Protocol\TextDocumentSyncOptions;
 /**
  * Test functionality of the Language Server
  */
-class LanguageServerTest extends BaseTest
+final class LanguageServerTest extends BaseTest
 {
     public function testInitialize()
     {
-        $mock_file_path_lister = function () {
+        $mock_file_path_lister = function () : array {
             return [];
         };
         $code_base = new CodeBase([], [], [], [], []);
-        $server = new LanguageServer(new MockProtocolStream, new MockProtocolStream, $code_base, $mock_file_path_lister);
-        $result = $server->initialize(new ClientCapabilities, __DIR__, getmypid())->wait();
+        $server = new LanguageServer(new MockProtocolStream(), new MockProtocolStream(), $code_base, $mock_file_path_lister);
+        $result = $server->initialize(new ClientCapabilities(), __DIR__, getmypid())->wait();
 
         $sync_options = new TextDocumentSyncOptions();
         $sync_options->openClose = true;

@@ -54,8 +54,18 @@ final class MixedType extends NativeType
         return ArrayType::instance(false);
     }
 
+    public function isArrayOrArrayAccessSubType(CodeBase $unused_code_base) : bool
+    {
+        return true;
+    }
+
     public function isPrintableScalar() : bool
     {
         return true;  // It's possible.
+    }
+
+    public function isValidNumericOperand() : bool
+    {
+        return true;
     }
 }

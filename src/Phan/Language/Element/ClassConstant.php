@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\AST\ASTReverter;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\UnionType;
@@ -72,23 +73,23 @@ class ClassConstant extends ClassElement implements ConstantInterface
      */
     public function getFQSEN() : FullyQualifiedClassConstantName
     {
-        \assert(!empty($this->fqsen), "FQSEN must be defined");
         return $this->fqsen;
     }
 
     public function __toString() : string
     {
-        $string = '';
+        return $this->getVisibilityName() . ' const ' . $this->getName();
+    }
 
-        if ($this->isPublic()) {
-            $string .= 'public ';
-        } elseif ($this->isProtected()) {
-            $string .= 'protected ';
-        } elseif ($this->isPrivate()) {
-            $string .= 'private ';
-        }
-
-        return $string . 'const ' . $this->getName();
+    /**
+     * Used for generating issue messages
+     */
+    public function asVisibilityAndFQSENString() : string
+    {
+        return $this->getVisibilityName() . ' ' .
+            $this->getClassFQSEN()->__toString() .
+            '::' .
+            $this->getName();
     }
 
     /**
@@ -116,22 +117,50 @@ class ClassConstant extends ClassElement implements ConstantInterface
         );
     }
 
-    public function toStub() : string
+    public function getMarkupDescription() : string
     {
-        $string = '    ';
+        $string = '';
 
-        if ($this->isPublic()) {
-            $string .= 'public ';
-        } elseif ($this->isProtected()) {
+        if ($this->isProtected()) {
             $string .= 'protected ';
         } elseif ($this->isPrivate()) {
             $string .= 'private ';
         }
 
         $string .= 'const ' . $this->getName() . ' = ';
-        $fqsen = (string)$this->getFQSEN();
+        $value_node = $this->getNodeForValue();
+        $string .= ASTReverter::toShortString($value_node);
+        return $string;
+    }
+
+    private function getVisibilityName() : string
+    {
+        if ($this->isPrivate()) {
+            return 'private';
+        } elseif ($this->isProtected()) {
+            return 'protected';
+        } else {
+            return 'public';
+        }
+    }
+
+    public function toStub() : string
+    {
+        $string = '    ';
+        if ($this->isPrivate()) {
+            $string .= 'private ';
+        } elseif ($this->isProtected()) {
+            $string .= 'protected ';
+        }
+
+        // For PHP 7.0 compatibility of stubs,
+        // show public class constants as 'const', not 'public const'.
+        // Also, PHP modules probably won't have private/protected constants.
+        $string .= 'const ' . $this->getName() . ' = ';
+        $fqsen = $this->getFQSEN()->__toString();
         if (defined($fqsen)) {
             // TODO: Could start using $this->getNodeForValue()?
+            // NOTE: This is used by tool/make_stub, which is why it uses reflection instead of getting a node.
             $string .= var_export(constant($fqsen), true) . ';';
         } else {
             $string .= "null;  // could not find";

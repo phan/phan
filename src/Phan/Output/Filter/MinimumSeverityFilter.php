@@ -9,15 +9,15 @@ final class MinimumSeverityFilter implements IssueFilterInterface
 {
 
     /** @var int */
-    private $minimumSeverity;
+    private $minimum_severity;
 
     /**
      * MinimumSeverityFilter constructor.
-     * @param $minimumSeverity
+     * @param int $minimum_severity should be a constant from Issue::SEVERITY_*
      */
-    public function __construct(int $minimumSeverity = Issue::SEVERITY_LOW)
+    public function __construct(int $minimum_severity = Issue::SEVERITY_LOW)
     {
-        $this->minimumSeverity = $minimumSeverity;
+        $this->minimum_severity = $minimum_severity;
     }
 
 
@@ -27,6 +27,6 @@ final class MinimumSeverityFilter implements IssueFilterInterface
      */
     public function supports(IssueInstance $issue):bool
     {
-        return $issue->getIssue()->getSeverity() >= $this->minimumSeverity;
+        return $issue->getIssue()->getSeverity() >= $this->minimum_severity;
     }
 }

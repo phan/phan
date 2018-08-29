@@ -20,7 +20,11 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
+use Phan\Parse\ParseVisitor;
+
+use AssertionError;
 use ast\Node;
+use InvalidArgumentException;
 
 /**
  * @phan-file-suppress PhanPartialTypeMismatchArgument
@@ -109,7 +113,7 @@ class Parameter extends Variable
         if ($future_type !== null) {
             // Only attempt to resolve the future type once.
             try {
-                $this->default_value_type = $future_type->get();
+                $this->default_value_type = $future_type->get()->asNonLiteralType();
             } catch (IssueException $exception) {
                 // Ignore exceptions
                 Issue::maybeEmitInstance(
@@ -140,6 +144,7 @@ class Parameter extends Variable
      * If the value's default is null, or a constant evaluating to null,
      * then the parameter type should be converted to nullable
      * (E.g. `int $x = null` and `?int $x = null` are equivalent.
+     * @return void
      */
     public function handleDefaultValueOfNull()
     {
@@ -202,9 +207,7 @@ class Parameter extends Variable
     public static function listFromReflectionParameterList(
         array $reflection_parameters
     ) : array {
-        return \array_map(function (\ReflectionParameter $reflection_parameter) {
-            return self::fromReflectionParameter($reflection_parameter);
-        }, $reflection_parameters);
+        return \array_map([__CLASS__, 'fromReflectionParameter'], $reflection_parameters);
     }
 
     public static function fromReflectionParameter(
@@ -241,7 +244,7 @@ class Parameter extends Variable
     private static function maybeGetKnownDefaultValueForNode($node)
     {
         if (!($node instanceof Node)) {
-            return Type::fromObject($node)->asUnionType();
+            return Type::nonLiteralFromObject($node)->asUnionType();
         }
         if ($node->kind === \ast\AST_CONST) {
             $name = $node->children['name']->children['name'] ?? null;
@@ -288,18 +291,37 @@ class Parameter extends Variable
         }
 
         // If there is a default value, store it and its type
-        if (($default_node = $node->children['default']) !== null) {
+        $default_node = $node->children['default'];
+        if ($default_node !== null) {
             // Set the actual value of the default
             $parameter->setDefaultValue($default_node);
+            try {
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                ParseVisitor::checkIsAllowedInConstExpr($default_node);
 
-            // We can't figure out default values during the
-            // parsing phase, unfortunately
-            $default_value_union_type = self::maybeGetKnownDefaultValueForNode($default_node);
+                // We can't figure out default values during the
+                // parsing phase, unfortunately
+                $has_error = false;
+            } catch (InvalidArgumentException $_) {
+                // If the parameter default is an invalid constant expression,
+                // then don't use that value elsewhere.
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::InvalidConstantExpression,
+                    $default_node->lineno ?? 0
+                );
+                $has_error = true;
+            }
+            $default_value_union_type = $has_error ? null : self::maybeGetKnownDefaultValueForNode($default_node);
+
             if ($default_value_union_type !== null) {
                 // Set the default value
                 $parameter->setDefaultValueType($default_value_union_type);
             } else {
-                \assert($default_node instanceof Node);
+                if (!($default_node instanceof Node)) {
+                    throw new AssertionError("Somehow failed to infer type for the default_node - not a scalar or a Node");
+                }
 
                 if ($default_node->kind === \ast\AST_ARRAY) {
                     // We know the parameter default is some sort of array, but we don't know any more (e.g. key types, value types).
@@ -321,11 +343,13 @@ class Parameter extends Variable
                     $default_value_union_type = $possible_parameter_default_union_type;
                 }
                 $parameter->setDefaultValueType($default_value_union_type);
-                $parameter->setDefaultValueFutureType(new FutureUnionType(
-                    $code_base,
-                    clone($context)->withLineNumberStart($default_node->lineno ?? 0),
-                    $default_node
-                ));
+                if (!$has_error) {
+                    $parameter->setDefaultValueFutureType(new FutureUnionType(
+                        $code_base,
+                        clone($context)->withLineNumberStart($default_node->lineno ?? 0),
+                        $default_node
+                    ));
+                }
             }
             $parameter->handleDefaultValueOfNull();
         }
@@ -471,9 +495,9 @@ class Parameter extends Variable
     {
         $string = '';
 
-        $typeObj = $this->getNonVariadicUnionType();
-        if (!$typeObj->isEmpty()) {
-            $string .= (string)$typeObj . ' ';
+        $union_type = $this->getNonVariadicUnionType();
+        if (!$union_type->isEmpty()) {
+            $string .= $union_type->__toString() . ' ';
         }
 
         if ($this->isPassByReference()) {
@@ -488,7 +512,7 @@ class Parameter extends Variable
 
         if ($this->hasDefaultValue() && !$this->isVariadic()) {
             $default_value = $this->getDefaultValue();
-            if ($default_value instanceof \ast\Node) {
+            if ($default_value instanceof Node) {
                 $string .= ' = null';
             } else {
                 $string .= ' = ' . var_export($default_value, true);
@@ -502,9 +526,9 @@ class Parameter extends Variable
     {
         $string = '';
 
-        $typeObj = $this->getNonVariadicUnionType();
-        if (!$typeObj->isEmpty()) {
-            $string .= (string)$typeObj . ' ';
+        $union_type = $this->getNonVariadicUnionType();
+        if (!$union_type->isEmpty()) {
+            $string .= $union_type->__toString() . ' ';
         }
 
         if ($this->isPassByReference()) {
@@ -529,7 +553,7 @@ class Parameter extends Variable
 
         if ($this->hasDefaultValue() && !$this->isVariadic()) {
             $default_value = $this->getDefaultValue();
-            if ($default_value instanceof \ast\Node) {
+            if ($default_value instanceof Node) {
                 $kind = $default_value->kind;
                 if ($kind === \ast\AST_NAME) {
                     $default_repr = $default_value->children['name'];

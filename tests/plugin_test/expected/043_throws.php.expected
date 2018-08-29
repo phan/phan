@@ -1,0 +1,3 @@
+src/043_throws.php:20 PhanThrowTypeAbsent \ExampleThrow43::example() can throw \OutOfBoundsException here, but has no '@throws' declarations for that class
+src/043_throws.php:22 PhanThrowTypeAbsentForCall \ExampleThrow43::example() can throw \InvalidArgumentException because it calls \ExampleThrow43::throwInvalidArgumentException(), but has no '@throws' declarations for that class
+src/043_throws.php:30 PhanThrowTypeAbsentForCall \ExampleThrow43::example2() can throw \InvalidArgumentException because it calls \ExampleThrow43::throwInvalidArgumentException(), but has no '@throws' declarations for that class

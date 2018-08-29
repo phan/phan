@@ -20,7 +20,6 @@ use Phan\LanguageServer\DefinitionResolver;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Library\RAII;
-use Phan\Plugin;
 use Phan\Plugin\Internal\ArrayReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\BuiltinSuppressionPlugin;
 use Phan\Plugin\Internal\CallableParamPlugin;
@@ -29,23 +28,19 @@ use Phan\Plugin\Internal\CompactPlugin;
 use Phan\Plugin\Internal\DependentReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\MiscParamPlugin;
 use Phan\Plugin\Internal\NodeSelectionPlugin;
+use Phan\Plugin\Internal\NodeSelectionVisitor;
 use Phan\Plugin\Internal\StringFunctionPlugin;
+use Phan\Plugin\Internal\ThrowAnalyzerPlugin;
 use Phan\Plugin\Internal\VariableTrackerPlugin;
-use Phan\Plugin\PluginImplementation;
 use Phan\PluginV2;
 use Phan\PluginV2\AfterAnalyzeFileCapability;
 use Phan\PluginV2\AnalyzeClassCapability;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
 use Phan\PluginV2\AnalyzeFunctionCapability;
 use Phan\PluginV2\AnalyzeMethodCapability;
-use Phan\PluginV2\AnalyzeNodeCapability;
 use Phan\PluginV2\AnalyzePropertyCapability;
 use Phan\PluginV2\BeforeAnalyzeFileCapability;
 use Phan\PluginV2\FinalizeProcessCapability;
-use Phan\PluginV2\LegacyAnalyzeNodeCapability;
-use Phan\PluginV2\LegacyPostAnalyzeNodeCapability;
-use Phan\PluginV2\LegacyPreAnalyzeNodeCapability;
-use Phan\PluginV2\PluginAwareAnalysisVisitor;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV2\PluginAwarePreAnalysisVisitor;
 use Phan\PluginV2\PostAnalyzeNodeCapability;
@@ -54,11 +49,12 @@ use Phan\PluginV2\ReturnTypeOverrideCapability;
 use Phan\PluginV2\SuppressionCapability;
 use Phan\Suggestion;
 
-use ast\Closure;
-use ast\Node;
+use Closure;
 use ReflectionException;
 use ReflectionProperty;
+use Throwable;
 use UnusedSuppressionPlugin;
+use ast\Node;
 
 /**
  * The root plugin that calls out each hook
@@ -66,6 +62,7 @@ use UnusedSuppressionPlugin;
  *
  * (Note: This is called almost once per each AST node being analyzed.
  * Speed is preferred over using Phan\Memoize.)
+ * @phan-file-suppress PhanPluginNoAssert
  */
 final class ConfigPluginSet extends PluginV2 implements
     AfterAnalyzeFileCapability,
@@ -76,60 +73,58 @@ final class ConfigPluginSet extends PluginV2 implements
     AnalyzePropertyCapability,
     BeforeAnalyzeFileCapability,
     FinalizeProcessCapability,
-    LegacyPreAnalyzeNodeCapability,
-    LegacyPostAnalyzeNodeCapability,
     ReturnTypeOverrideCapability,
     SuppressionCapability
 {
 
-    /** @var array<int,Plugin>|null - Cached plugin set for this instance. Lazily generated. */
-    private $pluginSet;
+    /** @var array<int,PluginV2>|null - Cached plugin set for this instance. Lazily generated. */
+    private $plugin_set;
 
     /**
      * @var array<int,Closure>|null - plugins to analyze nodes in pre order.
      * @phan-var array<int,Closure(CodeBase,Context,Node):void>|null
      */
-    private $preAnalyzeNodePluginSet;
+    private $pre_analyze_node_plugin_set;
 
     /**
      * @var array<int,Closure> - plugins to analyze files
      * @phan-var array<int,Closure(string,Node):void>|null
      */
-    private $postAnalyzeNodePluginSet;
+    private $post_analyze_node_plugin_set;
 
     /**
      * @var array<int,BeforeAnalyzeFileCapability> - plugins to analyze files before phan's analysis of that file is completed.
      */
-    private $beforeAnalyzeFilePluginSet;
+    private $before_analyze_file_plugin_set;
 
     /**
      * @var array<int,AfterAnalyzeFileCapability> - plugins to analyze files after phan's analysis of that file is completed.
      */
-    private $afterAnalyzeFilePluginSet;
+    private $after_analyze_file_plugin_set;
 
     /** @var array<int,AnalyzeClassCapability>|null - plugins to analyze class declarations. */
-    private $analyzeClassPluginSet;
+    private $analyze_class_plugin_set;
 
     /** @var array<int,AnalyzeFunctionCallCapability>|null - plugins to analyze invocations of subsets of functions and methods. */
-    private $analyzeFunctionCallPluginSet;
+    private $analyze_function_call_plugin_set;
 
     /** @var array<int,AnalyzeFunctionCapability>|null - plugins to analyze function declarations. */
-    private $analyzeFunctionPluginSet;
+    private $analyze_function_plugin_set;
 
     /** @var array<int,AnalyzePropertyCapability>|null - plugins to analyze property declarations. */
-    private $analyzePropertyPluginSet;
+    private $analyze_property_plugin_set;
 
     /** @var array<int,AnalyzeMethodCapability>|null - plugins to analyze method declarations.*/
-    private $analyzeMethodPluginSet;
+    private $analyze_method_plugin_set;
 
     /** @var array<int,FinalizeProcessCapability>|null - plugins to call finalize() on after analysis is finished. */
-    private $finalizeProcessPluginSet;
+    private $finalize_process_plugin_set;
 
     /** @var array<int,ReturnTypeOverrideCapability>|null - plugins which generate return UnionTypes of functions based on arguments. */
-    private $returnTypeOverridePluginSet;
+    private $return_type_override_plugin_set;
 
     /** @var array<int,SuppressionCapability>|null - plugins which generate return UnionTypes of functions based on arguments. */
-    private $suppressionPluginSet;
+    private $suppression_plugin_set;
 
     /** @var ?UnusedSuppressionPlugin - TODO: Refactor*/
     private $unused_suppression_plugin = null;
@@ -144,16 +139,43 @@ final class ConfigPluginSet extends PluginV2 implements
     /**
      * @return ConfigPluginSet
      * A shared single instance of this plugin
-     * @suppress PhanDeprecatedInterface
      */
     public static function instance() : ConfigPluginSet
     {
         static $instance = null;
         if ($instance === null) {
-            $instance = new self;
-            $instance->ensurePluginsExist();
+            $instance = self::newInstance();
         }
         return $instance;
+    }
+
+    /**
+     * Returns a brand new ConfigPluginSet where all plugins are initialized.
+     *
+     * If one of the plugins could not be instantiated, this prints an error message and terminates the program.
+     *
+     * @suppress PhanDeprecatedInterface
+     */
+    private static function newInstance() : ConfigPluginSet
+    {
+        try {
+            $instance = new self();
+            $instance->ensurePluginsExist();
+            return $instance;
+        } catch (Throwable $e) {
+            // An unexpected error.
+            // E.g. a third party plugin class threw when building the list of return types to analyze.
+            $message = sprintf(
+                "Failed to initialize plugins, exiting: %s: %s at %s:%d\nStack Trace:\n%s",
+                get_class($e),
+                $e->getMessage(),
+                $e->getFile(),
+                $e->getLine(),
+                $e->getTraceAsString()
+            );
+            error_log($message);
+            exit(EXIT_FAILURE);
+        }
     }
 
     /**
@@ -183,14 +205,13 @@ final class ConfigPluginSet extends PluginV2 implements
      * The php-ast Node being analyzed.
      *
      * @return void
-     * @override
      */
     public function preAnalyzeNode(
         CodeBase $code_base,
         Context $context,
         Node $node
     ) {
-        $plugin_callback = $this->preAnalyzeNodePluginSet[$node->kind] ?? null;
+        $plugin_callback = $this->pre_analyze_node_plugin_set[$node->kind] ?? null;
         if ($plugin_callback !== null) {
             $plugin_callback(
                 $code_base,
@@ -216,7 +237,6 @@ final class ConfigPluginSet extends PluginV2 implements
      * The parent node of the given node (if one exists).
      *
      * @return void
-     * @override
      */
     public function postAnalyzeNode(
         CodeBase $code_base,
@@ -224,7 +244,7 @@ final class ConfigPluginSet extends PluginV2 implements
         Node $node,
         array $parent_node_list = []
     ) {
-        $plugin_callback = $this->postAnalyzeNodePluginSet[$node->kind] ?? null;
+        $plugin_callback = $this->post_analyze_node_plugin_set[$node->kind] ?? null;
         if ($plugin_callback !== null) {
             $plugin_callback(
                 $code_base,
@@ -253,7 +273,7 @@ final class ConfigPluginSet extends PluginV2 implements
         string $file_contents,
         Node $node
     ) {
-        foreach ($this->beforeAnalyzeFilePluginSet as $plugin) {
+        foreach ($this->before_analyze_file_plugin_set as $plugin) {
             $plugin->beforeAnalyzeFile(
                 $code_base,
                 $context,
@@ -281,7 +301,7 @@ final class ConfigPluginSet extends PluginV2 implements
         string $file_contents,
         Node $node
     ) {
-        foreach ($this->afterAnalyzeFilePluginSet as $plugin) {
+        foreach ($this->after_analyze_file_plugin_set as $plugin) {
             $plugin->afterAnalyzeFile(
                 $code_base,
                 $context,
@@ -305,7 +325,7 @@ final class ConfigPluginSet extends PluginV2 implements
         CodeBase $code_base,
         Clazz $class
     ) {
-        foreach ($this->analyzeClassPluginSet as $plugin) {
+        foreach ($this->analyze_class_plugin_set as $plugin) {
             $plugin->analyzeClass(
                 $code_base,
                 $class
@@ -332,7 +352,7 @@ final class ConfigPluginSet extends PluginV2 implements
         CodeBase $code_base,
         Method $method
     ) {
-        foreach ($this->analyzeMethodPluginSet as $plugin) {
+        foreach ($this->analyze_method_plugin_set as $plugin) {
             $plugin->analyzeMethod(
                 $code_base,
                 $method
@@ -367,7 +387,7 @@ final class ConfigPluginSet extends PluginV2 implements
         array $parameters,
         $suggestion
     ) : bool {
-        foreach ($this->suppressionPluginSet as $plugin) {
+        foreach ($this->suppression_plugin_set as $plugin) {
             if ($plugin->shouldSuppressIssue(
                 $code_base,
                 $context,
@@ -388,6 +408,8 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
+     * @param CodeBase $code_base
+     * @param string $file_path
      * @return array<string,array<int,int>> Maps 0 or more issue types to a *list* of lines that this plugin set is going to suppress.
      */
     public function getIssueSuppressionList(
@@ -395,7 +417,7 @@ final class ConfigPluginSet extends PluginV2 implements
         string $file_path
     ) : array {
         $result = [];
-        foreach ($this->suppressionPluginSet as $plugin) {
+        foreach ($this->suppression_plugin_set as $plugin) {
             $result += $plugin->getIssueSuppressionList(
                 $code_base,
                 $file_path
@@ -407,7 +429,7 @@ final class ConfigPluginSet extends PluginV2 implements
     /** @return array<int,SuppressionCapability> */
     public function getSuppressionPluginSet() : array
     {
-        return $this->suppressionPluginSet;
+        return $this->suppression_plugin_set;
     }
 
     /**
@@ -424,7 +446,7 @@ final class ConfigPluginSet extends PluginV2 implements
         CodeBase $code_base,
         Func $function
     ) {
-        foreach ($this->analyzeFunctionPluginSet as $plugin) {
+        foreach ($this->analyze_function_plugin_set as $plugin) {
             $plugin->analyzeFunction(
                 $code_base,
                 $function
@@ -448,7 +470,7 @@ final class ConfigPluginSet extends PluginV2 implements
         CodeBase $code_base,
         Property $property
     ) {
-        foreach ($this->analyzePropertyPluginSet as $plugin) {
+        foreach ($this->analyze_property_plugin_set as $plugin) {
             try {
                 $plugin->analyzeProperty(
                     $code_base,
@@ -476,7 +498,7 @@ final class ConfigPluginSet extends PluginV2 implements
     public function finalizeProcess(
         CodeBase $code_base
     ) {
-        foreach ($this->finalizeProcessPluginSet as $plugin) {
+        foreach ($this->finalize_process_plugin_set as $plugin) {
             $plugin->finalizeProcess($code_base);
         }
     }
@@ -486,8 +508,8 @@ final class ConfigPluginSet extends PluginV2 implements
      */
     public function hasAnalyzeFunctionPlugins() : bool
     {
-        \assert(!\is_null($this->pluginSet));
-        return \count($this->analyzeFunctionPluginSet) > 0;
+        \assert(!\is_null($this->plugin_set));
+        return \count($this->analyze_function_plugin_set) > 0;
     }
 
     /**
@@ -495,18 +517,19 @@ final class ConfigPluginSet extends PluginV2 implements
      */
     public function hasAnalyzeMethodPlugins() : bool
     {
-        \assert(!\is_null($this->pluginSet));
-        return \count($this->analyzeMethodPluginSet) > 0;
+        \assert(!\is_null($this->plugin_set));
+        return \count($this->analyze_method_plugin_set) > 0;
     }
 
     /**
+     * @param CodeBase $code_base
      * @return array<string,\Closure> maps FQSEN string to closure
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
     {
         $result = [];
-        \assert(!\is_null($this->pluginSet));
-        foreach ($this->analyzeFunctionCallPluginSet as $plugin) {
+        \assert(!\is_null($this->plugin_set));
+        foreach ($this->analyze_function_call_plugin_set as $plugin) {
             // TODO: Make this case insensitive.
             foreach ($plugin->getAnalyzeFunctionCallClosures($code_base) as $fqsen_name => $closure) {
                 $other_closure = $result[$fqsen_name] ?? null;
@@ -524,19 +547,53 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
+     * @param CodeBase $code_base
      * @return array<string,\Closure> maps FQSEN string to closure
      */
     public function getReturnTypeOverrides(CodeBase $code_base) : array
     {
         $result = [];
-        \assert(!\is_null($this->pluginSet));
-        foreach ($this->returnTypeOverridePluginSet as $plugin) {
+        \assert(!\is_null($this->plugin_set));
+        foreach ($this->return_type_override_plugin_set as $plugin) {
             $result += $plugin->getReturnTypeOverrides($code_base);
         }
         return $result;
     }
 
+    /** @var ?NodeSelectionPlugin */
+    private $node_selection_plugin;
+
     /**
+     * @internal
+     * @return void
+     * @see addTemporaryAnalysisPlugin
+     */
+    public function prepareNodeSelectionPluginForNode(Node $node)
+    {
+        $node_selection_plugin = $this->node_selection_plugin;
+        if (!$node_selection_plugin) {
+            fwrite(STDERR, "Error: " . __METHOD__ . " called before node selection plugin was created\n");
+            return;
+        }
+
+        // TODO: Track if this has been added already(not necessary yet)
+
+        $kind = $node->kind;
+        \assert(\is_int($kind));
+
+        /**
+         * @phan-closure-scope NodeSelectionVisitor
+         */
+        $closure = (static function (CodeBase $code_base, Context $context, Node $node, array $unused_parent_node_list = []) {
+            $visitor = new NodeSelectionVisitor($code_base, $context);
+            $visitor->visitCommonImplementation($node);
+        });
+
+        $this->addNodeSelectionClosureForKind($node->kind, $closure);
+    }
+
+    /**
+     * @param CodeBase $code_base
      * @param ?Request $request
      * @return ?RAII
      */
@@ -549,33 +606,44 @@ final class ConfigPluginSet extends PluginV2 implements
         if (!$go_to_definition_request) {
             return null;
         }
-        $completion_plugin = new NodeSelectionPlugin();
-        /**
-         * @return void
-         */
-        $completion_plugin->setNodeSelectorClosure(DefinitionResolver::createGoToDefinitionClosure($go_to_definition_request, $code_base));
-        $new_post_analyze_node_plugins = self::filterPostAnalysisPlugins([$completion_plugin]);
+        $node_selection_plugin = new NodeSelectionPlugin();
+        $node_selection_plugin->setNodeSelectorClosure(DefinitionResolver::createGoToDefinitionClosure($go_to_definition_request, $code_base));
+        $this->node_selection_plugin = $node_selection_plugin;
+
+        $old_post_analyze_node_plugin_set = $this->post_analyze_node_plugin_set;
+
+        /*
+        $new_post_analyze_node_plugins = self::filterPostAnalysisPlugins([$node_selection_plugin]);
         if (!$new_post_analyze_node_plugins) {
             throw new \RuntimeException("Invalid NodeSelectionPlugin");
         }
-        $old_post_analyze_node_plugin_set = $this->postAnalyzeNodePluginSet;
-        foreach ($new_post_analyze_node_plugins as $kind => $new_plugin) {
-            $old_plugin_for_kind = $this->postAnalyzeNodePluginSet[$kind] ?? null;
-            if ($old_plugin_for_kind) {
-                $this->postAnalyzeNodePluginSet[$kind] = static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) use ($old_plugin_for_kind, $new_plugin) {
-                    $old_plugin_for_kind($code_base, $context, $node, $parent_node_list);
-                    $new_plugin($code_base, $context, $node, $parent_node_list);
-                };
-            } else {
-                $this->postAnalyzeNodePluginSet[$kind] = $new_plugin;
-            }
-        }
 
-        // TODO: Add plugins
+        // TODO: This can be removed?
+        foreach ($new_post_analyze_node_plugins as $kind => $new_plugin) {
+            $this->addNodeSelectionClosureForKind($kind, $new_plugin);
+        }
+         */
+
         return new RAII(function () use ($old_post_analyze_node_plugin_set) {
-            $this->postAnalyzeNodePluginSet = $old_post_analyze_node_plugin_set;
-            // TODO: Clean up all of the plugins that were added
+            $this->post_analyze_node_plugin_set = $old_post_analyze_node_plugin_set;
+            $this->node_selection_plugin = null;
         });
+    }
+
+    /**
+     * @param Closure(CodeBase,Context,Node,array=) $new_plugin
+     */
+    private function addNodeSelectionClosureForKind(int $kind, Closure $new_plugin)
+    {
+        $old_plugin_for_kind = $this->post_analyze_node_plugin_set[$kind] ?? null;
+        if ($old_plugin_for_kind) {
+            $this->post_analyze_node_plugin_set[$kind] = static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) use ($old_plugin_for_kind, $new_plugin) {
+                $old_plugin_for_kind($code_base, $context, $node, $parent_node_list);
+                $new_plugin($code_base, $context, $node, $parent_node_list);
+            };
+        } else {
+            $this->post_analyze_node_plugin_set[$kind] = $new_plugin;
+        }
     }
 
     /**
@@ -583,8 +651,8 @@ final class ConfigPluginSet extends PluginV2 implements
      */
     private function hasAnalyzePropertyPlugins() : bool
     {
-        \assert(!\is_null($this->pluginSet));
-        return \count($this->analyzePropertyPluginSet) > 0;
+        \assert(!\is_null($this->plugin_set));
+        return \count($this->analyze_property_plugin_set) > 0;
     }
 
     /**
@@ -593,7 +661,7 @@ final class ConfigPluginSet extends PluginV2 implements
      */
     private function ensurePluginsExist()
     {
-        if (!\is_null($this->pluginSet)) {
+        if (!\is_null($this->plugin_set)) {
             return;
         }
         // Add user-defined plugins.
@@ -606,8 +674,23 @@ final class ConfigPluginSet extends PluginV2 implements
                     $plugin_file_name = __DIR__ . '/../../../.phan/plugins/' . $plugin_file_name . '.php';
                 }
 
-                $plugin_instance =
-                    require($plugin_file_name);
+                try {
+                    $plugin_instance = require($plugin_file_name);
+                } catch (Throwable $e) {
+                    // An unexpected error.
+                    // E.g. a plugin class threw a SyntaxError because it required PHP 7.1 or newer but 7.0 was used.
+                    $message = sprintf(
+                        "Failed to initialize plugin %s, exiting: %s: %s at %s:%d\nStack Trace:\n%s",
+                        $plugin_file_name,
+                        get_class($e),
+                        $e->getMessage(),
+                        $e->getFile(),
+                        $e->getLine(),
+                        $e->getTraceAsString()
+                    );
+                    error_log($message);
+                    exit(EXIT_FAILURE);
+                }
 
                 \assert(
                     !empty($plugin_instance),
@@ -636,11 +719,14 @@ final class ConfigPluginSet extends PluginV2 implements
             ];
             $plugin_set = array_merge($internal_return_type_plugins, $plugin_set);
         }
+        if (Config::getValue('warn_about_undocumented_throw_statements')) {
+            $plugin_set[] = new ThrowAnalyzerPlugin();
+        }
         if (Config::getValue('unused_variable_detection') || Config::getValue('dead_code_detection')) {
             $plugin_set[] = new VariableTrackerPlugin();
         }
         if (self::requiresPluginBasedBuiltinSuppressions()) {
-            if (function_exists('token_get_all')) {
+            if (\function_exists('token_get_all')) {
                 $plugin_set[] = new BuiltinSuppressionPlugin();
             } else {
                 fwrite(STDERR, "ext-tokenizer is required for file-based and line-based suppressions to work, as well as the error-tolerant parser fallback." . PHP_EOL);
@@ -649,21 +735,21 @@ final class ConfigPluginSet extends PluginV2 implements
         }
 
         // Register the entire set.
-        $this->pluginSet = $plugin_set;
+        $this->plugin_set = $plugin_set;
 
-        $this->preAnalyzeNodePluginSet      = self::filterPreAnalysisPlugins($plugin_set);
-        $this->postAnalyzeNodePluginSet     = self::filterPostAnalysisPlugins($plugin_set);
-        $this->beforeAnalyzeFilePluginSet   = self::filterByClass($plugin_set, BeforeAnalyzeFileCapability::class);
-        $this->afterAnalyzeFilePluginSet    = self::filterByClass($plugin_set, AfterAnalyzeFileCapability::class);
-        $this->analyzeMethodPluginSet       = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeMethodCapability::class), 'analyzeMethod');
-        $this->analyzeFunctionPluginSet     = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeFunctionCapability::class), 'analyzeFunction');
-        $this->analyzePropertyPluginSet     = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzePropertyCapability::class), 'analyzeProperty');
-        $this->analyzeClassPluginSet        = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeClassCapability::class), 'analyzeClass');
-        $this->finalizeProcessPluginSet     = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, FinalizeProcessCapability::class), 'finalizeProcess');
-        $this->returnTypeOverridePluginSet  = self::filterByClass($plugin_set, ReturnTypeOverrideCapability::class);
-        $this->suppressionPluginSet         = self::filterByClass($plugin_set, SuppressionCapability::class);
-        $this->analyzeFunctionCallPluginSet = self::filterByClass($plugin_set, AnalyzeFunctionCallCapability::class);
-        $this->unused_suppression_plugin    = self::findUnusedSuppressionPlugin($plugin_set);
+        $this->pre_analyze_node_plugin_set      = self::filterPreAnalysisPlugins($plugin_set);
+        $this->post_analyze_node_plugin_set     = self::filterPostAnalysisPlugins($plugin_set);
+        $this->before_analyze_file_plugin_set   = self::filterByClass($plugin_set, BeforeAnalyzeFileCapability::class);
+        $this->after_analyze_file_plugin_set    = self::filterByClass($plugin_set, AfterAnalyzeFileCapability::class);
+        $this->analyze_method_plugin_set        = self::filterByClass($plugin_set, AnalyzeMethodCapability::class);
+        $this->analyze_function_plugin_set      = self::filterByClass($plugin_set, AnalyzeFunctionCapability::class);
+        $this->analyze_property_plugin_set      = self::filterByClass($plugin_set, AnalyzePropertyCapability::class);
+        $this->analyze_class_plugin_set         = self::filterByClass($plugin_set, AnalyzeClassCapability::class);
+        $this->finalize_process_plugin_set      = self::filterByClass($plugin_set, FinalizeProcessCapability::class);
+        $this->return_type_override_plugin_set  = self::filterByClass($plugin_set, ReturnTypeOverrideCapability::class);
+        $this->suppression_plugin_set           = self::filterByClass($plugin_set, SuppressionCapability::class);
+        $this->analyze_function_call_plugin_set = self::filterByClass($plugin_set, AnalyzeFunctionCallCapability::class);
+        $this->unused_suppression_plugin        = self::findUnusedSuppressionPlugin($plugin_set);
     }
 
     private static function requiresPluginBasedBuiltinSuppressions() : bool
@@ -678,24 +764,6 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
-     * @param array<int,PluginV2> $plugin_set
-     * @return array<int,mixed> (TODO: Can't precisely annotate without improved (at)template analysis)
-     */
-    private static function filterOutEmptyMethodBodies(array $plugin_set, string $method_name) : array
-    {
-        return \array_values(\array_filter($plugin_set, function (PluginV2 $plugin) use ($method_name) : bool {
-            if ($plugin instanceof PluginImplementation) {
-                if (!$plugin->isDefinedInSubclass($method_name)) {
-                    // PluginImplementation defines empty method bodies for each of the plugin $method_names
-                    // Don't execute $method_name for a plugin during analysis if the subclass didn't override the implementation for $method_name.
-                    return false;
-                }
-            }
-            return true;
-        }));
-    }
-
-    /**
      * @return array<int,Closure>
      *         Returned value maps ast\Node->kind to [function(CodeBase $code_base, Context $context, Node $node, array<int,Node> $parent_node_list = []): void]
      * @phan-return array<int,Closure(CodeBase,Context,Node,array<int,Node>=):void>
@@ -704,49 +772,8 @@ final class ConfigPluginSet extends PluginV2 implements
     {
         $closures_for_kind = new ClosuresForKind();
         foreach ($plugin_set as $plugin) {
-            if ($plugin instanceof LegacyPreAnalyzeNodeCapability) {
-                if ($plugin instanceof PreAnalyzeNodeCapability) {
-                    throw new \TypeError(sprintf("plugin %s should implement only one of LegacyPreAnalyzeNodeCapability and PreAnalyzeNodeCapability, not both", get_class($plugin)));
-                }
-                if ($plugin instanceof PluginImplementation) {
-                    if (!$plugin->isDefinedInSubclass('preAnalyzeNode')) {
-                        continue;
-                    }
-                }
-                $closure = (new \ReflectionMethod($plugin, 'preAnalyzeNode'))->getClosure($plugin);
-                $closures_for_kind->recordForAllKinds($closure);
-            } elseif ($plugin instanceof PreAnalyzeNodeCapability) {
-                $plugin_analysis_class = $plugin->getPreAnalyzeNodeVisitorClassName();
-                if (!\is_subclass_of($plugin_analysis_class, PluginAwarePreAnalysisVisitor::class)) {
-                    throw new \TypeError(
-                        sprintf(
-                            "Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not",
-                            get_class($plugin),
-                            PluginAwarePreAnalysisVisitor::class,
-                            $plugin_analysis_class
-                        )
-                    );
-                }
-                /**
-                 * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
-                 *
-                 * @phan-closure-scope PluginAwarePreAnalysisVisitor
-                 */
-                $closure = (static function (CodeBase $code_base, Context $context, Node $node) {
-                    $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
-                    return (new static($code_base, $context))->{$fn_name}($node);
-                })->bindTo(null, $plugin_analysis_class);
-                $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
-                if (\count($handled_node_kinds) === 0) {
-                    fprintf(
-                        STDERR,
-                        "Plugin %s has an preAnalyzeNode visitor %s (subclass of %s) which doesn't override any known visit<Suffix>() methods, but expected at least one method to be overridden\n",
-                        get_class($plugin),
-                        $plugin_analysis_class,
-                        PluginAwarePreAnalysisVisitor::class
-                    );
-                }
-                $closures_for_kind->recordForKinds($handled_node_kinds, $closure);
+            if ($plugin instanceof PreAnalyzeNodeCapability) {
+                self::addClosuresForPreAnalyzeNodeCapability($closures_for_kind, $plugin);
             }
         }
         return $closures_for_kind->getFlattenedClosures(static function (array $closure_list) : \Closure {
@@ -758,6 +785,78 @@ final class ConfigPluginSet extends PluginV2 implements
         });
     }
 
+    private static function addClosuresForPreAnalyzeNodeCapability(
+        ClosuresForKind $closures_for_kind,
+        PreAnalyzeNodeCapability $plugin
+    ) {
+        $plugin_analysis_class = $plugin->getPreAnalyzeNodeVisitorClassName();
+        if (!\is_subclass_of($plugin_analysis_class, PluginAwarePreAnalysisVisitor::class)) {
+            throw new \TypeError(
+                sprintf(
+                    "Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not",
+                    \get_class($plugin),
+                    PluginAwarePreAnalysisVisitor::class,
+                    $plugin_analysis_class
+                )
+            );
+        }
+        // @see PreAnalyzeNodeCapability (magic to create parent_node_list)
+        $closure = self::getGenericClosureForPluginAwarePreAnalysisVisitor($plugin_analysis_class);
+        $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
+        if (\count($handled_node_kinds) === 0) {
+            fprintf(
+                STDERR,
+                "Plugin %s has an preAnalyzeNode visitor %s (subclass of %s) which doesn't override any known visit<Suffix>() methods, but expected at least one method to be overridden\n",
+                \get_class($plugin),
+                $plugin_analysis_class,
+                PluginAwarePreAnalysisVisitor::class
+            );
+        }
+        $closures_for_kind->recordForKinds($handled_node_kinds, $closure);
+    }
+
+    /**
+     * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
+     *
+     * @return Closure(CodeBase,Context,Node,array=)
+     */
+    private static function getGenericClosureForPluginAwarePreAnalysisVisitor(string $plugin_analysis_class) : Closure
+    {
+        try {
+            new ReflectionProperty($plugin_analysis_class, 'parent_node_list');
+            $has_parent_node_list = true;
+        } catch (ReflectionException $_) {
+            $has_parent_node_list = false;
+        }
+
+        if ($has_parent_node_list) {
+            /**
+             * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
+             *
+             * @phan-closure-scope PluginAwarePreAnalysisVisitor
+             */
+            return (static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) {
+                $visitor = new static($code_base, $context);
+                // @phan-suppress-next-line PhanUndeclaredProperty checked via $has_parent_node_list
+                $visitor->parent_node_list = $parent_node_list;
+                $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
+                $visitor->{$fn_name}($node);
+            })->bindTo(null, $plugin_analysis_class);
+        } else {
+            /**
+             * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
+             *
+             * @phan-closure-scope PluginAwarePreAnalysisVisitor
+             */
+            return (static function (CodeBase $code_base, Context $context, Node $node, array $unused_parent_node_list = []) {
+                $visitor = new static($code_base, $context);
+                $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
+                $visitor->{$fn_name}($node);
+            })->bindTo(null, $plugin_analysis_class);
+        }
+    }
+
+
     /**
      * @return array<int,\Closure> - [function(CodeBase $code_base, Context $context, Node $node, array<int,Node> $parent_node_list = []): void]
      */
@@ -765,139 +864,8 @@ final class ConfigPluginSet extends PluginV2 implements
     {
         $closures_for_kind = new ClosuresForKind();
         foreach ($plugin_set as $plugin) {
-            $implemented_count = 0;
-            if ($plugin instanceof LegacyAnalyzeNodeCapability) {
-                $implemented_count++;
-            }
-            if ($plugin instanceof AnalyzeNodeCapability) {
-                $implemented_count++;
-            }
             if ($plugin instanceof PostAnalyzeNodeCapability) {
-                $implemented_count++;
-            }
-            if ($plugin instanceof LegacyPostAnalyzeNodeCapability) {
-                $implemented_count++;
-            }
-            if ($implemented_count > 1) {
-                throw new \TypeError(
-                    sprintf(
-                        "plugin %s should implement only one of LegacyAnalyzeNodeCapability, AnalyzeNodeCapability, LegacyPostAnalyzeNodeCapability, or PostAnalyzeNodeCapability. PostAnalyzeNodeCapability is preferred.",
-                        get_class($plugin)
-                    )
-                );
-            }
-            // TODO: Get rid of LegacyAnalyzeNodeCapability and AnalyzeNodeCapability.
-            if ($plugin instanceof LegacyAnalyzeNodeCapability) {
-                if ($plugin instanceof PluginImplementation) {
-                    if (!$plugin->isDefinedInSubclass('analyzeNode')) {
-                        continue;
-                    }
-                }
-                $closure = (new \ReflectionMethod($plugin, 'analyzeNode'))->getClosure($plugin);
-                $closures_for_kind->recordForAllKinds(function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list) use ($closure) {
-                    $closure($code_base, $context, $node, \end($parent_node_list) ?: null);
-                });
-            } elseif ($plugin instanceof LegacyPostAnalyzeNodeCapability) {
-                if ($plugin instanceof PluginImplementation) {
-                    if (!$plugin->isDefinedInSubclass('analyzeNode')) {
-                        continue;
-                    }
-                }
-                $closure = (new \ReflectionMethod($plugin, 'analyzeNode'))->getClosure($plugin);
-                $closures_for_kind->recordForAllKinds($closure);
-            } elseif ($plugin instanceof AnalyzeNodeCapability) {
-                $plugin_analysis_class = $plugin->getAnalyzeNodeVisitorClassName();
-                if (!\is_subclass_of($plugin_analysis_class, PluginAwareAnalysisVisitor::class)) {
-                    throw new \TypeError(
-                        sprintf(
-                            "Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not",
-                            get_class($plugin),
-                            PluginAwareAnalysisVisitor::class,
-                            $plugin_analysis_class
-                        )
-                    );
-                }
-                /**
-                 * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
-                 *
-                 * @phan-closure-scope PluginAwareAnalysisVisitor
-                 */
-                $closure = (static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) {
-                    $visitor = new static($code_base, $context);
-                    $visitor->parent_node = \end($parent_node_list) ?: null;
-                    $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
-                    $visitor->{$fn_name}($node);
-                })->bindTo(null, $plugin_analysis_class);
-
-                $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
-                if (\count($handled_node_kinds) === 0) {
-                    fprintf(
-                        STDERR,
-                        "Plugin %s has an analyzeNode visitor %s (subclass of %s) which doesn't override any known visit<Suffix>() methods, but expected at least one method to be overridden\n",
-                        get_class($plugin),
-                        $plugin_analysis_class,
-                        PluginAwareAnalysisVisitor::class
-                    );
-                }
-                $closures_for_kind->recordForKinds($handled_node_kinds, $closure);
-            } elseif ($plugin instanceof PostAnalyzeNodeCapability) {
-                $plugin_analysis_class = $plugin->getPostAnalyzeNodeVisitorClassName();
-                if (!\is_subclass_of($plugin_analysis_class, PluginAwarePostAnalysisVisitor::class)) {
-                    throw new \TypeError(
-                        sprintf(
-                            "Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not",
-                            get_class($plugin),
-                            PluginAwarePostAnalysisVisitor::class,
-                            $plugin_analysis_class
-                        )
-                    );
-                }
-
-                // @see PostAnalyzeNodeCapability (magic to create parent_node_list)
-                try {
-                    new ReflectionProperty($plugin_analysis_class, 'parent_node_list');
-                    $has_parent_node_list = true;
-                } catch (ReflectionException $e) {
-                    $has_parent_node_list = false;
-                }
-
-                if ($has_parent_node_list) {
-                    /**
-                     * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
-                     *
-                     * @phan-closure-scope PluginAwarePostAnalysisVisitor
-                     */
-                    $closure = (static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) {
-                        $visitor = new static($code_base, $context);
-                        // @phan-suppress-next-line PhanUndeclaredProperty checked via $has_parent_node_list
-                        $visitor->parent_node_list = $parent_node_list;
-                        $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
-                        $visitor->{$fn_name}($node);
-                    })->bindTo(null, $plugin_analysis_class);
-                } else {
-                    /**
-                     * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
-                     *
-                     * @phan-closure-scope PluginAwarePostAnalysisVisitor
-                     */
-                    $closure = (static function (CodeBase $code_base, Context $context, Node $node, array $unused_parent_node_list = []) {
-                        $visitor = new static($code_base, $context);
-                        $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
-                        $visitor->{$fn_name}($node);
-                    })->bindTo(null, $plugin_analysis_class);
-                }
-
-                $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
-                if (\count($handled_node_kinds) === 0) {
-                    fprintf(
-                        STDERR,
-                        "Plugin %s has an analyzeNode visitor %s (subclass of %s) which doesn't override any known visit<Suffix>() methods, but expected at least one method to be overridden\n",
-                        get_class($plugin),
-                        $plugin_analysis_class,
-                        PluginAwarePostAnalysisVisitor::class
-                    );
-                }
-                $closures_for_kind->recordForKinds($handled_node_kinds, $closure);
+                self::addClosuresForPostAnalyzeNodeCapability($closures_for_kind, $plugin);
             }
         }
         return $closures_for_kind->getFlattenedClosures(static function (array $closure_list) : \Closure {
@@ -907,6 +875,82 @@ final class ConfigPluginSet extends PluginV2 implements
                 }
             };
         });
+    }
+
+    /**
+     * @throws \TypeError if the returned getPostAnalyzeNodeVisitorClassName() is invalid
+     */
+    private static function addClosuresForPostAnalyzeNodeCapability(
+        ClosuresForKind $closures_for_kind,
+        PostAnalyzeNodeCapability $plugin
+    ) {
+        $plugin_analysis_class = $plugin->getPostAnalyzeNodeVisitorClassName();
+        if (!\is_subclass_of($plugin_analysis_class, PluginAwarePostAnalysisVisitor::class)) {
+            throw new \TypeError(
+                sprintf(
+                    "Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not",
+                    \get_class($plugin),
+                    PluginAwarePostAnalysisVisitor::class,
+                    $plugin_analysis_class
+                )
+            );
+        }
+
+        // @see PostAnalyzeNodeCapability (magic to create parent_node_list)
+        $closure = self::getGenericClosureForPluginAwarePostAnalysisVisitor($plugin_analysis_class);
+
+        $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
+        if (\count($handled_node_kinds) === 0) {
+            fprintf(
+                STDERR,
+                "Plugin %s has an analyzeNode visitor %s (subclass of %s) which doesn't override any known visit<Suffix>() methods, but expected at least one method to be overridden\n",
+                \get_class($plugin),
+                $plugin_analysis_class,
+                PluginAwarePostAnalysisVisitor::class
+            );
+        }
+        $closures_for_kind->recordForKinds($handled_node_kinds, $closure);
+    }
+
+    /**
+     * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
+     *
+     * @return Closure(CodeBase,Context,Node,array=)
+     */
+    private static function getGenericClosureForPluginAwarePostAnalysisVisitor(string $plugin_analysis_class) : Closure
+    {
+        try {
+            new ReflectionProperty($plugin_analysis_class, 'parent_node_list');
+            $has_parent_node_list = true;
+        } catch (ReflectionException $_) {
+            $has_parent_node_list = false;
+        }
+
+        if ($has_parent_node_list) {
+            /**
+             * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
+             *
+             * @phan-closure-scope PluginAwarePostAnalysisVisitor
+             */
+            return (static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) {
+                $visitor = new static($code_base, $context);
+                // @phan-suppress-next-line PhanUndeclaredProperty checked via $has_parent_node_list
+                $visitor->parent_node_list = $parent_node_list;
+                $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
+                $visitor->{$fn_name}($node);
+            })->bindTo(null, $plugin_analysis_class);
+        } else {
+            /**
+             * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
+             *
+             * @phan-closure-scope PluginAwarePostAnalysisVisitor
+             */
+            return (static function (CodeBase $code_base, Context $context, Node $node, array $unused_parent_node_list = []) {
+                $visitor = new static($code_base, $context);
+                $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
+                $visitor->{$fn_name}($node);
+            })->bindTo(null, $plugin_analysis_class);
+        }
     }
 
     private static function filterByClass(array $plugin_set, string $interface_name) : array
@@ -928,7 +972,7 @@ final class ConfigPluginSet extends PluginV2 implements
         foreach ($plugin_set as $plugin) {
             // Don't use instanceof, avoid triggering class autoloader unnecessarily.
             // (load one less file)
-            if (get_class($plugin) === 'UnusedSuppressionPlugin') {
+            if (\get_class($plugin) === 'UnusedSuppressionPlugin') {
                 return $plugin;
             }
         }

@@ -9,6 +9,9 @@ namespace Phan;
  * Some configuration can be overridden on the command line.
  * See `./phan -h` for command line usage, or take a
  * look at \Phan\CLI.php for more details on CLI usage.
+ *
+ * For efficiency, all of these methods are static methods.
+ * Configuration is fetched frequently, and static methods were much faster than magic __get().
  */
 class Config
 {
@@ -28,7 +31,7 @@ class Config
      * New features increment minor versions, and bug fixes increment patch versions.
      * @suppress PhanUnreferencedPublicClassConstant
      */
-    const PHAN_PLUGIN_VERSION = '2.4.0';
+    const PHAN_PLUGIN_VERSION = '2.5.0';
 
     /**
      * @var string|null
@@ -71,10 +74,11 @@ class Config
     private static $quick_mode = false;
     // End of the 4 most commonly accessed configs.
 
-    private static $closest_target_php_version_id = null;
+    /** @var int */
+    private static $closest_target_php_version_id;
 
     const DEFAULT_CONFIGURATION = [
-        // Supported values: '7.0', '7.1', '7.2', null.
+        // Supported values: '7.0', '7.1', '7.2', '7.3', null.
         // If this is set to null,
         // then Phan assumes the PHP version which is closest to the minor version
         // of the php executable used to execute phan.
@@ -367,6 +371,22 @@ class Config
         // types expressed in code.
         'read_type_annotations' => true,
 
+        // If enabled, warn about throw statement where the exception types
+        // are not documented in the PHPDoc of functions, methods, and closures.
+        'warn_about_undocumented_throw_statements' => false,
+
+        // If enabled (and `warn_about_undocumented_throw_statements` is enabled),
+        // Phan will warn about function/closure/method invocations that have `@throws`
+        // that aren't caught or documented in the invoking method.
+
+        'warn_about_undocumented_exceptions_thrown_by_invoked_functions' => false,
+
+        // Phan will not warn about lack of documentation of (at)throws for any of the configured classes or their subclasses.
+        // This only matters when warn_about_undocumented_throw_statements is true.
+        // The default is the empty array (Don't suppress any warnings)
+        // (E.g. ['RuntimeException', 'AssertionError', 'TypeError'])
+        'exception_classes_with_optional_throws_phpdoc' => [ ],
+
         // This setting maps case insensitive strings to union types.
         // This is useful if a project uses phpdoc that differs from the phpdoc2 standard.
         // If the corresponding value is the empty string, Phan will ignore that union type (E.g. can ignore 'the' in `@return the value`)
@@ -405,20 +425,11 @@ class Config
         // to stdout instead of parsing and analyzing files.
         'dump_parsed_file_list' => false,
 
-        // Include a progress bar in the output
+        // Include a progress bar in the output.
         'progress_bar' => false,
 
-        // The probability of actually emitting any progress
-        // bar update. Setting this to something very low
-        // is good for reducing network IO and filling up
-        // your terminal's buffer when running phan on a
-        // remote host.
-        // Set this to 0 to use *only* progress_bar_sample_interval.
-        'progress_bar_sample_rate' => 0.000,
-
         // If this much time (in seconds) has passed since the last update,
-        // then update the progress bar (Ignores progress_bar_sample_rate).
-        // Set this to INF to only use progress_bar_sample_rate.
+        // then update the progress bar.
         'progress_bar_sample_interval' => 0.1,
 
         // The number of processes to fork off during the analysis
@@ -723,8 +734,15 @@ class Config
         // Path to a unix socket for a daemon to listen to files to analyze. Use command line option instead.
         'daemonize_socket' => false,
 
-        // TCP port(from 1024 to 65535) for a daemon to listen to files to analyze. Use command line option instead.
-        'daemonize_tcp_port' => false,
+        // If a daemon should listen to files to analyze over TCP.
+        // This setting is mutually exclusive with 'daemonize_socket'.
+        'daemonize_tcp' => false,
+
+        // TCP host for a daemon to listen to files to analyze.
+        'daemonize_tcp_host' => '127.0.0.1',
+
+        // TCP port (from 1024 to 65535) for a daemon to listen to files to analyze.
+        'daemonize_tcp_port' => 4846,
 
         // If this is an array, it configures the way clients will communicate with the Phan language server.
         // Possibilities: Exactly one of
@@ -743,12 +761,25 @@ class Config
         'language_server_use_pcntl_fallback' => true,
 
         // This should only be set via CLI (--language-server-enable-go-to-definition)
-        // Affects "go to definition" and "go to type definition"
+        // Affects "go to definition" and "go to type definition" of LSP.
         'language_server_enable_go_to_definition' => false,
+
+        // This should only be set via CLI (--language-server-enable-hover)
+        // Affects "hover" of LSP.
+        'language_server_enable_hover' => false,
+
+        // Don't show the category name in issue messages.
+        // This makes error messages slightly shorter.
+        'language_server_hide_category_of_issues' => false,
 
         // Can be set to false to disable the plugins Phan uses to infer more accurate return types of array_map, array_filter, etc.
         // Phan is slightly faster when these are disabled.
         'enable_internal_return_type_plugins' => true,
+
+        // This setting can be used if users wish to store strings that are even longer than 50 bytes.
+        // If a literal string type exceeds this length, Phan converts it to a regular string type.
+        // This setting cannot be used to decrease the maximum.
+        'max_literal_string_type_length' => \Phan\Language\Type\LiteralStringType::MINIMUM_MAX_STRING_LENGTH,
 
         // A list of plugin files to execute
         // Plugins which are bundled with Phan can be added here by providing their name (e.g. 'AlwaysReturnPlugin')
@@ -762,7 +793,7 @@ class Config
     ];
 
     /**
-     * Disallow the constructor to force a singleton
+     * Disallow the constructor.
      */
     private function __construct()
     {
@@ -793,26 +824,19 @@ class Config
     }
 
     /**
-     * @return Config
-     * Get a Configuration singleton
-     */
-    public static function get() : Config
-    {
-        static $instance;
-
-        if ($instance) {
-            return $instance;
-        }
-
-        $instance = new Config();
-        $instance->init();
-        return $instance;
-    }
-
-    /**
      * @return void
      */
-    private function init()
+    public static function init()
+    {
+        static $did_init = false;
+        if ($did_init) {
+            return;
+        }
+        $did_init = true;
+        self::initOnce();
+    }
+
+    private static function initOnce()
     {
         // Trigger magic setters
         foreach (self::$configuration as $name => $v) {
@@ -829,7 +853,8 @@ class Config
         return self::$configuration;
     }
 
-    // @codingStandardsIgnoreStart method naming is deliberate to make these getters easier to search.
+    // method naming is deliberate to make these getters easier to search.
+    // phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
 
     public static function get_null_casts_as_any_type() : bool
     {
@@ -880,16 +905,7 @@ class Config
     {
         return self::$closest_target_php_version_id;
     }
-    // @codingStandardsIgnoreEnd
-
-    /**
-     * @return mixed
-     * @deprecated
-     */
-    public function __get(string $name)
-    {
-        return self::getValue($name);
-    }
+    // phpcs:enable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
 
     /**
      * @return mixed
@@ -899,22 +915,15 @@ class Config
         return self::$configuration[$name];
     }
 
+    /**
+     * @return void
+     * @internal - this should only be used in unit tests.
+     */
     public static function reset()
     {
         self::$configuration = self::DEFAULT_CONFIGURATION;
         // Trigger magic behavior
-        self::get()->init();
-    }
-
-    /**
-     * @param string $name
-     * @param mixed $value
-     * @return void
-     * @deprecated
-     */
-    public function __set(string $name, $value)
-    {
-        self::setValue($name, $value);
+        self::initOnce();
     }
 
     /**
@@ -974,8 +983,10 @@ class Config
                     self::$closest_target_php_version_id = 70000;
                 } elseif (version_compare($value, '7.2') < 0) {
                     self::$closest_target_php_version_id = 70100;
-                } else {
+                } elseif (version_compare($value, '7.3') < 0) {
                     self::$closest_target_php_version_id = 70200;
+                } else {
+                    self::$closest_target_php_version_id = 70300;
                 }
                 if ((self::$configuration['allow_method_param_type_widening_original'] ?? null) === null) {
                     self::$configuration['allow_method_param_type_widening'] = self::$closest_target_php_version_id >= 70200;
@@ -1011,4 +1022,4 @@ class Config
 }
 
 // Call init() to trigger the magic setters.
-Config::get();
+Config::init();

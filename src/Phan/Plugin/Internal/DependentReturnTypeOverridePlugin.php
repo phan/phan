@@ -2,6 +2,7 @@
 namespace Phan\Plugin\Internal;
 
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
@@ -150,17 +151,30 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $has_array ? $str_array_type : $str_replace_types;
         };
+        $getenv_handler = static function (
+            CodeBase $unused_code_base,
+            Context $unused_context,
+            Func $unused_function,
+            array $args
+        ) : UnionType {
+            if (\count($args) === 0 && Config::get_closest_target_php_version_id() >= 70100) {
+                return UnionType::fromFullyQualifiedString('array<string,string>');
+            }
+            return UnionType::fromFullyQualifiedString('string|false');
+        };
 
         return [
             // commonly used functions where the return type depends on a passed in boolean
-            'var_export'                => $string_if_2_true,
-            'print_r'                   => $string_if_2_true_else_true,
-            'json_decode'               => $json_decode_return_type_handler,
+            'var_export'                  => $string_if_2_true,
+            'print_r'                     => $string_if_2_true_else_true,
+            'json_decode'                 => $json_decode_return_type_handler,
             // Functions with dependent return types
             'str_replace'                 => $third_argument_string_or_array_handler,
             'preg_replace'                => $third_argument_string_or_array_handler,
             'preg_replace_callback'       => $third_argument_string_or_array_handler,
             'preg_replace_callback_array' => $third_argument_string_or_array_handler,
+            // misc
+            'getenv'                      => $getenv_handler,
         ];
     }
 

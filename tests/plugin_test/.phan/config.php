@@ -75,6 +75,17 @@ return [
 
     'generic_types_enabled' => true,
 
+    'guess_unknown_parameter_type_using_default' => true,
+
+    // If enabled, warn about throw statement where the exception types
+    // are not documented in the PHPDoc of functions, methods, and closures.
+    'warn_about_undocumented_throw_statements' => true,
+
+    // If enabled (and warn_about_undocumented_throw_statements is enabled),
+    // warn about function/closure/method calls that have (at)throws
+    // without the invoking method documenting that exception.
+    'warn_about_undocumented_exceptions_thrown_by_invoked_functions' => true,
+
     'minimum_severity' => Issue::SEVERITY_LOW,
 
     'directory_list' => ['src'],
@@ -103,5 +114,6 @@ return [
         'UnreachableCodePlugin',
         'UnusedSuppressionPlugin',
         'SleepCheckerPlugin',
+        'DuplicateExpressionPlugin',
     ],
 ];

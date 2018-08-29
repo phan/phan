@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Phan\Output;
 
@@ -60,11 +61,12 @@ class Colorizing
     const ESC_PATTERN = "\033[%sm";
     const ESC_RESET = "\033[0m";
 
-    // NOTE: Keep sorted and in sync with Issue::uncolored_format_string_for_template
+    // NOTE: Keep sorted and in sync with Issue::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE
     // By using 'color_scheme' in .phan/config.php, these settings can be overridden
     const DEFAULT_COLOR_FOR_TEMPLATE = [
         'CLASS'         => 'green',
         'CLASSLIKE'     => 'green',
+        'CODE'          => 'light_magenta',
         'COMMENT'       => 'light_green',
         'CONST'         => 'light_red',
         'COUNT'         => 'light_magenta',
@@ -113,6 +115,9 @@ class Colorizing
                 return '(MISSING)';
             }
             $arg = $template_parameters[$j];
+            if (\is_object($arg)) {
+                $arg = (string)$arg;
+            }
             $format_str = $matches[0];
             if ($format_str[0] === '%') {
                 return sprintf($format_str, $arg);
@@ -123,18 +128,18 @@ class Colorizing
     }
 
     /**
-     * @param string $template_type (A key of _uncolored_format_string_for_template, e.g. "FILE")
+     * @param string $template_type (A key of _UNCOLORED_FORMAT_STRING_FOR_TEMPLATE, e.g. "FILE")
      * @param int|string|float|FQSEN|Type|UnionType $arg (Argument for format string, e.g. a type name, method fqsen, line number, etc.)
      * @return string - Colorized for unix terminals.
      */
     public static function colorizeField(string $template_type, $arg) : string
     {
-        $fmt_directive = Issue::uncolored_format_string_for_template[$template_type] ?? null;
+        $fmt_directive = Issue::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE[$template_type] ?? null;
         if ($fmt_directive === null) {
             error_log(sprintf(
                 "Unknown template type '%s'. Known template types: %s",
                 $template_type,
-                implode(', ', array_keys(Issue::uncolored_format_string_for_template))
+                implode(', ', array_keys(Issue::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE))
             ));
             return (string)$arg;
         }

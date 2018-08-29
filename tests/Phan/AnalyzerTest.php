@@ -14,7 +14,7 @@ use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
-class AnalyzerTest extends BaseTest
+final class AnalyzerTest extends BaseTest
 {
     /**
      * @var CodeBase
@@ -99,7 +99,7 @@ class AnalyzerTest extends BaseTest
         return
             Analysis::parseNodeInContext(
                 $this->code_base,
-                new Context,
+                new Context(),
                 \ast\parse_code(
                     '<?php ' . $code_stub,
                     Config::AST_VERSION

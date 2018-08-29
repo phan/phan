@@ -1,0 +1,3 @@
+%s:3 PhanCompatibleNullableTypePHP71 Type 'object' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
+%s:18 PhanCompatibleNullableTypePHP71 Type 'object' refers to any object starting in PHP 7.2. In PHP 7.1 and earlier, it refers to a class/interface with the name 'object'
+

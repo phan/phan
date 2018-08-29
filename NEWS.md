@@ -1,7 +1,227 @@
 Phan NEWS
 
-?? ??? 2018, Phan 0.12.12(dev)
+?? ??? 2018, Phan 1.0.2 (dev)
+-----------------------
+
+New features(Analysis)
++ Allow spaces on either side of `|` in union types
+  (e.g. `@param array | ArrayAccess $x`)
++ Warn about array destructuring assignments from non-arrays (#1818)
+  (E.g. `[$x] = 2`)
+  New issue type: `PhanTypeInvalidExpressionArrayDestructuring`
+
+Bug fixes
++ Fix a crash seen when using a temporary expression in a write context. (#1915)
+  New issue type: `PhanInvalidWriteToTemporaryExpression`
++ Fix a crash seen with --use-fallback-parser with an invalid expression after `new`
+
+26 Aug 2018, Phan 1.0.1
+-----------------------
+
+New features(CLI,Configs)
++ Support setting a `target_php_version` of PHP 7.3 in the config file or through `--target-php-version`.
++ Assume that `__construct`, `__destruct`, `__set`, `__get`, `__unset`, `__clone`, and `__wakeup` have return types of void if unspecified.
+
+New features(Analysis)
++ Add function signatures for functions added/modified in PHP 7.3. (#1537)
++ Improve the line number for warnings about unextractable `@property*` annotations.
++ Make Phan aware that `$x` is not false inside of loops such as `while ($x = dynamic_value()) {...}` (#1646)
++ Improve inferred types of `$x` in complex equality/inequality checks such as `if (($x = dynamic_value()) !== false) {...}`
++ Make `!is_numeric` assertions remove `int` and `float` from the union type of an expression. (#1895)
++ Preserve any matching original types in scalar type assertions (#1896)
+  (e.g. a variable `$x` of type `?int|?MyClass` will have type `int` after `assert(is_numeric($x))`)
+
+Maintenance:
++ Add/modify various function, methods, and property type signatures.
+
+Plugins:
++ Add `UnknownElementTypePlugin` to warn about functions/methods
+  that have param/return types that Phan can't infer anything about.
+  (it can still infer some things in non-quick mode about parameters)
+
+  New issue types: `PhanPluginUnknownMethodReturnType`, `PhanPluginUnknownClosureReturnType`, `PhanPluginUnknownFunctionReturnType`, `PhanPluginUnknownPropertyType`
++ Add `DuplicateExpressionPlugin` to warn about duplicated expressions such as:
+  - `X == X`, `X || X`, and many other binary operators (for operators where it is likely to be a bug)
+  - `X ? X : Y` (can often simplify to `X ?: Y`)
+  - `isset(X) ? X : Y` (can simplify to `??` in PHP 7)
+
+  New issue types: `PhanPluginDuplicateExpressionBinaryOp`, `PhanPluginDuplicateConditionalTernaryOperation`, `PhanPluginDuplicateConditionalNullCoalescing`
++ Improve types inferred for `$matches` for PregRegexCheckerPlugin.
+
+Bug fixes:
++ Properly handle `CompileError` (that are not the subclass `ParseError`). CompileError was added in PHP 7.3.
+  (Phan now logs these the same way it would log other syntax errors, instead of treating this like an unexpected Error.)
++ Make sure that private methods that are generators, that are inherited from a trait, aren't treated like a `void`.
++ Fix a crash analyzing a dynamic call to a static method, which occurred when dead code detection or reference tracking was enabled. (#1889)
++ Don't accidentally emit false positive issues about operands of binary operators in certain contexts. (#1898)
+
+12 Aug 2018, Phan 1.0.0
+-----------------------
+
+The Phan 1.0.0 release supports analysis of php 7.0-7.2, and can be executed with php 7.0+.
+This release replaces the previous 0.12.x releases.
+Because Phan uses PHP's Reflection APIs, it's recommended to use the same PHP minor version for analyzing the code as would be used to run the code.
+(For the small number of function/method signatures, etc., that were added or changed in each minor release of PHP.)
+
+Plugins:
++ Plugins: Remove V1 plugins (and V1 plugin examples), as well as legacy plugin capabilities. (#249)
+  Third party plugin authors must use V2 of the plugin system.
+
+  Removed capabilities:
+
+  - `AnalyzeNodeCapability`, `LegacyAnalyzeNodeCapability`, `LegacyPostAnalyzeNodeCapability` (use `PostAnalyzeNodeCapability` instead)
+  - `LegacyPreAnalyzeNodeCapability` (use `PreAnalyzeNodeCapability` instead)
++ API: Remove various methods that were deprecated. (#249)
+  Any plugins using those methods will need to be updated.
+  (e.g. `Config::getValue('config_value')` must be used instead of `Config::get()->config_value`)
++ Config: Remove `progress_bar_sample_rate` (#249)
+  (`progress_bar_sample_interval` must be used instead if you want the progress bar to be faster or slower)
++ Maintenance: Immediately report the exception and exit if any plugins threw an uncaught `Throwable` during initialization.
+  (E.g. this results in a better error message when a third party plugin requires PHP 7.1 syntax but PHP 7.0 is used to run Phan)
+
+21 Jul 2018, Phan 0.12.15
 -------------------------
+
+New features(Analysis)
++ Make Phan's unused variable detection also treat exception variables as variable definitions,
+  and warn if the caught exception is unused. (#1810)
+  New issue types: `PhanUnusedVariableCaughtException`
++ Be more aggressive about inferring that a method has a void return type, when it is safe to do so
++ Emit `PhanInvalidConstantExpression` in some places where PHP would emit `"Constant expression contains invalid operations"`
+
+  Phan will replace the default parameter type (or constant type) with `mixed` for constants and class constants.
+
+  Previously, this could cause Phan to crash, especially with `--use-fallback-parser` on invalid ASTs.
++ Improve analysis of arguments passed to `implode()`
+
+New features(CLI)
++ Add `--daemonize-tcp-host` CLI option for specifying the hostname for daemon mode (#1868).
+  The default will remain `127.0.0.1` when not specified.
+  It can be overidden to values such as `0.0.0.0` (publicly accessible, e.g. for usage with Docker)
+
+Language Server/Daemon mode:
++ Implement support for hover requests in the Language Server (#1738)
+
+  This will show a preview of the element definition (showing signature types instead of PHPDoc types)
+  along with the snippet of the element description from the doc comment.
+
+  Clients that use this should pass in the CLI option `--language-server-enable-hover` when starting the language server.
+
+  - Note that this implementation assumes that clients sanitize the mix of markdown and HTML before rendering it.
+  - Note that this may slow down some language server clients if they pause while waiting for the hover request to finish.
+
+Maintenance:
++ Add a workaround for around a notice in PHP 7.3alpha4  (that Phan treats as fatal) (#1870)
+
+Bug fixes:
++ Fix a bug in checking if nullable versions of specialized type were compatible with other nullable types. (#1839, #1852)
+  Phan now correctly allows the following type casts:
+
+  - `?1`               can cast to `?int`
+  - `?'a string'`      can cast to `?string`
+  - `?Closure(T1):T2`  can cast to `?Closure`
+  - `?callable(T1):T2` can cast to `?callable`,
++ Make `exclude_file_list` work more consistently on Windows
+
+08 Jul 2018, Phan 0.12.14
+-------------------------
+
+New features(CLI, Configs)
++ Add `warn_about_undocumented_throw_statements` and `exception_classes_with_optional_throws_phpdoc` config. (#90)
+
+  If `warn_about_undocumented_throw_statements` is true, Phan will warn about uncaught throw statements that aren't documented in the function's PHPDoc.
+  (excluding classes listed in `exception_classes_with_optional_throws_phpdoc` and their subclasses)
+  This does not yet check function and method calls within the checked function that may themselves throw.
+
+  Add `warn_about_undocumented_exceptions_thrown_by_invoked_functions`.
+  If enabled (and `warn_about_undocumented_throw_statements` is enabled),
+  Phan will warn about function/closure/method invocations that have `@throws`
+  that aren't caught or documented in the invoking method.
+  New issue types: `PhanThrowTypeAbsent`, `PhanThrowTypeAbsentForCall`,
+  `PhanThrowTypeMismatch`, `PhanThrowTypeMismatchForCall`
+
+  Add `exception_classes_with_optional_throws_phpdoc` config.
+  Phan will not warn about lack of documentation of `@throws` for any of the configured classes or their subclasses.
+  The default is the empty array (Don't suppress any warnings.)
+  (E.g. Phan suppresses `['RuntimeException', 'AssertionError', 'TypeError']` for self-analysis)
+
+New Features (Analysis):
++ Warn when string literals refer to invalid class names (E.g. `$myClass::SOME_CONSTANT`). (#1794)
+  New issue types: `PhanTypeExpectedObjectOrClassNameInvalidName` (emitted if the name can't be used as a class)
+  This will also emit `PhanUndeclaredClass` if the class name could not be found.
++ Make Phan aware that `$this` doesn't exist in a static closure (#768)
+
+Language Server/Daemon mode:
++ Fix another rare bug that can cause crashes in the polyfill/fallback parser when parsing invalid or incomplete ASTs.
++ Add a `--language-server-hide-category` setting to hide the issue category from diagnostic messages.
++ Remove the numeric diagnostic code from the language server diagnostics (a.k.a. issues).
+  (Certain language clients such as LanguageClient-neovim would render that the code in the quickfix menu, wasting space)
++ Support "go to definition" for union types within all code comment types  (#1704)
+  (e.g. can go to definition in `// some annotation or comment mentioning MyType`)
+
+New features(Analysis)
++ Support analysis of [`list()` reference assignment](https://wiki.php.net/rfc/list_reference_assignment) for php 7.3 (which is still in alpha). (#1537)
++ Warn about invalid operands of the unary operators `+`, `-`, and `~`
+  New issue types: `PhanTypeInvalidUnaryOperandNumeric` and `PhanTypeInvalidUnaryOperandBitwiseNot` (#680)
+
+Bug fixes:
++ Fix a bug causing Phan to infer extra wrong types (`ancestorClass[][]`) for `@return className[]` (#1822)
++ Start warning about assignment operations (e.g. `+=`) when the modified variable isn't referenced later in the function.
++ Make exceptions in `catch{}` always include the type `Throwable` even if the declared type doesn't. (#336)
+
+16 Jun 2018, Phan 0.12.13
+-------------------------
+
+New features(Analysis)
++ Support integer literals both in PHPDoc and in Phan's type system. (E.g. `@return -1|string`)
+  Include integer values in issue messages if the values are known.
++ Support string literals both in PHPDoc and in Phan's type system. (E.g. `@return 'example\n'`)
+  Phan can now infer possible variable values for dynamic function/method calls, etc.
+
+  Note: By default, Phan does not store representations of strings longer than 50 characters. This can be increased with the `'max_literal_string_type_length'` config.
+
+  Supported escape codes: `\\`, `\'`, `\r`, `\n`, `\t`, and hexadecimal (`\xXX`).
++ Improve inferred types of unary operators.
++ Warn about using `void`/`iterable`/`object` in use statements based on `target_php_version`. (#449)
+  New issue types: `PhanCompatibleUseVoidPHP70`, `PhanCompatibleUseObjectPHP71`, `PhanCompatibleUseObjectPHP71`
++ Warn about making overrides of inherited property and constants less visible (#788)
+  New issue types: `PhanPropertyAccessSignatureMismatch`, `PhanPropertyAccessSignatureMismatchInternal`,
+  `PhanConstantAccessSignatureMismatch`, `PhanConstantAccessSignatureMismatchInternal`.
++ Warn about making static properties into non-static properties (and vice-versa) (#615)
+  New issue types: `PhanAccessNonStaticToStaticProperty`, `PhanAccessStaticToNonStaticProperty`
++ Warn about inheriting from a class/trait/interface that has multiple possible definitions (#773)
+  New issue types: `PhanRedefinedExtendedClass`, `PhanRedefinedUsedTrait`, `PhanRedefinedInheritedInterface`
++ Infer more accurate types for the side effects of assignment operators (i.e. `+=`, `.=`, etc) and other binary operations. (#1775)
++ Warn about invalid arguments to binary operators or assignment operators.
+  New issue types: `PhanTypeInvalidLeftOperandOfAdd`,  `PhanTypeInvalidLeftOperandOfNumericOp`,
+                   `PhanTypeInvalidRightOperandOfAdd`, `PhanTypeInvalidRightOperandOfNumericOp`
++ Warn about using negative string offsets and multiple catch exceptions in PHP 7.0 (if `target_php_version` is less than `'7.1'`). (#1771, #1778)
+  New issue types: `PhanCompatibleMultiExceptionCatchPHP70`, `PhanCompatibleNegativeStringOffset`.
+
+Maintenance:
++ Update signature map with more accurate signatures (#1761)
++ Upgrade tolerant-php-parser, making the polyfill/fallback able to parse PHP 7.1's multi exception catch.
+
+Bug fixes:
++ Don't add more generic types to properties with more specific PHPDoc types (#1783).
+  For example, don't add `array` to a property declared with PHPDoc type `/** @var string[] */`
++ Fix uncaught `AssertionError` when `parent` is used in PHPDoc (#1758)
++ Fix various bugs that can cause crashes in the polyfill/fallback parser when parsing invalid or incomplete ASTs.
++ Fix unparseable/invalid function signature entries of rarely used functions
++ Warn about undefined variables on the left hand side of assignment operations (e.g. `$x .= 'string'`) (#1613)
+
+08 Jun 2018, Phan 0.12.12
+-------------------------
+
+Maintenance:
++ Increase the severity of some issues to critical
+  (if they are likely to cause runtime Errors in the latest PHP version).
+
+Bug fixes:
++ Allow suppressing `PhanTypeInvalidThrows*` with doc comment suppressions
+  in the phpdoc of a function/method/closure.
++ Fix crashes when fork pool is used and some issue types are emitted (#1754)
++ Catch uncaught exception for PhanContextNotObject when calling `instanceof self` outside a class scope (#1754)
 
 30 May 2018, Phan 0.12.11
 -------------------------
@@ -439,7 +659,7 @@ After upgrading Phan, projects using phan should add a `target_php_version` sett
 New Features(CLI, Configs)
 + Add a `target_php_version` config setting, which can be set to `'7.0'`, `'7.1'`, `'7.2'`, or `null`/`'native'`. (#1174)
   This defaults to the same PHP minor version as the PHP binary used to run Phan.
-  `target_php_version` can be overriden via the CLI option `--target-php-version {7.0,7.1,7.2,native}`
+  `target_php_version` can be overridden via the CLI option `--target-php-version {7.0,7.1,7.2,native}`
 
   NOTE: This setting does not let a PHP 7.0 installation parse PHP 7.1 nullable syntax or PHP 7.1 array destructuring syntax.
 
@@ -868,7 +1088,7 @@ New Features (Analysis)
   Infer the negation of type assertions from if statements that unconditionally throw/return/break/continue.
   (E.g. `if (!is_string($x)) { return false; } functionUsingX($x);`)
 
-  When checking if a variable is defined by all branches of an if statement, ignore branches which inconditionally throw/return/break/continue.
+  When checking if a variable is defined by all branches of an if statement, ignore branches which unconditionally throw/return/break/continue.
 + To reduce the false positives from analysis of the negation of type assertions,
   normalize nullable/boolean union types after analyzing code branches (E.g. if/else) affecting the types of those variables.
   (e.g. convert "bool|false|null" to "?bool")
@@ -1017,7 +1237,7 @@ New Features (Analysis)
 + Supports magic instance/static `@method` annotations. (Issue #467)
   This is enabled by default.
 + Change the behavior of non-quick recursion (Affects emitted issues in large projects).
-  Improve perfomance of non-quick analysis by checking for redundant analysis steps
+  Improve performance of non-quick analysis by checking for redundant analysis steps
   (E.g. calls from two different places passing the same union types for each parameter),
   continuing to recurse when passing by reference.
 + Support for checking for misuses of "@internal" annotations. Phan assumes this means it is internal to a namespace. (Issue #353)

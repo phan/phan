@@ -1,8 +1,4 @@
-<?php // @codingStandardsIgnoreFile
-
-<<<PHAN
-@phan-file-suppress PhanPluginMixedKeyNoKey (read by Phan when analyzing this file)
-PHAN;
+<?php // phpcs:ignoreFile
 
 /**
  * This contains the information needed to convert the function signatures for php 7.2 to php 7.1 (and vice versa)
@@ -14,6 +10,8 @@ PHAN;
  *   Functions are expected to be removed only in major releases of php. (e.g. php 7.0 removed various functions that were deprecated in 5.6)
  *
  * @see FunctionSignatureMap.php
+ *
+ * @phan-file-suppress PhanPluginMixedKeyNoKey (read by Phan when analyzing this file)
  */
 return [
 'new' => [
@@ -42,6 +40,7 @@ return [
     'oci_register_taf_callback' => ['bool', 'connection'=>'resource', 'callback='=>'callable'],
     'oci_unregister_taf_callback' => ['bool', 'connection'=>'resource'],
     'ReflectionClass::isIterable' => ['bool'],
+    'SQLite3::openBlob' => ['resource', 'table'=>'string', 'column'=>'string', 'rowid'=>'int', 'dbname'=>'string', 'flags='=>'int'],
     'sapi_windows_vt100_support' => ['bool', 'stream'=>'resource', 'enable='=>'bool'],
     'socket_addrinfo_bind' => ['resource', 'addrinfo'=>'resource'],
     'socket_addrinfo_connect' => ['resource', 'addrinfo'=>'resource'],
@@ -146,5 +145,6 @@ return [
     'hash_update' => ['bool', 'context'=>'resource', 'data'=>'string'],
     'hash_update_file' => ['bool', 'hcontext'=>'resource', 'filename'=>'string', 'scontext='=>'?resource'],
     'hash_update_stream' => ['int', 'context'=>'resource', 'handle'=>'resource', 'length='=>'int'],
+    'SQLite3::openBlob' => ['resource', 'table'=>'string', 'column'=>'string', 'rowid'=>'int', 'dbname'=>'string'],
 ]
 ];

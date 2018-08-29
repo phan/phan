@@ -73,6 +73,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
         switch ($node->kind) {
             case ast\AST_RETURN:
                 $this->analyzeReturnValue($node->children['expr'], $node->lineno);
+                return;
             case ast\AST_CLASS:
             case ast\AST_CLOSURE:
             case ast\AST_FUNC_DECL:
@@ -182,4 +183,4 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
 
 // Every plugin needs to return an instance of itself at the
 // end of the file in which its defined.
-return new SleepCheckerPlugin;
+return new SleepCheckerPlugin();

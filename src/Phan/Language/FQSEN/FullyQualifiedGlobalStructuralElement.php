@@ -6,9 +6,11 @@ use Phan\Language\Context;
 use Phan\Language\Type;
 
 use AssertionError;
+use InvalidArgumentException;
 
 /**
  * A Fully-Qualified Global Structural Element
+ * @phan-file-suppress PhanPluginNoAssert
  */
 abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
 {
@@ -31,6 +33,15 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      * @param int $alternate_id
      * An alternate ID for the element for use when
      * there are multiple definitions of the element
+     *
+     * @throws EmptyFQSENException
+     * if the name component of this FullyQualifiedGlobalStructuralElement is empty
+     *
+     * @throws EmptyFQSENException
+     * if the namespace of this FullyQualifiedGlobalStructuralElement is empty
+     *
+     * @throws InvalidArgumentException
+     * if the namespace begins with an invalid character
      */
     protected function __construct(
         string $namespace,
@@ -41,12 +52,13 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             throw new EmptyFQSENException("The name of an FQSEN cannot be empty", rtrim($namespace, '\\') . '\\');
         }
 
-        \assert($namespace !== '', "The namespace cannot be empty");
+        if ($namespace === '') {
+            throw new EmptyFQSENException("The namespace cannot be empty", $name);
+        }
 
-        \assert(
-            $namespace[0] === '\\',
-            "The first character of a namespace must be \\"
-        );
+        if ($namespace[0] !== '\\') {
+            throw new InvalidArgumentException("The first character of a namespace must be \\");
+        }
 
         parent::__construct($name);
         $this->namespace = $namespace;
@@ -67,7 +79,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             // Common case: no namespace
             return self::make('\\', $name);
         }
-        return self::make('\\' . \substr($name, 0, $i), \substr($name, $i+1));
+        return self::make('\\' . \substr($name, 0, $i), \substr($name, $i + 1));
     }
 
     /**
@@ -94,7 +106,10 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         $name_parts = \explode('\\', $name);
         $name = \array_pop($name_parts);
         foreach ($name_parts as $part) {
-            $namespace .= '\\' . $part;
+            // TODO: Emit a warning or throw instead?
+            if ($part !== '') {
+                $namespace .= '\\' . $part;
+            }
         }
         $namespace = self::cleanNamespace($namespace);
 
@@ -102,7 +117,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         $key = static::class . '|' .
             static::toString(\strtolower($namespace), static::canonicalLookupKey($name), $alternate_id);
 
-        $fqsen = self::memoizeStatic($key, function () use ($namespace, $name, $alternate_id) {
+        $fqsen = self::memoizeStatic($key, /** @return FullyQualifiedGlobalStructuralElement */ function () use ($namespace, $name, $alternate_id) {
             return new static(
                 $namespace,
                 $name,
@@ -127,7 +142,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
 
         $key = static::class . '|' . $fully_qualified_string;
 
-        return self::memoizeStatic($key, function () use ($fully_qualified_string) {
+        return self::memoizeStatic($key, /** @return FullyQualifiedGlobalStructuralElement */ function () use ($fully_qualified_string) {
 
             // Split off the alternate_id
             $parts = \explode(',', $fully_qualified_string);
@@ -190,7 +205,9 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         // Split the parts into the namespace(0 or more components) and the last name.
         $name = \array_pop($parts);
 
-        \assert(!empty($name), "The name cannot be empty");
+        if (empty($name)) {
+            throw new AssertionError("The name cannot be empty");
+        }
 
         // Check for a name map
         if ($context->hasNamespaceMapFor($namespace_map_type, $fqsen_string)) {
@@ -268,10 +285,9 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             return $this;
         }
 
-        \assert(
-            $alternate_id < 1000,
-            "Your alternate IDs have run away"
-        );
+        if ($alternate_id >= 1000) {
+            throw new AssertionError("Your alternate IDs have run away");
+        }
 
         return static::make(
             $this->getNamespace(),
@@ -290,7 +306,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      */
     protected static function cleanNamespace(string $namespace) : string
     {
-        if (!$namespace
+        if ($namespace === ''
             || $namespace === '\\'
         ) {
             return '\\';
@@ -304,11 +320,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
 
         // Ensure that we don't have a trailing '\' on the
         // namespace
-        if ('\\' === \substr($namespace, -1)) {
-            $namespace = \substr($namespace, 0, -1);
-        }
-
-        return $namespace;
+        return \rtrim($namespace, '\\');
     }
 
     /**
@@ -339,7 +351,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     }
 
     /** @var string|null */
-    private $asString = null;
+    private $as_string = null;
 
     /**
      * @return string
@@ -348,15 +360,15 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      */
     public function __toString() : string
     {
-        $asString = $this->asString;
-        if ($asString === null) {
-            $asString = static::toString(
+        $as_string = $this->as_string;
+        if ($as_string === null) {
+            $as_string = static::toString(
                 $this->getNamespace(),
                 $this->getName(),
                 $this->getAlternateId()
             );
-            $this->asString = $asString;
+            $this->as_string = $as_string;
         }
-        return $asString;
+        return $as_string;
     }
 }

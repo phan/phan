@@ -1,0 +1,2 @@
+%s:11 PhanTypeMismatchArgumentInternal Argument 1 (string) is \X\Example but \strlen() takes string
+%s:13 PhanUndeclaredConstant Reference to undeclared constant \X\Example::BAD (Did you mean \X\Example::BAR)

@@ -48,6 +48,7 @@ final class UnionTypeBuilder
             // TODO: How do other versions affect performance on large projects?
             $replacement_type = \array_pop($this->type_set);
             if ($replacement_type !== $type) {
+                // @phan-suppress-next-line PhanPartialTypeMismatchProperty $replacement_type is guaranteed to not be false
                 $this->type_set[$i] = $replacement_type;
             }
         }

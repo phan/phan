@@ -5,6 +5,8 @@ namespace Phan\AST\TolerantASTConverter;
 use Microsoft\PhpParser\Node;
 use Microsoft\PhpParser\Token;
 
+use function substr;
+
 /**
  * Source: https://github.com/TysonAndre/tolerant-php-parser-to-php-ast
  *
@@ -75,7 +77,8 @@ class NodeDumper
     {
         $name = get_class($ast_node);
         if (stripos($name, 'Microsoft\\PhpParser\\') === 0) {
-            $name = substr($name, 20);
+            // Remove the PhpParser namespace
+            $name = (string)substr($name, 20);
         }
         return $name;
     }
@@ -84,7 +87,8 @@ class NodeDumper
     {
         $name = get_class($ast_node);
         if (stripos($name, 'Microsoft\\PhpParser\\') === 0) {
-            $name = substr($name, 20);
+            // Remove the PhpParser namespace
+            $name = (string)substr($name, 20);
         }
         return $name;
     }
@@ -93,6 +97,7 @@ class NodeDumper
      * @param Node|Token $ast_node
      * @param string $padding (to be echoed before the current node
      * @return string
+     * @throws \InvalidArgumentException for invalid $ast_node values
      */
     public function dumpTreeAsString($ast_node, string $key = '', string $padding = '') : string
     {

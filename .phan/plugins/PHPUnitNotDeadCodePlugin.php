@@ -45,8 +45,9 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
     private static $did_warn_unused = false;
 
     /**
-     * @override
      * This is called after the parse phase is completely finished, so $this->code_base contains all class definitions
+     * @return void
+     * @override
      */
     public function visitClass(Node $unused_node)
     {
@@ -105,9 +106,9 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
     private function markDataProvidersAsReferenced(Clazz $class, Method $method)
     {
         if (preg_match('/@dataProvider\s+' . self::WORD_REGEX . '/', $method->getNode()->children['docComment'] ?? '', $match)) {
-            $dataProviderName = $match[1];
-            if ($class->hasMethodWithName($this->code_base, $dataProviderName)) {
-                $class->getMethodByName($this->code_base, $dataProviderName)->addReference($this->context);
+            $data_provider_name = $match[1];
+            if ($class->hasMethodWithName($this->code_base, $data_provider_name)) {
+                $class->getMethodByName($this->code_base, $data_provider_name)->addReference($this->context);
             }
         }
     }
@@ -125,6 +126,9 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
         return false;
     }
 
+    /**
+     * @return void
+     */
     public static function init()
     {
         $fqsen = FullyQualifiedClassName::make('\\PHPUnit\Framework', 'TestCase');

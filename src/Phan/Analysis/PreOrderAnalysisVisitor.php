@@ -6,6 +6,7 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
+use Phan\Exception\UnanalyzableException;
 use Phan\Exception\NodeException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
@@ -21,7 +22,9 @@ use Phan\Language\Type;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
+
 use ast\Node;
+use AssertionError;
 
 class PreOrderAnalysisVisitor extends ScopeVisitor
 {
@@ -57,6 +60,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * @throws UnanalyzableException
+     * if the class name is unexpectedly empty
+     *
+     * @throws CodeBaseException
+     * if the class could not be located
      */
     public function visitClass(Node $node) : Context
     {
@@ -71,7 +80,11 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $class_name = (string)$node->children['name'];
         }
 
-        \assert(!empty($class_name), "Class name cannot be empty");
+        if (empty($class_name)) {
+            // Should only occur with --use-fallback-parser
+            // Class name
+            throw new UnanalyzableException($node, "Class name cannot be empty");
+        }
 
         $alternate_id = 0;
 
@@ -112,6 +125,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * @throws CodeBaseException if the method could not be found
      */
     public function visitMethod(Node $node) : Context
     {
@@ -119,10 +134,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $code_base = $this->code_base;
         $context = $this->context;
 
-        \assert(
-            $context->isInClassScope(),
-            "Must be in class context to see a method"
-        );
+        if (!($context->isInClassScope())) {
+            throw new AssertionError("Must be in class context to see a method");
+        }
 
         $clazz = $this->getContextClass();
 
@@ -162,10 +176,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         // Add $this to the scope of non-static methods
         if (!($node->flags & \ast\flags\MODIFIER_STATIC)) {
-            \assert(
-                $clazz->getInternalScope()->hasVariableWithName('this'),
-                "Classes must have a \$this variable."
-            );
+            if (!($clazz->getInternalScope()->hasVariableWithName('this'))) {
+                throw new AssertionError("Classes must have a \$this variable.");
+            }
 
             $context->addScopeVariable(
                 $clazz->getInternalScope()->getVariableByName('this')
@@ -203,6 +216,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     * @throws CodeBaseException
+     * if this function declaration could not be found
      */
     public function visitFuncDecl(Node $node) : Context
     {
@@ -210,18 +225,14 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $code_base = $this->code_base;
         $original_context = $this->context;
 
-        try {
-            $canonical_function = (new ContextNode(
-                $code_base,
-                $original_context,
-                $node
-            ))->getFunction($function_name, true);
-        } catch (CodeBaseException $exception) {
-            // This really ought not happen given that
-            // we already successfully parsed the code
-            // base
-            throw $exception;
-        }
+        // This really ought not to throw given that
+        // we already successfully parsed the code
+        // base
+        $canonical_function = (new ContextNode(
+            $code_base,
+            $original_context,
+            $node
+        ))->getFunction($function_name, true);
 
         // Hunt for the alternate associated with the file we're
         // looking at currently in this context.
@@ -235,7 +246,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
 
-        if (empty($function)) {
+        if (!($function instanceof Func)) {
             // No alternate was found
             throw new CodeBaseException(
                 null,
@@ -243,7 +254,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             );
         }
 
-        \assert($function instanceof Func);
         $function->ensureScopeInitialized($code_base);
 
         $context = $original_context->withScope(
@@ -327,10 +337,15 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         Context $context,
         Func $func
     ) {
+        // skip adding $this to internal scope if the closure is a static one
+        if ($func->getFlags() == \ast\flags\MODIFIER_STATIC) {
+            return;
+        }
+
         $override_this_fqsen = self::getOverrideClassFQSEN($code_base, $func);
         if ($override_this_fqsen !== null) {
             if ($context->getScope()->hasVariableWithName('this') || !$context->isInClassScope()) {
-                // Handle @phan-closure-scope - Should set $this to the overriden class, as well as handling self:: and parent::
+                // Handle @phan-closure-scope - Should set $this to the overridden class, as well as handling self:: and parent::
                 $func->getInternalScope()->addVariable(
                     new Variable(
                         $context,
@@ -346,8 +361,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // pass it down into the closure
         if ($context->getScope()->hasVariableWithName('this')) {
             // Normal case: Closures inherit $this from parent scope.
-            $thisVarFromScope = $context->getScope()->getVariableByName('this');
-            $func->getInternalScope()->addVariable($thisVarFromScope);
+            $this_var_from_scope = $context->getScope()->getVariableByName('this');
+            $func->getInternalScope()->addVariable($this_var_from_scope);
         }
     }
 
@@ -550,6 +565,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * @throws NodeException
+     * if the key is invalid
      */
     public function visitForeach(Node $node) : Context
     {
@@ -611,7 +629,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         // If there's a key, make a variable out of that too
         $key_node = $node->children['key'];
-        if ($key_node instanceof \ast\Node) {
+        if ($key_node instanceof Node) {
             if ($key_node->kind == \ast\AST_LIST) {
                 throw new NodeException(
                     $node,
@@ -699,10 +717,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $value_elem_node = $child_node->children['value'] ?? null;
 
             // for syntax like: foreach ([] as list(, $a));
-            if ($value_elem_node === null) {
+            if (!($value_elem_node instanceof Node)) {
                 continue;
             }
-            \assert($value_elem_node instanceof Node);
 
             // Get the key and value nodes for each
             // array element we're assigning to
@@ -795,10 +812,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $value_elem_node = $child_node->children['value'] ?? null;
 
             // for syntax like: foreach ([] as list(, $a));
-            if ($value_elem_node === null) {
+            if (!($value_elem_node instanceof Node)) {
                 continue;
             }
-            \assert($value_elem_node instanceof Node);
 
             $key_node = $child_node->children['key'];
             if (!$scalar_array_key_cast) {
@@ -901,6 +917,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 $node->children['class']
             ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
 
+            if (Config::get_closest_target_php_version_id() < 70100 && \count($class_list) > 1) {
+                $this->emitIssue(
+                    Issue::CompatibleMultiExceptionCatchPHP70,
+                    $node->lineno ?? 0
+                );
+            }
+
             foreach ($class_list as $class) {
                 $class->addReference($this->context);
             }
@@ -913,8 +936,11 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 [(string)$exception->getFQSEN()],
                 IssueFixSuggester::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception->getFQSEN())
             );
+        }
 
-            $union_type = $union_type->withType(Type::fromFullyQualifiedString('\Throwable'));
+        $throwable_type = Type::fromFullyQualifiedString('\Throwable');
+        if ($union_type->isEmpty() || !$union_type->asExpandedTypes($this->code_base)->hasType($throwable_type)) {
+            $union_type = $union_type->withType($throwable_type);
         }
 
         $variable_name = (new ContextNode(
@@ -965,29 +991,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         ))->__invoke($cond);
     }
 
-    /**
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitWhile(Node $node) : Context
-    {
-        $cond = $node->children['cond'];
-        if (!($cond instanceof Node)) {
-            return $this->context;
-        }
-
-        // Look to see if any proofs we do within the condition of the while
-        // can say anything about types within the statement
-        // list.
-        return (new ConditionVisitor(
-            $this->code_base,
-            $this->context
-        ))->__invoke($cond);
-    }
+    // visitWhile is unnecessary, this has special logic in BlockAnalysisVisitor to handle conditions assigning variables to the loop
 
     /**
      * @param Node $node

@@ -12,6 +12,8 @@ use Phan\Output\IgnoredFilesFilterInterface;
 use Phan\Output\IssueCollectorInterface;
 use Phan\Output\IssuePrinterInterface;
 use Phan\Plugin\ConfigPluginSet;
+use Exception;
+use InvalidArgumentException;
 
 /**
  * This executes the the parse, method/function, then the analysis phases.
@@ -20,6 +22,7 @@ use Phan\Plugin\ConfigPluginSet;
  * Implementations such as `./phan` or the code climate integration call into this.
  *
  * @see self::analyzeFileList
+ * @phan-file-suppress PhanPluginNoAssert
  */
 class Phan implements IgnoredFilesFilterInterface
 {
@@ -27,25 +30,25 @@ class Phan implements IgnoredFilesFilterInterface
     public static $printer;
 
     /** @var IssueCollectorInterface */
-    private static $issueCollector;
+    private static $issue_collector;
 
     /**
      * @return IssueCollectorInterface
      */
     public static function getIssueCollector() : IssueCollectorInterface
     {
-        return self::$issueCollector;
+        return self::$issue_collector;
     }
 
     /**
-     * @param IssueCollectorInterface $issueCollector
+     * @param IssueCollectorInterface $issue_collector
      *
      * @return void
      */
     public static function setIssueCollector(
-        IssueCollectorInterface $issueCollector
+        IssueCollectorInterface $issue_collector
     ) {
-        self::$issueCollector = $issueCollector;
+        self::$issue_collector = $issue_collector;
     }
 
     /**
@@ -93,7 +96,7 @@ class Phan implements IgnoredFilesFilterInterface
         FileCache::setMaxCacheSize(FileCache::MINIMUM_CACHE_SIZE);
         self::checkForSlowPHPOptions();
         self::loadConfiguredPHPExtensionStubs($code_base);
-        $is_daemon_request = Config::getValue('daemonize_socket') || Config::getValue('daemonize_tcp_port');
+        $is_daemon_request = Config::getValue('daemonize_socket') || Config::getValue('daemonize_tcp');
         $language_server_config = Config::getValue('language_server_config');
         $is_undoable_request = is_array($language_server_config) || $is_daemon_request;
         if ($is_daemon_request) {
@@ -234,6 +237,8 @@ class Phan implements IgnoredFilesFilterInterface
      * @param ?Request $request
      * @param array<int,string> $analyze_file_path_list
      * @param array<string,string> $temporary_file_mapping
+     *
+     * @throws Exception if analysis failed catastrophically
      */
     public static function finishAnalyzingRemainingStatements(
         CodeBase $code_base,
@@ -285,7 +290,7 @@ class Phan implements IgnoredFilesFilterInterface
             // analysis
             $analyze_file_path_list = array_filter(
                 $analyze_file_path_list,
-                function ($file_path) {
+                function ($file_path) : bool {
                     return !self::isExcludedAnalysisFile($file_path);
                 }
             );
@@ -380,17 +385,17 @@ class Phan implements IgnoredFilesFilterInterface
             }
 
             // Get a count of the number of issues that were found
-            $issue_count = count((self::$issueCollector)->getCollectedIssues());
+            $issue_count = count((self::$issue_collector)->getCollectedIssues());
             $is_issue_found =
                 0 !== $issue_count;
 
             // Collect all issues, blocking
             self::display();
 
-            if (Config::get()->print_memory_usage_summary) {
+            if (Config::getValue('print_memory_usage_summary')) {
                 self::printMemoryUsageSummary();
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             if ($request instanceof Request) {
                 // Give people using the language server client/daemon a somewhat useful response.
                 $request->sendJSONResponse([
@@ -498,7 +503,7 @@ class Phan implements IgnoredFilesFilterInterface
      */
     private static function display()
     {
-        $collector = self::$issueCollector;
+        $collector = self::$issue_collector;
 
         $printer = self::$printer;
 
@@ -534,8 +539,8 @@ class Phan implements IgnoredFilesFilterInterface
      */
     private static function printMemoryUsageSummary()
     {
-        $memory = memory_get_usage()/1024/1024;
-        $peak   = memory_get_peak_usage()/1024/1024;
+        $memory = memory_get_usage() / 1024 / 1024;
+        $peak   = memory_get_peak_usage() / 1024 / 1024;
         fwrite(STDERR, sprintf("Memory usage after analysis completed: %.02dMB/%.02dMB\n", $memory, $peak));
     }
 
@@ -588,6 +593,7 @@ class Phan implements IgnoredFilesFilterInterface
     /**
      * Loads configured stubs for internal PHP extensions.
      * @return void
+     * @throws InvalidArgumentException if the stubs or stub config is invalid
      */
     private static function loadConfiguredPHPExtensionStubs(CodeBase $code_base)
     {

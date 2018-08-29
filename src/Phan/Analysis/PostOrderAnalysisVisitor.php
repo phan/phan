@@ -14,6 +14,7 @@ use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
+use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
@@ -27,7 +28,6 @@ use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\StringType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use ast\Node;
@@ -35,6 +35,7 @@ use ast\flags;
 
 /**
  * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPluginNoAssert
  */
 class PostOrderAnalysisVisitor extends AnalysisVisitor
 {
@@ -103,10 +104,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         );
 
         $var_node = $node->children['var'];
-        \assert(
-            $var_node instanceof Node,
-            "Expected left side of assignment to be a var"
-        );
+        if (!($var_node instanceof Node)) {
+            // Give up, this should be impossible except with the fallback
+            $this->emitIssue(
+                Issue::InvalidNode,
+                $node->lineno ?? 0,
+                "Expected left side of assignment to be a variable"
+            );
+            return $this->context;
+        }
 
         if ($right_type->isType(VoidType::instance(false))) {
             $this->emitIssue(
@@ -154,6 +160,20 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitAssignRef(Node $node) : Context
     {
         return $this->visitAssign($node);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     * @override
+     */
+    public function visitAssignOp(Node $node) : Context
+    {
+        return (new AssignOperatorAnalysisVisitor($this->code_base, $this->context))->__invoke($node);
     }
 
     /**
@@ -361,7 +381,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         return;
                     }
                 }
-            } catch (CodeBaseException $e) {
+            } catch (CodeBaseException $_) {
                 // Swallow "Cannot find class", go on to emit issue
             }
             $this->emitIssue(
@@ -547,7 +567,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                             return $context;
                         }
                     }
-                } catch (CodeBaseException $e) {
+                } catch (CodeBaseException $_) {
                     // Swallow "Cannot find class", go on to emit issue
                 }
             }
@@ -709,9 +729,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         $context = $this->context;
         try {
-            $nameNode = $node->children['name'];
+            $name_node = $node->children['name'];
             // Based on UnionTypeVisitor::visitConst
-            if ($nameNode->kind == \ast\AST_NAME) {
+            if ($name_node->kind == \ast\AST_NAME) {
                 $constant = (new ContextNode(
                     $this->code_base,
                     $context,
@@ -731,7 +751,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $context,
                 $exception->getIssueInstance()
             );
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // Swallow any other types of exceptions. We'll log the errors
             // elsewhere.
         }
@@ -770,7 +790,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $exception->getIssueInstance()
             );
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // Swallow any other types of exceptions. We'll log the errors
             // elsewhere.
         }
@@ -1009,7 +1029,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             } else {
                 $yield_key_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $yield_key_node);
             }
-            // TODO: finalize syntax to indicate the absense of a key or value (e.g. use void instead?)
+            // TODO: finalize syntax to indicate the absence of a key or value (e.g. use void instead?)
             $expected_key_type = $template_type_list[0];
             if (!$yield_key_type->asExpandedTypes($code_base)->canCastToUnionType($expected_key_type)) {
                 $this->emitIssue(
@@ -1103,7 +1123,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         if ($type_list_count > 1 && $actual_type_list_count > 1) {
-            // TODO: finalize syntax to indicate the absense of a key or value (e.g. use void instead?)
+            // TODO: finalize syntax to indicate the absence of a key or value (e.g. use void instead?)
             $yield_key_type = $actual_template_type_list[0];
             $expected_key_type = $template_type_list[0];
             if (!$yield_key_type->asExpandedTypes($code_base)->canCastToUnionType($expected_key_type)) {
@@ -1120,7 +1140,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         return $context;
     }
 
-    private function checkCanCastToReturnType(CodeBase $code_base, UnionType $expression_type, UnionType $method_return_type)
+    private function checkCanCastToReturnType(CodeBase $code_base, UnionType $expression_type, UnionType $method_return_type) : bool
     {
         if ($method_return_type->hasTemplateParameterTypes()) {
             // TODO: Better casting logic for template types (E.g. should be able to cast None to Option<MyClass>, but not Some<int> to Option<MyClass>
@@ -1162,7 +1182,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 if ($method->isPHPInternal()) {
                     // If we are not in strict mode and we accept a string parameter
                     // and the argument we are passing has a __toString method then it is ok
-                    if (!$context->getIsStrictTypes() && $method_return_type->hasType(StringType::instance(false))) {
+                    if (!$context->getIsStrictTypes() && $method_return_type->hasNonNullStringType()) {
                         if ($individual_type_expanded->hasClassWithToStringMethod($code_base, $context)) {
                             continue;
                         }
@@ -1341,7 +1361,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @param \Generator|UnionType[] $types
      * @return \Generator|array<int,UnionType>
      * @phan-return \Generator<int,UnionType>
-     * @suppress PhanPluginUnusedVariable
      */
     private static function deduplicateUnionTypes($types)
     {
@@ -1425,7 +1444,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $node
                 );
             }
-        } catch (CodeBaseException $e) {
+        } catch (CodeBaseException $_) {
             // ignore it.
         }
 
@@ -1535,7 +1554,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $exception->getIssueInstance()
             );
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // If we can't figure out what kind of a call
             // this is, don't worry about it
             return $this->context;
@@ -1562,6 +1581,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $node->children['class']
             ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, Issue::TypeInvalidInstanceof);
+        } catch (IssueException $exception) {
+            Issue::maybeEmitInstance(
+                $this->code_base,
+                $this->context,
+                $exception->getIssueInstance()
+            );
         } catch (CodeBaseException $exception) {
             $this->emitIssueWithSuggestion(
                 Issue::UndeclaredClassInstanceof,
@@ -1595,7 +1620,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // Give up on things like Class::$var
         if (!\is_string($method_name)) {
-            return $this->context;
+            $method_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $method_name);
+            if (!\is_string($method_name)) {
+                return $this->context;
+            }
         }
 
         // Get the name of the static class being referenced
@@ -1607,7 +1635,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $static_class = (string)$node->children['class']->children['name'];
         }
 
-        $method = $this->getStaticMethodOrEmitIssue($node);
+        $method = $this->getStaticMethodOrEmitIssue($node, $method_name);
 
         if ($method === null) {
             // Short circuit on a constructor being called statically
@@ -1699,7 +1727,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $exception->getIssueInstance()
             );
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.
@@ -1790,12 +1818,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * gets the static method, or emits an issue.
-     * @return Method|null
+     * @param Node $node
+     * @param string $method_name - NOTE: The caller should convert constants/class constants/etc in $node->children['method'] to a string.
+     * @return ?Method
      */
-    private function getStaticMethodOrEmitIssue(Node $node)
+    private function getStaticMethodOrEmitIssue(Node $node, string $method_name)
     {
-        $method_name = $node->children['method'];
-
         try {
             // Get a reference to the method being called
             return (new ContextNode(
@@ -1809,7 +1837,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $exception->getIssueInstance()
             );
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.
@@ -1826,6 +1854,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // If we can't figure out what kind of a call
             // this is, don't worry about it
         }
+        return null;
     }
 
     /**
@@ -1852,12 +1881,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             "Function found where method expected"
         );
 
-        $has_interface_class = false;
         if ($method instanceof Method) {
+            $has_interface_class = false;
             try {
                 $class = $method->getClass($this->code_base);
                 $has_interface_class = $class->isInterface();
-            } catch (\Exception $exception) {
+            } catch (\Exception $_) {
             }
 
             if (!$method->isAbstract()
@@ -1973,7 +2002,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $method_name = $node->children['method'];
 
         if (!\is_string($method_name)) {
-            return $this->context;
+            $method_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $method_name);
+            if (!\is_string($method_name)) {
+                return $this->context;
+            }
         }
 
         try {
@@ -1989,7 +2021,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $exception->getIssueInstance()
             );
             return $this->context;
-        } catch (NodeException $exception) {
+        } catch (NodeException $_) {
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.
@@ -2058,7 +2090,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             );
             // TODO: check if array_type has array but not ArrayAccess.
             // If that is true, then assert that $dim_type can cast to `int|string`
-        } catch (IssueException $exception) {
+        } catch (IssueException $_) {
             // Detect this elsewhere, e.g. want to detect PhanUndeclaredVariableDim but not PhanUndeclaredVariable
         }
         return $context;
@@ -2172,13 +2204,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if (!$is_static) {
                 // Find out of any of them have a __get magic method
                 // (Only check if looking for instance properties)
-                $has_getter =
-                    \array_reduce($class_list, function ($carry, $class) {
-                        return (
-                            $carry ||
-                            $class->hasGetMethod($this->code_base)
-                        );
-                    }, false);
+                $has_getter = $this->hasGetter($class_list);
 
                 // If they don't, then analyze for Noops.
                 if (!$has_getter) {
@@ -2196,6 +2222,17 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         return $this->context;
+    }
+
+    /** @param Clazz[] $class_list */
+    private function hasGetter(array $class_list) : bool
+    {
+        foreach ($class_list as $class) {
+            if ($class->hasGetMethod($this->code_base)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -2362,7 +2399,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // parameters
         $argument_list = $node->children['args']->children;
         foreach ($argument_list as $i => $argument) {
-            if (!$argument instanceof \ast\Node) {
+            if (!$argument instanceof Node) {
                 continue;
             }
 
@@ -2383,7 +2420,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                             $context,
                             $argument
                         ))->getOrCreateVariable();
-                    } catch (NodeException $e) {
+                    } catch (NodeException $_) {
                         // E.g. `function_accepting_reference(${$varName})` - Phan can't analyze outer type of ${$varName}
                         continue;
                     }
@@ -2430,7 +2467,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Take another pass over pass-by-reference parameters
         // and assign types to passed in variables
         foreach ($argument_list as $i => $argument) {
-            if (!$argument instanceof \ast\Node) {
+            if (!$argument instanceof Node) {
                 continue;
             }
             $parameter = $method->getParameterForCaller($i);
@@ -2499,7 +2536,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $context,
                     $argument
                 ))->getOrCreateVariable();
-            } catch (NodeException $e) {
+            } catch (NodeException $_) {
                 // E.g. `function_accepting_reference(${$varName})` - Phan can't analyze outer type of ${$varName}
                 return;
             }
@@ -2524,7 +2561,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $context,
                         $exception->getIssueInstance()
                     );
-                } catch (\Exception $exception) {
+                } catch (\Exception $_) {
                     // If we can't figure out what kind of a call
                     // this is, don't worry about it
                 }
@@ -2587,6 +2624,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Variable|Property $variable
+     * @return void
      */
     private function analyzePregMatch(array $argument_list, $variable)
     {
@@ -2606,12 +2644,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $offset_flags_node = $argument_list[3];
         $bit = (new ContextNode($this->code_base, $this->context, $offset_flags_node))->getEquivalentPHPScalarValue();
         if (!\is_int($bit)) {
-            return $array_type;
+            $variable->setUnionType($array_type);
+            return;
         }
         if ($bit & PREG_OFFSET_CAPTURE) {
-            return $shape_array_type;
+            $variable->setUnionType($shape_array_type);
+            return;
         }
-        return $string_array_type;
+        $variable->setUnionType($string_array_type);
     }
 
     /**
@@ -2628,7 +2668,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             ))->getClosure();
 
             $method->addReference($inner_context);
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // Swallow it
         }
     }
@@ -2669,7 +2709,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         try {
             // Even though we don't modify the parameter list, we still need to know the types
             // -- as an optimization, we don't run quick mode again if the types didn't change?
-            $parameter_list = \array_map(function (Parameter $parameter) {
+            $parameter_list = \array_map(/** @return Parameter */ function (Parameter $parameter) {
                 return clone($parameter);
             }, $method->getParameterList());
 
@@ -2878,11 +2918,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // For https://github.com/phan/phan/issues/1525 : Collapse array shapes into generic arrays before recursively analyzing a method.
         if (!$parameter->isCloneOfVariadic()) {
             $parameter->addUnionType(
-                $argument_type->withFlattenedArrayShapeTypeInstances()
+                $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()
             );
         } else {
             $parameter->addUnionType(
-                $argument_type->withFlattenedArrayShapeTypeInstances()->asGenericArrayTypes(GenericArrayType::KEY_INT)
+                $argument_type->withFlattenedArrayShapeOrLiteralTypeInstances()->asGenericArrayTypes(GenericArrayType::KEY_INT)
             );
         }
 
@@ -2914,7 +2954,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
 
-        if (!$argument instanceof \ast\Node) {
+        if (!$argument instanceof Node) {
             return;
         }
 
@@ -2936,7 +2976,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $argument->children['prop'] ?? '',
                     true
                 );
-            } catch (UnanalyzableException $exception) {
+            } catch (UnanalyzableException $_) {
                 // Ignore it. There's nothing we can do. (E.g. the class name for the static property fetch couldn't be determined.
             }
         }
@@ -2990,6 +3030,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function declOnlyThrows(Node $node) : bool
     {
-        return BlockExitStatusChecker::willUnconditionallyThrowOrReturn($node->children['stmts']);
+        // Work around fallback parser generating methods without statements list.
+        // Otherwise, 'stmts' would always be a Node due to preconditions.
+        $stmts_node = $node->children['stmts'];
+        return $stmts_node instanceof Node && BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node);
     }
 }

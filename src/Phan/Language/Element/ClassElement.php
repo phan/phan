@@ -9,6 +9,8 @@ use Phan\Language\FQSEN\FullyQualifiedClassElement;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\UnionType;
 
+use TypeError;
+
 abstract class ClassElement extends AddressableElement
 {
     /** @var FullyQualifiedClassName */
@@ -33,7 +35,9 @@ abstract class ClassElement extends AddressableElement
      */
     public function setFQSEN(FQSEN $fqsen)
     {
-        \assert($fqsen instanceof FullyQualifiedClassElement);
+        if (!($fqsen instanceof FullyQualifiedClassElement)) {
+            throw new TypeError('Expected $fqsen to be a subclass of Phan\Language\Element\FullyQualifiedClassElement');
+        }
         parent::setFQSEN($fqsen);
         $this->class_fqsen = $fqsen->getFullyQualifiedClassName();
     }
@@ -68,6 +72,9 @@ abstract class ClassElement extends AddressableElement
      * @return FullyQualifiedClassName
      * The FQSEN of this class element from where it was
      * originally defined
+     *
+     * @throws CodeBaseException if this was called without first checking
+     * if hasDefiningFQSEN()
      */
     public function getDefiningClassFQSEN() : FullyQualifiedClassName
     {
@@ -84,6 +91,7 @@ abstract class ClassElement extends AddressableElement
      * @param FullyQualifiedClassElement $defining_fqsen
      * The FQSEN of this class element in the location in which
      * it was originally defined
+     * @return void
      */
     public function setDefiningFQSEN(
         FullyQualifiedClassElement $defining_fqsen
@@ -94,6 +102,7 @@ abstract class ClassElement extends AddressableElement
     /**
      * @return Clazz
      * The class on which this element was originally defined
+     * @throws CodeBaseException if hasDefiningFQSEN is false
      */
     public function getDefiningClass(CodeBase $code_base) : Clazz
     {

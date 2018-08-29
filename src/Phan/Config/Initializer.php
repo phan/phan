@@ -11,6 +11,7 @@ use Phan\Language\Context;
 use ast\Node;
 use Composer\Semver\VersionParser;
 use Composer\Semver\Constraint\ConstraintInterface;
+use TypeError;
 
 /**
  * This class is used by 'phan --init' to generate a phan config for a composer project.
@@ -133,7 +134,9 @@ class Initializer
             if (count($setting_value) > 0) {
                 $source .= "[\n";
                 foreach ($setting_value as $key => $element) {
-                    assert(is_int($key));
+                    if (!is_int($key)) {
+                        throw new TypeError("Expected setting default for $setting_name to have consecutive integer keys");
+                    }
                     $source .= '        ' . var_export($element, true) . ",\n";
                 }
                 $source .= "    ],\n";
@@ -391,7 +394,7 @@ EOT;
         }
         try {
             $version_constraint = self::parseConstraintsForRange($php_version_constraint);
-        } catch (\UnexpectedValueException $e) {
+        } catch (\UnexpectedValueException $_) {
             return [null, ['TODO: Choose a target_php_version for this project, or leave as null and remove this comment']];
         }
         if ($version_constraint->matches(self::parseConstraintsForRange('<7.1-dev'))) {
@@ -451,6 +454,9 @@ EOT;
         return [array_unique($directory_list), array_unique($file_list)];
     }
 
+    /**
+     * @return array
+     */
     private static function getArrayOption(array $opts, string $key)
     {
         $values = $opts[$key] ?? [];
@@ -489,9 +495,11 @@ EOT;
             }
             $node = $child_nodes[0];
             return $node->kind !== \ast\AST_ECHO || !is_string($node->children['expr']);
-        } catch (\ParseError $e) {
+        } catch (\ParseError $_) {
             return false;
-        } catch (\Phan\AST\TolerantASTConverter\ParseException $e) {
+        } catch (\CompileError $_) {
+            return false;
+        } catch (\Phan\AST\TolerantASTConverter\ParseException $_) {
             return false;
         }
     }

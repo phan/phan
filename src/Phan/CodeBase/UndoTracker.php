@@ -30,12 +30,12 @@ class UndoTracker
      * @var array<string,array<int,Closure>> operations to undo for a current path
      * @phan-var array<string,array<int,Closure(CodeBase)>>
      */
-    private $undoOperationsForPath = [];
+    private $undo_operations_for_path = [];
 
     /**
-     * @var array<string,string> Maps file paths to the modification dates and file size of the paths. - On ext4, milliseconds are available, but php APIs all return seconds.
+     * @var array<string,?string> Maps file paths to the modification dates and file size of the paths. - On ext4, milliseconds are available, but php APIs all return seconds.
      */
-    private $fileModificationState = [];
+    private $file_modification_state = [];
 
     public function __construct()
     {
@@ -51,7 +51,7 @@ class UndoTracker
      */
     public function getParsedFilePathList() : array
     {
-        return array_keys($this->fileModificationState);
+        return array_keys($this->file_modification_state);
     }
 
     /**
@@ -59,7 +59,7 @@ class UndoTracker
      */
     public function getParsedFilePathCount() : int
     {
-        return count($this->fileModificationState);
+        return count($this->file_modification_state);
     }
 
     /**
@@ -70,7 +70,8 @@ class UndoTracker
     {
         if (\is_string($current_parsed_file)) {
             Daemon::debugf("Recording file modification state for %s", $current_parsed_file);
-            $this->fileModificationState[$current_parsed_file] = self::getFileState($current_parsed_file);
+            // This shouldn't be null. TODO: Figure out what to do if it is.
+            $this->file_modification_state[$current_parsed_file] = self::getFileState($current_parsed_file);
         }
         $this->current_parsed_file = $current_parsed_file;
     }
@@ -106,7 +107,7 @@ class UndoTracker
         Daemon::debugf("%s was unparseable, had a syntax error", $current_parsed_file);
         Phan::getIssueCollector()->removeIssuesForFiles([$current_parsed_file]);
         $this->undoFileChanges($code_base, $current_parsed_file);
-        unset($this->fileModificationState[$current_parsed_file]);
+        unset($this->file_modification_state[$current_parsed_file]);
     }
 
     /**
@@ -116,10 +117,10 @@ class UndoTracker
     private function undoFileChanges(CodeBase $code_base, string $path)
     {
         Daemon::debugf("Undoing file changes for $path");
-        foreach ($this->undoOperationsForPath[$path] ?? [] as $undo_operation) {
+        foreach ($this->undo_operations_for_path[$path] ?? [] as $undo_operation) {
             $undo_operation($code_base);
         }
-        unset($this->undoOperationsForPath[$path]);
+        unset($this->undo_operations_for_path[$path]);
     }
 
     /**
@@ -132,12 +133,12 @@ class UndoTracker
     {
         $file = $this->current_parsed_file;
         if (!\is_string($file)) {
-            throw new \Error("Called recordUndo in CodeBaseMutable, but not parsing a file");
+            throw new \RuntimeException("Called recordUndo in CodeBaseMutable, but not parsing a file");
         }
-        if (!isset($this->undoOperationsForPath[$file])) {
-            $this->undoOperationsForPath[$file] = [];
+        if (!isset($this->undo_operations_for_path[$file])) {
+            $this->undo_operations_for_path[$file] = [];
         }
-        $this->undoOperationsForPath[$file][] = $undo_operation;
+        $this->undo_operations_for_path[$file][] = $undo_operation;
     }
 
     /**
@@ -159,29 +160,29 @@ class UndoTracker
         $removed_file_list = [];
         $changed_or_added_file_list = [];
         foreach ($new_file_set as $path => $_) {
-            if (!isset($this->fileModificationState[$path])) {
+            if (!isset($this->file_modification_state[$path])) {
                 $changed_or_added_file_list[] = $path;
             }
         }
-        foreach ($this->fileModificationState as $path => $state) {
+        foreach ($this->file_modification_state as $path => $state) {
             if (!isset($new_file_set[$path])) {
                 $this->undoFileChanges($code_base, $path);
                 $removed_file_list[] = $path;
-                unset($this->fileModificationState[$path]);
+                unset($this->file_modification_state[$path]);
                 continue;
             }
             if (isset($file_mapping_contents[$path])) {
                 // TODO: Move updateFileList to be called before fork()?
-                $newState = 'daemon:' . sha1($file_mapping_contents[$path]);
+                $new_state = 'daemon:' . sha1($file_mapping_contents[$path]);
             } else {
-                $newState = self::getFileState($path);
+                $new_state = self::getFileState($path);
             }
-            if ($newState !== $state) {
+            if ($new_state !== $state) {
                 $removed_file_list[] = $path;
                 $this->undoFileChanges($code_base, $path);
                 // TODO: This will call stat() twice as much as necessary for the modified files. Not important.
-                unset($this->fileModificationState[$path]);
-                if ($newState !== null) {
+                unset($this->file_modification_state[$path]);
+                if ($new_state !== null) {
                     $changed_or_added_file_list[] = $path;
                 }
             }
@@ -199,13 +200,13 @@ class UndoTracker
      */
     public function beforeReplaceFileContents(CodeBase $code_base, string $file_path)
     {
-        if (!isset($this->fileModificationState[$file_path])) {
+        if (!isset($this->file_modification_state[$file_path])) {
             Daemon::debugf("Tried to replace contents of '$file_path', but that path does not yet exist");
             return false;
         }
         Phan::getIssueCollector()->removeIssuesForFiles([$file_path]);
         $this->undoFileChanges($code_base, $file_path);
-        unset($this->fileModificationState[$file_path]);
+        unset($this->file_modification_state[$file_path]);
         return true;
     }
 }

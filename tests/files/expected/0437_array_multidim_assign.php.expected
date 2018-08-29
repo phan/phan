@@ -1,2 +1,2 @@
-%s:6 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
-%s:7 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:6 PhanTypeMismatchArgumentInternal Argument 1 (string) is 0 but \strlen() takes string
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 (string) is 2 but \strlen() takes string

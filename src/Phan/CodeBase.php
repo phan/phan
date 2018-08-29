@@ -69,6 +69,7 @@ use function strlen;
  * for a background daemon analyzing single files. (Phan\CodeBase\UndoTracker)
  *
  * @phan-file-suppress PhanPartialTypeMismatchReturn the way generic objects is type hinted is inadequate, etc.
+ * @phan-file-suppress PhanPluginNoAssert
  */
 class CodeBase
 {
@@ -215,16 +216,16 @@ class CodeBase
         array $internal_function_name_list,
         ClassResolverInterface $class_resolver = null
     ) {
-        $this->fqsen_class_map = new Map;
-        $this->fqsen_class_map_internal = new Map;
-        $this->fqsen_class_map_reflection = new Map;
-        $this->fqsen_class_map_user_defined = new Map;
-        $this->fqsen_alias_map = new Map;
-        $this->fqsen_global_constant_map = new Map;
-        $this->fqsen_func_map = new Map;
-        $this->class_fqsen_class_map_map = new Map;
-        $this->method_set = new Set;
-        $this->internal_function_fqsen_set = new Set;
+        $this->fqsen_class_map = new Map();
+        $this->fqsen_class_map_internal = new Map();
+        $this->fqsen_class_map_reflection = new Map();
+        $this->fqsen_class_map_user_defined = new Map();
+        $this->fqsen_alias_map = new Map();
+        $this->fqsen_global_constant_map = new Map();
+        $this->fqsen_func_map = new Map();
+        $this->class_fqsen_class_map_map = new Map();
+        $this->method_set = new Set();
+        $this->internal_function_fqsen_set = new Set();
         $this->class_resolver = $class_resolver;
 
         // Add any pre-defined internal classes, interfaces,
@@ -296,6 +297,7 @@ class CodeBase
     public function enableUndoTracking()
     {
         if ($this->has_enabled_undo_tracker) {
+            // @phan-suppress-next-line PhanThrowTypeAbsent should be impossible.
             throw new \RuntimeException("Undo tracking already enabled");
         }
         $this->has_enabled_undo_tracker = true;
@@ -471,6 +473,9 @@ class CodeBase
         throw new \RuntimeException("Calling replaceFileContents without undo tracker");
     }
 
+    /**
+     * @return void
+     */
     public function eagerlyLoadAllSignatures()
     {
         $this->getInternalClassMap();  // Force initialization of remaining internal php classes to reduce latency of future analysis requests.
@@ -483,7 +488,7 @@ class CodeBase
     public function forceLoadingInternalFunctions()
     {
         $internal_function_fqsen_set = $this->internal_function_fqsen_set;
-        $this->internal_function_fqsen_set = new Set;  // Don't need to track these any more.
+        $this->internal_function_fqsen_set = new Set();  // Don't need to track these any more.
         foreach ($internal_function_fqsen_set as $function_fqsen) {
             // hasFunctionWithFQSEN will automatically load $function_name, **unless** we don't have a signature for that function.
             if (!$this->hasFunctionWithFQSEN($function_fqsen)) {
@@ -520,10 +525,10 @@ class CodeBase
             $this->fqsen_class_map->deepCopyValues();
 
         $this->fqsen_class_map_user_defined =
-            new Map;
+            new Map();
 
         $this->fqsen_class_map_internal =
-            new Map;
+            new Map();
 
         foreach ($this->fqsen_class_map as $fqsen => $clazz) {
             if ($clazz->isPHPInternal()) {
@@ -1033,18 +1038,6 @@ class CodeBase
 
     /**
      * @return Map
-     * A list of all classes
-     *
-     * @deprecated - use hasClassWithFQSEN and getClassByFQSEN or getUserDefinedClassMap instead
-     */
-    public function getClassMap() : Map
-    {
-        $this->getInternalClassMap(); // Force initialization of remaining internal php classes
-        return $this->fqsen_class_map;
-    }
-
-    /**
-     * @return Map
      * A map from FQSENs to classes which are internal.
      */
     public function getUserDefinedClassMap() : Map
@@ -1061,7 +1054,7 @@ class CodeBase
         if (\count($this->fqsen_class_map_reflection) > 0) {
             $fqsen_class_map_reflection = $this->fqsen_class_map_reflection;
             // Free up memory used by old class map. Prevent it from being freed before we can load it manually.
-            $this->fqsen_class_map_reflection = new Map;
+            $this->fqsen_class_map_reflection = new Map();
             foreach ($fqsen_class_map_reflection as $fqsen => $reflection_class) {
                 $this->loadPHPInternalClassWithFQSEN($fqsen, $reflection_class);
             }
@@ -1090,7 +1083,7 @@ class CodeBase
         // mary references.
         if (Config::get_track_references()) {
             if (empty($this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()])) {
-                $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()] = new Set;
+                $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()] = new Set();
             }
             $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()]->attach($method);
         }
@@ -1157,16 +1150,16 @@ class CodeBase
             . ' detection (or force_tracking_references) is enabled.'
         );
 
-        return $this->name_method_map[$name] ?? new Set;
+        return $this->name_method_map[$name] ?? new Set();
     }
 
     /**
      * @return Set
      * The set of all methods and functions
      *
-     * @deprecated - Use getFunctionMap and getMethodSet instead, this is slow and may be removed in a future release.
+     * @internal - this is slow and should be used only for debugging.
      */
-    public function getFunctionAndMethodSet() : Set
+    private function getFunctionAndMethodSet() : Set
     {
         $set = clone($this->method_set);
         foreach ($this->fqsen_func_map as $value) {
@@ -1204,7 +1197,7 @@ class CodeBase
             $signature = [(string)$function_or_method->getUnionType()];
             foreach ($function_or_method->getParameterList() as $param) {
                 $name = $param->getName();
-                $paramType = (string)$param->getUnionType();
+                $param_type = (string)$param->getUnionType();
                 if ($param->isVariadic()) {
                     $name = '...' . $name;
                 }
@@ -1214,7 +1207,7 @@ class CodeBase
                 if ($param->isOptional()) {
                     $name = $name . '=';
                 }
-                $signature[$name] = $paramType;
+                $signature[$name] = $param_type;
             }
             $result[$function_or_method_name] = $signature;
         }
@@ -1467,7 +1460,7 @@ class CodeBase
         if ($class_fqsen_class_map_map->offsetExists($fqsen)) {
             return $class_fqsen_class_map_map->offsetGet($fqsen);
         }
-        $class_fqsen_class_map_map->offsetSet($fqsen, new ClassMap);
+        $class_fqsen_class_map_map->offsetSet($fqsen, new ClassMap());
         return $class_fqsen_class_map_map->offsetGet($fqsen);
     }
 
@@ -1498,7 +1491,7 @@ class CodeBase
             // (All of the functions were loaded during initialization)
             //
             // Also, skip over user-defined global functions defined **by Phan** and its dependencies for analysis
-            if (!Config::get()->ignore_undeclared_functions_with_known_signatures) {
+            if (!Config::getValue('ignore_undeclared_functions_with_known_signatures')) {
                 return false;
             }
             // If we already created the alternates, do nothing.
@@ -1671,6 +1664,9 @@ class CodeBase
         $this->class_names_near_strlen_in_namespace = null;
     }
 
+    /**
+     * @return array<string,array<string,string>>
+     */
     private function getNamespacesForClassNames()
     {
         return $this->namespaces_for_class_names ?? ($this->namespaces_for_class_names = $this->computeNamespacesForClassNames());
@@ -1747,6 +1743,7 @@ class CodeBase
     /**
      * For use with IssueFixSuggester::getSuggestionsForStringSet
      * @param array<string,string> $class_names
+     * @return array<string,string> similar matches
      */
     private function computeSimilarLengthClassNamesForNamespace(array $class_names, int $strlen)
     {

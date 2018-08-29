@@ -1,6 +1,6 @@
-%s:7 PhanTypeMismatchArgument Argument 2 (b) is string but \f() takes float defined at %s:5
-%s:14 PhanTypeMismatchArgument Argument 2 (b) is string but \g() takes \Traversable|float|int defined at %s:12
+%s:7 PhanTypeMismatchArgument Argument 2 (b) is 'string' but \f() takes float defined at %s:5
+%s:14 PhanTypeMismatchArgument Argument 2 (b) is 'string' but \g() takes \Traversable|float|int defined at %s:12
 %s:17 PhanUnextractableAnnotationElementName Saw possibly unextractable annotation for a fragment of comment '* @param int': after int, did not see an element name (will guess based on comment order)
 %s:18 PhanUnextractableAnnotationElementName Saw possibly unextractable annotation for a fragment of comment '* @param string': after string, did not see an element name (will guess based on comment order)
-%s:21 PhanTypeMismatchArgument Argument 1 (a) is string but \h() takes int defined at %s:20
-%s:21 PhanTypeMismatchArgument Argument 2 (b) is int but \h() takes string defined at %s:20
+%s:21 PhanTypeMismatchArgument Argument 1 (a) is 'string' but \h() takes int defined at %s:20
+%s:21 PhanTypeMismatchArgument Argument 2 (b) is 42 but \h() takes string defined at %s:20

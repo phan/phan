@@ -106,6 +106,10 @@ class Request
         return -1;
     }
 
+    /**
+     * @return void (unreachable)
+     * @throws ExitException to imitate an exit without actually exiting
+     */
     public function exit(int $exit_code)
     {
         if ($this->should_exit) {
@@ -172,7 +176,7 @@ class Request
      * Respond with issues in the requested format
      * @return void
      */
-    public function respondWithIssues(int $issueCount)
+    public function respondWithIssues(int $issue_count)
     {
         $raw_issues = $this->buffered_output->fetch();
         if (($this->config[self::PARAM_FORMAT] ?? null) === 'json') {
@@ -185,7 +189,7 @@ class Request
         }
         $response = [
             "status" => self::STATUS_OK,
-            "issue_count" => $issueCount,
+            "issue_count" => $issue_count,
             "issues" => $issues,
         ];
         if ($this->most_recent_definition_request) {
@@ -217,21 +221,21 @@ class Request
         }
 
         $analyze_file_path_set = array_flip($analyze_file_path_list);
-        $filteredFiles = [];
+        $filtered_files = [];
         foreach ($this->files as $file) {
             // Must be relative to project, allow absolute paths to be passed in.
             $file = FileRef::getProjectRelativePathForPath($file);
 
             if (\array_key_exists($file, $analyze_file_path_set)) {
-                $filteredFiles[] = $file;
+                $filtered_files[] = $file;
             } else {
                 // TODO: Reload file list once before processing request?
                 // TODO: Change this to also support analyzing files that would normally be parsed but not analyzed?
                 Daemon::debugf("Failed to find requested file '%s' in parsed file list", $file, json_encode($analyze_file_path_list));
             }
         }
-        Daemon::debugf("Returning file set: %s", json_encode($filteredFiles));
-        return $filteredFiles;
+        Daemon::debugf("Returning file set: %s", json_encode($filtered_files));
+        return $filtered_files;
     }
 
     /**
@@ -256,6 +260,9 @@ class Request
         return $this->most_recent_definition_request;
     }
 
+    /**
+     * @return void
+     */
     public function rejectLanguageServerRequestsRequiringAnalysis()
     {
         $most_recent_definition_request = $this->most_recent_definition_request;

@@ -67,7 +67,7 @@ class Logger
     public static function setLogFile($newFile)
     {
         if (!is_resource($newFile)) {
-            throw new \InvalidArgumentException("Expected newFile to be a resource, got " . gettype($newFile));
+            throw new \TypeError("Expected newFile to be a resource, got " . gettype($newFile));
         }
         if (is_resource(self::$file)) {
             if (self::$file === $newFile) {

@@ -1,0 +1,3 @@
+%s:11 PhanTypeMismatchProperty Assigning 2 to property but \Example501::propWithStringDefault is string
+%s:12 PhanTypeMismatchProperty Assigning \stdClass to property but \Example501::propWithStringDefault is string
+%s:14 PhanTypeMismatchProperty Assigning \stdClass to property but \Example501::propWithIntDefault is int

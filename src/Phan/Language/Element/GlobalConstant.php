@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\AST\ASTReverter;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\Type;
@@ -32,7 +33,6 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
      */
     public function getFQSEN() : FullyQualifiedGlobalConstantName
     {
-        \assert(!empty($this->fqsen), "FQSEN must be defined");
         return $this->fqsen;
     }
 
@@ -44,6 +44,9 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
      * @return GlobalConstant
      * A GlobalConstant structural element representing the given named
      * builtin constant.
+     *
+     * @throws \InvalidArgumentException
+     * If reflection could not locate the builtin constant.
      */
     public static function fromGlobalConstantName(
         string $name
@@ -74,6 +77,14 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         list($namespace, $string) = $this->toStubInfo();
         $namespace_text = $namespace === '' ? '' : "$namespace ";
         $string = sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
+        return $string;
+    }
+
+    public function getMarkupDescription() : string
+    {
+        $string = 'const ' . $this->getName() . ' = ';
+        $value_node = $this->getNodeForValue();
+        $string .= ASTReverter::toShortString($value_node);
         return $string;
     }
 

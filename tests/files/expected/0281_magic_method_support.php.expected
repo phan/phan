@@ -6,20 +6,20 @@
 %s:45 PhanTypeMismatchArgument Argument 2 (b) is null but \A281::fooWithOptionalSecondParam() takes int defined at %s:19
 %s:46 PhanParamTooFew Call with 0 arg(s) to \A281::fooWithOptionalSecondParam() which requires 1 arg(s) defined at %s:19
 %s:47 PhanStaticCallToNonStatic Static call to non-static method \A281::fooWithOptionalSecondParam() defined at %s:19
-%s:52 PhanTypeMismatchArgument Argument 1 (x) is int but \A281::fooWithOptionalNullableParam() takes ?string defined at %s:19
+%s:52 PhanTypeMismatchArgument Argument 1 (x) is 42 but \A281::fooWithOptionalNullableParam() takes ?string defined at %s:19
 %s:54 PhanTypeMismatchArgument Argument 1 (x) is int but \expects_a281() takes \A281 defined at %s:30
 %s:57 PhanTypeMismatchArgument Argument 1 (x) is \A281 but \expects_int281() takes int defined at %s:33
 %s:58 PhanParamTooMany Call with 1 arg(s) to \A281::static_foo_with_return_type_of_static() which only takes 0 arg(s) defined at %s:19
 %s:61 PhanParamTooFew Call with 0 arg(s) to \A281::myMethodWithParams() which requires 1 arg(s) defined at %s:19
-%s:62 PhanTypeMismatchArgument Argument 1 (x) is string but \A281::myMethodWithParams() takes int defined at %s:19
+%s:62 PhanTypeMismatchArgument Argument 1 (x) is 'string' but \A281::myMethodWithParams() takes int defined at %s:19
 %s:65 PhanParamTooFew Call with 0 arg(s) to \A281::myMethodWithUntypedParams() which requires 1 arg(s) defined at %s:19
-%s:68 PhanTypeMismatchArgument Argument 1 (x) is string but \A281::myMethodWithPHPDocParams() takes float defined at %s:19
+%s:68 PhanTypeMismatchArgument Argument 1 (x) is 'str' but \A281::myMethodWithPHPDocParams() takes float defined at %s:19
 %s:68 PhanTypeMismatchArgument Argument 2 (y) is null but \A281::myMethodWithPHPDocParams() takes object defined at %s:19
 %s:70 PhanTypeMismatchArgument Argument 4 (x) is float but \A281::myMethodWithVariadicParams() takes int|string defined at %s:19
 %s:72 PhanTypeMismatchArgument Argument 1 (x) is int|string but \expects_a281() takes \A281 defined at %s:30
-%s:74 PhanTypeMismatchArgument Argument 2 (b) is int but \A281::fooWithOptionalArrayParam() takes array defined at %s:19
-%s:75 PhanTypeMismatchArgument Argument 2 (b) is int but \A281::fooWithOptionalArrayParam2() takes array defined at %s:19
-%s:75 PhanTypeMismatchArgument Argument 3 (c) is string but \A281::fooWithOptionalArrayParam2() takes int defined at %s:19
+%s:74 PhanTypeMismatchArgument Argument 2 (b) is 3 but \A281::fooWithOptionalArrayParam() takes array defined at %s:19
+%s:75 PhanTypeMismatchArgument Argument 2 (b) is 3 but \A281::fooWithOptionalArrayParam2() takes array defined at %s:19
+%s:75 PhanTypeMismatchArgument Argument 3 (c) is 'x' but \A281::fooWithOptionalArrayParam2() takes int defined at %s:19
 %s:80 PhanUndeclaredMethod Call to undeclared method \C281::undeclaredMagicMethod
 %s:81 PhanTypeVoidAssignment Cannot assign void return value
 %s:81 PhanUnusedVariable Unused definition of variable $d

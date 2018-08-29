@@ -1,9 +1,7 @@
 #!/usr/bin/env php
 <?php
 declare(strict_types=1);
-<<<PHAN
-@phan-file-suppress PhanNativePHPSyntaxCheckPlugin
-PHAN;
+// @phan-file-suppress PhanNativePHPSyntaxCheckPlugin
 
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -11,7 +9,9 @@ use Phan\Issue;
 
 class WikiWriter
 {
+    /** @var string */
     private $contents = '';
+    /** @var bool */
     private $print_to_stdout;
 
     public function __construct(bool $print_to_stdout = true)
@@ -87,13 +87,16 @@ EOT;
                 $title = $line;
                 $text_for_section[$title] = '';
             } else {
-                $text_for_section[$title] .= $line."\n";
+                $text_for_section[$title] .= $line . "\n";
             }
         }
         return $text_for_section;
     }
 
-    /** @return void */
+    /**
+     * @return void
+     * @throws InvalidArgumentException (uncaught) if the documented issue types can't be found.
+     */
     public static function main()
     {
         global $argv;
@@ -124,7 +127,7 @@ EOT;
                     throw new InvalidArgumentException("Failed to find category name for category $category of {$issue->getType()}");
                 }
 
-                $header = '# '.$category_name;
+                $header = '# ' . $category_name;
                 $writer->append($header . "\n");
                 if (array_key_exists($header, $old_text_for_section)) {
                     $writer->append($old_text_for_section[$header]);
@@ -133,7 +136,7 @@ EOT;
                 }
             }
             // TODO: Print each severity as we see it?
-            $header = '## '.$issue->getType();
+            $header = '## ' . $issue->getType();
             // TODO: echo '## \[', $issue->getSeverityName(), '\] ', $issue->getType(), "\n";
             if (array_key_exists($header, $old_text_for_section)) {
                 $writer->append($header . "\n");
@@ -165,7 +168,7 @@ EOT;
         file_put_contents($wiki_filename_new, $contents);
     }
 
-    private static function updateTextForSection(string $text, string $header)
+    private static function updateTextForSection(string $text, string $header) : string
     {
         $issue_map = Issue::issueMap();
         $issue_name = preg_replace('@^[# ]*@', '', $header);
@@ -173,7 +176,7 @@ EOT;
 
         if ($issue instanceof Issue) {
             fwrite(STDERR, "Found $issue_name\n");
-            $text = preg_replace_callback('@\n```\n[^\n]*\n```@', function ($unused_match) use ($issue) {
+            $text = preg_replace_callback('@\n```\n[^\n]*\n```@', function ($unused_match) use ($issue) : string {
                 return "\n```\n{$issue->getTemplateRaw()}\n```";
             }, $text);
         }

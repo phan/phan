@@ -1,21 +1,21 @@
 %s:9 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
 %s:10 PhanTypeMismatchDimEmpty Assigning to an empty array index of a value of type string, but expected the index to exist and be of type int
 %s:10 PhanTypeMismatchProperty Assigning array<int,string> to property but \A354::foo is string
-%s:13 PhanTypeMismatchArgumentInternal Argument 1 (var) is string but \count() takes \Countable|array
-%s:14 PhanTypeMismatchDimEmpty Assigning to an empty array index of a value of type string, but expected the index to exist and be of type int
-%s:16 PhanTypeMismatchDimAssignment When appending to a value of type string, found an array access index of type string, but expected the index to be of type int
-%s:22 PhanTypeMismatchDimFetch When fetching an array index from a value of type string, found an array index of type array{}, but expected the index to be of type int
-%s:23 PhanTypeMismatchDimFetch When fetching an array index from a value of type string, found an array index of type string, but expected the index to be of type int
-%s:24 PhanTypeMismatchDimFetch When fetching an array index from a value of type string, found an array index of type null, but expected the index to be of type int
-%s:27 PhanTypeMismatchDimFetch When fetching an array index from a value of type array{offset:string}, found an array index of type array{}, but expected the index to be of type string
-%s:28 PhanTypeMismatchDimFetchNullable When fetching an array index from a value of type array{offset:string}, found an array index of type null, but expected the index to be of the non-nullable type string
-%s:29 PhanTypeInvalidDimOffset Invalid offset 0 of array type array{offset:string}
-%s:29 PhanTypeMismatchDimFetch When fetching an array index from a value of type array{offset:string}, found an array index of type int, but expected the index to be of type string
-%s:30 PhanTypeInvalidDimOffset Invalid offset 31 of array type array{offset:string}
-%s:30 PhanTypeMismatchDimFetch When fetching an array index from a value of type array{offset:string}, found an array index of type int, but expected the index to be of type string
-%s:31 PhanTypeInvalidDimOffset Invalid offset "otherOffset" of array type array{offset:string}
-%s:33 PhanTypeInvalidDimOffset Invalid offset "offset2" of array type array{offset:string}
-%s:35 PhanTypeInvalidDimOffset Invalid offset "offset2" of array type array{offset:string}
-%s:40 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
-%s:41 PhanTypeInvalidDimOffset Invalid offset 2 of array type array{0:int,1:int,3:string}
-%s:43 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 (var) is 'aaa'|string but \count() takes \Countable|array
+%s:14 PhanTypeMismatchDimEmpty Assigning to an empty array index of a value of type 'aaa'|string, but expected the index to exist and be of type int
+%s:16 PhanTypeMismatchDimAssignment When appending to a value of type 'aaa', found an array access index of type 'offset', but expected the index to be of type int
+%s:22 PhanTypeMismatchDimFetch When fetching an array index from a value of type 'abc', found an array index of type array{}, but expected the index to be of type int
+%s:23 PhanTypeMismatchDimFetch When fetching an array index from a value of type 'abc', found an array index of type 'offset', but expected the index to be of type int
+%s:24 PhanTypeMismatchDimFetch When fetching an array index from a value of type 'abc', found an array index of type null, but expected the index to be of type int
+%s:27 PhanTypeMismatchDimFetch When fetching an array index from a value of type array{offset:'c'}, found an array index of type array{}, but expected the index to be of type string
+%s:28 PhanTypeMismatchDimFetchNullable When fetching an array index from a value of type array{offset:'c'}, found an array index of type null, but expected the index to be of the non-nullable type string
+%s:29 PhanTypeInvalidDimOffset Invalid offset 0 of array type array{offset:'c'}
+%s:29 PhanTypeMismatchDimFetch When fetching an array index from a value of type array{offset:'c'}, found an array index of type 0, but expected the index to be of type string
+%s:30 PhanTypeInvalidDimOffset Invalid offset 31 of array type array{offset:'c'}
+%s:30 PhanTypeMismatchDimFetch When fetching an array index from a value of type array{offset:'c'}, found an array index of type 31, but expected the index to be of type string
+%s:31 PhanTypeInvalidDimOffset Invalid offset "otherOffset" of array type array{offset:'c'}
+%s:33 PhanTypeInvalidDimOffset Invalid offset "offset2" of array type array{offset:'c'}
+%s:35 PhanTypeInvalidDimOffset Invalid offset "offset2" of array type array{offset:'c'}
+%s:40 PhanTypeMismatchArgumentInternal Argument 1 (string) is 2 but \strlen() takes string
+%s:41 PhanTypeInvalidDimOffset Invalid offset 2 of array type array{0:1,1:2,3:'x'}
+%s:43 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is 'x' but \intdiv() takes int

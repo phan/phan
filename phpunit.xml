@@ -31,8 +31,12 @@
         <const name="SOAP_EXPECTED_DIR" value="./tests/misc/soap_files/expected"/>
         <const name="INTL_TEST_FILE_DIR" value="./tests/misc/intl_files/src"/>
         <const name="INTL_EXPECTED_DIR" value="./tests/misc/intl_files/expected"/>
+        <const name="PHP70_TEST_FILE_DIR" value="./tests/php70_files/src"/>
+        <const name="PHP70_EXPECTED_DIR" value="./tests/php70_files/expected"/>
         <const name="PHP72_TEST_FILE_DIR" value="./tests/php72_files/src"/>
         <const name="PHP72_EXPECTED_DIR" value="./tests/php72_files/expected"/>
+        <const name="PHP73_TEST_FILE_DIR" value="./tests/php73_files/src"/>
+        <const name="PHP73_EXPECTED_DIR" value="./tests/php73_files/expected"/>
     </php>
 
     <testsuites>
@@ -67,8 +71,14 @@
             <directory>tests/Phan/Library</directory>
             <directory>tests/Phan/Output</directory>
         </testsuite>
+        <testsuite name="PHP70Test">
+            <file>tests/Phan/PHP70Test.php</file>
+        </testsuite>
         <testsuite name="PHP72Test">
             <file>tests/Phan/PHP72Test.php</file>
+        </testsuite>
+        <testsuite name="PHP73Test">
+            <file>tests/Phan/PHP73Test.php</file>
         </testsuite>
     </testsuites>
     <filter>

@@ -11,6 +11,7 @@ use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionLikeName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -20,6 +21,8 @@ use Phan\Language\Scope\GlobalScope;
 /**
  * An object representing the context in which any
  * structural element (such as a class or method) lives.
+ *
+ * @phan-file-suppress PhanPluginNoAssert
  */
 class Context extends FileRef
 {
@@ -75,7 +78,7 @@ class Context extends FileRef
      */
     public function __construct()
     {
-        $this->scope = new GlobalScope;
+        $this->scope = new GlobalScope();
     }
 
     /*
@@ -481,7 +484,7 @@ class Context extends FileRef
         );
     }
 
-    /*
+    /**
      * @return FullyQualifiedFunctionLikeName|FullyQualifiedMethodName|FullyQualifiedFunctionName
      * A fully-qualified structural element name describing
      * the current function or method in scope.
@@ -559,14 +562,12 @@ class Context extends FileRef
      * The element who's scope we're in. If we're in the global
      * scope this method will go down in flames and take your
      * process with it.
+     *
+     * @throws CodeBaseException if this was called without first checking
+     * if this context is in an element scope
      */
     public function getElementInScope(CodeBase $code_base) : TypedElement
     {
-        \assert(
-            $this->isInElementScope(),
-            "Cannot get element in scope if we're in the global scope"
-        );
-
         if ($this->isInFunctionLikeScope()) {
             return $this->getFunctionLikeInScope($code_base);
         } elseif ($this->isInPropertyScope()) {
@@ -752,6 +753,7 @@ class Context extends FileRef
     }
 
     /**
+     * @return void
      * @internal
      * @suppress PhanAccessMethodInternal
      */

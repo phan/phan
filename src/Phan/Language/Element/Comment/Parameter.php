@@ -94,7 +94,7 @@ class Parameter
         );
         if ($this->has_default_value) {
             $param->setDefaultValueType($union_type);
-            // TODO: could setDefaultValue in a future PR. Would have to run \ast\parse_code on the default value, catch ParseError if necessary.
+            // TODO: could setDefaultValue in a future PR. Would have to run \ast\parse_code on the default value, catch ParseError/CompileError if necessary.
             // If given '= "Default"', then extract the default from '<?php ("Default");'
             // Then get the type from UnionTypeVisitor, for defaults such as SomeClass::CONST.
         }

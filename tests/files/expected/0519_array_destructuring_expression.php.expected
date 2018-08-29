@@ -1,0 +1,5 @@
+%s:4 PhanTypeInvalidExpressionArrayDestructuring Invalid value of type int in an array destructuring assignment, expected array|ArrayAccess
+%s:5 PhanTypeInvalidExpressionArrayDestructuring Invalid value of type string in an array destructuring assignment, expected array|ArrayAccess
+%s:6 PhanTypeInvalidExpressionArrayDestructuring Invalid value of type \stdClass in an array destructuring assignment, expected array|ArrayAccess
+%s:7 PhanTypeInvalidExpressionArrayDestructuring Invalid value of type bool in an array destructuring assignment, expected array|ArrayAccess
+%s:8 PhanTypeInvalidExpressionArrayDestructuring Invalid value of type null in an array destructuring assignment, expected array|ArrayAccess

@@ -1,8 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
-use ast\Node;
 use Phan\AST\Visitor\KindVisitorImplementation;
+
+use AssertionError;
+use ast\Node;
 
 /**
  * This simplifies a PHP AST into a form which is easier to analyze.
@@ -70,13 +72,15 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             return self::STATUS_PROCEED;
         }
         $result = $this->__invoke($node);
-        \assert(\is_int($result), 'Expected int');
-        \assert($result > 0, 'Expected positive int');
+        if (!\is_int($result) || $result <= 0) {
+            throw new AssertionError('Expected positive int');
+        }
         return $result;
     }
 
     /**
      * If we don't know how to analyze a node type (or left it out), assume it always proceeds
+     * @return int - The status bitmask corresponding to always proceeding
      */
     public function visit(Node $node)
     {
@@ -100,24 +104,37 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return (bool)$cond;
     }
 
-    // A break statement unconditionally breaks out of a loop/switch
+    /**
+     * A break statement unconditionally breaks out of a loop/switch
+     * @return int the corresponding status code
+     */
     public function visitBreak(Node $node)
     {
         return self::STATUS_BREAK;
     }
 
-    // A continue statement unconditionally continues out of a loop.
+    /**
+     * A continue statement unconditionally continues out of a loop/switch.
+     * TODO: Make this account for levels
+     * @return int the corresponding status code
+     */
     public function visitContinue(Node $node)
     {
         return self::STATUS_CONTINUE;
     }
 
-    // A throw statement unconditionally throws
+    /**
+     * A throw statement unconditionally throws
+     * @return int the corresponding status code
+     */
     public function visitThrow(Node $node)
     {
         return self::STATUS_THROW;
     }
 
+    /**
+     * @return int the corresponding status code for the try/catch/finally block
+     */
     public function visitTry(Node $node)
     {
         $status = $node->flags & self::STATUS_BITMASK;
@@ -160,6 +177,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return $combined_status;
     }
 
+    /**
+     * @return int the corresponding status code
+     */
     public function visitCatchList(Node $node)
     {
         $status = $node->flags & self::STATUS_BITMASK;
@@ -198,6 +218,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return $try_status | $finally_status;
     }
 
+    /**
+     * @return int the corresponding status code
+     */
     public function visitSwitch(Node $node)
     {
         $status = $node->flags & self::STATUS_BITMASK;
@@ -306,6 +329,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return ($inner_status & ~self::STATUS_CONTINUE_OR_BREAK) | self::STATUS_PROCEED;
     }
 
+    /**
+     * @return int the corresponding status code
+     */
     public function visitFor(Node $node)
     {
         $inner_status = $this->check($node->children['stmts']);
@@ -349,18 +375,27 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return $status;
     }
 
-    // A return statement unconditionally returns (Assume expression passed in doesn't throw)
+    /**
+     * A return statement unconditionally returns (Assume expression passed in doesn't throw)
+     * @return int the corresponding status code
+     */
     public function visitReturn(Node $node)
     {
         return self::STATUS_RETURN;
     }
 
-    // A exit statement unconditionally exits (Assume expression passed in doesn't throw)
+    /**
+     * A exit statement unconditionally exits (Assume expression passed in doesn't throw)
+     * @return int the corresponding status code
+     */
     public function visitExit(Node $node)
     {
         return self::STATUS_RETURN;
     }
 
+    /**
+     * @return int the corresponding status code
+     */
     public function visitUnaryOp(Node $node)
     {
         // Don't modify $node->flags, use unmodified flags here
@@ -375,7 +410,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return $this->__invoke($expr);
     }
 
-    // A trigger_error statement may or may not exit, depending on the constant and user configuration.
+    /**
+     * Determines the exit status of a function call, such as trigger_error()
+     *
+     * NOTE: A trigger_error() statement may or may not exit, depending on the constant and user configuration.
+     * @return int the corresponding status code
+     */
     public function visitCall(Node $node)
     {
         $status = $node->flags & self::STATUS_BITMASK;
@@ -445,6 +485,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      * A statement list has the weakest return status out of all of the (non-PROCEEDing) statements.
      * FIXME: This is buggy, doesn't account for one statement having STATUS_CONTINUE some of the time but not all of it.
      *       (We don't check for STATUS_CONTINUE yet, so this doesn't matter yet.)
+     * @return int the corresponding status code
      */
     public function visitStmtList(Node $node)
     {
@@ -536,6 +577,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return $status;
     }
 
+    /**
+     * @return int the corresponding status code
+     */
     public function visitGoto(Node $node)
     {
         return self::STATUS_GOTO;

@@ -17,7 +17,7 @@ g(['a','b','c']);
 g(['extras'=>[1,2,3]]);
 
 function h(int $i) : int {
-    $i = 'string';
+    $i = 'literalstring';
     return $i;
 }
 h(42);

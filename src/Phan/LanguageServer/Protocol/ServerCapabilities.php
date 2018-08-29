@@ -1,10 +1,10 @@
 <?php
+declare(strict_types=1);
 
 namespace Phan\LanguageServer\Protocol;
 
 /**
  * Based on https://github.com/felixfbecker/php-language-server/tree/master/src/Protocol/ServerCapabilities.php
- * FIXME: Hook up capabilities for
  * @phan-file-suppress PhanWriteOnlyPublicProperty (used by AdvancedJsonRpc)
  */
 class ServerCapabilities
@@ -17,7 +17,7 @@ class ServerCapabilities
     public $textDocumentSync;
 
     /**
-     * FIXME: Make the server provide completion support, and re-integrate work on TysonAndre/php-parser-to-php-ast
+     * TODO: Make the server provide completion support
      *
      * @var CompletionOptions|null
      */
@@ -36,6 +36,13 @@ class ServerCapabilities
      * @var bool|null
      */
     public $typeDefinitionProvider;
+
+    /**
+     * The server provides hover support.
+     *
+     * @var bool|null
+     */
+    public $hoverProvider;
 
     /**
      * The server provides find references support.

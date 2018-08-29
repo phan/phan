@@ -8,6 +8,8 @@ use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FileRef;
 use Phan\Language\UnionType;
+
+use AssertionError;
 use Closure;
 
 abstract class AddressableElement extends TypedElement implements AddressableElementInterface
@@ -26,6 +28,11 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * References from the same file and line are deduplicated to save memory.
      */
     protected $reference_list = [];
+
+    /**
+     * @var ?string
+     */
+    protected $doc_comment;
 
     /**
      * @param Context $context
@@ -71,7 +78,9 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      */
     public function getFQSEN()
     {
-        \assert(!empty($this->fqsen), "FQSEN must be defined");
+        if (!$this->fqsen) {
+            throw new AssertionError("FQSEN must be defined");
+        }
         return $this->fqsen;
     }
 
@@ -85,6 +94,28 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     public function setFQSEN(FQSEN $fqsen)
     {
         $this->fqsen = $fqsen;
+    }
+
+    /**
+     * @return bool true if this element's visibility
+     *                   is strictly more visible than $other (public > protected > private)
+     */
+    public function isStrictlyMoreVisibileThan(AddressableElementInterface $other) : bool
+    {
+        if ($this->isPrivate()) {
+            return false;
+        } // $this is public or protected
+
+        if ($other->isPrivate()) {
+            return true;
+        }
+
+        if ($other->isProtected()) {
+            // True if this is public.
+            return !$this->isProtected();
+        }
+        // $other is public
+        return false;
     }
 
     /**
@@ -242,6 +273,9 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         $this->hydrateOnce($code_base);
     }
 
+    /**
+     * @return void
+     */
     protected function hydrateOnce(CodeBase $unused_code_base)
     {
         // Do nothing unless overridden
@@ -250,7 +284,9 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     public function getElementNamespace() : string
     {
         $element_fqsen = $this->getFQSEN();
-        \assert($element_fqsen instanceof FullyQualifiedGlobalStructuralElement);
+        if (!$element_fqsen instanceof FullyQualifiedGlobalStructuralElement) {
+            throw new AssertionError('Expected $this->element_fqsen to be FullyQualifiedGlobalStructuralElement');
+        }
 
         // Figure out which namespace this element is within
         return $element_fqsen->getNamespace();
@@ -261,4 +297,21 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @return ?Closure
      */
     abstract public function createRestoreCallback();
+
+    /**
+     * @param ?string $doc_comment the 'docComment' for this element, if any exists.
+     * @return void
+     */
+    public function setDocComment(string $doc_comment = null)
+    {
+        $this->doc_comment = $doc_comment;
+    }
+
+    /**
+     * @return ?string the 'docComment' for this element, if any exists.
+     */
+    public function getDocComment()
+    {
+        return $this->doc_comment;
+    }
 }

@@ -3,6 +3,8 @@ namespace Phan\Language\FQSEN;
 
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
+
+use Error;
 use Serializable;
 
 /**
@@ -92,21 +94,30 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
      */
     abstract public function __toString() : string;
 
+    /**
+     * @throws Error to prevent accidentally calling this
+     */
     public function __clone()
     {
         // We compare and look up FQSENs by their identity
-        throw new \Error("cloning an FQSEN (" . (string)$this . ") is forbidden\n");
+        throw new Error("cloning an FQSEN (" . (string)$this . ") is forbidden\n");
     }
 
+    /**
+     * @throws Error to prevent accidentally calling this
+     */
     public function serialize()
     {
         // We compare and look up FQSENs by their identity
-        throw new \Error("serializing an FQSEN (" . (string)$this . ") is forbidden\n");
+        throw new Error("serializing an FQSEN (" . (string)$this . ") is forbidden\n");
     }
 
+    /**
+     * @throws Error to prevent accidentally calling this
+     */
     public function unserialize($unused_serialized)
     {
         // We compare and look up FQSENs by their identity
-        throw new \Error("unserializing an FQSEN ($unused_serialized) is forbidden\n");
+        throw new Error("unserializing an FQSEN ($unused_serialized) is forbidden\n");
     }
 }

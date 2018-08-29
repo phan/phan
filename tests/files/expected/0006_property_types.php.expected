@@ -1,2 +1,2 @@
-%s:6 PhanTypeMismatchProperty Assigning array{0:string,1:string,2:string} to property but \A::property is \bad
+%s:6 PhanTypeMismatchProperty Assigning array{0:'alpha',1:'beta',2:'gamma'} to property but \A::property is \bad
 %s:6 PhanUndeclaredTypeProperty Property \A::property has undeclared type \bad

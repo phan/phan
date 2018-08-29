@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Debug;
 
-readline_completion_function(function ($input) {
+readline_completion_function(function (string $input) : array {
     $matches = [];
-    foreach (\get_declared_classes() as $className) {
-        if (\strpos($className, $input) == 0) {
-            $matches[] = $className;
+    foreach (\get_declared_classes() as $class_name) {
+        if (\strpos($class_name, $input) == 0) {
+            $matches[] = $class_name;
         }
     }
     return $matches;
@@ -33,6 +33,8 @@ do {
         eval($input . ';');
     } catch (\ParseError $exception) {
         print "Parse error in `$input`\n";
+    } catch (\CompileError $exception) {
+        print "Compile error in `$input`\n";
     } catch (\Throwable $exception) {
         print $exception->getMessage() . "\n";
         print $exception->getTraceAsString() . "\n";

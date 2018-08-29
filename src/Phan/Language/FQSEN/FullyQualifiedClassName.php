@@ -70,7 +70,7 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
      */
     public static function getStdClassFQSEN() : FullyQualifiedClassName
     {
-        return self::memoizeStatic(__METHOD__, function () {
+        return self::memoizeStatic(__METHOD__, function () : FullyQualifiedClassName {
             return self::fromFullyQualifiedString("\stdClass");
         });
     }

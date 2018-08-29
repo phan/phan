@@ -24,6 +24,12 @@ interface AddressableElementInterface extends TypedElementInterface
     public function setFQSEN(FQSEN $fqsen);
 
     /**
+     * @return bool true if this element's visibility
+     *                   is strictly more visible than $other (public > protected > private)
+     */
+    public function isStrictlyMoreVisibileThan(AddressableElementInterface $other) : bool;
+
+    /**
      * @return bool
      * True if this is a public property
      */
@@ -67,4 +73,14 @@ interface AddressableElementInterface extends TypedElementInterface
     public function getReferenceCount(
         CodeBase $code_base
     ) : int;
+
+    /**
+     * @return string For use in the language server protocol.
+     */
+    public function getMarkupDescription() : string;
+
+    /**
+     * @return ?string the 'docComment' for this element, if any exists.
+     */
+    public function getDocComment();
 }

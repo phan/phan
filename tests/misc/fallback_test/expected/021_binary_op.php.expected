@@ -1,0 +1,2 @@
+src/021_binary_op.php:2 PhanSyntaxError syntax error, unexpected ')'
+src/021_binary_op.php:2 PhanTypeMismatchArgumentInternal Argument 1 (var) is 'example ' but \count() takes \Countable|array

@@ -1,6 +1,5 @@
 %s:12 PhanUndeclaredStaticMethod Static call to undeclared method \C::unknown
 %s:13 PhanParamTooFew Call with 0 arg(s) to \C::t1() which requires 1 arg(s) defined at %s:3
 %s:14 PhanParamTooMany Call with 3 arg(s) to \C::t1() which only takes 2 arg(s) defined at %s:3
-%s:14 PhanTypeMismatchArgument Argument 2 (arg2) is int but \C::t1() takes string defined at %s:3
+%s:14 PhanTypeMismatchArgument Argument 2 (arg2) is 2 but \C::t1() takes string defined at %s:3
 %s:15 PhanTypeMismatchArgument Argument 1 (arg1) is float but \C::t1() takes int defined at %s:3
-

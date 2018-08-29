@@ -21,9 +21,10 @@ With Phan installed, you'll want to [create a `.phan/config.php` file](https://g
 your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
 
 This version (branch) of Phan depends on PHP 7.x with the [php-ast](https://github.com/nikic/php-ast) extension (0.1.5 or newer, uses AST version 50) and supports PHP version 7.0-7.2 syntax.
-The master branch is the basis for the 0.12.x releases.
+The master branch is the basis for the 1.x.y releases.
 Installation instructions for php-ast can be found [here](https://github.com/nikic/php-ast#installation).
-Having PHP's `pcntl` extension installed is strongly recommended (not available on Windows), in order to support using parallel processes for analysis (pcntl is also recommended for daemon mode).
+Having PHP's `pcntl` extension installed is strongly recommended (not available on Windows), in order to support using parallel processes for analysis
+(`pcntl` is recommended for daemon mode and LSP to work efficiently, but both should work without that extension).
 
 * **Alternative Installation Methods**<br />
   See [Getting Started](https://github.com/phan/phan/wiki/Getting-Started) for alternative methods of using
@@ -40,7 +41,7 @@ Phan is able to perform the following kinds of analysis.
 * Check that all methods, functions, classes, traits, interfaces, constants, properties and variables are defined and accessible.
 * Check for type safety and arity issues on method/function/closure calls.
 * Check for PHP7/PHP5 backward compatibility.
-* Check for features that weren't supported in older PHP 7.x minor releases (E.g. `object`, `void`, `iterable`, `?T`, `[$x] = ...;`, etc.)
+* Check for features that weren't supported in older PHP 7.x minor releases (E.g. `object`, `void`, `iterable`, `?T`, `[$x] = ...;`, negative string offsets, multiple exception catches, etc.)
 * Check for sanity with array accesses.
 * Check for type safety on binary operations.
 * Check for valid and type safe return values on methods, functions, and closures.
@@ -54,8 +55,8 @@ Phan is able to perform the following kinds of analysis.
 * Supports namespaces, traits and variadics.
 * Supports [Union Types](https://github.com/phan/phan/wiki/About-Union-Types).
 * Supports generic arrays such as `int[]`, `UserObject[]`, `array<int,UserObject>`, etc..
-* Supports array shapes such as `array{key:string,otherKey:?stdClass}`, etc. (internally and in PHPDoc tags) as of Phan >= 0.12.0.
-* The upcoming 0.12.3 release will support indicating that fields of an array shape are optional
+* Supports array shapes such as `array{key:string,otherKey:?stdClass}`, etc. (internally and in PHPDoc tags)
+  This also supports indicating that fields of an array shape are optional
   via `array{requiredKey:string,optionalKey?:string}` (useful for `@param`)
 * Supports phpdoc [type annotations](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code).
 * Supports inheriting phpdoc type annotations.
@@ -68,7 +69,7 @@ Phan is able to perform the following kinds of analysis.
 * Supports [magic @method annotations](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code#method) (`@method <union_type> <method_name>(<union_type> <param1_name>)`)
 * Supports [`class_alias` annotations (experimental, off by default)](https://github.com/phan/phan/pull/586)
 * Supports indicating the class to which a closure will be bound, via `@phan-closure-scope` ([example](tests/files/src/0264_closure_override_context.php))
-* Supports analysis of closures and return types passed to `array_map`, `array_filter`, and other internal array functions. (as of Phan 0.10.1+/0.8.9+)
+* Supports analysis of closures and return types passed to `array_map`, `array_filter`, and other internal array functions.
 * Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
 * Can be run on many cores. (requires `pcntl`)
 * [Can run in the background (daemon mode)](https://github.com/phan/phan/wiki/Using-Phan-Daemon-Mode), to then quickly respond to requests to analyze the latest version of a file.
@@ -102,7 +103,7 @@ Additional analysis features have been provided by [plugins](https://github.com/
 - [Checking coding style conventions](https://github.com/phan/phan/tree/master/.phan/plugins#3-plugins-specific-to-code-styles)
 - [Others](https://github.com/phan/phan/tree/master/.phan/plugins#plugins)
 
-Example: [Phan's plugins for self-analysis.](https://github.com/phan/phan/blob/0.12.0/.phan/config.php#L461-L474)
+Example: [Phan's plugins for self-analysis.](https://github.com/phan/phan/blob/1.0.0/.phan/config.php#L542-L563)
 
 # Usage
 
@@ -120,7 +121,7 @@ A simple `.phan/config.php` file might look something like the following.
  */
 return [
 
-    // Supported values: '7.0', '7.1', '7.2', null.
+    // Supported values: '7.0', '7.1', '7.2', '7.3', null.
     // If this is set to null,
     // then Phan assumes the PHP version which is closest to the minor version
     // of the php executable used to execute phan.
@@ -156,10 +157,13 @@ return [
     // A list of plugin files to execute.
     // See https://github.com/phan/phan/tree/master/.phan/plugins for even more.
     // (Pass these in as relative paths.
-    // The 0.10.2 release will allow passing 'AlwaysReturnPlugin' if referring to a plugin that is bundled with Phan)
+    // Base names without extensions such as 'AlwaysReturnPlugin'
+    // can be used to refer to a plugin that is bundled with Phan)
     'plugins' => [
         // checks if a function, closure or method unconditionally returns.
-        'AlwaysReturnPlugin',  // can also be written as 'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php'
+
+        // can also be written as 'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php'
+        'AlwaysReturnPlugin',
         // Checks for syntactically unreachable statements in
         // the global scope or function bodies.
         'UnreachableCodePlugin',
@@ -272,7 +276,7 @@ Usage: ./phan [options] [files...]
  -b, --backward-compatibility-checks
   Check for potential PHP 5 -> PHP 7 BC issues
 
- --target-php-version {7.0,7.1,7.2,native}
+ --target-php-version {7.0,7.1,7.2,7.3,native}
   The PHP version that the codebase will be checked for compatibility against.
   For best results, the PHP binary used to run Phan should have the same PHP version.
   (Phan relies on Reflection for some param counts
@@ -349,6 +353,11 @@ Usage: ./phan [options] [files...]
  -s, --daemonize-socket </path/to/file.sock>
   Unix socket for Phan to listen for requests on, in daemon mode.
 
+ --daemonize-tcp-host
+  TCP hostname for Phan to listen for JSON requests on, in daemon mode.
+  (e.g. 'default', which is an alias for host 127.0.0.1, or `0.0.0.0` for
+  usage with Docker). `phan_client` can be used to communicate with the Phan Daemon.
+
  --daemonize-tcp-port <default|1024-65535>
   TCP port for Phan to listen for JSON requests on, in daemon mode.
   (e.g. 'default', which is an alias for port 4846.)
@@ -418,20 +427,13 @@ class C {
 Just like in PHP, any type can be nulled in the function declaration which also
 means a null is allowed to be passed in for that parameter.
 
-As of Phan 0.8.12+/0.10.4+/0.11.2+/0.12.0:
 Phan checks the type of every single element of arrays (Including keys and values).
-In practical terms, this means that `[1,2,'a']` is seen as `array<int,int|string>`,
+In practical terms, this means that `[$int1=>$int2,$int3=>$int4,$int5=>$str6]` is seen as `array<int,int|string>`,
 which Phan represents as `array<int,int>|array<int,string>`.
 `[$strKey => new MyClass(), $strKey2 => $unknown]` will be represented as
 `array<string,MyClass>|array<string,mixed>`.
-(Note that Phan also started tracking the key types of generic arrays in 0.10.4)
 
-In older versions (<= 0.10.3 and other minor version releases from the same date):
-By default, and completely arbitrarily, for things like `int[]` it checks the first 5
-elements. If the first 5 are of the same type, it assumes the rest are as well. If it can't
-determine the array sub-type it just becomes `array` which will pass through most type
-checks. In practical terms, this means that `[1,2,'a']` is seen as `array` but `[1,2,3]`
-is `int[]` and `['a','b','c']` as `string[]`.
+- Literals such as `[12,'myString']` will be represented internally as array shapes such as `array{0:12,1:'myString'}`
 
 # Generating a file list
 

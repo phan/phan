@@ -1,0 +1,2 @@
+%s:4 PhanCompatibleVoidTypePHP70 Return type 'void' means the absence of a return value starting in PHP 7.1. In PHP 7.0, void refers to a class/interface with the name 'void'
+

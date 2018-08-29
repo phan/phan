@@ -32,14 +32,21 @@ final class VariableGraph
     public $loop_def_ids = [];
 
     /**
+     * @var array<int,true>
+     *
+     * The set of definition ids that are caught exceptions in catch blocks.
+     */
+    public $caught_exception_ids = [];
+
+    /**
      * @var array<string,int> maps variable names to whether
      *    they have ever occurred as a given self::IS_* category in the current scope
      */
     public $variable_types = [];
 
-    const IS_REFERENCE      = 1<<0;
-    const IS_GLOBAL         = 1<<1;
-    const IS_STATIC         = 1<<2;
+    const IS_REFERENCE      = 1 << 0;
+    const IS_GLOBAL         = 1 << 1;
+    const IS_STATIC         = 1 << 2;
 
     const IS_REFERENCE_OR_GLOBAL_OR_STATIC = self::IS_REFERENCE | self::IS_GLOBAL | self::IS_STATIC;
 
@@ -132,6 +139,27 @@ final class VariableGraph
     public function isLoopValueDefinitionId(int $definition_id) : bool
     {
         return \array_key_exists($definition_id, $this->loop_def_ids);
+    }
+
+    /**
+     * Marks something as being a loop variable `$v` in `foreach ($arr as $k => $v)`
+     * (Common false positive, since there's no way to avoid setting the value)
+     *
+     * @return void
+     */
+    public function markAsCaughtException($node)
+    {
+        if ($node instanceof Node) {
+            $this->caught_exception_ids[spl_object_id($node)] = true;
+        }
+    }
+
+    /**
+     * Checks if the node for this id is defined as a caught exception
+     */
+    public function isCaughtException(int $definition_id) : bool
+    {
+        return \array_key_exists($definition_id, $this->caught_exception_ids);
     }
 
     /**

@@ -2,17 +2,19 @@
 namespace Phan\Language\Type;
 
 use Phan\AST\UnionTypeVisitor;
-use Phan\Language\Type;
-use Phan\Language\Context;
-use Phan\Language\UnionType;
-use Phan\Language\UnionTypeBuilder;
-use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Language\Context;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Type;
+use Phan\Language\UnionType;
+use Phan\Language\UnionTypeBuilder;
 
 use ast\Node;
+use InvalidArgumentException;
+use RuntimeException;
 
-final class GenericArrayType extends ArrayType
+final class GenericArrayType extends ArrayType implements GenericArrayInterface
 {
     /** @phan-override */
     const NAME = 'array';
@@ -61,11 +63,13 @@ final class GenericArrayType extends ArrayType
      *
      * @param int $key_type
      * Corresponds to the type of the array keys. Set this to a GenericArrayType::KEY_* constant.
+     *
+     * @throws InvalidArgumentException if $key_type is an invalid constant
      */
     protected function __construct(Type $type, bool $is_nullable, int $key_type)
     {
         if ($key_type & ~3) {
-            throw new \InvalidArgumentException("Invalid key_type $key_type");
+            throw new InvalidArgumentException("Invalid key_type $key_type");
         }
         parent::__construct('\\', self::NAME, [], $is_nullable);
         $this->element_type = $type;
@@ -293,12 +297,11 @@ final class GenericArrayType extends ArrayType
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
         // and should bail out.
-        \assert(
-            $recursion_depth < 20,
-            "Recursion has gotten out of hand"
-        );
+        if ($recursion_depth >= 20) {
+            throw new RuntimeException("Recursion has gotten out of hand");
+        }
 
-        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) {
+        return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
             $union_type = $this->asUnionType();
 
             $class_fqsen = $this->genericArrayElementType()->asFQSEN();
@@ -306,8 +309,6 @@ final class GenericArrayType extends ArrayType
             if (!($class_fqsen instanceof FullyQualifiedClassName)) {
                 return $union_type;
             }
-
-            \assert($class_fqsen instanceof FullyQualifiedClassName);
 
             if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
                 return $union_type;
@@ -318,7 +319,7 @@ final class GenericArrayType extends ArrayType
             $class_union_type = $clazz->getUnionType();
             $additional_union_type = $clazz->getAdditionalTypes();
             if ($additional_union_type !== null) {
-                $class_union_type = $union_type->withUnionType($additional_union_type);
+                $class_union_type = $class_union_type->withUnionType($additional_union_type);
             }
 
             $union_type = $union_type->withUnionType(
@@ -327,9 +328,9 @@ final class GenericArrayType extends ArrayType
 
             // Recurse up the tree to include all types
             $recursive_union_type_builder = new UnionTypeBuilder();
-            $representation = (string)$this;
+            $representation = $this->__toString();
             foreach ($union_type->getTypeSet() as $clazz_type) {
-                if ((string)$clazz_type != $representation) {
+                if ($clazz_type->__toString() !== $representation) {
                     $recursive_union_type_builder->addUnionType(
                         $clazz_type->asExpandedTypes(
                             $code_base,
@@ -343,15 +344,26 @@ final class GenericArrayType extends ArrayType
 
             // Add in aliases
             // (If enable_class_alias_support is false, this will do nothing)
-            $fqsen_aliases = $code_base->getClassAliasesByFQSEN($class_fqsen);
-            foreach ($fqsen_aliases as $alias_fqsen_record) {
-                $alias_fqsen = $alias_fqsen_record->alias_fqsen;
-                $recursive_union_type_builder->addType(
-                    $alias_fqsen->asType()->asGenericArrayType($this->key_type)
-                );
+            if (Config::getValue('enable_class_alias_support')) {
+                self::addClassAliases($code_base, $recursive_union_type_builder, $class_fqsen);
             }
             return $recursive_union_type_builder->getUnionType();
         });
+    }
+
+    // (If enable_class_alias_support is false, this will not be called)
+    private function addClassAliases(
+        CodeBase $code_base,
+        UnionTypeBuilder $union_type_builder,
+        FullyQualifiedClassName $class_fqsen
+    ) {
+        $fqsen_aliases = $code_base->getClassAliasesByFQSEN($class_fqsen);
+        foreach ($fqsen_aliases as $alias_fqsen_record) {
+            $alias_fqsen = $alias_fqsen_record->alias_fqsen;
+            $union_type_builder->addType(
+                $alias_fqsen->asType()->asGenericArrayType($this->key_type)
+            );
+        }
     }
 
     public static function keyTypeFromUnionTypeKeys(UnionType $union_type) : int
@@ -476,16 +488,24 @@ final class GenericArrayType extends ArrayType
         return GenericArrayType::KEY_MIXED;
     }
 
+    public function hasArrayShapeOrLiteralTypeInstances() : bool
+    {
+        return $this->element_type->hasArrayShapeOrLiteralTypeInstances();
+    }
+
     public function hasArrayShapeTypeInstances() : bool
     {
         return $this->element_type->hasArrayShapeTypeInstances();
     }
 
-    /** @return array<int,Type> */
-    public function withFlattenedArrayShapeTypeInstances() : array
+    /**
+     * @return array<int,Type>
+     * @override
+     */
+    public function withFlattenedArrayShapeOrLiteralTypeInstances() : array
     {
         // TODO: Any point in caching this?
-        $type_instances = $this->element_type->withFlattenedArrayShapeTypeInstances();
+        $type_instances = $this->element_type->withFlattenedArrayShapeOrLiteralTypeInstances();
         if (\count($type_instances) === 1 && $type_instances[0] === $this->element_type) {
             return [$this];
         }

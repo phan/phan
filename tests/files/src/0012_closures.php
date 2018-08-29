@@ -17,4 +17,11 @@ class A {
 
         return $closure(3);
     }
+
+    public function staticClosure()
+    {
+        return static function() {
+            return $this->a;
+        };
+    }
 }

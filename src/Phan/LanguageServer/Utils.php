@@ -24,6 +24,7 @@ class Utils
     public static function crash(Throwable $err)
     {
         Loop\nextTick(function () use ($err) {
+            // @phan-suppress-next-line PhanThrowTypeAbsent this is meant to crash the loop for debugging.
             throw $err;
         });
     }

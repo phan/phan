@@ -23,7 +23,10 @@ use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
 
 use ast\Node;
+use CompileError;
+use InvalidArgumentException;
 use ParseError;
+use Throwable;
 
 /**
  * This class is the entry point into the static analyzer.
@@ -54,6 +57,8 @@ class Analysis
      * See autoload_internal_extension_signatures.
      *
      * @return Context
+     *
+     * @throws InvalidArgumentException for invalid stub files
      */
     public static function parseFile(CodeBase $code_base, string $file_path, bool $suppress_parse_errors = false, string $override_contents = null, bool $is_php_internal_stub = false) : Context
     {
@@ -63,7 +68,7 @@ class Analysis
             /** @see \Phan\Language\FileRef->isPHPInternal() */
             $file_path = 'internal';
         }
-        $context = (new Context)->withFile($file_path);
+        $context = (new Context())->withFile($file_path);
 
         // Convert the file to an Abstract Syntax Tree
         // before passing it on to the recursive version
@@ -79,7 +84,7 @@ class Analysis
         $file_contents = $cache_entry->getContents();
         if ($file_contents === '') {
             if ($is_php_internal_stub) {
-                throw new \InvalidArgumentException("Unexpected empty php file for autoload_internal_extension_signatures: path=" . json_encode($original_file_path, JSON_UNESCAPED_SLASHES));
+                throw new InvalidArgumentException("Unexpected empty php file for autoload_internal_extension_signatures: path=" . json_encode($original_file_path, JSON_UNESCAPED_SLASHES));
             }
             // php-ast would return null for 0 byte files as an implementation detail.
             // Make Phan consistently emit this warning.
@@ -96,6 +101,8 @@ class Analysis
         try {
             $node = Parser::parseCode($code_base, $context, null, $file_path, $file_contents, $suppress_parse_errors);
         } catch (ParseError $e) {
+            return $context;
+        } catch (CompileError $e) {
             return $context;
         } catch (ParseException $e) {
             return $context;
@@ -124,8 +131,8 @@ class Analysis
 
         if (Config::getValue('simplify_ast')) {
             try {
-                $newNode = ASTSimplifier::applyStatic($node);  // Transform the original AST, leaving the original unmodified.
-                $node = $newNode;  // Analyze the new AST instead.
+                // Transform the original AST, and if successful, then analyze the new AST instead of the original
+                $node = ASTSimplifier::applyStatic($node);
             } catch (\Exception $e) {
                 Issue::maybeEmit(
                     $code_base,
@@ -184,7 +191,6 @@ class Analysis
             $context->withLineNumberStart($node->lineno ?? 0)
         ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
-        \assert(!empty($context), 'Context cannot be null');
         $kind = $node->kind;
 
         // \ast\AST_GROUP_USE has \ast\AST_USE as a child.
@@ -206,14 +212,12 @@ class Analysis
             // Step into each child node and get an
             // updated context for the node
             $child_context = self::parseNodeInContext($code_base, $child_context, $child_node);
-
-            \assert(!empty($child_context), 'Context cannot be null');
         }
 
         // For closed context elements (that have an inner scope)
         // return the outer context instead of their inner context
         // after we finish parsing their children.
-        if (in_array($kind, [
+        if (\in_array($kind, [
             \ast\AST_CLASS,
             \ast\AST_METHOD,
             \ast\AST_FUNC_DECL,
@@ -307,7 +311,7 @@ class Analysis
         $function_map = $code_base->getFunctionMap();
         foreach ($function_map as $function) {  // iterate, ignoring $fqsen
             if ($show_progress) {
-                CLI::progress('function', (++$i)/(\count($function_map)));
+                CLI::progress('function', (++$i) / (\count($function_map)));
             }
             $analyze_function_or_method($function);
         }
@@ -324,7 +328,7 @@ class Analysis
                 // I suspect that method analysis is hydrating some of the classes,
                 // adding even more inherited methods to the end of the set.
                 // This recalculation is needed so that the progress bar is accurate.
-                CLI::progress('method', (++$i)/(\count($method_set)));
+                CLI::progress('method', (++$i) / (\count($method_set)));
             }
             $analyze_function_or_method($method);
         }
@@ -446,7 +450,7 @@ class Analysis
         string $override_contents = null
     ) : Context {
         // Set the file on the context
-        $context = (new Context)->withFile($file_path);
+        $context = (new Context())->withFile($file_path);
         // @phan-suppress-next-line PhanAccessMethodInternal
         $context->importNamespaceMapFromParsePhase($code_base);
 
@@ -482,18 +486,15 @@ class Analysis
                 $code_base,
                 $context,
                 Issue::SyntaxError,
-                $parse_error->getLineNumberStart(),
+                $parse_error->getLineNumberStart(),  // getLineNumberStart() is what differs from emitSyntaxError
                 $parse_error->getMessage()
             );
             return $context;
         } catch (ParseError $parse_error) {
-            Issue::maybeEmit(
-                $code_base,
-                $context,
-                Issue::SyntaxError,
-                $parse_error->getLine(),
-                $parse_error->getMessage()
-            );
+            self::emitSyntaxError($code_base, $context, $parse_error);
+            return $context;
+        } catch (CompileError $parse_error) {
+            self::emitSyntaxError($code_base, $context, $parse_error);
             return $context;
         }
 
@@ -511,16 +512,11 @@ class Analysis
 
         if (Config::getValue('simplify_ast')) {
             try {
-                $newNode = ASTSimplifier::applyStatic($node);  // Transform the original AST, leaving the original unmodified.
-                $node = $newNode;  // Analyze the new AST instead.
+                // Transform the original AST, and if successful, then analyze the new AST instead of the original
+                $node = ASTSimplifier::applyStatic($node);
             } catch (\Exception $e) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::SyntaxError,  // Not the right kind of error. I don't think it would throw, anyway.
-                    $e->getLine(),
-                    $e->getMessage()
-                );
+                // Not the right kind of Issue to show to the user. I don't think it would throw, anyway.
+                self::emitSyntaxError($code_base, $context, $e);
             }
         }
         PhanAnnotationAdder::applyFull($node);
@@ -532,5 +528,22 @@ class Analysis
 
         ConfigPluginSet::instance()->afterAnalyzeFile($code_base, $context, $file_contents, $node);
         return $context;
+    }
+
+    /**
+     * @return void
+     */
+    private static function emitSyntaxError(
+        CodeBase $code_base,
+        Context $context,
+        Throwable $e
+    ) {
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            Issue::SyntaxError,
+            $e->getLine(),
+            $e->getMessage()
+        );
     }
 }

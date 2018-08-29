@@ -10,7 +10,10 @@ rm $ACTUAL_PATH -f || exit 1
 ../../tool/make_stubs -e json | tee $ACTUAL_PATH
 sed -i 's,@phan-stub-for-extension json@.*$,@phan-stub-for-extension json@%s,' $ACTUAL_PATH
 # Normalize output by deleting constants added in php 7.1.0+
-sed -i '/JSON_INVALID_UTF8_\|JSON_UNESCAPED_LINE_TERMINATOR\|JSON_UNESCAPED_SLASHES/d' $ACTUAL_PATH
+sed -i '/JSON_INVALID_UTF8_\|JSON_UNESCAPED_LINE_TERMINATOR\|JSON_UNESCAPED_SLASHES\|JSON_THROW_ON_ERROR/d' $ACTUAL_PATH
+
+# PHP 7.3 introduced class JsonException, so delete the lines with that class definition
+sed -i '/^class JsonException extends/,+8 d' $ACTUAL_PATH
 # diff returns a non-zero exit code if files differ or are missing
 # This outputs the difference between actual and expected output.
 echo

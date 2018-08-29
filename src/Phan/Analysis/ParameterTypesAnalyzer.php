@@ -67,8 +67,7 @@ class ParameterTypesAnalyzer
                     }
                 } else {
                     // Make sure the class exists
-                    $type_fqsen = $type->asFQSEN();
-                    \assert($type_fqsen instanceof FullyQualifiedClassName, 'non-native types must be class names');
+                    $type_fqsen = FullyQualifiedClassName::fromType($type);
                     if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
                         Issue::maybeEmitWithParameters(
                             $code_base,
@@ -267,7 +266,7 @@ class ParameterTypesAnalyzer
         //      then this has to check two different overrides (Subclass overriding parent class, and subclass overriding abstract method in interface)
         try {
             $o_method_list = $method->getOverriddenMethods($code_base);
-        } catch (CodeBaseException $e) {
+        } catch (CodeBaseException $_) {
             // TODO: Remove if no edge cases are seen.
             Issue::maybeEmit(
                 $code_base,
@@ -591,9 +590,7 @@ class ParameterTypesAnalyzer
         }
 
         // Access must be compatible
-        if ($o_method->isProtected() && $method->isPrivate()
-            || $o_method->isPublic() && !$method->isPublic()
-        ) {
+        if ($o_method->isStrictlyMoreVisibileThan($method)) {
             if ($o_method->isPHPInternal()) {
                 if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::AccessSignatureMismatchInternal)) {
                     Issue::maybeEmit(

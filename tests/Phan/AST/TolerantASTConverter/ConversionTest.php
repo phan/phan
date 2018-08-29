@@ -14,12 +14,17 @@ use RuntimeException;
 
 use ast;
 
-class ConversionTest extends BaseTest
+/**
+ * Tests that the polyfill works with valid ASTs
+ *
+ * @phan-file-suppress PhanThrowTypeAbsent it's a test
+ */
+final class ConversionTest extends BaseTest
 {
     /**
      * @return array<int,string>
      */
-    protected function _scanSourceDirForPHP(string $source_dir) : array
+    protected function scanSourceDirForPHP(string $source_dir) : array
     {
         $files = [];
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($source_dir)) as $file_path => $file_info) {
@@ -46,7 +51,7 @@ class ConversionTest extends BaseTest
         try {
             ast\parse_code('', $ast_version);
             return true;
-        } catch (\LogicException $e) {
+        } catch (\LogicException $_) {
             return false;
         }
     }
@@ -63,7 +68,7 @@ class ConversionTest extends BaseTest
         foreach ($files as $file) {
             $token_counts[$file] = count(token_get_all(file_get_contents($file)));
         }
-        usort($files, function (string $path1, string $path2) use ($token_counts) {
+        usort($files, function (string $path1, string $path2) use ($token_counts) : int {
             return $token_counts[$path1] <=> $token_counts[$path2];
         });
     }
@@ -77,7 +82,7 @@ class ConversionTest extends BaseTest
     {
         $tests = [];
         $source_dir = dirname(dirname(dirname(realpath(__DIR__)))) . '/misc/fallback_ast_src';
-        $paths = $this->_scanSourceDirForPHP($source_dir);
+        $paths = $this->scanSourceDirForPHP($source_dir);
 
         self::sortByTokenCount($paths);
         $supports50 = self::hasNativeASTSupport(50);

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Based on PHPDoc stub file for ast extension from
  * https://github.com/nikic/php-ast/blob/master/ast_stub.php

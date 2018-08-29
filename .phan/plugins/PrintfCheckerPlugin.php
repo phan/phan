@@ -71,20 +71,20 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      *
      * @param CodeBase $code_base
      * @param Context $context
-     * @param bool|int|string|float|Node|array|null $astNode
+     * @param bool|int|string|float|Node|array|null $ast_node
      * @return ?PrimitiveValue
      */
-    protected function astNodeToPrimitive(CodeBase $code_base, Context $context, $astNode)
+    protected function astNodeToPrimitive(CodeBase $code_base, Context $context, $ast_node)
     {
         // Base case: convert primitive tokens such as numbers and strings.
-        if (!($astNode instanceof Node)) {
-            return new PrimitiveValue($astNode);
+        if (!($ast_node instanceof Node)) {
+            return new PrimitiveValue($ast_node);
         }
-        switch ($astNode->kind) {
+        switch ($ast_node->kind) {
             case \ast\AST_CONST:
-                $nameNode = $astNode->children['name'];
-                if ($nameNode->kind === \ast\AST_NAME) {
-                    $name = $nameNode->children['name'];
+                $name_node = $ast_node->children['name'];
+                if ($name_node->kind === \ast\AST_NAME) {
+                    $name = $name_node->children['name'];
                     if (!\is_string($name)) {
                         return null;
                     }
@@ -108,20 +108,20 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 return null;
         // TODO: Resolve class constant access when those are format strings. Same for PregRegexCheckerPlugin.
             case \ast\AST_CALL:
-                $nameNode = $astNode->children['expr'];
-                if ($nameNode->kind === \ast\AST_NAME) {
+                $name_node = $ast_node->children['expr'];
+                if ($name_node->kind === \ast\AST_NAME) {
                     // TODO: Use Phan's function resolution?
                     // TODO: ngettext?
-                    $name = $nameNode->children['name'];
+                    $name = $name_node->children['name'];
                     if (!\is_string($name)) {
                         return null;
                     }
                     if ($name === '_' || strcasecmp($name, 'gettext') === 0) {
-                        $childArg = $astNode->children['args']->children[0] ?? null;
-                        if ($childArg === null) {
+                        $child_arg = $ast_node->children['args']->children[0] ?? null;
+                        if ($child_arg === null) {
                             return null;
                         }
-                        $prim = self::astNodeToPrimitive($code_base, $context, $childArg);
+                        $prim = self::astNodeToPrimitive($code_base, $context, $child_arg);
                         if ($prim === null) {
                             return null;
                         }
@@ -130,14 +130,14 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 }
                 return null;
             case \ast\AST_BINARY_OP:
-                if ($astNode->flags !== ast\flags\BINARY_CONCAT) {
+                if ($ast_node->flags !== ast\flags\BINARY_CONCAT) {
                     return null;
                 }
-                $left = $this->astNodeToPrimitive($code_base, $context, $astNode->children['left']);
+                $left = $this->astNodeToPrimitive($code_base, $context, $ast_node->children['left']);
                 if ($left === null) {
                     return null;
                 }
-                $right = $this->astNodeToPrimitive($code_base, $context, $astNode->children['right']);
+                $right = $this->astNodeToPrimitive($code_base, $context, $ast_node->children['right']);
                 if ($right === null) {
                     return null;
                 }
@@ -311,7 +311,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
 
         $fmt_str = $primitive_for_fmtstr->value;
         $is_translated = $primitive_for_fmtstr->is_translated;
-        $specs = is_string($fmt_str) ? ConversionSpec::extract_all($fmt_str) : [];
+        $specs = is_string($fmt_str) ? ConversionSpec::extractAll($fmt_str) : [];
         $fmt_str = (string)$fmt_str;
         /**
          * @param string $issue_type
@@ -425,6 +425,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                     // Warn about "100% dollars" but not about "100%1$ 2dollars" (If both position and width were parsed, assume the padding was intentional)
                     $emit_issue(
                         'PhanPluginPrintfNotPercent',
+                        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                         "Format string {STRING_LITERAL} contains something that is not a percent sign, it will be treated as a format string '{STRING_LITERAL}' with padding. Use {DETAILS} for a literal percent sign, or '{STRING_LITERAL}' to be less ambiguous",
                         [$this->encodeString($fmt_str), $spec->directive, '%%', $canonical],
                         Issue::SEVERITY_NORMAL,
@@ -493,7 +494,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                                 break;
                             }
                         }
-                    } catch (CodeBaseException $e) {
+                    } catch (CodeBaseException $_) {
                         // Swallow "Cannot find class", go on to emit issue.
                     }
                     if ($can_cast_to_string) {
@@ -551,12 +552,12 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      */
     private function getSpecStringsRepresentation(array $specs) : string
     {
-        return \implode(',', \array_unique(\array_map(function (ConversionSpec $spec) {
+        return \implode(',', \array_unique(\array_map(function (ConversionSpec $spec) : string {
             return $spec->directive;
         }, $specs)));
     }
 
-    private function canWeakCast(UnionType $actual_union_type, array $expected_set)
+    private function canWeakCast(UnionType $actual_union_type, array $expected_set) : bool
     {
         if (isset($expected_set['string'])) {
             static $string_weak_types;
@@ -599,7 +600,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 continue;
             }
             // Compare the translated specs for a given position to the existing spec.
-            $translated_specs = ConversionSpec::extract_all($translated_fmt_str);
+            $translated_specs = ConversionSpec::extractAll($translated_fmt_str);
             foreach ($translated_specs as $i => $spec_group) {
                 $expected = $types_of_arg[$i] ?? [];
                 foreach ($spec_group as $spec) {
@@ -674,33 +675,33 @@ class ConversionSpec
 
     // A padding string regex may be a space or 0.
     // Alternate padding specifiers may be specified by prefixing it with a single quote.
-    const padding_string_regex_part ='[0 ]?|\'.';
+    const PADDING_STRING_REGEX_PART = '[0 ]?|\'.';
 
     /**
      * Based on https://secure.php.net/manual/en/function.sprintf.php
      */
-    const format_string_inner_regex_part =
+    const FORMAT_STRING_INNER_REGEX_PART =
         '%'  // Every format string begins with a percent
         . '(\d+\$)?'  // Optional n$ position specifier must go immediately after percent
-        . '(' . self::padding_string_regex_part . ')'  // optional padding specifier
+        . '(' . self::PADDING_STRING_REGEX_PART . ')'  // optional padding specifier
         . '([+-]?)' // optional alignment specifier
         . '(\d*)'  // optional width specifier
         . '(\.\d*)?'   // Optional precision specifier in the form of a period followed by an optional decimal digit string
         . '([bcdeEfFgGosuxX])';  // A type specifier
 
 
-    const format_string_regex = '/%%|' . self::format_string_inner_regex_part . '/';
+    const FORMAT_STRING_REGEX = '/%%|' . self::FORMAT_STRING_INNER_REGEX_PART . '/';
 
     /**
      * Extract a list of directives from a format string.
      * @param string $fmt_str a format string to extract directives from.
      * @return array<int,array<int,ConversionSpec>> array(int position => array of ConversionSpec referring to arg at that position)
      */
-    public static function extract_all($fmt_str) : array
+    public static function extractAll($fmt_str) : array
     {
         // echo "format is $fmt_str\n";
         $directives = [];
-        \preg_match_all(self::format_string_regex, (string) $fmt_str, $matches, PREG_SET_ORDER);
+        \preg_match_all(self::FORMAT_STRING_REGEX, (string) $fmt_str, $matches, PREG_SET_ORDER);
         $unnamed_count = 0;
         foreach ($matches as $match) {
             if ($match[0] === '%%') {

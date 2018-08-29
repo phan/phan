@@ -9,6 +9,8 @@ use Phan\Output\IssueCollectorInterface;
  * but will send them all to a message queue for collection
  * by a ParallelParentCollector instead of holding on to
  * them itself.
+ *
+ * @phan-file-suppress PhanPluginNoAssert
  */
 class ParallelChildCollector implements IssueCollectorInterface
 {
@@ -44,6 +46,7 @@ class ParallelChildCollector implements IssueCollectorInterface
     /**
      * Collect issue
      * @param IssueInstance $issue
+     * @return void
      */
     public function collectIssue(IssueInstance $issue)
     {
@@ -100,7 +103,8 @@ class ParallelChildCollector implements IssueCollectorInterface
     }
 
     /**
-     * This method has not effect on a ParallelChildCollector.
+     * This method has no effect on a ParallelChildCollector.
+     * @return void
      */
     public function reset()
     {

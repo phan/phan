@@ -6,12 +6,15 @@ use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
 use Phan\CodeBase;
 
+use InvalidArgumentException;
+use RuntimeException;
+
 /**
  * Callers should split this up into multiple GenericArrayType instances.
  *
  * This is generated from phpdoc array<int, T1|T2> where callers expect a subclass of Type.
  */
-final class GenericMultiArrayType extends ArrayType implements MultiType
+final class GenericMultiArrayType extends ArrayType implements MultiType, GenericArrayInterface
 {
     /** @phan-override */
     const NAME = 'array';
@@ -37,10 +40,14 @@ final class GenericMultiArrayType extends ArrayType implements MultiType
      *
      * @param int $key_type
      * Corresponds to the type of the array keys. Set this to a GenericArrayType::KEY_* constant.
+     *
+     * @throws InvalidArgumentException if there are less than 2 types in $types
      */
     protected function __construct(array $types, bool $is_nullable, int $key_type)
     {
-        \assert(\count($types) >= 2);
+        if (\count($types) < 2) {
+            throw new InvalidArgumentException('Expected $types to have at least 2 array elements');
+        }
         // Could de-duplicate, but callers should be able to do that as well when converting to UnionType.
         // E.g. array<int|int> is int[].
         parent::__construct('\\', self::NAME, [], false);
@@ -77,7 +84,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType
      */
     public function asIndividualTypeInstances() : array
     {
-        return \array_map(function (Type $type) {
+        return \array_map(function (Type $type) : GenericArrayType {
             return GenericArrayType::fromElementType($type, $this->is_nullable, $this->key_type);
         }, UnionType::normalizeMultiTypes($this->element_types));
     }
@@ -176,10 +183,10 @@ final class GenericMultiArrayType extends ArrayType implements MultiType
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
         // and should bail out.
-        \assert(
-            $recursion_depth < 20,
-            "Recursion has gotten out of hand"
-        );
+        if ($recursion_depth >= 20) {
+            throw new RuntimeException("Recursion has gotten out of hand");
+        }
+
         // TODO: Use UnionType::merge from a future change?
         $result = new UnionTypeBuilder();
         foreach ($this->element_types as $type) {

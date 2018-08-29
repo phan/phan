@@ -1,0 +1,4 @@
+src/049_redundant_null_coalescing.php:4 PhanPluginDuplicateConditionalNullCoalescing "isset(X) ? X : Y" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was $a
+src/049_redundant_null_coalescing.php:5 PhanPluginDuplicateConditionalNullCoalescing "isset(X) ? X : Y" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was $x->prop
+src/049_redundant_null_coalescing.php:6 PhanPluginDuplicateExpressionBinaryOp Both sides of the binary operator == are the same: $x->prop
+src/049_redundant_null_coalescing.php:9 PhanPluginDuplicateConditionalTernaryDuplication "X ? X : Y" can usually be simplified to "X ?: Y". The duplicated expression X was $x->prop

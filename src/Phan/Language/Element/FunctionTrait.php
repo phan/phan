@@ -20,6 +20,8 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
+
+use AssertionError;
 use ast\Node;
 use Closure;
 
@@ -145,8 +147,8 @@ trait FunctionTrait
     private $phpdoc_parameter_type_map = [];
 
     /**
-     * @var array<string,true>
-     * A set of parameter names that are output-only references
+     * @var array<int,string>
+     * A list of parameter names that are output-only references
      */
     private $phpdoc_output_references = [];
 
@@ -412,9 +414,9 @@ trait FunctionTrait
         if ($parameter) {
             return $parameter->asNonVariadic();
         }
-        $lastParameter = $list[count($list) - 1];
-        if ($lastParameter->isVariadic()) {
-            return $lastParameter->asNonVariadic();
+        $last_parameter = $list[count($list) - 1];
+        if ($last_parameter->isVariadic()) {
+            return $last_parameter->asNonVariadic();
         }
         return null;
     }
@@ -485,7 +487,7 @@ trait FunctionTrait
     public function getRealParameterList()
     {
         // Excessive cloning, to ensure that this stays immutable.
-        return array_map(function (Parameter $param) {
+        return array_map(/** @return Parameter */ function (Parameter $param) {
             return clone($param);
         }, $this->real_parameter_list);
     }
@@ -498,7 +500,7 @@ trait FunctionTrait
      */
     public function setRealParameterList(array $parameter_list)
     {
-        $this->real_parameter_list = array_map(function (Parameter $param) {
+        $this->real_parameter_list = array_map(/** @return Parameter */ function (Parameter $param) {
             return clone($param);
         }, $parameter_list);
 
@@ -713,20 +715,20 @@ trait FunctionTrait
             // If there are no types on the parameter, the
             // default shouldn't be treated as the one
             // and only allowable type.
-            $wasEmpty = $parameter->getUnionType()->isEmpty();
+            $was_empty = $parameter->getUnionType()->isEmpty();
 
             // If we have no other type info about a parameter,
             // just because it has a default value of null
             // doesn't mean that is its type. Any type can default
             // to null
             if ($default_is_null) {
-                if ($wasEmpty) {
+                if ($was_empty) {
                     $parameter->addUnionType(MixedType::instance(false)->asUnionType());
                 }
                 // The parameter constructor or above check for wasEmpty already took care of null default case
             } else {
-                $default_type = $default_type->withFlattenedArrayShapeTypeInstances();
-                if ($wasEmpty) {
+                $default_type = $default_type->withFlattenedArrayShapeOrLiteralTypeInstances();
+                if ($was_empty) {
                     $parameter->addUnionType(self::inferNormalizedTypesOfDefault($default_type));
                     if (!Config::getValue('guess_unknown_parameter_type_using_default')) {
                         $parameter->addUnionType(MixedType::instance(false)->asUnionType());
@@ -998,11 +1000,14 @@ trait FunctionTrait
         $comment = $this->comment;
         // $comment can be null for magic methods from `@method`
         if ($comment !== null) {
-            \assert($this instanceof FunctionInterface);
+            if (!($this instanceof FunctionInterface)) {
+                throw new AssertionError('Expected any class using FunctionTrait to implement FunctionInterface');
+            }
             FunctionTrait::addParamsToScopeOfFunctionOrMethod($this->getContext(), $code_base, $this, $comment);
         }
     }
 
+    /** @return void */
     public abstract function memoizeFlushAll();
 
     public abstract function getUnionType() : UnionType;
@@ -1085,6 +1090,7 @@ trait FunctionTrait
 
     /**
      * @return array<mixed,string> in the same format as FunctionSignatureMap.php
+     * @throws \InvalidArgumentException if this function has invalid parameters for generating a stub (e.g. param names, types, etc.)
      */
     public function toFunctionSignatureArray() : array
     {

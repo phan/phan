@@ -13,10 +13,15 @@ use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
+use Phan\Language\Type;
+use Phan\Language\UnionType;
 use ast;
 use ast\Node;
 use AssertionError;
 
+/**
+ * This implements closures for finding definitions for nodes where isSelected is set
+ */
 class DefinitionResolver
 {
     /**
@@ -28,6 +33,12 @@ class DefinitionResolver
     public static function createGoToDefinitionClosure(GoToDefinitionRequest $request, CodeBase $code_base)
     {
         return function (Context $context, Node $node) use ($request, $code_base) {
+            // @phan-suppress-next-line PhanUndeclaredProperty this is overridden
+            $selected_fragment = $node->selectedFragment ?? null;
+            if (is_string($selected_fragment)) {
+                self::locateCommentDefinition($request, $code_base, $context, $selected_fragment);
+                return;
+            }
             // TODO: Better way to be absolutely sure this $node is in the same requested file path?
             // I think it's possible that we'll have more than one Node to check against (with simplify_ast)
 
@@ -71,12 +82,41 @@ class DefinitionResolver
         };
     }
 
+    private static function locateCommentDefinition(
+        GoToDefinitionRequest $request,
+        CodeBase $code_base,
+        Context $context,
+        string $selected_fragment
+    ) {
+        // fprintf(STDERR, "locateCommentDefinition called for %s\n", $selected_fragment);
+        // TODO: Handle method references in doc comments, global functions, etc.
+        try {
+            $union_type = UnionType::fromStringInContext($selected_fragment, $context, Type::FROM_PHPDOC);
+        } catch (\Exception $e) {
+            fprintf(STDERR, "Unexpected error in " . __METHOD__ . ": " . $e->getMessage() . "\n");
+            return;
+        }
+        self::locateClassDefinitionForUnionType($request, $code_base, $union_type);
+    }
+
     /**
      * @return void
      */
-    public static function locateClassDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
-    {
+    public static function locateClassDefinition(
+        GoToDefinitionRequest $request,
+        CodeBase $code_base,
+        Context $context,
+        Node $node
+    ) {
         $union_type = UnionTypeVisitor::unionTypeFromClassNode($code_base, $context, $node);
+        self::locateClassDefinitionForUnionType($request, $code_base, $union_type);
+    }
+
+    private static function locateClassDefinitionForUnionType(
+        GoToDefinitionRequest $request,
+        CodeBase $code_base,
+        UnionType $union_type
+    ) {
         foreach ($union_type->getTypeSet() as $type) {
             if ($type->isNativeType()) {
                 continue;
@@ -103,11 +143,11 @@ class DefinitionResolver
         $is_static = $node->kind === ast\AST_STATIC_PROP;
         try {
             $property = (new ContextNode($code_base, $context, $node))->getProperty($is_static);
-        } catch (NodeException $e) {
+        } catch (NodeException $_) {
             return; // ignore
-        } catch (IssueException $e) {
+        } catch (IssueException $_) {
             return; // ignore
-        } catch (CodeBaseException $e) {
+        } catch (CodeBaseException $_) {
             return; // ignore
         }
         $request->recordDefinitionElement($code_base, $property, true);
@@ -129,11 +169,11 @@ class DefinitionResolver
         }
         try {
             $class_const = (new ContextNode($code_base, $context, $node))->getClassConst();
-        } catch (NodeException $e) {
+        } catch (NodeException $_) {
             return; // ignore
-        } catch (IssueException $e) {
+        } catch (IssueException $_) {
             return; // ignore
-        } catch (CodeBaseException $e) {
+        } catch (CodeBaseException $_) {
             return; // ignore
         }
         // Class constants can't be objects, so there's no point in "Go To Type Definition" for now.
@@ -148,11 +188,11 @@ class DefinitionResolver
     {
         try {
             $global_const = (new ContextNode($code_base, $context, $node))->getConst();
-        } catch (NodeException $e) {
+        } catch (NodeException $_) {
             return; // ignore
-        } catch (IssueException $e) {
+        } catch (IssueException $_) {
             return; // ignore
-        } catch (CodeBaseException $e) {
+        } catch (CodeBaseException $_) {
             return; // ignore
         }
         $request->recordDefinitionElement($code_base, $global_const, false);
@@ -191,10 +231,10 @@ class DefinitionResolver
         }
         try {
             $method = (new ContextNode($code_base, $context, $node))->getMethod($method_name, $is_static);
-        } catch (NodeException $e) {
+        } catch (NodeException $_) {
             // ignore
             return;
-        } catch (IssueException $e) {
+        } catch (IssueException $_) {
             // ignore
             return;
         }
@@ -210,10 +250,10 @@ class DefinitionResolver
             foreach ((new ContextNode($code_base, $context, $node->children['expr']))->getFunctionFromNode() as $function_interface) {
                 $request->recordDefinitionElement($code_base, $function_interface, true);
             }
-        } catch (NodeException $e) {
+        } catch (NodeException $_) {
             // ignore
             return;
-        } catch (IssueException $e) {
+        } catch (IssueException $_) {
             // ignore
             return;
         }
@@ -258,8 +298,8 @@ class DefinitionResolver
             if (is_string($name)) {
                 try {
                     $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\' . ltrim($name, '\\'));
-                } catch (AssertionError $e) {
-                    return;  // ignore, probably still typing it
+                } catch (AssertionError $_) {
+                    return;  // ignore, probably still typing the requested definition
                 }
                 if ($code_base->hasClassWithFQSEN($class_fqsen)) {
                     $class = $code_base->getClassByFQSEN($class_fqsen);

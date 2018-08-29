@@ -13,7 +13,9 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Element\Variable;
 use Phan\Language\UnionType;
+
 use ast\Node;
+use Closure;
 
 /**
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
@@ -159,7 +161,7 @@ trait ConditionVisitorUtil
             if (!$suppress_issues) {
                 Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
             }
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // Swallow it
         }
         return $context;
@@ -194,7 +196,7 @@ trait ConditionVisitorUtil
             if (!$suppress_issues) {
                 Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
             }
-        } catch (\Exception $exception) {
+        } catch (\Exception $_) {
             // Swallow it
         }
         return $context;
@@ -214,8 +216,8 @@ trait ConditionVisitorUtil
         // Don't analyze variables such as $$a
         if (\is_string($var_name) && $var_name) {
             try {
-                $exprType = UnionTypeVisitor::unionTypeFromLiteralOrConstant($this->code_base, $context, $expr);
-                if ($exprType) {
+                $expr_type = UnionTypeVisitor::unionTypeFromLiteralOrConstant($this->code_base, $context, $expr);
+                if ($expr_type) {
                     // Get the variable we're operating on
                     $variable = $this->getVariableFromScope($var_node, $context);
                     if (\is_null($variable)) {
@@ -225,7 +227,7 @@ trait ConditionVisitorUtil
                     // Make a copy of the variable
                     $variable = clone($variable);
 
-                    $variable->setUnionType($exprType);
+                    $variable->setUnionType($expr_type);
 
                     // Overwrite the variable with its new type in this
                     // scope without overwriting other scopes
@@ -234,7 +236,7 @@ trait ConditionVisitorUtil
                     );
                     return $context;
                 }
-            } catch (\Exception $e) {
+            } catch (\Exception $_) {
                 // Swallow it (E.g. IssueException for undefined variable)
             }
         }
@@ -255,11 +257,11 @@ trait ConditionVisitorUtil
         if (\is_string($var_name)) {
             try {
                 if ($expr instanceof Node && $expr->kind === \ast\AST_CONST) {
-                    $exprNameNode = $expr->children['name'];
-                    if ($exprNameNode->kind === \ast\AST_NAME) {
+                    $expr_name_node = $expr->children['name'];
+                    if ($expr_name_node->kind === \ast\AST_NAME) {
                         // Currently, only add this inference when we're absolutely sure this is a check rejecting null/false/true
-                        $exprName = $exprNameNode->children['name'];
-                        switch (\strtolower($exprName)) {
+                        $expr_name = $expr_name_node->children['name'];
+                        switch (\strtolower($expr_name)) {
                             case 'null':
                                 return $this->removeNullFromVariable($var_node, $context, false);
                             case 'false':
@@ -269,7 +271,7 @@ trait ConditionVisitorUtil
                         }
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (\Exception $_) {
                 // Swallow it (E.g. IssueException for undefined variable)
             }
         }
@@ -292,11 +294,11 @@ trait ConditionVisitorUtil
             try {
                 if ($expr instanceof Node) {
                     if ($expr->kind === \ast\AST_CONST) {
-                        $exprNameNode = $expr->children['name'];
-                        if ($exprNameNode->kind === \ast\AST_NAME) {
+                        $expr_name_node = $expr->children['name'];
+                        if ($expr_name_node->kind === \ast\AST_NAME) {
                             // Currently, only add this inference when we're absolutely sure this is a check rejecting null/false/true
-                            $exprName = $exprNameNode->children['name'];
-                            switch (\strtolower($exprName)) {
+                            $expr_name = $expr_name_node->children['name'];
+                            switch (\strtolower($expr_name)) {
                                 case 'null':
                                 case 'false':
                                     return $this->removeFalseyFromVariable($var_node, $context, false);
@@ -316,7 +318,7 @@ trait ConditionVisitorUtil
                 } elseif ($expr == true) {  // e.g. 1, "1", -1
                     return $this->removeTrueFromVariable($var_node, $context);
                 }
-            } catch (\Exception $e) {
+            } catch (\Exception $_) {
                 // Swallow it (E.g. IssueException for undefined variable)
             }
         }
@@ -327,17 +329,23 @@ trait ConditionVisitorUtil
      * @param Node|int|float|string $left
      * @param Node|int|float|string $right
      * @return Context - Constant after inferring type from an expression such as `if ($x !== false)`
+     *
+     * TODO: Could improve analysis by adding analyzeAndUpdateToBeEqual for `==`
      */
     protected function analyzeAndUpdateToBeIdentical($left, $right) : Context
     {
-        if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
-            // e.g. `if (!($x !== null))` or `if ($x === null)`
-            return $this->updateVariableToBeIdentical($left, $right, $this->context);
-        } elseif (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
-            // e.g. if (!(null !== $x))
-            return $this->updateVariableToBeIdentical($right, $left, $this->context);
-        }
-        return $this->context;
+        return $this->analyzeBinaryConditionPattern(
+            $left,
+            $right,
+            /**
+             * @param Node $var
+             * @param Node|int|string|float $expr
+             * @return Context
+             */
+            function ($var, $expr) {
+                return $this->updateVariableToBeIdentical($var, $expr, $this->context);
+            }
+        );
     }
 
     /**
@@ -347,12 +355,60 @@ trait ConditionVisitorUtil
      */
     protected function analyzeAndUpdateToBeNotIdentical($left, $right) : Context
     {
-        if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
-            // e.g. if ($x !== null)
-            return $this->updateVariableToBeNotIdentical($left, $right, $this->context);
-        } elseif (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
-            // e.g. if (null !== $x)
-            return $this->updateVariableToBeNotIdentical($right, $left, $this->context);
+        return $this->analyzeBinaryConditionPattern(
+            $left,
+            $right,
+            /**
+             * @param Node $var
+             * @param Node|int|string|float $expr
+             * @return Context
+             */
+            function ($var, $expr) {
+                return $this->updateVariableToBeNotIdentical($var, $expr, $this->context);
+            }
+        );
+    }
+
+    /**
+     * @param Node|int|float|string $left
+     * @param Node|int|float|string $right
+     * @param Closure(Node,Node|int|float|string):Context $analyzer
+     */
+    private function analyzeBinaryConditionPattern($left, $right, Closure $analyzer) : Context
+    {
+        if ($left instanceof Node) {
+            $kind = $left->kind;
+            if ($kind === \ast\AST_VAR) {
+                return $analyzer($left, $right);
+            }
+            $tmp = $left;
+            while (\in_array($kind, [\ast\AST_ASSIGN, \ast\AST_ASSIGN_OP, \ast\AST_ASSIGN_REF], true)) {
+                $tmp = $tmp->children['var'];
+                if (!$tmp instanceof Node) {
+                    break;
+                }
+                $kind = $tmp->kind;
+                if ($kind === \ast\AST_VAR) {
+                    return $analyzer($tmp, $right);
+                }
+            }
+        }
+        if ($right instanceof Node) {
+            $kind = $right->kind;
+            if ($kind === \ast\AST_VAR) {
+                return $analyzer($right, $left);
+            }
+            $tmp = $right;
+            while (\in_array($kind, [\ast\AST_ASSIGN, \ast\AST_ASSIGN_OP, \ast\AST_ASSIGN_REF], true)) {
+                $tmp = $right->children['var'];
+                if (!$tmp instanceof Node) {
+                    break;
+                }
+                $kind = $tmp->kind;
+                if ($kind === \ast\AST_VAR) {
+                    return $analyzer($tmp, $left);
+                }
+            }
         }
         return $this->context;
     }
@@ -364,14 +420,18 @@ trait ConditionVisitorUtil
      */
     protected function analyzeAndUpdateToBeNotEqual($left, $right) : Context
     {
-        if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
-            // e.g. if (!($x == null))
-            return $this->updateVariableToBeNotEqual($left, $right, $this->context);
-        } elseif (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
-            // e.g. if (!(null == $x))
-            return $this->updateVariableToBeNotEqual($right, $left, $this->context);
-        }
-        return $this->context;
+        return $this->analyzeBinaryConditionPattern(
+            $left,
+            $right,
+            /**
+             * @param Node $var
+             * @param Node|int|string|float $expr
+             * @return Context
+             */
+            function ($var, $expr) {
+                return $this->updateVariableToBeNotEqual($var, $expr, $this->context);
+            }
+        );
     }
 
     /**

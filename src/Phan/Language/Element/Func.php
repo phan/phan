@@ -11,6 +11,8 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+
+use AssertionError;
 use ast\Node;
 
 /**
@@ -167,11 +169,13 @@ class Func extends AddressableElement implements FunctionInterface
             $fqsen,
             $parameter_list
         );
+        $doc_comment = $node->children['docComment'] ?? '';
+        $func->setDocComment($doc_comment);
 
         // Parse the comment above the function to get
         // extra meta information about the function.
         $comment = Comment::fromStringInContext(
-            (string)$node->children['docComment'],
+            $doc_comment,
             $code_base,
             $context,
             $node->lineno ?? 0,
@@ -186,7 +190,9 @@ class Func extends AddressableElement implements FunctionInterface
             if ($override_class_fqsen !== null) {
                 // TODO: Allow Null?
                 $scope = $func->getInternalScope();
-                assert($scope instanceof ClosureScope);
+                if (!($scope instanceof ClosureScope)) {
+                    throw new AssertionError('Expected scope of a closure to be a ClosureScope');
+                }
                 $scope->overrideClassFQSEN($override_class_fqsen);
                 $func->getContext()->setScope($scope);
             }
@@ -256,10 +262,10 @@ class Func extends AddressableElement implements FunctionInterface
             // See if we have a return type specified in the comment
             $union_type = $comment->getReturnType();
 
-            \assert(
-                !$union_type->hasSelfType(),
-                "Function referencing self in $context"
-            );
+            // FIXME properly handle self/static in closures declared within methods.
+            if ($union_type->hasSelfType()) {
+                throw new AssertionError("Function unexpectedly referencing self in $context");
+            }
 
             $func->setUnionType($func->getUnionType()->withUnionType($union_type));
             $func->setPHPDocReturnType($union_type);
@@ -343,6 +349,12 @@ class Func extends AddressableElement implements FunctionInterface
         $namespace_text = $namespace === '' ? '' : "$namespace ";
         $string = sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
         return $string;
+    }
+
+    public function getMarkupDescription() : string
+    {
+        list($unused_namespace, $text) = $this->toStubInfo();
+        return rtrim($text, "\n {}");
     }
 
     /** @return array{0:string,1:string} [string $namespace, string $text] */
