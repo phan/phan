@@ -949,7 +949,7 @@ class CodeBase
         // As we're adding missing classes, we don't want to continue hydrating them
         // so cache the current value and reset after we're done
         $should_hydrate_requested_elements = $this->should_hydrate_requested_elements;
-        $current_parsed_file = $this->getCurrentParsedFile();
+        $current_parsed_file = self::$current_file;
         $this->setShouldHydrateRequestedElements(false);
         $this->setCurrentParsedFile($file_path);
         $this->flushDependenciesForFile($file_path);

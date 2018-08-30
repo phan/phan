@@ -6,8 +6,6 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 
 /**
  * The ComposerResolver uses the Composer autoloader to attempt to resolve files from a class name.
- * @suppress PhanUndeclaredTypeProperty
- * @suppress PhanUndeclaredTypeParameter
  */
 class ComposerResolver implements ClassResolverInterface
 {
@@ -35,7 +33,6 @@ class ComposerResolver implements ClassResolverInterface
 
     /**
      * @inheritDoc
-     * @suppress PhanUndeclaredClassMethod
      */
     public function fileForClass(FullyQualifiedClassName $fqsen): string
     {
