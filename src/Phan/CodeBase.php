@@ -251,6 +251,7 @@ class CodeBase
      *
      * @throws FileNotFoundException If the using `use_project_composer_autoloader` and the configured
      *                               `composer_autoloader_path` does not resolve to a file
+     * @return void
      */
     public function init()
     {
@@ -303,6 +304,7 @@ class CodeBase
 
     /**
      * @param ClassResolverInterface $class_resolver
+     * @return void
      */
     protected function setClassResolver(ClassResolverInterface $class_resolver)
     {
