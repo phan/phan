@@ -251,6 +251,7 @@ class CodeBase
      *
      * @throws FileNotFoundException If the using `use_project_composer_autoloader` and the configured
      *                               `composer_autoloader_path` does not resolve to a file
+     * @throws ClassNotFoundException If the configured `class_resolver` class does not exist or not loaded
      * @return void
      */
     public function init()
@@ -955,9 +956,6 @@ class CodeBase
         try {
             // Parse the file
             Analysis::parseFile($this, $file_path);
-
-            // Save this to the set of files to analyze
-            $analyze_file_path_list[] = $file_path;
         } catch (\Throwable $throwable) {
             // Catch miscellaneous errors such as $throwable and print their stack traces.
             error_log("While parsing $file_path, caught: " . $throwable . "\n");

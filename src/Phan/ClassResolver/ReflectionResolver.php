@@ -26,7 +26,7 @@ class ReflectionResolver implements ClassResolverInterface
         }
 
         $file = $reflection->getFileName();
-        if (!file_exists($file)) {
+        if (!$file || !file_exists($file)) {
             return '';
         }
 
