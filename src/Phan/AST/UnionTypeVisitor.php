@@ -520,7 +520,6 @@ class UnionTypeVisitor extends AnalysisVisitor
             )->asUnionType();
         }
         // Sometimes 0 for a fully qualified name?
-        // \assert(($node->flags & \ast\flags\NAME_FQ) !== 0, "All flags must match");
 
         return Type::fromFullyQualifiedString(
             '\\' . $node->children['name']

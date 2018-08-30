@@ -21,6 +21,8 @@ use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Scope\PropertyScope;
 use Phan\Plugin\ConfigPluginSet;
+
+use AssertionError;
 use ast\Node;
 
 /**
@@ -34,7 +36,6 @@ use ast\Node;
  * @see $this->visit
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
- * @phan-file-suppress PhanPluginNoAssert
  */
 class BlockAnalysisVisitor extends AnalysisVisitor
 {
@@ -147,7 +148,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // or be null (`namespace Foo;`)
         $stmts_node = $node->children['stmts'];
         if ($stmts_node instanceof Node) {
-            assert($stmts_node->kind === \ast\AST_STMT_LIST);
             $context = $this->analyzeAndGetUpdatedContext($context, $node, $stmts_node);
         }
 
@@ -476,7 +476,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // The typical case is `for (init; $x; loop) {}`
             // But `for (init; $x, $y; loop) {}` is rare but possible, which requires evaluating those in order.
             // Evaluate the list of cond expressions in order.
-            \assert($condition_node->kind === \ast\AST_EXPR_LIST);
             foreach ($condition_node->children as $condition_subnode) {
                 if ($condition_subnode instanceof Node) {
                     $context = $this->analyzeAndGetUpdatedContext(
@@ -858,8 +857,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // scope for things like assigning veriables.
             $child_context = clone($fallthrough_context);
 
-            assert($child_node->kind === \ast\AST_IF_ELEM);
-
             $child_context->withLineNumberStart(
                 $child_node->lineno ?? 0
             );
@@ -935,8 +932,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // node.
 
         $try_node = $node->children['try'];
-        // Skip any non Node children.
-        assert($try_node instanceof Node);
 
         // The conditions need to communicate to the outer
         // scope for things like assigning veriables.
@@ -972,7 +967,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         foreach ($catch_nodes as $catch_node) {
             // Note: ContextMergeVisitor expects to get each individual catch
-            assert($catch_node instanceof Node);
+            if (!$catch_node instanceof Node) {
+                throw new AssertionError("Expected catch_node to be a Node");
+            }
 
             // The conditions need to communicate to the outer
             // scope for things like assigning veriables.
@@ -1006,7 +1003,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         $finally_node = $node->children['finally'] ?? null;
         if ($finally_node) {
-            assert($finally_node instanceof Node);
+            if (!($finally_node instanceof Node)) {
+                throw new AssertionError("Expected non-null finally node to be a Node");
+            }
             // Because finally is always executed, we reuse $context
 
             // The conditions need to communicate to the outer

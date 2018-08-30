@@ -1072,7 +1072,6 @@ class ParseVisitor extends ScopeVisitor
             if (!\is_string($line)) {
                 return $this->context;
             }
-            unset($ftemp);
             if (\strpos($line, '{') === false
                 || \strpos($line, '}') === false
             ) {
@@ -1095,7 +1094,6 @@ class ParseVisitor extends ScopeVisitor
             if (!\is_string($line)) {
                 return $this->context;
             }
-            unset($ftemp);
             if (\strpos($line, '{') === false
                 || \strpos($line, '}') === false
             ) {

@@ -30,12 +30,13 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
+
+use AssertionError;
 use ast\Node;
 use ast\flags;
 
 /**
  * @phan-file-suppress PhanPartialTypeMismatchArgument
- * @phan-file-suppress PhanPluginNoAssert
  */
 class PostOrderAnalysisVisitor extends AnalysisVisitor
 {
@@ -2177,11 +2178,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (isset($property)) {
             $this->analyzeNoOp($node, Issue::NoopProperty);
         } else {
-            \assert(
-                isset($node->children['expr'])
-                || isset($node->children['class']),
-                "Property nodes must either have an expression or class"
-            );
+            $expr_or_class_node = $node->children['expr'] ?? $node->children['class'];
+            if ($expr_or_class_node === null) {
+                throw new AssertionError(
+                    "Property nodes must either have an expression or class"
+                );
+            }
 
             $class_list = [];
             try {
@@ -2189,7 +2191,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $class_list = (new ContextNode(
                     $this->code_base,
                     $this->context,
-                    $node->children['expr'] ?? $node->children['class']
+                    $expr_or_class_node
                 ))->getClassList(true);
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
@@ -2821,7 +2823,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
 
             foreach ($parameter_list as $i => $parameter_clone) {
-                assert($parameter_clone instanceof Parameter);
                 $argument = $argument_list_node->children[$i] ?? null;
 
                 if (!$argument

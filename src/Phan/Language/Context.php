@@ -19,7 +19,6 @@ use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\GlobalScope;
 
 use AssertionError;
-use InvalidArgumentException;
 use RuntimeException;
 
 /**

@@ -4,13 +4,13 @@ namespace Phan\Output\Collector;
 use Phan\IssueInstance;
 use Phan\Output\IssueCollectorInterface;
 
+use AssertionError;
+
 /**
  * A ParallelParentCollector collects issues as normal proxying
  * them on to a given base collector, but will also listen to
  * a message queue for issues emitted by other processes (via
  * a ParallelChildCollector).
- *
- * @phan-file-suppress PhanPluginNoAssert
  */
 class ParallelParentCollector implements IssueCollectorInterface
 {
@@ -43,15 +43,7 @@ class ParallelParentCollector implements IssueCollectorInterface
     public function __construct(
         IssueCollectorInterface $base_collector
     ) {
-        \assert(
-            extension_loaded('sysvsem'),
-            'PHP must be compiled with --enable-sysvsem in order to use -j(>=2).'
-        );
-
-        \assert(
-            extension_loaded('sysvmsg'),
-            'PHP must be compiled with --enable-sysvmsg in order to use -j(>=2).'
-        );
+        ParallelChildCollector::assertSharedMemoryCommunicationEnabled();
 
         $this->base_collector = $base_collector;
 
@@ -74,8 +66,10 @@ class ParallelParentCollector implements IssueCollectorInterface
         $success = msg_remove_queue(
             $this->message_queue_resource
         );
-        // @phan-suppress-next-line PhanTypeSuspiciousStringExpression we're deliberately converting the resource to a string
-        \assert($success, "Failed to remove queue with ID {$this->message_queue_resource}");
+        if (!$success) {
+            // @phan-suppress-next-line PhanTypeSuspiciousStringExpression we're deliberately converting the resource to a string
+            throw new AssertionError("Failed to remove queue with ID {$this->message_queue_resource}");
+        }
     }
 
     /**
@@ -117,15 +111,12 @@ class ParallelParentCollector implements IssueCollectorInterface
                 $message,
                 true
             )) {
-                \assert(
-                    $message instanceof IssueInstance,
-                    "Messages must be of type IssueInstance."
-                );
+                if (!($message instanceof IssueInstance)) {
+                    throw new AssertionError("Messages must be of type IssueInstance.");
+                }
 
                 // Cast the message to an IssueInstance
-                if ($message instanceof IssueInstance) {
-                    $this->collectIssue($message);
-                }
+                $this->collectIssue($message);
             } else {
                 break;
             }
