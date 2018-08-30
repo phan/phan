@@ -33,9 +33,12 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
+use Phan\Library\FileCache;
 use Phan\Library\None;
-use ast\Node;
+
+use AssertionError;
 use ast;
+use ast\Node;
 use InvalidArgumentException;
 
 /**
@@ -342,7 +345,9 @@ class ParseVisitor extends ScopeVisitor
         if ($context->isPHPInternal()) {
             // only for stubs
             foreach (FunctionFactory::functionListFromFunction($method) as $method_variant) {
-                \assert($method_variant instanceof Method);
+                if (!($method_variant instanceof Method)) {
+                    throw new AssertionError("Expected variants of Method to be Method");
+                }
                 $class->addMethod($code_base, $method_variant, new None());
             }
         } else {
@@ -432,14 +437,15 @@ class ParseVisitor extends ScopeVisitor
 
             $property_name = $child_node->children['name'];
 
-            \assert(
-                \is_string($property_name),
-                'Property name must be a string. '
-                . 'Got '
-                . print_r($property_name, true)
-                . ' at '
-                . $context_for_property
-            );
+            if (!\is_string($property_name)) {
+                throw new AssertionError(
+                    'Property name must be a string. '
+                    . 'Got '
+                    . print_r($property_name, true)
+                    . ' at '
+                    . $context_for_property
+                );
+            }
 
             $property_fqsen = FullyQualifiedPropertyName::make(
                 $class->getFQSEN(),
@@ -552,9 +558,13 @@ class ParseVisitor extends ScopeVisitor
         $class = $this->getContextClass();
 
         foreach ($node->children as $child_node) {
-            \assert($child_node instanceof Node, 'expected class const element to be a Node');
+            if (!$child_node instanceof Node) {
+                throw new AssertionError('expected class const element to be a Node');
+            }
             $name = $child_node->children['name'];
-            \assert(\is_string($name));
+            if (!\is_string($name)) {
+                throw new AssertionError('expected class const name to be a string');
+            }
 
             $fqsen = FullyQualifiedClassConstantName::fromStringInContext(
                 $name,
@@ -633,7 +643,9 @@ class ParseVisitor extends ScopeVisitor
     public function visitConstDecl(Node $node) : Context
     {
         foreach ($node->children as $child_node) {
-            \assert($child_node instanceof Node);
+            if (!$child_node instanceof Node) {
+                throw new AssertionError("Expected global constant element to be a Node");
+            }
 
             $value_node = $child_node->children['value'];
             try {
@@ -703,7 +715,9 @@ class ParseVisitor extends ScopeVisitor
         if ($context->isPHPInternal()) {
             // only for stubs
             foreach (FunctionFactory::functionListFromFunction($func) as $func_variant) {
-                \assert($func_variant instanceof Func);
+                if (!($func_variant instanceof Func)) {
+                    throw new AssertionError("Expecteded variant of Func to be a Func");
+                }
                 $code_base->addFunction($func_variant);
             }
         } else {
@@ -1045,18 +1059,19 @@ class ParseVisitor extends ScopeVisitor
             $temp = $node->children['expr']->children['name'];
             $depth = 1;
             while ($temp instanceof Node) {
-                \assert(
-                    isset($temp->children['name']),
-                    "Expected to find a name in context, something else found."
-                );
+                if (!isset($temp->children['name'])) {
+                    throw new AssertionError("Expected to find a name in context, something else found.");
+                }
                 $temp = $temp->children['name'];
                 $depth++;
             }
             $dollars = str_repeat('$', $depth);
-            $ftemp = new \SplFileObject($this->context->getFile());
-            $ftemp->seek($node->lineno - 1);
-            $line = $ftemp->current();
-            \assert(\is_string($line));
+            // FIXME: Use the FileCache
+            $cache_entry = FileCache::getOrReadEntry($this->context->getFile());
+            $line = $cache_entry->getLines()[$node->lineno - 1] ?? null;
+            if (!\is_string($line)) {
+                return $this->context;
+            }
             unset($ftemp);
             if (\strpos($line, '{') === false
                 || \strpos($line, '}') === false
@@ -1075,10 +1090,11 @@ class ParseVisitor extends ScopeVisitor
             && ($node->children['expr']->children[0]->kind == \ast\AST_VAR)
             && ($node->children['expr']->children[1]->kind == \ast\AST_VAR)
         ) {
-            $ftemp = new \SplFileObject($this->context->getFile());
-            $ftemp->seek($node->lineno - 1);
-            $line = $ftemp->current();
-            \assert(\is_string($line));
+            $cache_entry = FileCache::getOrReadEntry($this->context->getFile());
+            $line = $cache_entry->getLines()[$node->lineno - 1] ?? null;
+            if (!\is_string($line)) {
+                return $this->context;
+            }
             unset($ftemp);
             if (\strpos($line, '{') === false
                 || \strpos($line, '}') === false

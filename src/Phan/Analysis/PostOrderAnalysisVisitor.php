@@ -1164,7 +1164,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     ) {
         $type_set = $expression_type->getTypeSet();
         $context = $this->context;
-        \assert(\count($type_set) >= 2);
+        if (\count($type_set)< 2) {
+            throw new AssertionError("Expected at least two types for strict return type checks");
+        }
 
         $mismatch_type_set = UnionType::empty();
         $mismatch_expanded_types = null;
@@ -1321,7 +1323,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $base_context = $this->context;
             // We don't bother analyzing visitReturn in PostOrderAnalysisVisitor, right now.
             // This may eventually change, just to ensure the expression is checked for issues
-            assert($base_context->isInFunctionLikeScope());
             $true_context = (new ConditionVisitor(
                 $this->code_base,
                 $base_context
@@ -1437,7 +1438,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             ))->getFunctionFromNode();
 
             foreach ($function_list_generator as $function) {
-                assert($function instanceof FunctionInterface);
                 // Check the call for parameter and argument types
                 $this->analyzeCallToMethod(
                     $function,
@@ -1867,19 +1867,17 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitMethod(Node $node) : Context
     {
-        \assert(
-            $this->context->isInFunctionLikeScope(),
-            "Must be in function-like scope to get method"
-        );
+        if (!$this->context->isInFunctionLikeScope()) {
+            throw new AssertionError("Must be in function-like scope to get method");
+        }
 
         $method = $this->context->getFunctionLikeInScope($this->code_base);
 
         $return_type = $method->getUnionType();
 
-        \assert(
-            $method instanceof Method,
-            "Function found where method expected"
-        );
+        if (!($method instanceof Method)) {
+            throw new AssertionError("Function found where method expected");
+        }
 
         if ($method instanceof Method) {
             $has_interface_class = false;

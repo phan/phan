@@ -12,6 +12,9 @@ use Phan\Output\IgnoredFilesFilterInterface;
 use Phan\Output\IssueCollectorInterface;
 use Phan\Output\IssuePrinterInterface;
 use Phan\Plugin\ConfigPluginSet;
+
+use AssertionError;
+use Closure;
 use Exception;
 use InvalidArgumentException;
 
@@ -22,7 +25,6 @@ use InvalidArgumentException;
  * Implementations such as `./phan` or the code climate integration call into this.
  *
  * @see self::analyzeFileList
- * @phan-file-suppress PhanPluginNoAssert
  */
 class Phan implements IgnoredFilesFilterInterface
 {
@@ -80,7 +82,7 @@ class Phan implements IgnoredFilesFilterInterface
      * it to be initialized before any classes or files are
      * loaded.
      *
-     * @param \Closure $file_path_lister
+     * @param Closure $file_path_lister
      * Returns a list of files to scan (string[])
      *
      * @return bool
@@ -91,7 +93,7 @@ class Phan implements IgnoredFilesFilterInterface
      */
     public static function analyzeFileList(
         CodeBase $code_base,
-        \Closure $file_path_lister
+        Closure $file_path_lister
     ) : bool {
         FileCache::setMaxCacheSize(FileCache::MINIMUM_CACHE_SIZE);
         self::checkForSlowPHPOptions();
@@ -134,7 +136,7 @@ class Phan implements IgnoredFilesFilterInterface
         CLI::progress('parse', 0.0);
         $code_base->setCurrentParsedFile(null);
         foreach ($file_path_list as $i => $file_path) {
-            \assert(\is_string($file_path));
+            $file_path = (string)$file_path;
 
             $code_base->setCurrentParsedFile($file_path);
             CLI::progress('parse', ($i + 1) / $file_count);
@@ -181,9 +183,13 @@ class Phan implements IgnoredFilesFilterInterface
         $request = null;
         Type::clearAllMemoizations();
         if ($is_undoable_request) {
-            \assert($code_base->isUndoTrackingEnabled());
+            if (!$code_base->isUndoTrackingEnabled()) {
+                throw new AssertionError("Expected undo tracking to be enabled");
+            }
             if ($is_daemon_request) {
-                \assert(!is_array($language_server_config), 'cannot use language server config for daemon mode');
+                if (is_array($language_server_config)) {
+                    throw new AssertionError('cannot use language server config for daemon mode');
+                }
                 // Garbage collecting cycles doesn't help or hurt much here. Thought it would change something..
                 // TODO: check for conflicts with other config options -
                 //    incompatible with dump_ast, dump_signatures_file, output-file, etc.
@@ -198,7 +204,9 @@ class Phan implements IgnoredFilesFilterInterface
                     exit(2);
                 }
             } else {
-                assert(is_array($language_server_config));
+                if (!is_array($language_server_config)) {
+                    throw new AssertionError("Language server config must be an array");
+                }
                 LanguageServerLogger::logInfo(sprintf("Starting accepting connections on the language server (pid=%d)", getmypid()));
                 $request = LanguageServer::run($code_base, $file_path_lister, $language_server_config);
                 if (!$request) {
@@ -330,10 +338,11 @@ class Phan implements IgnoredFilesFilterInterface
             // excessively.
             $process_count = count($process_file_list_map);
 
-            \assert(
-                $process_count > 0 && $process_count <= Config::getValue('processes'),
-                "The process count must be between 1 and the given number of processes. After mapping files to cores, $process_count process were set to be used."
-            );
+            if (!($process_count > 0 && $process_count <= Config::getValue('processes'))) {
+                throw new AssertionError(
+                    "The process count must be between 1 and the given number of processes. After mapping files to cores, $process_count process were set to be used."
+                );
+            }
 
             $did_fork_pool_have_error = false;
 

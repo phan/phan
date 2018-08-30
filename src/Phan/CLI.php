@@ -9,6 +9,7 @@ use Phan\Output\Filter\FileIssueFilter;
 use Phan\Output\Filter\MinimumSeverityFilter;
 use Phan\Output\PrinterFactory;
 
+use AssertionError;
 use InvalidArgumentException;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -553,11 +554,10 @@ class CLI
         // way during analysis. With our parallelization mechanism, there
         // is no shared state between processes, making it impossible to
         // have a complete set of reference lists.
-        \assert(
-            Config::getValue('processes') === 1
-            || !Config::getValue('dead_code_detection'),
-            "We cannot run dead code detection on more than one core."
-        );
+        if (Config::getValue('processes') !== 1
+            && Config::getValue('dead_code_detection')) {
+            throw new AssertionError("We cannot run dead code detection on more than one core.");
+        }
     }
 
     /**
@@ -1190,17 +1190,21 @@ EOB;
     /**
      * This will assert that ast\parse_code or a polyfill can be called.
      * @return void
+     * @throws AssertionError on failure
      */
     private function ensureASTParserExists()
     {
         if (Config::getValue('use_polyfill_parser')) {
             return;
         }
-        assert(
-            extension_loaded('ast'),
-            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-            'The php-ast extension must be loaded in order for Phan to work. See https://github.com/phan/phan#getting-it-running for more details. Alternately, invoke Phan with the CLI option --allow-polyfill-parser (which is noticeably slower)'
-        );
+        if (!extension_loaded('ast')) {
+            fwrite(
+                STDERR,
+                // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+                'The php-ast extension must be loaded in order for Phan to work. See https://github.com/phan/phan#getting-it-running for more details. Alternately, invoke Phan with the CLI option --allow-polyfill-parser (which is noticeably slower)'
+            );
+            exit(EXIT_FAILURE);
+        }
 
         try {
             // Split up the opening PHP tag to fix highlighting in vim.
@@ -1209,14 +1213,14 @@ EOB;
                 Config::AST_VERSION
             );
         } catch (\LogicException $_) {
-            assert(
-                false,
+            fwrite(STDERR,
                 'Unknown AST version ('
                 . Config::AST_VERSION
                 . ') in configuration. '
                 . 'You may need to rebuild the latest '
                 . 'version of the php-ast extension.'
             );
+            exit(EXIT_FAILURE);
         }
 
         // Workaround for https://github.com/nikic/php-ast/issues/79
@@ -1225,14 +1229,15 @@ EOB;
                 '<' . '?php syntaxerror',
                 Config::AST_VERSION
             );
-            assert(
-                false,
+            fwrite(
+                STDERR,
                 'Expected ast\\parse_code to throw ParseError on invalid inputs. Configured AST version: '
                 . Config::AST_VERSION
                 . '. '
                 . 'You may need to rebuild the latest '
                 . 'version of the php-ast extension.'
             );
+            exit(EXIT_FAILURE);
         } catch (\ParseError $_) {
             // error message may validate with locale and version, don't validate that.
         }

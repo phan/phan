@@ -436,7 +436,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                                 $has_null = $has_null || $type->getIsNullable();
                                 continue;
                             }
-                            assert($type instanceof Type);
                             $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
                             $new_type_builder->addType($type);
                         }
@@ -474,7 +473,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                                 $has_null = $has_null || $type->getIsNullable();
                                 continue;
                             }
-                            assert($type instanceof Type);
                             $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
                             $new_type_builder->addType($type);
                         }
@@ -515,7 +513,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                             $has_null = $has_null || $type->getIsNullable();
                             continue;
                         }
-                        assert($type instanceof Type);
                         $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
                         $new_type_builder->addType($type);
                     }
@@ -551,7 +548,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                             continue;
                         }
 
-                        assert($type instanceof Type);
                         $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
 
                         if (\get_class($type) === IterableType::class) {
@@ -589,7 +585,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                             $has_null = $has_null || $type->getIsNullable();
                             continue;
                         }
-                        assert($type instanceof Type);
                         $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
 
                         if (\get_class($type) === IterableType::class) {

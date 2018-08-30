@@ -25,6 +25,7 @@ use Phan\Language\UnionType;
 use Phan\Library\Map;
 use Phan\Library\Set;
 
+use AssertionError;
 use ReflectionClass;
 
 use function strtolower;
@@ -724,7 +725,9 @@ class CodeBase
      */
     public function resolveClassAliases()
     {
-        \assert(!$this->undo_tracker, 'should only call this after daemon mode is finished');
+        if ($this->undo_tracker) {
+            throw new AssertionError('should only call this after daemon mode is finished');
+        }
         // loop through fqsen_alias_map and add entries to fqsen_class_map.
         foreach ($this->fqsen_alias_map as $original_fqsen => $alias_set) {
             $this->resolveClassAliasesForAliasSet($original_fqsen, $alias_set);
