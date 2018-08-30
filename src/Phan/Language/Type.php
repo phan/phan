@@ -55,7 +55,6 @@ use RuntimeException;
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
- * @phan-file-suppress PhanPluginNoAssert
  * phpcs:disable Generic.NamingConventions.UpperCaseConstantName
  */
 class Type

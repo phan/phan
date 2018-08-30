@@ -52,7 +52,6 @@ use InvalidArgumentException;
  * @phan-file-suppress PhanPluginUnusedPublicMethodArgument, PhanUnusedPublicMethodParameter implementing faster no-op methods for common visit*
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
- * @phan-file-suppress PhanPluginNoAssert
  */
 class ParseVisitor extends ScopeVisitor
 {
@@ -1187,10 +1186,7 @@ class ParseVisitor extends ScopeVisitor
      */
     private function getContextClass() : Clazz
     {
-        \assert(
-            $this->context->isInClassScope(),
-            "Must be in class scope"
-        );
+        // throws AssertionError if not in class scope
         return $this->context->getClassInScope($this->code_base);
     }
 

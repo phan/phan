@@ -12,9 +12,6 @@ use Phan\Language\Type\TemplateType;
 
 use AssertionError;
 
-/**
- * @phan-file-suppress PhanPluginNoAssert
- */
 abstract class Scope
 {
     /**

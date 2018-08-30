@@ -27,8 +27,6 @@ use ast\flags;
 use Closure;
 
 /**
- * @phan-file-suppress PhanPluginNoAssert
- *
  * TODO: Make $x > 0, $x < 0, $x >= 50, etc.  remove FalseType and NullType from $x
  * TODO: if (a || b || c || d) might get really slow, due to creating both ConditionVisitor and NegatedConditionVisitor
  */

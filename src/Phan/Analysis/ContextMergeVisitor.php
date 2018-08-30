@@ -261,7 +261,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
      */
     public function combineScopeList(array $scope_list) : Context
     {
-        if (\count($this->child_context_list) < 2) {
+        if (\count($scope_list) < 2) {
             throw new AssertionError("Expected at least two child contexts in " . __METHOD__);
         }
         // Get a list of all variables in all scopes
