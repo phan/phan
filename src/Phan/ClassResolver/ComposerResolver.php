@@ -18,14 +18,14 @@ class ComposerResolver implements ClassResolverInterface
     /**
      * Map of previously resolved classes
      *
-     * @var <string,string>
+     * @var array<string,string>
      */
     private $class_map = [];
 
     /**
      * ClassResolver constructor.
      *
-     * @param ClassLoader $composer_class_loader
+     * @param ClassLoader $composer_class_loader A composer class loader instance
      * @suppress PhanUndeclaredTypeProperty
      */
     public function __construct(ClassLoader $composer_class_loader)

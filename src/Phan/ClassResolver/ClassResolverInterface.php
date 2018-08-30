@@ -12,7 +12,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 interface ClassResolverInterface
 {
     /**
-     * Resolve the file path for a FullyQualifiedClassName
+     * Resolve the file path for a FullyQualifiedClassName, or empty string for failure.
      *
      * @param FullyQualifiedClassName $fqsen
      * @return string

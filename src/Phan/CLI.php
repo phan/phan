@@ -104,7 +104,7 @@ class CLI
         'unused-variable-detection',
         'use-fallback-parser',
         'use-project-composer-autoloader',
-                'version',
+        'version',
     ];
 
     /**
@@ -544,17 +544,11 @@ class CLI
         }
 
         if (!$this->file_list_only) {
-            if (Config::getValue('use_project_composer_autoloader')) {
-                // Set files as any remaining args on the CLI
-                $this->file_list_in_config = array_slice($argv, 1);
-                $this->file_list_only = true;
-            } else {
-                // Merge in any remaining args on the CLI
-                $this->file_list_in_config = array_merge(
-                    $this->file_list_in_config,
-                    array_slice($argv, 1)
-                );
-            }
+            // Merge in any remaining args on the CLI
+            $this->file_list_in_config = array_merge(
+                $this->file_list_in_config,
+                array_slice($argv, 1)
+            );
         }
 
         $this->recomputeFileList();
