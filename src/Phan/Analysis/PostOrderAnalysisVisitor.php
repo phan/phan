@@ -30,12 +30,13 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
+
+use AssertionError;
 use ast\Node;
 use ast\flags;
 
 /**
  * @phan-file-suppress PhanPartialTypeMismatchArgument
- * @phan-file-suppress PhanPluginNoAssert
  */
 class PostOrderAnalysisVisitor extends AnalysisVisitor
 {
@@ -1164,7 +1165,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     ) {
         $type_set = $expression_type->getTypeSet();
         $context = $this->context;
-        \assert(\count($type_set) >= 2);
+        if (\count($type_set)< 2) {
+            throw new AssertionError("Expected at least two types for strict return type checks");
+        }
 
         $mismatch_type_set = UnionType::empty();
         $mismatch_expanded_types = null;
@@ -1321,7 +1324,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $base_context = $this->context;
             // We don't bother analyzing visitReturn in PostOrderAnalysisVisitor, right now.
             // This may eventually change, just to ensure the expression is checked for issues
-            assert($base_context->isInFunctionLikeScope());
             $true_context = (new ConditionVisitor(
                 $this->code_base,
                 $base_context
@@ -1437,7 +1439,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             ))->getFunctionFromNode();
 
             foreach ($function_list_generator as $function) {
-                assert($function instanceof FunctionInterface);
                 // Check the call for parameter and argument types
                 $this->analyzeCallToMethod(
                     $function,
@@ -1867,19 +1868,17 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitMethod(Node $node) : Context
     {
-        \assert(
-            $this->context->isInFunctionLikeScope(),
-            "Must be in function-like scope to get method"
-        );
+        if (!$this->context->isInFunctionLikeScope()) {
+            throw new AssertionError("Must be in function-like scope to get method");
+        }
 
         $method = $this->context->getFunctionLikeInScope($this->code_base);
 
         $return_type = $method->getUnionType();
 
-        \assert(
-            $method instanceof Method,
-            "Function found where method expected"
-        );
+        if (!($method instanceof Method)) {
+            throw new AssertionError("Function found where method expected");
+        }
 
         if ($method instanceof Method) {
             $has_interface_class = false;
@@ -2179,11 +2178,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (isset($property)) {
             $this->analyzeNoOp($node, Issue::NoopProperty);
         } else {
-            \assert(
-                isset($node->children['expr'])
-                || isset($node->children['class']),
-                "Property nodes must either have an expression or class"
-            );
+            $expr_or_class_node = $node->children['expr'] ?? $node->children['class'];
+            if ($expr_or_class_node === null) {
+                throw new AssertionError(
+                    "Property nodes must either have an expression or class"
+                );
+            }
 
             $class_list = [];
             try {
@@ -2191,7 +2191,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $class_list = (new ContextNode(
                     $this->code_base,
                     $this->context,
-                    $node->children['expr'] ?? $node->children['class']
+                    $expr_or_class_node
                 ))->getClassList(true);
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
@@ -2823,7 +2823,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
 
             foreach ($parameter_list as $i => $parameter_clone) {
-                assert($parameter_clone instanceof Parameter);
                 $argument = $argument_list_node->children[$i] ?? null;
 
                 if (!$argument

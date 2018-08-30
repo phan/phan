@@ -6,13 +6,13 @@ use Phan\Language\Context;
 use Phan\Language\Scope;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
+
+use AssertionError;
 use ast\Node;
 
 /**
  * This will merge inferred variable types from multiple contexts in branched control structures
  * (E.g. if/elseif/else, try/catch, loops, ternary operators, etc.
- *
- * @phan-file-suppress PhanPluginNoAssert
  */
 class ContextMergeVisitor extends KindVisitorImplementation
 {
@@ -80,7 +80,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
      */
     public function mergeTryContext(Node $node) : Context
     {
-        \assert(\count($this->child_context_list) === 1);
+        if (\count($this->child_context_list) !== 1) {
+            throw new AssertionError("Expected one child context in " . __METHOD__);
+        }
 
         // Get the list of scopes for each branch of the
         // conditional
@@ -119,7 +121,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
     public function mergeCatchContext(Node $node) : Context
     {
-        \assert(\count($this->child_context_list) >= 2);  // first context is the try
+        if (\count($this->child_context_list) < 2) {
+            throw new AssertionError("Expected at least two contexts in " . __METHOD__);
+        }
         // Get the list of scopes for each branch of the
         // conditional
         $scope_list = \array_map(function (Context $context) : Scope {
@@ -243,7 +247,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
     public function combineChildContextList() : Context
     {
         $child_context_list = $this->child_context_list;
-        \assert(\count($child_context_list) >= 2);
+        if (\count($child_context_list) < 2) {
+            throw new AssertionError("Expected at least two child contexts in " . __METHOD__);
+        }
         $scope_list = \array_map(function (Context $context) : Scope {
             return $context->getScope();
         }, $child_context_list);
@@ -255,7 +261,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
      */
     public function combineScopeList(array $scope_list) : Context
     {
-        \assert(\count($scope_list) >= 2);
+        if (\count($scope_list) < 2) {
+            throw new AssertionError("Expected at least two child contexts in " . __METHOD__);
+        }
         // Get a list of all variables in all scopes
         $variable_map = [];
         foreach ($scope_list as $scope) {
@@ -297,7 +305,6 @@ class ContextMergeVisitor extends KindVisitorImplementation
                     if ($type !== $previous_type) {
                         $type_list[] = $type;
 
-                        // @phan-suppress-next-line PhanPluginUnusedVariable plugin doesn't handle loops well.
                         $previous_type = $type;
                     }
                 };

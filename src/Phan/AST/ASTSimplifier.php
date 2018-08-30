@@ -9,9 +9,7 @@ use AssertionError;
  * and returns the new Node.
  * The original \ast\Node objects are not modified.
  *
- * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
- * @phan-file-suppress PhanPluginNoAssert
  */
 class ASTSimplifier
 {
@@ -375,7 +373,7 @@ class ASTSimplifier
     private function applyIfAndReduction(Node $node) : Node
     {
         if (count($node->children) != 1) {
-            throw new AssertionError("Expected an if statement with no else/elseif statements");
+            throw new AssertionError('Expected an if statement with no else/elseif statements');
         }
         $inner_node_elem = clone($node->children[0]);  // AST_IF_ELEM
         $inner_node_elem->children['cond'] = $inner_node_elem->children['cond']->children['right'];
@@ -411,7 +409,9 @@ class ASTSimplifier
     private function applyIfAssignReduction(Node $node) : array
     {
         $outer_assign_statement = $node->children[0]->children['cond'];
-        \assert($outer_assign_statement instanceof Node);
+        if (!($outer_assign_statement instanceof Node)) {
+            throw new AssertionError('Expected condition of first if statement (with assignment as condition) to be a Node');
+        }
         $new_node_elem = clone($node->children[0]);
         $new_node_elem->children['cond'] = $new_node_elem->children['cond']->children['var'];
         $new_node_elem->flags = 0;
@@ -428,9 +428,13 @@ class ASTSimplifier
      */
     private function applyIfNegateReduction(Node $node) : Node
     {
-        \assert(count($node->children) === 2);
-        \assert($node->children[0]->children['cond']->flags === \ast\flags\UNARY_BOOL_NOT);
-        \assert($node->children[1]->children['cond'] === null);
+        if (!(
+            count($node->children) === 2 &&
+            $node->children[0]->children['cond']->flags === \ast\flags\UNARY_BOOL_NOT &&
+            $node->children[1]->children['cond'] === null
+        )) {
+            throw new AssertionError('Failed precondition of ' . __METHOD__);
+        }
         $new_node = clone($node);
         $new_node->children = [clone($new_node->children[1]), clone($new_node->children[0])];
         $new_node->children[0]->children['cond'] = $node->children[0]->children['cond']->children['expr'];
@@ -445,8 +449,12 @@ class ASTSimplifier
      */
     private function applyIfDoubleNegateReduction(Node $node) : Node
     {
-        \assert($node->children[0]->children['cond']->flags === \ast\flags\UNARY_BOOL_NOT);
-        \assert($node->children[0]->children['cond']->children['expr']->flags === \ast\flags\UNARY_BOOL_NOT);
+        if (!(
+            $node->children[0]->children['cond']->flags === \ast\flags\UNARY_BOOL_NOT &&
+            $node->children[0]->children['cond']->children['expr']->flags === \ast\flags\UNARY_BOOL_NOT
+        )) {
+            throw new AssertionError('Failed precondition of ' . __METHOD__);
+        }
 
         $new_cond = $node->children[0]->children['cond']->children['expr']->children['expr'];
         $new_node = clone($node);
@@ -460,9 +468,13 @@ class ASTSimplifier
 
     private function applyIfNegatedToIfElseReduction(Node $node) : Node
     {
-        \assert(\count($node->children) === 1);
+        if (\count($node->children) !== 1) {
+            throw new AssertionError("Expected one child node");
+        }
         $if_elem = $node->children[0];
-        \assert($if_elem->children['cond']->flags === \ast\flags\UNARY_BOOL_NOT);
+        if ($if_elem->children['cond']->flags !== \ast\flags\UNARY_BOOL_NOT) {
+            throw new AssertionError("Expected condition to begin with unary boolean negation operator");
+        }
         $lineno = $if_elem->lineno;
         $new_else_elem = new Node(
             \ast\AST_IF_ELEM,
@@ -540,7 +552,9 @@ class ASTSimplifier
     {
         $rewriter = new self();
         $nodes = $rewriter->apply($node);
-        \assert(\count($nodes) === 1);
+        if (\count($nodes) !== 1) {
+            throw new AssertionError("Expected applying simplifier to a statement list would return an array with one statement list");
+        }
         return $nodes[0];
     }
 }

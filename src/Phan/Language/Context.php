@@ -18,11 +18,12 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\GlobalScope;
 
+use AssertionError;
+use RuntimeException;
+
 /**
  * An object representing the context in which any
  * structural element (such as a class or method) lives.
- *
- * @phan-file-suppress PhanPluginNoAssert
  */
 class Context extends FileRef
 {
@@ -174,17 +175,12 @@ class Context extends FileRef
 
         $namespace_map_entry = $this->namespace_map[$map_flags][$name] ?? null;
 
-        \assert(
-            !empty($namespace_map_entry),
-            "No namespace defined for name"
-        );
+        if (!$namespace_map_entry) {
+            throw new AssertionError('No namespace defined for name');
+        }
         $fqsen = $namespace_map_entry->fqsen;
         $namespace_map_entry->is_used = true;
 
-        \assert(
-            $fqsen instanceof FullyQualifiedGlobalStructuralElement,
-            "Namespace map was not a FullyQualifiedGlobalStructuralElement"
-        );
 
         if (!$suffix) {
             return $fqsen;
@@ -194,19 +190,19 @@ class Context extends FileRef
         switch ($flags) {
             case \ast\flags\USE_NORMAL:
                 return FullyQualifiedClassName::fromFullyQualifiedString(
-                    (string)$fqsen . '\\' . $suffix
+                    $fqsen->__toString() . '\\' . $suffix
                 );
             case \ast\flags\USE_FUNCTION:
                 return FullyQualifiedFunctionName::fromFullyQualifiedString(
-                    (string)$fqsen . '\\' . $suffix
+                    $fqsen->__toString() . '\\' . $suffix
                 );
             case \ast\flags\USE_CONST:
                 return FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
-                    (string)$fqsen . '\\' . $suffix
+                    $fqsen->__toString() . '\\' . $suffix
                 );
         }
 
-        throw new \AssertionError("Unknown flag $flags");
+        throw new AssertionError("Unknown flag $flags");
     }
 
     /**
@@ -414,10 +410,9 @@ class Context extends FileRef
      */
     public function getClassInScope(CodeBase $code_base) : Clazz
     {
-        \assert(
-            $this->isInClassScope(),
-            "Must be in class scope to get class"
-        );
+        if (!$this->isInClassScope()) {
+            throw new AssertionError("Must be in class scope to get class");
+        }
 
         if (!$code_base->hasClassWithFQSEN($this->getClassFQSEN())) {
             throw new CodeBaseException(
@@ -444,10 +439,9 @@ class Context extends FileRef
      */
     public function getPropertyInScope(CodeBase $code_base) : Property
     {
-        \assert(
-            $this->isInPropertyScope(),
-            "Must be in property scope to get property"
-        );
+        if (!$this->isInPropertyScope()) {
+            throw new AssertionError("Must be in property scope to get property");
+        }
 
         $property_fqsen = $this->getPropertyFQSEN();
         if (!$code_base->hasPropertyWithFQSEN($property_fqsen)) {
@@ -491,8 +485,11 @@ class Context extends FileRef
      */
     public function getFunctionLikeFQSEN()
     {
-        \assert($this->getScope()->isInFunctionLikeScope());
-        return $this->getScope()->getFunctionLikeFQSEN();
+        $scope = $this->getScope();
+        if (!$scope->isInFunctionLikeScope()) {
+            throw new AssertionError("Must be in function-like scope to get function-like FQSEN");
+        }
+        return $scope->getFunctionLikeFQSEN();
     }
 
     /**
@@ -505,29 +502,23 @@ class Context extends FileRef
     public function getFunctionLikeInScope(
         CodeBase $code_base
     ) : FunctionInterface {
-        \assert(
-            $this->isInFunctionLikeScope(),
-            "Must be in method scope to get method."
-        );
-
         $fqsen = $this->getFunctionLikeFQSEN();
 
         if ($fqsen instanceof FullyQualifiedFunctionName) {
             if (!$code_base->hasFunctionWithFQSEN($fqsen)) {
-                throw new \RuntimeException("The function $fqsen does not exist, but Phan is in that function's scope");
+                throw new RuntimeException("The function $fqsen does not exist, but Phan is in that function's scope");
             }
             return $code_base->getFunctionByFQSEN($fqsen);
         }
 
         if ($fqsen instanceof FullyQualifiedMethodName) {
-            \assert(
-                $code_base->hasMethodWithFQSEN($fqsen),
-                "Method does not exist"
-            );
+            if (!$code_base->hasMethodWithFQSEN($fqsen)) {
+                throw new RuntimeException("Method does not exist");
+            }
             return $code_base->getMethodByFQSEN($fqsen);
         }
 
-        throw new \AssertionError("FQSEN must be for a function or method");
+        throw new AssertionError("FQSEN must be for a function or method");
     }
 
     /**

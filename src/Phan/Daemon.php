@@ -66,7 +66,7 @@ class Daemon
                  * @param string $file
                  * @param int $line
                  * @return bool
-                 * @phan-suppress-next-line PhanPluginUnusedVariable https://github.com/mattriverm/PhanUnusedVariable/issues/30 */
+                 */
                 $previous_error_handler = set_error_handler(function ($severity, $message, $file, $line) use (&$previous_error_handler) {
                     self::debugf("In new error handler '$message'");
                     if (!preg_match('/stream_socket_accept/i', $message)) {
@@ -122,7 +122,6 @@ class Daemon
             while (true) {
                 $got_signal = false;  // reset this.
                 // We get an error from stream_socket_accept. After the RuntimeException is thrown, pcntl_signal is called.
-                // @phan-suppress-next-line PhanPluginUnusedVariable
                 $previous_error_handler = set_error_handler(
                     /** @return bool */
                     function ($severity, $message, $file, $line) use (&$previous_error_handler) {

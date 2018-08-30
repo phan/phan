@@ -25,6 +25,7 @@ use Phan\Language\UnionType;
 use Phan\Library\Map;
 use Phan\Library\Set;
 
+use AssertionError;
 use ReflectionClass;
 
 use function strtolower;
@@ -64,7 +65,6 @@ use function strlen;
  * for a background daemon analyzing single files. (Phan\CodeBase\UndoTracker)
  *
  * @phan-file-suppress PhanPartialTypeMismatchReturn the way generic objects is type hinted is inadequate, etc.
- * @phan-file-suppress PhanPluginNoAssert
  */
 class CodeBase
 {
@@ -220,7 +220,6 @@ class CodeBase
     public function enableUndoTracking()
     {
         if ($this->has_enabled_undo_tracker) {
-            // @phan-suppress-next-line PhanThrowTypeAbsent should be impossible.
             throw new \RuntimeException("Undo tracking already enabled");
         }
         $this->has_enabled_undo_tracker = true;
@@ -724,7 +723,9 @@ class CodeBase
      */
     public function resolveClassAliases()
     {
-        \assert(!$this->undo_tracker, 'should only call this after daemon mode is finished');
+        if ($this->undo_tracker) {
+            throw new AssertionError('should only call this after daemon mode is finished');
+        }
         // loop through fqsen_alias_map and add entries to fqsen_class_map.
         foreach ($this->fqsen_alias_map as $original_fqsen => $alias_set) {
             $this->resolveClassAliasesForAliasSet($original_fqsen, $alias_set);
@@ -741,7 +742,10 @@ class CodeBase
             // Emit issues at the point of every single class_alias call with that original class.
             foreach ($alias_set as $alias_record) {
                 $suggestion = IssueFixSuggester::suggestSimilarClass($this, $alias_record->context, $original_fqsen);
-                \assert($alias_record instanceof ClassAliasRecord);
+                if (!($alias_record instanceof ClassAliasRecord)) {
+                    throw new AssertionError("Expected instances of ClassAliasRecord in alias_set");
+                }
+
                 Issue::maybeEmitWithParameters(
                     $this,
                     $alias_record->context,
@@ -756,7 +760,9 @@ class CodeBase
         // The original class exists. Attempt to create aliases of the original class.
         $class = $this->getClassByFQSEN($original_fqsen);
         foreach ($alias_set as $alias_record) {
-            \assert($alias_record instanceof ClassAliasRecord);
+            if (!($alias_record instanceof ClassAliasRecord)) {
+                throw new AssertionError("Expected instances of ClassAliasRecord in alias_set");
+            }
             $alias_fqsen = $alias_record->alias_fqsen;
             // Don't do anything if there is a real class, or if an earlier class_alias created an alias.
             if ($this->hasClassWithFQSEN($alias_fqsen)) {
@@ -986,11 +992,12 @@ class CodeBase
      */
     public function getMethodSetByName(string $name) : Set
     {
-        \assert(
-            Config::get_track_references(),
-            __METHOD__ . ' can only be called when dead code '
-            . ' detection (or force_tracking_references) is enabled.'
-        );
+        if (!Config::get_track_references()) {
+            throw new AssertionError(
+                __METHOD__ . ' can only be called when dead code '
+                . ' detection (or force_tracking_references) is enabled.'
+            );
+        }
 
         return $this->name_method_map[$name] ?? new Set();
     }

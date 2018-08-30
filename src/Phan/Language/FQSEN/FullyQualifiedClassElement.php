@@ -9,7 +9,6 @@ use InvalidArgumentException;
 
 /**
  * A Fully-Qualified Class Name
- * @phan-file-suppress PhanPluginNoAssert
  */
 abstract class FullyQualifiedClassElement extends AbstractFQSEN
 {

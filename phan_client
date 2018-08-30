@@ -26,7 +26,6 @@
  *
  * TODO: tutorial or repo.
  *
- * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * @phan-file-suppress PhanPluginDuplicateConditionalNullCoalescing this can't use the `??` operator because it's compatible with php 5.6
  */
@@ -226,7 +225,6 @@ class PhanPHPLinter
      * @param array[] $response
      * @param string[] $file_mapping
      * @return void
-     * @suppress PhanPluginUnusedVariable $did_debug false positive
      */
     private static function dumpJSONIssues(array $response, array $file_mapping)
     {

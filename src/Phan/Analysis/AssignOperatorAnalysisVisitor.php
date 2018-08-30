@@ -24,8 +24,6 @@ use Closure;
 
 /**
  * TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed
- *
- * @phan-file-suppress PhanUnusedPublicMethodParameter this is a WIP. TODO: Finish implementing.
  */
 class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
 {

@@ -110,7 +110,6 @@ class FunctionFactory
         );
 
         $method->setNumberOfOptionalParameters(
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument TODO: Make this consistently an int?
             $reflection_method->getNumberOfParameters()
             - $reflection_method->getNumberOfRequiredParameters()
         );

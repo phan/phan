@@ -97,7 +97,6 @@ class Initializer
             if (preg_match('@^\s*//@', $line)) {
                 $prev_lines[] = trim($line);
             } else {
-                // @phan-suppress-next-line PhanPluginUnusedVariable (used in loop)
                 $prev_lines = [];
             }
         }

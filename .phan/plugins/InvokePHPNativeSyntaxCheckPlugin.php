@@ -87,7 +87,6 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
     }
 
     /**
-     * @suppress PhanPartialTypeMismatchArgument
      * @throws Error if a syntax check process fails to shut down
      */
     private function awaitIncompleteProcesses(CodeBase $code_base, int $max_incomplete_processes)

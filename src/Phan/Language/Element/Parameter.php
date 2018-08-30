@@ -190,7 +190,6 @@ class Parameter extends Variable
                 && !$is_optional_seen
                 && $parameter->getNonVariadicUnionType()->isEmpty()
             ) {
-                // @phan-suppress-next-line PhanPluginUnusedVariable
                 $is_optional_seen = true;
             }
 

@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Library;
 
+use Closure;
+
 /**
  * A map from object to object with key comparisons
  * based on spl_object_hash.
@@ -30,11 +32,11 @@ class Map extends \SplObjectStorage
     }
 
     /**
-     * @param \Closure(object):object $key_closure
+     * @param Closure(object):object $key_closure
      * A closure that maps each key of this map
      * to a new key
      *
-     * @param \Closure(object):object $value_closure
+     * @param Closure(object):object $value_closure
      * A closure that maps each value of this map
      * to a new value.
      *
@@ -42,7 +44,7 @@ class Map extends \SplObjectStorage
      * A new map containing the mapped keys and
      * values
      */
-    public function keyValueMap(\Closure $key_closure, \Closure $value_closure)
+    public function keyValueMap(Closure $key_closure, Closure $value_closure)
     {
         $map = new Map();
         foreach ($this as $key => $value) {

@@ -2,6 +2,7 @@
 
 namespace Phan\AST\TolerantASTConverter;
 
+use AssertionError;
 use ast;
 use Error;
 use InvalidArgumentException;
@@ -68,8 +69,6 @@ if (!class_exists('\ast\Node')) {
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
- * @phan-file-suppress PhanPluginNoAssert
  */
 class TolerantASTConverter
 {
@@ -540,7 +539,9 @@ class TolerantASTConverter
                 $ast_kind = $lookup[$kind] ?? null;
                 if ($ast_kind === null) {
                     $ast_kind = $assign_lookup[$kind] ?? null;
-                    assert($ast_kind !== null, "missing $kind (" . Token::getTokenKindNameFromValue($kind) . ")");
+                    if ($ast_kind === null) {
+                        throw new AssertionError("missing $kind (" . Token::getTokenKindNameFromValue($kind) . ")");
+                    }
                     return static::astNodeAssignop($ast_kind, $n, $start_line);
                 }
                 return static::astNodeBinaryop($ast_kind, $n, $start_line);
@@ -554,7 +555,9 @@ class TolerantASTConverter
                 ];
                 $kind = $n->operator->kind;
                 $ast_kind = $lookup[$kind] ?? null;
-                \assert($ast_kind !== null, "missing $kind(" . Token::getTokenKindNameFromValue($kind) . ")");
+                if ($ast_kind === null) {
+                    throw new AssertionError("missing $kind(" . Token::getTokenKindNameFromValue($kind) . ")");
+                }
                 return static::astNodeUnaryOp($ast_kind, static::phpParserNodeToAstNode($n->operand), $start_line);
             },
             'Microsoft\PhpParser\Node\Expression\CastExpression' => function (PhpParser\Node\Expression\CastExpression $n, int $start_line) : ast\Node {
@@ -569,7 +572,9 @@ class TolerantASTConverter
                 ];
                 $kind = $n->castType->kind;
                 $ast_kind = $lookup[$kind] ?? null;
-                assert($ast_kind !== null, "missing $kind");
+                if ($ast_kind === null) {
+                    throw new AssertionError("missing $kind");
+                }
                 return static::astNodeCast($ast_kind, $n, $start_line);
             },
             'Microsoft\PhpParser\Node\Expression\AnonymousFunctionCreationExpression' => function (PhpParser\Node\Expression\AnonymousFunctionCreationExpression $n, int $start_line) : ast\Node {
@@ -1104,7 +1109,9 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Statement\DeclareStatement' => function (PhpParser\Node\Statement\DeclareStatement $n, int $start_line) : ast\Node {
                 $doc_comment = $n->getDocCommentText();
                 $directive = $n->declareDirective;
-                assert($directive instanceof PhpParser\Node\DeclareDirective);
+                if (!($directive instanceof PhpParser\Node\DeclareDirective)) {
+                    throw new AssertionError("Unexpected type for directive");
+                }
                 return static::astStmtDeclare(
                     static::phpParserDeclareListToAstDeclares($directive, $start_line, $doc_comment),
                     $n->statements !== null ? static::phpParserStmtlistToAstNode($n->statements, $start_line, true) : null,
@@ -1283,7 +1290,10 @@ class TolerantASTConverter
                     if ($var instanceof Token) {
                         continue;
                     }
-                    assert($var instanceof PhpParser\Node\StaticVariableDeclaration);  // FIXME error tolerance
+                    if (!($var instanceof PhpParser\Node\StaticVariableDeclaration)) {
+                        // FIXME error tolerance
+                        throw new AssertionError("Expected StaticVariableDeclaration");
+                    }
 
                     $static_nodes[] = new ast\Node(ast\AST_STATIC, 0, [
                         'var' => new ast\Node(ast\AST_VAR, 0, ['name' => static::phpParserNodeToAstNode($var->variableName)], static::getEndLine($var) ?: $start_line),
@@ -1312,7 +1322,9 @@ class TolerantASTConverter
                         if ($select_or_alias_clause instanceof Token) {
                             continue;
                         }
-                        assert($select_or_alias_clause instanceof PhpParser\Node\TraitSelectOrAliasClause);
+                        if (!($select_or_alias_clause instanceof PhpParser\Node\TraitSelectOrAliasClause)) {
+                            throw new AssertionError("Expected TraitSelectOrAliasClause");
+                        }
                         $result = static::phpParserNodeToAstNode($select_or_alias_clause);
                         if ($result instanceof ast\Node) {
                             $adaptations_inner[] = $result;
@@ -1358,7 +1370,9 @@ class TolerantASTConverter
                         'method' => $method_node->children[0]
                     ], $start_line);
 
-                    assert(\count($member_name_list) === 1);  // TODO: can this be simplified?
+                    if (\count($member_name_list) !== 1) {
+                        throw new AssertionError("Expected insteadof member_name_list length to be 1");
+                    }
                     $children = [
                         'method' => $outer_method_node,
                         'insteadof' => $target_node,
@@ -1425,7 +1439,9 @@ class TolerantASTConverter
         ];
 
         foreach ($closures as $key => $_) {
-            \assert(\class_exists($key), "Class $key should exist");
+            if (!(\class_exists($key))) {
+                throw new AssertionError("Class $key should exist");
+            }
         }
         return $closures;
     }
@@ -1723,7 +1739,9 @@ class TolerantASTConverter
             if ($use instanceof Token) {
                 continue;
             }
-            \assert($use instanceof PhpParser\Node\UseVariableName);
+            if (!($use instanceof PhpParser\Node\UseVariableName)) {
+                throw new AssertionError("Expected UseVariableName");
+            }
             $ast_uses[] = new ast\Node(ast\AST_CLOSURE_VAR, $use->byRef ? 1 : 0, ['name' => static::tokenToString($use->variableName)], self::getStartLine($use));
         }
         return new ast\Node(ast\AST_CLOSURE_USES, 0, $ast_uses, $ast_uses[0]->lineno ?? $line);
@@ -2461,7 +2479,9 @@ class TolerantASTConverter
         if ($comments === null) {
             return null;
         }
-        assert(\is_array($comments));
+        if (!(\is_array($comments))) {
+            throw new AssertionError("Expected an array of comments");
+        }
         if (\count($comments) === 0) {
             return null;
         }
@@ -2480,10 +2500,11 @@ class TolerantASTConverter
                 $prev_was_element = false;
                 continue;
             } else {
-                // @phan-suppress-next-line PhanPluginUnusedVariable
                 $prev_was_element = true;
             }
-            assert($item instanceof PhpParser\Node\ArrayElement);
+            if (!($item instanceof PhpParser\Node\ArrayElement)) {
+                throw new AssertionError("Expected ArrayElement");
+            }
             $ast_items[] = new ast\Node(ast\AST_ARRAY_ELEM, 0, [
                 'value' => static::phpParserNodeToAstNode($item->elementValue),
                 'key' => $item->elementKey !== null ? static::phpParserNodeToAstNode($item->elementKey) : null,
@@ -2508,10 +2529,11 @@ class TolerantASTConverter
                 $prev_was_element = false;
                 continue;
             } else {
-                // @phan-suppress-next-line PhanPluginUnusedVariable
                 $prev_was_element = true;
             }
-            assert($item instanceof PhpParser\Node\ArrayElement);
+            if (!($item instanceof PhpParser\Node\ArrayElement)) {
+                throw new AssertionError("Expected ArrayElement");
+            }
             $flags = $item->byRef ? ast\flags\PARAM_REF : 0;
             $ast_items[] = new ast\Node(ast\AST_ARRAY_ELEM, $flags, [
                 'value' => static::phpParserNodeToAstNode($item->elementValue),

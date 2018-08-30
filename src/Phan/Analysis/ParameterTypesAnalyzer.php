@@ -222,7 +222,6 @@ class ParameterTypesAnalyzer
                 return;
             }
             $prev_name = $parameter_name;
-            // @phan-suppress-next-line PhanPluginUnusedVariable
             $prev_index = $parameter_index_in_comment;
         }
     }

@@ -520,7 +520,6 @@ class UnionTypeVisitor extends AnalysisVisitor
             )->asUnionType();
         }
         // Sometimes 0 for a fully qualified name?
-        // \assert(($node->flags & \ast\flags\NAME_FQ) !== 0, "All flags must match");
 
         return Type::fromFullyQualifiedString(
             '\\' . $node->children['name']
@@ -1975,7 +1974,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                         // Find the static type on the list
                         $static_type = $union_type->findTypeMatchingCallback(function (Type $type) : bool {
                             return $type instanceof GenericArrayInterface
-                                && $type->genericArrayElementUnionType()->hasStaticType();  // @phan-suppress-current-line PhanUndeclaredMethod TODO: Support intersection types
+                                && $type->genericArrayElementUnionType()->hasStaticType();
                         });
 
                         // Remove it from the list

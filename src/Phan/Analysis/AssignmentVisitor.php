@@ -33,7 +33,7 @@ use AssertionError;
 use ast\Node;
 
 /**
- * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * Analyzes assignments.
  */
 class AssignmentVisitor extends AnalysisVisitor
 {

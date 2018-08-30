@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Library;
 
+use Closure;
+
 /**
  * A set of objects supporting union and
  * intersection
@@ -129,7 +131,7 @@ class Set extends \SplObjectStorage
     }
 
     /**
-     * @param \Closure $closure
+     * @param Closure $closure
      * A closure taking a set element that returns a boolean
      * for which true will cause the element to be retained
      * and false will cause the element to be removed
@@ -139,7 +141,7 @@ class Set extends \SplObjectStorage
      * closure return true
      * @suppress PhanUnreferencedPublicMethod potentially useful but currently unused
      */
-    public function filter(\Closure $closure)
+    public function filter(Closure $closure)
     {
         $set = new Set();
         foreach ($this as $element) {
@@ -151,14 +153,14 @@ class Set extends \SplObjectStorage
     }
 
     /**
-     * @param \Closure(object):object $closure
+     * @param Closure(object):object $closure
      * A closure that maps each element of this set
      * to a new element
      *
      * @return Set
      * A new set containing the mapped values
      */
-    public function map(\Closure $closure) : Set
+    public function map(Closure $closure) : Set
     {
         $set = new Set();
         foreach ($this as $element) {
@@ -185,7 +187,7 @@ class Set extends \SplObjectStorage
     }
 
     /**
-     * @param \Closure $closure
+     * @param Closure $closure
      * A closure that takes an element and returns a boolean
      *
      * @return mixed|bool
@@ -194,7 +196,7 @@ class Set extends \SplObjectStorage
      * given closure
      * @suppress PhanUnreferencedPublicMethod potentially useful but currently unused
      */
-    public function find(\Closure $closure)
+    public function find(Closure $closure)
     {
         foreach ($this as $element) {
             if ($closure($element)) {

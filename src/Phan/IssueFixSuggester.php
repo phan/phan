@@ -437,7 +437,6 @@ class IssueFixSuggester
             $distance = levenshtein(strtolower($name), $search_name);
             if ($distance <= $min_found_distance) {
                 if ($distance < $min_found_distance) {
-                    // @phan-suppress-next-line PhanPluginUnusedVariable false positive in loop
                     $min_found_distance = $distance;
                     $best_matches = [];
                 }

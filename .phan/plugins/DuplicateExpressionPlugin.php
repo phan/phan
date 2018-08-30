@@ -109,7 +109,6 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
      *
      * @return void
      * @override
-     * @suppress PhanAccessClassConstantInternal
      */
     public function visitConditional(Node $node)
     {

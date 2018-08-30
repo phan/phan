@@ -3011,7 +3011,6 @@ class Issue
                     $expected_category_for_type_id_bitpos
                 ));
             }
-            // @phan-suppress-next-line PhanPluginUnusedVariable
             $error_map[$error_type] = $error;
         }
     }
