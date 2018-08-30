@@ -626,7 +626,6 @@ class CLI
     /**
      * @return array<int,string>
      * Get the set of files to analyze
-     * @suppress PhanPartialTypeMismatchReturn other types get inferred from assignments
      */
     public function getFileList() : array
     {

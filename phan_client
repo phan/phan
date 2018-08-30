@@ -26,7 +26,6 @@
  *
  * TODO: tutorial or repo.
  *
- * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * @phan-file-suppress PhanPluginDuplicateConditionalNullCoalescing this can't use the `??` operator because it's compatible with php 5.6
  */

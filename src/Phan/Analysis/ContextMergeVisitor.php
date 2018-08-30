@@ -305,7 +305,6 @@ class ContextMergeVisitor extends KindVisitorImplementation
                     if ($type !== $previous_type) {
                         $type_list[] = $type;
 
-                        // @phan-suppress-next-line PhanPluginUnusedVariable plugin doesn't handle loops well.
                         $previous_type = $type;
                     }
                 };

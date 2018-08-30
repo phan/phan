@@ -1101,7 +1101,6 @@ EOT;
      * @param resource $proc_out
      * Based on ProtocolStreamReader::readMessages()
      * TODO: Add timeout logic, etc.
-     * @suppress PhanPluginUnusedVariable $parsing_mode
      * @return array
      */
     private function awaitResponse($proc_out) : array

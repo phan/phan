@@ -111,7 +111,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     /**
      * Analyzes a namespace block or statement (e.g. `namespace NS\SubNS;` or `namespace OtherNS { ... }`)
      * @param Node $node a node of type AST_NAMESPACE
-     * @suppress PhanAccessMethodInternal
      */
     public function visitNamespace(Node $node) : Context
     {
@@ -134,6 +133,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         ))->visitNamespace($node);
 
         // We already imported namespace constants earlier; use those.
+        // @phan-suppress-next-line PhanAccessMethodInternal
         $context->importNamespaceMapFromParsePhase($this->code_base);
 
         // Let any configured plugins do a pre-order
@@ -1076,7 +1076,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             }
             foreach ($union_type->getTypeSet() as $type) {
                 // Track where this ancestor type was thrown
-                // @phan-suppress-next-line PhanPluginUnusedVariable
                 $caught_union_types[\spl_object_id($type)] = $catch_line;
             }
         }
