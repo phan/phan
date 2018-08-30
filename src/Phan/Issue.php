@@ -879,7 +879,7 @@ class Issue
                 self::AutoloaderMissingFile,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
-                "Expected autoloaded file to exist for '{CLASSLIKE}' but no such file exists.",
+                "Expected autoloaded file to exist for '{CLASSLIKE}' at {FILE} but no such file exists.",
                 self::REMEDIATION_B,
                 11038
             ),

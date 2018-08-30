@@ -122,6 +122,9 @@ if (count($file_list_from_cli) > 0) {
 	}
 }
 
+// Initialize the codebase, allows for pre-run setup
+$code_base->init();
+
 // Analyze the file list provided via the CLI
 Phan::analyzeFileList($code_base, function() use($include_paths) {
 	return $include_paths;

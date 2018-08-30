@@ -949,6 +949,7 @@ class CodeBase
         // As we're adding missing classes, we don't want to continue hydrating them
         // so cache the current value and reset after we're done
         $should_hydrate_requested_elements = $this->should_hydrate_requested_elements;
+        $current_parsed_file = $this->getCurrentParsedFile();
         $this->setShouldHydrateRequestedElements(false);
         $this->setCurrentParsedFile($file_path);
         $this->flushDependenciesForFile($file_path);
@@ -965,7 +966,7 @@ class CodeBase
 
         // Reset temp state
         $this->setShouldHydrateRequestedElements($should_hydrate_requested_elements);
-        $this->setCurrentParsedFile(null);
+        $this->setCurrentParsedFile($current_parsed_file);
         $this->class_resolver_loaded[$class] = $this->fqsen_class_map->offsetExists($fqsen);
         $this->class_resolver_parsed_files[$file_path] = true;
 
