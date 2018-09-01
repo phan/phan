@@ -1071,9 +1071,12 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $node->lineno ?? 0,
                 "Invalid ClassName for new ClassName()"
             );
-            return UnionType::empty();
+            return ObjectType::instance(false)->asUnionType();
         }
-        $union_type = $this->visitClassNode($class_node);
+        $union_type = $this->visitClassNameNode($class_node);
+        if ($union_type->isEmpty()) {
+            return ObjectType::instance(false)->asUnionType();
+        }
 
         // TODO: re-use the underlying type set in the common case
         // Maybe UnionType::fromMap
@@ -1083,12 +1086,8 @@ class UnionTypeVisitor extends AnalysisVisitor
         return UnionType::of(\array_map(function (Type $type) use ($node) : Type {
 
             // Get a fully qualified name for the type
-            $fqsen = $type->asFQSEN();
-
-            // If this isn't a class, its fine as is
-            if (!($fqsen instanceof FullyQualifiedClassName)) {
-                return $type;
-            }
+            // TODO: Add a test of `new $closure()` warning.
+            $fqsen = FullyQualifiedClassName::fromType($type);
 
             // If we don't have the class, we'll catch that problem
             // elsewhere
@@ -1659,7 +1658,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         if ($node->children['name']->kind == \ast\AST_NAME) {
             $name = $node->children['name']->children['name'];
-            if (defined($name)) {
+            if (\defined($name)) {
                 // This constant is internal to php
                 $result = Type::fromReservedConstantName($name);
                 if ($result->isDefined()) {
@@ -1670,7 +1669,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 // defined() doesn't account for use statements in the codebase (`use ... as aliased_name`)
                 // TODO: The below code will act as though some constants from Phan exist in other codebases (e.g. EXIT_STATUS).
                 return Type::fromObject(
-                    constant($name)
+                    \constant($name)
                 )->asUnionType();
             }
 
@@ -1681,7 +1680,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             // If the constant is referring to the current
             // class, return that as a type
             if (Type::isSelfTypeString($constant_name) || Type::isStaticTypeString($constant_name)) {
-                return $this->visitClassNode($node);
+                return Type::fromStringInContext($constant_name, $this->context, Type::FROM_NODE)->asUnionType();
             }
 
             try {
@@ -2128,7 +2127,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /*
      * @param Node $node
-     * A node holding a class
+     * A node holding a class name
      *
      * @return UnionType
      * The set of types that are possibly produced by the
@@ -2138,15 +2137,12 @@ class UnionTypeVisitor extends AnalysisVisitor
      * An exception is thrown if we can't find a class for
      * the given type
      */
-    private function visitClassNode(Node $node) : UnionType
+    private function visitClassNameNode(Node $node) : UnionType
     {
         $kind = $node->kind;
-        if ($kind === \ast\AST_VAR) {
-            return $this->classLiteralsForNonName($node);
-        }
         // Anonymous class of form `new class { ... }`
         if ($kind === \ast\AST_CLASS
-            && $node->flags & \ast\flags\CLASS_ANONYMOUS
+            && ($node->flags & \ast\flags\CLASS_ANONYMOUS)
         ) {
             // Generate a stable name for the anonymous class
             $anonymous_class_name =
@@ -2163,12 +2159,12 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
 
             // Turn that into a union type
-            return Type::fromFullyQualifiedString((string)$fqsen)->asUnionType();
+            return Type::fromFullyQualifiedString($fqsen->__toString())->asUnionType();
         }
 
         // Things of the form `new $className()`, `new (foo())()`, etc.
         if ($kind !== \ast\AST_NAME) {
-            return UnionType::empty();
+            return $this->classLiteralsForNonName($node);
         }
 
         // Get the name of the class
@@ -2213,13 +2209,13 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
 
             return Type::fromFullyQualifiedString(
-                (string)$class->getParentClassFQSEN()
+                $class->getParentClassFQSEN()->__toString()
             )->asUnionType();
         }
 
         // TODO: UnionType::fromFullyQualifiedString()
         $result = Type::fromFullyQualifiedString(
-            (string)$this->context->getClassFQSEN()
+            $this->context->getClassFQSEN()->__toString()
         )->asUnionType();
 
         if ($is_static_type_string) {
@@ -2235,18 +2231,37 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->context,
             $node
         );
+        if ($node_type->isEmpty()) {
+            return UnionType::empty();
+        }
         $result = UnionType::empty();
+        $is_valid = true;
         foreach ($node_type->getTypeSet() as $sub_type) {
             if ($sub_type instanceof LiteralStringType) {
                 $value = $sub_type->getValue();
-                if (\preg_match('/\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\]*/', $value)) {
-                    // TODO: warn about invalid types and unparseable types
-                    $fqsen = FullyQualifiedClassName::makeFromExtractedNamespaceAndName($value);
-                    if ($this->code_base->hasClassWithFQSEN($fqsen)) {
-                        $result = $result->withType($fqsen->asType());
-                    }
+                if (!\preg_match('/\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\]*/', $value)) {
+                    $is_valid = false;
+                    continue;
+                }
+                // TODO: warn about invalid types and unparseable types
+                $fqsen = FullyQualifiedClassName::makeFromExtractedNamespaceAndName($value);
+                if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
+                    $is_valid = false;
+                    continue;
+                }
+                $result = $result->withType($fqsen->asType());
+            } elseif ($is_valid) {
+                if (!($sub_type instanceof StringType || $sub_type instanceof MixedType)) {
+                    $is_valid = false;
                 }
             }
+        }
+        if ($result->isEmpty() && !$is_valid) {
+            $this->emitIssue(
+                Issue::TypeExpectedClassName,
+                $node->lineno ?? 0,
+                $node_type
+            );
         }
         return $result;
     }
@@ -2532,10 +2547,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if ($object_type instanceof ObjectType || $object_type instanceof TemplateType) {
                 continue;
             }
-            $class_fqsen = $object_type->asFQSEN();
-            if (!($class_fqsen instanceof FullyQualifiedClassName)) {
-                continue;
-            }
+            $class_fqsen = FullyQualifiedClassName::fromType($object_type);
             if ($object_type->isStaticType()) {
                 if (!$context->isInClassScope()) {
                     $this->emitIssue(

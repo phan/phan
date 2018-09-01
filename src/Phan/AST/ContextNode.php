@@ -776,7 +776,7 @@ class ContextNode
                     if ($type instanceof ClosureType) {
                         $closure_fqsen =
                             FullyQualifiedFunctionName::fromFullyQualifiedString(
-                                (string)$type->asFQSEN()
+                                $type->asFQSEN()->__toString()
                             );
 
                         if ($code_base->hasFunctionWithFQSEN(

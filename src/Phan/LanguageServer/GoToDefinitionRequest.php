@@ -135,6 +135,7 @@ final class GoToDefinitionRequest
                 }
                 $type_fqsen = $context->getClassFQSEN();
             } else {
+                // Get the FQSEN of the class or closure.
                 $type_fqsen = $type->asFQSEN();
             }
             try {

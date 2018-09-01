@@ -91,13 +91,13 @@ class Func extends AddressableElement implements FunctionInterface
     private static function getClosureOverrideFQSEN(
         CodeBase $code_base,
         Context $context,
-        Type $closure_scope,
+        Type $closure_scope_type,
         Node $node
     ) {
         if ($node->kind !== \ast\AST_CLOSURE) {
             return null;
         }
-        if ($closure_scope->isNativeType()) {
+        if ($closure_scope_type->isNativeType()) {
             // TODO: Handle final internal classes (Can't call bindTo on those)
             // TODO: What about 'null' (for code planning to bindTo(null))
             // Emit an error
@@ -106,25 +106,19 @@ class Func extends AddressableElement implements FunctionInterface
                 $context,
                 Issue::TypeInvalidClosureScope,
                 $node->lineno ?? 0,
-                (string)$closure_scope
+                (string)$closure_scope_type
             );
             return null;
         } else {
             // TODO: handle 'parent'?
             // TODO: Check if isInClassScope
-            if ($closure_scope->isSelfType() || $closure_scope->isStaticType()) {
+            if ($closure_scope_type->isSelfType() || $closure_scope_type->isStaticType()) {
                 // nothing to do.
                 return null;
             }
         }
 
-        $class_fqsen = $closure_scope->asFQSEN();
-        if (!($class_fqsen instanceof FullyQualifiedClassName)) {
-            // shouldn't happen
-            return null;
-        }
-
-        return $class_fqsen;
+        return FullyQualifiedClassName::fromType($closure_scope_type);
     }
 
 

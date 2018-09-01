@@ -1211,7 +1211,8 @@ EOB;
                 Config::AST_VERSION
             );
         } catch (\LogicException $_) {
-            fwrite(STDERR,
+            fwrite(
+                STDERR,
                 'Unknown AST version ('
                 . Config::AST_VERSION
                 . ') in configuration. '

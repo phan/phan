@@ -1,0 +1,8 @@
+%s:6 PhanNonClassMethodCall Call to method __construct on non-class type int
+%s:6 PhanTypeExpectedClassName Expected the name of a class but saw expression with type int
+%s:8 PhanTypeExpectedClassName Expected the name of a class but saw expression with type \stdClass
+%s:10 PhanAccessMethodPrivate Cannot access private method \Closure::__construct defined at internal:0
+%s:10 PhanTypeExpectedClassName Expected the name of a class but saw expression with type Closure(string):void
+%s:11 PhanUndeclaredMethodInCallable Call to undeclared method name in callable. Possible object type(s) for that method are Closure():void
+%s:12 PhanUndeclaredMethod Call to undeclared method \Closure::name
+%s:13 PhanTypeInvalidCallableObjectOfMethod In a place where phan was expecting a callable, saw a two-element array with a class or expression with an unexpected type 2 (expected a class type or string). Method name was name
