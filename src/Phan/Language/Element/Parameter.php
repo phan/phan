@@ -126,6 +126,7 @@ class Parameter extends Variable
                 $this->default_value_future_type = null;
             }
         }
+        // @phan-suppress-next-line PhanPossiblyNullTypeReturn callers should check hasDefaultType
         return $this->default_value_type;
     }
 

@@ -338,7 +338,6 @@ class Clazz extends AddressableElement
         }
         $class_fqsen = $clazz->getFQSEN();
         $class_fqsen_string = strtolower($class_fqsen->__toString());
-        ;
         if ($class_fqsen_string === '\closure') {
             $parameter_list = [
                 new Parameter($clazz->getContext(), 'callable', UnionType::fromFullyQualifiedString('callable'), 0)

@@ -42,10 +42,10 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
     ];
 
     /**
-     * @var Type|null
+     * @var Type
      * The type of every value in this array
      */
-    private $element_type = null;
+    private $element_type;
 
     /**
      * @var int

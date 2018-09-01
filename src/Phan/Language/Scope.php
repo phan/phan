@@ -61,6 +61,7 @@ abstract class Scope
     /**
      * @return Scope
      * Get the parent scope of this scope
+     * @suppress PhanPossiblyNullTypeReturn callers should call hasParentScope
      */
     public function getParentScope() : Scope
     {
@@ -79,6 +80,7 @@ abstract class Scope
 
     /**
      * @return FQSEN
+     * @suppress PhanPossiblyNullTypeReturn callers should call hasFQSEN
      */
     public function getFQSEN()
     {

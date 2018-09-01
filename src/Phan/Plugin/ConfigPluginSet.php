@@ -427,7 +427,10 @@ final class ConfigPluginSet extends PluginV2 implements
         return $result;
     }
 
-    /** @return array<int,SuppressionCapability> */
+    /**
+     * @return array<int,SuppressionCapability>
+     * @suppress PhanPossiblyNullTypeReturn should always be initialized before any issues get emitted.
+     */
     public function getSuppressionPluginSet() : array
     {
         return $this->suppression_plugin_set;

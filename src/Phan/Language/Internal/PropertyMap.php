@@ -24,7 +24,7 @@ $ast_node_shape_inner = \implode(',', [
     "stmts?:?ast\Node",
 ]);
 
-$ast_node_children_types = 'array{' . $ast_node_shape_inner . '}|ast\Node[]|array[]|int[]|string[]|float[]|null[]';
+$ast_node_children_types = 'array{' . $ast_node_shape_inner . '}|ast\Node[]|int[]|string[]|float[]|null[]';
 
 $standard_exception_types = [
     'message' => 'string',

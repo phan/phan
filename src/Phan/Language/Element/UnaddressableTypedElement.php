@@ -22,12 +22,12 @@ abstract class UnaddressableTypedElement
     private $name;
 
     /**
-     * @var UnionType|null
+     * @var UnionType
      * A set of types satisfied by this typed structural
      * element.
-     * Prefer using getUnionType() - getUnionType() is overridden by VariadicParameter
+     * Prefer using getUnionType() over $this->type - getUnionType() is overridden by VariadicParameter
      */
-    protected $type = null;
+    protected $type;
 
     /**
      * @var int

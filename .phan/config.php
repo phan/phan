@@ -257,7 +257,6 @@ return [
         'PhanPossiblyFalseTypeArgumentInternal',
         'PhanPossiblyNullTypeArgument',
         'PhanPossiblyNullTypeArgumentInternal',
-        'PhanPossiblyNullTypeReturn',
     ],
 
     // If empty, no filter against issues types will be applied.

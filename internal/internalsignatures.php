@@ -396,7 +396,6 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
             }
         }
         return $result;
-        ;
     }
 
     // These aren't built in functions, but they're documented like them.
