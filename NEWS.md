@@ -18,6 +18,7 @@ Bug fixes
 + Fix a crash seen with --use-fallback-parser with an invalid expression after `new`
 + Properly infer that closures have a class name of `Closure` for some issue types.
   (e.g. `call_user_func([function() {}, 'invalidMethod'])`)
++ Fix a bug analyzing nested assignment in conditionals (#1919)
 
 26 Aug 2018, Phan 1.0.1
 -----------------------
