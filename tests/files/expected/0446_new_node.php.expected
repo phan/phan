@@ -1,2 +1,2 @@
 %s:4 PhanTypeMismatchArgumentInternal Argument 1 (kind) is 'key' but \ast\Node::__construct() takes int
-%s:6 PhanTypeMismatchArgumentInternal Argument 3 (children) is array{0:\stdClass} but \ast\Node::__construct() takes \ast\Node[]|\ast\Node\Decl[]|array[]|bool[]|float[]|int[]|null[]|string[]
+%s:6 PhanTypeMismatchArgumentInternal Argument 3 (children) is array{0:\stdClass} but \ast\Node::__construct() takes \ast\Node[]|\ast\Node\Decl[]|bool[]|float[]|int[]|null[]|string[]

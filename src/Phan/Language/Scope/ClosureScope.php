@@ -45,9 +45,6 @@ class ClosureScope extends FunctionLikeScope
      */
     public function getClassFQSEN() : FullyQualifiedClassName
     {
-        if ($this->override_class_fqsen) {
-            return $this->override_class_fqsen;
-        }
-        return parent::getClassFQSEN();
+        return $this->override_class_fqsen ?? parent::getClassFQSEN();
     }
 }

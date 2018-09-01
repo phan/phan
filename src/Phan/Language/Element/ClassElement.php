@@ -9,6 +9,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassElement;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\UnionType;
 
+use AssertionError;
 use TypeError;
 
 abstract class ClassElement extends AddressableElement
@@ -65,7 +66,11 @@ abstract class ClassElement extends AddressableElement
      */
     public function getDefiningFQSEN() : FullyQualifiedClassElement
     {
-        return $this->defining_fqsen;
+        $defining_fqsen = $this->defining_fqsen;
+        if ($defining_fqsen === null) {
+            throw new AssertionError('should check hasDefiningFQSEN');
+        }
+        return $defining_fqsen;
     }
 
     /**

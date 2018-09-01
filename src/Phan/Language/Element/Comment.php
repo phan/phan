@@ -15,6 +15,8 @@ use Phan\Language\UnionType;
 use Phan\Library\None;
 use Phan\Library\Option;
 
+use AssertionError;
+
 /**
  * Handles extracting information(param types, return types, magic methods/properties, etc.) from phpdoc comments.
  * Instances of Comment contain the extracted information.
@@ -404,7 +406,11 @@ class Comment
      */
     public function getReturnType() : UnionType
     {
-        return $this->return_union_type;
+        $return_union_type = $this->return_union_type;
+        if (!$return_union_type) {
+            throw new AssertionError('Should check hasReturnUnionType');
+        }
+        return $return_union_type;
     }
 
     /**

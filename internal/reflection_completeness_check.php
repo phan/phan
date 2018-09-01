@@ -56,7 +56,11 @@ class ReflectionCompletenessCheck
      */
     private static function getInternalClasses() : Generator
     {
-        $classes = get_declared_classes();
+        $classes = array_merge(
+            get_declared_classes(),
+            get_declared_interfaces(),
+            get_declared_traits()
+        );
         sort($classes);
         foreach ($classes as $class_name) {
             if (array_key_exists(strtolower($class_name), self::EXCLUDED_CLASS_NAMES)) {

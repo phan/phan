@@ -1733,7 +1733,6 @@ class CodeBase
             }
             $class_name = $class_names_in_namespace[$class_name_lower];
             return FullyQualifiedClassName::make($namespace, $class_name);
-            ;
         }, $suggested_class_names);
     }
 }

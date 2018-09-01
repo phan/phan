@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Exception;
 
+use AssertionError;
 use Phan\Language\FQSEN;
 
 class CodeBaseException extends \Exception
@@ -32,7 +33,7 @@ class CodeBaseException extends \Exception
      */
     public function hasFQSEN() : bool
     {
-        return !empty($this->missing_fqsen);
+        return !is_null($this->missing_fqsen);
     }
 
     /**
@@ -41,6 +42,10 @@ class CodeBaseException extends \Exception
      */
     public function getFQSEN() : FQSEN
     {
-        return $this->missing_fqsen;
+        $fqsen = $this->missing_fqsen;
+        if (!$fqsen) {
+            throw new AssertionError('Should check CodeBaseException->hasFQSEN()');
+        }
+        return $fqsen;
     }
 }
