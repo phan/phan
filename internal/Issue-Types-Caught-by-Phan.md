@@ -1450,6 +1450,12 @@ if (42 == [1, 2]) {}
 array to {TYPE} conversion
 ```
 
+## PhanTypeExpectedClassName
+
+```
+Expected the name of a class but saw expression with type {TYPE}
+```
+
 ## PhanTypeExpectedObject
 
 ```

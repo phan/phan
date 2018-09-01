@@ -1838,7 +1838,7 @@ class Type
     public function getTemplateParameterTypeMap(CodeBase $code_base)
     {
         return $this->memoize(__METHOD__, function () use ($code_base) : array {
-            $fqsen = $this->asFQSEN();
+            $fqsen = FullyQualifiedClassName::fromType($this);
 
             if (!($fqsen instanceof FullyQualifiedClassName)) {
                 return [];

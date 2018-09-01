@@ -1165,7 +1165,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     ) {
         $type_set = $expression_type->getTypeSet();
         $context = $this->context;
-        if (\count($type_set)< 2) {
+        if (\count($type_set) < 2) {
             throw new AssertionError("Expected at least two types for strict return type checks");
         }
 

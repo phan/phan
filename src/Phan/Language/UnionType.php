@@ -1513,7 +1513,8 @@ class UnionType implements \Serializable
     /**
      * @return UnionType
      */
-    public function asArrayOrArrayAccessSubTypes(CodeBase $code_base) : UnionType {
+    public function asArrayOrArrayAccessSubTypes(CodeBase $code_base) : UnionType
+    {
         $result = UnionType::empty();
         foreach ($this->type_set as $type) {
             if ($type->isArrayOrArrayAccessSubType($code_base)) {
@@ -1630,11 +1631,7 @@ class UnionType implements \Serializable
                 continue;
             }
             // Get the class FQSEN
-            $class_fqsen = $class_type->asFQSEN();
-            if (!($class_fqsen instanceof FullyQualifiedClassName)) {
-                // Should be impossible, but skip to satisfy the type checker
-                continue;
-            }
+            $class_fqsen = FullyQualifiedClassName::fromType($class_type);
 
             if ($class_type->isStaticType()) {
                 if (!$context->isInClassScope()) {

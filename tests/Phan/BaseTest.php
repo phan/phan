@@ -11,6 +11,14 @@ use PHPUnit\Framework\TestCase;
 abstract class BaseTest extends TestCase
 {
     /**
+     * @return void
+     */
+    public static function setUpBeforeClass()
+    {
+        parent::setUpBeforeClass();
+        ini_set('memory_limit', '1G');
+    }
+    /**
      * Needed to prevent phpunit from backing up these private static variables.
      * See https://phpunit.de/manual/current/en/fixtures.html#fixtures.global-state
      *

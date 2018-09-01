@@ -39,7 +39,7 @@ class ParallelChildCollector implements IssueCollectorInterface
      * @throws AssertionError if PHP modules needed for shared communication aren't loaded
      * @internal
      */
-    public static final function assertSharedMemoryCommunicationEnabled()
+    final public static function assertSharedMemoryCommunicationEnabled()
     {
         if (!extension_loaded('sysvsem')) {
             throw new AssertionError(

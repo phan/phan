@@ -67,11 +67,7 @@ final class ClosureType extends Type
      */
     public function asFQSEN() : FQSEN
     {
-        if (!empty($this->fqsen)) {
-            return $this->fqsen;
-        }
-
-        return parent::asFQSEN();
+        return $this->fqsen ?? parent::asFQSEN();
     }
 
     /**

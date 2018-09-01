@@ -446,7 +446,7 @@ class Clazz extends AddressableElement
             throw new \Exception("Class $this has no parent");
         }
 
-        return $parent_type_option->get()->asFQSEN();
+        return FullyQualifiedClassName::fromType($parent_type_option->get());
     }
 
     /**
@@ -2498,7 +2498,7 @@ class Clazz extends AddressableElement
 
         $parent_type = $this->parent_type;
         if ($parent_type) {
-            $extend_types[] = $parent_type->asFQSEN();
+            $extend_types[] = FullyQualifiedClassName::fromType($parent_type);
             $parent_class = $this->getParentClass($code_base);
             $parent_implements_types = $parent_class->interface_fqsen_list;
         }
