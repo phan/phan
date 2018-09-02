@@ -2334,6 +2334,12 @@ Cannot access internal property {PROPERTY} of namespace {NAMESPACE} defined at {
 
 This is emitted for some (but not all) comments which Phan thinks are invalid or unparsable.
 
+## PhanCommentAmbiguousClosure
+
+```
+Comment {STRING_LITERAL} refers to {TYPE} instead of \Closure - Assuming \Closure
+```
+
 ## PhanCommentOverrideOnNonOverrideConstant
 
 ```
