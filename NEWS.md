@@ -12,6 +12,10 @@ New features(Analysis)
   New issue type: `PhanTypeInvalidExpressionArrayDestructuring`
 + Emit `PhanTypeExpectedClassName` when attempting to use an invalid type where a class name was expected.
   (e.g. `new $notAClassName()`)
++ Infer the number of groups for $matches in `preg_match()`
+
+  Named subpatterns, non-capturing patterns, and regular expression options are not supported yet.
+  Phan will just infer a more generic type such as `string[]` (depending on the bit flags).
 
 Bug fixes
 + Fix a crash seen when using a temporary expression in a write context. (#1915)

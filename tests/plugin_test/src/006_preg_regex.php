@@ -20,4 +20,13 @@ call_user_func(function() {
     // test invalid inputs
     echo preg_replace_callback_array([function($x) { return 'i'; }], 'bad');
     echo preg_replace_callback_array([false => function($x) { return 'i'; }], 'bad');
+
+    $str = 'arg';
+    // Test that this plugin warns and the regex analyzer does not crash
+    if (preg_match('/^(a/', $str, $matches) > 0) {
+        var_export($matches);
+    }
+    if (preg_match('/^(a/', $str, $matches, PREG_OFFSET_CAPTURE) > 0) {
+        var_export($matches);
+    }
 });

@@ -2581,7 +2581,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     }
                     // TODO: Make this configurable with a plugin
                     if ($method->getFQSEN() === $preg_match_fqsen) {
-                        $this->analyzePregMatch($argument_list, $variable);
+                        $variable->setUnionType(
+                            RegexAnalyzer::getPregMatchUnionType($code_base, $context, $argument_list)
+                        );
                     } else {
                         // The previous value is being ignored, and being replaced.
                         $variable->setUnionType(
@@ -2620,38 +2622,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     break;
             }
         }
-    }
-
-    /**
-     * @param Variable|Property $variable
-     * @return void
-     */
-    private function analyzePregMatch(array $argument_list, $variable)
-    {
-        $string_array_type = null;
-        $array_type = null;
-        $shape_array_type = null;
-        if ($string_array_type === null) {
-            // Note: Patterns **can** have named subpatterns
-            $string_array_type = UnionType::fromFullyQualifiedString('string[]');
-            $array_type        = UnionType::fromFullyQualifiedString('array');
-            $shape_array_type  = UnionType::fromFullyQualifiedString('array{0:string,1:int}[]');
-        }
-        if (\count($argument_list) <= 3) {
-            $variable->setUnionType($string_array_type);
-            return;
-        }
-        $offset_flags_node = $argument_list[3];
-        $bit = (new ContextNode($this->code_base, $this->context, $offset_flags_node))->getEquivalentPHPScalarValue();
-        if (!\is_int($bit)) {
-            $variable->setUnionType($array_type);
-            return;
-        }
-        if ($bit & PREG_OFFSET_CAPTURE) {
-            $variable->setUnionType($shape_array_type);
-            return;
-        }
-        $variable->setUnionType($string_array_type);
     }
 
     /**
