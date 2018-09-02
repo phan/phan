@@ -1320,11 +1320,6 @@ class ParseVisitor extends ScopeVisitor
     public static function checkIsAllowedInConstExpr($n)
     {
         if (!($n instanceof Node)) {
-            if (\is_array($n)) {
-                foreach ($n as $child_node) {
-                    self::checkIsAllowedInConstExpr($child_node);
-                }
-            }
             return;
         }
         if (!\array_key_exists($n->kind, self::ALLOWED_CONST_EXPRESSION_KINDS)) {

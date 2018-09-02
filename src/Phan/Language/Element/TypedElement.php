@@ -93,9 +93,7 @@ abstract class TypedElement implements TypedElementInterface
      */
     public function __clone()
     {
-        $this->context = $this->context
-            ? clone($this->context)
-            : $this->context;
+        $this->context = clone($this->context);
     }
 
     /**

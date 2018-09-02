@@ -25,16 +25,11 @@ class Prep
         foreach ($file_list as $file_path) {
             // Convert the file to an Abstract Syntax Tree
             // before passing it on to the recursive version
-            // of this method
+            // of this method.
             $node = \ast\parse_file(
                 $file_path,
                 Config::AST_VERSION
             );
-
-            // Skip empty files
-            if (!$node) {
-                continue;
-            }
 
             self::scanNodeInFile($node, $file_path, $visit_node);
         }
