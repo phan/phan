@@ -1,8 +1,15 @@
 <?php declare(strict_types=1);
 namespace Phan\AST;
 
+use ast;
+use ast\flags;
 use ast\Node;
 use AssertionError;
+
+use function array_map;
+use function array_pop;
+use function count;
+use function in_array;
 
 /**
  * This simplifies a PHP AST into a form which is easier to analyze,
@@ -29,10 +36,12 @@ class ASTSimplifier
             case \ast\AST_CLOSURE:
             case \ast\AST_CLASS:
             case \ast\AST_DO_WHILE:
-            case \ast\AST_FOR:
             case \ast\AST_FOREACH:
-            case \ast\AST_WHILE:
                 return [$this->applyToStmts($node)];
+            case \ast\AST_FOR:
+                return $this->normalizeForStatement($node);
+            case \ast\AST_WHILE:
+                return $this->normalizeWhileStatement($node);
             //case \ast\AST_BREAK:
             //case \ast\AST_CONTINUE:
             //case \ast\AST_RETURN:
@@ -153,16 +162,16 @@ class ASTSimplifier
     }
 
     const NON_SHORT_CIRCUITING_BINARY_OPERATOR_FLAGS = [
-        \ast\flags\BINARY_BOOL_XOR,
-        \ast\flags\BINARY_IS_IDENTICAL,
-        \ast\flags\BINARY_IS_NOT_IDENTICAL,
-        \ast\flags\BINARY_IS_EQUAL,
-        \ast\flags\BINARY_IS_NOT_EQUAL,
-        \ast\flags\BINARY_IS_SMALLER,
-        \ast\flags\BINARY_IS_SMALLER_OR_EQUAL,
-        \ast\flags\BINARY_IS_GREATER,
-        \ast\flags\BINARY_IS_GREATER_OR_EQUAL,
-        \ast\flags\BINARY_SPACESHIP,
+        flags\BINARY_BOOL_XOR,
+        flags\BINARY_IS_IDENTICAL,
+        flags\BINARY_IS_NOT_IDENTICAL,
+        flags\BINARY_IS_EQUAL,
+        flags\BINARY_IS_NOT_EQUAL,
+        flags\BINARY_IS_SMALLER,
+        flags\BINARY_IS_SMALLER_OR_EQUAL,
+        flags\BINARY_IS_GREATER,
+        flags\BINARY_IS_GREATER_OR_EQUAL,
+        flags\BINARY_SPACESHIP,
     ];
 
     /**
@@ -202,7 +211,7 @@ class ASTSimplifier
         $old_nodes = [];
         $nodes = [$original_node];
         // Repeatedly apply these rules
-        while ($old_nodes !== $nodes) {
+        do {
             $old_nodes = $nodes;
             $node = $nodes[count($nodes) - 1];
             $node->flags = 0;
@@ -212,28 +221,28 @@ class ASTSimplifier
             }
 
             if ($if_cond->kind === \ast\AST_UNARY_OP &&
-                $if_cond->flags === \ast\flags\UNARY_BOOL_NOT) {
+                $if_cond->flags === flags\UNARY_BOOL_NOT) {
                 $cond_node = $if_cond->children['expr'];
                 if ($cond_node instanceof Node &&
                         $cond_node->kind === \ast\AST_UNARY_OP &&
-                        $cond_node->flags === \ast\flags\UNARY_BOOL_NOT) {
+                        $cond_node->flags === flags\UNARY_BOOL_NOT) {
                     self::replaceLastNodeWithNodeList($nodes, $this->applyIfDoubleNegateReduction($node));
                     continue;
                 }
-                if (\count($node->children) === 1) {
+                if (count($node->children) === 1) {
                     self::replaceLastNodeWithNodeList($nodes, $this->applyIfNegatedToIfElseReduction($node));
                     continue;
                 }
             }
-            if ($if_cond->kind === \ast\AST_BINARY_OP && \in_array($if_cond->flags, self::NON_SHORT_CIRCUITING_BINARY_OPERATOR_FLAGS, true)) {
+            if ($if_cond->kind === \ast\AST_BINARY_OP && in_array($if_cond->flags, self::NON_SHORT_CIRCUITING_BINARY_OPERATOR_FLAGS, true)) {
                 // if (($var = A) === B) {X} -> $var = A; if ($var === B) { X}
                 $if_cond_children = $if_cond->children;
-                if (\in_array($if_cond_children['left']->kind ?? 0, [\ast\AST_ASSIGN, \ast\AST_ASSIGN_REF], true) &&
+                if (in_array($if_cond_children['left']->kind ?? 0, [\ast\AST_ASSIGN, \ast\AST_ASSIGN_REF], true) &&
                         ($if_cond_children['left']->children['var']->kind ?? 0) === \ast\AST_VAR) {
                     self::replaceLastNodeWithNodeList($nodes, ...$this->applyAssignInLeftSideOfBinaryOpReduction($node));
                     continue;
                 }
-                if (\in_array($if_cond_children['right']->kind ?? 0, [\ast\AST_ASSIGN, \ast\AST_ASSIGN_REF], true) &&
+                if (in_array($if_cond_children['right']->kind ?? 0, [\ast\AST_ASSIGN, \ast\AST_ASSIGN_REF], true) &&
                         ($if_cond_children['right']->children['var']->kind ?? 0) === \ast\AST_VAR &&
                         self::isExpressionWithoutSideEffects($if_cond_children['left'])) {
                     self::replaceLastNodeWithNodeList($nodes, ...$this->applyAssignInRightSideOfBinaryOpReduction($node));
@@ -244,7 +253,7 @@ class ASTSimplifier
             }
             if (count($node->children) === 1) {
                 if ($if_cond->kind === \ast\AST_BINARY_OP &&
-                        $if_cond->flags === \ast\flags\BINARY_BOOL_AND) {
+                        $if_cond->flags === flags\BINARY_BOOL_AND) {
                     self::replaceLastNodeWithNodeList($nodes, $this->applyIfAndReduction($node));
                     // if (A && B) {X} -> if (A) { if (B) {X}}
                     // Do this, unless there is an else statement that can be executed.
@@ -252,7 +261,7 @@ class ASTSimplifier
                 }
             } elseif (count($node->children) === 2) {
                 if ($if_cond->kind === \ast\AST_UNARY_OP &&
-                        $if_cond->flags === \ast\flags\UNARY_BOOL_NOT &&
+                        $if_cond->flags === flags\UNARY_BOOL_NOT &&
                         $node->children[1]->children['cond'] === null) {
                     self::replaceLastNodeWithNodeList($nodes, $this->applyIfNegateReduction($node));
                     continue;
@@ -269,8 +278,98 @@ class ASTSimplifier
                 self::replaceLastNodeWithNodeList($nodes, ...$this->applyIfAssignReduction($node));
                 continue;
             }
-        }
+        } while ($old_nodes !== $nodes);
         return $nodes;
+    }
+
+    /**
+     * Converts a while statement to one which is easier for phan to analyze
+     * E.g. repeatedly makes these conversions
+     * while (A && B) {X} -> while (A) { if (!B) {break;} X}
+     * while (!!A) {X} -> while (A) { X }
+     * @return array{0:Node} - An array with a single while statement
+     *        Will return [$original_node] if no modifications were made.
+     */
+    private function normalizeWhileStatement(Node $original_node) : array
+    {
+        $node = $original_node;
+        // Repeatedly apply these rules
+        while (true) {
+            $while_cond = $node->children['cond'];
+            if (!($while_cond instanceof Node)) {
+                break;  // No transformation rules apply here.
+            }
+
+            if ($while_cond->kind === \ast\AST_UNARY_OP &&
+                $while_cond->flags === flags\UNARY_BOOL_NOT) {
+                $cond_node = $while_cond->children['expr'];
+                if ($cond_node instanceof Node &&
+                        $cond_node->kind === \ast\AST_UNARY_OP &&
+                        $cond_node->flags === flags\UNARY_BOOL_NOT) {
+                    $node = $this->applyWhileDoubleNegateReduction($node);
+                    continue;
+                }
+                break;
+            }
+            if ($while_cond->kind === \ast\AST_BINARY_OP &&
+                    $while_cond->flags === flags\BINARY_BOOL_AND) {
+                // TODO: Also support `and` operator.
+                $node = $this->applyWhileAndReduction($node);
+                // while (A && B) {X} -> while (A) { if (!B) {break;} X}
+                // Do this, unless there is an else statement that can be executed.
+                continue;
+            }
+            break;
+        }
+
+        return [$node];
+    }
+
+    /**
+     * Converts a while statement to one which is easier for phan to analyze
+     * E.g. repeatedly makes these conversions
+     * while (A && B) {X} -> while (A) { if (!B) {break;} X}
+     * while (!!A) {X} -> while (A) { X }
+     * @return array{0:Node} - An array with a single while statement
+     *        Will return [$node] if no modifications were made.
+     */
+    private function normalizeForStatement(Node $node) : array
+    {
+        // Repeatedly apply these rules
+        while (true) {
+            $for_cond_list = $node->children['cond'];
+            if (!($for_cond_list instanceof Node)) {
+                break;  // No transformation rules apply here.
+            }
+
+            $for_cond = \end($for_cond_list->children);
+
+            if (!($for_cond instanceof Node)) {
+                break;
+            }
+            if ($for_cond->kind === \ast\AST_UNARY_OP &&
+                $for_cond->flags === flags\UNARY_BOOL_NOT) {
+                $cond_node = $for_cond->children['expr'];
+                if ($cond_node instanceof Node &&
+                        $cond_node->kind === \ast\AST_UNARY_OP &&
+                        $cond_node->flags === flags\UNARY_BOOL_NOT) {
+                    $node = $this->applyForDoubleNegateReduction($node);
+                    continue;
+                }
+                break;
+            }
+            if ($for_cond->kind === \ast\AST_BINARY_OP &&
+                    $for_cond->flags === flags\BINARY_BOOL_AND) {
+                // TODO: Also support `and` operator.
+                $node = $this->applyForAndReduction($node);
+                // for (init ; A && B; loop) {X} -> for (init; A; loop) { if (!B) {break;} X}
+                // Do this, unless there is an else statement that can be executed.
+                continue;
+            }
+            break;
+        }
+
+        return [$node];
     }
 
     /**
@@ -402,6 +501,106 @@ class ASTSimplifier
     }
 
     /**
+     * Converts `while (A && B) {X}` -> `while (A) { if (!B) { break;} X}`
+     * @return Node simplified node logically equivalent to $node, with kind \ast\AST_IF.
+     */
+    private function applyWhileAndReduction(Node $node) : Node
+    {
+        $cond_node = $node->children['cond'];
+        $right_node = $cond_node->children['right'];
+        $lineno = $right_node->lineno ?? $cond_node->lineno;
+        $conditional_break_elem = $this->makeBreakWithNegatedConditional($right_node, $lineno);
+
+        return new Node(
+            ast\AST_WHILE,
+            0,
+            [
+                'cond' => $cond_node->children['left'],
+                'stmts' => new Node(
+                    ast\AST_STMT_LIST,
+                    $lineno,
+                    array_merge([$conditional_break_elem], $node->children['stmts']->children),
+                    0
+                ),
+            ],
+            $node->lineno
+        );
+    }
+
+    /**
+     * Converts `for (INIT; A && B; LOOP) {X}` -> `for (INIT; A; LOOP) { if (!B) { break;} X}`
+     * @return Node simplified node logically equivalent to $node, with kind \ast\AST_IF.
+     */
+    private function applyForAndReduction(Node $node) : Node
+    {
+        $children = $node->children;
+        $cond_node_array = $children['cond']->children;
+        $cond_node = array_pop($cond_node_array);
+        $right_node = $cond_node->children['right'];
+        $lineno = $right_node->lineno ?? $cond_node->lineno;
+        $conditional_break_elem = $this->makeBreakWithNegatedConditional($right_node, $lineno);
+
+        $cond_node_array[] = $cond_node->children['left'];
+
+        $cond_node_list = new Node(
+            ast\AST_EXPR_LIST,
+            0,
+            $cond_node_array,
+            $children['cond']->lineno
+        );
+
+        return new Node(
+            ast\AST_FOR,
+            0,
+            [
+                'init' => $children['init'],
+                'cond' => $cond_node_list,
+                'loop' => $children['loop'],
+                'stmts' => new Node(
+                    ast\AST_STMT_LIST,
+                    $lineno,
+                    array_merge([$conditional_break_elem], $children['stmts']->children),
+                    0
+                ),
+            ],
+            $node->lineno
+        );
+    }
+
+    /**
+     * Creates a Node for `if (!COND) { break; }`
+     * @param Node|string|int|float $cond_node
+     */
+    private function makeBreakWithNegatedConditional($cond_node, int $lineno) : Node
+    {
+        $break_if_elem = new Node(
+            ast\AST_IF_ELEM,
+            0,
+            [
+                'cond' => new Node(
+                    ast\AST_UNARY_OP,
+                    flags\UNARY_BOOL_NOT,
+                    ['expr' => $cond_node],
+                    $lineno
+                ),
+                'stmts' => new Node(
+                    ast\AST_STMT_LIST,
+                    0,
+                    [new Node(ast\AST_BREAK, $lineno, ['depth' => null], 0)],
+                    $lineno
+                ),
+            ],
+            $lineno
+        );
+        return new Node(
+            ast\AST_IF,
+            0,
+            [$break_if_elem],
+            $lineno
+        );
+    }
+
+    /**
      * Converts if ($x = A) {Y} -> $x = A; if ($x) {Y}
      * This allows analyzing variables set in if blocks outside of the `if` block
      * @return array{0:Node,1:Node} [$outer_assign_statement, $new_node]
@@ -430,7 +629,7 @@ class ASTSimplifier
     {
         if (!(
             count($node->children) === 2 &&
-            $node->children[0]->children['cond']->flags === \ast\flags\UNARY_BOOL_NOT &&
+            $node->children[0]->children['cond']->flags === flags\UNARY_BOOL_NOT &&
             $node->children[1]->children['cond'] === null
         )) {
             throw new AssertionError('Failed precondition of ' . __METHOD__);
@@ -450,8 +649,8 @@ class ASTSimplifier
     private function applyIfDoubleNegateReduction(Node $node) : Node
     {
         if (!(
-            $node->children[0]->children['cond']->flags === \ast\flags\UNARY_BOOL_NOT &&
-            $node->children[0]->children['cond']->children['expr']->flags === \ast\flags\UNARY_BOOL_NOT
+            $node->children[0]->children['cond']->flags === flags\UNARY_BOOL_NOT &&
+            $node->children[0]->children['cond']->children['expr']->flags === flags\UNARY_BOOL_NOT
         )) {
             throw new AssertionError('Failed precondition of ' . __METHOD__);
         }
@@ -466,13 +665,69 @@ class ASTSimplifier
         return $new_node;
     }
 
+    /**
+     * Converts while (!!(x)) {Y} -> if (x) {Y}
+     * This improves phan's analysis for cases such as `if (!!x)`
+     */
+    private function applyWhileDoubleNegateReduction(Node $node) : Node
+    {
+        if (!(
+            $node->children['cond']->flags === flags\UNARY_BOOL_NOT &&
+            $node->children['cond']->children['expr']->flags === flags\UNARY_BOOL_NOT
+        )) {
+            throw new AssertionError('Failed precondition of ' . __METHOD__);
+        }
+
+        return new Node(
+            ast\AST_WHILE,
+            0,
+            [
+                'cond' => $node->children['cond']->children['expr']->children['expr'],
+                'stmts' => $node->children['stmts']
+            ],
+            $node->lineno
+        );
+    }
+
+    /**
+     * Converts for (INIT; !!(x); LOOP) {Y} -> if (INIT; x; LOOP) {Y}
+     * This improves phan's analysis for cases such as `if (!!x)`
+     */
+    private function applyForDoubleNegateReduction(Node $node) : Node
+    {
+        $children = $node->children;
+        $cond_node_list = $children['cond']->children;
+        $cond_node = array_pop($cond_node_list);
+        if (!(
+            $cond_node->flags === flags\UNARY_BOOL_NOT &&
+            $cond_node->children['expr']->flags === flags\UNARY_BOOL_NOT
+        )) {
+            throw new AssertionError('Failed precondition of ' . __METHOD__);
+        }
+        $cond_node_list[] = $cond_node->children['expr']->children['expr'];
+
+        $children['cond'] = new ast\Node(
+            ast\AST_EXPR_LIST,
+            0,
+            $cond_node_list,
+            $children['cond']->lineno
+        );
+
+        return new Node(
+            ast\AST_FOR,
+            0,
+            $children,
+            $node->lineno
+        );
+    }
+
     private function applyIfNegatedToIfElseReduction(Node $node) : Node
     {
-        if (\count($node->children) !== 1) {
+        if (count($node->children) !== 1) {
             throw new AssertionError("Expected one child node");
         }
         $if_elem = $node->children[0];
-        if ($if_elem->children['cond']->flags !== \ast\flags\UNARY_BOOL_NOT) {
+        if ($if_elem->children['cond']->flags !== flags\UNARY_BOOL_NOT) {
             throw new AssertionError("Expected condition to begin with unary boolean negation operator");
         }
         $lineno = $if_elem->lineno;
@@ -552,7 +807,7 @@ class ASTSimplifier
     {
         $rewriter = new self();
         $nodes = $rewriter->apply($node);
-        if (\count($nodes) !== 1) {
+        if (count($nodes) !== 1) {
             throw new AssertionError("Expected applying simplifier to a statement list would return an array with one statement list");
         }
         return $nodes[0];

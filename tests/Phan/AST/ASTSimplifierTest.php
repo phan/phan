@@ -1,12 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Phan\Tests;
+namespace Phan\Tests\AST;
 
 use Phan\AST\ASTSimplifier;
+use Phan\Tests\AbstractPhanFileTest;
 use Phan\Config;
 use Phan\Debug;
 
-final class ASTRewriterTest extends AbstractPhanFileTest
+final class ASTSimplifierTest extends AbstractPhanFileTest
 {
     /**
      * @suppress PhanUndeclaredConstant
