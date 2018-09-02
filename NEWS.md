@@ -8,12 +8,14 @@ New features(Analysis)
   (e.g. `@param array | ArrayAccess $x`)
 + Warn about array destructuring assignments from non-arrays (#1818)
   (E.g. `[$x] = 2`)
+
   New issue type: `PhanTypeInvalidExpressionArrayDestructuring`
 + Emit `PhanTypeExpectedClassName` when attempting to use an invalid type where a class name was expected.
   (e.g. `new $notAClassName()`)
 
 Bug fixes
 + Fix a crash seen when using a temporary expression in a write context. (#1915)
+
   New issue type: `PhanInvalidWriteToTemporaryExpression`
 + Fix a crash seen with --use-fallback-parser with an invalid expression after `new`
 + Properly infer that closures have a class name of `Closure` for some issue types.
