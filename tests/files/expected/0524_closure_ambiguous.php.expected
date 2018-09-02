@@ -1,0 +1,2 @@
+%s:18 PhanCommentAmbiguousClosure Comment Closure():void refers to \Baz524\Closure instead of \Closure - Assuming \Closure
+%s:27 PhanCommentAmbiguousClosure Comment Closure():void refers to \Bar524\Closure instead of \Closure - Assuming \Closure

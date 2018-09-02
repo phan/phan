@@ -17,6 +17,7 @@ use Phan\Language\Type;
 use Phan\Language\UnionType;
 use ast;
 use ast\Node;
+use Closure;
 use AssertionError;
 
 /**

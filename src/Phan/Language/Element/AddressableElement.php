@@ -78,9 +78,6 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      */
     public function getFQSEN()
     {
-        if (!$this->fqsen) {
-            throw new AssertionError("FQSEN must be defined");
-        }
         return $this->fqsen;
     }
 

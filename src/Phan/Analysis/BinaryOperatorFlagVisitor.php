@@ -608,11 +608,10 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                     $node->lineno ?? 0
                 );
                 return UnionType::empty();
-            } elseif ($left_is_array || $right_is_array) {
-                // If it is a '+' and we know one side is an array
-                // and the other is unknown, assume array
-                return $array_type->asUnionType();
             }
+            // If it is a '+' and we know one side is an array
+            // and the other is unknown, assume array
+            return $array_type->asUnionType();
         }
 
         return $int_or_float_union_type;
