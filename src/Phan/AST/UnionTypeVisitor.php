@@ -2162,9 +2162,9 @@ class UnionTypeVisitor extends AnalysisVisitor
             return Type::fromFullyQualifiedString($fqsen->__toString())->asUnionType();
         }
 
-        // Things of the form `new $className()`, `new (foo())()`, etc.
+        // Things of the form `new $className()`, `new $obj()`, `new (foo())()`, etc.
         if ($kind !== \ast\AST_NAME) {
-            return $this->classLiteralsForNonName($node);
+            return $this->classTypesForNonName($node);
         }
 
         // Get the name of the class
@@ -2224,7 +2224,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         return $result;
     }
 
-    private function classLiteralsForNonName(Node $node) : UnionType
+    private function classTypesForNonName(Node $node) : UnionType
     {
         $node_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -2250,6 +2250,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                     continue;
                 }
                 $result = $result->withType($fqsen->asType());
+            } elseif (\get_class($sub_type) === Type::class || $sub_type instanceof ClosureType) {
+                $result = $result->withType($sub_type);
             } elseif ($is_valid) {
                 if (!($sub_type instanceof StringType || $sub_type instanceof MixedType)) {
                     $is_valid = false;
@@ -2257,8 +2259,9 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
         }
         if ($result->isEmpty() && !$is_valid) {
+            // See https://github.com/phan/phan/issues/1926 - `new $obj()` is valid PHP and documented in the manual.
             $this->emitIssue(
-                Issue::TypeExpectedClassName,
+                Issue::TypeExpectedObjectOrClassName,
                 $node->lineno ?? 0,
                 $node_type
             );

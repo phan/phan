@@ -17,7 +17,8 @@ use InvalidArgumentException;
  *
  * @see PregRegexPlugin for the plugin that actually emits warnings about invalid regexes
  */
-class RegexAnalyzer {
+class RegexAnalyzer
+{
     public static function getPregMatchUnionType(
         CodeBase $code_base,
         Context $context,

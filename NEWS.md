@@ -10,8 +10,6 @@ New features(Analysis)
   (E.g. `[$x] = 2`)
 
   New issue type: `PhanTypeInvalidExpressionArrayDestructuring`
-+ Emit `PhanTypeExpectedClassName` when attempting to use an invalid type where a class name was expected.
-  (e.g. `new $notAClassName()`)
 + Infer the number of groups for $matches in `preg_match()`
 
   Named subpatterns, non-capturing patterns, and regular expression options are not supported yet.
