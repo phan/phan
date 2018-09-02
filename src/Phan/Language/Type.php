@@ -6,6 +6,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\EmptyFQSENException;
 use Phan\Exception\IssueException;
+use Phan\Issue;
 use Phan\Language\Element\Comment;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
@@ -1054,6 +1055,9 @@ class Type
                 );
             }
             if ($type_name === 'Closure' || $type_name === 'callable') {
+                if ($type_name === 'Closure' && $code_base !== null) {
+                    self::checkClosureString($code_base, $context, $string);
+                }
                 return self::fromFunctionLikeInContext($type_name === 'Closure', $shape_components, $context, $source, $is_nullable);
             }
         }
@@ -1061,8 +1065,8 @@ class Type
         // Map the names of the types to actual types in the
         // template parameter type list
         $template_parameter_type_list =
-            \array_map(function (string $type_name) use ($context, $source) : UnionType {
-                return UnionType::fromStringInContext($type_name, $context, $source);
+            \array_map(function (string $type_name) use ($code_base, $context, $source) : UnionType {
+                return UnionType::fromStringInContext($type_name, $context, $source, $code_base);
             }, $template_parameter_type_name_list);
 
         // @var bool
@@ -1216,6 +1220,41 @@ class Type
         );
     }
 
+
+    private static function checkClosureString(
+        CodeBase $code_base,
+        Context $context,
+        string $string
+    ) {
+        // Note: Because of the regex, the namespace should be either empty or '\\'
+        if (preg_match('/^\??\\\\/', $string) > 0) {
+            // This is fully qualified
+            return;
+        }
+        // This check is probably redundant, we can't parse
+        if ($context->hasNamespaceMapFor(
+            \ast\flags\USE_NORMAL,
+            'Closure'
+        )) {
+            $fqsen = $context->getNamespaceMapFor(
+                \ast\flags\USE_NORMAL,
+                'Closure'
+            );
+            $namespace = $fqsen->getNamespace();
+        } else {
+            $namespace = $context->getNamespace();
+        }
+        if (($namespace ?: '\\') !== '\\') {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::CommentAmbiguousClosure,
+                $context->getLineNumberStart(),
+                $string,
+                $namespace . '\\Closure'
+            );
+        }
+    }
     /**
      * @throws IssueException (TODO: Catch, emit, and proceed?
      */

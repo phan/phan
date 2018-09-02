@@ -353,6 +353,7 @@ class Issue
     const ThrowTypeAbsentForCall           = 'PhanThrowTypeAbsentForCall';
     const ThrowTypeMismatch                = 'PhanThrowTypeMismatch';
     const ThrowTypeMismatchForCall         = 'PhanThrowTypeMismatchForCall';
+    const CommentAmbiguousClosure          = 'PhanCommentAmbiguousClosure';
     // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     // end of issue name constants
 
@@ -2961,6 +2962,14 @@ class Issue
                 "{METHOD}() throws {TYPE} because it calls {FUNCTIONLIKE}(), but it only has declarations of '@throws {TYPE}'",
                 self::REMEDIATION_A,
                 16014
+            ),
+            new Issue(
+                self::CommentAmbiguousClosure,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Comment {STRING_LITERAL} refers to {TYPE} instead of \\Closure - Assuming \\Closure",
+                self::REMEDIATION_A,
+                16015
             ),
         ];
         // phpcs:enable Generic.Files.LineLength

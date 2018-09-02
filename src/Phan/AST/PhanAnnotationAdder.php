@@ -4,6 +4,7 @@ namespace Phan\AST;
 use ast;
 use ast\Node;
 use ast\flags;
+use Closure;
 
 /**
  * This adds annotations for Phan analysis to a given node,

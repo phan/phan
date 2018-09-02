@@ -5,6 +5,8 @@ use Phan\CodeBase;
 use Phan\Daemon;
 use Phan\Phan;
 
+use Closure;
+
 /**
  * UndoTracker maps a file path to a list of operations(e.g. Closures) that must be executed to
  * remove all traces of a file from the CodeBase, etc. if a file was removed or edited.
@@ -28,7 +30,7 @@ class UndoTracker
 
     /**
      * @var array<string,array<int,Closure>> operations to undo for a current path
-     * @phan-var array<string,array<int,Closure(CodeBase)>>
+     * @phan-var array<string,array<int,Closure(CodeBase):void>>
      */
     private $undo_operations_for_path = [];
 

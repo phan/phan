@@ -26,6 +26,7 @@ use Phan\Library\Map;
 use Phan\Library\Set;
 
 use AssertionError;
+use Closure;
 use ReflectionClass;
 
 use function strtolower;

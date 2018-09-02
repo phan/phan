@@ -2,8 +2,10 @@
 namespace Phan\AST;
 
 use Phan\Analysis\PostOrderAnalysisVisitor;
+
 use ast\Node;
 use ast;
+use Closure;
 use function implode;
 
 /**
