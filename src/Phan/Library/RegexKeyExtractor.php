@@ -9,7 +9,8 @@ use function strlen;
  *
  * This may not be aware of all edge cases.
  */
-class RegexKeyExtractor {
+class RegexKeyExtractor
+{
     /**
      * @var string the inner pattern of the regular expression
      */

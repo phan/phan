@@ -37,12 +37,12 @@ final class RegexKeyExtractorTest extends BaseTest
         ];
     }
 
-    private static function toArraySet(array $list) : array {
+    private static function toArraySet(array $list) : array
+    {
         $set = [];
         foreach ($list as $key) {
             $set[$key] = true;
         }
         return $set;
     }
-
 }
