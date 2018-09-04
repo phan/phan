@@ -24,6 +24,8 @@
     "require": {
         "php": "^7.0.0",
         "ext-ast": "^0.1.5",
+        "ext-filter": "*",
+        "ext-json": "*",
         "composer/semver": "^1.4",
         "composer/xdebug-handler": "^1.1",
         "felixfbecker/advanced-json-rpc": "^3.0",
