@@ -9,8 +9,6 @@ use Phan\Library\FileCache;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\Element\Comment;
-use Phan\Language\Element\Comment\Parameter as CommentParameter;
-use Phan\Language\Element\Comment\Method as CommentMethod;
 use Phan\Language\Element\Flags;
 use Phan\Language\Type;
 use Phan\Language\Type\TemplateType;
@@ -54,7 +52,7 @@ final class Builder
      * @suppress PhanReadOnlyPublicProperty FIXME: array_push doesn't count as a write-reference
      */
     public $suppress_issue_list = [];
-    /** @var array<int,Parameter> */
+    /** @var array<int,Property> */
     public $magic_property_list = [];
     /** @var array<int,Method> */
     public $magic_method_list = [];
@@ -99,8 +97,8 @@ final class Builder
      * @param bool $is_var
      * True if this is parsing a variable, false if parsing a parameter.
      *
-     * @return CommentParameter
-     * A CommentParameter associated with a line that has a var
+     * @return Parameter
+     * A Parameter associated with a line that has a var
      * or param reference.
      *
      * TODO: account for difference between (at)var and (at)param
@@ -116,7 +114,7 @@ final class Builder
         // Warn if there is neither a union type nor a variable
         if ($matched && (isset($match[2]) || isset($match[21]))) {
             if (!isset($match[2])) {
-                return new CommentParameter('', UnionType::empty());
+                return new Parameter('', UnionType::empty());
             }
             if (!$is_var && !isset($match[21])) {
                 $this->checkParamWithoutVarName($line, $match[0], $match[2], $i);
@@ -151,7 +149,7 @@ final class Builder
             }
             $is_output_parameter = \stripos($line, '@phan-output-reference') !== false;
 
-            return new CommentParameter(
+            return new Parameter(
                 $variable_name,
                 $union_type,
                 $is_variadic,
@@ -172,7 +170,7 @@ final class Builder
             );
         }
 
-        return new CommentParameter('', UnionType::empty());
+        return new Parameter('', UnionType::empty());
     }
 
     /** @internal */
@@ -699,7 +697,7 @@ final class Builder
 
     /**
      * Parses a magic method based on https://phpdoc.org/docs/latest/references/phpdoc/tags/method.html
-     * @return ?CommentParameter - if null, the phpdoc magic method was invalid.
+     * @return ?Parameter - if null, the phpdoc magic method was invalid.
      */
     private function magicParamFromMagicMethodParamString(
         string $param_string,
@@ -737,7 +735,7 @@ final class Builder
                 // placeholder names are p1, p2, ...
                 $var_name = 'p' . ($param_index + 1);
             }
-            return new CommentParameter($var_name, $union_type, $is_variadic, $has_default_value);
+            return new Parameter($var_name, $union_type, $is_variadic, $has_default_value);
         }
         return null;
     }
@@ -746,7 +744,7 @@ final class Builder
      * @param string $line
      * An individual line of a comment
      *
-     * @return ?CommentMethod
+     * @return ?Method
      * magic method with the parameter types, return types, and name.
      */
     private function magicMethodFromCommentLine(
@@ -807,8 +805,13 @@ final class Builder
                 }
             }
 
-            // TODO: Track the line number for comment methods?
-            return new CommentMethod($method_name, $return_union_type, $comment_params, $is_static);
+            return new Method(
+                $method_name,
+                $return_union_type,
+                $comment_params,
+                $is_static,
+                $this->guessActualLineLocation($comment_line_offset)
+            );
         } else {
             $this->emitIssue(
                 Issue::UnextractableAnnotation,
@@ -826,7 +829,7 @@ final class Builder
      * Currently treats property-read and property-write the same way
      * because of the rewrites required for read-only properties.
      *
-     * @return CommentParameter|null
+     * @return Property|null
      * magic property with the union type.
      *
      * TODO: guess line number for emitted issue
@@ -856,9 +859,10 @@ final class Builder
                     $this->code_base
                 );
 
-            return new CommentParameter(
+            return new Property(
                 $property_name,
-                $union_type
+                $union_type,
+                $this->guessActualLineLocation($i)
             );
         } else {
             $this->emitIssue(

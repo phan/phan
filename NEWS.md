@@ -16,6 +16,7 @@ New features(Analysis)
   Phan will just infer a more generic type such as `string[]` (depending on the bit flags).
 + Warn about ambiguous uses of `Closure():void` in phpdoc.
   Also, make that syntax count as a reference to `use Closure;` in that namespace.
++ Track the line number of magic method and magic properties (Instead of reporting the line number of the class).
 
 Bug fixes
 + Fix a crash seen when using a temporary expression in a write context. (#1915)

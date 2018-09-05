@@ -14,6 +14,7 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
+use Phan\Language\Element\Comment\Property as CommentProperty;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -758,7 +759,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @param array<string,\Phan\Language\Element\Comment\Parameter> $magic_property_map mapping from property name to property
+     * @param array<string,CommentProperty> $magic_property_map mapping from property name to property
      * @param CodeBase $code_base
      * @return bool whether or not we defined it.
      */
@@ -783,7 +784,7 @@ class Clazz extends AddressableElement
                 $property_name
             );
             $property = new Property(
-                $context,
+                clone($context)->withLineNumberStart($comment_parameter->getLine()),
                 $property_name,
                 $comment_parameter->getUnionType(),
                 $flags,
@@ -832,7 +833,7 @@ class Clazz extends AddressableElement
                 return $parameter->asRealParameter($context);
             }, $comment_method->getParameterList());
             $method = new Method(
-                $context,
+                clone($context)->withLineNumberStart($comment_method->getLine()),
                 $method_name,
                 $comment_method->getUnionType(),
                 $flags,

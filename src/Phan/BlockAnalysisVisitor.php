@@ -120,6 +120,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         // If there are multiple namespaces in the file, have to warn about unused entries in the current namespace first.
         // If this is the first namespace, then there wouldn't be any use statements yet.
+        // TODO: This may not be the case if the language server is used
         // @phan-suppress-next-line PhanAccessMethodInternal
         $context->warnAboutUnusedUseElements($this->code_base);
 

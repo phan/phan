@@ -32,6 +32,12 @@ class Method
     private $is_static;
 
     /**
+     * @var int
+     * The line of this method
+     */
+    private $line;
+
+    /**
      * @param string $name
      * The name of the method
      *
@@ -43,17 +49,22 @@ class Method
      *
      * @param bool $is_static
      * Whether this method is static
+     *
+     * @param int $line
+     * The line of this method
      */
     public function __construct(
         string $name,
         UnionType $type,
         array $parameters,
-        bool $is_static
+        bool $is_static,
+        int $line
     ) {
         $this->name = $name;
         $this->type = $type;
         $this->parameters = $parameters;
         $this->is_static = $is_static;
+        $this->line = $line;
     }
 
     /**
@@ -89,6 +100,15 @@ class Method
     public function isStatic() : bool
     {
         return $this->is_static;
+    }
+
+    /**
+     * @return int
+     * The line of this method
+     */
+    public function getLine() : int
+    {
+        return $this->line;
     }
 
     /**

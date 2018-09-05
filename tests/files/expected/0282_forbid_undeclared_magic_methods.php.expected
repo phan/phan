@@ -1,9 +1,9 @@
 %s:23 PhanUndeclaredVariable Variable $this is undeclared
-%s:32 PhanTypeMismatchArgument Argument 1 (arg) is 'str' but \Magic282::instanceMethod() takes ?int defined at %s:9
+%s:32 PhanTypeMismatchArgument Argument 1 (arg) is 'str' but \Magic282::instanceMethod() takes ?int defined at %s:4
 %s:33 PhanUndeclaredMethod Call to undeclared method \Magic282::missingMethod
-%s:34 PhanParamTooFew Call with 0 arg(s) to \Magic282::instanceMethod() which requires 1 arg(s) defined at %s:9
+%s:34 PhanParamTooFew Call with 0 arg(s) to \Magic282::instanceMethod() which requires 1 arg(s) defined at %s:4
 %s:35 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array but \intdiv() takes int
-%s:37 PhanTypeMismatchArgument Argument 1 (arg) is 22 but \Magic282::static_method() takes string defined at %s:9
+%s:37 PhanTypeMismatchArgument Argument 1 (arg) is 22 but \Magic282::static_method() takes string defined at %s:6
 %s:39 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
 %s:41 PhanUndeclaredStaticMethod Static call to undeclared method \Magic282::undeclared_magic_static_method
 %s:43 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \Magic282 but \intdiv() takes int
