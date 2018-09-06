@@ -12,16 +12,20 @@ use Phan\AST\ContextNode;
 use Phan\Language\Element\Variable;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
+use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
+
 use ast\Node;
 use ast\flags;
 use Closure;
+use ReflectionMethod;
 
 /**
  * TODO: Make $x != null remove FalseType and NullType from $x
@@ -661,24 +665,38 @@ class ConditionVisitor extends KindVisitorImplementation
             }
             $variable->setUnionType($new_type);
         };
-        $callable_callback = static function (Variable $variable, array $args) {
-            // Change the type to match the is_a relationship
-            // If we already have possible callable types, then keep those
-            // (E.g. Closure|false becomes Closure)
-            $new_type = $variable->getUnionType()->callableTypes();
-            if ($new_type->isEmpty()) {
-                // If there are no inferred types, or the only type we saw was 'null',
-                // assume there this can be any possible scalar.
-                // (Excludes `resource`, which is technically a scalar)
-                $new_type = CallableType::instance(false)->asUnionType();
-            } elseif ($new_type->containsNullable()) {
-                $new_type = $new_type->nonNullableClone();
-            }
-            $variable->setUnionType($new_type);
+        /**
+         * @param string $extract_types
+         * @param UnionType $default_if_empty
+         * @return Closure(Variable,array):void
+         */
+        $make_callback = static function (string $extract_types, UnionType $default_if_empty) : Closure {
+            $method = new ReflectionMethod(UnionType::class, $extract_types);
+            /** @return void */
+            return function (Variable $variable, array $args) use ($method, $default_if_empty) {
+                // Change the type to match the is_a relationship
+                // If we already have possible callable types, then keep those
+                // (E.g. Closure|false becomes Closure)
+                $new_type = $method->invoke($variable->getUnionType());
+                if ($new_type->isEmpty()) {
+                    // If there are no inferred types, or the only type we saw was 'null',
+                    // assume there this can be any possible scalar.
+                    // (Excludes `resource`, which is technically a scalar)
+                    $new_type = $default_if_empty;
+                } elseif ($new_type->containsNullable()) {
+                    $new_type = $new_type->nonNullableClone();
+                }
+                $variable->setUnionType($new_type);
+            };
         };
+        /** @return void */
+        $callable_callback = $make_callback('callableTypes', CallableType::instance(false)->asUnionType());
+        $bool_callback = $make_callback('getTypesInBoolFamily', BoolType::instance(false)->asUnionType());
+        $int_callback = $make_callback('intTypes', IntType::instance(false)->asUnionType());
+        $string_callback = $make_callback('stringTypes', StringType::instance(false)->asUnionType());
+        $numeric_callback = $make_callback('numericTypes', UnionType::fromFullyQualifiedString('string|int|float'));
 
         // Note: LiteralIntType exists, but LiteralFloatType doesn't, which is why these are different.
-        $int_callback = $make_basic_assertion_callback('int');
         $float_callback = $make_direct_assertion_callback('float');
         $null_callback = $make_direct_assertion_callback('null');
         // Note: isset() is handled in visitIsset()
@@ -686,7 +704,7 @@ class ConditionVisitor extends KindVisitorImplementation
         return [
             'is_a' => $is_a_callback,
             'is_array' => $array_callback,
-            'is_bool' => $make_basic_assertion_callback('bool'),
+            'is_bool' => $bool_callback,
             'is_callable' => $callable_callback,
             'is_double' => $float_callback,
             'is_float' => $float_callback,
@@ -695,12 +713,12 @@ class ConditionVisitor extends KindVisitorImplementation
             'is_iterable' => $make_basic_assertion_callback('iterable'),  // TODO: Could keep basic array types and classes extending iterable
             'is_long' => $int_callback,
             'is_null' => $null_callback,
-            'is_numeric' => $make_basic_assertion_callback('string|int|float'),
+            'is_numeric' => $numeric_callback,
             'is_object' => $object_callback,
             'is_real' => $float_callback,
             'is_resource' => $make_direct_assertion_callback('resource'),
             'is_scalar' => $scalar_callback,
-            'is_string' => $make_basic_assertion_callback('string'),
+            'is_string' => $string_callback,
             'empty' => $null_callback,
         ];
     }

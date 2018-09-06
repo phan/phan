@@ -1472,6 +1472,11 @@ class Type
         return false;  // overridden in FalseType, TrueType, BoolType
     }
 
+    public function getIsPossiblyNumeric() : bool
+    {
+        return false;
+    }
+
     /**
      * @param bool $is_nullable
      * Set to true if the type should be nullable, else pass
