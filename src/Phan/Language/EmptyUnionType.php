@@ -116,6 +116,19 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
+     * Returns the types for which is_bool($x) would be true.
+     *
+     * @return UnionType
+     * A UnionType with known bool types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     */
+    public function getTypesInBoolFamily() : UnionType
+    {
+        return $this;
+    }
+
+    /**
      * @param CodeBase $code_base
      * The code base to look up classes against
      *
@@ -739,6 +752,46 @@ final class EmptyUnionType extends UnionType
     public function hasCallableType() : bool
     {
         return false;  // has no types
+    }
+
+    /**
+     * Returns the types for which is_int($x) would be true.
+     *
+     * @return UnionType
+     * A UnionType with known int types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     */
+    public function intTypes() : UnionType
+    {
+        return $this;
+    }
+
+    /**
+     * Returns the types for which is_string($x) would be true.
+     *
+     * @return UnionType
+     * A UnionType with known string types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     */
+    public function stringTypes() : UnionType
+    {
+        return $this;
+    }
+
+    /**
+     * Returns the types for which is_numeric($x) is possibly true.
+     *
+     * @return UnionType
+     * A UnionType with known numeric types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function numericTypes() : UnionType
+    {
+        return $this;
     }
 
     /**

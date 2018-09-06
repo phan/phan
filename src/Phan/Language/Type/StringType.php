@@ -13,4 +13,10 @@ class StringType extends ScalarType
         // CallableDeclarationType is not a native type, we check separately here
         return parent::canCastToNonNullableType($type) || $type instanceof CallableDeclarationType;
     }
+
+    /** @override */
+    public function getIsPossiblyNumeric() : bool
+    {
+        return true;
+    }
 }

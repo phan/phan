@@ -587,6 +587,22 @@ class UnionType implements \Serializable
     }
 
     /**
+     * Returns the types for which is_bool($x) would be true.
+     *
+     * @return UnionType
+     * A UnionType with known bool types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function getTypesInBoolFamily() : UnionType
+    {
+        return $this->makeFromFilter(function (Type $type) : bool {
+            return $type->getIsInBoolFamily();
+        });
+    }
+
+    /**
      * @param CodeBase $code_base
      * The code base to look up classes against
      *
@@ -1847,11 +1863,63 @@ class UnionType implements \Serializable
      * A UnionType with known callable types kept, other types filtered out.
      *
      * @see nonGenericArrayTypes
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function callableTypes() : UnionType
     {
         return $this->makeFromFilter(function (Type $type) : bool {
             return $type->isCallable();
+        });
+    }
+
+    /**
+     * Returns the types for which is_int($x) would be true.
+     *
+     * @return UnionType
+     * A UnionType with known int types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function intTypes() : UnionType
+    {
+        return $this->makeFromFilter(function (Type $type) : bool {
+            // IntType and LiteralType
+            return $type instanceof IntType;
+        });
+    }
+
+    /**
+     * Returns the types for which is_string($x) would be true.
+     *
+     * @return UnionType
+     * A UnionType with known string types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function stringTypes() : UnionType
+    {
+        return $this->makeFromFilter(function (Type $type) : bool {
+            // IntType and LiteralStringType
+            return $type instanceof StringType;
+        });
+    }
+
+    /**
+     * Returns the types for which is_numeric($x) is possibly true.
+     *
+     * @return UnionType
+     * A UnionType with known numeric types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function numericTypes() : UnionType
+    {
+        return $this->makeFromFilter(function (Type $type) : bool {
+            // IntType and LiteralStringType
+            return $type->getIsPossiblyNumeric();
         });
     }
 

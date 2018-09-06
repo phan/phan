@@ -5,4 +5,10 @@ class IntType extends ScalarType
 {
     /** @phan-override */
     const NAME = 'int';
+
+    /** @override */
+    public function getIsPossiblyNumeric() : bool
+    {
+        return true;
+    }
 }

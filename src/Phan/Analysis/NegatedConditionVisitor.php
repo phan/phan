@@ -490,6 +490,9 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         $remove_numeric_callback = $remove_conditional_function_callback(function (Type $type) : bool {
             return $type instanceof IntType || $type instanceof FloatType;
         });
+        $remove_bool_callback = $remove_conditional_function_callback(function (Type $type) : bool {
+            return $type->getIsInBoolFamily();
+        });
         $remove_callable_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
             return $cv->updateVariableWithConditionalFilter(
                 $var_node,
@@ -605,7 +608,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         return [
             'is_null' => $remove_null_cb,
             'is_array' => $remove_array_callback,
-            // 'is_bool' => $make_basic_assertion_callback(BoolType::class),
+            'is_bool' => $remove_bool_callback,
             'is_callable' => $remove_callable_callback,
             'is_double' => $remove_float_callback,
             'is_float' => $remove_float_callback,

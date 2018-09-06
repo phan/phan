@@ -5,4 +5,10 @@ final class FloatType extends ScalarType
 {
     /** @phan-override */
     const NAME = 'float';
+
+    /** @override */
+    public function getIsPossiblyNumeric() : bool
+    {
+        return true;
+    }
 }
