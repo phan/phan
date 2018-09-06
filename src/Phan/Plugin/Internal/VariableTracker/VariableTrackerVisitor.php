@@ -145,6 +145,9 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         return $this->analyzeAssignmentTarget($node->children['var'], false);
     }
 
+    /**
+     * @param Node|int|string|float|null $node
+     */
     private function analyzeAssignmentTarget($node, bool $is_ref) : VariableTrackingScope
     {
         // TODO: Push onto the node list?
@@ -240,6 +243,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     }
 
     /**
+     * @param Node|string|int|float|null $child_node
      * @return VariableTrackingScope
      */
     private function analyzeWhenValidNode(VariableTrackingScope $scope, $child_node)

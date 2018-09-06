@@ -95,7 +95,10 @@ final class ConversionTest extends BaseTest
         return $tests;
     }
 
-    /** @return void */
+    /**
+     * @param ast\Node|int|string|float|null $node
+     * @return void
+     */
     private static function normalizeOriginalAST($node)
     {
         if ($node instanceof ast\Node) {

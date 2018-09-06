@@ -58,6 +58,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
+     * @param Node|int|string|float|null $node
      * @return void
      */
     private function analyzeStatements($node)
@@ -90,9 +91,11 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
         ContextNode::RESOLVE_ARRAY_VALUES |
         ContextNode::RESOLVE_CONSTANTS;
 
+    /**
+     * @param Node|string|int|float|null $expr_node
+     */
     private function analyzeReturnValue($expr_node, int $lineno)
     {
-
         $context = clone($this->context)->withLineNumberStart($lineno);
         if (!($expr_node instanceof Node)) {
             $this->emitPluginIssue(

@@ -142,9 +142,12 @@ class FileRef implements \Serializable
 
     public function serialize()
     {
-        return (string)$this;
+        return $this->__toString();
     }
 
+    /**
+     * @param string $serialized
+     */
     public function unserialize($serialized)
     {
         $map = explode(':', $serialized);

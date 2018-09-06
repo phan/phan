@@ -124,6 +124,7 @@ final class VariableGraph
      * Marks something as being a loop variable `$v` in `foreach ($arr as $k => $v)`
      * (Common false positive, since there's no way to avoid setting the value)
      *
+     * @param Node|string|int|float|null $node
      * @return void
      */
     public function markAsLoopValueNode($node)
@@ -145,6 +146,7 @@ final class VariableGraph
      * Marks something as being a loop variable `$v` in `foreach ($arr as $k => $v)`
      * (Common false positive, since there's no way to avoid setting the value)
      *
+     * @param Node|int|string|float|null $node
      * @return void
      */
     public function markAsCaughtException($node)

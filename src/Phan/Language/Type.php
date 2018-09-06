@@ -572,6 +572,7 @@ class Type
     }
 
     /**
+     * @param mixed $object
      * @return Type
      * Get a type for the given object. Equivalent to Type::fromObject($object)->asNonLiteralType()
      */
@@ -595,6 +596,7 @@ class Type
     }
 
     /**
+     * @param mixed $object
      * @return Type
      * Get a type for the given object
      * @throws AssertionError if the type was unexpected

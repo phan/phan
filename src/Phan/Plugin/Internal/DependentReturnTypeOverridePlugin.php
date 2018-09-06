@@ -42,7 +42,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
         /**
          * @phan-return Closure(CodeBase,Context,Func,array):UnionType
          */
-        $make_dependent_type_method = static function (int $expected_bool_pos, $type_if_true, $type_if_false, $type_if_unknown) : Closure {
+        $make_dependent_type_method = static function (int $expected_bool_pos, UnionType $type_if_true, UnionType $type_if_false, UnionType $type_if_unknown) : Closure {
             /**
              * @param Func $function @phan-unused-param
              * @return UnionType

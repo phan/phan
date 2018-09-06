@@ -47,11 +47,17 @@ final class ForkPoolTest extends BaseTest
         $did_startup = false;
         $pool = new ForkPool(
             [[1], [2], [3], [4]],
-            /** @return void */
+            /**
+             * @return void
+             */
             function () use (&$did_startup) {
                 $did_startup = true;
             },
-            /** @return void */
+            /**
+             * @param int $unused_i
+             * @param mixed $unused_data
+             * @return void
+             */
             function ($unused_i, $unused_data) {
             },
             function () use (&$did_startup) : array {

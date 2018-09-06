@@ -298,7 +298,7 @@ class Phan implements IgnoredFilesFilterInterface
             // analysis
             $analyze_file_path_list = array_filter(
                 $analyze_file_path_list,
-                function ($file_path) : bool {
+                function (string $file_path) : bool {
                     return !self::isExcludedAnalysisFile($file_path);
                 }
             );
@@ -328,7 +328,7 @@ class Phan implements IgnoredFilesFilterInterface
              * This worker takes a file and analyzes it
              * @return void
              */
-            $analysis_worker = function ($i, $file_path) use ($file_count, $code_base, $temporary_file_mapping, $request) {
+            $analysis_worker = function (int $i, string $file_path) use ($file_count, $code_base, $temporary_file_mapping, $request) {
                 CLI::progress('analyze', ($i + 1) / $file_count);
                 Analysis::analyzeFile($code_base, $file_path, $request, $temporary_file_mapping[$file_path] ?? null);
             };

@@ -77,7 +77,7 @@ trait Profile
             }
 
             // Sort such that the highest metric value is on top
-            uasort($label_metric_map, function ($a, $b) : int {
+            uasort($label_metric_map, function (array $a, array $b) : int {
                 return $b[1] <=> $a[1];
             });
 

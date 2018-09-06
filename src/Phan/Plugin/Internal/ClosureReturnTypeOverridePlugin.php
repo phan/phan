@@ -261,6 +261,9 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
     public static function createNormalArgumentCache(CodeBase $code_base, Context $context) : Closure
     {
         $cache = [];
+        /**
+         * @param Node|int|string|float|null $argument
+         */
         return function ($argument, int $i) use ($code_base, $context, &$cache) : UnionType {
             $argument_type = $cache[$i] ?? null;
             if (isset($argument_type)) {
