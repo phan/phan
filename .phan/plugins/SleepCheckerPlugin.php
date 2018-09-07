@@ -77,6 +77,9 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
         $class = $this->context->getClassInScope($this->code_base);
         $class_fqsen = $class->getFQSEN();
         foreach ($class->getPropertyMap($this->code_base) as $property_name => $property) {
+            if ($property->isStatic()) {
+                continue;
+            }
             if ($property->isFromPHPDoc()) {
                 continue;
             }
