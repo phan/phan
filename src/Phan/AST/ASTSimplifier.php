@@ -191,6 +191,8 @@ class ASTSimplifier
             case \ast\AST_NAME:
                 return true;
             case \ast\AST_BINARY_OP:
+                return self::isExpressionWithoutSideEffects($node->children['left']) &&
+                    self::isExpressionWithoutSideEffects($node->children['right']);
             case \ast\AST_CLASS_CONST:
                 return self::isExpressionWithoutSideEffects($node->children['class']);
             default:
@@ -238,7 +240,8 @@ class ASTSimplifier
                 // if (($var = A) === B) {X} -> $var = A; if ($var === B) { X}
                 $if_cond_children = $if_cond->children;
                 if (in_array($if_cond_children['left']->kind ?? 0, [\ast\AST_ASSIGN, \ast\AST_ASSIGN_REF], true) &&
-                        ($if_cond_children['left']->children['var']->kind ?? 0) === \ast\AST_VAR) {
+                        ($if_cond_children['left']->children['var']->kind ?? 0) === \ast\AST_VAR &&
+                        self::isExpressionWithoutSideEffects($if_cond_children['right'])) {
                     self::replaceLastNodeWithNodeList($nodes, ...$this->applyAssignInLeftSideOfBinaryOpReduction($node));
                     continue;
                 }

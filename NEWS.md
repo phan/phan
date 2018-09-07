@@ -5,6 +5,8 @@ Phan NEWS
 
 Bug fixes
 + Fix bugs in analysis of assignments within conditionals (#1937)
++ Fix a crash analyzing comparison with variable assignment expression (#1940)
+  (e.g. `if (1 + 1 > ($var = 1))`)
 
 06 Sep 2018, Phan 1.0.2
 -----------------------
