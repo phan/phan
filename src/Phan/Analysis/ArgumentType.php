@@ -663,6 +663,8 @@ final class ArgumentType
      * Used to check if a place expecting a reference is actually getting a reference from a node.
      * Obvious types which are always references (properties, variables) must be checked for before calling this.
      *
+     * @param Node|string|int|float $node
+     *
      * @return bool - True if this node is a call to a function that may return a reference?
      */
     private static function isFunctionReturningReference(CodeBase $code_base, Context $context, $node) : bool

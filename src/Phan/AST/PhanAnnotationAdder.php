@@ -184,6 +184,7 @@ class PhanAnnotationAdder
     }
 
     /**
+     * @param Node|string|int|float|null $node
      * @return void
      */
     private static function applyToScopeInner($node)

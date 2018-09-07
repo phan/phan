@@ -17,8 +17,9 @@ use Phan\Language\UnionType;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
 use Phan\PluginV2\StopParamAnalysisException;
 use Phan\PluginV2;
-use Closure;
 
+use ast\Node;
+use Closure;
 use function count;
 
 /**
@@ -316,7 +317,10 @@ final class MiscParamPlugin extends PluginV2 implements
             }
         };
 
-        /** @return string */
+        /**
+         * @param Node|int|string|float|null $node
+         * @return string
+         */
         $get_variable_name = function (
             CodeBase $code_base,
             Context $context,
@@ -472,6 +476,7 @@ final class MiscParamPlugin extends PluginV2 implements
     }
 
     /**
+     * @param Node|int|string|float|null $node
      * @param Closure(UnionType):IssueInstance $issue_instance
      */
     private static function analyzeNodeUnionTypeCast(
@@ -508,6 +513,7 @@ final class MiscParamPlugin extends PluginV2 implements
     }
 
     /**
+     * @param Node|int|string|float|null $node
      * @param Closure(UnionType):IssueInstance $issue_instance
      */
     private static function analyzeNodeUnionTypeCastStringArrayLike(

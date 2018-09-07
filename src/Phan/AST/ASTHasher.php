@@ -14,6 +14,7 @@ use function is_string;
 class ASTHasher
 {
     /**
+     * @param string|int|float|null $node
      * @return string a 16-byte binary key
      */
     public static function hash_key($node)
@@ -29,6 +30,7 @@ class ASTHasher
     }
 
     /**
+     * @param Node|string|int|float|null $node
      * @return string a 16-byte binary key
      */
     public static function hash($node)
@@ -48,6 +50,7 @@ class ASTHasher
     }
 
     /**
+     * @param Node $node
      * @return string a 16-byte binary key
      */
     private static function compute_hash($node)

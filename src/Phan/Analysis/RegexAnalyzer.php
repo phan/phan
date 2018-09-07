@@ -76,6 +76,7 @@ class RegexAnalyzer
         UnionType $type
     ) : UnionType {
         $field_types = array_map(
+            /** @param true $_ */
             function ($_) use ($type) : UnionType {
                 return $type;
             },

@@ -227,6 +227,7 @@ EOT;
 
     /**
      * @dataProvider hoverInOtherFileProvider
+     * @param ?string $expected_hover_markup
      */
     public function testHoverInOtherFile(string $new_file_contents, Position $position, $expected_hover_markup, string $requested_uri = null, bool $require_php71_or_newer = false)
     {

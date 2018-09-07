@@ -20,6 +20,8 @@ use Phan\Language\UnionType;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
 use Phan\PluginV2;
 
+use ast\Node;
+
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  *
@@ -212,6 +214,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             $arguments = \array_slice($args, 1);
             $possible_return_types = UnionType::empty();
             $cache_outer = [];
+            /**
+             * @param Node|int|string|float|null $argument
+             */
             $get_argument_type = function ($argument, int $i) use ($code_base, $context, &$cache_outer) : UnionType {
                 if (isset($cache_outer[$i])) {
                     return $cache_outer[$i];
@@ -227,6 +232,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             };
             $cache = [];
             // Don't calculate argument types more than once.
+            /**
+             * @param Node|int|string|float|null $argument
+             */
             $get_argument_type_for_array_map = function ($argument, int $i) use ($get_argument_type, &$cache) : UnionType {
                 if (isset($cache[$i])) {
                     return $cache[$i];

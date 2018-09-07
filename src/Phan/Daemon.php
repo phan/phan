@@ -8,6 +8,7 @@ use Phan\Daemon\ExitException;
 use AssertionError;
 use Closure;
 use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * A simple analyzing daemon that can be used by IDEs. (see `phan_client`)
@@ -50,13 +51,20 @@ class Daemon
 
         $socket_server = self::createDaemonStreamSocketServer();
         // TODO: Limit the maximum number of active processes to a small number(4?)
-        // TODO: accept SIGCHLD when child terminates, somehow?
         try {
             $got_signal = false;
-            pcntl_signal(SIGCHLD, function (...$args) use (&$got_signal) {
-                $got_signal = true;
-                Request::childSignalHandler(...$args);
-            });
+
+            pcntl_signal(
+                SIGCHLD,
+                /**
+                 * @param mixed ...$args
+                 * @return void
+                 */
+                function (...$args) use (&$got_signal) {
+                    $got_signal = true;
+                    Request::childSignalHandler(...$args);
+                }
+            );
             while (true) {
                 $got_signal = false;  // reset this.
                 // We get an error from stream_socket_accept. After the RuntimeException is thrown, pcntl_signal is called.
@@ -72,13 +80,13 @@ class Daemon
                     if (!preg_match('/stream_socket_accept/i', $message)) {
                         return $previous_error_handler($severity, $message, $file, $line);
                     }
-                    throw new \RuntimeException("Got signal");
+                    throw new RuntimeException("Got signal");
                 });
 
                 $conn = false;
                 try {
                     $conn = stream_socket_accept($socket_server, -1);
-                } catch (\RuntimeException $_) {
+                } catch (RuntimeException $_) {
                     self::debugf("Got signal");
                     pcntl_signal_dispatch();
                     self::debugf("done processing signals");
@@ -123,20 +131,26 @@ class Daemon
                 $got_signal = false;  // reset this.
                 // We get an error from stream_socket_accept. After the RuntimeException is thrown, pcntl_signal is called.
                 $previous_error_handler = set_error_handler(
-                    /** @return bool */
+                    /**
+                     * @param int $severity
+                     * @param string $message
+                     * @param string $file
+                     * @param int $line
+                     * @return bool
+                     */
                     function ($severity, $message, $file, $line) use (&$previous_error_handler) {
                         self::debugf("In new error handler '$message'");
                         if (!preg_match('/stream_socket_accept/i', $message)) {
                             return $previous_error_handler($severity, $message, $file, $line);
                         }
-                        throw new \RuntimeException("Got signal");
+                        throw new RuntimeException("Got signal");
                     }
                 );
 
                 $conn = false;
                 try {
                     $conn = stream_socket_accept($socket_server, -1);
-                } catch (\RuntimeException $_) {
+                } catch (RuntimeException $_) {
                     self::debugf("Got signal");
                     pcntl_signal_dispatch();
                     self::debugf("done processing signals");

@@ -36,6 +36,9 @@ class IssueFixSuggester
      */
     public static function createFQSENFilterFromClassFilter(CodeBase $code_base, Closure $class_closure)
     {
+        /**
+         * @param FullyQualifiedClassName $alternate_fqsen
+         */
         return function ($alternate_fqsen) use ($code_base, $class_closure) : bool {
             if (!($alternate_fqsen instanceof FullyQualifiedClassName)) {
                 return false;
@@ -238,15 +241,24 @@ class IssueFixSuggester
             return null;
         }
         $property_set = self::suggestSimilarPropertyMap($code_base, $context, $class, $wanted_property_name, $is_static);
-        if (count($property_set) === 0) {
-            return null;
-        }
-        uksort($property_set, 'strcmp');
         $suggestions = [];
+        if ($is_static) {
+            if ($class->hasConstantWithName($code_base, $wanted_property_name)) {
+                $suggestions[] = '::' . $wanted_property_name;
+            }
+        }
+        if ($class->hasMethodWithName($code_base, $wanted_property_name)) {
+            $method = $class->getMethodByName($code_base, $wanted_property_name);
+            $suggestions[] = ($method->isStatic() ? '::' : '->') . $wanted_property_name . '()';
+        }
         foreach ($property_set as $property_name => $_) {
             $prefix = $is_static ? 'expr::$' : 'expr->' ;
             $suggestions[] = $prefix . $property_name;
         }
+        if (count($suggestions) === 0) {
+            return null;
+        }
+        uksort($suggestions, 'strcmp');
         return Suggestion::fromString(
             'Did you mean ' . implode(' or ', $suggestions)
         );

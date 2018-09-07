@@ -36,6 +36,7 @@ class ASTReverter
     }
 
     /**
+     * @param Node|string|int|float $node
      * @return string
      */
     public static function toShortString($node)

@@ -119,6 +119,8 @@ class Initializer
     }
 
     /**
+     * @param string $setting_name
+     * @param string|int|float|bool|array|null $setting_value
      * @param array<int,string> $additional_comment_lines
      */
     public static function generateEntrySnippetForSetting(string $setting_name, $setting_value, array $additional_comment_lines) : string

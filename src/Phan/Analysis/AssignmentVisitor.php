@@ -318,6 +318,7 @@ class AssignmentVisitor extends AnalysisVisitor
     }
 
     /**
+     * @param Node|string|int|float $value_node
      * @return void
      */
     private function analyzeValueNodeOfShapedArray(

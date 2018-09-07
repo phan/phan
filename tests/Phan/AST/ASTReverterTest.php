@@ -7,6 +7,8 @@ use Phan\Tests\BaseTest;
 use Phan\AST\ASTReverter;
 use Phan\Config;
 
+use AssertionError;
+
 final class ASTReverterTest extends BaseTest
 {
     /**
@@ -20,6 +22,9 @@ final class ASTReverterTest extends BaseTest
         $statements = \ast\parse_code($file_contents, Config::AST_VERSION);
         $this->assertSame(1, count($statements->children));
         $snippet_node = $statements->children[0];
+        if ($snippet_node === null) {
+            throw new AssertionError("invalid first statement in statement list");
+        }
 
         $reverter = new ASTReverter();
         $this->assertSame($expected, $reverter->toShortString($snippet_node));

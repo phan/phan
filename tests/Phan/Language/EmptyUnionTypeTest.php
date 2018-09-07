@@ -159,9 +159,11 @@ final class EmptyUnionTypeTest extends BaseTest
                 ];
             case Closure::class:
                 return [
+                    /** @param mixed ...$unused_args */
                     function (...$unused_args) : bool {
                         return false;
                     },
+                    /** @param mixed ...$unused_args */
                     function (...$unused_args) : bool {
                         return true;
                     },

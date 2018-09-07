@@ -35,17 +35,26 @@ class UnknownElementTypePlugin extends PluginV2 implements
         if ($method->getFQSEN() !== $method->getRealDefiningFQSEN()) {
             return;
         }
-        // As an example, we test to see if the name of the
-        // method is `function`, and emit an issue if it is.
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
         if ($method->getUnionType()->isEmpty()) {
             $this->emitIssue(
                 $code_base,
                 $method->getContext(),
                 'PhanPluginUnknownMethodReturnType',
-                "Method {METHOD} has no declared or inferred return type",
+                'Method {METHOD} has no declared or inferred return type',
                 [(string)$method->getFQSEN()]
             );
+        }
+        foreach ($method->getParameterList() as $parameter) {
+            if ($parameter->getUnionType()->isEmpty()) {
+                $this->emitIssue(
+                    $code_base,
+                    $method->getContext(),
+                    'PhanPluginUnknownMethodParamType',
+                    'Method {METHOD} has no declared or inferred parameter type for ${PARAMETER}',
+                    [(string)$method->getFQSEN(), $parameter->getName()]
+                );
+            }
         }
     }
 
@@ -64,25 +73,38 @@ class UnknownElementTypePlugin extends PluginV2 implements
         CodeBase $code_base,
         Func $function
     ) {
-        // As an example, we test to see if the name of the
-        // method is `function`, and emit an issue if it is.
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
         if ($function->getUnionType()->isEmpty()) {
             if ($function->getFQSEN()->isClosure()) {
-                $this->emitIssue(
-                    $code_base,
-                    $function->getContext(),
-                    'PhanPluginUnknownClosureReturnType',
-                    "Closure {FUNCTION} has no declared or inferred return type",
-                    [(string)$function->getFQSEN()]
-                );
+                $issue = 'PhanPluginUnknownClosureReturnType';
+                $message = 'Closure {FUNCTION} has no declared or inferred return type';
             } else {
+                $issue = 'PhanPluginUnknownFunctionReturnType';
+                $message = 'Function {FUNCTION} has no declared or inferred return type';
+            }
+            $this->emitIssue(
+                $code_base,
+                $function->getContext(),
+                $issue,
+                $message,
+                [(string)$function->getFQSEN()]
+            );
+        }
+        foreach ($function->getParameterList() as $parameter) {
+            if ($function->getFQSEN()->isClosure()) {
+                $issue = 'PhanPluginUnknownClosureParamType';
+                $message = 'Closure {FUNCTION} has no declared or inferred return type for ${PARAMETER}';
+            } else {
+                $issue = 'PhanPluginUnknownFunctionParamType';
+                $message = 'Function {FUNCTION} has no declared or inferred return type for ${PARAMETER}';
+            }
+            if ($parameter->getUnionType()->isEmpty()) {
                 $this->emitIssue(
                     $code_base,
                     $function->getContext(),
-                    'PhanPluginUnknownFunctionReturnType',
-                    "Function {FUNCTION} has no declared or inferred return type",
-                    [(string)$function->getFQSEN()]
+                    $issue,
+                    $message,
+                    [(string)$function->getFQSEN(), $parameter->getName()]
                 );
             }
         }
@@ -106,8 +128,6 @@ class UnknownElementTypePlugin extends PluginV2 implements
         if ($property->getFQSEN() !== $property->getRealDefiningFQSEN()) {
             return;
         }
-        // As an example, we test to see if the name of the
-        // function is `foo`, and emit an issue if it is.
         if ($property->getUnionType()->isEmpty()) {
             $this->emitIssue(
                 $code_base,

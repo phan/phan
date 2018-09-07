@@ -150,6 +150,9 @@ class FunctionFactory
         }
 
         $alternate_id = 0;
+        /**
+         * @param array<string,mixed> $map
+         */
         return \array_map(function ($map) use (
             $function,
             &$alternate_id

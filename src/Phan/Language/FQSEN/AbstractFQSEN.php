@@ -113,6 +113,7 @@ abstract class AbstractFQSEN implements FQSEN, Serializable
     }
 
     /**
+     * @param string $unused_serialized
      * @throws Error to prevent accidentally calling this
      */
     public function unserialize($unused_serialized)

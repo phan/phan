@@ -278,7 +278,7 @@ class CLI
                     break;
                 case 'm':
                 case 'output-mode':
-                    if (!in_array($value, $factory->getTypes(), true)) {
+                    if (!is_string($value) || !in_array($value, $factory->getTypes(), true)) {
                         $this->usage(
                             sprintf(
                                 'Unknown output mode %s. Known values are [%s]',
@@ -287,6 +287,7 @@ class CLI
                             ),
                             EXIT_FAILURE
                         );
+                        return;  // unreachable
                     }
 
                     $printer_type = $value;
@@ -503,7 +504,8 @@ class CLI
 
         $this->ensureASTParserExists();
 
-        $printer = $factory->getPrinter($printer_type, $this->output);
+        $output = $this->output;
+        $printer = $factory->getPrinter($printer_type, $output);
         $filter  = new ChainedIssueFilter([
             new FileIssueFilter(new Phan()),
             new MinimumSeverityFilter($minimum_severity),

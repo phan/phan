@@ -50,7 +50,7 @@ final class PhanTestListener extends BaseTestListener
     }
 
     /**
-     * @param $time @phan-unused-param
+     * @param float $time @phan-unused-param
      */
     public function endTest(Test $test, $time)
     {

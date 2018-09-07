@@ -42,6 +42,9 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
         $this->assertEquals($expected_node, $selected_node);
     }
 
+    /**
+     * @param Node|string|int|float|null $node
+     */
     private function findSelectedNode($node) : Node
     {
         $candidates = [];
@@ -51,6 +54,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
     }
 
     /**
+     * @param Node|int|string|float|null $node
      * @param array<int,Node> &$candidates
      * @return void
      * @suppress PhanUndeclaredProperty isSelected is dynamically added by Phan

@@ -515,7 +515,7 @@ final class TypeTest extends BaseTest
     /**
      * @dataProvider arrayShapeProvider
      */
-    public function testArrayShape($normalized_union_type_string, $type_string)
+    public function testArrayShape(string $normalized_union_type_string, string $type_string)
     {
         $this->assertTrue(\preg_match('@^' . Type::type_regex . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex");
         $this->assertTrue(\preg_match('@^' . Type::type_regex_or_this . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex_or_this");
@@ -583,7 +583,7 @@ final class TypeTest extends BaseTest
     }
 
     /** @dataProvider unparseableTypeProvider */
-    public function testUnparseableType($type_string)
+    public function testUnparseableType(string $type_string)
     {
         $this->assertFalse(\preg_match('@^' . Type::type_regex . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex");
         $this->assertFalse(\preg_match('@^' . Type::type_regex_or_this . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex_or_this");
