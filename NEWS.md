@@ -8,6 +8,17 @@ Bug fixes
 + Fix a crash analyzing comparison with variable assignment expression (#1940)
   (e.g. `if (1 + 1 > ($var = 1))`)
 
+Plugins:
++ Update `SleepCheckerPlugin` to warn about properties that aren't returned in `__sleep()`
+  that don't have a doc comment annotation of `@phan-transient` or `@transient`.
+  (This is not an officially specified annotation)
+
+  New issue type: `SleepCheckerPropertyMissingTransient`
+
+  New setting: `$config['plugin_config']['sleep_transient_warning_blacklist_regex']`
+  can be used to prevent Phan from warning about certain properties missing `@phan-transient`
+
+
 06 Sep 2018, Phan 1.0.2
 -----------------------
 

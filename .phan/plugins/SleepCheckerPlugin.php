@@ -2,10 +2,12 @@
 
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
+use Phan\Config;
 use Phan\Language\Type\StringType;
 use Phan\PluginV2;
 use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
+
 use ast\Node;
 
 /**
@@ -54,26 +56,75 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
         if (strcasecmp('__sleep', (string)$node->children['name']) !== 0) {
             return;
         }
-        $this->analyzeStatements($node);
+        $sleep_properties = [];
+        $this->analyzeStatementsOfSleep($node, $sleep_properties);
+        $this->warnAboutTransientSleepProperties($sleep_properties);
+    }
+
+    /**
+     * Warn about instance properties that aren't mentioned in __sleep()
+     * and don't have (at)transient or (at)phan-transient
+     *
+     * @param array<string,true> $sleep_properties
+     * @return void
+     */
+    private function warnAboutTransientSleepProperties(array $sleep_properties)
+    {
+        if (count($sleep_properties) === 0) {
+            // Give up, failed to extract property names
+            return;
+        }
+        $class = $this->context->getClassInScope($this->code_base);
+        $class_fqsen = $class->getFQSEN();
+        foreach ($class->getPropertyMap($this->code_base) as $property_name => $property) {
+            if ($property->isFromPHPDoc()) {
+                continue;
+            }
+            if ($property->isDynamicProperty()) {
+                continue;
+            }
+            if (isset($sleep_properties[$property_name])) {
+                continue;
+            }
+            if ($property->getRealDefiningFQSEN()->getFullyQualifiedClassName() !== $class_fqsen) {
+                continue;
+            }
+            $doc_comment = $property->getDocComment() ?? '';
+            $has_transient = preg_match('/@(phan-)?transient\b/', $doc_comment) > 0;
+            if (!$has_transient) {
+                $regex = Config::getValue('plugin_config')['sleep_transient_warning_blacklist_regex'] ?? null;
+                if (is_string($regex) && preg_match($regex, $property_name)) {
+                    continue;
+                }
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    $property->getContext(),
+                    'SleepCheckerPropertyMissingTransient',
+                    'Property {PROPERTY} that is not serialized by __sleep should be annotated with @transient or @phan-transient',
+                    [$property->__toString()]
+                );
+            }
+        }
     }
 
     /**
      * @param Node|int|string|float|null $node
+     * @param array<string,true> $sleep_properties
      * @return void
      */
-    private function analyzeStatements($node)
+    private function analyzeStatementsOfSleep($node, array &$sleep_properties = [])
     {
         if (!($node instanceof Node)) {
             if (is_array($node)) {
                 foreach ($node as $child_node) {
-                    $this->analyzeStatements($child_node);
+                    $this->analyzeStatementsOfSleep($child_node, $sleep_properties);
                 }
             }
             return;
         }
         switch ($node->kind) {
             case ast\AST_RETURN:
-                $this->analyzeReturnValue($node->children['expr'], $node->lineno);
+                $this->analyzeReturnValue($node->children['expr'], $node->lineno, $sleep_properties);
                 return;
             case ast\AST_CLASS:
             case ast\AST_CLOSURE:
@@ -81,7 +132,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
                 return;
             default:
                 foreach ($node->children as $child_node) {
-                    $this->analyzeStatements($child_node);
+                    $this->analyzeStatementsOfSleep($child_node, $sleep_properties);
                 }
         }
     }
@@ -93,8 +144,10 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param Node|string|int|float|null $expr_node
+     * @param int $lineno
+     * @param array<string,true> $sleep_properties
      */
-    private function analyzeReturnValue($expr_node, int $lineno)
+    private function analyzeReturnValue($expr_node, int $lineno, array &$sleep_properties)
     {
         $context = clone($this->context)->withLineNumberStart($lineno);
         if (!($expr_node instanceof Node)) {
@@ -148,6 +201,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
                 }
                 continue;
             }
+            $sleep_properties[$prop_name] = true;
 
             if (!$class->hasPropertyWithName($code_base, $prop_name)) {
                 $this->emitPluginIssue(

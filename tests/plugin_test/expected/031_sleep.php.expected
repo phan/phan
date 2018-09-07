@@ -6,6 +6,7 @@ src/031_sleep.php:17 SleepCheckerInvalidPropName __sleep is returning an array t
 src/031_sleep.php:17 SleepCheckerMagicPropName __sleep is returning an array that includes z, which is a magic property
 src/031_sleep.php:19 SleepCheckerInvalidPropName __sleep is returning an array that includes _Z, which cannot be found
 src/031_sleep.php:22 PhanUnusedPublicMethodParameter Parameter $x is never used
+src/031_sleep.php:28 SleepCheckerPropertyMissingTransient Property public $_myProp that is not serialized by __sleep should be annotated with @transient or @phan-transient
 src/031_sleep.php:35 SleepCheckerInvalidReturnStatement __sleep must return an array of strings. This is definitely not an array.
 src/031_sleep.php:37 SleepCheckerInvalidReturnStatement __sleep must return an array of strings. This is definitely not an array.
 src/031_sleep.php:39 SleepCheckerInvalidPropName __sleep is returning an array that includes _myprop, which cannot be found
