@@ -383,15 +383,16 @@ trait ConditionVisitorUtil
             }
             $tmp = $left;
             while (\in_array($kind, [\ast\AST_ASSIGN, \ast\AST_ASSIGN_OP, \ast\AST_ASSIGN_REF], true)) {
-                $tmp = $tmp->children['var'];
                 if (!$tmp instanceof Node) {
                     break;
                 }
-                $kind = $tmp->kind;
+                $var = $tmp->children['var'];
+                $kind = $var->kind;
                 if ($kind === \ast\AST_VAR) {
                     $this->context = (new BlockAnalysisVisitor($this->code_base, $this->context))->__invoke($tmp);
-                    return $analyzer($tmp, $right);
+                    return $analyzer($var, $right);
                 }
+                $tmp = $var;
             }
         }
         if ($right instanceof Node) {
@@ -401,15 +402,16 @@ trait ConditionVisitorUtil
             }
             $tmp = $right;
             while (\in_array($kind, [\ast\AST_ASSIGN, \ast\AST_ASSIGN_OP, \ast\AST_ASSIGN_REF], true)) {
-                $tmp = $right->children['var'];
                 if (!$tmp instanceof Node) {
                     break;
                 }
-                $this->context = (new BlockAnalysisVisitor($this->code_base, $this->context))->__invoke($right);
-                $kind = $tmp->kind;
+                $var = $right->children['var'];
+                $kind = $var->kind;
                 if ($kind === \ast\AST_VAR) {
-                    return $analyzer($tmp, $left);
+                    $this->context = (new BlockAnalysisVisitor($this->code_base, $this->context))->__invoke($tmp);
+                    return $analyzer($var, $left);
                 }
+                $tmp = $var;
             }
         }
         return $this->context;
