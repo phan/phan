@@ -4,6 +4,7 @@ namespace Phan\AST\TolerantASTConverter;
 
 use AssertionError;
 use ast;
+use ast\flags;
 use Error;
 use InvalidArgumentException;
 use Microsoft\PhpParser;
@@ -487,47 +488,47 @@ class TolerantASTConverter
              */
             'Microsoft\PhpParser\Node\Expression\BinaryExpression' => function (PhpParser\Node\Expression\BinaryExpression $n, int $start_line) {
                 static $lookup = [
-                    TokenKind::AmpersandAmpersandToken              => ast\flags\BINARY_BOOL_AND,
-                    TokenKind::AmpersandToken                       => ast\flags\BINARY_BITWISE_AND,
-                    TokenKind::AndKeyword                           => ast\flags\BINARY_BOOL_AND,
-                    TokenKind::AsteriskAsteriskToken                => ast\flags\BINARY_POW,
-                    TokenKind::AsteriskToken                        => ast\flags\BINARY_MUL,
-                    TokenKind::BarBarToken                          => ast\flags\BINARY_BOOL_OR,
-                    TokenKind::BarToken                             => ast\flags\BINARY_BITWISE_OR,
-                    TokenKind::CaretToken                           => ast\flags\BINARY_BITWISE_XOR,
-                    TokenKind::DotToken                             => ast\flags\BINARY_CONCAT,
-                    TokenKind::EqualsEqualsEqualsToken              => ast\flags\BINARY_IS_IDENTICAL,
-                    TokenKind::EqualsEqualsToken                    => ast\flags\BINARY_IS_EQUAL,
-                    TokenKind::ExclamationEqualsEqualsToken         => ast\flags\BINARY_IS_NOT_IDENTICAL,
-                    TokenKind::ExclamationEqualsToken               => ast\flags\BINARY_IS_NOT_EQUAL,
-                    TokenKind::GreaterThanEqualsToken               => ast\flags\BINARY_IS_GREATER_OR_EQUAL,
-                    TokenKind::GreaterThanGreaterThanToken          => ast\flags\BINARY_SHIFT_RIGHT,
-                    TokenKind::GreaterThanToken                     => ast\flags\BINARY_IS_GREATER,
-                    TokenKind::LessThanEqualsGreaterThanToken       => ast\flags\BINARY_SPACESHIP,
-                    TokenKind::LessThanEqualsToken                  => ast\flags\BINARY_IS_SMALLER_OR_EQUAL,
-                    TokenKind::LessThanLessThanToken                => ast\flags\BINARY_SHIFT_LEFT,
-                    TokenKind::LessThanToken                        => ast\flags\BINARY_IS_SMALLER,
-                    TokenKind::MinusToken                           => ast\flags\BINARY_SUB,
-                    TokenKind::OrKeyword                            => ast\flags\BINARY_BOOL_OR,
-                    TokenKind::PercentToken                         => ast\flags\BINARY_MOD,
-                    TokenKind::PlusToken                            => ast\flags\BINARY_ADD,
-                    TokenKind::QuestionQuestionToken                => ast\flags\BINARY_COALESCE,
-                    TokenKind::SlashToken                           => ast\flags\BINARY_DIV,
-                    TokenKind::XorKeyword                           => ast\flags\BINARY_BOOL_XOR,
+                    TokenKind::AmpersandAmpersandToken              => flags\BINARY_BOOL_AND,
+                    TokenKind::AmpersandToken                       => flags\BINARY_BITWISE_AND,
+                    TokenKind::AndKeyword                           => flags\BINARY_BOOL_AND,
+                    TokenKind::AsteriskAsteriskToken                => flags\BINARY_POW,
+                    TokenKind::AsteriskToken                        => flags\BINARY_MUL,
+                    TokenKind::BarBarToken                          => flags\BINARY_BOOL_OR,
+                    TokenKind::BarToken                             => flags\BINARY_BITWISE_OR,
+                    TokenKind::CaretToken                           => flags\BINARY_BITWISE_XOR,
+                    TokenKind::DotToken                             => flags\BINARY_CONCAT,
+                    TokenKind::EqualsEqualsEqualsToken              => flags\BINARY_IS_IDENTICAL,
+                    TokenKind::EqualsEqualsToken                    => flags\BINARY_IS_EQUAL,
+                    TokenKind::ExclamationEqualsEqualsToken         => flags\BINARY_IS_NOT_IDENTICAL,
+                    TokenKind::ExclamationEqualsToken               => flags\BINARY_IS_NOT_EQUAL,
+                    TokenKind::GreaterThanEqualsToken               => flags\BINARY_IS_GREATER_OR_EQUAL,
+                    TokenKind::GreaterThanGreaterThanToken          => flags\BINARY_SHIFT_RIGHT,
+                    TokenKind::GreaterThanToken                     => flags\BINARY_IS_GREATER,
+                    TokenKind::LessThanEqualsGreaterThanToken       => flags\BINARY_SPACESHIP,
+                    TokenKind::LessThanEqualsToken                  => flags\BINARY_IS_SMALLER_OR_EQUAL,
+                    TokenKind::LessThanLessThanToken                => flags\BINARY_SHIFT_LEFT,
+                    TokenKind::LessThanToken                        => flags\BINARY_IS_SMALLER,
+                    TokenKind::MinusToken                           => flags\BINARY_SUB,
+                    TokenKind::OrKeyword                            => flags\BINARY_BOOL_OR,
+                    TokenKind::PercentToken                         => flags\BINARY_MOD,
+                    TokenKind::PlusToken                            => flags\BINARY_ADD,
+                    TokenKind::QuestionQuestionToken                => flags\BINARY_COALESCE,
+                    TokenKind::SlashToken                           => flags\BINARY_DIV,
+                    TokenKind::XorKeyword                           => flags\BINARY_BOOL_XOR,
                 ];
                 static $assign_lookup = [
-                    TokenKind::AmpersandEqualsToken                 => \ast\flags\BINARY_BITWISE_AND,
-                    TokenKind::AsteriskAsteriskEqualsToken          => \ast\flags\BINARY_POW,
-                    TokenKind::AsteriskEqualsToken                  => \ast\flags\BINARY_MUL,
-                    TokenKind::BarEqualsToken                       => \ast\flags\BINARY_BITWISE_OR,
-                    TokenKind::CaretEqualsToken                     => \ast\flags\BINARY_BITWISE_XOR,
-                    TokenKind::DotEqualsToken                       => \ast\flags\BINARY_CONCAT,
-                    TokenKind::MinusEqualsToken                     => \ast\flags\BINARY_SUB,
-                    TokenKind::PercentEqualsToken                   => \ast\flags\BINARY_MOD,
-                    TokenKind::PlusEqualsToken                      => \ast\flags\BINARY_ADD,
-                    TokenKind::SlashEqualsToken                     => \ast\flags\BINARY_DIV,
-                    TokenKind::GreaterThanGreaterThanEqualsToken    => ast\flags\BINARY_SHIFT_RIGHT,
-                    TokenKind::LessThanLessThanEqualsToken          => ast\flags\BINARY_SHIFT_LEFT,
+                    TokenKind::AmpersandEqualsToken                 => flags\BINARY_BITWISE_AND,
+                    TokenKind::AsteriskAsteriskEqualsToken          => flags\BINARY_POW,
+                    TokenKind::AsteriskEqualsToken                  => flags\BINARY_MUL,
+                    TokenKind::BarEqualsToken                       => flags\BINARY_BITWISE_OR,
+                    TokenKind::CaretEqualsToken                     => flags\BINARY_BITWISE_XOR,
+                    TokenKind::DotEqualsToken                       => flags\BINARY_CONCAT,
+                    TokenKind::MinusEqualsToken                     => flags\BINARY_SUB,
+                    TokenKind::PercentEqualsToken                   => flags\BINARY_MOD,
+                    TokenKind::PlusEqualsToken                      => flags\BINARY_ADD,
+                    TokenKind::SlashEqualsToken                     => flags\BINARY_DIV,
+                    TokenKind::GreaterThanGreaterThanEqualsToken    => flags\BINARY_SHIFT_RIGHT,
+                    TokenKind::LessThanLessThanEqualsToken          => flags\BINARY_SHIFT_LEFT,
                 ];
                 $kind = $n->operator->kind;
                 if ($kind === TokenKind::InstanceOfKeyword) {
@@ -548,34 +549,44 @@ class TolerantASTConverter
             },
             'Microsoft\PhpParser\Node\Expression\UnaryOpExpression' => function (PhpParser\Node\Expression\UnaryOpExpression $n, int $start_line) : ast\Node {
                 static $lookup = [
-                    TokenKind::TildeToken                   => ast\flags\UNARY_BITWISE_NOT,
-                    TokenKind::MinusToken                   => ast\flags\UNARY_MINUS,
-                    TokenKind::PlusToken                    => ast\flags\UNARY_PLUS,
-                    TokenKind::ExclamationToken             => ast\flags\UNARY_BOOL_NOT,
+                    TokenKind::TildeToken                   => flags\UNARY_BITWISE_NOT,
+                    TokenKind::MinusToken                   => flags\UNARY_MINUS,
+                    TokenKind::PlusToken                    => flags\UNARY_PLUS,
+                    TokenKind::ExclamationToken             => flags\UNARY_BOOL_NOT,
                 ];
                 $kind = $n->operator->kind;
                 $ast_kind = $lookup[$kind] ?? null;
                 if ($ast_kind === null) {
                     throw new AssertionError("missing $kind(" . Token::getTokenKindNameFromValue($kind) . ")");
                 }
-                return static::astNodeUnaryOp($ast_kind, static::phpParserNodeToAstNode($n->operand), $start_line);
+                return new ast\Node(
+                    ast\AST_UNARY_OP,
+                    $ast_kind,
+                    ['expr' => static::phpParserNodeToAstNode($n->operand)],
+                    $start_line
+                );
             },
             'Microsoft\PhpParser\Node\Expression\CastExpression' => function (PhpParser\Node\Expression\CastExpression $n, int $start_line) : ast\Node {
                 static $lookup = [
-                    TokenKind::ArrayCastToken   => ast\flags\TYPE_ARRAY,
-                    TokenKind::BoolCastToken    => ast\flags\TYPE_BOOL,
-                    TokenKind::DoubleCastToken  => ast\flags\TYPE_DOUBLE,
-                    TokenKind::IntCastToken     => ast\flags\TYPE_LONG,
-                    TokenKind::ObjectCastToken  => ast\flags\TYPE_OBJECT,
-                    TokenKind::StringCastToken  => ast\flags\TYPE_STRING,
-                    TokenKind::UnsetCastToken   => ast\flags\TYPE_NULL,
+                    TokenKind::ArrayCastToken   => flags\TYPE_ARRAY,
+                    TokenKind::BoolCastToken    => flags\TYPE_BOOL,
+                    TokenKind::DoubleCastToken  => flags\TYPE_DOUBLE,
+                    TokenKind::IntCastToken     => flags\TYPE_LONG,
+                    TokenKind::ObjectCastToken  => flags\TYPE_OBJECT,
+                    TokenKind::StringCastToken  => flags\TYPE_STRING,
+                    TokenKind::UnsetCastToken   => flags\TYPE_NULL,
                 ];
                 $kind = $n->castType->kind;
                 $ast_kind = $lookup[$kind] ?? null;
                 if ($ast_kind === null) {
                     throw new AssertionError("missing $kind");
                 }
-                return static::astNodeCast($ast_kind, $n, $start_line);
+                return new ast\Node(
+                    ast\AST_CAST,
+                    $ast_kind,
+                    ['expr' => static::phpParserNodeToAstNode($n->operand)],
+                    static::getEndLine($n) ?: $start_line
+                );
             },
             'Microsoft\PhpParser\Node\Expression\AnonymousFunctionCreationExpression' => function (PhpParser\Node\Expression\AnonymousFunctionCreationExpression $n, int $start_line) : ast\Node {
                 $ast_return_type = static::phpParserTypeToAstNode($n->returnType, static::getEndLine($n->returnType) ?: $start_line);
@@ -635,14 +646,21 @@ class TolerantASTConverter
                 return new ast\Node(ast\AST_CLONE, 0, ['expr' => static::phpParserNodeToAstNode($n->expression)], $start_line);
             },
             'Microsoft\PhpParser\Node\Expression\ErrorControlExpression' => function (PhpParser\Node\Expression\ErrorControlExpression $n, int $start_line) : ast\Node {
-                return static::astNodeUnaryOp(ast\flags\UNARY_SILENCE, static::phpParserNodeToAstNode($n->operand), $start_line);
+                return new ast\Node(
+                    ast\AST_UNARY_OP,
+                    flags\UNARY_SILENCE,
+                    ['expr' => static::phpParserNodeToAstNode($n->operand)],
+                    $start_line
+                );
             },
             'Microsoft\PhpParser\Node\Expression\EmptyIntrinsicExpression' => function (PhpParser\Node\Expression\EmptyIntrinsicExpression $n, int $start_line) : ast\Node {
                 return new ast\Node(ast\AST_EMPTY, 0, ['expr' => static::phpParserNodeToAstNode($n->expression)], $start_line);
             },
             'Microsoft\PhpParser\Node\Expression\EvalIntrinsicExpression' => function (PhpParser\Node\Expression\EvalIntrinsicExpression $n, int $start_line) : ast\Node {
-                return static::astNodeEval(
-                    static::phpParserNodeToAstNode($n->expression),
+                return new ast\Node(
+                    ast\AST_INCLUDE_OR_EVAL,
+                    flags\EXEC_EVAL,
+                    ['expr' => static::phpParserNodeToAstNode($n->expression)],
                     $start_line
                 );
             },
@@ -651,7 +669,7 @@ class TolerantASTConverter
                 $kind = $token->kind;
                 $str = static::tokenToString($token);
                 if ($kind === TokenKind::StaticKeyword) {
-                    return new ast\Node(ast\AST_NAME, ast\flags\NAME_NOT_FQ, ['name' => $str], $start_line);
+                    return new ast\Node(ast\AST_NAME, flags\NAME_NOT_FQ, ['name' => $str], $start_line);
                 }
                 return $str;
             },
@@ -697,10 +715,12 @@ class TolerantASTConverter
                 }
             },
             'Microsoft\PhpParser\Node\Expression\ScriptInclusionExpression' => function (PhpParser\Node\Expression\ScriptInclusionExpression $n, int $start_line) : ast\Node {
-                return static::astNodeInclude(
-                    static::phpParserNodeToAstNode($n->expression),
-                    $start_line,
-                    $n->requireOrIncludeKeyword
+                $flags = static::phpParserIncludeTokenToAstIncludeFlags($n->requireOrIncludeKeyword);
+                return new ast\Node(
+                    ast\AST_INCLUDE_OR_EVAL,
+                    $flags,
+                    ['expr' => static::phpParserNodeToAstNode($n->expression)],
+                    $start_line
                 );
             },
             /**
@@ -725,7 +745,7 @@ class TolerantASTConverter
                     $right = $ast_issets[$i];
                     $e = new ast\Node(
                         ast\AST_BINARY_OP,
-                        ast\flags\BINARY_BOOL_AND,
+                        flags\BINARY_BOOL_AND,
                         [
                             'left' => $e,
                             'right' => $right,
@@ -747,7 +767,7 @@ class TolerantASTConverter
                 if ($class_type_designator instanceof Token && $class_type_designator->kind === TokenKind::ClassKeyword) {
                     // Node of type AST_CLASS
                     $class_node = static::astStmtClass(
-                        ast\flags\CLASS_ANONYMOUS,
+                        flags\CLASS_ANONYMOUS,
                         null,
                         $n->classBaseClause !== null ? static::phpParserNonValueNodeToAstNode($n->classBaseClause->baseClass) : null,
                         $n->classInterfaceClause,
@@ -863,7 +883,7 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\ReservedWord' => function (PhpParser\Node\ReservedWord $n, int $start_line) : ast\Node {
                 return new ast\Node(
                     ast\AST_NAME,
-                    ast\flags\NAME_NOT_FQ,
+                    flags\NAME_NOT_FQ,
                     ['name' => static::tokenToString($n->children)],
                     $start_line
                 );
@@ -887,11 +907,11 @@ class TolerantASTConverter
                     $imploded_parts = static::phpParserNameToString($n);
                 }
                 if ($n->globalSpecifier !== null) {
-                    $ast_kind = ast\flags\NAME_FQ;
+                    $ast_kind = flags\NAME_FQ;
                 } elseif (($n->relativeSpecifier->namespaceKeyword ?? null) !== null) {
-                    $ast_kind = ast\flags\NAME_RELATIVE;
+                    $ast_kind = flags\NAME_RELATIVE;
                 } else {
-                    $ast_kind = ast\flags\NAME_NOT_FQ;
+                    $ast_kind = flags\NAME_NOT_FQ;
                 }
                 return new ast\Node(ast\AST_NAME, $ast_kind, ['name' => $imploded_parts], $start_line);
             },
@@ -1023,7 +1043,7 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Statement\InterfaceDeclaration' => function (PhpParser\Node\Statement\InterfaceDeclaration $n, int $start_line) : ast\Node {
                 $end_line = static::getEndLine($n) ?: $start_line;
                 return static::astStmtClass(
-                    ast\flags\CLASS_INTERFACE,
+                    flags\CLASS_INTERFACE,
                     static::tokenToString($n->name),
                     static::interfaceBaseClauseToNode($n->interfaceBaseClause),
                     null,
@@ -1050,7 +1070,7 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Statement\TraitDeclaration' => function (PhpParser\Node\Statement\TraitDeclaration $n, int $start_line) : ast\Node {
                 $end_line = static::getEndLine($n) ?: $start_line;
                 return static::astStmtClass(
-                    ast\flags\CLASS_TRAIT,
+                    flags\CLASS_TRAIT,
                     static::tokenToString($n->name),
                     null,
                     null,
@@ -1089,7 +1109,7 @@ class TolerantASTConverter
                 }
                 return static::newAstDecl(
                     ast\AST_METHOD,
-                    static::phpParserVisibilityToAstVisibility($n->modifiers) | ($n->byRefToken !== null ? ast\flags\RETURNS_REF : 0),
+                    static::phpParserVisibilityToAstVisibility($n->modifiers) | ($n->byRefToken !== null ? flags\RETURNS_REF : 0),
                     [
                         'params' => static::phpParserParamsToAstParams($n->parameters, $start_line),
                         'uses' => null,
@@ -1471,6 +1491,11 @@ class TolerantASTConverter
         }
     }
 
+    /**
+     * @param ast\Node $try_node
+     * @param ?ast\Node $catches_node
+     * @param ?ast\Node $finally_node
+     */
     private static function astNodeTry(
         $try_node,
         $catches_node,
@@ -1488,6 +1513,9 @@ class TolerantASTConverter
         return new ast\Node(ast\AST_TRY, 0, $children, $start_line);
     }
 
+    /**
+     * @param ast\Node $stmts
+     */
     private static function astStmtCatch(ast\Node $types, string $var, $stmts, int $lineno) : ast\Node
     {
         return new ast\Node(
@@ -1523,7 +1551,10 @@ class TolerantASTConverter
         return new ast\Node(ast\AST_NAME_LIST, 0, $ast_types, $line);
     }
 
-    private static function astNodeWhile($cond, $stmts, int $start_line) : ast\Node
+    /**
+     * @param ast\Node|string|int|float $cond
+     */
+    private static function astNodeWhile($cond, ast\Node $stmts, int $start_line) : ast\Node
     {
         return new ast\Node(
             ast\AST_WHILE,
@@ -1536,6 +1567,10 @@ class TolerantASTConverter
         );
     }
 
+    /**
+     * @param ast\Node|string|int|float $var
+     * @param ast\Node|string|int|float $expr
+     */
     private static function astNodeAssign($var, $expr, int $line, bool $ref) : ast\Node
     {
         return new ast\Node(
@@ -1549,21 +1584,6 @@ class TolerantASTConverter
         );
     }
 
-    private static function astNodeUnaryOp(int $flags, $expr, int $line) : ast\Node
-    {
-        return new ast\Node(ast\AST_UNARY_OP, $flags, ['expr' => $expr], $line);
-    }
-
-    private static function astNodeCast(int $flags, PhpParser\Node\Expression\CastExpression $n, int $line) : ast\Node
-    {
-        return new ast\Node(ast\AST_CAST, $flags, ['expr' => static::phpParserNodeToAstNode($n->operand)], static::getEndLine($n) ?: $line);
-    }
-
-    private static function astNodeEval($expr, int $line) : ast\Node
-    {
-        return new ast\Node(ast\AST_INCLUDE_OR_EVAL, ast\flags\EXEC_EVAL, ['expr' => $expr], $line);
-    }
-
     /**
      * @throws Error if the kind could not be found
      */
@@ -1571,21 +1591,16 @@ class TolerantASTConverter
     {
         switch ($type->kind) {
             case TokenKind::IncludeKeyword:
-                return ast\flags\EXEC_INCLUDE;
+                return flags\EXEC_INCLUDE;
             case TokenKind::IncludeOnceKeyword:
-                return ast\flags\EXEC_INCLUDE_ONCE;
+                return flags\EXEC_INCLUDE_ONCE;
             case TokenKind::RequireKeyword:
-                return ast\flags\EXEC_REQUIRE;
+                return flags\EXEC_REQUIRE;
             case TokenKind::RequireOnceKeyword:
-                return ast\flags\EXEC_REQUIRE_ONCE;
+                return flags\EXEC_REQUIRE_ONCE;
             default:
                 throw new \Error("Unrecognized PhpParser include/require type");
         }
-    }
-    private static function astNodeInclude($expr, int $line, Token $type) : ast\Node
-    {
-        $flags = static::phpParserIncludeTokenToAstIncludeFlags($type);
-        return new ast\Node(ast\AST_INCLUDE_OR_EVAL, $flags, ['expr' => $expr], $line);
     }
 
     /**
@@ -1606,47 +1621,47 @@ class TolerantASTConverter
         if (\is_string($type)) {
             switch (\strtolower($type)) {
                 case 'null':
-                    $flags = ast\flags\TYPE_NULL;
+                    $flags = flags\TYPE_NULL;
                     break;
                 case 'bool':
-                    $flags = ast\flags\TYPE_BOOL;
+                    $flags = flags\TYPE_BOOL;
                     break;
                 case 'int':
-                    $flags = ast\flags\TYPE_LONG;
+                    $flags = flags\TYPE_LONG;
                     break;
                 case 'float':
-                    $flags = ast\flags\TYPE_DOUBLE;
+                    $flags = flags\TYPE_DOUBLE;
                     break;
                 case 'string':
-                    $flags = ast\flags\TYPE_STRING;
+                    $flags = flags\TYPE_STRING;
                     break;
                 case 'array':
-                    $flags = ast\flags\TYPE_ARRAY;
+                    $flags = flags\TYPE_ARRAY;
                     break;
                 case 'object':
-                    $flags = ast\flags\TYPE_OBJECT;
+                    $flags = flags\TYPE_OBJECT;
                     break;
                 case 'callable':
-                    $flags = ast\flags\TYPE_CALLABLE;
+                    $flags = flags\TYPE_CALLABLE;
                     break;
                 case 'void':
-                    $flags = ast\flags\TYPE_VOID;
+                    $flags = flags\TYPE_VOID;
                     break;
                 case 'iterable':
-                    $flags = ast\flags\TYPE_ITERABLE;
+                    $flags = flags\TYPE_ITERABLE;
                     break;
                 default:
                     // TODO: Refactor this into a function accepting a QualifiedName
                     if ($original_type instanceof PhpParser\Node\QualifiedName) {
                         if ($original_type->globalSpecifier !== null) {
-                            $ast_kind = ast\flags\NAME_FQ;
+                            $ast_kind = flags\NAME_FQ;
                         } elseif (($original_type->relativeSpecifier->namespaceKeyword ?? null) !== null) {
-                            $ast_kind = ast\flags\NAME_RELATIVE;
+                            $ast_kind = flags\NAME_RELATIVE;
                         } else {
-                            $ast_kind = ast\flags\NAME_NOT_FQ;
+                            $ast_kind = flags\NAME_NOT_FQ;
                         }
                     } else {
-                        $ast_kind = ast\flags\NAME_NOT_FQ;
+                        $ast_kind = flags\NAME_NOT_FQ;
                     }
                     return new ast\Node(
                         ast\AST_NAME,
@@ -1664,6 +1679,7 @@ class TolerantASTConverter
      * @param bool $by_ref
      * @param ?ast\Node $type
      * @param string $name
+     * @param ?ast\Node|?int|?string|?float $default
      */
     private static function astNodeParam(bool $is_nullable, bool $by_ref, bool $variadic, $type, $name, $default, int $line) : ast\Node
     {
@@ -1677,7 +1693,7 @@ class TolerantASTConverter
         }
         return new ast\Node(
             ast\AST_PARAM,
-            ($by_ref ? ast\flags\PARAM_REF : 0) | ($variadic ? ast\flags\PARAM_VARIADIC : 0),
+            ($by_ref ? flags\PARAM_REF : 0) | ($variadic ? flags\PARAM_VARIADIC : 0),
             [
                 'type' => $type,
                 'name' => $name,
@@ -1705,6 +1721,9 @@ class TolerantASTConverter
         );
     }
 
+    /**
+     * @param PhpParser\Node|PhpParser\Token $parser_node
+     */
     protected static function astStub($parser_node) : ast\Node
     {
         // Debugging code.
@@ -1828,6 +1847,8 @@ class TolerantASTConverter
     }
 
     /**
+     * @param ?ast\Node $uses
+     * @param ?ast\Node $return_type
      * @param ?string $doc_comment
      */
     private static function astDeclClosure(
@@ -1835,7 +1856,7 @@ class TolerantASTConverter
         bool $static,
         ast\Node $params,
         $uses,
-        $stmts,
+        ast\Node $stmts,
         $return_type,
         int $start_line,
         int $end_line,
@@ -1843,7 +1864,7 @@ class TolerantASTConverter
     ) : ast\Node {
         return static::newAstDecl(
             ast\AST_CLOSURE,
-            ($by_ref ? ast\flags\RETURNS_REF : 0) | ($static ? ast\flags\MODIFIER_STATIC : 0),
+            ($by_ref ? flags\RETURNS_REF : 0) | ($static ? flags\MODIFIER_STATIC : 0),
             [
                 'params' => $params,
                 'uses' => $uses,
@@ -1875,7 +1896,7 @@ class TolerantASTConverter
     ) : ast\Node {
         return static::newAstDecl(
             ast\AST_FUNC_DECL,
-            $by_ref ? ast\flags\RETURNS_REF : 0,
+            $by_ref ? flags\RETURNS_REF : 0,
             [
                 'params' => $params,
                 'uses' => null,
@@ -1901,9 +1922,9 @@ class TolerantASTConverter
         }
         switch ($flags->kind) {
             case TokenKind::AbstractKeyword:
-                return ast\flags\CLASS_ABSTRACT;
+                return flags\CLASS_ABSTRACT;
             case TokenKind::FinalKeyword:
-                return ast\flags\CLASS_FINAL;
+                return flags\CLASS_FINAL;
             default:
                 throw new InvalidArgumentException("Unexpected kind '" . Token::getTokenKindNameFromValue($flags->kind) . "'");
         }
@@ -1955,10 +1976,10 @@ class TolerantASTConverter
         // the empty string or '0' is a missing string we pretend is an anonymous class
         // so that Phan won't throw an UnanalyzableException during the analysis phase
         if ($name === null || !$name) {
-            $flags |= ast\flags\CLASS_ANONYMOUS;
+            $flags |= flags\CLASS_ANONYMOUS;
         }
 
-        if (($flags & ast\flags\CLASS_INTERFACE) > 0) {
+        if (($flags & flags\CLASS_INTERFACE) > 0) {
             $children = [
                 'extends'    => null,
                 'implements' => $extends,
@@ -2024,11 +2045,11 @@ class TolerantASTConverter
     {
         switch ($kind ?? 0) {
             case TokenKind::FunctionKeyword:
-                return ast\flags\USE_FUNCTION;
+                return flags\USE_FUNCTION;
             case TokenKind::ConstKeyword:
-                return ast\flags\USE_CONST;
+                return flags\USE_CONST;
             case 0:
-                return ast\flags\USE_NORMAL;
+                return flags\USE_NORMAL;
             default:
                 throw new \InvalidArgumentException("Unexpected kind '" . Token::getTokenKindNameFromValue($kind ?? 0) . "'");
         }
@@ -2065,6 +2086,7 @@ class TolerantASTConverter
     }
 
     /**
+     * @param ?int $type
      * @param ?string $alias
      * @return ast\Node
      */
@@ -2087,7 +2109,7 @@ class TolerantASTConverter
     {
         $flags = static::phpParserNamespaceUseKindToASTUseFlags($type);
         $uses = new ast\Node(ast\AST_USE, 0, $uses, $line);
-        if ($flags === ast\flags\USE_NORMAL) {
+        if ($flags === flags\USE_NORMAL) {
             foreach ($uses->children as $use) {
                 if ($use->flags !== 0) {
                     $flags = 0;
@@ -2096,7 +2118,7 @@ class TolerantASTConverter
             }
         } else {
             foreach ($uses->children as $use) {
-                if ($use->flags === ast\flags\USE_NORMAL) {
+                if ($use->flags === flags\USE_NORMAL) {
                     $use->flags = 0;
                 }
             }
@@ -2113,6 +2135,11 @@ class TolerantASTConverter
         );
     }
 
+    /**
+     * @param ast\Node|string|int|float|null $cond (null for else statements)
+     * @param ast\Node $stmts
+     * @param int $line
+     */
     private static function astIfElem($cond, $stmts, int $line) : ast\Node
     {
         return new ast\Node(ast\AST_IF_ELEM, 0, ['cond' => $cond, 'stmts' => $stmts], $line);
@@ -2312,29 +2339,29 @@ class TolerantASTConverter
         foreach ($visibility as $token) {
             switch ($token->kind) {
                 case TokenKind::PublicKeyword:
-                    $ast_visibility |= ast\flags\MODIFIER_PUBLIC;
+                    $ast_visibility |= flags\MODIFIER_PUBLIC;
                     break;
                 case TokenKind::ProtectedKeyword:
-                    $ast_visibility |= ast\flags\MODIFIER_PROTECTED;
+                    $ast_visibility |= flags\MODIFIER_PROTECTED;
                     break;
                 case TokenKind::PrivateKeyword:
-                    $ast_visibility |= ast\flags\MODIFIER_PRIVATE;
+                    $ast_visibility |= flags\MODIFIER_PRIVATE;
                     break;
                 case TokenKind::StaticKeyword:
-                    $ast_visibility |= ast\flags\MODIFIER_STATIC;
+                    $ast_visibility |= flags\MODIFIER_STATIC;
                     break;
                 case TokenKind::AbstractKeyword:
-                    $ast_visibility |= ast\flags\MODIFIER_ABSTRACT;
+                    $ast_visibility |= flags\MODIFIER_ABSTRACT;
                     break;
                 case TokenKind::FinalKeyword:
-                    $ast_visibility |= ast\flags\MODIFIER_FINAL;
+                    $ast_visibility |= flags\MODIFIER_FINAL;
                     break;
                 default:
                     throw new \RuntimeException("Unexpected visibility modifier '" . Token::getTokenKindNameFromValue($token->kind) . "'");
             }
         }
-        if ($automatically_add_public && !($ast_visibility & (ast\flags\MODIFIER_PUBLIC | ast\flags\MODIFIER_PROTECTED | ast\flags\MODIFIER_PRIVATE))) {
-            $ast_visibility |= ast\flags\MODIFIER_PUBLIC;
+        if ($automatically_add_public && !($ast_visibility & (flags\MODIFIER_PUBLIC | flags\MODIFIER_PROTECTED | flags\MODIFIER_PRIVATE))) {
+            $ast_visibility |= flags\MODIFIER_PUBLIC;
         }
         return $ast_visibility;
     }
@@ -2348,7 +2375,7 @@ class TolerantASTConverter
             if ($prop instanceof Token) {
                 continue;
             }
-            // @phan-suppress-next-line PhanTypeMismatchArgument casting to a more specific node
+            // @phan-suppress-next-line PhanTypeMismatchArgument, PhanPartialTypeMismatchArgument casting to a more specific node
             $prop_elems[] = static::phpParserPropelemToAstPropelem($prop, $i === 0 ? $doc_comment : null);
         }
         $flags = static::phpParserVisibilityToAstVisibility($n->modifiers, false);
@@ -2364,7 +2391,7 @@ class TolerantASTConverter
             if ($const_elem instanceof Token) {
                 continue;
             }
-            // @phan-suppress-next-line PhanTypeMismatchArgument casting to something more specific
+            // @phan-suppress-next-line PhanTypeMismatchArgument, PhanPartialTypeMismatchArgument casting to a more specific node
             $const_elems[] = static::phpParserConstelemToAstConstelem($const_elem, $i === 0 ? $doc_comment : null);
         }
         $flags = static::phpParserVisibilityToAstVisibility($n->modifiers);
@@ -2427,13 +2454,17 @@ class TolerantASTConverter
         return new ast\Node(ast\AST_DECLARE, 0, $children, $start_line);
     }
 
+    /**
+     * @param string|ast\Node $expr
+     * @param ast\Node $args
+     */
     private static function astNodeCall($expr, $args, int $start_line) : ast\Node
     {
         if (\is_string($expr)) {
             if (substr($expr, 0, 1) === '\\') {
                 $expr = substr($expr, 1);
             }
-            $expr = new ast\Node(ast\AST_NAME, ast\flags\NAME_FQ, ['name' => $expr], $start_line);
+            $expr = new ast\Node(ast\AST_NAME, flags\NAME_FQ, ['name' => $expr], $start_line);
         }
         return new ast\Node(ast\AST_CALL, 0, ['expr' => $expr, 'args' => $args], $start_line);
     }
@@ -2458,13 +2489,14 @@ class TolerantASTConverter
             if (\substr($class, 0, 1) === '\\') {
                 $class = \substr($class, 1);
             }
-            $class = new ast\Node(ast\AST_NAME, ast\flags\NAME_FQ, ['name' => $class], $start_line);
+            $class = new ast\Node(ast\AST_NAME, flags\NAME_FQ, ['name' => $class], $start_line);
         }
         return new ast\Node(ast\AST_STATIC_CALL, 0, ['class' => $class, 'method' => $method, 'args' => $args], $start_line);
     }
 
     /**
      * TODO: Get rid of this function?
+     * @param string|PhpParser\Node|null|array $comments
      * @return ?string the doc comment, or null
      */
     private static function extractPhpdocComment($comments)
@@ -2513,7 +2545,7 @@ class TolerantASTConverter
         if (self::$php_version_id_parsing < 70100 && \count($ast_items) === 0) {
             $ast_items[] = null;
         }
-        return new ast\Node(ast\AST_ARRAY, ast\flags\ARRAY_SYNTAX_LIST, $ast_items, $start_line);
+        return new ast\Node(ast\AST_ARRAY, flags\ARRAY_SYNTAX_LIST, $ast_items, $start_line);
     }
 
     private static function phpParserArrayToAstArray(PhpParser\Node\Expression\ArrayCreationExpression $n, int $start_line) : ast\Node
@@ -2534,7 +2566,7 @@ class TolerantASTConverter
             if (!($item instanceof PhpParser\Node\ArrayElement)) {
                 throw new AssertionError("Expected ArrayElement");
             }
-            $flags = $item->byRef ? ast\flags\PARAM_REF : 0;
+            $flags = $item->byRef ? flags\PARAM_REF : 0;
             $ast_items[] = new ast\Node(ast\AST_ARRAY_ELEM, $flags, [
                 'value' => static::phpParserNodeToAstNode($item->elementValue),
                 'key' => $item->elementKey !== null ? static::phpParserNodeToAstNode($item->elementKey) : null,
@@ -2545,9 +2577,9 @@ class TolerantASTConverter
         } else {
             $kind = $n->openParenOrBracket->kind;
             if ($kind === TokenKind::OpenBracketToken) {
-                $flags = ast\flags\ARRAY_SYNTAX_SHORT;
+                $flags = flags\ARRAY_SYNTAX_SHORT;
             } else {
-                $flags = ast\flags\ARRAY_SYNTAX_LONG;
+                $flags = flags\ARRAY_SYNTAX_LONG;
             }
         }
         // Workaround for ast line choice
@@ -2622,14 +2654,14 @@ class TolerantASTConverter
 
     /** @internal */
     const _MAGIC_CONST_LOOKUP = [
-        '__LINE__' => \ast\flags\MAGIC_LINE,
-        '__FILE__' => \ast\flags\MAGIC_FILE,
-        '__DIR__' => \ast\flags\MAGIC_DIR,
-        '__NAMESPACE__' => \ast\flags\MAGIC_NAMESPACE,
-        '__FUNCTION__' => \ast\flags\MAGIC_FUNCTION,
-        '__METHOD__' => \ast\flags\MAGIC_METHOD,
-        '__CLASS__' => \ast\flags\MAGIC_CLASS,
-        '__TRAIT__' => \ast\flags\MAGIC_TRAIT,
+        '__LINE__' => flags\MAGIC_LINE,
+        '__FILE__' => flags\MAGIC_FILE,
+        '__DIR__' => flags\MAGIC_DIR,
+        '__NAMESPACE__' => flags\MAGIC_NAMESPACE,
+        '__FUNCTION__' => flags\MAGIC_FUNCTION,
+        '__METHOD__' => flags\MAGIC_METHOD,
+        '__CLASS__' => flags\MAGIC_CLASS,
+        '__TRAIT__' => flags\MAGIC_TRAIT,
     ];
 
     // FIXME don't use in places expecting non-strings.
@@ -2710,7 +2742,7 @@ class TolerantASTConverter
     private static function newPlaceholderExpression($n) : ast\Node
     {
         $start_line = self::getStartLine($n);
-        $name_node = new ast\Node(ast\AST_NAME, ast\flags\NAME_FQ, ['name' => '__INCOMPLETE_EXPR__'], $start_line);
+        $name_node = new ast\Node(ast\AST_NAME, flags\NAME_FQ, ['name' => '__INCOMPLETE_EXPR__'], $start_line);
         return new ast\Node(ast\AST_CONST, 0, ['name' => $name_node], $start_line);
     }
 }

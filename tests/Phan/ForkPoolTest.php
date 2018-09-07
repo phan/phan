@@ -27,7 +27,11 @@ final class ForkPoolTest extends BaseTest
             /** @return void */
             function () {
             },
-            /** @return void */
+            /**
+             * @param int $unused_i
+             * @param array $data
+             * @return void
+             */
             function ($unused_i, $data) use (&$worker_data) {
                 $worker_data[] = $data;
             },

@@ -1234,6 +1234,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * @param ?Node|?string|?int|?float $node
      * @return \Generator|array<int,UnionType>
      * @phan-return \Generator<int,UnionType>
      */

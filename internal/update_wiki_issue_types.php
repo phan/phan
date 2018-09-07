@@ -176,6 +176,7 @@ EOT;
 
         if ($issue instanceof Issue) {
             fwrite(STDERR, "Found $issue_name\n");
+            /** @param array<int,string> $unused_match */
             $text = preg_replace_callback('@\n```\n[^\n]*\n```@', function ($unused_match) use ($issue) : string {
                 return "\n```\n{$issue->getTemplateRaw()}\n```";
             }, $text);

@@ -295,6 +295,7 @@ EOT;
         return $parts;
     }
 
+    /** @param int|string|float $scalar */
     private static function encodeScalar($scalar) : string
     {
         if (is_string($scalar)) {
@@ -778,6 +779,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         return $result;
     }
 
+    /** @param string|int|float $type */
     private static function toTypeString($type) : string
     {
         // TODO: Validate that Phan can parse these?
@@ -828,6 +830,9 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     private function normalizeEntityFile(string $contents) : string
     {
         $entities = $this->getKnownEntities();
+        /**
+         * @param array<int,string> $matches
+         */
         return preg_replace_callback('/&([-a-zA-Z_.0-9]+);/', function ($matches) use ($entities) : string {
             $entity_name = $matches[1];
             if (isset($entities[strtolower($entity_name)])) {

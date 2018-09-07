@@ -92,6 +92,9 @@ class ContextNode
             return [];
         }
 
+        /**
+         * @param Node|string|int|float|null $name_node
+         */
         return \array_map(function ($name_node) : string {
             return (new ContextNode(
                 $this->code_base,
@@ -122,6 +125,9 @@ class ContextNode
             return [];
         }
 
+        /**
+         * @param Node|int|string|float|null $name_node
+         */
         return \array_map(function ($name_node) : FQSEN {
             return (new ContextNode(
                 $this->code_base,

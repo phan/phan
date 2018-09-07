@@ -47,6 +47,8 @@ class Debug
      * Print the name of a node to the terminal
      *
      * @suppress PhanUnreferencedPublicMethod
+     * @param Node|string|null $node
+     * @param int $indent
      * @return void
      */
     public static function printNodeName($node, $indent = 0)
@@ -245,6 +247,8 @@ class Debug
     /**
      * Dumps abstract syntax tree
      * Source: https://github.com/nikic/php-ast/blob/master/util.php
+     * @param Node|string|int|float|null $ast
+     * @param int $options (self::AST_DUMP_*)
      */
     public static function astDump($ast, int $options = 0) : string
     {

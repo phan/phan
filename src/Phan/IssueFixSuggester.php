@@ -36,6 +36,9 @@ class IssueFixSuggester
      */
     public static function createFQSENFilterFromClassFilter(CodeBase $code_base, Closure $class_closure)
     {
+        /**
+         * @param FullyQualifiedClassName $alternate_fqsen
+         */
         return function ($alternate_fqsen) use ($code_base, $class_closure) : bool {
             if (!($alternate_fqsen instanceof FullyQualifiedClassName)) {
                 return false;

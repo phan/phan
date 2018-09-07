@@ -57,12 +57,12 @@ class PhanPHPLinter
         }
     }
 
-	/**
-	 * The main function of the phan_client binary.
-	 * See the doc comment of this file.
-	 *
-	 * @return void
-	 */
+    /**
+     * The main function of the phan_client binary.
+     * See the doc comment of this file.
+     *
+     * @return void
+     */
     public static function run()
     {
         error_reporting(E_ALL);
@@ -451,11 +451,11 @@ EOB;
                 case 'l':
                 case 'syntax-check':
                     $path = $value;
-					if (!is_string($path)) {
+                    if (!is_string($path)) {
                         $this->print_usage_on_error = $print_usage_on_error;
                         $this->usage(sprintf("Error: asked to analyze path %s which is not a string", json_encode($path)), 1);
                         exit(1);
-					}
+                    }
                     if (!file_exists($path)) {
                         $this->print_usage_on_error = $print_usage_on_error;
                         $this->usage(sprintf("Error: asked to analyze file %s which does not exist", json_encode($path)), 1);
@@ -500,6 +500,7 @@ EOB;
 
     /**
      * prints error message if php doesn't support connecting to a daemon with a given protocol.
+     * @param string $protocol
      * @return void
      */
     private function checkCanConnectToDaemon($protocol)

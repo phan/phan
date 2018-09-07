@@ -89,7 +89,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         $files = array_filter(
             array_filter(
                 scandir($source_dir),
-                function ($filename) : bool {
+                function (string $filename) : bool {
                     // Ignore directories and hidden files.
                     return !in_array($filename, ['.', '..'], true) && substr($filename, 0, 1) !== '.' && preg_match('@\.php$@', $filename);
                 }
@@ -108,7 +108,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         return array_combine(
             $files,
             array_map(
-                function ($filename) use ($source_dir, $expected_dir, $suffix) : array {
+                function (string $filename) use ($source_dir, $expected_dir, $suffix) : array {
                     return [
                         [self::getFileForPHPVersion($source_dir . DIRECTORY_SEPARATOR . $filename, $suffix)],
                         self::getFileForPHPVersion($expected_dir . DIRECTORY_SEPARATOR . $filename . self::EXPECTED_SUFFIX, $suffix),

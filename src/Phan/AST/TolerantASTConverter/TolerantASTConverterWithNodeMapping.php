@@ -2,6 +2,7 @@
 
 namespace Phan\AST\TolerantASTConverter;
 
+use AssertionError;
 use ast;
 use Closure;
 use InvalidArgumentException;
@@ -144,6 +145,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
     ];
 
     /**
+     * @param PhpParser\Node $parser_node
      * @return bool|PhpParser\Node|PhpParser\Token (Returns $parser_node if that node was what the cursor is pointing directly to)
      */
     private static function findNodeAtOffsetRecursive($parser_node, int $offset)
@@ -194,6 +196,9 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
                     // fwrite(STDERR, "Found parent node for $key: " . get_class($parser_node) . "\n");
                     // fwrite(STDERR, "Found parent node for $key: " . json_encode($parser_node) . "\n");
                     if ($state instanceof PhpParser\Node) {
+                        if (!is_string($key)) {
+                            throw new AssertionError("Expected key to be a string");
+                        }
                         return self::adjustClosestNodeOrToken($parser_node, $key);
                     }
                     return true;
@@ -208,9 +213,10 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      * (so that functionality such as "go to definition" for classes, properties, etc. will work as expected)
      *
      * @param PhpParser\Node $node the parent node of the old value of
+     * @param string $key
      * @return PhpParser\Node|true
      */
-    private static function adjustClosestNodeOrToken(PhpParser\Node $node, $key)
+    private static function adjustClosestNodeOrToken(PhpParser\Node $node, string $key)
     {
         switch ($key) {
             case 'memberName':
