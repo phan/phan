@@ -35,8 +35,6 @@ class UnknownElementTypePlugin extends PluginV2 implements
         if ($method->getFQSEN() !== $method->getRealDefiningFQSEN()) {
             return;
         }
-        // As an example, we test to see if the name of the
-        // method is `function`, and emit an issue if it is.
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
         if ($method->getUnionType()->isEmpty()) {
             $this->emitIssue(
@@ -75,8 +73,6 @@ class UnknownElementTypePlugin extends PluginV2 implements
         CodeBase $code_base,
         Func $function
     ) {
-        // As an example, we test to see if the name of the
-        // method is `function`, and emit an issue if it is.
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
         if ($function->getUnionType()->isEmpty()) {
             if ($function->getFQSEN()->isClosure()) {
@@ -132,8 +128,6 @@ class UnknownElementTypePlugin extends PluginV2 implements
         if ($property->getFQSEN() !== $property->getRealDefiningFQSEN()) {
             return;
         }
-        // As an example, we test to see if the name of the
-        // function is `foo`, and emit an issue if it is.
         if ($property->getUnionType()->isEmpty()) {
             $this->emitIssue(
                 $code_base,
