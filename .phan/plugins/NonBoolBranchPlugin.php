@@ -9,6 +9,11 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use ast\Node;
 
+/**
+ * This plugin warns if an expression which has types other than `bool` is used in an if/else if.
+ *
+ * Note that the 'simplify_ast' setting's default of true will interfere with this plugin.
+ */
 class NonBoolBranchPlugin extends PluginV2 implements PostAnalyzeNodeCapability
 {
     /**
@@ -22,6 +27,9 @@ class NonBoolBranchPlugin extends PluginV2 implements PostAnalyzeNodeCapability
     }
 }
 
+/**
+ * This visitor checks if statements for conditions ('cond') that are non-booleans.
+ */
 class NonBoolBranchVisitor extends PluginAwarePostAnalysisVisitor
 {
     // A plugin's visitors should not override visit() unless they need to.
