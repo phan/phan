@@ -44,8 +44,8 @@ class NonBoolBranchVisitor extends PluginAwarePostAnalysisVisitor
         foreach ($node->children as $if_node) {
             $condition = $if_node->children['cond'];
 
-            // dig nodes to avoid NOT('!') operator's converting its value to boolean type
-            // Also, use right hand side of $x = (expr)
+            // dig nodes to avoid the NOT('!') operation converting its value to a boolean type.
+            // Also, use right hand side of assignments such as `$x = (expr)`
             while (($condition instanceof Node) && (
                 ($condition->flags === ast\flags\UNARY_BOOL_NOT && $condition->kind === ast\AST_UNARY_OP)
                 || (\in_array($condition->kind, [\ast\AST_ASSIGN, \ast\AST_ASSIGN_REF], true)))

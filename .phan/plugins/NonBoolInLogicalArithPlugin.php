@@ -26,7 +26,7 @@ class NonBoolInLogicalArithPlugin extends PluginV2 implements PostAnalyzeNodeCap
 }
 
 /**
- * This visitor checks boolean logical arithmetic operators for non-boolean expressions on either side.
+ * This visitor checks boolean logical arithmetic operations for non-boolean expressions on either side.
  */
 class NonBoolInLogicalArithVisitor extends PluginAwarePostAnalysisVisitor
 {
