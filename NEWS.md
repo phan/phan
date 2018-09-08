@@ -1,6 +1,6 @@
 Phan NEWS
 
-?? ??? 2018, Phan 1.0.3 (dev)
+07 Sep 2018, Phan 1.0.3
 -----------------------
 
 Bug fixes
@@ -17,7 +17,6 @@ Plugins:
 
   New setting: `$config['plugin_config']['sleep_transient_warning_blacklist_regex']`
   can be used to prevent Phan from warning about certain properties missing `@phan-transient`
-
 
 06 Sep 2018, Phan 1.0.2
 -----------------------
