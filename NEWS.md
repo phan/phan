@@ -47,7 +47,7 @@ Bug fixes
 + Properly infer that closures have a class name of `Closure` for some issue types.
   (e.g. `call_user_func([function() {}, 'invalidMethod'])`)
 + Fix a bug analyzing nested assignment in conditionals (#1919)
-+ Don't include impossibly types when analyzing assertions such as `is_string($var)` (#1932)
++ Don't include impossible types when analyzing assertions such as `is_string($var)` (#1932)
 
 26 Aug 2018, Phan 1.0.1
 -----------------------
