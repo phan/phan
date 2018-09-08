@@ -4,6 +4,9 @@ namespace Phan\Language\Scope;
 use Phan\Language\Element\Variable;
 use Phan\Language\Scope;
 
+/**
+ * Represents the global scope (and stores global variables)
+ */
 class GlobalScope extends Scope
 {
 

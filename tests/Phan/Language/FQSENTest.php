@@ -12,6 +12,9 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Tests\BaseTest;
 
+/**
+ * Unit tests of various FQSEN subclasses.
+ */
 final class FQSENTest extends BaseTest
 {
 

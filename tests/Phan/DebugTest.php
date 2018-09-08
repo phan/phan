@@ -4,6 +4,9 @@ namespace Phan\Tests;
 
 use Phan\Debug;
 
+/**
+ * Unit tests of static helper methods used for debugging in Debug
+ */
 final class DebugTest extends BaseTest
 {
     public function testNodeToString()

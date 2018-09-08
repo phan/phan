@@ -8,6 +8,9 @@ use Phan\Output\Printer\JSONPrinter;
 use Phan\Tests\BaseTest;
 use Symfony\Component\Console\Output\BufferedOutput;
 
+/**
+ * Unit tests that JSONPrinter converts `IssueInstance`s to the expected JSON output.
+ */
 final class JSONPrinterTest extends BaseTest
 {
 

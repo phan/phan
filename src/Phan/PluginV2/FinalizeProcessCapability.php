@@ -3,6 +3,9 @@ namespace Phan\PluginV2;
 
 use Phan\CodeBase;
 
+/**
+ * Plugins can implement this to be called after other forms of analysis are finished running
+ */
 interface FinalizeProcessCapability
 {
     /**

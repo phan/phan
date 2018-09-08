@@ -16,6 +16,8 @@ use PHPUnit\Framework\BaseTestListener;
 use PHPUnit\Framework\Test;
 
 /**
+ * Utilities for creating and cleaning up clones of CodeBase instances when running tests
+ *
  * @suppress PhanUnreferencedClass
  * This class is referenced in phpunit.xml
  */

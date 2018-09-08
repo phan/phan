@@ -3,6 +3,11 @@ namespace Phan;
 
 use ast\Node;
 
+/**
+ * A utility that can be used to scan a list of files and apply a closure to every node.
+ *
+ * This is not invoked by ./phan
+ */
 class Prep
 {
 

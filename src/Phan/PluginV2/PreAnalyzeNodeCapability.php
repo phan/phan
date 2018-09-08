@@ -2,6 +2,8 @@
 namespace Phan\PluginV2;
 
 /**
+ * Plugins can implement this to specify a visitor to pre-analyze a node in the analysis phase.
+ *
  * @see PreAnalyzeNodeCapability->getPreAnalyzeNodeVisitorClassName
  *
  * Note: If $this->parent_node_list is declared as an instance property, then that will automatically get set.

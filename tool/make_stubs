@@ -21,6 +21,12 @@ if (!class_exists('\ast\Node')) {
     require_once __DIR__ . '/../src/Phan/AST/TolerantASTConverter/ast_shim.php';
 }
 
+/**
+ * Generates PHP stubs for extensions that can be used in the autoload_internal_extension_signatures `.phan/config.php` setting.
+ * These are regular PHP files stubbing PHP modules, containing empty method implementations, etc.
+ *
+ * Configured stubs can be used in IDEs, analysis, etc. where extensions aren't installed or enabled (e.g. xdebug)
+ */
 class StubsGenerator {
 
     /**

@@ -4,9 +4,16 @@ namespace Phan\PluginV2;
 use Phan\CodeBase;
 use Phan\Language\Element\Property;
 
+/**
+ * Plugins can implement this to analyze (and modify) a property definition,
+ * after parsing and before analyzing.
+ */
 interface AnalyzePropertyCapability
 {
     /**
+     * Analyze (and modify) a property definition,
+     * after parsing and before analyzing.
+     *
      * @param CodeBase $code_base
      * The code base in which the property exists
      *

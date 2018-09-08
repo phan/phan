@@ -38,6 +38,9 @@ $internal_interface_name_list = get_declared_interfaces();
 $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
+/**
+ * Unit tests of the many methods of UnionType
+ */
 final class UnionTypeTest extends BaseTest
 {
     /** @var CodeBase|null */

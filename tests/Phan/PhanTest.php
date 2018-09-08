@@ -5,6 +5,11 @@ namespace Phan\Tests;
 use Phan\Config;
 use Phan\Plugin\ConfigPluginSet;
 
+/**
+ * The default type of test for Phan
+ *
+ * Verifies that the analysis of a single file with default settings has the expected output.
+ */
 class PhanTest extends AbstractPhanFileTest
 {
     public static function setUpBeforeClass()
@@ -25,7 +30,6 @@ class PhanTest extends AbstractPhanFileTest
      */
     public function getTestFiles()
     {
-
         return $this->scanSourceFilesDir(TEST_FILE_DIR, EXPECTED_DIR);
     }
 }

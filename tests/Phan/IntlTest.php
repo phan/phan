@@ -2,6 +2,8 @@
 namespace Phan\Tests;
 
 /**
+ * Unit test of analysis involving classes/functions/methods from the PHP module(extension) `intl`
+ *
  * @requires extension intl
  */
 final class IntlTest extends AbstractPhanFileTest

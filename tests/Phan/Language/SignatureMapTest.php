@@ -5,6 +5,12 @@ namespace Phan\Tests\Language;
 use Phan\Tests\BaseTest;
 use Phan\Language\UnionType;
 
+/**
+ * This is a sanity check that Phan's function signature map has the correct structure
+ * and can be parsed into a function signature.
+ *
+ * TODO: Add a test of the property signature map
+ */
 final class SignatureMapTest extends BaseTest
 {
     const FUNCTION_KEY_REGEX = '/^[a-z_][a-z0-9_]*(\\\\[a-z_][a-z0-9_]*)*(::[a-z_][a-z0-9_]*)?(\'[1-9][0-9]*)?$/i';

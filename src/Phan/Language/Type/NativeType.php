@@ -6,6 +6,11 @@ use Phan\Language\UnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 
+/**
+ * Phan's base class for native types such as IntType, ObjectType, etc.
+ *
+ * (i.e. not class instances, Closures, etc)
+ */
 abstract class NativeType extends Type
 {
     const NAME = '';

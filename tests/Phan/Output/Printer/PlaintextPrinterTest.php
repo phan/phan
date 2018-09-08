@@ -9,6 +9,9 @@ use Phan\Output\Printer\PlainTextPrinter;
 use Phan\Tests\BaseTest;
 use Symfony\Component\Console\Output\BufferedOutput;
 
+/**
+ * Unit tests that PlainTextPrinter converts `IssueInstance`s to the expected 'text' output format.
+ */
 final class PlainTextPrinterTest extends BaseTest
 {
 
@@ -16,6 +19,28 @@ final class PlainTextPrinterTest extends BaseTest
     {
         parent::tearDown();
         Config::setValue('color_issue_messages', false);
+    }
+
+    /**
+     * Sanity check of output without color codes
+     */
+    public function testPrintUncolorizedOutput()
+    {
+        $output = new BufferedOutput();
+
+        $printer = new PlainTextPrinter();
+        $printer->configureOutput($output);
+        $printer->print(new IssueInstance(Issue::fromType(Issue::UndeclaredVariableDim), 'dim.php', 10, ['varName']));
+        $printer->print(new IssueInstance(Issue::fromType(Issue::SyntaxError), 'test.php', 1, ['fake error']));
+        $printer->print(new IssueInstance(Issue::fromType(Issue::UndeclaredMethod), 'undefinedmethod.php', 1, ['\\Foo::bar']));
+        $expected_output = '';
+        // phpcs:disable
+        $expected_output .= 'dim.php:10 PhanUndeclaredVariableDim Variable $varName was undeclared, but array fields are being added to it.' . PHP_EOL;
+        $expected_output .= 'test.php:1 PhanSyntaxError fake error' . PHP_EOL;
+        $expected_output .= 'undefinedmethod.php:1 PhanUndeclaredMethod Call to undeclared method \Foo::bar' . PHP_EOL;
+        // phpcs:enable
+        $actual_output = $output->fetch();
+        $this->assertSame($expected_output, $actual_output);
     }
 
     /**

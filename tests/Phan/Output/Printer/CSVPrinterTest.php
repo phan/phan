@@ -8,6 +8,9 @@ use Phan\Output\Printer\CSVPrinter;
 use Phan\Tests\BaseTest;
 use Symfony\Component\Console\Output\BufferedOutput;
 
+/**
+ * Unit tests of CSVPrinter converting `IssueInstance`s to CSV text
+ */
 final class CSVPrinterTest extends BaseTest
 {
 
