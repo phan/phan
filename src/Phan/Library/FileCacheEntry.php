@@ -3,12 +3,21 @@ namespace Phan\Library;
 
 use AssertionError;
 
+/**
+ * Represents the cached contents of a given file, and various ways to access that file.
+ *
+ * This is used under the circumstances such as the following:
+ *
+ * - Checking for (at)phan-suppress-line annotations at runtime - Many checks to the same file will often be in cache
+ * - Checking the tokens/text of the file for purposes such as checking for expressions that are incompatible in PHP5.
+ */
 class FileCacheEntry
 {
     /** @var string contents of the file */
     private $contents;
+
     /**
-     * @var ?array lines of the contents of the file. Lazily populated.
+     * @var ?array<int,string> lines of the contents of the file. Lazily populated.
      */
     private $lines = null;
 

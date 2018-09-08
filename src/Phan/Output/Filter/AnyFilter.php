@@ -4,6 +4,9 @@ namespace Phan\Output\Filter;
 use Phan\IssueInstance;
 use Phan\Output\IssueFilterInterface;
 
+/**
+ * This is a filter which permits any IssueInstance to be output.
+ */
 final class AnyFilter implements IssueFilterInterface
 {
 

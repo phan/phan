@@ -6,6 +6,9 @@ use Phan\IssueInstance;
 use Phan\Output\BufferedPrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * This prints issues in the CodeClimate zero byte separated JSON format to the configured OutputInterface.
+ */
 final class CodeClimatePrinter implements BufferedPrinterInterface
 {
 
@@ -13,7 +16,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
     const CODECLIMATE_SEVERITY_CRITICAL = 'critical';
     const CODECLIMATE_SEVERITY_NORMAL = 'normal';
 
-    /** @var  OutputInterface */
+    /** @var OutputInterface */
     private $output;
 
     /** @var array<int,array> */

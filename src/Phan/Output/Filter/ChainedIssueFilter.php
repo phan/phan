@@ -4,6 +4,10 @@ namespace Phan\Output\Filter;
 use Phan\IssueInstance;
 use Phan\Output\IssueFilterInterface;
 
+/**
+ * ChainedIssueFilter is a combination of 0 or more filters.
+ * It will reject an IssueInstance if any of the filters in the list reject that IssueInstance
+ */
 final class ChainedIssueFilter implements IssueFilterInterface
 {
 

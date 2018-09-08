@@ -6,6 +6,9 @@ use Phan\Output\Filter\AnyFilter;
 use Phan\Output\IssueCollectorInterface;
 use Phan\Output\IssueFilterInterface;
 
+/**
+ * BufferingCollector represents an issue collector that stores issues for use later.
+ */
 final class BufferingCollector implements IssueCollectorInterface
 {
 

@@ -8,6 +8,11 @@ use Phan\Output\IssuePrinterInterface;
 use Phan\Output\Colorizing;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Outputs `IssueInstance`s to the provided OutputInterface in plain text format.
+ *
+ * 'text' is the only output format for which the option `--color` is recommended.
+ */
 final class PlainTextPrinter implements IssuePrinterInterface
 {
 

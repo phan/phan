@@ -4,8 +4,13 @@ namespace Phan\Output\Printer;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Output\IssuePrinterInterface;
+
+use AssertionError;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Prints `IssueInstance`s in the pylint error format to the configued OutputInterface
+ */
 final class PylintPrinter implements IssuePrinterInterface
 {
     /** @var OutputInterface */
@@ -46,7 +51,7 @@ final class PylintPrinter implements IssuePrinterInterface
             case Issue::SEVERITY_CRITICAL:
                 return 'E' . $category_id;
             default:
-                throw new \AssertionError("Unrecognized severity for " . __METHOD__ . ": " . $issue->getSeverity());
+                throw new AssertionError("Unrecognized severity for " . __METHOD__ . ": " . $issue->getSeverity());
         }
     }
 

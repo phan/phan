@@ -5,6 +5,10 @@ use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Output\IssueFilterInterface;
 
+/**
+ * MinimumSeverityFilter is a filter that will filter out issues
+ * that are less severe than the provided minimum severity.
+ */
 final class MinimumSeverityFilter implements IssueFilterInterface
 {
 

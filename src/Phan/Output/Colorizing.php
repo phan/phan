@@ -9,7 +9,11 @@ use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
-// Colorizing codes are based on https://github.com/kevinlebrun/colors.php/
+/**
+ * Contains utilities for colorizing Phan's issue messages (and colorized CLI ouptut in general)
+ *
+ * Colorizing codes are based on https://github.com/kevinlebrun/colors.php/
+ */
 class Colorizing
 {
     const STYLES = [

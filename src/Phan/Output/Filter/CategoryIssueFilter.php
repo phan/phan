@@ -6,9 +6,13 @@ namespace Phan\Output\Filter;
 use Phan\IssueInstance;
 use Phan\Output\IssueFilterInterface;
 
+/**
+ * This is a filter which limits `IssueInstance`s to specific categories,
+ * represented as the bitmask $this->mask
+ */
 final class CategoryIssueFilter implements IssueFilterInterface
 {
-    /** @var  int */
+    /** @var int a bitmask of categories to allow */
     private $mask;
 
     /**

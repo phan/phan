@@ -4,6 +4,9 @@ namespace Phan\Output;
 use Phan\IssueInstance;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Abstraction for printing (or recording) `IssueInstance`s in various ways.
+ */
 interface IssuePrinterInterface
 {
 

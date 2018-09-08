@@ -3,6 +3,10 @@ namespace Phan\Language\Type;
 
 use Phan\Language\Type;
 
+/**
+ * Represents the type `string`.
+ * @see LiteralStringType for the representation of types for specific string literals
+ */
 class StringType extends ScalarType
 {
     /** @phan-override */

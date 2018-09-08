@@ -6,13 +6,17 @@ use Phan\IssueInstance;
 use Phan\Output\BufferedPrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * This prints issues as raw JSON to the configured OutputInterface.
+ * The output is intended for use by other programs (or processes)
+ */
 final class JSONPrinter implements BufferedPrinterInterface
 {
 
     /** @var OutputInterface */
     private $output;
 
-    /** @var array<int,array> */
+    /** @var array<int,array<string,mixed>> */
     private $messages = [];
 
     /** @param IssueInstance $instance */
