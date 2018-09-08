@@ -13,7 +13,6 @@ use Phan\Exception\CodeBaseException;
 use Phan\Exception\EmptyFQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
-use Phan\Exception\TypeException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
@@ -1154,29 +1153,25 @@ class UnionTypeVisitor extends AnalysisVisitor
         $context = $this->context;
         // Check to make sure the left side is valid
         UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node->children['expr']);
-        try {
-            // Get the type that we're checking it against, check if it is valid.
-            $class_node = $node->children['class'];
-            $type = UnionTypeVisitor::unionTypeFromNode(
-                $code_base,
-                $context,
-                $class_node
-            );
-            // TODO: Unify UnionTypeVisitor, AssignmentVisitor, and PostOrderAnalysisVisitor
-            if (!$type->isEmpty() && !$type->hasObjectTypes()) {
-                if ($class_node->kind !== \ast\AST_NAME &&
-                        !$type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeInvalidInstanceof,
-                        $context->getLineNumberStart(),
-                        (string)$type
-                    );
-                }
+        // Get the type that we're checking it against, check if it is valid.
+        $class_node = $node->children['class'];
+        $type = UnionTypeVisitor::unionTypeFromNode(
+            $code_base,
+            $context,
+            $class_node
+        );
+        // TODO: Unify UnionTypeVisitor, AssignmentVisitor, and PostOrderAnalysisVisitor
+        if (!$type->isEmpty() && !$type->hasObjectTypes()) {
+            if ($class_node->kind !== \ast\AST_NAME &&
+                    !$type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypeInvalidInstanceof,
+                    $context->getLineNumberStart(),
+                    (string)$type
+                );
             }
-        } catch (TypeException $_) {
-            // TODO: log it?
         }
 
         return BoolType::instance(false)->asUnionType();

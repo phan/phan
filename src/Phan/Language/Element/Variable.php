@@ -11,6 +11,11 @@ use Phan\Language\Type;
 use Phan\Language\UnionType;
 use ast\Node;
 
+/**
+ * Phan's representation of a Variable, as well as methods for accessing and modifying variables.
+ *
+ * This has subclasses for parameters, etc.
+ */
 class Variable extends UnaddressableTypedElement
 {
     /**

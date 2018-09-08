@@ -14,11 +14,14 @@ use Phan\Language\Type;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\TemplateType;
 
+/**
+ * An analyzer that checks method phpdoc (at)throws types of function-likes to make sure they're valid
+ */
 class ThrowsTypesAnalyzer
 {
 
     /**
-     * Check method phpdoc (at)throws types to make sure they're valid
+     * Check phpdoc (at)throws types of function-likes to make sure they're valid
      *
      * @return void
      */

@@ -25,6 +25,10 @@ use AssertionError;
 use ast\Node;
 use Closure;
 
+/**
+ * This contains functionality common to global functions, closures, and methods
+ * @see FunctionInterface - Classes using this trait use that interface
+ */
 trait FunctionTrait
 {
     /**

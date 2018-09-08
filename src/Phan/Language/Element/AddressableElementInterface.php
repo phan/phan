@@ -5,6 +5,10 @@ use Phan\CodeBase;
 use Phan\Language\FQSEN;
 use Phan\Language\FileRef;
 
+/**
+ * An AddressableElementInterface is a TypedElementInterface with an FQSEN.
+ * (e.g. represents a class, property, function, etc.)
+ */
 interface AddressableElementInterface extends TypedElementInterface
 {
     /**

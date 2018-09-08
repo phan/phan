@@ -1,6 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+/**
+ * Flags contains bit flags that Phan adds to elements
+ * and methods for manipulating those bit flags.
+ *
+ * (manipulated by Element->getPhanFlags(), ElementPhanFlags())
+ */
 class Flags
 {
     const IS_DEPRECATED                = (1 << 1);

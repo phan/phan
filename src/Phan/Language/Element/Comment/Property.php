@@ -4,12 +4,15 @@ namespace Phan\Language\Element\Comment;
 
 use Phan\Language\UnionType;
 
+/**
+ * Represents information about a given (at)property annotation in a PHPDoc comment
+ */
 class Property
 {
 
     /**
      * @var string
-     * The name of the parameter
+     * The name of the property
      */
     private $name;
 

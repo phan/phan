@@ -10,6 +10,9 @@ use Phan\Language\UnionType;
 use Closure;
 use TypeError;
 
+/**
+ * Phan's representation of a class/trait/interface's property (including magic and dynamic properties)
+ */
 class Property extends ClassElement
 {
     use ElementFutureUnionType;

@@ -1,6 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+/**
+ * APIs for generating markup (markdown) description of elements
+ *
+ * This is used by the language server (e.g. for hover text of an element).
+ */
 class MarkupDescription
 {
     public static function buildForElement(

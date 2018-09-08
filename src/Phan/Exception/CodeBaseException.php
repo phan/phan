@@ -4,6 +4,9 @@ namespace Phan\Exception;
 use AssertionError;
 use Phan\Language\FQSEN;
 
+/**
+ * Thrown to indicate that retrieving the element for an FQSEN from the CodeBase failed.
+ */
 class CodeBaseException extends \Exception
 {
 

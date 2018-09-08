@@ -7,6 +7,10 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope;
 
+/**
+ * A branch scope represents a scope created by branching off of the current scope
+ * (e.g. an if/elseif/else statement, a ternary conditional (`?:`) operator, etc.
+ */
 class BranchScope extends Scope
 {
 

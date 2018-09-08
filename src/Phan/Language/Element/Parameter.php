@@ -27,6 +27,9 @@ use ast\Node;
 use InvalidArgumentException;
 
 /**
+ * Represents the information Phan has about a function-like's Parameter
+ * (e.g. of a function, closure, method, a PHPDoc closure/callable signature such as `Closure(MyClass=):void`, or phpdoc method.
+ *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 class Parameter extends Variable
@@ -35,7 +38,7 @@ class Parameter extends Variable
     const REFERENCE_READ_WRITE = 2;
     const REFERENCE_WRITE_ONLY = 3;
 
-    // __construct inherited from Variable
+    // __construct(FileRef $file_ref, string $name, UnionType $type, int $flags) inherited from Variable
 
     /**
      * @var UnionType|null

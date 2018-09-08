@@ -36,6 +36,12 @@ use ast\Node;
 use ast\flags;
 
 /**
+ * PostOrderAnalysisVisitor is where we do the post-order part of the analysis
+ * during Phan's analysis phase.
+ *
+ * This is called in post-order by BlockAnalysisVisitor
+ * (i.e. this is called after visiting all children of the current node)
+ *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 class PostOrderAnalysisVisitor extends AnalysisVisitor

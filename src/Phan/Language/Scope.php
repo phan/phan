@@ -12,6 +12,15 @@ use Phan\Language\Type\TemplateType;
 
 use AssertionError;
 
+/**
+ * Represents the scope of a Context.
+ *
+ * This includes the current element which it is found in,
+ * variables (etc.) found in that scope,
+ * as well as any functionality to use/modify this information.
+ *
+ * A scope is either the global scope or a child scope of another scope.
+ */
 abstract class Scope
 {
     /**

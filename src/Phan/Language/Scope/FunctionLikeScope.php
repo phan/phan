@@ -5,7 +5,10 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 
-// TODO: Wrap this with a ClosureLikeScope
+/**
+ * The scope of a function, method, or closure.
+ * This has subclasses.
+ */
 class FunctionLikeScope extends ClosedScope
 {
     /**

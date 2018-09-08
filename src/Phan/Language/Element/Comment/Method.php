@@ -4,6 +4,10 @@ namespace Phan\Language\Element\Comment;
 
 use Phan\Language\UnionType;
 
+/**
+ * Phan's representation of a magic method
+ * (i.e. an (at)method declaration on a class-like's doc comment)
+ */
 class Method
 {
 

@@ -3,10 +3,15 @@ namespace Phan\Language\Scope;
 
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
-// TODO: Wrap this with a ClosureLikeScope
+/**
+ * Represents the Scope of a closure declaration, used by a Closure's Context.
+ *
+ * TODO: Wrap this with a ClosureLikeScope
+ */
 class ClosureScope extends FunctionLikeScope
 {
     /**
+     * The optional FQSEN of an (at)phan-closure-scope annotation. (an annotation used for closures that will be bound to a different class)
      * @var FullyQualifiedClassName|null
      */
     private $override_class_fqsen = null;

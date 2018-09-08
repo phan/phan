@@ -5,16 +5,23 @@ use Phan\Language\FutureUnionType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 
+/**
+ * Implements functionality of an element with a union type that is evaluated lazily.
+ *
+ * This lets Phan deal with elements (e.g. properties, constants)
+ * where the default type is another constant with a type
+ * that is not yet known during parsing.
+ */
 trait ElementFutureUnionType
 {
 
     /**
      * @var FutureUnionType|null
      * A FutureUnionType is evaluated lazily only when
-     * the type is actually needed. This lets us deal
-     * with constants who's default type is another
-     * constant who's type is not yet known during
-     * parsing.
+     * the type is actually needed.
+     * This lets Phan deal with elements (e.g. properties, constants)
+     * where the default type is another constant with a type
+     * that is not yet known during parsing.
      */
     protected $future_union_type = null;
 

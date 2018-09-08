@@ -7,7 +7,6 @@ use Phan\Exception\CodeBaseException;
 use Phan\Exception\EmptyFQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
-use Phan\Exception\TypeException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
@@ -594,10 +593,6 @@ class ContextNode
      * An exception is thrown if we can't find the given
      * method
      *
-     * @throws TypeException
-     * An exception may be thrown if the only viable candidate
-     * is a non-class type.
-     *
      * @throws IssueException
      */
     public function getMethod(
@@ -1092,10 +1087,6 @@ class ContextNode
      * private or protected)
      * or if the property is static and missing.
      *
-     * @throws TypeException
-     * An exception may be thrown if the only viable candidate
-     * is a non-class type.
-     *
      * @throws UnanalyzableException
      * An exception is thrown if we hit a construct in which
      * we can't determine if the property exists or not
@@ -1309,10 +1300,6 @@ class ContextNode
      * @throws CodeBaseException
      * An exception is thrown if we can't find the given
      * class
-     *
-     * @throws TypeException
-     * An exception may be thrown if the only viable candidate
-     * is a non-class type.
      *
      * @throws IssueException
      * An exception is thrown if $is_static, but the property doesn't exist.

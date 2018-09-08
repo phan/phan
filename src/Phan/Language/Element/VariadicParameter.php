@@ -4,6 +4,9 @@ namespace Phan\Language\Element;
 use Phan\Language\UnionType;
 use Phan\Language\Type\GenericArrayType;
 
+/**
+ * Contains Phan's representation of a variadic parameter of a method declaration, and methods to access/modify/use the variadic parameters.
+ */
 class VariadicParameter extends Parameter
 {
     // __construct inherited from Parameter

@@ -6,6 +6,14 @@ use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
+/**
+ * Represents an instance of an issue at a given file and line for the given template parameters.
+ *
+ * Some IssueInstances are created with suggestions for how they can be fixed
+ *
+ * @see Issue for how these are emitted. Visitors and plugins often have helper methods to emit issues.
+ * @see OutputPrinter for how this is converted to various output formats
+ */
 class IssueInstance
 {
     /** @var Issue */

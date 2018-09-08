@@ -10,11 +10,14 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\TemplateType;
 
+/**
+ * An analyzer that checks a class's properties for issues.
+ */
 class PropertyTypesAnalyzer
 {
 
     /**
-     * Check to see if the given properties have issues
+     * Check to see if the given class's properties have issues.
      *
      * @return void
      */
@@ -56,26 +59,27 @@ class PropertyTypesAnalyzer
                             (string)$property->getFQSEN()
                         );
                     }
-                } else {
-                    // Make sure the class exists
-                    $type_fqsen = FullyQualifiedClassName::fromType($type);
+                    continue;
+                }
 
-                    if (!$code_base->hasClassWithFQSEN($type_fqsen)
-                        && !($type instanceof TemplateType)
-                        && (
-                            !$property->hasDefiningFQSEN()
-                            || $property->getDefiningFQSEN() == $property->getFQSEN()
-                        )
-                    ) {
-                        Issue::maybeEmitWithParameters(
-                            $code_base,
-                            $property->getContext(),
-                            Issue::UndeclaredTypeProperty,
-                            $property->getFileRef()->getLineNumberStart(),
-                            [(string)$property->getFQSEN(), (string)$outer_type],
-                            IssueFixSuggester::suggestSimilarClass($code_base, $property->getContext(), $type_fqsen, null, 'Did you mean', IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES)
-                        );
-                    }
+                // Make sure the class exists
+                $type_fqsen = FullyQualifiedClassName::fromType($type);
+
+                if (!$code_base->hasClassWithFQSEN($type_fqsen)
+                    && !($type instanceof TemplateType)
+                    && (
+                        !$property->hasDefiningFQSEN()
+                        || $property->getDefiningFQSEN() == $property->getFQSEN()
+                    )
+                ) {
+                    Issue::maybeEmitWithParameters(
+                        $code_base,
+                        $property->getContext(),
+                        Issue::UndeclaredTypeProperty,
+                        $property->getFileRef()->getLineNumberStart(),
+                        [(string)$property->getFQSEN(), (string)$outer_type],
+                        IssueFixSuggester::suggestSimilarClass($code_base, $property->getContext(), $type_fqsen, null, 'Did you mean', IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES)
+                    );
                 }
             }
         }

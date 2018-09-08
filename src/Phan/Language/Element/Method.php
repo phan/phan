@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\Analysis\Analyzable;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
@@ -9,15 +10,18 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\UnionType;
+use Phan\Memoize;
 use ast\Node;
 
 /**
+ * Phan's representation of a class's method.
+ *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 class Method extends ClassElement implements FunctionInterface
 {
-    use \Phan\Analysis\Analyzable;
-    use \Phan\Memoize;
+    use Analyzable;
+    use Memoize;
     use FunctionTrait;
     use ClosedScopeElement;
 
