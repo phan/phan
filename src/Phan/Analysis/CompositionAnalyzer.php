@@ -7,11 +7,14 @@ use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\UnionType;
 
+/**
+ * This analyzer checks if the signatures of inherited properties match
+ */
 class CompositionAnalyzer
 {
 
     /**
-     * Check to see if signatures match
+     * Check to see if the signatures of inherited properties match
      *
      * @return void
      */

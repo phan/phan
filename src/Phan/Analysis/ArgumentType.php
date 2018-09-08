@@ -23,6 +23,9 @@ use AssertionError;
 use ast\Node;
 
 /**
+ * This visitor analyzes arguments of calls to methods, functions, and closures
+ * and emits issues for incorrect argument types.
+ *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 final class ArgumentType

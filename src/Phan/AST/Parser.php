@@ -18,6 +18,12 @@ use CompileError;
 use Error;
 use ParseError;
 
+/**
+ * Parser parses the passed in PHP code based on configuration settings.
+ *
+ * It has options for error-tolerant parsing,
+ * annotating \ast\Nodes with additional information used by the language server
+ */
 class Parser
 {
     /**
@@ -27,7 +33,7 @@ class Parser
      * @param Context $context
      * @param ?Request $request (A daemon mode request if in daemon mode. May affect the parser used for $file_path)
      * @param string $file_path file path for error reporting
-     * @param string $file_contents file contents to pass to parser. May be overridden to ignore what is currently on disk.
+     * @param string $file_contents file contents to pass to parser. This may deliberately differ from what is currently on disk (e.g. for the language server mode or daemon mode)
      * @param bool $suppress_parse_errors (If true, don't emit SyntaxError)
      * @return ?Node
      * @throws ParseError

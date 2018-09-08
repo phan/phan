@@ -6,6 +6,12 @@ use Phan\Debug;
 use AssertionError;
 use ast\Node;
 
+/**
+ * This contains functionality needed by various visitor implementations
+ * (visitors on Node->kind, Node->flags for a specific kind, etc)
+ *
+ * For performance, many callers manually inline the implementation of these methods
+ */
 class Element
 {
     use \Phan\Profile;

@@ -20,7 +20,15 @@ use AssertionError;
 use ast\Node;
 use Closure;
 
-// TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed
+/**
+ * This implements Phan's analysis of the type of binary operators (Node->kind=ast\AST_BINARY_OP).
+ * The visit* method invoked is based on Node->flags.
+ *
+ * This returns the union type of the binary operator.
+ * It emits issues as a side effect, usually based on $should_catch_issue_exception
+ *
+ * TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed
+ */
 final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 {
 

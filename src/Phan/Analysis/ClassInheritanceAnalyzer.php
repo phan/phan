@@ -7,10 +7,15 @@ use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
+/**
+ * A checker for whether the given Clazz(class/trait/interface) properly inherits
+ * from its classes, traits, and/or interfaces.
+ */
 class ClassInheritanceAnalyzer
 {
     /**
-     * Check to see if the given Clazz is a duplicate
+     * Checks if the given Clazz(class/trait/interface) properly inherits
+     * from its classes, traits, and/or interfaces
      *
      * @return void
      */

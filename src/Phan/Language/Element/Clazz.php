@@ -2543,7 +2543,7 @@ class Clazz extends AddressableElement
         }
 
         // TODO: Also render the namespace?
-        $string .= (string)$this->getFQSEN()->getName();
+        $string .= $this->getFQSEN()->getName();
         return $string;
     }
 
