@@ -32,7 +32,9 @@ Warns if an `@suppress` annotation is no longer needed to suppress issue types o
 or if the relevant parts of the codebase fixed the bug/added annotations)
 **This must be run with exactly one worker process**
 
-- **UnusedSuppression**: "Element func/class/etc. suppresses issue Phan... but does not use it"
+- **UnusedSuppression**: `Element {FUNCTIONLIKE} suppresses issue {ISSUETYPE} but does not use it`
+- **UnusedPluginSuppression**: `Plugin {STRING_LITERAL} suppresses issue {ISSUETYPE} on this line but this suppression is unused or suppressed elsewhere`
+- **UnusedPluginFileSuppression**: `Plugin {STRING_LITERAL} suppresses issue {ISSUETYPE} in this file but this suppression is unused or suppressed elsewhere`
 
 ### 2. General-Use Plugins
 
@@ -121,8 +123,10 @@ Configuration settings can be added to `.phan/config.php`:
 
         // 'php_native_syntax_check_binaries' => [PHP_BINARY],
 
-        // The maximum number of `php --syntax-check` processes to run at any point in time (Minimum: 1. Default: 1).
-        // This may be temporarily higher if php_native_syntax_check_binaries has more elements than this process count.
+        // The maximum number of `php --syntax-check` processes to run at any point in time
+        // (Minimum: 1. Default: 1).
+        // This may be temporarily higher if php_native_syntax_check_binaries
+        // has more elements than this process count.
         'php_native_syntax_check_max_processes' => 4,
     ],
 ```
@@ -158,6 +162,13 @@ Warns about invalid uses of `isset`. This README documentation may be inaccurate
   E.g. it will warn about `isset(foo()['key'])`, because foo() is not a variable or an array access.
 - **PhanUndeclaredVariable**: Warns if `$array` is undeclared in `isset($array[$key])`
 
+#### NoAssertPlugin.php
+
+Discourages the usage of assert() in the analyzed project.
+See https://secure.php.net/assert
+
+- **PhanPluginNoAssert**: `assert() is discouraged. Although phan supports using assert() for type annotations, PHP's documentation recommends assertions only for debugging, and assert() has surprising behaviors.`
+
 #### NumericalComparisonPlugin.php
 
 Enforces that loose equality is used for numeric operands (e.g. `2 == 2.0`), and that strict equality is used for non-numeric operands (e.g. `"2" === "2e0"` is false).
@@ -182,14 +193,18 @@ as well as about returning array values with invalid property names in `__sleep`
 - **SleepCheckerInvalidPropName**: `__sleep is returning an array that includes {PROPERTY}, which cannot be found`
 - **SleepCheckerMagicPropName**: `__sleep is returning an array that includes {PROPERTY}, which is a magic property`
 - **SleepCheckerDynamicPropName**: `__sleep is returning an array that includes {PROPERTY}, which is a dynamically added property (but not a declared property)`
+- **SleepCheckerPropertyMissingTransient**: `Property {PROPERTY} that is not serialized by __sleep should be annotated with @transient or @phan-transient`,
 
 #### UnknownElementTypePlugin.php
 
 Warns about elements containing unknown types (function/method/closure return types, parameter types)
 
 - **PhanPluginUnknownMethodReturnType**: `Method {METHOD} has no declared or inferred return type`
+- **PhanPluginUnknownMethodParamType**: `Method {METHOD} has no declared or inferred parameter type for ${PARAMETER}`
 - **PhanPluginUnknownFunctionReturnType**: `Function {FUNCTION} has no declared or inferred return type`
+- **PhanPluginUnknownFunctionParamType**: `Function {FUNCTION} has no declared or inferred return type for ${PARAMETER}`
 - **PhanPluginUnknownClosureReturnType**: `Closure {FUNCTION} has no declared or inferred return type`
+- **PhanPluginUnknownClosureParamType**: `Closure {FUNCTION} has no declared or inferred return type for ${PARAMETER}`
 - **PhanPluginUnknownPropertyType**: `Property {PROPERTY} has an initial type that cannot be inferred`
 
 #### DuplicateExpressionPlugin.php
