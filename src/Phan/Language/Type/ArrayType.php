@@ -6,6 +6,11 @@ use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
 
+/**
+ * Phan's representation of the type for `array`.
+ * @see ArrayShapeType for the representation of `array{key:string}`
+ * @see GenericArrayType for the representation of `MyClass[]`, `array<string,MyClass>`, etc.
+ */
 class ArrayType extends IterableType
 {
     /** @phan-override */

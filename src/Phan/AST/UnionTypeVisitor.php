@@ -58,8 +58,10 @@ use function is_scalar;
 use function is_string;
 
 /**
- * Determine the UnionType associated with a
- * given node
+ * Determines the UnionType associated with a given node.
+ *
+ * @see UnionTypeVisitor::unionTypeFromNode()
+ *
  * @phan-file-suppress PhanPartialTypeMismatchArgument node is complicated
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal node is complicated
  */

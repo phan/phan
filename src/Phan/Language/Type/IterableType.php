@@ -1,6 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+/**
+ * Phan's representation of `iterable`
+ * @see GenericIterableType for the representation of `iterable<KeyType,ValueType>`
+ */
 class IterableType extends NativeType
 {
     /** @phan-override */

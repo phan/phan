@@ -4,6 +4,12 @@ namespace Phan\Language\Type;
 use Phan\Config;
 use Phan\Language\Type;
 
+/**
+ * Phan's representation of the type for `bool`.
+ *
+ * @see TrueType
+ * @see FalseType
+ */
 final class BoolType extends ScalarType
 {
     /** @phan-override */

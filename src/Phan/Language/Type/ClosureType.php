@@ -7,6 +7,10 @@ use Phan\Language\Type;
 
 use AssertionError;
 
+/**
+ * Phan's representation of `Closure` and of closures associated with a given function-like's FQSEN
+ * @see ClosureDeclarationType for representations created from PHPDoc `Closure(MyClass):MyOtherClass`.
+ */
 final class ClosureType extends Type
 {
     /** Not an override */
