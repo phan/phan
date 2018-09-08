@@ -24,7 +24,8 @@ use Exception;
 use Sabre\Event\Promise;
 
 /**
- * Represents a Language Server Protocol to go to the definition or type definition of an Element (class, property, function-like, constant, etc.)
+ * Represents the Language Server Protocol's "Go to Definition" or "Go to Type Definition" request for a usage of an Element
+ * (class, property, function-like, constant, etc.)
  *
  * @see https://microsoft.github.io/language-server-protocol/specification#textDocument_definition
  * @see https://microsoft.github.io/language-server-protocol/specification#textDocument_typeDefinition
