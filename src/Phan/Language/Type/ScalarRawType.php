@@ -1,6 +1,13 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+/**
+ * A temporary representation of the type `scalar`.
+ * These are the types for which `is_scalar(expr)` is true
+ *
+ * This is used in the middle of parsing PHPDoc types,
+ * but is quickly converted to bool|int|float|string once parsing is finished.
+ */
 final class ScalarRawType extends ScalarType implements MultiType
 {
     /** @override */

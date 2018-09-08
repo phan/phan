@@ -1,6 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+/**
+ * APIs for generating markup (markdown) description of elements
+ *
+ * This is used by the language server (e.g. for hover text of an element).
+ */
 class MarkupDescription
 {
     public static function buildForElement(
@@ -8,21 +13,34 @@ class MarkupDescription
     ) : string {
         $markup = $element->getMarkupDescription();
         $result = "```php\n$markup\n```";
-        $doc_comment = $element->getDocComment();
-        if ($doc_comment) {
-            $comment_category = null;
-            if ($element instanceof Property) {
-                $comment_category = Comment::ON_PROPERTY;
-            } elseif ($element instanceof ConstantInterface) {
-                $comment_category = Comment::ON_CONST;
-            }
-            $extracted_doc_comment = self::extractDocComment($doc_comment, $comment_category);
-            if ($extracted_doc_comment) {
-                $result .= "\n\n" . $extracted_doc_comment;
-            }
+        $extracted_doc_comment = self::extractDescriptionFromDocComment($element);
+        if ($extracted_doc_comment) {
+            $result .= "\n\n" . $extracted_doc_comment;
         }
 
         return $result;
+    }
+
+    /**
+     * Extracts a plaintext description of the element from the doc comment of an element.
+     *
+     * @return ?string
+     * @internal
+     */
+    public static function extractDescriptionFromDocComment(AddressableElementInterface $element)
+    {
+        $doc_comment = $element->getDocComment();
+        if (!$doc_comment) {
+            return null;
+        }
+        $comment_category = null;
+        if ($element instanceof Property) {
+            $comment_category = Comment::ON_PROPERTY;
+        } elseif ($element instanceof ConstantInterface) {
+            $comment_category = Comment::ON_CONST;
+        }
+        $extracted_doc_comment = self::extractDocComment($doc_comment, $comment_category);
+        return $extracted_doc_comment ?: null;
     }
 
     /**

@@ -5,7 +5,10 @@ namespace Phan\AST\TolerantASTConverter;
 use Exception;
 
 /**
- * @internal thrown when processing something that would become an invalid variable.
+ * An exception thrown when TolerantASTConverter is processing something that would become an invalid Node.
+ *
+ * This is caught within TolerantASTConverter, the way it is handled depends on configuration settings.
+ * @internal
  */
 final class InvalidNodeException extends Exception
 {

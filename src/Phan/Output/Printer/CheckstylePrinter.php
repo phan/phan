@@ -5,6 +5,9 @@ use Phan\IssueInstance;
 use Phan\Output\BufferedPrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * This prints `IssueInstance`s in the checkstyle XML format to the configured OutputInterface
+ */
 final class CheckstylePrinter implements BufferedPrinterInterface
 {
 

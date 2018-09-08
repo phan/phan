@@ -17,6 +17,7 @@ use Closure;
 use ast\Node;
 
 /**
+ * Phan's base class for representations of `callable(MyClass):MyOtherClass` and `Closure(MyClass):MyOtherClass`
  * @phan-file-suppress PhanPluginUnusedPublicMethodArgument, PhanUnusedPublicMethodParameter
  */
 abstract class FunctionLikeDeclarationType extends Type implements FunctionInterface

@@ -8,6 +8,9 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use ast\Node;
 
+/**
+ * This plugin detects undeclared variables within isset() checks.
+ */
 class InvalidVariableIssetPlugin extends PluginV2 implements PostAnalyzeNodeCapability
 {
 
@@ -22,6 +25,9 @@ class InvalidVariableIssetPlugin extends PluginV2 implements PostAnalyzeNodeCapa
     }
 }
 
+/**
+ * This plugin checks isset nodes (\ast\AST_ISSET) to see if they contain undeclared variables
+ */
 class InvalidVariableIssetVisitor extends PluginAwarePostAnalysisVisitor
 {
 

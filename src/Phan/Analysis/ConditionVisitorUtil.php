@@ -19,6 +19,11 @@ use ast\Node;
 use Closure;
 
 /**
+ * This implements common functionality to update variables based on checks within a conditional (of an if/elseif/else/while/for/assert(), etc.)
+ *
+ * @see ConditionVisitor
+ * @see NegatedConditionVisitor
+ *
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  */
 trait ConditionVisitorUtil

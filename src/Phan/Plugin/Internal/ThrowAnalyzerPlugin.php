@@ -18,9 +18,9 @@ use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use ast\Node;
 use ast;
 
-// ThrowAnalyzerPlugin analyzes throw statements and
-// compares them against the phpdoc (at)throws annotations
-
+/**
+ * Analyzes throw statements and compares them against the phpdoc (at)throws annotations
+ */
 class ThrowAnalyzerPlugin extends PluginV2 implements PostAnalyzeNodeCapability
 {
     /**
@@ -39,6 +39,9 @@ class ThrowAnalyzerPlugin extends PluginV2 implements PostAnalyzeNodeCapability
     }
 }
 
+/**
+ * Visits throw statements to compares them against the phpdoc (at)throws annotations in the function-like scope
+ */
 class ThrowVisitor extends PluginAwarePostAnalysisVisitor
 {
     /**
@@ -49,6 +52,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @return void
+     * @override
      */
     public function visitThrow(Node $node)
     {
@@ -200,6 +204,11 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
     }
 }
 
+/**
+ * Visits throw statements to compares them against the phpdoc (at)throws annotations in the function-like scope,
+ * as well as to check if the functions invoked within the implementation may throw
+ * are either caught or documented by the (at)throws annotation.
+ */
 class ThrowRecursiveVisitor extends ThrowVisitor
 {
     /**

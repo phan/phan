@@ -6,13 +6,18 @@ use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
+/**
+ * Represents the PHPDoc `mixed` type, which can cast to/from any type
+ *
+ * For purposes of analysis, there's usually no difference between mixed and nullable mixed.
+ */
 final class MixedType extends NativeType
 {
     /** @phan-override */
     const NAME = 'mixed';
 
     // mixed or ?mixed can cast to/from anything.
-    // For purposes of analysis, there's no difference between mixed and nullable mixed.
+    // For purposes of analysis, there's usually no difference between mixed and nullable mixed.
     public function canCastToType(Type $unused_type) : bool
     {
         return true;

@@ -8,6 +8,10 @@ use Phan\Language\Type;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 
+/**
+ * This returns internal function declarations for a given function/method FQSEN,
+ * using Reflection and/or Phan's internal function signature map.
+ */
 class FunctionFactory
 {
     /**

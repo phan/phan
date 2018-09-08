@@ -13,6 +13,7 @@ use Phan\Tests\BaseTest;
 use Phan\Parse\ParseVisitor;
 
 /**
+ * Unit tests of Context and scopes
  * @phan-file-suppress PhanPartialTypeMismatchArgument TODO: phpunit lib
  */
 final class ContextTest extends BaseTest
@@ -30,7 +31,6 @@ final class ContextTest extends BaseTest
     protected function tearDown()
     {
         // Deliberately not calling parent::tearDown()
-        $this->code_base = new CodeBase([], [], [], [], []);
         $this->code_base = null;
     }
 

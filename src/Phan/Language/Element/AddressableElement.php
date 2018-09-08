@@ -8,13 +8,18 @@ use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FileRef;
 use Phan\Language\UnionType;
+use Phan\Memoize;
 
 use AssertionError;
 use Closure;
 
+/**
+ * An addressable element is a TypedElement with an FQSEN.
+ * (E.g. a class, property, function, method, etc.)
+ */
 abstract class AddressableElement extends TypedElement implements AddressableElementInterface
 {
-    use \Phan\Memoize;
+    use Memoize;
 
     /**
      * @var FQSEN

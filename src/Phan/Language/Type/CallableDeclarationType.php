@@ -3,6 +3,9 @@ namespace Phan\Language\Type;
 
 use Phan\Language\Type;
 
+/**
+ * Phan's representation for types such as `callable(MyClass):MyOtherClass`
+ */
 final class CallableDeclarationType extends FunctionLikeDeclarationType
 {
     /** @override */

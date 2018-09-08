@@ -5,6 +5,12 @@ namespace Phan\Language\Element;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
+/**
+ * A ClassAliasRecord represents the information Phan parsed from calls
+ * to class_alias() within the codebase (FQSEN and location of alias creation)
+ *
+ * The original class is mapped to a set of ClassAliasRecord
+ */
 class ClassAliasRecord
 {
 

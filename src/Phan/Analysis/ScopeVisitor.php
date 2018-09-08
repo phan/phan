@@ -15,6 +15,10 @@ use AssertionError;
 use ast\Node;
 
 /**
+ * An abstract visitor with methods to track elements in the current scope.
+ *
+ * This tracks the current namespace and adds namespace and `use` information to the current scope.
+ *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  */

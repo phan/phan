@@ -10,7 +10,12 @@ use Phan\Language\UnionType;
 use Phan\Language\Type;
 use Phan\Suggestion;
 
-// TODO: Move to AST\Visitor?
+/**
+ * A visitor used for analysis.
+ *
+ * In addition to calling the corresponding visit*() method for the passed in \ast\Node's kind,
+ * this contains helper methods to emit issues.
+ */
 abstract class AnalysisVisitor extends KindVisitorImplementation
 {
     /**

@@ -4,6 +4,8 @@ namespace Phan\Library;
 use Exception;
 
 /**
+ * This represents the absence of a value in an Option.
+ *
  * @inherits Option<null>
  */
 class None extends Option

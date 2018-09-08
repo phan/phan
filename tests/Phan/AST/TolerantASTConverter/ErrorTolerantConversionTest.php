@@ -7,6 +7,9 @@ use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\AST\TolerantASTConverter\NodeDumper;
 use Phan\Debug;
 
+/**
+ * Various tests of the error-tolerant conversion mode of TolerantASTConverter
+ */
 final class ErrorTolerantConversionTest extends BaseTest
 {
     public function testIncompleteVar()

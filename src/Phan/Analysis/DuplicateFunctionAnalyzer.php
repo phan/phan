@@ -6,6 +6,9 @@ use Phan\Issue;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 
+/**
+ * Checks to see if the given method is a duplicate of another method
+ */
 class DuplicateFunctionAnalyzer
 {
 

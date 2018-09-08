@@ -12,6 +12,10 @@ use Phan\Language\UnionType;
 use AssertionError;
 use TypeError;
 
+/**
+ * ClassElement is a base class of an element belonging to a class/trait/interface
+ * (such as properties, methods, and class constants)
+ */
 abstract class ClassElement extends AddressableElement
 {
     /** @var FullyQualifiedClassName */

@@ -7,6 +7,9 @@ use Phan\Language\UnionType;
 
 use function json_encode;
 
+/**
+ * Phan's representation of the type `iterable<KeyType,ValueType>`
+ */
 final class GenericIterableType extends IterableType
 {
     /** @phan-override */

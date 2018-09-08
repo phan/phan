@@ -5,6 +5,9 @@ use Phan\Config;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
+/**
+ * Singleton representing the type `null`
+ */
 final class NullType extends ScalarType
 {
     /** @phan-override */

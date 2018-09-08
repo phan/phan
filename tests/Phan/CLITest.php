@@ -4,6 +4,11 @@ namespace Phan\Tests;
 
 use Phan\CLI;
 
+/**
+ * Unit tests of helper methods in the class CLI.
+ *
+ * TODO: Add more tests
+ */
 final class CLITest extends BaseTest
 {
     /**

@@ -4,6 +4,12 @@ namespace Phan\Language\Element;
 use ast\Node;
 use Closure;
 
+/**
+ * Represents functionality common to GlobalConstant and ClassConstant
+ * for APIs Phan has for representations of constants.
+ *
+ * @see ConstantInterface - Classes using this trait use this interface
+ */
 trait ConstantTrait
 {
     use ElementFutureUnionType;

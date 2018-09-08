@@ -7,6 +7,10 @@ use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Language\Context;
 
+/**
+ * The base class for various scalar types (BoolType, StringType, ScalarRawType,
+ * NullType (null is technically not a scalar, but included), etc.
+ */
 abstract class ScalarType extends NativeType
 {
     public function isScalar() : bool
@@ -16,7 +20,7 @@ abstract class ScalarType extends NativeType
 
     public function isPrintableScalar() : bool
     {
-        return true;  // Overridden in subclass IterableType and ResourceType
+        return true;  // Overridden in subclass BoolType
     }
 
     public function isSelfType() : bool

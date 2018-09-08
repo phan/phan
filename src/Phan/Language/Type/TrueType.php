@@ -6,7 +6,11 @@ use Phan\Language\Type;
 
 use AssertionError;
 
-// Not sure if it made sense to extend BoolType, so not doing that.
+/**
+ * Represents the type `true`
+ * @see BoolType
+ * @see FalseType
+ */
 final class TrueType extends ScalarType
 {
     /** @phan-override */

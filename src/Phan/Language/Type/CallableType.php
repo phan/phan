@@ -3,6 +3,11 @@ namespace Phan\Language\Type;
 
 use Phan\Language\Type;
 
+/**
+ * Phan's representation for `callable`
+ *
+ * @see CallableDeclarationType for Phan's representation of `callable(MyClass):MyOtherClass`
+ */
 final class CallableType extends NativeType
 {
     /** @phan-override */

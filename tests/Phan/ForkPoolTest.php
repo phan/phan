@@ -4,6 +4,8 @@ namespace Phan\Tests;
 use Phan\ForkPool;
 
 /**
+ * Unit test of the ForkPool
+ *
  * @requires extension pcntl
  */
 final class ForkPoolTest extends BaseTest

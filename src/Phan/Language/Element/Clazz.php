@@ -30,16 +30,23 @@ use Phan\Language\UnionType;
 use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;
+use Phan\Memoize;
 use Phan\Plugin\ConfigPluginSet;
 
 use Closure;
 
 /**
+ * Clazz represents the information Phan knows about a class, trait, or interface,
+ * the state of Phan populating that information (hydration),
+ * and methods to access that information.
+ *
+ * @see CodeBase for the data structures used for looking up classes or elements of classes (properties, methods, constants, etc)
+ *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 class Clazz extends AddressableElement
 {
-    use \Phan\Memoize;
+    use Memoize;
     use ClosedScopeElement;
 
     /**
@@ -2543,7 +2550,7 @@ class Clazz extends AddressableElement
         }
 
         // TODO: Also render the namespace?
-        $string .= (string)$this->getFQSEN()->getName();
+        $string .= $this->getFQSEN()->getName();
         return $string;
     }
 

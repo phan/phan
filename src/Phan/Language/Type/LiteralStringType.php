@@ -7,6 +7,9 @@ use Phan\Language\Type;
 use InvalidArgumentException;
 use RuntimeException;
 
+/**
+ * Phan's representation of the type for a specific string, e.g. `'a string'`
+ */
 final class LiteralStringType extends StringType implements LiteralTypeInterface
 {
 

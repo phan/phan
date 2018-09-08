@@ -1,7 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan\Exception;
 
-class EmptyFQSENException extends \Exception
+use Exception;
+
+/**
+ * Thrown to indicate that an empty FQSEN was used where a valid FQSEN was expected.
+ */
+class EmptyFQSENException extends Exception
 {
     /** @var string */
     private $fqsen;

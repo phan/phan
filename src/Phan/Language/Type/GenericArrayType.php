@@ -14,6 +14,11 @@ use ast\Node;
 use InvalidArgumentException;
 use RuntimeException;
 
+/**
+ * Phan's representation for the types `array<string,MyClass>` and `MyClass[]`
+ * @see ArrayShapeType for representations of `array{key:MyClass}`
+ * @see ArrayType for the representation of `array`
+ */
 final class GenericArrayType extends ArrayType implements GenericArrayInterface
 {
     /** @phan-override */

@@ -6,6 +6,11 @@ use Phan\Language\Type;
 
 use AssertionError;
 
+/**
+ * Phan's representation of PHPDoc `false`
+ * @see TrueType
+ * @see BoolType
+ */
 final class FalseType extends ScalarType
 {
     /** @phan-override */

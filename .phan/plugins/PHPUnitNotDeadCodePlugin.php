@@ -34,6 +34,11 @@ class PHPUnitNotDeadCodePlugin extends PluginV2 implements PostAnalyzeNodeCapabi
     }
 }
 
+/**
+ * This visitor visits classes (After all class/method definitions are parsed and analyzed)
+ * and, for subclasses of PHPUnit test cases,
+ * marks the phpunit test cases, (at)dataProviders, and special PHPUnit subclass properties as being referenced (i.e. not dead code)
+ */
 class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
 {
     /** @var FullyQualifiedClassName */

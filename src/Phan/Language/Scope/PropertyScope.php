@@ -3,6 +3,9 @@ namespace Phan\Language\Scope;
 
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 
+/**
+ * Represents the Scope of the Context of a class's property declaration.
+ */
 class PropertyScope extends ClosedScope
 {
 

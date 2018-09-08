@@ -10,6 +10,12 @@ use Phan\Phan;
 use Phan\Plugin\ConfigPluginSet;
 use Symfony\Component\Console\Output\BufferedOutput;
 
+/**
+ * Base class for tests that contain
+ *
+ * - a src/ folder with analyzed PHP files, and
+ * - the expected/ folder of expected error (template) lines for the corresponding files.
+ */
 abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTestInterface
 {
     const EXPECTED_SUFFIX = '.expected';

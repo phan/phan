@@ -2,6 +2,9 @@
 namespace Phan\Library;
 
 /**
+ * `Some<T>` is a sub-type of `Option<T>` representing an option with a value.
+ * @see Option
+ *
  * @template T
  * The type of the element
  *

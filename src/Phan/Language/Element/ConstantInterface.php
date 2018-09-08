@@ -4,6 +4,10 @@ namespace Phan\Language\Element;
 use Phan\Language\FutureUnionType;
 use ast\Node;
 
+/**
+ * Represents APIs used when Phan is setting up/analyzing
+ * the representation of a given global or class constant.
+ */
 interface ConstantInterface
 {
 

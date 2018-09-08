@@ -8,6 +8,9 @@ use Phan\Output\Printer\CodeClimatePrinter;
 use Phan\Tests\BaseTest;
 use Symfony\Component\Console\Output\BufferedOutput;
 
+/**
+ * Unit tests that CodeClimatePrinter converts `IssueInstance`s to the expected codeclimate JSON output
+ */
 final class CodeClimatePrinterTest extends BaseTest
 {
 

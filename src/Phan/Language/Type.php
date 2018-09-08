@@ -54,6 +54,8 @@ use RuntimeException;
  * A plain Type represents a class instance.
  * Separate subclasses exist for NativeType, ArrayType, ScalarType, TemplateType, etc.
  *
+ * Types are immutable.
+ *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * phpcs:disable Generic.NamingConventions.UpperCaseConstantName

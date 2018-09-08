@@ -4,6 +4,9 @@ namespace Phan\Tests;
 
 use Phan\Config;
 
+/**
+ * Unit tests of Phan analysis targeting PHP 7.3 codebases
+ */
 final class PHP73Test extends AbstractPhanFileTest
 {
     const OVERRIDES = [

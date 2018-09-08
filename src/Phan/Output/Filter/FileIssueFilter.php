@@ -5,6 +5,9 @@ use Phan\IssueInstance;
 use Phan\Output\IgnoredFilesFilterInterface;
 use Phan\Output\IssueFilterInterface;
 
+/**
+ * FileIssueFilter is a filter that will ignore `IssueInstance`s based on their file name.
+ */
 final class FileIssueFilter implements IssueFilterInterface
 {
 

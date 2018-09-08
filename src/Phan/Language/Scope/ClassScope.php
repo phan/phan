@@ -3,6 +3,9 @@ namespace Phan\Language\Scope;
 
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
+/**
+ * Phan's representation of the scope within a class declaration.
+ */
 class ClassScope extends ClosedScope
 {
 

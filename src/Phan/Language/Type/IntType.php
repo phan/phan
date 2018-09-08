@@ -1,6 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+/**
+ * Phan's representation of `int`
+ * @see LiteralIntType for Phan's representation of specific integers
+ */
 class IntType extends ScalarType
 {
     /** @phan-override */

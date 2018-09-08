@@ -18,6 +18,16 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 
 define('ORIGINAL_SIGNATURE_PATH', dirname(__DIR__) . '/src/Phan/Language/Internal/FunctionSignatureMap.php');
 
+/**
+ * Implementations of this can be used to check Phan's function signature map.
+ *
+ * They do the following:
+ *
+ * - Load signatures from an external source
+ * - Compare the signatures against Phan's to report incomplete or inaccurate signatures of Phan itself (or the external signature)
+ *
+ * TODO: could extend this to properties (the use of properties in extensions is rare).
+ */
 abstract class IncompatibleSignatureDetectorBase
 {
     use Memoize;
@@ -896,6 +906,10 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     }
 }
 
+/**
+ * This reads from a folder containing PHP stub files documenting internal extensions (e.g. those from PHPStorm)
+ * to check if Phan's function signature map are up to date.
+ */
 class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBase
 {
     /** @var string */

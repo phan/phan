@@ -5,6 +5,9 @@ use Phan\Analysis\BlockExitStatusChecker;
 use Phan\Config;
 use Phan\Tests\BaseTest;
 
+/**
+ * Unit tests of BlockExitStatusChecker on various AST Nodes
+ */
 final class BlockExitStatusCheckerTest extends BaseTest
 {
 

@@ -4,6 +4,12 @@ namespace Phan\Tests;
 
 use Phan\CodeBase;
 
+/**
+ * This represents a test case that has a CodeBase instance.
+ *
+ * This is used by PhanTestListener to avoid wasting memory
+ * by removing cloned CodeBase instances after the test finishes running.
+ */
 interface CodeBaseAwareTestInterface
 {
 

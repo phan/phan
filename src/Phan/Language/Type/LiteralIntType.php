@@ -5,6 +5,9 @@ use Phan\Language\Type;
 
 use RuntimeException;
 
+/**
+ * Phan's representation of the type for a specific integer, e.g. `-1`
+ */
 final class LiteralIntType extends IntType implements LiteralTypeInterface
 {
     /** @var int $value */

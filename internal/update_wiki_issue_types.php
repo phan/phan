@@ -7,6 +7,9 @@ require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 use Phan\Issue;
 
+/**
+ * This class will update and save issue documentation in a markdown format that can be uploaded to Phan's wiki
+ */
 class WikiWriter
 {
     /** @var string */

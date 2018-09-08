@@ -4,6 +4,9 @@ namespace Phan\Tests;
 
 use Phan\Config;
 
+/**
+ * Unit tests of Phan analysis targeting PHP 7.2 codebases and function/method signatures.
+ */
 class PHP72Test extends AbstractPhanFileTest
 {
     const OVERRIDES = [

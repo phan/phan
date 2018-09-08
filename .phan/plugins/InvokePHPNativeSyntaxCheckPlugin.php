@@ -149,6 +149,11 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
     }
 }
 
+/**
+ * This wraps a `php --syntax-check` process,
+ * and contains methods to start the process and await the result
+ * (and check for failures)
+ */
 class InvokeExecutionPromise
 {
     /** @var string path to the php binary invoked */

@@ -2,6 +2,8 @@
 namespace Phan\Tests;
 
 /**
+ * Unit tests for the expected behavior when Phan analyzes code using the SOAP extension.
+ *
  * @requires extension soap
  */
 final class SoapTest extends AbstractPhanFileTest

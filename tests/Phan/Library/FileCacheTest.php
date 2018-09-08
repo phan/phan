@@ -5,6 +5,7 @@ use Phan\Tests\BaseTest;
 use Phan\Library\FileCache;
 
 /**
+ * Unit tests of FileCache
  */
 final class FileCacheTest extends BaseTest
 {

@@ -4,6 +4,9 @@ namespace Phan\Language\Type;
 
 use Phan\Language\Type;
 
+/**
+ * Represents the type `object` (an instance of an unspecified class)
+ */
 final class ObjectType extends NativeType
 {
     /** @phan-override */

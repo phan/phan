@@ -33,12 +33,30 @@ use Phan\Language\Type\TrueType;
 use Closure;
 use Generator;
 use RuntimeException;
+use Serializable;
 
 if (!\function_exists('spl_object_id')) {
     require_once __DIR__ . '/../../spl_object_id.php';
 }
 
-class UnionType implements \Serializable
+/**
+ * Phan's internal representation of union types, and methods for working with union types.
+ *
+ * This representation is immutable.
+ * Phan represents union types as a list of unique `Type`s
+ * (This was the most efficient representation, since most union types have 0, 1, or 2 unique types in practice)
+ * To add/remove a type to a UnionType, you replace it with a UnionType that had that type added.
+ *
+ * @see AnnotatedUnionType for the way Phan represents extra information about types
+ * @see https://github.com/phan/phan/wiki/About-Union-Types
+ *
+ * > Union types can be any native type such as int, string, bool, or array, any class such as DateTime,
+ * > arrays of types such as string[], DateTime[],
+ * > or a union of any other types such as string|int|null|DateTime|DateTime[],
+ * > and many other types
+ *
+ */
+class UnionType implements Serializable
 {
     /**
      * @var string

@@ -46,6 +46,10 @@ class DuplicateExpressionPlugin extends PluginV2 implements PostAnalyzeNodeCapab
     }
 }
 
+/**
+ * This visitor analyzes node kinds that can be the root of expressions
+ * containing duplicate expressions.
+ */
 class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
 {
     /**

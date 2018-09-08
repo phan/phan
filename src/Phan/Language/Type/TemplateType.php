@@ -3,6 +3,10 @@ namespace Phan\Language\Type;
 
 use Phan\Language\Type;
 
+/**
+ * Represents a template type that has not yet been resolved.
+ * @see https://github.com/phan/phan/wiki/Generic-Types
+ */
 final class TemplateType extends Type
 {
     /** @var string */

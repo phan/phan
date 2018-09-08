@@ -3,6 +3,11 @@ namespace Phan\Output;
 
 use Phan\IssueInstance;
 
+/**
+ * Abstraction of functionality used to report and read issues to output.
+ *
+ * Multiple implementations are permitted for the language server protocol, unit testing, etc.
+ */
 interface IssueCollectorInterface
 {
 

@@ -6,6 +6,10 @@ use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\UnionType;
 
+/**
+ * ClassConstant represents the information Phan has
+ * about the declaration of a class constant.
+ */
 class ClassConstant extends ClassElement implements ConstantInterface
 {
     use ConstantTrait;

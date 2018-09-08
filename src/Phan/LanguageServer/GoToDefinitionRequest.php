@@ -24,6 +24,12 @@ use Exception;
 use Sabre\Event\Promise;
 
 /**
+ * Represents the Language Server Protocol's "Go to Definition" or "Go to Type Definition" request for a usage of an Element
+ * (class, property, function-like, constant, etc.)
+ *
+ * @see https://microsoft.github.io/language-server-protocol/specification#textDocument_definition
+ * @see https://microsoft.github.io/language-server-protocol/specification#textDocument_typeDefinition
+ *
  * @see \Phan\LanguageServer\DefinitionResolver for how this maps the found node to the type in the context.
  * @see \Phan\Plugin\Internal\NodeSelectionPlugin for how the node is found
  * @see \Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping for how isSelected is set

@@ -7,6 +7,9 @@ use Phan\Tests\AbstractPhanFileTest;
 use Phan\Config;
 use Phan\Debug;
 
+/**
+ * Tests of ASTSimplifier converting one AST to the expected AST.
+ */
 final class ASTSimplifierTest extends AbstractPhanFileTest
 {
     /**

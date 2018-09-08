@@ -8,6 +8,11 @@ use Phan\Language\UnionType;
 
 use AssertionError;
 
+/**
+ * Represents the PHPDoc type `static`.
+ * This is converted to a real class when necessary.
+ * @see $this->withStaticResolvedInContext()
+ */
 final class StaticType extends Type
 {
     /** Not an override */

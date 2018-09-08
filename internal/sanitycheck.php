@@ -62,7 +62,11 @@ function getParameterCountsFromReflection(array $args) : array
     return [$num_required, $num_optional];
 }
 
-// TODO: reuse code?
+/**
+ * This represents an entry in Phan's internal function signatures for a function/method parameter.
+ *
+ * (e.g. `'args...' => 'string|int'`)
+ */
 class PhanParameterInfo
 {
     /** @var string */

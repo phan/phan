@@ -12,6 +12,8 @@ use Phan\PluginV2\SuppressionCapability;
 use Phan\Suggestion;
 
 /**
+ * Plugins can implement this to suppress issues in additional ways.
+ *
  * @see \Phan\Plugin\Internal\BuiltinSuppressionPlugin for an example of how to implement a plugin with this functionality
  */
 interface SuppressionCapability

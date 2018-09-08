@@ -9,6 +9,9 @@ use Phan\Config;
 
 use AssertionError;
 
+/**
+ * Tests of ASTReverter converting a Node to a compact string representation of that node
+ */
 final class ASTReverterTest extends BaseTest
 {
     /**

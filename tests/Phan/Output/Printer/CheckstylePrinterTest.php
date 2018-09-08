@@ -8,6 +8,11 @@ use Phan\Output\Printer\CheckstylePrinter;
 use Phan\Tests\BaseTest;
 use Symfony\Component\Console\Output\BufferedOutput;
 
+/**
+ * Unit tests of CheckstylePrinter converting `IssueInstance`s to checkstyle xml output.
+ *
+ * TODO: Add tests that the output has the expected XML.
+ */
 final class CheckstylePrinterTest extends BaseTest
 {
 

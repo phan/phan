@@ -14,6 +14,9 @@ use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
+/**
+ * Unit tests of Phan's analysis creating the expected element representations on snippets of code.
+ */
 final class AnalyzerTest extends BaseTest
 {
     /**

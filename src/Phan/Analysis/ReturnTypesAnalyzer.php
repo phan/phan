@@ -14,6 +14,10 @@ use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 
+/**
+ * An analyzer that checks method return types (phpdoc and real)
+ * to make sure they're valid.
+ */
 class ReturnTypesAnalyzer
 {
 

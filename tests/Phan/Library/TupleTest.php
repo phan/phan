@@ -6,6 +6,7 @@ use Phan\Library\Tuple1;
 use Phan\Library\Tuple2;
 
 /**
+ * Unit tests of Tuple
  */
 final class TupleTest extends BaseTest
 {

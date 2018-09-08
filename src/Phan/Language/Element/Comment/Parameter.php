@@ -6,12 +6,16 @@ use Phan\Language\Context;
 use Phan\Language\Element\Variable;
 use Phan\Language\UnionType;
 
+/**
+ * Stores information Phan knows about the PHPDoc parameter of a given function-like.
+ * (e.g. of the doc comment of a method, function, closure, or magic method)
+ */
 class Parameter
 {
 
     /**
      * @var string
-     * The name of the parameter
+     * The name of the comment parameter
      */
     private $name;
 

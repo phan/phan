@@ -19,11 +19,23 @@ use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 
+/**
+ * Analyzer of the parameters of function/closure/method signatures.
+ *
+ * This will modify union types of parameter declarations based on available information
+ * such as inheritance, parameter defaults, etc.
+ *
+ * This will also warn if inherited parameters are invalid.
+ *
+ * (Depends on configuration settings)
+ */
 class ParameterTypesAnalyzer
 {
 
     /**
-     * Check method parameters to make sure they're valid
+     * Check function, closure, and method parameters to make sure they're valid
+     *
+     * This will also warn if method parameters are incompatible with the parameters of ancestor methods.
      *
      * @return void
      */
