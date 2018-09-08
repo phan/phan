@@ -4,7 +4,7 @@ namespace Phan\Library;
 use Exception;
 
 /**
- * This represents the absense of a value in an Option.
+ * This represents the absence of a value in an Option.
  *
  * @inherits Option<null>
  */
