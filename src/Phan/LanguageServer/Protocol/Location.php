@@ -16,12 +16,12 @@ use Phan\LanguageServer\Utils;
 class Location
 {
     /**
-     * @var string|null
+     * @var string|null the URI of the location
      */
     public $uri;
 
     /**
-     * @var Range|null
+     * @var Range|null the byte range of the location
      */
     public $range;
 

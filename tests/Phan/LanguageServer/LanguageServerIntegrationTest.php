@@ -38,8 +38,11 @@ final class LanguageServerIntegrationTest extends BaseTest
         return self::getLSPFolder() . '/src/example.php';
     }
 
-    // Incrementing message id for language client requests.
-    // Each test case has its own instance property $this->messageId
+    /**
+     * Incrementing message id for language client requests.
+     * Each test case has its own instance property $this->messageId
+     * @var int
+     */
     private $messageId = 0;
 
     /**

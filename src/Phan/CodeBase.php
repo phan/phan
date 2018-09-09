@@ -168,7 +168,10 @@ class CodeBase
     private $undo_tracker;
 
     /**
-     * @var bool
+     * @var bool is the undo tracker currently enabled?
+     *
+     * If the Phan Language Server or Daemon Mode is enabled,
+     * the undo tracker will be enabled prior to the analysis phase, and disabled afterwards.
      */
     private $has_enabled_undo_tracker = false;
 

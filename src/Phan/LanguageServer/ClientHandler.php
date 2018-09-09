@@ -13,17 +13,17 @@ use Sabre\Event\Promise;
 class ClientHandler
 {
     /**
-     * @var ProtocolReader
+     * @var ProtocolReader used to read notifications, requests, and responses from the LSP client
      */
     public $protocolReader;
 
     /**
-     * @var ProtocolWriter
+     * @var ProtocolWriter used to send notifications, requests, and responses to the LSP client
      */
     public $protocolWriter;
 
     /**
-     * @var IdGenerator
+     * @var IdGenerator used to generate ids when sending requests to the client.
      */
     public $idGenerator;
 

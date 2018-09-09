@@ -157,10 +157,10 @@ class DemoPlugin extends PluginV2 implements
 
     /**
      * @param CodeBase $code_base
-     * The code base in which the function exists
+     * The code base in which the property exists
      *
      * @param Property $property
-     * A function being analyzed
+     * A property being analyzed
      *
      * @return void
      *

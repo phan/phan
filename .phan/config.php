@@ -257,6 +257,9 @@ return [
         'PhanPossiblyFalseTypeArgumentInternal',
         'PhanPossiblyNullTypeArgument',
         'PhanPossiblyNullTypeArgumentInternal',
+        // TODO: Fix and remove suppression for this plugin
+        'PhanPluginDescriptionlessCommentOnPrivateProperty',
+        'PhanPluginDescriptionlessCommentOnProtectedProperty',
     ],
 
     // If empty, no filter against issues types will be applied.
@@ -557,7 +560,7 @@ return [
         // TODO: warn about the usage of assert() for Phan's self-analysis. See https://github.com/phan/phan/issues/288
         'NoAssertPlugin',
 
-        // 'HasPHPDocPlugin',
+        'HasPHPDocPlugin',
 
         ////////////////////////////////////////////////////////////////////////
         // End plugins for Phan's self-analysis

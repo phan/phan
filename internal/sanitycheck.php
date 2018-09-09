@@ -65,26 +65,29 @@ function getParameterCountsFromReflection(array $args) : array
 /**
  * This represents an entry in Phan's internal function signatures for a function/method parameter.
  *
- * (e.g. `'args...' => 'string|int'`)
+ * (e.g. `'...args' => 'string|int'`)
  */
 class PhanParameterInfo
 {
-    /** @var string */
+    /** @var string the parameter name */
     public $name;
+
     /**
-     * @var string
+     * @var string the original spec string, e.g. `'...args'`
      * @suppress PhanWriteOnlyPublicProperty may use this in the future, e.g. for warnings
      */
     public $original_name_spec;
 
-    /** @var bool */
+    /** @var bool is this parameter optional */
     public $is_optional;
-    /** @var bool */
+
+    /** @var bool is this parameter passed by reference */
     public $is_by_reference;
-    /** @var bool */
+
+    /** @var bool is this parameter variadic */
     public $is_variadic;
 
-    /** @var string */
+    /** @var string the union type string */
     public $value;
 
     public function __construct(string $original_name_spec, string $value_spec)

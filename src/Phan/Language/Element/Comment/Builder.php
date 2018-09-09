@@ -25,44 +25,45 @@ use Phan\Library\Some;
  */
 final class Builder
 {
-    /** @var array<int,string> */
+    /** @var array<int,string> the list of lines of the doc comment */
     public $lines;
-    /** @var int */
+    /** @var int count($this->lines) */
     public $comment_lines_count;
-    /** @var CodeBase */
+    /** @var CodeBase The code base within which we're operating. */
     public $code_base;
-    /** @var Context */
+    /** @var Context the context of the parser at the comment we're reading */
     public $context;
-    /** @var int */
+    /** @var int the line number of the element this doc comment belongs to */
     public $lineno;
-    /** @var int */
+    /** @var int an enum value from Comment::ON_* */
     public $comment_type;
-    /** @var array<int,Parameter> */
+    /** @var array<int,Parameter> the list of extracted (at)var annotations*/
     public $variable_list = [];
-    /** @var array<int,Parameter> */
+    /** @var array<int,Parameter> the list of extracted (at)param annotations */
     public $parameter_list = [];
-    /** @var array<int,TemplateType> */
+    /** @var array<int,TemplateType> the list of extracted (at)template annotations */
     public $template_type_list = [];
-    /** @var Option<Type> */
+    /** @var Option<Type> the (at)inherits annotation */
     public $inherited_type;
-    /** @var UnionType */
+    // TODO: Warn about multiple (at)returns
+    /** @var UnionType the (at)return annotation types*/
     public $return_union_type;
     /**
-     * @var array<int,string>
+     * @var array<int,string> the list of issue names from (at)suppress annotations
      * @suppress PhanReadOnlyPublicProperty FIXME: array_push doesn't count as a write-reference
      */
     public $suppress_issue_list = [];
-    /** @var array<int,Property> */
+    /** @var array<int,Property> the list of (at)property annotations (and property-read, property-write) */
     public $magic_property_list = [];
-    /** @var array<int,Method> */
+    /** @var array<int,Method> the list of (at)method annotations */
     public $magic_method_list = [];
-    /** @var Option */
+    /** @var Option<Type> the type a closure will be bound to */
     public $closure_scope;
-    /** @var int */
+    /** @var int combination of flags from \Phan\Flags */
     public $comment_flags = 0;
-    /** @var array<string,mixed> */
+    /** @var array<string,mixed> annotations for Phan that override the standardized version of those annotations. Used for compatibility with other tools. */
     public $phan_overrides = [];
-    /** @var UnionType */
+    /** @var UnionType the union type of the set of (at)throws annotations */
     public $throw_union_type;
 
     public function __construct(

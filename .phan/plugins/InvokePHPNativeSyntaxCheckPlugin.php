@@ -30,7 +30,12 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
     const LINE_NUMBER_REGEX = "@ on line ([1-9][0-9]*)$@";
     const STDIN_FILENAME_REGEX = "@ in (Standard input code|-)@";
 
-    /** @var array<int,InvokeExecutionPromise> */
+    /**
+     * @var array<int,InvokeExecutionPromise>
+     * A list of invoked processes that this plugin created.
+     * This plugin creates a processes(up to a maximum number can run at a time)
+     * and then waits for the execution of those processes to finish.
+     */
     private $processes = [];
 
     /**
@@ -159,22 +164,22 @@ class InvokeExecutionPromise
     /** @var string path to the php binary invoked */
     private $binary;
 
-    /** @var bool */
+    /** @var bool is the process finished executing */
     private $done = false;
 
-    /** @var resource */
+    /** @var resource result of proc_open() */
     private $process;
 
     /** @var array{0:resource,1:resource,2:resource} */
     private $pipes;
 
-    /** @var ?string */
+    /** @var ?string an error message */
     private $error = null;
 
-    /** @var string */
+    /** @var string the raw bytes from stdout with serialized data */
     private $raw_stdout = '';
 
-    /** @var Context */
+    /** @var Context has the file name being analyzed */
     private $context;
 
     public function __construct(string $binary, string $file_contents, Context $context)

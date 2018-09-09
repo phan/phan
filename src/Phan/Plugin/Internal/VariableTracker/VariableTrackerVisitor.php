@@ -26,11 +26,19 @@ use function is_string;
 final class VariableTrackerVisitor extends AnalysisVisitor
 {
     /**
+     * This shared graph instance maps definitions of variables (in a function-like context)
+     * to the uses of that variable.
+     *
      * @var VariableGraph
      */
     public static $variable_graph;
 
-    /** @var VariableTrackingScope */
+    /**
+     * This represents the status of variables in the current scope
+     * (e.g. which variable definitions are available to be used, etc.)
+     *
+     * @var VariableTrackingScope
+     */
     private $scope;
 
     public function __construct(VariableTrackingScope $scope)

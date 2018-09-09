@@ -6,17 +6,20 @@ namespace Phan\LanguageServer\Protocol;
 use AdvancedJsonRpc\Message as MessageBody;
 
 /**
+ * This represents a notification, request, or response from the Language Server Protocol,
+ * which uses JSON-RPC 2.
+ *
  * Source: https://github.com/felixfbecker/php-language-server/tree/master/src/Protocol/Message.php
  */
 class Message
 {
     /**
-     * @var ?\AdvancedJsonRpc\Message
+     * @var ?\AdvancedJsonRpc\Message the optional decoded message body for this message
      */
     public $body;
 
     /**
-     * @var array<string,string>
+     * @var array<string,string> the headers associated with this message (e.g. Content-Length)
      */
     public $headers;
 

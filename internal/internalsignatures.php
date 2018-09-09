@@ -965,6 +965,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
         return 0;
     }
 
+    /** @var bool */
     private $initialized = false;
 
     private function getFileList() : array

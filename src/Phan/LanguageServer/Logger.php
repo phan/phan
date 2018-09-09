@@ -11,7 +11,7 @@ use Phan\Config;
  */
 class Logger
 {
-    /** @var resource|false */
+    /** @var resource|false the log file handle */
     public static $file = false;
 
     public static function shouldLog() : bool
@@ -48,7 +48,7 @@ class Logger
     }
 
     /**
-     * @return resource
+     * @return resource the log file handle
      */
     private static function getLogFile()
     {

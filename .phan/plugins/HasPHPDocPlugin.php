@@ -3,18 +3,24 @@
 use Phan\CodeBase;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\MarkupDescription;
+use Phan\Language\Element\Property;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeClassCapability;
+use Phan\PluginV2\AnalyzePropertyCapability;
 
 /**
  * This file checks if a class has a PHPDoc comment,
  * and that Phan can generate a hover description for that comment.
  *
- * It hooks into this event:
+ * It hooks into these events:
  *
  * - analyzeClass
  *   Once all classes are parsed, this method will be called
  *   on every method in the code base
+ *
+ * - analyzeProperty
+ *   Once all functions have been parsed, this method will
+ *   be called on every property in the code base.
  *
  * A plugin file must
  *
@@ -29,7 +35,8 @@ use Phan\PluginV2\AnalyzeClassCapability;
  * add them to the corresponding section of README.md
  */
 final class HasPHPDocPlugin extends PluginV2 implements
-    AnalyzeClassCapability
+    AnalyzeClassCapability,
+    AnalyzePropertyCapability
 {
     /**
      * @param CodeBase $code_base
@@ -66,6 +73,60 @@ final class HasPHPDocPlugin extends PluginV2 implements
                 'PhanPluginDescriptionlessCommentOnClass',
                 'Class {CLASS} has no readable description: {STRING_LITERAL}',
                 [$class->getFQSEN(), json_encode($class->getDocComment(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)]
+            );
+            return;
+        }
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base in which the function exists
+     *
+     * @param Property $property
+     * A property being analyzed
+     *
+     * @return void
+     *
+     * @override
+     */
+    public function analyzeProperty(
+        CodeBase $code_base,
+        Property $property
+    ) {
+        if ($property->isDynamicProperty()) {
+            // And dynamic properties don't have phpdoc.
+        }
+        if ($property->isFromPHPDoc()) {
+            // Phan does not track descriptions of (at)property.
+            return;
+        }
+        if ($property->getFQSEN() !== $property->getRealDefiningFQSEN()) {
+            // Only warn once for the original definition of this property.
+            // Don't warn about subclasses inheriting this property.
+            return;
+        }
+        $doc_comment = $property->getDocComment();
+        if (!$doc_comment) {
+            $visibility_upper = ucfirst($property->getVisibilityName());
+            $this->emitIssue(
+                $code_base,
+                $property->getContext(),
+                "PhanPluginNoCommentOn${visibility_upper}Property",
+                "$visibility_upper property {PROPERTY} has no doc comment",
+                [$property->getFQSEN()]
+            );
+            return;
+        }
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $description = MarkupDescription::extractDescriptionFromDocComment($property);
+        if (!$description) {
+            $visibility_upper = ucfirst($property->getVisibilityName());
+            $this->emitIssue(
+                $code_base,
+                $property->getContext(),
+                "PhanPluginDescriptionlessCommentOn${visibility_upper}Property",
+                "$visibility_upper property {PROPERTY} has no readable description: {STRING_LITERAL}",
+                [$property->getFQSEN(), json_encode($property->getDocComment(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)]
             );
             return;
         }

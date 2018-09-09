@@ -18,7 +18,7 @@ class Tuple2 extends Tuple1
     /** @var int */
     const ARITY = 2;
 
-    /** @var T1 */
+    /** @var T1 element 1 of this tuple (0-based index) */
     public $_1;
 
     /**

@@ -45,6 +45,10 @@ class UnusedSuppressionPlugin extends PluginV2 implements
      */
     private $elements_for_postponed_analysis = [];
 
+    /**
+     * @var string[] a list of files where checks for unused suppressions was postponed
+     * (Because of non-quick mode, we may emit issues in a file after analysis has run on that file)
+     */
     private $files_for_postponed_analysis = [];
 
     /**
@@ -58,7 +62,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
 
     /**
      * @param CodeBase $code_base
-     * The code base in which the function exists
+     * The code base in which the element exists
      *
      * @param AddressableElement $element
      * Any element such as function, method, class
@@ -155,7 +159,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
 
     /**
      * @param CodeBase $unused_code_base
-     * The code base in which the function exists
+     * The code base in which the property exists
      *
      * @param Property $property
      * A property being analyzed

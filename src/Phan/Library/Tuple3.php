@@ -22,7 +22,7 @@ class Tuple3 extends Tuple2
     /** @var int */
     const ARITY = 3;
 
-    /** @var T2 */
+    /** @var T2 element 2 of this tuple (0-based index) */
     public $_2;
 
     /**

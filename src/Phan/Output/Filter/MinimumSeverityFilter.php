@@ -12,7 +12,7 @@ use Phan\Output\IssueFilterInterface;
 final class MinimumSeverityFilter implements IssueFilterInterface
 {
 
-    /** @var int */
+    /** @var int the provided minimum severity */
     private $minimum_severity;
 
     /**
