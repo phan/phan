@@ -159,6 +159,11 @@ EOT
                 '/**   @return int positive */',
                 Comment::ON_METHOD
             ],
+            [
+                '@return int self::MY_ENUM_* description',
+                '/**   @return int self::MY_ENUM_* description */',
+                Comment::ON_METHOD
+            ],
             // Don't treat uninformative (at)return as function-like summaries.
             [
                 '',

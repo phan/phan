@@ -49,7 +49,11 @@ class MarkupDescription
      */
     public static function extractDocComment(string $doc_comment, int $comment_category = null) : string
     {
-        $doc_comment = preg_replace('@(^/\*\*)|(\*/$)@', '', $doc_comment);
+        // Trim the start and the end of the doc comment.
+        //
+        // We leave in the second `*` of `/**` so that every single non-empty line
+        // of a typical doc comment will begin with a `*`
+        $doc_comment = preg_replace('@(^/\*)|(\*/$)@', '', $doc_comment);
 
         $results = [];
         $lines = explode("\n", $doc_comment);
