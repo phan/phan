@@ -47,7 +47,7 @@ namespace {
  */
 function global_function_with_comment(int $x, $y) {
 }
-
+/** description of ExampleClass */
 class ExampleClass {
     /** @var int this tracks a count */
     public $counter;
