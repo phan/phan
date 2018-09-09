@@ -62,7 +62,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
 
     /**
      * @param CodeBase $code_base
-     * The code base in which the function exists
+     * The code base in which the element exists
      *
      * @param AddressableElement $element
      * Any element such as function, method, class
@@ -159,7 +159,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
 
     /**
      * @param CodeBase $unused_code_base
-     * The code base in which the function exists
+     * The code base in which the property exists
      *
      * @param Property $property
      * A property being analyzed
