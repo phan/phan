@@ -46,8 +46,6 @@ final class GoToDefinitionRequest
     private $promise;
     /** @var int self::REQUEST_* */
     private $request_type;
-    /** @var bool true if this is "Go to Type Definition" */
-    private $is_type_definition_request;
 
     /**
      * @var array<string,Location> the list of locations for a "Go to [Type] Definition" request
@@ -69,7 +67,6 @@ final class GoToDefinitionRequest
         $this->path = Utils::uriToPath($uri);
         $this->position = $position;
         $this->promise = new Promise();
-        $this->is_type_definition_request = $request_type === self::REQUEST_TYPE_DEFINITION;
         $this->request_type = $request_type;
     }
 
@@ -82,7 +79,7 @@ final class GoToDefinitionRequest
         AddressableElementInterface $element,
         bool $resolve_type_definition_if_needed
     ) {
-        if ($this->is_type_definition_request && $resolve_type_definition_if_needed) {
+        if ($this->getIsTypeDefinitionRequest() && $resolve_type_definition_if_needed) {
             if (!($element instanceof Clazz)) {
                 $this->recordTypeOfElement($code_base, $element->getContext(), $element->getUnionType());
                 return;
@@ -96,16 +93,75 @@ final class GoToDefinitionRequest
     ) {
         if ($this->request_type === self::REQUEST_HOVER) {
             if ($this->hover_response === null) {
-                $this->hover_response = new Hover(
-                    new MarkupContent(
-                        MarkupContent::MARKDOWN,
-                        MarkupDescription::buildForElement($element)
-                    )
-                );
+                $this->setHoverMarkdown(MarkupDescription::buildForElement($element));
+                // TODO: Support documenting more than one definition.
             }
             return;
         }
         $this->recordDefinitionContext($element->getContext());
+    }
+
+    private function setHoverMarkdown(string $markdown)
+    {
+        $this->hover_response = new Hover(
+            new MarkupContent(
+                MarkupContent::MARKDOWN,
+                $markdown
+            )
+        );
+    }
+
+    /**
+     * Precondition: $this->getIsHoverRequest()
+     */
+    private function recordHoverTextForElementType(
+        CodeBase $code_base,
+        Context $context,
+        UnionType $union_type
+    ) {
+        $type_set = $union_type->getTypeSet();
+        if (count($type_set) === 0) {
+            // Don't bother generating hover text if there are no known types, maybe a subsequent call will have types
+            return;
+        }
+        $maybe_set_markdown_to_union_type = function () use ($union_type) {
+            if ($this->hover_response === null) {
+                $this->setHoverMarkdown(sprintf('`%s`', (string)$union_type));
+            }
+        };
+        if (count($type_set) >= 2) {
+            $maybe_set_markdown_to_union_type();
+            return;
+        }
+
+        // If there is exactly one known type, then if it is a class/interface type, show details about the class/interface for that type
+        foreach ($type_set as $type) {
+            if ($type->getIsNullable()) {
+                continue;
+            }
+            if ($type instanceof TemplateType) {
+                continue;
+            }
+            if ($type->isSelfType() || $type->isStaticType()) {
+                if (!$context->isInClassScope()) {
+                    // Phan already warns elsewhere
+                    continue;
+                }
+                $type_fqsen = $context->getClassFQSEN();
+            } else {
+                // Get the FQSEN of the class or closure.
+                $type_fqsen = $type->asFQSEN();
+            }
+            try {
+                $this->recordDefinitionOfTypeFQSEN($code_base, $type_fqsen);
+            } catch (CodeBaseException $_) {
+                continue;
+            }
+        }
+
+        if ($this->hover_response === null) {
+            $maybe_set_markdown_to_union_type();
+        }
     }
 
     /**
@@ -129,6 +185,11 @@ final class GoToDefinitionRequest
         Context $context,
         UnionType $union_type
     ) {
+        if ($this->getIsHoverRequest()) {
+            $this->recordHoverTextForElementType($code_base, $context, $union_type);
+            return;
+        }
+
         // Do something similar to the check for undeclared classes
         foreach ($union_type->getTypeSet() as $type) {
             if ($type instanceof TemplateType) {
@@ -160,9 +221,13 @@ final class GoToDefinitionRequest
         CodeBase $code_base,
         FQSEN $type_fqsen
     ) {
-        $record_definition = function (AddressableElementInterface $element) {
+        $record_definition = function (AddressableElementInterface $element) use ($code_base) {
             if (!$element->isPHPInternal()) {
-                $this->recordDefinitionContext($element->getContext());
+                if ($this->getIsHoverRequest()) {
+                    $this->recordDefinitionElement($code_base, $element, false);
+                } else {
+                    $this->recordDefinitionContext($element->getContext());
+                }
             }
         };
         if ($type_fqsen instanceof FullyQualifiedClassName) {
@@ -270,7 +335,12 @@ final class GoToDefinitionRequest
 
     public function getIsTypeDefinitionRequest() : bool
     {
-        return $this->is_type_definition_request;
+        return $this->request_type === self::REQUEST_TYPE_DEFINITION;
+    }
+
+    public function getIsHoverRequest() : bool
+    {
+        return $this->request_type === self::REQUEST_HOVER;
     }
 
     public function __destruct()

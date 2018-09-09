@@ -2531,7 +2531,13 @@ class Clazz extends AddressableElement
 
     public function getMarkupDescription() : string
     {
+        $fqsen = $this->getFQSEN();
         $string = '';
+        $namespace = ltrim($fqsen->getNamespace(), '\\');
+        if ($namespace !== '') {
+            // Render the namespace one line above the class
+            $string .= "namespace $namespace;\n";
+        }
 
         if ($this->isFinal()) {
             $string .= 'final ';
@@ -2549,8 +2555,7 @@ class Clazz extends AddressableElement
             $string .= 'class ';
         }
 
-        // TODO: Also render the namespace?
-        $string .= $this->getFQSEN()->getName();
+        $string .= $fqsen->getName();
         return $string;
     }
 

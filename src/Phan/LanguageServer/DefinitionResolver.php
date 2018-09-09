@@ -71,7 +71,7 @@ class DefinitionResolver
                     self::locateGlobalConstDefinition($request, $code_base, $context, $node);
                     return;
                 case ast\AST_VAR:
-                    // NOTE: Only implemented for "go to type definition" right now.
+                    // NOTE: Only implemented for "go to type definition" and "hover" right now.
                     // TODO: Add simple heuristics to check for assignments and references within the function/global scope?
                     self::locateVariableDefinition($request, $code_base, $context, $node);
                     return;
@@ -208,7 +208,7 @@ class DefinitionResolver
         if (!$context->getScope()->hasVariableWithName($name)) {
             return;
         }
-        if (!$request->getIsTypeDefinitionRequest()) {
+        if (!$request->getIsTypeDefinitionRequest() && !$request->getIsHoverRequest()) {
             // TODO: Implement "Go To Definition" for variables with heuristics or create a new plugin
             return;
         }
