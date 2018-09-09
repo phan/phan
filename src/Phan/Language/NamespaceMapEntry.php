@@ -4,12 +4,12 @@ namespace Phan\Language;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 
 /**
- * Tracks a `use Foo\Bar;` statement at the top of a class.
+ * Tracks a `use Foo\Bar;` statement inside of a namespace.
  */
 class NamespaceMapEntry implements \Serializable
 {
     /**
-     * @var FullyQualifiedGlobalStructuralElement
+     * @var FullyQualifiedGlobalStructuralElement the FQSEN of the
      */
     public $fqsen;
 
@@ -24,7 +24,7 @@ class NamespaceMapEntry implements \Serializable
     public $lineno;
 
     /**
-     * @var bool
+     * @var bool has this use statement been referenced during the parse/analysis phase?
      */
     public $is_used = false;
 

@@ -47,6 +47,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
     /** @var Type */
     private static $phpunit_test_case_type;
 
+    /** @var bool */
     private static $did_warn_unused = false;
 
     /**

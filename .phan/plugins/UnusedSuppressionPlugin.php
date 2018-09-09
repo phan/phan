@@ -45,6 +45,10 @@ class UnusedSuppressionPlugin extends PluginV2 implements
      */
     private $elements_for_postponed_analysis = [];
 
+    /**
+     * @var string[] a list of files where checks for unused suppressions was postponed
+     * (Because of non-quick mode, we may emit issues in a file after analysis has run on that file)
+     */
     private $files_for_postponed_analysis = [];
 
     /**

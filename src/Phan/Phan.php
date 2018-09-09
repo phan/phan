@@ -28,10 +28,10 @@ use InvalidArgumentException;
  */
 class Phan implements IgnoredFilesFilterInterface
 {
-    /** @var IssuePrinterInterface */
+    /** @var IssuePrinterInterface used to print formatted issues. */
     public static $printer;
 
-    /** @var IssueCollectorInterface */
+    /** @var IssueCollectorInterface used to gather issues to be printed (or used) once analysis is finished */
     private static $issue_collector;
 
     /**

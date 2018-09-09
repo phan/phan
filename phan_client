@@ -283,10 +283,10 @@ class PhanPHPLinterOpts
     /** @var string[]|null - optional, maps original files to temporary file path to use as a substitute. */
     public $temporary_file_map = null;
 
-    /** @var bool - unused. */
+    /** @var bool if true, enable verbose output. */
     public $verbose = false;
 
-    /** @var bool */
+    /** @var bool should this client request analysis from the Phan server when the file has syntax errors */
     public $use_fallback_parser;
 
     /** @var bool */

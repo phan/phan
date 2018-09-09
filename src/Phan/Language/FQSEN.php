@@ -2,7 +2,7 @@
 namespace Phan\Language;
 
 /**
- * A Fully-Qualified Name
+ * A Fully-Qualified Structural Element Name
  */
 interface FQSEN
 {

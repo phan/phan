@@ -19,17 +19,19 @@ use Phan\LanguageServer\Utils;
 class Workspace
 {
     /**
-     * @var LanguageClient
+     * @var LanguageClient represents the client of this language server.
      */
     public $client;
 
     /**
-     * @var LanguageServer
+     * @var LanguageServer represents the LSP related functionality of the Phan Language Server.
      */
     public $server;
 
     /**
-     * @var FileMapping
+     * @var FileMapping this tracks the state of files opened and edited in the client.
+     *
+     * Any entries in this object should override the state of the files on disk.
      */
     public $file_mapping;
 

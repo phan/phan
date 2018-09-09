@@ -28,7 +28,7 @@ class Tuple5 extends Tuple4
     /** @var int */
     const ARITY = 4;
 
-    /** @var T4 */
+    /** @var T4 element 4 of this tuple (0-based index) */
     public $_4;
 
     /**

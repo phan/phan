@@ -166,15 +166,16 @@ StubsGenerator::main();
 class StubCollection {
     /** @var CodeBase */
     private $code_base;
+
     public function __construct(CodeBase $code_base) {
         $this->code_base = $code_base;
     }
 
-    /** @var string[][] */
+    /** @var string[][] a list of class stubs for a PHP module */
     public $class_stubs = [];
-    /** @var string[][] */
+    /** @var string[][] a list of function stubs for a PHP module */
     public $function_stubs = [];
-    /** @var string[][] */
+    /** @var string[][] a list of global constant stubs for a PHP module */
     public $global_constant_stubs = [];
 
     /** @return void */
