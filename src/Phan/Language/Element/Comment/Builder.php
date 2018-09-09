@@ -49,7 +49,7 @@ final class Builder
     /** @var UnionType the (at)return annotation types*/
     public $return_union_type;
     /**
-     * @var array<int,string>
+     * @var array<int,string> the list of issue names from (at)suppress annotations
      * @suppress PhanReadOnlyPublicProperty FIXME: array_push doesn't count as a write-reference
      */
     public $suppress_issue_list = [];

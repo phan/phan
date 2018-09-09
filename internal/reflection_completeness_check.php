@@ -12,6 +12,11 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\UnionType;
 
+/**
+ * Checks if Phan has internal signatures for all elements of PHP modules
+ * (e.g. php-ast, redis)
+ * that the running PHP binary has Reflection information for.
+ */
 class ReflectionCompletenessCheck
 {
     const EXCLUDED_FUNCTIONS = [
