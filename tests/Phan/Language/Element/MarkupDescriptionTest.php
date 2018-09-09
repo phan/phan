@@ -32,19 +32,26 @@ final class MarkupDescriptionTest extends BaseTest
             [
                 '',
                 '/** @param T $x A parameter annotation goes here */',
+                Comment::ON_METHOD,
             ],
             [
                 '',
                 '/** @var T $x A local variable annotation of a function goes here*/',
-                Comment::ON_METHOD
+                Comment::ON_METHOD,
             ],
             [
                 '@var MyClass An annotation of a property goes here',
                 '/** @var MyClass An annotation of a property goes here */',
                 Comment::ON_PROPERTY,
             ],
+            // Allow the description of (at)var to be a summary for the property if there is no earlier summary
             [
-                '@var MyClass A annotation of a constant goes here',
+                <<<EOT
+@var MyClass A annotation of a constant goes here
+
+Rest of this comment
+EOT
+                ,
                 <<<EOT
 /**
  * @var MyClass A annotation of a constant goes here
@@ -55,6 +62,7 @@ EOT
                 ,
                 Comment::ON_CONST,
             ],
+            // Preserve leading whitespace when parsing the comment description
             [
                 <<<EOT
 A description goes here
@@ -75,6 +83,92 @@ EOT
  *    Rest of that list
  */
 EOT
+            ],
+            // Preserve leading whitespace when parsing markup after (at)return
+            [
+                <<<EOT
+@return int
+
+Rest of this description
+
+-  Example markup list
+   Rest of that list
+EOT
+                ,
+            <<<EOT
+/**
+ * @return int
+ *
+ * Rest of this description
+ *
+ * -  Example markup list
+ *    Rest of that list
+ *
+ * @internal
+ */
+EOT
+                ,
+                Comment::ON_METHOD
+            ],
+            // Only parse (at)return on comments of function-likes
+            [
+                ''
+                ,
+            <<<EOT
+/**
+ * @return int
+ *
+ * Rest of this description
+ */
+EOT
+                ,
+                Comment::ON_PROPERTY
+            ],
+            // Parse summaries on adjacent lines
+            [
+                <<<EOT
+@return int
+Rest of this description
+EOT
+                ,
+            <<<EOT
+/**
+ * @return int
+ * Rest of this description
+ *
+ * @internal
+ */
+EOT
+                ,
+                Comment::ON_FUNCTION
+            ],
+            // Treat informative (at)return as function-like summaries.
+            [
+                '@return int positive',
+            <<<EOT
+/**
+ * @return int positive
+ */
+EOT
+                ,
+                Comment::ON_FUNCTION
+            ],
+            // Treat informative single-line (at)return as function-like summaries.
+            [
+                '@return int positive',
+                '/**   @return int positive */',
+                Comment::ON_METHOD
+            ],
+            // Don't treat uninformative (at)return as function-like summaries.
+            [
+                '',
+            <<<EOT
+/**
+ * @return string|false
+ */
+EOT
+                ,
+                Comment::ON_FUNCTION
             ],
         ];
     }

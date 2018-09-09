@@ -51,22 +51,24 @@ class MarkupDescription
     {
         $doc_comment = preg_replace('@(^/\*\*)|(\*/$)@', '', $doc_comment);
 
-        // TODO: Improve this extraction, add tests
         $results = [];
-        foreach (explode("\n", $doc_comment) as $line) {
-            $pos = stripos($line, '*');
-            if ($pos !== false) {
-                $line = \substr($line, $pos + 1);
-            } else {
-                $line = \ltrim(rtrim($line), "\n\t ");
-            }
+        $lines = explode("\n", $doc_comment);
+        foreach ($lines as $i => $line) {
+            $line = self::trimLine($line);
             if (!is_string($line) || preg_match('/^\s*@/', $line) > 0) {
                 if (count($results) === 0) {
-                    // Special case: Treat `@var T description of T` as a valid single-line comment of constants and properties.
-                    // Variables don't currently have associated comments
+                    // Special cases:
                     if (\in_array($comment_category, [Comment::ON_PROPERTY, Comment::ON_CONST])) {
-                        if (preg_match('/^\s*@var\b/', $line) > 0) {
-                            $results[] = trim($line);
+                        // Treat `@var T description of T` as a valid single-line comment of constants and properties.
+                        // Variables don't currently have associated comments
+                        if (preg_match('/^\s*@var\s/', $line) > 0) {
+                            $results = array_merge($results, self::extractTagSummary($lines, $i));
+                        }
+                    } elseif (\in_array($comment_category, Comment::FUNCTION_LIKE)) {
+                        // Treat `@return T description of return value` as a valid single-line comment of closures, functions, and methods.
+                        // Variables don't currently have associated comments
+                        if (preg_match('/^\s*@return\s/', $line) > 0) {
+                            $results = array_merge($results, self::extractTagSummary($lines, $i));
                         }
                     }
                 }
@@ -86,6 +88,50 @@ class MarkupDescription
         }
         $results = self::trimLeadingWhitespace($results);
         return implode("\n", $results);
+    }
+
+    private static function trimLine(string $line) : string
+    {
+        $line = rtrim($line);
+        $pos = stripos($line, '*');
+        if ($pos !== false) {
+            return (string)\substr($line, $pos + 1);
+        } else {
+            return \ltrim($line, "\n\t ");
+        }
+    }
+
+    /**
+     * @param array<int,string> $lines
+     * @param int $i the offset of the tag in $lines
+     * @return array<int,string> the trimmed lines
+     */
+    private static function extractTagSummary(array $lines, int $i): array
+    {
+        $summary = [];
+        $summary[] = self::trimLine($lines[$i]);
+        for ($j = $i + 1; $j < count($lines); $j++) {
+            $line = self::trimLine($lines[$j]);
+            if (preg_match('/^\s*\{?@/', $line)) {
+                // Break on other annotations such as (at)internal, {(at)inheritDoc}, etc.
+                break;
+            }
+            if ($line === '' && end($summary) === '') {
+                continue;
+            }
+            $summary[] = $line;
+        }
+        if (end($summary) === '') {
+            array_pop($summary);
+        }
+        if (count($summary) === 1 && count(preg_split('/\s+/', trim($summary[0]))) <= 2) {
+            // For something uninformative such as "* (at)return int" (and nothing else),
+            // don't treat it as a summary.
+            //
+            // The caller would already show the return type
+            return [];
+        }
+        return $summary;
     }
 
     /**
