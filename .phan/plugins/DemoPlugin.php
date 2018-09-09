@@ -160,7 +160,7 @@ class DemoPlugin extends PluginV2 implements
      * The code base in which the function exists
      *
      * @param Property $property
-     * A function being analyzed
+     * A property being analyzed
      *
      * @return void
      *

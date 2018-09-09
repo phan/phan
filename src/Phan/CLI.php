@@ -107,7 +107,7 @@ class CLI
     ];
 
     /**
-     * @var OutputInterface
+     * @var OutputInterface used for outputting the formatted issue messages.
      */
     private $output;
 

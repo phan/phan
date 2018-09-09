@@ -160,6 +160,9 @@ EOT;
 
 StubsGenerator::main();
 
+/**
+ * A representation of the collection of stubs for elements of a PHP module(a.k.a. extension).
+ */
 class StubCollection {
     /** @var CodeBase */
     private $code_base;

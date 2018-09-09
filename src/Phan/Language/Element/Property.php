@@ -84,7 +84,7 @@ class Property extends ClassElement
         return $this->real_defining_fqsen ?? $this->getDefiningFQSEN();
     }
 
-    private function getVisibilityName() : string
+    public function getVisibilityName() : string
     {
         if ($this->isPrivate()) {
             return 'private';

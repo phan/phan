@@ -67,9 +67,21 @@ class Request
     private static $exited_pid_status = [];
 
 
-    /** @var ?GoToDefinitionRequest */
+    /**
+     * The most recent Language Server Protocol request to look up what an element is
+     * (e.g. "go to definition", "go to type definition", "hover")
+     *
+     * @var ?GoToDefinitionRequest
+     */
     private $most_recent_definition_request;
-    /** @var bool */
+
+    /**
+     * If true, this process will exit() after finishing.
+     * If false, this class will instead throw ExitException to be caught by the caller
+     * (E.g. if pcntl is unavailable)
+     *
+     * @var bool
+     */
     private $should_exit;
 
     /**

@@ -257,6 +257,9 @@ return [
         'PhanPossiblyFalseTypeArgumentInternal',
         'PhanPossiblyNullTypeArgument',
         'PhanPossiblyNullTypeArgumentInternal',
+        // TODO: Fix and remove suppression for this plugin
+        'PhanPluginDescriptionlessCommentOnPrivateProperty',
+        'PhanPluginDescriptionlessCommentOnProtectedProperty',
     ],
 
     // If empty, no filter against issues types will be applied.

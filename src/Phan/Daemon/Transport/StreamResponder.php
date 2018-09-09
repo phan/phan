@@ -16,6 +16,7 @@ class StreamResponder implements Responder
     /** @var ?array the request data */
     private $request_data;
 
+    /** @var bool did this process already finish reading the data of the request? */
     private $did_read_request_data = false;
 
     /** @param resource $connection a stream */
