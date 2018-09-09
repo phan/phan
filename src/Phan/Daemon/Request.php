@@ -54,8 +54,16 @@ class Request
     /** @var array<int,string>|null */
     private $files = null;
 
+    /**
+     * A set of process ids of child processes
+     * @var array<int,true>
+     */
     private static $child_pids = [];
 
+    /**
+     * A set of process ids of child processes
+     * @var array<int,int>
+     */
     private static $exited_pid_status = [];
 
 
@@ -480,7 +488,6 @@ class Request
 
             // TODO: Use http://php.net/manual/en/book.inotify.php if available, watch all directories if available.
             // Daemon continues to execute.
-            self::$child_pids[] = $fork_result;
             Daemon::debugf("Created a child pid %d", $fork_result);
         }
         return null;
