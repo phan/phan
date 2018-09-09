@@ -129,7 +129,7 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
             );
             return;
         }
-        if ($cond_node->kind === ast\AST_ISSET) {
+        if ($cond_node instanceof Node && $cond_node->kind === ast\AST_ISSET) {
             if (ASTHasher::hash($cond_node->children['var']) === $true_node_hash) {
                 $this->emitPluginIssue(
                     $this->code_base,

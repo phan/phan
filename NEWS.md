@@ -3,11 +3,19 @@ Phan NEWS
 ?? ??? 2018, Phan 1.0.4 (dev)
 -----------------------
 
+Plugins:
++ Fix a crash in `DuplicateExpressionPlugin`.
+
 Language Server/Daemon mode:
-+ Support hover text for variables.
++ Support generating a hover description for variables.
 
   - For union types with a single non-nullable class/interface type, the hover text include the full summary description of that class-like.
   - For non-empty union types, this will just show the raw union type (e.g. `string|false`)
++ Improve extraction of summaries of elements (e.g. hover description)
+
+  - Support using `@return` as a summary for function-likes.
+  - Parse the lines after `@var` tag (before subsequent tags)
+    as an additional part of the summary for constants/properties.
 
 07 Sep 2018, Phan 1.0.3
 -----------------------
