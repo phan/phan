@@ -65,7 +65,7 @@ function getParameterCountsFromReflection(array $args) : array
 /**
  * This represents an entry in Phan's internal function signatures for a function/method parameter.
  *
- * (e.g. `'args...' => 'string|int'`)
+ * (e.g. `'...args' => 'string|int'`)
  */
 class PhanParameterInfo
 {
@@ -73,7 +73,7 @@ class PhanParameterInfo
     public $name;
 
     /**
-     * @var string the original spec string, e.g. `'...string'`
+     * @var string the original spec string, e.g. `'...args'`
      * @suppress PhanWriteOnlyPublicProperty may use this in the future, e.g. for warnings
      */
     public $original_name_spec;
