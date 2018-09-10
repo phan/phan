@@ -1701,6 +1701,8 @@ class ContextNode
      * This ignores union types, and can be run in the parse phase.
      * (It often should, because outside quick mode, it may be run multiple times per node)
      *
+     * TODO: This is repetitive, move these checks into ParseVisitor?
+     *
      * @return void
      */
     public function analyzeBackwardCompatibility()
@@ -1820,8 +1822,8 @@ class ContextNode
             $line = $cache_entry->getLine($this->node->lineno) ?? '';
             unset($cache_entry);
             if (strpos($line, '}[') === false
-                || strpos($line, ']}') === false
-                || strpos($line, '>{') === false
+                && strpos($line, ']}') === false
+                && strpos($line, '>{') === false
             ) {
                 Issue::maybeEmit(
                     $this->code_base,
