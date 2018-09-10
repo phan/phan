@@ -1045,17 +1045,16 @@ class ParseVisitor extends ScopeVisitor
             return $this->context;
         }
 
-        if (!($node->children['expr'] instanceof Node
-            && ($node->children['expr']->children['name'] ?? null) instanceof Node)
-        ) {
+        $expr = $node->children['expr'];
+        if (!($expr instanceof Node)) {
             return $this->context;
         }
 
         // check for $$var[]
-        if ($node->children['expr']->kind == \ast\AST_VAR
-            && $node->children['expr']->children['name']->kind == \ast\AST_VAR
+        if ($expr->kind === \ast\AST_VAR
+            && ($expr->children['name']->kind ?? null) === \ast\AST_VAR
         ) {
-            $temp = $node->children['expr']->children['name'];
+            $temp = $expr->children['name'];
             $depth = 1;
             while ($temp instanceof Node) {
                 if (!isset($temp->children['name'])) {
@@ -1065,9 +1064,8 @@ class ParseVisitor extends ScopeVisitor
                 $depth++;
             }
             $dollars = str_repeat('$', $depth);
-            // FIXME: Use the FileCache
             $cache_entry = FileCache::getOrReadEntry($this->context->getFile());
-            $line = $cache_entry->getLines()[$node->lineno - 1] ?? null;
+            $line = $cache_entry->getLine($node->lineno);
             if (!\is_string($line)) {
                 return $this->context;
             }
@@ -1082,14 +1080,12 @@ class ParseVisitor extends ScopeVisitor
             }
 
         // $foo->$bar['baz'];
-        } elseif (!empty($node->children['expr']->children[1])
-            && ($node->children['expr']->children[1] instanceof Node)
-            && ($node->children['expr']->kind == \ast\AST_PROP)
-            && ($node->children['expr']->children[0]->kind == \ast\AST_VAR)
-            && ($node->children['expr']->children[1]->kind == \ast\AST_VAR)
+        } elseif ($expr->kind === \ast\AST_PROP &&
+            ($expr->children['expr']->kind ?? null) === ast\AST_VAR &&
+            ($expr->children['prop']->kind ?? null) === ast\AST_VAR
         ) {
             $cache_entry = FileCache::getOrReadEntry($this->context->getFile());
-            $line = $cache_entry->getLines()[$node->lineno - 1] ?? null;
+            $line = $cache_entry->getLines()[$node->lineno] ?? null;
             if (!\is_string($line)) {
                 return $this->context;
             }
