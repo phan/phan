@@ -5,10 +5,12 @@ use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Exception\IssueException;
+use Phan\Exception\NodeException;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Variable;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\GenericArrayType;
@@ -319,28 +321,32 @@ final class MiscParamPlugin extends PluginV2 implements
 
         /**
          * @param Node|int|string|float|null $node
-         * @return string
+         * @return ?Variable the variable
          */
-        $get_variable_name = function (
+        $get_variable = function (
             CodeBase $code_base,
             Context $context,
             $node
         ) {
+            if (!$node instanceof Node) {
+                return null;
+            }
             try {
-                $variable_name = (new ContextNode(
+                return (new ContextNode(
                     $code_base,
                     $context,
                     $node
-                ))->getVariableName();
+                ))->getVariableStrict();
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
                     $code_base,
                     $context,
                     $exception->getIssueInstance()
                 );
-                return '';
+                return null;
+            } catch (NodeException $_) {
+                return null;
             }
-            return $variable_name;
         };
 
         /**
@@ -351,17 +357,15 @@ final class MiscParamPlugin extends PluginV2 implements
             Context $context,
             FunctionInterface $unused_function,
             array $args
-        ) use ($get_variable_name) {
+        ) use ($get_variable) {
             // TODO: support nested adds, like AssignmentVisitor
+            // TODO: support properties, like AssignmentVisitor
             if (count($args) < 2) {
                 return;
             }
-            $variable_name = $get_variable_name($code_base, $context, $args[0]);
+            $variable = $get_variable($code_base, $context, $args[0]);
             // Don't analyze variables when we can't determine their names.
-            if ($variable_name === '') {
-                return;
-            }
-            if (!$context->getScope()->hasVariableWithName($variable_name)) {
+            if (!$variable) {
                 return;
             }
             $element_types = UnionType::empty();
@@ -371,7 +375,6 @@ final class MiscParamPlugin extends PluginV2 implements
                 $node = $args[$i];
                 $element_types = $element_types->withUnionType(UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node));
             }
-            $variable = $context->getScope()->getVariableByName($variable_name);
             $variable->setUnionType($variable->getUnionType()->nonNullableClone()->withUnionType(
                 $element_types->elementTypesToGenericArray(GenericArrayType::KEY_INT)
             ));
@@ -385,22 +388,16 @@ final class MiscParamPlugin extends PluginV2 implements
             Context $context,
             FunctionInterface $unused_function,
             array $args
-        ) use ($get_variable_name) {
+        ) use ($get_variable) {
             // TODO: support nested adds, like AssignmentVisitor
             // TODO: Could be more specific for arrays with known length and order
             if (count($args) < 1) {
                 return;
             }
-            $variable_name = $get_variable_name($code_base, $context, $args[0]);
-            // Don't analyze variables when we can't determine their names.
-            if ($variable_name === '') {
+            $variable = $get_variable($code_base, $context, $args[0]);
+            if (!$variable) {
                 return;
             }
-            if (!$context->getScope()->hasVariableWithName($variable_name)) {
-                return;
-            }
-
-            $variable = $context->getScope()->getVariableByName($variable_name);
             $variable->setUnionType($variable->getUnionType()->withFlattenedArrayShapeOrLiteralTypeInstances());
         };
 
@@ -409,18 +406,14 @@ final class MiscParamPlugin extends PluginV2 implements
             Context $context,
             FunctionInterface $unused_function,
             array $args
-        ) use ($get_variable_name) {
+        ) use ($get_variable) {
             // TODO: support nested adds, like AssignmentVisitor
             // TODO: Could be more specific for arrays with known length and order
             if (count($args) < 4) {
                 return;
             }
-            $variable_name = $get_variable_name($code_base, $context, $args[0]);
-            // Don't analyze variables when we can't determine their names.
-            if ($variable_name === '') {
-                return;
-            }
-            if (!$context->getScope()->hasVariableWithName($variable_name)) {
+            $variable = $get_variable($code_base, $context, $args[0]);
+            if (!$variable) {
                 return;
             }
 
@@ -429,7 +422,6 @@ final class MiscParamPlugin extends PluginV2 implements
             $added_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[3])->genericArrayTypes();
             $added_types = $added_types->withFlattenedArrayShapeOrLiteralTypeInstances();
 
-            $variable = $context->getScope()->getVariableByName($variable_name);
             $old_types = $variable->getUnionType()->withFlattenedArrayShapeOrLiteralTypeInstances();
 
             $variable->setUnionType($old_types->withUnionType($added_types));
