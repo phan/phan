@@ -37,6 +37,12 @@ $iterator = new CallbackFilterIterator(
     }
 );
 $phar->buildFromIterator($iterator, $dir);
+$phar->addFile('LICENSE');
+$phar->addFile('LICENSE.LANGUAGE_SERVER');
+$phar->addFile('LICENSE.PHP_PARSER');
+foreach ($phar as $file) {
+    echo $file->getFileName() . "\n";
+}
 
 // We don't want to use https://secure.php.net/manual/en/phar.interceptfilefuncs.php , which Phar does by default.
 // That causes annoying bugs.
