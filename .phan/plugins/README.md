@@ -153,6 +153,16 @@ but may cause false positives in large projects with different code styles.
 
   (E.g. warns about `if ($x && $x->fn())`, where $x is an object. Fix by checking `if (($x instanceof MyClass) && $x->fn())`)
 
+#### HasPHPDocPlugin.php
+
+Checks if an element (class or property) has a PHPDoc comment,
+and that Phan can extract a plaintext summary/description from that comment.
+
+- **PhanPluginNoCommentOnClass**: `Class {CLASS} has no doc comment`
+- **PhanPluginDescriptionlessCommentOnClass**: `Class {CLASS} has no readable description: {STRING_LITERAL}`
+- **PhanPluginNoCommentOnPublicProperty**: `Public property {PROPERTY} has no doc comment` (Also exists for Private and Protected)
+- **PhanPluginDescriptionlessCommentOnPublicProperty**: `Public property {PROPERTY} has no readable description: {STRING_LITERAL}` (Also exists for Private and Protected)
+
 #### InvalidVariableIssetPlugin.php
 
 Warns about invalid uses of `isset`. This README documentation may be inaccurate for this plugin.

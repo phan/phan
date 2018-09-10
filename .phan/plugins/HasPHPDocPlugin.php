@@ -9,8 +9,10 @@ use Phan\PluginV2\AnalyzeClassCapability;
 use Phan\PluginV2\AnalyzePropertyCapability;
 
 /**
- * This file checks if a class has a PHPDoc comment,
- * and that Phan can generate a hover description for that comment.
+ * This file checks if an element (class or property) has a PHPDoc comment,
+ * and that Phan can extract a plaintext summary/description from that comment.
+ *
+ * (e.g. for generating a hover description in the language server)
  *
  * It hooks into these events:
  *

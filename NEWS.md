@@ -5,6 +5,8 @@ Phan NEWS
 
 Plugins:
 + Fix a crash in `DuplicateExpressionPlugin`.
++ Add `HasPHPDocPlugin`, which checks if an element (class or property) has a PHPDoc comment,
+  and that Phan can extract a plaintext summary/description from that comment.
 
 Language Server/Daemon mode:
 + Support generating a hover description for variables.
@@ -19,6 +21,7 @@ Language Server/Daemon mode:
 
 Maintenance:
 + Update Phar file to contain missing LICENSEs (#1950)
++ Add more documentation to Phan's code.
 
 07 Sep 2018, Phan 1.0.3
 -----------------------
