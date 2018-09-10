@@ -17,6 +17,9 @@ Language Server/Daemon mode:
   - Parse the lines after `@var` tag (before subsequent tags)
     as an additional part of the summary for constants/properties.
 
+Maintenance:
++ Update Phar file to contain missing LICENSEs (#1950)
+
 07 Sep 2018, Phan 1.0.3
 -----------------------
 
