@@ -28,7 +28,7 @@
         "ext-json": "*",
         "composer/semver": "^1.4",
         "composer/xdebug-handler": "^1.3",
-        "felixfbecker/advanced-json-rpc": "^3.0",
+        "felixfbecker/advanced-json-rpc": "^3.0.3",
         "microsoft/tolerant-php-parser": "0.0.13",
         "sabre/event": "^5.0",
         "symfony/console": "^2.3|^3.0|~4.0"
