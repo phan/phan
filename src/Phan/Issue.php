@@ -354,6 +354,9 @@ class Issue
     const ThrowTypeMismatch                = 'PhanThrowTypeMismatch';
     const ThrowTypeMismatchForCall         = 'PhanThrowTypeMismatchForCall';
     const CommentAmbiguousClosure          = 'PhanCommentAmbiguousClosure';
+    const CommentDuplicateParam            = 'PhanCommentDuplicateParam';
+    const CommentDuplicateMagicMethod      = 'PhanCommentDuplicateMagicMethod';
+    const CommentDuplicateMagicProperty    = 'PhanCommentDuplicateMagicProperty';
     // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     // end of issue name constants
 
@@ -2970,6 +2973,31 @@ class Issue
                 "Comment {STRING_LITERAL} refers to {TYPE} instead of \\Closure - Assuming \\Closure",
                 self::REMEDIATION_A,
                 16015
+            ),
+            new Issue(
+                self::CommentDuplicateParam,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                'Comment declares @param ${PARAMETER} multiple times',
+                self::REMEDIATION_A,
+                16016
+            ),
+            new Issue(
+                self::CommentDuplicateMagicProperty,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                'Comment declares @property* ${PROPERTY} multiple times',
+                self::REMEDIATION_A,
+                16017
+            ),
+            // TODO: Support declaring both instance and static methods of the same name
+            new Issue(
+                self::CommentDuplicateMagicMethod,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                'Comment declares @method {METHOD} multiple times',
+                self::REMEDIATION_A,
+                16018
             ),
         ];
         // phpcs:enable Generic.Files.LineLength

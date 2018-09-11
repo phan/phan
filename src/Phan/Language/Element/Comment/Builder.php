@@ -290,7 +290,10 @@ final class Builder
             $this->magic_method_list,
             $this->phan_overrides,
             $this->closure_scope,  // @phan-suppress-current-line PhanPartialTypeMismatchArgument
-            $this->throw_union_type
+            $this->throw_union_type,
+            // NOTE: The code base and context are used for emitting issues, and are not saved
+            $this->code_base,
+            $this->context
         );
     }
 

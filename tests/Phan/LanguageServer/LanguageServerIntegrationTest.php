@@ -202,8 +202,7 @@ EOT;
     }
 
     /**
-     * @param int $expected_definition_line 0-based line number
-     * @param ?int $expected_definition_line null for nothing
+     * @param ?int $expected_definition_line 0-based line number (null for nothing)
      *
      * @dataProvider definitionInOtherFileProvider
      */
