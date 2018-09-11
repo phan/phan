@@ -4,6 +4,7 @@ namespace Phan\Language\Element;
 
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\Comment\Parameter as CommentParameter;
@@ -194,7 +195,9 @@ class Comment
         array $magic_method_list,
         array $phan_overrides,
         Option $closure_scope,
-        UnionType $throw_union_type
+        UnionType $throw_union_type,
+        CodeBase $code_base,
+        Context $context
     ) {
         $this->comment_flags = $comment_flags;
         $this->variable_list = $variable_list;
@@ -209,6 +212,15 @@ class Comment
         foreach ($this->parameter_list as $i => $parameter) {
             $name = $parameter->getName();
             if (!empty($name)) {
+                if (isset($this->parameter_map[$name])) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::CommentDuplicateParam,
+                        $context->getLineNumberStart(),
+                        $name
+                    );
+                }
                 // Add it to the named map
                 $this->parameter_map[$name] = $parameter;
 
@@ -219,6 +231,15 @@ class Comment
         foreach ($magic_property_list as $property) {
             $name = $property->getName();
             if (!empty($name)) {
+                if (isset($this->magic_property_map[$name])) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::CommentDuplicateMagicProperty,
+                        $context->getLineNumberStart(),
+                        $name
+                    );
+                }
                 // Add it to the named map
                 // TODO: Detect duplicates, emit warning for duplicates.
                 // TODO(optional): Emit Issues when a property with only property-read is written to
@@ -229,6 +250,15 @@ class Comment
         foreach ($magic_method_list as $method) {
             $name = $method->getName();
             if (!empty($name)) {
+                if (isset($this->magic_method_map[$name])) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::CommentDuplicateMagicMethod,
+                        $context->getLineNumberStart(),
+                        $name
+                    );
+                }
                 // Add it to the named map
                 // TODO: Detect duplicates, emit warning for duplicates.
                 $this->magic_method_map[$name] = $method;
@@ -337,7 +367,9 @@ class Comment
                 [],
                 [],
                 new None(),
-                UnionType::empty()
+                UnionType::empty(),
+                $code_base,
+                $context
             );
         }
 

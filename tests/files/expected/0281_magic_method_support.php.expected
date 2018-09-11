@@ -1,3 +1,4 @@
+%s:19 PhanCommentDuplicateMagicMethod Comment declares @method myMethodWithVariadicParams multiple times
 %s:37 PhanUndeclaredMethod Call to undeclared method \A281::undeclaredMagicMethod
 %s:38 PhanTypeVoidAssignment Cannot assign void return value
 %s:38 PhanUnusedVariable Unused definition of variable $b
