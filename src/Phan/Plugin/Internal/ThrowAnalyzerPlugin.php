@@ -72,6 +72,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
         }
         $analyzed_function = $context->getFunctionLikeInScope($code_base);
 
+        // TODO: This seems like it didn't work for A::c(A::d()) - See #1960 (InvalidArgumentException wasn't detected)
         foreach ($this->parent_node_list as $parent) {
             if ($parent->kind !== ast\AST_TRY) {
                 continue;
@@ -262,20 +263,20 @@ class ThrowRecursiveVisitor extends ThrowVisitor
                 return;
             }
         }
-        $analyzed_function = $context->getFunctionLikeInScope($code_base);
 
         try {
             $invoked_method = (new ContextNode(
-                $this->code_base,
-                $this->context,
+                $code_base,
+                $context,
                 $node
-            ))->getMethod($method_name, false);
+            ))->getMethod($method_name, false, true);
         } catch (IssueException $_) {
             // do nothing, PostOrderAnalysisVisitor should catch this
             return;
         } catch (NodeException $_) {
             return;
         }
+        $analyzed_function = $context->getFunctionLikeInScope($code_base);
         // Check the types that can be thrown by this call.
         $this->warnAboutPossiblyThrownType(
             $node,
@@ -297,11 +298,17 @@ class ThrowRecursiveVisitor extends ThrowVisitor
         }
         $code_base = $this->code_base;
         $method_name = $node->children['method'];
+        if (!\is_string($method_name)) {
+            $method_name = UnionTypeVisitor::anyStringLiteralForNode($code_base, $context, $method_name);
+            if (!\is_string($method_name)) {
+                return;
+            }
+        }
         try {
             // Get a reference to the method being called
             $invoked_method = (new ContextNode(
-                $this->code_base,
-                $this->context,
+                $code_base,
+                $context,
                 $node
             ))->getMethod($method_name, true, true);  // @phan-suppress-current-line PhanPartialTypeMismatchArgument
         } catch (\Exception $_) {
