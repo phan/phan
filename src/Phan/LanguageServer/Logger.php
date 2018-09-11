@@ -47,6 +47,13 @@ class Logger
         fwrite($file, $msg . "\n");
     }
 
+    /** @return void */
+    public static function logError(string $msg)
+    {
+        $file = self::getLogFile();
+        fwrite($file, $msg . "\n");
+    }
+
     /**
      * @return resource the log file handle
      */

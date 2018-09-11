@@ -8,6 +8,9 @@ Bug fixes:
   (also fixes other `array_*` functions taking references)
 + Fix false negatives in PHP5 backwards compatibility heuristic checks (#1939)
 
+Language Server/Daemon mode:
++ Fix an uncaught exception when extracting a URL with an unexpected scheme (not `file:/...`) (#1960)
+
 10 Sep 2018, Phan 1.0.4
 -----------------------
 
