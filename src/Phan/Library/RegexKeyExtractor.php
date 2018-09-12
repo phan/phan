@@ -94,7 +94,7 @@ class RegexKeyExtractor
 
 
     /**
-     * Extracts everything between the pattern delimeters.
+     * Extracts everything between the pattern delimiters.
      * @throws InvalidArgumentException if the length mismatched
      */
     private static function extractInnerRegexPattern(string $pattern) : string

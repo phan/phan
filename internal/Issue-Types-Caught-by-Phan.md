@@ -266,7 +266,7 @@ Access level to {PROPERTY} must be compatible with internal {PROPERTY}
 
 This category will be emitted when Phan doesn't know how to analyze something.
 
-Please do file an issue or otherwise get in touch if you get one of these (or an uncaught exception, or anything else thats shitty).
+Please do file an issue or otherwise get in touch if you get one of these (or an uncaught exception, or anything else that's shitty).
 
 [![Gitter](https://badges.gitter.im/phan/phan.svg)](https://gitter.im/phan/phan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
@@ -523,7 +523,7 @@ Unused result of a numeric literal {STRING_LITERAL} near this line
 
 ## PhanNoopProperty
 
-Emitted when you have a refence to a property that is unused.
+Emitted when you have a reference to a property that is unused.
 
 ```
 Unused property

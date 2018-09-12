@@ -186,7 +186,7 @@ use Phan\Issue;
  * - Look at 'plugins' and add or remove plugins if appropriate (see https://github.com/phan/phan/tree/master/.phan/plugins#plugins)
  * - Add global suppressions for pre-existing issues to suppress_issue_types (https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base)
  *
- * This configuration will be read and overlayed on top of the
+ * This configuration will be read and overlaid on top of the
  * default configuration. Command line arguments will be applied
  * after this file is read.
  *

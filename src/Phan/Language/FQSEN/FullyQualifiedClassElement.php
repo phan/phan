@@ -101,7 +101,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      * @param $fully_qualified_string
      * An FQSEN string like '\Namespace\Class::methodName'
      *
-     * @throws InvalidArgumentException if the $fully_qualified_string doesn't have a '::' delimeter
+     * @throws InvalidArgumentException if the $fully_qualified_string doesn't have a '::' delimiter
      */
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
