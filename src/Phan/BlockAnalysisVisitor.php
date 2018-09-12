@@ -163,7 +163,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $context = $this->context;
         // Only invoke post-order plugins, needed for NodeSelectionPlugin.
         // PostOrderAnalysisVisitor and PreOrderAnalysisVisitor don't do anything.
-        // Optimized beause this is frequently called
+        // Optimized because this is frequently called
         ConfigPluginSet::instance()->postAnalyzeNode(
             $this->code_base,
             $context,
@@ -438,7 +438,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *   ●──●──▶●
      *   stmts  │
      *          │
-     *          ● 'loop' child node (after inner statments)
+     *          ● 'loop' child node (after inner statements)
      *          │
      *          ▼
      *
@@ -790,7 +790,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $has_default = true;
             }
             // We can improve analysis of `case` blocks by using
-            // a BlockExitStatusChecker to avoid propogating invalid inferences.
+            // a BlockExitStatusChecker to avoid propagating invalid inferences.
             $stmts_node = $child_node->children['stmts'];
             if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node)) {
                 // Skip over empty case statements (incomplete heuristic), TODO: test
@@ -867,7 +867,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $child_context = $this->analyzeAndGetUpdatedContext($child_context, $node, $child_node);
 
             // Issue #406: We can improve analysis of `if` blocks by using
-            // a BlockExitStatusChecker to avoid propogating invalid inferences.
+            // a BlockExitStatusChecker to avoid propagating invalid inferences.
             // TODO: we may wish to check for a try block between this line's scope
             // and the parent function's (or global) scope,
             // to reduce false positives.

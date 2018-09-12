@@ -952,7 +952,7 @@ EOB;
         } elseif ($key === '') {
             return '';
         }
-        // include short options incase a typo is made like -aa instead of -a
+        // include short options in case a typo is made like -aa instead of -a
         $known_flags = array_merge(self::GETOPT_LONG_OPTIONS, $short_options);
 
         $known_flags = array_map($trim, $known_flags);

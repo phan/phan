@@ -3,7 +3,7 @@
 use \Phan\Issue;
 
 /**
- * This configuration will be read and overlayed on top of the
+ * This configuration will be read and overlaid on top of the
  * default configuration. Command line arguments will be applied
  * after this file is read.
  *

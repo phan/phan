@@ -806,7 +806,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $serverCapabilities = new ServerCapabilities();
 
             // FULL: Ask the client to return always return full documents (because we need to rebuild the AST from scratch)
-            // NONE: Don't sync until the user explitly saves a document.
+            // NONE: Don't sync until the user explicitly saves a document.
             $serverCapabilities->textDocumentSync = $this->makeTextDocumentSyncOptions();
 
             // TODO: Support "Find all symbols"?

@@ -2492,7 +2492,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             // If the parameter is pass-by-reference and we're
             // passing a variable in, see if we should pass
-            // the parameter and variable types to eachother
+            // the parameter and variable types to each other
             if ($parameter->isPassByReference()) {
                 $this->analyzePassByReferenceArgument(
                     $code_base,

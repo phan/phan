@@ -10,7 +10,7 @@ use Phan\Language\Type;
 use Phan\Language\UnionType;
 
 /**
- * Contains utilities for colorizing Phan's issue messages (and colorized CLI ouptut in general)
+ * Contains utilities for colorizing Phan's issue messages (and colorized CLI output in general)
  *
  * Colorizing codes are based on https://github.com/kevinlebrun/colors.php/
  */

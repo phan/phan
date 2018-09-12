@@ -1188,7 +1188,7 @@ class UnionType implements Serializable
         // TODO: Allow casting MyClass<TemplateType> to MyClass (Without the template?
 
         // Resolve 'static' for the given context to
-        // determine whats actually being referred
+        // determine what's actually being referred
         // to in concrete terms.
         $other_resolved_type =
             $union_type->withStaticResolvedInContext($context);

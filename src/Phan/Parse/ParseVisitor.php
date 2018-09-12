@@ -1027,7 +1027,7 @@ class ParseVisitor extends ScopeVisitor
             return $this->context;
         }
         // Analyze the assignment for compatibility with some
-        // breaking changes betweeen PHP5 and PHP7.
+        // breaking changes between PHP5 and PHP7.
         $var_node = $node->children['var'];
         if ($var_node instanceof Node) {
             $this->analyzeBackwardCompatibility($var_node);
