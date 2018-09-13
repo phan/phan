@@ -2108,10 +2108,9 @@ class ContextNode
                 }
                 return $node;
             case ast\flags\MAGIC_DIR:
-                // TODO: Absolute directory?
-                return \dirname($context->getFile());
+                return \dirname(Config::projectPath($context->getFile()));
             case ast\flags\MAGIC_FILE:
-                return $context->getFile();
+                return Config::projectPath($context->getFile());
             case ast\flags\MAGIC_LINE:
                 return $node->lineno ?? $context->getLineNumberStart();
             case ast\flags\MAGIC_NAMESPACE:

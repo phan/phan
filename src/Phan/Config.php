@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use Phan\Library\Paths;
+
 /**
  * Program configuration.
  *
@@ -143,6 +145,18 @@ class Config
         // This is useful for excluding hopelessly unanalyzable
         // files that can't be removed for whatever reason.
         'exclude_file_list' => [],
+
+        // A list of [include paths](https://secure.php.net/manual/en/ini.core.php#ini.include-path) to check when checking if `require_once`, `include`, etc. are pointing to valid files.
+        //
+        // To refer to the directory of the file being analyzed, use `'.'`
+        // To refer to the project root directory, use \Phan\Config::getProjectRootDirectory()
+        //
+        // (E.g. `['.', \Phan\Config::getProjectRootDirectory() . '/src/folder-added-to-include_path']`)
+        'include_paths' => ['.'],
+
+        // Enable this to warn about the use of relative paths in `require_once`, `include`, etc.
+        // Relative paths are harder to reason about, and opcache may have issues with relative paths in edge cases.
+        'warn_about_relative_include_statement' => false,
 
         // A directory list that defines files that will be excluded
         // from static analysis, but whose class and method
@@ -835,10 +849,10 @@ class Config
 
         // If a literal string type exceeds this length,
         // then Phan converts it to a regular string type.
-        // This setting cannot be used to decrease the maximum.
+        // This setting cannot be less than 50.
         //
-        // This setting can be used if users wish to store strings that are even longer than 50 bytes.
-        'max_literal_string_type_length' => \Phan\Language\Type\LiteralStringType::MINIMUM_MAX_STRING_LENGTH,
+        // This setting can be overridden if users wish to store strings that are even longer than 50 bytes.
+        'max_literal_string_type_length' => 200,
 
         // A list of plugin files to execute.
         //
@@ -1070,20 +1084,7 @@ class Config
      */
     public static function projectPath(string $relative_path) : string
     {
-        // Make sure its actually relative
-        if (\DIRECTORY_SEPARATOR === \substr($relative_path, 0, 1)) {
-            return $relative_path;
-        }
-        // Check for absolute path in windows, e.g. C:\
-        if (\DIRECTORY_SEPARATOR === "\\" &&
-                \strlen($relative_path) > 3 &&
-                \ctype_alpha($relative_path[0]) &&
-                $relative_path[1] === ':' &&
-                \strspn($relative_path, '/\\', 2, 1)) {
-            return $relative_path;
-        }
-
-        return Config::getProjectRootDirectory() . DIRECTORY_SEPARATOR .  $relative_path;
+        return Paths::toAbsolutePath(self::getProjectRootDirectory(), $relative_path);
     }
 }
 

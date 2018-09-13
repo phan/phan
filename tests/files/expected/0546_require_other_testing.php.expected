@@ -1,0 +1,17 @@
+%s:2 PhanTypeInvalidRequire Require statement was passed an invalid expression of type array{} (expected a string)
+%s:3 PhanTypeInvalidRequire Require statement was passed an invalid expression of type array{} (expected a string)
+%s:4 PhanTypeInvalidRequire Require statement was passed an invalid expression of type array{} (expected a string)
+%s:5 PhanTypeInvalidRequire Require statement was passed an invalid expression of type array{} (expected a string)
+%s:6 PhanTypeInvalidRequire Require statement was passed an invalid expression of type \stdClass (expected a string)
+%s:7 PhanTypeInvalidEval Eval statement was passed an invalid expression of type array{} (expected a string)
+%s:8 PhanTypeInvalidRequire Require statement was passed an invalid expression of type false (expected a string)
+%s:9 PhanTypeInvalidRequire Require statement was passed an invalid expression of type float (expected a string)
+%s:11 PhanMissingRequireFile Missing required file "%stests%sfiles%ssrc%s0529_require_once.php"
+%s:12 PhanInvalidRequireFile Required file "" is not a file
+%s:12 PhanRelativePathUsed require_once() statement was passed a relative path "" instead of an absolute path
+%s:13 PhanInvalidRequireFile Required file "/" is not a file
+%s:14 PhanMissingRequireFile Missing required file "%stests%sfiles%ssrc%s0546_require_other_testing.php.missing"
+%s:15 PhanMissingRequireFile Missing required file "%stests%sfiles%ssrc%smissing"
+%s:16 PhanInvalidRequireFile Required file "%stests%sfiles%ssrc" is not a file
+%s:17 PhanMissingRequireFile Missing required file "file:///notarealpath"
+%s:17 PhanRelativePathUsed require_once() statement was passed a relative path "file:///notarealpath" instead of an absolute path

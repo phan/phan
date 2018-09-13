@@ -1,0 +1,14 @@
+%s:2 PhanTypeInvalidRequire Require statement was passed an invalid expression of type array{} (expected a string)
+%s:3 PhanTypeInvalidRequire Require statement was passed an invalid expression of type \stdClass (expected a string)
+%s:4 PhanTypeInvalidRequire Require statement was passed an invalid expression of type 11 (expected a string)
+%s:5 PhanInvalidRequireFile Required file "" is not a file
+%s:5 PhanRelativePathUsed require_once() statement was passed a relative path "" instead of an absolute path
+%s:6 PhanInvalidRequireFile Required file "." is not a file
+%s:6 PhanRelativePathUsed include_once() statement was passed a relative path "." instead of an absolute path
+%s:7 PhanInvalidRequireFile Required file "%stests%sfiles%ssrc" is not a file
+%s:8 PhanInvalidRequireFile Required file "%stests%sfiles%ssrc/.." is not a file
+%s:9 PhanRelativePathUsed require_once() statement was passed a relative path "file_found_in_include_folder.php" instead of an absolute path
+%s:10 PhanMissingRequireFile Missing required file "file_missing_from_any_folder.php"
+%s:10 PhanRelativePathUsed require_once() statement was passed a relative path "file_missing_from_any_folder.php" instead of an absolute path
+%s:11 PhanMissingRequireFile Missing required file "%s/src/file_missing_from_any_folder.php"
+%s:12 PhanRelativePathUsed require_once() statement was passed a relative path "0101_one_of_each.php" instead of an absolute path

@@ -230,6 +230,9 @@ return [
         'TypeError',
     ],
 
+    // Increase this to properly analyze require_once statements
+    'max_literal_string_type_length' => 1000,
+
     // Setting this to true makes the process assignment for file analysis
     // as predictable as possible, using consistent hashing.
     // Even if files are added or removed, or process counts change,
@@ -457,6 +460,18 @@ return [
     // can't be removed for whatever reason.
     // (e.g. '@Test\.php$@', or '@vendor/.*/(tests|Tests)/@')
     'exclude_file_regex' => '@^vendor/.*/(tests?|Tests?)/@',
+
+    // A list of include paths to check when checking if `require_once`, `include`, etc. are valid.
+    //
+    // To refer to the directory of the file being analyzed, use `'.'`
+    // To refer to the project root directory, you must use \Phan\Config::getProjectRootDirectory()
+    //
+    // (E.g. `['.', \Phan\Config::getProjectRootDirectory() . '/src/folder-added-to-include_path']`)
+    'include_paths' => ['.'],
+
+    // Enable this to warn about the use of relative paths in `require_once`, `include`, etc.
+    // Relative paths are harder to reason about, and opcache may have issues with relative paths in edge cases.
+    'warn_about_relative_include_statement' => true,
 
     // A file list that defines files that will be excluded
     // from parsing and analysis and will not be read at all.

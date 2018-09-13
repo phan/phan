@@ -6,6 +6,11 @@ Phan NEWS
 New features(Analysis):
 + Add `defined at {FILE}:{LINE}` to warnings about property visibility.
 + Warn about missing references (`\n` or `$n`) in the replacement template string of `preg_replace()` (#2047)
++ Warn about missing/invalid files in `require`/`include`/`require_once`/`include_once` statements.
+
+  New issue types: `PhanRelativePathUsed`, `PhanTypeInvalidEval`, `PhanTypeInvalidRequire`, `PhanInvalidRequireFile`, `PhanMissingRequiredFile`
+
+  New config settings: `include_paths`, `warn_about_relative_include_statement`
 + Warn when attempting to unset a property that was declared (i.e. not a dynamic or magic property) (#569)
   New issue type: `PhanTypeObjectUnsetDeclaredProperty`
 
@@ -20,6 +25,7 @@ New features(Analysis):
 
 Maintenance:
 + Minor performance improvements.
++ Increase the default value of `max_literal_string_type_length` from 50 to 200.
 
 Bug fixes:
 + Don't crash when parsing an invalid cast expression. Only the fallback/polyfill parsers were affected.

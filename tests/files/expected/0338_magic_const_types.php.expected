@@ -3,7 +3,7 @@
 %s:16 PhanTypeMismatchArgument Argument 1 (x) is '%s' but \expect_int338() takes int defined at %s:3
 %s:17 PhanTypeMismatchArgument Argument 1 (x) is 17 but \expect_string338() takes string defined at %s:4
 %s:18 PhanTypeMismatchArgument Argument 1 (x) is '\\Test338' but \expect_int338() takes int defined at %s:3
-%s:19 PhanTypeMismatchArgument Argument 1 (x) is './tests/files/src' but \expect_int338() takes int defined at %s:3
+%s:19 PhanTypeMismatchArgument Argument 1 (x) is '%stests/files/src' but \expect_int338() takes int defined at %s:3
 %s:20 PhanTypeMismatchArgument Argument 1 (x) is 'test' but \expect_int338() takes int defined at %s:3
 %s:21 PhanTypeMismatchArgument Argument 1 (x) is 'Test338::test' but \expect_int338() takes int defined at %s:3
 %s:22 PhanTypeMismatchArgument Argument 1 (x) is '' but \expect_int338() takes int defined at %s:3

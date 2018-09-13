@@ -394,10 +394,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
                 return StringType::instance(false)->asUnionType();
             case ast\flags\MAGIC_DIR:
-                // TODO: Absolute directory?
-                return self::literalStringUnionType(\dirname($this->context->getFile()));
+                return self::literalStringUnionType(\dirname(Config::projectPath($this->context->getFile())));
             case ast\flags\MAGIC_FILE:
-                return self::literalStringUnionType($this->context->getFile());
+                return self::literalStringUnionType(Config::projectPath($this->context->getFile()));
             case ast\flags\MAGIC_LINE:
                 return self::literalIntUnionType($node->lineno);
             case ast\flags\MAGIC_NAMESPACE:
