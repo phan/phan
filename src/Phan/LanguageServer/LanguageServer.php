@@ -668,7 +668,12 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $diagnostics[$normalized_requested_uri] = [];  // send an empty diagnostic list on failure.
         }
 
-        foreach ($response_data['issues'] ?? [] as $issue) {
+        $issues = $response_data['issues'] ?? [];
+        if (!is_array($issues)) {
+            Logger::logInfo("Failed to fetch 'issues' from JSON:" . json_encode($response_data));
+            return;
+        }
+        foreach ($issues as $issue) {
             list($issue_uri, $diagnostic) = self::generateDiagnostic($issue);
             if ($diagnostic instanceof Diagnostic) {
                 $diagnostics[$issue_uri][] = $diagnostic;
