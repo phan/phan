@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
+use ast\Node;
 use Phan\AST\ContextNode;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
-use ast\Node;
 
 /**
  * This plugin checks for invalid regexes in calls to preg_match. (And all of the other internal PCRE functions).

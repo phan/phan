@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
+use ast\Node;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Exception\IssueException;
-use ast\Node;
 
 /**
  * A FutureUnionType is a UnionType that is lazily loaded.

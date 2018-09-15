@@ -1,21 +1,20 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use AssertionError;
+use ast\Node;
 use Phan\Analysis\Analyzable;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Issue;
-use Phan\Language\Scope\ClosureScope;
-use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\Scope\ClosureScope;
+use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Memoize;
-
-use AssertionError;
-use ast\Node;
 
 /**
  * Phan's representation of a closure or global function.

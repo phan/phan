@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use ast\Node;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
@@ -7,7 +8,6 @@ use Phan\PluginV2;
 use Phan\PluginV2\AfterAnalyzeFileCapability;
 use Phan\PluginV2\BeforeAnalyzeFileCapability;
 use Phan\PluginV2\FinalizeProcessCapability;
-use ast\Node;
 
 /**
  * This plugin invokes the equivalent of `php --no-php-ini --syntax-check $analyzed_file_path`.

@@ -1,12 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use AssertionError;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-
-use AssertionError;
 
 /**
  * Represents the PHPDoc type `static`.
@@ -30,7 +29,7 @@ final class StaticType extends Type
         if ($is_nullable) {
             static $nullable_instance = null;
 
-            if (empty($nullable_instance)) {
+            if ($nullable_instance === null) {
                 $nullable_instance = static::make('\\', static::NAME, [], true, Type::FROM_TYPE);
             }
 

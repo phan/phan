@@ -2,12 +2,10 @@
 
 namespace Phan\Tests\AST;
 
-use Phan\Tests\BaseTest;
-
+use AssertionError;
 use Phan\AST\ASTReverter;
 use Phan\Config;
-
-use AssertionError;
+use Phan\Tests\BaseTest;
 
 /**
  * Tests of ASTReverter converting a Node to a compact string representation of that node

@@ -1,12 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\FQSEN;
 
+use AssertionError;
+use InvalidArgumentException;
 use Phan\Exception\EmptyFQSENException;
 use Phan\Language\Context;
 use Phan\Language\Type;
-
-use AssertionError;
-use InvalidArgumentException;
 
 /**
  * A Fully-Qualified Global Structural Element
@@ -204,7 +203,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         // Split the parts into the namespace(0 or more components) and the last name.
         $name = \array_pop($parts);
 
-        if (empty($name)) {
+        if (!$name) {
             throw new AssertionError("The name cannot be empty");
         }
 
@@ -221,7 +220,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         // n.b.: Functions must override this method because
         //       they don't prefix the namespace for naked
         //       calls
-        if (empty($namespace)) {
+        if (!$namespace) {
             $namespace = $context->getNamespace();
         }
 

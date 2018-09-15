@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use ast\Node;
 use Phan\CodeBase;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
@@ -12,7 +13,6 @@ use Phan\PluginV2\AnalyzeMethodCapability;
 use Phan\PluginV2\AnalyzePropertyCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV2\PostAnalyzeNodeCapability;
-use ast\Node;
 
 /**
  * This file demonstrates plugins for Phan.

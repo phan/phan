@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Plugin\Internal;
 
+use ast\Node;
 use Phan\AST\ContextNode;
 use Phan\CodeBase;
 use Phan\Issue;
@@ -9,7 +10,6 @@ use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
-use ast\Node;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.

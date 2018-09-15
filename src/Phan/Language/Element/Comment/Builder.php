@@ -5,17 +5,17 @@ namespace Phan\Language\Element\Comment;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
-use Phan\Library\FileCache;
 use Phan\Language\Context;
-use Phan\Language\FQSEN;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\Flags;
+use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
-use Phan\Library\Option;
+use Phan\Library\FileCache;
 use Phan\Library\None;
+use Phan\Library\Option;
 use Phan\Library\Some;
 
 /**

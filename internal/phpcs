@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# This has been tested with phpcs.phar 3.3.0 (3.3.0 or newer is required)
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PHPCS="$DIR/PHP_CodeSniffer/vendor/bin/phpcs"
 set -xu
 if [[ "$#" != 0 ]]; then
-	echo "Executing phpcs.phar --standard=ruleset.xml $@"  1>&2
-	phpcs.phar --standard=ruleset.xml "$@"
+	echo "Executing phpcs --standard=ruleset.xml $@"  1>&2
+	php -d memory_limit=2G "$PHPCS" --standard=phpcs.xml "$@"
 else
 	# Automatically detect PSR-2 and PSR-12 syntax issues in Phan itself
-	phpcs.phar --standard=ruleset.xml tests/Phan src internal .phan tool/make_stubs phan_client
+	php -d memory_limit=2G "$PHPCS" --standard=phpcs.xml tests/Phan src internal/*.php .phan tool/make_stubs phan_client
 fi

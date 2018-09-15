@@ -1,13 +1,14 @@
 <?php
+declare(strict_types = 1);
 
+use ast\flags;
+use ast\Node;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\AST\ASTHasher;
 use Phan\AST\ASTReverter;
 use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use ast\flags;
-use ast\Node;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
 /**
  * This plugin checks for duplicate expressions in a statement

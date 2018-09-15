@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Plugin;
 
+use AssertionError;
+use ast\Node;
+use Closure;
 use Phan\AST\Visitor\Element;
 use Phan\CodeBase;
 use Phan\Config;
@@ -16,9 +19,9 @@ use Phan\Language\Element\Property;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\UnaddressableTypedElement;
 use Phan\Language\FQSEN;
-use Phan\LanguageServer\DefinitionResolver;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Phan\LanguageServer\DefinitionResolver;
 use Phan\Library\RAII;
 use Phan\Plugin\Internal\ArrayReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\BuiltinSuppressionPlugin;
@@ -48,14 +51,10 @@ use Phan\PluginV2\PreAnalyzeNodeCapability;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
 use Phan\PluginV2\SuppressionCapability;
 use Phan\Suggestion;
-
-use AssertionError;
-use Closure;
 use ReflectionException;
 use ReflectionProperty;
 use Throwable;
 use UnusedSuppressionPlugin;
-use ast\Node;
 use function is_null;
 
 /**

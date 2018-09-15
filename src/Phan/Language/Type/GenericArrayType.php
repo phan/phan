@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use ast\Node;
+use InvalidArgumentException;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
@@ -10,9 +12,6 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
-
-use ast\Node;
-use InvalidArgumentException;
 
 /**
  * Phan's representation for the types `array<string,MyClass>` and `MyClass[]`

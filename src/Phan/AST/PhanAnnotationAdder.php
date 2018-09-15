@@ -2,8 +2,8 @@
 namespace Phan\AST;
 
 use ast;
-use ast\Node;
 use ast\flags;
+use ast\Node;
 use Closure;
 
 /**

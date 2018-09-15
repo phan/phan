@@ -1,6 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use AssertionError;
+use Closure;
+use Exception;
+use InvalidArgumentException;
 use Phan\Daemon\Request;
 use Phan\Language\Type;
 use Phan\LanguageServer\LanguageServer;
@@ -12,11 +16,6 @@ use Phan\Output\IgnoredFilesFilterInterface;
 use Phan\Output\IssueCollectorInterface;
 use Phan\Output\IssuePrinterInterface;
 use Phan\Plugin\ConfigPluginSet;
-
-use AssertionError;
-use Closure;
-use Exception;
-use InvalidArgumentException;
 
 /**
  * This executes the the parse, method/function, then the analysis phases.
@@ -63,7 +62,7 @@ class Phan implements IgnoredFilesFilterInterface
     {
         $collector = self::getIssueCollector();
         foreach ($results as $issues) {
-            if (empty($issues)) {
+            if (!$issues) {
                 continue;
             }
 

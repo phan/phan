@@ -1,8 +1,8 @@
 <?php declare(strict_types = 1);
 namespace Phan\Tests\Library;
 
-use Phan\Tests\BaseTest;
 use Phan\Library\FileCache;
+use Phan\Tests\BaseTest;
 
 /**
  * Unit tests of FileCache

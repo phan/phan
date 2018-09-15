@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Phan\Language;
 
+use AssertionError;
 use Phan\Config;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -9,8 +10,6 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Type\TemplateType;
-
-use AssertionError;
 
 /**
  * Represents the scope of a Context.
@@ -301,7 +300,7 @@ abstract class Scope
             return false;
         }
 
-        return !empty($this->template_type_map)
+        return \count($this->template_type_map) > 0
             || ($this->hasParentScope() && $this->getParentScope()->hasAnyTemplateType());
     }
 

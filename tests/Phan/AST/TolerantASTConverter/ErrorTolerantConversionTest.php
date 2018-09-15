@@ -1,11 +1,10 @@
 <?php declare(strict_types = 1);
 namespace Phan\Tests\AST\TolerantASTConverter;
 
-use Phan\Tests\BaseTest;
-
-use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\AST\TolerantASTConverter\NodeDumper;
+use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\Debug;
+use Phan\Tests\BaseTest;
 
 /**
  * Various tests of the error-tolerant conversion mode of TolerantASTConverter

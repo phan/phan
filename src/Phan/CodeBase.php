@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use AssertionError;
+use Closure;
 use Phan\CodeBase\ClassMap;
 use Phan\CodeBase\UndoTracker;
 use Phan\Language\Context;
@@ -24,13 +26,9 @@ use Phan\Language\NamespaceMapEntry;
 use Phan\Language\UnionType;
 use Phan\Library\Map;
 use Phan\Library\Set;
-
-use AssertionError;
-use Closure;
 use ReflectionClass;
-
-use function strtolower;
 use function strlen;
+use function strtolower;
 
 /**
  * A CodeBase represents the known state of a code base
@@ -935,7 +933,7 @@ class CodeBase
         // method, map the name to the FQSEN so we can do hail-
         // mary references.
         if (Config::get_track_references()) {
-            if (empty($this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()])) {
+            if (!isset($this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()])) {
                 $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()] = new Set();
             }
             $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()]->attach($method);

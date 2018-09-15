@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 namespace Phan\Tests\Language\Element;
 
-use Phan\Tests\BaseTest;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\MarkupDescription;
+use Phan\Tests\BaseTest;
 
 /**
  * Unit tests of MarkupDescription functionality

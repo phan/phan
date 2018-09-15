@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use ast\Node;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -9,7 +10,6 @@ use Phan\Exception\IssueException;
 use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-use ast\Node;
 
 /**
  * Phan's representation of a Variable, as well as methods for accessing and modifying variables.

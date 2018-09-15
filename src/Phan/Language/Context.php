@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
+use AssertionError;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Issue;
@@ -10,15 +11,13 @@ use Phan\Language\Element\Property;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
-use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionLikeName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\GlobalScope;
-
-use AssertionError;
 use RuntimeException;
 
 /**

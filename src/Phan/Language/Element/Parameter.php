@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use AssertionError;
+use ast\Node;
+use InvalidArgumentException;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Exception\IssueException;
@@ -21,10 +24,6 @@ use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
 use Phan\Parse\ParseVisitor;
-
-use AssertionError;
-use ast\Node;
-use InvalidArgumentException;
 
 /**
  * Represents the information Phan has about a function-like's Parameter
@@ -210,7 +209,7 @@ class Parameter extends Variable
     public static function listFromReflectionParameterList(
         array $reflection_parameters
     ) : array {
-        return \array_map([__CLASS__, 'fromReflectionParameter'], $reflection_parameters);
+        return \array_map([self::class, 'fromReflectionParameter'], $reflection_parameters);
     }
 
     public static function fromReflectionParameter(

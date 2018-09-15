@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-use Phan\CodeBase;
+use ast\Node;
 use Phan\Analysis\BlockExitStatusChecker;
+use Phan\CodeBase;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
@@ -10,8 +11,6 @@ use Phan\Language\Type\VoidType;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCapability;
 use Phan\PluginV2\AnalyzeMethodCapability;
-
-use ast\Node;
 
 /**
  * This file checks if a function, closure or method unconditionally returns.

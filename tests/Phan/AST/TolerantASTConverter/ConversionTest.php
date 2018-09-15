@@ -2,17 +2,14 @@
 
 namespace Phan\Tests\AST\TolerantASTConverter;
 
-use Phan\Tests\BaseTest;
-
-use Phan\AST\TolerantASTConverter\TolerantASTConverter;
+use ast;
 use Phan\AST\TolerantASTConverter\NodeDumper;
+use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\Debug;
-
+use Phan\Tests\BaseTest;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
-
-use ast;
 
 /**
  * Tests that the polyfill works with valid ASTs

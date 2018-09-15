@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\AST;
 
+use AssertionError;
+use ast;
+use ast\Node;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
@@ -40,10 +43,6 @@ use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Library\FileCache;
 use Phan\Library\None;
-
-use AssertionError;
-use ast\Node;
-use ast;
 
 if (!\function_exists('spl_object_id')) {
     require_once __DIR__ . '/../../spl_object_id.php';

@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use ast\Node;
 use Phan\Analysis\Analyzable;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -11,7 +12,6 @@ use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\UnionType;
 use Phan\Memoize;
-use ast\Node;
 
 /**
  * Phan's representation of a class's method.

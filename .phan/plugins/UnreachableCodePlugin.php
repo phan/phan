@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
+use ast\Node;
 use Phan\Analysis\BlockExitStatusChecker;
 use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use ast\Node;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
 /**
  * This file checks for syntactically unreachable statements in

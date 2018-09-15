@@ -2,23 +2,23 @@
 
 namespace Phan\LanguageServer;
 
+use AssertionError;
+use ast;
+use ast\Node;
+use Closure;
 use Phan\Analysis\ScopeVisitor;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
-use Phan\Exception\NodeException;
 use Phan\Exception\IssueException;
+use Phan\Exception\NodeException;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-use ast;
-use ast\Node;
-use Closure;
-use AssertionError;
 
 /**
  * This implements closures for finding definitions for nodes where isSelected is set

@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\PluginV2;
 
-use Phan\Language\Context;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\IssueInstance;
+use Phan\Language\Context;
 
 /**
  * A trait which allows plugins to emit issues with custom error messages

@@ -3,8 +3,8 @@ declare(strict_types = 1);
 
 namespace Phan\LanguageServer;
 
-use Phan\LanguageServer\Protocol\Message;
 use Phan\LanguageServer\Logger;
+use Phan\LanguageServer\Protocol\Message;
 use Sabre\Event\Loop;
 use Sabre\Event\Promise;
 
@@ -37,7 +37,7 @@ class ProtocolStreamWriter implements ProtocolWriter
     public function write(Message $msg): Promise
     {
         // if the message queue is currently empty, register a write handler.
-        if (empty($this->messages)) {
+        if (!$this->messages) {
             Loop\addWriteStream($this->output, function () {
                 $this->flush();
             });

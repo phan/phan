@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use ast\flags;
+use ast\Node;
+use Closure;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
@@ -22,9 +25,6 @@ use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
-use ast\Node;
-use ast\flags;
-use Closure;
 
 /**
  * TODO: Make $x > 0, $x < 0, $x >= 50, etc.  remove FalseType and NullType from $x

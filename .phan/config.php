@@ -1,6 +1,7 @@
 <?php
+declare(strict_types = 1);
 
-use \Phan\Issue;
+use Phan\Issue;
 
 /**
  * This configuration will be read and overlaid on top of the
@@ -430,6 +431,12 @@ return [
         'phan',
         'phan_client',
         'tool/make_stubs',
+        "internal/dump_fallback_ast.php",
+        "internal/internalsignatures.php",
+        "internal/package.php",
+        "internal/reflection_completeness_check.php",
+        "internal/sanitycheck.php",
+        "internal/update_wiki_issue_types.php",
         // 'vendor/phpunit/phpunit/src/Framework/TestCase.php',
     ],
 
@@ -464,7 +471,6 @@ return [
     // your application should be included in this list.
     'directory_list' => [
         'src',
-        'internal',
         'tests/Phan',
         'vendor/composer/semver/src',
         'vendor/composer/xdebug-handler/src',

@@ -1,10 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Plugin\Internal;
 
-use Phan\CodeBase;
-use Phan\Config;
+use Closure;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
+use Phan\CodeBase;
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Type\StringType;
@@ -13,7 +14,6 @@ use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\PluginV2;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
-use Closure;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.

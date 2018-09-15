@@ -1,15 +1,14 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use ast\Node;
+use InvalidArgumentException;
 use Phan\AST\ContextNode;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\UnionType;
 use Phan\Library\RegexKeyExtractor;
-
-use ast\Node;
-use InvalidArgumentException;
 
 /**
  * This infers the union type of $matches in preg_match,

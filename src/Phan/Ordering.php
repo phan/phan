@@ -1,10 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use InvalidArgumentException;
 use Phan\Library\Hasher\Consistent;
 use Phan\Library\Hasher\Sequential;
-
-use InvalidArgumentException;
 
 /**
  * This determines the order in which files will be analyzed.

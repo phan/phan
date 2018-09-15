@@ -1,9 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use AssertionError;
+use ast\flags;
+use ast\Node;
 use Phan\AST\AnalysisVisitor;
-use Phan\AST\PhanAnnotationAdder;
 use Phan\AST\ContextNode;
+use Phan\AST\PhanAnnotationAdder;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
@@ -30,10 +33,6 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
-
-use AssertionError;
-use ast\Node;
-use ast\flags;
 
 /**
  * PostOrderAnalysisVisitor is where we do the post-order part of the analysis

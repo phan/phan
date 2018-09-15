@@ -1,10 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
-use Phan\AST\Visitor\KindVisitorImplementation;
-
 use AssertionError;
 use ast\Node;
+use Phan\AST\Visitor\KindVisitorImplementation;
 
 /**
  * This simplifies a PHP AST into a form which is easier to analyze.

@@ -1,6 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use ast\flags;
+use ast\Node;
+use Closure;
+use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\BlockAnalysisVisitor;
@@ -8,7 +12,6 @@ use Phan\CodeBase;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
-use Phan\AST\ContextNode;
 use Phan\Language\Element\Variable;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
@@ -21,10 +24,6 @@ use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
-
-use ast\Node;
-use ast\flags;
-use Closure;
 use ReflectionMethod;
 
 /**

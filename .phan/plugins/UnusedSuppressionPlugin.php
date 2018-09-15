@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use ast\Node;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
@@ -10,14 +11,13 @@ use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Plugin\ConfigPluginSet;
 use Phan\PluginV2;
-use Phan\PluginV2\BeforeAnalyzeFileCapability;
 use Phan\PluginV2\AnalyzeClassCapability;
 use Phan\PluginV2\AnalyzeFunctionCapability;
-use Phan\PluginV2\AnalyzePropertyCapability;
 use Phan\PluginV2\AnalyzeMethodCapability;
+use Phan\PluginV2\AnalyzePropertyCapability;
+use Phan\PluginV2\BeforeAnalyzeFileCapability;
 use Phan\PluginV2\FinalizeProcessCapability;
 use Phan\PluginV2\SuppressionCapability;
-use ast\Node;
 
 /**
  * Check for unused (at)suppress annotations.

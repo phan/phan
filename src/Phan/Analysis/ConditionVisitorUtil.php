@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use ast\Node;
+use Closure;
 use Phan\AST\UnionTypeVisitor;
 use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
@@ -9,14 +11,11 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
+use Phan\Language\Element\Variable;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
-use Phan\Language\Element\Variable;
 use Phan\Language\UnionType;
-
-use ast\Node;
-use Closure;
 
 /**
  * This implements common functionality to update variables based on checks within a conditional (of an if/elseif/else/while/for/assert(), etc.)

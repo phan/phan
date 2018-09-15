@@ -1,10 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\FQSEN;
 
+use Error;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
-
-use Error;
 use Serializable;
 
 /**

@@ -2,8 +2,8 @@
 namespace Phan\Language\Element;
 
 use Phan\CodeBase;
-use Phan\Language\FQSEN;
 use Phan\Language\FileRef;
+use Phan\Language\FQSEN;
 
 /**
  * An AddressableElementInterface is a TypedElementInterface with an FQSEN.

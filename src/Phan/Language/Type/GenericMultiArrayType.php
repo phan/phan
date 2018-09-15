@@ -1,13 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use InvalidArgumentException;
+use Phan\CodeBase;
 use Phan\Exception\RecursionDepthException;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
-use Phan\CodeBase;
-
-use InvalidArgumentException;
 
 /**
  * Callers should split this up into multiple GenericArrayType instances.

@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use AssertionError;
+use ast\Node;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -18,9 +20,6 @@ use Phan\Language\Type\FalseType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use Phan\PluginV2\StopParamAnalysisException;
-
-use AssertionError;
-use ast\Node;
 
 /**
  * This visitor analyzes arguments of calls to methods, functions, and closures

@@ -1,19 +1,17 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use Closure;
 use Phan\Config;
 use Phan\Language\Context;
-use Phan\Language\Element\Clazz;
 use Phan\Language\Element\ClassConstant;
+use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
-
-use Closure;
-
 use function strlen;
 use function strtolower;
 

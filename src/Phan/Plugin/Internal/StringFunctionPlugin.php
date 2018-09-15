@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 namespace Phan\Plugin\Internal;
 
+use ast;
+use ast\Node;
+use Closure;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
-use ast;
-use ast\Node;
-use Closure;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 
 // add all files in the project
 $dir = dirname(__DIR__);

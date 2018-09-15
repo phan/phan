@@ -1,10 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Closure;
 use Phan\Analysis\AbstractMethodAnalyzer;
+use Phan\Analysis\ClassInheritanceAnalyzer;
 use Phan\Analysis\CompositionAnalyzer;
 use Phan\Analysis\DuplicateClassAnalyzer;
-use Phan\Analysis\ClassInheritanceAnalyzer;
 use Phan\Analysis\ParentConstructorCalledAnalyzer;
 use Phan\Analysis\PropertyTypesAnalyzer;
 use Phan\CodeBase;
@@ -32,8 +33,6 @@ use Phan\Library\Option;
 use Phan\Library\Some;
 use Phan\Memoize;
 use Phan\Plugin\ConfigPluginSet;
-
-use Closure;
 
 /**
  * Clazz represents the information Phan knows about a class, trait, or interface,
@@ -421,7 +420,7 @@ class Clazz extends AddressableElement
      */
     public function hasParentType() : bool
     {
-        return !empty($this->parent_type);
+        return $this->parent_type !== null;
     }
 
     /**

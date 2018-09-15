@@ -42,7 +42,7 @@ class GlobalScope extends Scope
      */
     public function hasVariableWithName(string $name) : bool
     {
-        return (!empty(self::$global_variable_map[$name]));
+        return \array_key_exists($name, self::$global_variable_map);
     }
 
     /**

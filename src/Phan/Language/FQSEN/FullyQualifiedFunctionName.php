@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\FQSEN;
 
+use ast\Node;
 use Phan\Exception\EmptyFQSENException;
 use Phan\Language\Context;
-use ast\Node;
 
 /**
  * A Fully-Qualified Function Name

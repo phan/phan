@@ -1,10 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use InvalidArgumentException;
 use Phan\Config;
 use Phan\Language\Type;
-
-use InvalidArgumentException;
 use RuntimeException;
 
 /**
@@ -31,7 +30,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      */
     public static function instance(bool $unused_is_nullable)
     {
-        throw new RuntimeException('Call ' . __CLASS__ . '::instanceForValue() instead');
+        throw new RuntimeException('Call ' . self::class . '::instanceForValue() instead');
     }
 
     /**

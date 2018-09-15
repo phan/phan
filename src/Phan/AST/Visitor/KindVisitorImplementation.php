@@ -1,11 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\AST\Visitor;
 
-use Phan\AST\Visitor\Element;
-use Phan\Debug;
-
 use AssertionError;
 use ast\Node;
+use Phan\AST\Visitor\Element;
+use Phan\Debug;
 
 /**
  * A visitor of AST nodes based on the node's kind value

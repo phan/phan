@@ -1,5 +1,7 @@
 #!/usr/bin/env php
 <?php
+declare(strict_types = 1);
+// @phan-file-suppress PhanNativePHPSyntaxCheckPlugin
 /**
  * This checks that the function signatures are complete.
  * TODO: Expand to checking classes (methods, and properties)
@@ -8,8 +10,8 @@
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 use Phan\Config;
-use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\UnionType;
 
 /**

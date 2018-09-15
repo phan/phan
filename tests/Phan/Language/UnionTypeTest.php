@@ -2,6 +2,7 @@
 
 namespace Phan\Tests\Language;
 
+use AssertionError;
 use Phan\AST\UnionTypeVisitor;
 use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
@@ -29,8 +30,6 @@ use Phan\Language\UnionType;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Phan;
 use Phan\Tests\BaseTest;
-
-use AssertionError;
 
 // Grab these before we define our own classes
 $internal_class_name_list = get_declared_classes();

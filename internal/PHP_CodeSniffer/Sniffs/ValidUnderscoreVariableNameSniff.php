@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 /**
  * Checks the naming of variables and member variables.
  *
@@ -12,8 +13,8 @@
 
 namespace PHP_CodeSniffer\Standards\Phan\Sniffs\NamingConventions;
 
-use PHP_CodeSniffer\Sniffs\AbstractVariableSniff;
 use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Sniffs\AbstractVariableSniff;
 
 class ValidUnderscoreVariableNameSniff extends AbstractVariableSniff
 {

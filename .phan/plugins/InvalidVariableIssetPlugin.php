@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 // .phan/plugins/InvalidVariableIssetPlugin.php
 
+use ast\Node;
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
 use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use ast\Node;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
 /**
  * This plugin detects undeclared variables within isset() checks.

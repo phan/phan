@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
+use ast\Node;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Context;
 use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use ast\Node;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
 /**
  * This plugin checks for non-booleans in either side of logical arithmetic operators

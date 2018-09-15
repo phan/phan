@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use Phan\Language\FutureUnionType;
 use ast\Node;
+use Phan\Language\FutureUnionType;
 
 /**
  * Represents APIs used when Phan is setting up/analyzing

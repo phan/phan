@@ -9,8 +9,8 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\ClassScope;
 use Phan\Language\Scope\FunctionLikeScope;
-use Phan\Tests\BaseTest;
 use Phan\Parse\ParseVisitor;
+use Phan\Tests\BaseTest;
 
 /**
  * Unit tests of Context and scopes

@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use AssertionError;
+use ast\Node;
+use Closure;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
@@ -20,10 +23,6 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
-
-use AssertionError;
-use ast\Node;
-use Closure;
 
 /**
  * This contains functionality common to global functions, closures, and methods

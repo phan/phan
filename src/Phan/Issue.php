@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use AssertionError;
+use InvalidArgumentException;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\TypedElement;
@@ -9,9 +11,6 @@ use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Plugin\ConfigPluginSet;
-
-use AssertionError;
-use InvalidArgumentException;
 
 /**
  * An issue emitted during the course of analysis

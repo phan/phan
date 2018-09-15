@@ -1,15 +1,14 @@
 <?php declare(strict_types=1);
 
+use ast\Node;
 use Phan\Config;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-
-use ast\Node;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
 /**
  * Mark all phpunit test cases as used for dead code detection during Phan's self analysis.
@@ -63,7 +62,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
         $code_base = $this->code_base;
         if (!$code_base->hasClassWithFQSEN(self::$phpunit_test_case_fqsen)) {
             if (!self::$did_warn_unused) {
-                fprintf(STDERR, "Using plugin %s but could not find PHPUnit\Framework\TestCase\n", __CLASS__);
+                fprintf(STDERR, "Using plugin %s but could not find PHPUnit\Framework\TestCase\n", self::class);
                 self::$did_warn_unused = true;
             }
             return;

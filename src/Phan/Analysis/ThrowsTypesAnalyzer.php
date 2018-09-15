@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
-use Phan\Suggestion;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
@@ -13,6 +12,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\TemplateType;
+use Phan\Suggestion;
 
 /**
  * An analyzer that checks method phpdoc (at)throws types of function-likes to make sure they're valid

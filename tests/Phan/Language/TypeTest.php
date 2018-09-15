@@ -1,17 +1,16 @@
 <?php declare(strict_types = 1);
 namespace Phan\Tests\Language;
 
-use Phan\Tests\BaseTest;
 use Phan\Language\Context;
 use Phan\Language\Type;
-use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\ArrayShapeType;
+use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableDeclarationType;
 use Phan\Language\Type\CallableType;
-use Phan\Language\Type\ClosureType;
-use Phan\Language\Type\ClosureDeclarationType;
 use Phan\Language\Type\ClosureDeclarationParameter;
+use Phan\Language\Type\ClosureDeclarationType;
+use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\FunctionLikeDeclarationType;
@@ -29,6 +28,7 @@ use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
+use Phan\Tests\BaseTest;
 
 /**
  * Unit tests of Type
