@@ -141,7 +141,7 @@ class Request
 
     /**
      * @param Responder $responder (e.g. a socket to write a response on)
-     * @param array<int,string> $filenames absolute path of file(s) to analyze
+     * @param array<int,string> $file_names absolute path of file(s) to analyze
      * @param CodeBase $code_base (for refreshing parse state)
      * @param Closure $file_path_lister (for refreshing parse state)
      * @param FileMapping $file_mapping object tracking the overrides made by a client.
@@ -150,7 +150,7 @@ class Request
      */
     public static function makeLanguageServerAnalysisRequest(
         Responder $responder,
-        array $filenames,
+        array $file_names,
         CodeBase $code_base,
         Closure $file_path_lister,
         FileMapping $file_mapping,
@@ -160,7 +160,7 @@ class Request
         FileCache::clear();
         $file_mapping_contents = self::normalizeFileMappingContents($file_mapping->getOverrides(), $error_message);
         // Use the temporary contents if they're available
-        Request::reloadFilePathListForDaemon($code_base, $file_path_lister, $file_mapping_contents);
+        Request::reloadFilePathListForDaemon($code_base, $file_path_lister, $file_mapping_contents, $file_names);
         if ($error_message !== null) {
             Daemon::debugf($error_message);
         };
@@ -169,7 +169,7 @@ class Request
             [
                 self::PARAM_FORMAT => 'json',
                 self::PARAM_METHOD => self::METHOD_ANALYZE_FILES,
-                self::PARAM_FILES => $filenames,
+                self::PARAM_FILES => $file_names,
                 self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS => $file_mapping_contents,
             ],
             $most_recent_definition_request,
@@ -380,7 +380,7 @@ class Request
     }
     /**
      * @param CodeBase $code_base
-     * @param \Closure $file_path_lister
+     * @param \Closure $file_path_lister lists all files that will be parsed by Phan
      * @param Responder $responder
      * @return ?Request - non-null if this is a worker process with work to do. null if request failed or this is the master.
      */
@@ -399,6 +399,7 @@ class Request
         }
         $new_file_mapping_contents = [];
         $method = $request['method'] ?? '';
+        $files = null;
         switch ($method) {
             case 'analyze_all':
                 // Analyze the default list of files. No expected params.
@@ -406,14 +407,13 @@ class Request
             case 'analyze_file':
                 $method = 'analyze_files';
                 $request = [
-                self::PARAM_METHOD => $method,
-                self::PARAM_FILES => [$request['file']],
-                self::PARAM_FORMAT => $request[self::PARAM_FORMAT] ?? 'json',
+                    self::PARAM_METHOD => $method,
+                    self::PARAM_FILES => [$request['file']],
+                    self::PARAM_FORMAT => $request[self::PARAM_FORMAT] ?? 'json',
                 ];
                 // Fall through, this is an alias of analyze_files
             case 'analyze_files':
                 // Analyze the list of strings provided in "files"
-                // TODO: Actually do that.
                 $files = $request[self::PARAM_FILES] ?? null;
                 $request[self::PARAM_FORMAT] = $request[self::PARAM_FORMAT] ?? 'json';
                 $error_message = null;
@@ -457,7 +457,7 @@ class Request
         }
 
         // Re-parse the file list
-        self::reloadFilePathListForDaemon($code_base, $file_path_lister, $new_file_mapping_contents);
+        self::reloadFilePathListForDaemon($code_base, $file_path_lister, $new_file_mapping_contents, $files);
 
         // Analyze the files that are open in the IDE (If pcntl is available, the analysis is done in a forked process)
 
@@ -507,9 +507,10 @@ class Request
 
     /**
      * Reloads the file path list.
+     * @param ?array $file_names
      * @return void
      */
-    public static function reloadFilePathListForDaemon(CodeBase $code_base, \Closure $file_path_lister, array $file_mapping_contents)
+    public static function reloadFilePathListForDaemon(CodeBase $code_base, \Closure $file_path_lister, array $file_mapping_contents, array $file_names = null)
     {
         $old_count = $code_base->getParsedFilePathCount();
 
@@ -522,7 +523,7 @@ class Request
             sort($file_list, SORT_STRING);
         }
 
-        $changed_or_added_files = $code_base->updateFileList($file_list, $file_mapping_contents);
+        $changed_or_added_files = $code_base->updateFileList($file_list, $file_mapping_contents, $file_names);
         // Daemon::debugf("Parsing modified files: New files = %s", json_encode($changed_or_added_files));
         if (count($changed_or_added_files) > 0 || $code_base->getParsedFilePathCount() !== $old_count) {
             // Only clear memoizations if it is determined at least one file to parse was added/removed/modified.
