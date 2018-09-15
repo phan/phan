@@ -7,6 +7,7 @@ Bug fixes:
 + Don't infer bad types for variables when analyzing `array_push` using expressions containing those variables. (#1955)
   (also fixes other `array_*` functions taking references)
 + Fix false negatives in PHP5 backwards compatibility heuristic checks (#1939)
++ Fix false positive PhanUnanalyzableInheritance for a method inherited from a trait (which itself uses trait) (#1968)
 
 Language Server/Daemon mode:
 + Fix an uncaught exception when extracting a URL with an unexpected scheme (not `file:/...`) (#1960)

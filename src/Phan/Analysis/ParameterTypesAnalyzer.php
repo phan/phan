@@ -278,6 +278,10 @@ class ParameterTypesAnalyzer
         try {
             $o_method_list = $method->getOverriddenMethods($code_base);
         } catch (CodeBaseException $_) {
+            if (strcasecmp($method->getDefiningFQSEN()->getName(), $method->getFQSEN()->getName()) !== 0) {
+                // Give up, this is probably a renamed trait method that overrides another trait method.
+                return;
+            }
             // TODO: Remove if no edge cases are seen.
             Issue::maybeEmit(
                 $code_base,
