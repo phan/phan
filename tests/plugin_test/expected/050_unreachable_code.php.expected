@@ -1,0 +1,4 @@
+src/050_unreachable_code.php:11 PhanPluginUnreachableCode Unreachable statement detected
+src/050_unreachable_code.php:14 PhanPluginUnreachableCode Unreachable statement detected
+src/050_unreachable_code.php:17 PhanPluginUnreachableCode Unreachable statement detected
+src/050_unreachable_code.php:20 PhanPluginUnreachableCode Unreachable statement detected

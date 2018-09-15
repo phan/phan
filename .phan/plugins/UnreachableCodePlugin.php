@@ -81,7 +81,7 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
             if (!($node instanceof Node)) {
                 continue;
             }
-            if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($node)) {
+            if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($node)) {
                 continue;
             }
             // Skip over empty statements and scalar statements.
