@@ -24,6 +24,13 @@ use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Plugin\ConfigPluginSet;
 
+use function array_map;
+use function count;
+use function explode;
+use function json_encode;
+use function preg_match;
+use function rtrim;
+
 /**
  * Analyze blocks of code
  *
@@ -793,17 +800,17 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $stmts_node = $child_node->children['stmts'];
             if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node)) {
                 // Skip over empty case statements (incomplete heuristic), TODO: test
-                if (\count($stmts_node->children ?? []) !== 0 || $i === \count($node->children) - 1) {
+                if (count($stmts_node->children ?? []) !== 0 || $i === count($node->children) - 1) {
                     $child_context_list[] = $child_context;
                 }
             }
         }
 
-        if (\count($child_context_list) > 0) {
+        if (count($child_context_list) > 0) {
             if (!$has_default) {
                 $child_context_list[] = $context;
             }
-            if (\count($child_context_list) >= 2) {
+            if (count($child_context_list) >= 2) {
                 // For case statements, we need to merge the contexts
                 // of all child context into a single scope based
                 // on any possible branching structure
@@ -1288,8 +1295,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $child_context = $this->analyzeAndGetUpdatedContext($false_context, $node, $false_node);
             $child_context_list[] = $child_context;
         }
-        if (\count($child_context_list) >= 1) {
-            if (\count($child_context_list) < 2) {
+        if (count($child_context_list) >= 1) {
+            if (count($child_context_list) < 2) {
                 $child_context_list[] = $context;
             }
             $context = (new ContextMergeVisitor(

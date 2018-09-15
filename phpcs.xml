@@ -28,6 +28,7 @@
     <exclude name="SlevomatCodingStandard.TypeHints.DeclareStrictTypes.IncorrectStrictTypesFormat" />
   </rule>
   <rule ref="SlevomatCodingStandard.TypeHints.LongTypeHints" />
+  <!-- <rule ref="SlevomatCodingStandard.Namespaces.FullyQualifiedGlobalFunctions" /> doesn't account for 'use function...' statements, don't use that -->
   <!-- TODO: Look into SlevomatCodingStandard.TypeHints.ReturnTypeHintSpacing once PSR-12 is back into review -->
 
   <!-- Look into SlevomatCodingStandard.TypeHints.TypeHintDeclaration.MissingTraversableParameterTypeHintSpecification if it ever supports generic arrays+array shapes - Or just add this functionality to Phan's annotation plugin -->
