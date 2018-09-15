@@ -109,7 +109,7 @@ class Initializer
             $comment_source = self::computeCommentNameDocumentationMap();
         }
         $lines = $comment_source[$setting_name] ?? null;
-        if (empty($lines)) {
+        if ($lines === null) {
             return '';
         }
         return implode('', array_map(function (string $line) : string {

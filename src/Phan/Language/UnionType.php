@@ -228,7 +228,8 @@ class UnionType implements Serializable
         int $source,
         CodeBase $code_base = null
     ) : UnionType {
-        if (empty($type_string)) {
+        if ($type_string === '') {
+            // NOTE: '0' is a valid LiteralIntType
             return self::$empty_instance;
         }
 

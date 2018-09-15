@@ -210,7 +210,7 @@ class Comment
 
         foreach ($this->parameter_list as $i => $parameter) {
             $name = $parameter->getName();
-            if (!empty($name)) {
+            if ($name) {
                 if (isset($this->parameter_map[$name])) {
                     Issue::maybeEmit(
                         $code_base,
@@ -229,7 +229,7 @@ class Comment
         }
         foreach ($magic_property_list as $property) {
             $name = $property->getName();
-            if (!empty($name)) {
+            if ($name) {
                 if (isset($this->magic_property_map[$name])) {
                     Issue::maybeEmit(
                         $code_base,
@@ -248,7 +248,7 @@ class Comment
         }
         foreach ($magic_method_list as $method) {
             $name = $method->getName();
-            if (!empty($name)) {
+            if ($name) {
                 if (isset($this->magic_method_map[$name])) {
                     Issue::maybeEmit(
                         $code_base,
@@ -278,7 +278,7 @@ class Comment
             case 'param':
                 foreach ($value as $parameter) {
                     $name = $parameter->getName();
-                    if (!empty($name)) {
+                    if ($name) {
                         // Add it to the named map
                         // TODO: could check that @phan-param is compatible with the original @param
                         $this->parameter_map[$name] = $parameter;
@@ -296,7 +296,7 @@ class Comment
             case 'property':
                 foreach ($value as $property) {
                     $name = $property->getName();
-                    if (!empty($name)) {
+                    if ($name) {
                         // Override or add the entry in the named map
                         $this->magic_property_map[$name] = $property;
                     }
@@ -305,7 +305,7 @@ class Comment
             case 'method':
                 foreach ($value as $method) {
                     $name = $method->getName();
-                    if (!empty($name)) {
+                    if ($name) {
                         // Override or add the entry in the named map
                         $this->magic_method_map[$name] = $method;
                     }
@@ -536,11 +536,11 @@ class Comment
         string $name,
         int $offset
     ) : bool {
-        if (!empty($this->parameter_map[$name])) {
+        if (isset($this->parameter_map[$name])) {
             return true;
         }
 
-        return !empty($this->parameter_list[$offset]);
+        return isset($this->parameter_list[$offset]);
     }
 
     /**
@@ -551,7 +551,7 @@ class Comment
         string $name,
         int $offset
     ) : CommentParameter {
-        if (!empty($this->parameter_map[$name])) {
+        if (isset($this->parameter_map[$name])) {
             return $this->parameter_map[$name];
         }
 

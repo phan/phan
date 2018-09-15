@@ -300,7 +300,7 @@ abstract class Scope
             return false;
         }
 
-        return !empty($this->template_type_map)
+        return \count($this->template_type_map) > 0
             || ($this->hasParentScope() && $this->getParentScope()->hasAnyTemplateType());
     }
 

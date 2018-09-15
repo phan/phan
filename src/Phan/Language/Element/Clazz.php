@@ -420,7 +420,7 @@ class Clazz extends AddressableElement
      */
     public function hasParentType() : bool
     {
-        return !empty($this->parent_type);
+        return $this->parent_type !== null;
     }
 
     /**

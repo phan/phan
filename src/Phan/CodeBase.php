@@ -933,7 +933,7 @@ class CodeBase
         // method, map the name to the FQSEN so we can do hail-
         // mary references.
         if (Config::get_track_references()) {
-            if (empty($this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()])) {
+            if (!isset($this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()])) {
                 $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()] = new Set();
             }
             $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()]->attach($method);

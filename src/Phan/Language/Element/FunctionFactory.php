@@ -170,7 +170,7 @@ class FunctionFactory
             );
 
             // Set the return type if one is defined
-            if (!empty($map['return_type'])) {
+            if (isset($map['return_type'])) {
                 $alternate_function->setUnionType($map['return_type']);
             }
             $alternate_function->clearParameterList();

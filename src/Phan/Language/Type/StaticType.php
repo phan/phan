@@ -29,7 +29,7 @@ final class StaticType extends Type
         if ($is_nullable) {
             static $nullable_instance = null;
 
-            if (empty($nullable_instance)) {
+            if ($nullable_instance === null) {
                 $nullable_instance = static::make('\\', static::NAME, [], true, Type::FROM_TYPE);
             }
 

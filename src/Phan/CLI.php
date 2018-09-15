@@ -640,7 +640,7 @@ class CLI
     {
         global $argv;
 
-        if (!empty($msg)) {
+        if ($msg !== '') {
             echo "$msg\n";
         }
 
@@ -1155,7 +1155,7 @@ EOB;
 
         // If the file doesn't exist here, try a directory up
         $config_file_name =
-            !empty($this->config_file)
+            $this->config_file
             ? realpath($this->config_file)
             : implode(DIRECTORY_SEPARATOR, [
                 Config::getProjectRootDirectory(),

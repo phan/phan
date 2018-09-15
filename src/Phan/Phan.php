@@ -62,7 +62,7 @@ class Phan implements IgnoredFilesFilterInterface
     {
         $collector = self::getIssueCollector();
         foreach ($results as $issues) {
-            if (empty($issues)) {
+            if (!$issues) {
                 continue;
             }
 

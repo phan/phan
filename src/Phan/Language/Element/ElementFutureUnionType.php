@@ -62,7 +62,7 @@ trait ElementFutureUnionType
      */
     public function getFutureUnionType()
     {
-        if (empty($this->future_union_type)) {
+        if ($this->future_union_type === null) {
             return null;
         }
 

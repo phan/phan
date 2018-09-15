@@ -8,6 +8,9 @@
   <config name="installed_paths" value="../../slevomat/coding-standard"/>
   <rule ref="SlevomatCodingStandard.Classes.ModernClassNameReference" />
   <rule ref="SlevomatCodingStandard.Commenting.EmptyComment" />
+  <!-- TODO: Enable
+  <rule ref="SlevomatCodingStandard.ControlStructures.DisallowEmpty" />
+  -->
   <rule ref="SlevomatCodingStandard.Namespaces.UseDoesNotStartWithBackslash" />
   <rule ref="SlevomatCodingStandard.Namespaces.UselessAlias" />
   <rule ref="SlevomatCodingStandard.Namespaces.AlphabeticallySortedUses">
@@ -24,6 +27,10 @@
     <exclude name="SlevomatCodingStandard.TypeHints.DeclareStrictTypes.IncorrectWhitespaceBetweenOpenTagAndDeclare" />
     <exclude name="SlevomatCodingStandard.TypeHints.DeclareStrictTypes.IncorrectStrictTypesFormat" />
   </rule>
+  <rule ref="SlevomatCodingStandard.TypeHints.LongTypeHints" />
+  <!-- TODO: Look into SlevomatCodingStandard.TypeHints.ReturnTypeHintSpacing once PSR-12 is back into review -->
+
+  <!-- Look into SlevomatCodingStandard.TypeHints.TypeHintDeclaration.MissingTraversableParameterTypeHintSpecification if it ever supports generic arrays+array shapes - Or just add this functionality to Phan's annotation plugin -->
 
   <rule ref="PSR1" />
   <rule ref="PSR2">

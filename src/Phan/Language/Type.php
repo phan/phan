@@ -48,6 +48,9 @@ use Phan\Library\Option;
 use Phan\Library\Some;
 use Phan\Library\Tuple5;
 
+use function count;
+use function strtolower;
+
 /**
  * The base class for all of Phan's types.
  * A plain Type represents a class instance.
@@ -407,7 +410,7 @@ class Type
             }, $template_parameter_type_list)) . '>';
         }
 
-        $key = \strtolower($key);
+        $key = strtolower($key);
 
         $value = self::$canonical_object_map[$key] ?? null;
         if (!$value) {
@@ -673,7 +676,7 @@ class Type
             self::canonicalNameFromName($type_name);
 
         // TODO: Is this worth optimizing into a lookup table?
-        switch (\strtolower($type_name)) {
+        switch (strtolower($type_name)) {
             case 'array':
                 return ArrayType::instance($is_nullable);
             case 'bool':
@@ -820,8 +823,8 @@ class Type
             }
         }
 
-        if (empty($namespace)) {
-            if (\count($template_parameter_type_name_list) > 0) {
+        if (!$namespace) {
+            if (count($template_parameter_type_name_list) > 0) {
                 if (\strcasecmp($type_name, 'array') === 0) {
                     // template parameter type list
                     $template_parameter_type_list = self::createTemplateParameterTypeList($template_parameter_type_name_list);
@@ -901,7 +904,7 @@ class Type
         array $shape_components,
         bool $is_nullable
     ) : FunctionLikeDeclarationType {
-        if (\count($shape_components) === 0) {
+        if (count($shape_components) === 0) {
             // The literal int '0' is a valid union type, but it's falsey, so check the count instead.
             // shouldn't happen
             throw new AssertionError("Expected at least one component of a closure phpdoc type");
@@ -928,20 +931,20 @@ class Type
         array $template_parameter_type_list,
         bool $is_nullable
     ) : ArrayType {
-        $template_count = \count($template_parameter_type_list);
+        $template_count = count($template_parameter_type_list);
         if ($template_count <= 2) {  // array<T> or array<key, T>
             $key_type = ($template_count === 2)
                 ? GenericArrayType::keyTypeFromUnionTypeValues($template_parameter_type_list[0])
                 : GenericArrayType::KEY_MIXED;
 
             $types = $template_parameter_type_list[$template_count - 1]->getTypeSet();
-            if (\count($types) === 1) {
+            if (count($types) === 1) {
                 return GenericArrayType::fromElementType(
                     \reset($types),
                     $is_nullable,
                     $key_type
                 );
-            } elseif (\count($types) > 1) {
+            } elseif (count($types) > 1) {
                 return new GenericMultiArrayType(
                     $types,
                     $is_nullable,
@@ -960,7 +963,7 @@ class Type
         array $template_parameter_type_list,
         bool $is_nullable
     ) : Type {
-        $template_count = \count($template_parameter_type_list);
+        $template_count = count($template_parameter_type_list);
         if ($template_count <= 2) {  // iterable<T> or iterable<key, T>
             $key_union_type = ($template_count === 2)
                 ? $template_parameter_type_list[0]
@@ -1143,7 +1146,7 @@ class Type
 
         // If this was a fully qualified type, we're all
         // set
-        if (!empty($namespace) && 0 === \strpos($namespace, '\\')) {
+        if ($namespace && $namespace[0] === '\\') {
             return self::make(
                 $namespace,
                 $type_name,
@@ -1154,11 +1157,11 @@ class Type
         }
 
         if (self::isInternalTypeString($type_name, $source)) {
-            if (!empty($template_parameter_type_list)) {
-                if (\strtolower($type_name) === 'array') {
+            if (count($template_parameter_type_list) > 0) {
+                if (strtolower($type_name) === 'array') {
                     return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
                 }
-                if (\strtolower($type_name) === 'iterable') {
+                if (strtolower($type_name) === 'iterable') {
                     return self::parseGenericIterableTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
                 }
                 // TODO: Warn about unrecognized types.
@@ -1205,10 +1208,13 @@ class Type
 
         // Merge the current namespace with the given relative
         // namespace
-        if (!empty($context->getNamespace()) && !empty($namespace)) {
-            $namespace = $context->getNamespace() . '\\' . $namespace;
-        } elseif (!empty($context->getNamespace())) {
-            $namespace = $context->getNamespace();
+        $context_namespace = $context->getNamespace();
+        if ($context_namespace) {
+            if ($namespace) {
+                $namespace = $context_namespace . '\\' . $namespace;
+            } else {
+                $namespace = $context_namespace;
+            }
         } else {
             $namespace = '\\' . $namespace;
         }
@@ -1541,7 +1547,7 @@ class Type
      */
     private static function isInternalTypeString(string $original_type_name, int $source) : bool
     {
-        $type_name = \str_replace('[]', '', \strtolower($original_type_name));
+        $type_name = \str_replace('[]', '', strtolower($original_type_name));
         if ($source === Type::FROM_PHPDOC) {
             $type_name = self::canonicalNameFromName($type_name);  // Have to convert boolean[] to bool
         }
@@ -1752,7 +1758,7 @@ class Type
     public function iterableKeyUnionType(CodeBase $unused_code_base)
     {
         if ($this->namespace === '\\') {
-            $name = \strtolower($this->name);
+            $name = strtolower($this->name);
             if ($name === 'traversable' || $name === 'iterator') {
                 return $this->keyTypeOfTraversable();
             }
@@ -1778,7 +1784,7 @@ class Type
     public function iterableValueUnionType(CodeBase $unused_code_base)
     {
         if ($this->namespace === '\\') {
-            $name = \strtolower($this->name);
+            $name = strtolower($this->name);
             if ($name === 'traversable' || $name === 'iterator') {
                 return $this->valueTypeOfTraversable();
             }
@@ -1796,7 +1802,7 @@ class Type
     private function keyTypeOfTraversable()
     {
         $template_type_list = $this->template_parameter_type_list;
-        if (\count($template_type_list) === 2) {
+        if (count($template_type_list) === 2) {
             return $template_type_list[0];
         }
         return null;
@@ -1806,7 +1812,7 @@ class Type
     private function valueTypeOfTraversable()
     {
         $template_type_list = $this->template_parameter_type_list;
-        $count = \count($template_type_list);
+        $count = count($template_type_list);
         if ($count >= 1 && $count <= 2) {
             return $template_type_list[$count - 1];
         }
@@ -1818,7 +1824,7 @@ class Type
     private function keyTypeOfGenerator()
     {
         $template_type_list = $this->template_parameter_type_list;
-        if (\count($template_type_list) >= 2 && \count($template_type_list) <= 4) {
+        if (count($template_type_list) >= 2 && count($template_type_list) <= 4) {
             return $template_type_list[0];
         }
         return null;
@@ -1828,7 +1834,7 @@ class Type
     private function valueTypeOfGenerator()
     {
         $template_type_list = $this->template_parameter_type_list;
-        if (\count($template_type_list) >= 2 && \count($template_type_list) <= 4) {
+        if (count($template_type_list) >= 2 && count($template_type_list) <= 4) {
             return $template_type_list[1];
         }
         return null;
@@ -1859,7 +1865,7 @@ class Type
      */
     public function hasTemplateParameterTypes() : bool
     {
-        return !empty($this->template_parameter_type_list);
+        return count($this->template_parameter_type_list) > 0;
     }
 
     /**
@@ -1969,7 +1975,7 @@ class Type
                     $recursive_union_type_builder->addType($clazz_type);
                 }
             }
-            if (!empty($this->template_parameter_type_list)) {
+            if (count($this->template_parameter_type_list) > 0) {
                 $recursive_union_type_builder->addUnionType(
                     $clazz->resolveParentTemplateType($this->getTemplateParameterTypeMap($code_base))
                 );
@@ -2107,7 +2113,7 @@ class Type
         // Check for allowable type conversions from object types to native types
         if ($type::NAME === 'iterable') {
             if ($this->namespace === '\\' && \in_array($this->name, ['Generator', 'Traversable', 'Iterator'], true)) {
-                if (\count($this->template_parameter_type_list) === 0 || !($type instanceof GenericIterableType)) {
+                if (count($this->template_parameter_type_list) === 0 || !($type instanceof GenericIterableType)) {
                     return true;
                 }
                 return $this->canCastTraversableToIterable($type);
@@ -2124,7 +2130,7 @@ class Type
     private function canCastTraversableToIterable(GenericIterableType $type) : bool
     {
         $template_types = $this->template_parameter_type_list;
-        $count = \count($template_types);
+        $count = count($template_types);
         $name = $this->name;
         if ($name === 'Traversable' || $name === 'Iterator') {
             // Phan supports Traversable<TValue> and Traversable<TKey, TValue>
@@ -2272,7 +2278,7 @@ class Type
         return $this->memoize(__METHOD__, function () : string {
             $string = $this->asFQSENString();
 
-            if (\count($this->template_parameter_type_list) > 0) {
+            if (count($this->template_parameter_type_list) > 0) {
                 $string .= $this->templateParameterTypeListAsString();
             }
 
@@ -2314,7 +2320,7 @@ class Type
             'integer'  => 'int',
         ];
 
-        return $map[\strtolower($name)] ?? $name;
+        return $map[strtolower($name)] ?? $name;
     }
 
     /**
@@ -2507,7 +2513,7 @@ class Type
             $result = \trim($result);
             $open_bracket_count = \substr_count($result, '<') + \substr_count($result, '{');
             $close_bracket_count = \substr_count($result, '>') + \substr_count($result, '}');
-            if (\count($prev_parts) > 0) {
+            if (count($prev_parts) > 0) {
                 $prev_parts[] = $result;
                 $delta += $open_bracket_count - $close_bracket_count;
                 if ($delta <= 0) {

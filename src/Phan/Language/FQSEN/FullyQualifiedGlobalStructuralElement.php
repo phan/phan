@@ -203,7 +203,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         // Split the parts into the namespace(0 or more components) and the last name.
         $name = \array_pop($parts);
 
-        if (empty($name)) {
+        if (!$name) {
             throw new AssertionError("The name cannot be empty");
         }
 
@@ -220,7 +220,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         // n.b.: Functions must override this method because
         //       they don't prefix the namespace for naked
         //       calls
-        if (empty($namespace)) {
+        if (!$namespace) {
             $namespace = $context->getNamespace();
         }
 

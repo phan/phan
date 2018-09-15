@@ -116,7 +116,7 @@ final class ClosureType extends Type
 
         static $instance = null;
 
-        if (empty($instance)) {
+        if ($instance === null) {
             $instance = self::make('\\', self::NAME, [], false, Type::FROM_NODE);
         }
 

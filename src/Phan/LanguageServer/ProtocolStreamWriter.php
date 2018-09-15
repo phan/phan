@@ -37,7 +37,7 @@ class ProtocolStreamWriter implements ProtocolWriter
     public function write(Message $msg): Promise
     {
         // if the message queue is currently empty, register a write handler.
-        if (empty($this->messages)) {
+        if (!$this->messages) {
             Loop\addWriteStream($this->output, function () {
                 $this->flush();
             });

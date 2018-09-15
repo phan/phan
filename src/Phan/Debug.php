@@ -214,7 +214,7 @@ class Debug
                     $names[] = $name;
                 }
             }
-            if (!empty($names)) {
+            if (count($names) > 0) {
                 return implode(" | ", $names) . " ($flags)";
             }
         }
@@ -236,7 +236,7 @@ class Debug
                 continue;
             }
             echo "#" . ($level - 1) . " {$context['file']}:{$context['line']} {$context['class']} ";
-            if (!empty($context['type'])) {
+            if (isset($context['type'])) {
                 echo $context['class'] . $context['type'];
             }
             echo $context['function'];
