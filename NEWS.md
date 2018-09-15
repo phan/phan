@@ -3,6 +3,10 @@ Phan NEWS
 ?? ??? 2018, Phan 1.0.5 (dev)
 -----------------------
 
+Plugins:
++ Properly warn about code after `break` and `continue` in `UnreachableCodePlugin`.
+  Previously, Phan only warned about code after `throw` and `return`.
+
 Bug fixes:
 + Don't infer bad types for variables when analyzing `array_push` using expressions containing those variables. (#1955)
   (also fixes other `array_*` functions taking references)
