@@ -4,25 +4,25 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "45ff1cc44a0cb1018e6aba5ca61fc402",
+    "content-hash": "cda82293e9dcb09f61f47cbc64999051",
     "packages": [
         {
             "name": "slevomat/coding-standard",
-            "version": "4.7.3",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/slevomat/coding-standard.git",
-                "reference": "360ed8f9ce03afbf07fc67d198fe187fc2543c32"
+                "reference": "a2118ef9ba9334bf3aecc547a1183b134baa6ee2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/360ed8f9ce03afbf07fc67d198fe187fc2543c32",
-                "reference": "360ed8f9ce03afbf07fc67d198fe187fc2543c32",
+                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/a2118ef9ba9334bf3aecc547a1183b134baa6ee2",
+                "reference": "a2118ef9ba9334bf3aecc547a1183b134baa6ee2",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.1",
-                "squizlabs/php_codesniffer": "^3.2.3"
+                "squizlabs/php_codesniffer": "^3.3.0"
             },
             "require-dev": {
                 "jakub-onderka/php-parallel-lint": "1.0.0",
@@ -30,7 +30,7 @@
                 "phpstan/phpstan": "0.9.2",
                 "phpstan/phpstan-phpunit": "0.9.4",
                 "phpstan/phpstan-strict-rules": "0.9",
-                "phpunit/phpunit": "7.3.1"
+                "phpunit/phpunit": "7.3.5"
             },
             "type": "phpcodesniffer-standard",
             "autoload": {
@@ -43,7 +43,7 @@
                 "MIT"
             ],
             "description": "Slevomat Coding Standard for PHP_CodeSniffer complements Consistence Coding Standard by providing sniffs with additional checks.",
-            "time": "2018-09-03T21:12:37+00:00"
+            "time": "2018-09-14T19:55:14+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
@@ -101,7 +101,8 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "squizlabs/php_codesniffer": 20
+        "squizlabs/php_codesniffer": 20,
+        "slevomat/coding-standard": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

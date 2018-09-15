@@ -6,10 +6,24 @@
 <ruleset name="Custom Standard">
   <description>Coding standard for Phan</description>
   <config name="installed_paths" value="../../slevomat/coding-standard"/>
+  <rule ref="SlevomatCodingStandard.Classes.ModernClassNameReference" />
   <rule ref="SlevomatCodingStandard.Commenting.EmptyComment" />
   <rule ref="SlevomatCodingStandard.Namespaces.UseDoesNotStartWithBackslash" />
+  <rule ref="SlevomatCodingStandard.Namespaces.UselessAlias" />
+  <rule ref="SlevomatCodingStandard.Namespaces.AlphabeticallySortedUses">
+    <properties>
+      <property name="psr12Compatible" type="bool" value="true" />
+    </properties>
+  </rule>
   <rule ref="SlevomatCodingStandard.PHP.TypeCast" />
-  <rule ref="SlevomatCodingStandard.Namespaces.AlphabeticallySortedUses" />
+  <rule ref="SlevomatCodingStandard.TypeHints.DeclareStrictTypes" >
+    <properties>
+      <property name="spacesCountAroundEqualsSign" type="bool" value="false" />
+    </properties>
+    <exclude name="SlevomatCodingStandard.TypeHints.DeclareStrictTypes.IncorrectWhitespaceAfterDeclare" />
+    <exclude name="SlevomatCodingStandard.TypeHints.DeclareStrictTypes.IncorrectWhitespaceBetweenOpenTagAndDeclare" />
+    <exclude name="SlevomatCodingStandard.TypeHints.DeclareStrictTypes.IncorrectStrictTypesFormat" />
+  </rule>
 
   <rule ref="PSR1" />
   <rule ref="PSR2">

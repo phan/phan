@@ -209,7 +209,7 @@ class Parameter extends Variable
     public static function listFromReflectionParameterList(
         array $reflection_parameters
     ) : array {
-        return \array_map([__CLASS__, 'fromReflectionParameter'], $reflection_parameters);
+        return \array_map([self::class, 'fromReflectionParameter'], $reflection_parameters);
     }
 
     public static function fromReflectionParameter(
