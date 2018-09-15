@@ -12,6 +12,7 @@ Bug fixes:
 
 Language Server/Daemon mode:
 + Fix an uncaught exception when extracting a URL with an unexpected scheme (not `file:/...`) (#1960)
++ Fix false positive `PhanUnreferencedUseNormal` issues seen when the daemon was running without pcntl (#1860)
 
 10 Sep 2018, Phan 1.0.4
 -----------------------

@@ -147,9 +147,11 @@ class UndoTracker
      * @param CodeBase $code_base - code base owning this tracker
      * @param array<int,string> $new_file_list
      * @param array<string,string> $file_mapping_contents
+     * @param ?(string[]) $reanalyze_files files to re-parse before re-running analysis.
+     *                    This fixes #1921
      * @return array<int,string> - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
      */
-    public function updateFileList(CodeBase $code_base, array $new_file_list, array $file_mapping_contents)
+    public function updateFileList(CodeBase $code_base, array $new_file_list, array $file_mapping_contents, array $reanalyze_files = null)
     {
         $new_file_set = [];
         foreach ($new_file_list as $path) {
@@ -173,13 +175,14 @@ class UndoTracker
                 unset($this->file_modification_state[$path]);
                 continue;
             }
+            // TODO: Always invalidate the parsed file if we're about to analyze it?
             if (isset($file_mapping_contents[$path])) {
                 // TODO: Move updateFileList to be called before fork()?
                 $new_state = 'daemon:' . sha1($file_mapping_contents[$path]);
             } else {
                 $new_state = self::getFileState($path);
             }
-            if ($new_state !== $state) {
+            if ($new_state !== $state || in_array($path, $reanalyze_files ?? [])) {
                 $removed_file_list[] = $path;
                 $this->undoFileChanges($code_base, $path);
                 // TODO: This will call stat() twice as much as necessary for the modified files. Not important.

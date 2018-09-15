@@ -373,14 +373,15 @@ class CodeBase
     /**
      * @param array<int,string> $new_file_list
      * @param array<string,string> $file_mapping_contents maps relative path to absolute paths
+     * @param ?(string[]) $reanalyze_files files to re-analyze
      * @return array<int,string> - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
      */
-    public function updateFileList(array $new_file_list, array $file_mapping_contents = [])
+    public function updateFileList(array $new_file_list, array $file_mapping_contents = [], array $reanalyze_files = null)
     {
         if ($this->undo_tracker) {
             $this->invalidateDependentCacheEntries();
 
-            return $this->undo_tracker->updateFileList($this, $new_file_list, $file_mapping_contents);
+            return $this->undo_tracker->updateFileList($this, $new_file_list, $file_mapping_contents, $reanalyze_files);
         }
         throw new \RuntimeException("Calling updateFileList without undo tracker");
     }
