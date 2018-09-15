@@ -8,6 +8,7 @@ Bug fixes:
   (also fixes other `array_*` functions taking references)
 + Fix false negatives in PHP5 backwards compatibility heuristic checks (#1939)
 + Fix false positive PhanUnanalyzableInheritance for a method inherited from a trait (which itself uses trait) (#1968)
++ Fix an uncaught RuntimeException when type checking an array that was roughly 12 or more levels deep (#1962)
 
 Language Server/Daemon mode:
 + Fix an uncaught exception when extracting a URL with an unexpected scheme (not `file:/...`) (#1960)

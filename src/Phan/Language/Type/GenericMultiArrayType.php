@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use Phan\Exception\RecursionDepthException;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
 use Phan\CodeBase;
 
 use InvalidArgumentException;
-use RuntimeException;
 
 /**
  * Callers should split this up into multiple GenericArrayType instances.
@@ -184,19 +184,23 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
-            throw new RuntimeException("Recursion has gotten out of hand");
+            throw new RecursionDepthException("Recursion has gotten out of hand");
         }
 
         // TODO: Use UnionType::merge from a future change?
         $result = new UnionTypeBuilder();
-        foreach ($this->element_types as $type) {
-            $result->addUnionType(
-                GenericArrayType::fromElementType(
-                    $type,
-                    $this->is_nullable,
-                    $this->key_type
-                )->asExpandedTypes($code_base, $recursion_depth + 1)
-            );
+        try {
+            foreach ($this->element_types as $type) {
+                $result->addUnionType(
+                    GenericArrayType::fromElementType(
+                        $type,
+                        $this->is_nullable,
+                        $this->key_type
+                    )->asExpandedTypes($code_base, $recursion_depth + 1)
+                );
+            }
+        } catch (RecursionDepthException $_) {
+            return ArrayType::instance($this->getIsNullable())->asUnionType();
         }
         return $result->getUnionType();
     }

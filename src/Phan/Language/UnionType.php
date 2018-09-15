@@ -5,6 +5,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\Language\AnnotatedUnionType;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -32,7 +33,6 @@ use Phan\Language\Type\TrueType;
 
 use Closure;
 use Generator;
-use RuntimeException;
 use Serializable;
 
 if (!\function_exists('spl_object_id')) {
@@ -2273,7 +2273,7 @@ class UnionType implements Serializable
         int $recursion_depth = 0
     ) : UnionType {
         if ($recursion_depth >= 12) {
-            throw new RuntimeException("Recursion has gotten out of hand");
+            throw new RecursionDepthException("Recursion has gotten out of hand");
         }
 
         $type_set = $this->type_set;

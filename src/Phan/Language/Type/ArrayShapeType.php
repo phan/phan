@@ -1,12 +1,13 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use Phan\CodeBase;
+use Phan\Config;
+use Phan\Exception\RecursionDepthException;
 use Phan\Language\AnnotatedUnionType;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
-use Phan\CodeBase;
-use Phan\Config;
 
 use RuntimeException;
 
@@ -412,7 +413,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
-            throw new RuntimeException("Recursion has gotten out of hand");
+            throw new RecursionDepthException("Recursion has gotten out of hand");
         }
         return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
             $result_fields = [];
@@ -420,7 +421,11 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 // UnionType already increments recursion_depth before calling asExpandedTypes on a subclass of Type,
                 // and has a depth limit of 10.
                 // Don't increase recursion_depth here, it's too easy to reach.
-                $expanded_field_type = $union_type->asExpandedTypes($code_base, $recursion_depth);
+                try {
+                    $expanded_field_type = $union_type->asExpandedTypes($code_base, $recursion_depth);
+                } catch (RecursionDepthException $_) {
+                    $expanded_field_type = MixedType::instance(false)->asUnionType();
+                }
                 if ($union_type->getIsPossiblyUndefined()) {
                     // array{key?:string} should become array{key?:string}.
                     $expanded_field_type = $union_type->withIsPossiblyUndefined(true);

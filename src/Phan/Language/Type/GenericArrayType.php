@@ -4,6 +4,7 @@ namespace Phan\Language\Type;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Exception\RecursionDepthException;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
@@ -12,7 +13,6 @@ use Phan\Language\UnionTypeBuilder;
 
 use ast\Node;
 use InvalidArgumentException;
-use RuntimeException;
 
 /**
  * Phan's representation for the types `array<string,MyClass>` and `MyClass[]`
@@ -303,7 +303,7 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
-            throw new RuntimeException("Recursion has gotten out of hand");
+            throw new RecursionDepthException("Recursion has gotten out of hand");
         }
 
         return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
@@ -331,17 +331,21 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
             // Recurse up the tree to include all types
             $recursive_union_type_builder = new UnionTypeBuilder();
             $representation = $this->__toString();
-            foreach ($union_type->getTypeSet() as $clazz_type) {
-                if ($clazz_type->__toString() !== $representation) {
-                    $recursive_union_type_builder->addUnionType(
-                        $clazz_type->asExpandedTypes(
-                            $code_base,
-                            $recursion_depth + 1
-                        )
-                    );
-                } else {
-                    $recursive_union_type_builder->addType($clazz_type);
+            try {
+                foreach ($union_type->getTypeSet() as $clazz_type) {
+                    if ($clazz_type->__toString() !== $representation) {
+                        $recursive_union_type_builder->addUnionType(
+                            $clazz_type->asExpandedTypes(
+                                $code_base,
+                                $recursion_depth + 1
+                            )
+                        );
+                    } else {
+                        $recursive_union_type_builder->addType($clazz_type);
+                    }
                 }
+            } catch (RecursionDepthException $_) {
+                return ArrayType::instance($this->getIsNullable())->asUnionType();
             }
 
             // Add in aliases

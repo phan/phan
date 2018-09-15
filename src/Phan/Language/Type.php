@@ -6,6 +6,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\EmptyFQSENException;
 use Phan\Exception\IssueException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\Language\Element\Comment;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -47,7 +48,6 @@ use Phan\Library\Tuple5;
 use AssertionError;
 use Error;
 use InvalidArgumentException;
-use RuntimeException;
 
 /**
  * The base class for all of Phan's types.
@@ -1933,7 +1933,7 @@ class Type
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
-            throw new RuntimeException("Recursion has gotten out of hand");
+            throw new RecursionDepthException("Recursion has gotten out of hand");
         }
         $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) {
             $union_type = $this->asUnionType();
