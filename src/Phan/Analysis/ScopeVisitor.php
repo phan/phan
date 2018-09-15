@@ -1,18 +1,17 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use AssertionError;
+use ast\Node;
 use Phan\AST\AnalysisVisitor;
 use Phan\Config;
+use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
-use Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use Phan\Issue;
-
-use AssertionError;
-use ast\Node;
 
 /**
  * An abstract visitor with methods to track elements in the current scope.

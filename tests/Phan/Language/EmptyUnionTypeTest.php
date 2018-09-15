@@ -2,21 +2,20 @@
 
 namespace Phan\Tests\Language;
 
+use Closure;
+use Generator;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\EmptyUnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
-use Phan\Language\Type\ObjectType;
-use Phan\Language\Type\MixedType;
-use Phan\Language\Type\IntType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\IntType;
+use Phan\Language\Type\MixedType;
+use Phan\Language\Type\ObjectType;
 use Phan\Language\UnionType;
 use Phan\Tests\BaseTest;
-
-use Closure;
-use Generator;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;

@@ -1,7 +1,6 @@
 <?php declare(strict_types = 1);
 namespace Phan\Tests\Language\Element;
 
-use Phan\Tests\BaseTest;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
@@ -9,6 +8,7 @@ use Phan\Language\Element\Comment;
 use Phan\Language\Type;
 use Phan\Language\Type\StaticType;
 use Phan\Library\None;
+use Phan\Tests\BaseTest;
 
 /**
  * Unit tests of Comment

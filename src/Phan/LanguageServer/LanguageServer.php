@@ -2,8 +2,8 @@
 namespace Phan\LanguageServer;
 
 use AdvancedJsonRpc;
+use AssertionError;
 use Closure;
-use Phan\Phan;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Daemon\ExitException;
@@ -24,13 +24,12 @@ use Phan\LanguageServer\Protocol\SaveOptions;
 use Phan\LanguageServer\Protocol\ServerCapabilities;
 use Phan\LanguageServer\Protocol\TextDocumentSyncKind;
 use Phan\LanguageServer\Protocol\TextDocumentSyncOptions;
-use Phan\LanguageServer\Server\TextDocument;
 use Phan\LanguageServer\ProtocolReader;
-use Phan\LanguageServer\ProtocolWriter;
 use Phan\LanguageServer\ProtocolStreamReader;
 use Phan\LanguageServer\ProtocolStreamWriter;
-
-use AssertionError;
+use Phan\LanguageServer\ProtocolWriter;
+use Phan\LanguageServer\Server\TextDocument;
+use Phan\Phan;
 use Sabre\Event\Loop;
 use Sabre\Event\Promise;
 use Throwable;

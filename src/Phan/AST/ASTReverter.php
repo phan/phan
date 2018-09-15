@@ -1,11 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\AST;
 
-use Phan\Analysis\PostOrderAnalysisVisitor;
-
-use ast\Node;
 use ast;
+use ast\Node;
 use Closure;
+use Phan\Analysis\PostOrderAnalysisVisitor;
 use function implode;
 
 /**

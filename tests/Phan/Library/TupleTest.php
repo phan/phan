@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 namespace Phan\Tests\Library;
 
-use Phan\Tests\BaseTest;
 use Phan\Library\Tuple1;
 use Phan\Library\Tuple2;
+use Phan\Tests\BaseTest;
 
 /**
  * Unit tests of Tuple

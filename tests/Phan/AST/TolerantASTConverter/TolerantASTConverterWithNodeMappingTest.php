@@ -2,13 +2,13 @@
 
 namespace Phan\Tests\AST\TolerantASTConverter;
 
-use Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping;
-use Phan\AST\TolerantASTConverter\TolerantASTConverter;
-use Phan\Config;
-use Phan\Tests\BaseTest;
-use InvalidArgumentException;
 use ast;
 use ast\Node;
+use InvalidArgumentException;
+use Phan\AST\TolerantASTConverter\TolerantASTConverter;
+use Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping;
+use Phan\Config;
+use Phan\Tests\BaseTest;
 
 /**
  * Tests that the fallback works with ASTs, and can point an ast\Node to the original.

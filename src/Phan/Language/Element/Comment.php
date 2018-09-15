@@ -2,22 +2,21 @@
 declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use AssertionError;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment\Builder;
+use Phan\Language\Element\Comment\Method as CommentMethod;
 use Phan\Language\Element\Comment\Parameter as CommentParameter;
 use Phan\Language\Element\Comment\Property as CommentProperty;
-use Phan\Language\Element\Comment\Method as CommentMethod;
 use Phan\Language\Element\Flags;
 use Phan\Language\Type;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 use Phan\Library\None;
 use Phan\Library\Option;
-
-use AssertionError;
 
 /**
  * Handles extracting information(param types, return types, magic methods/properties, etc.) from phpdoc comments.

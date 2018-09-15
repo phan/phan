@@ -1,12 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use AssertionError;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-
-use AssertionError;
 
 /**
  * Represents the PHPDoc type `static`.

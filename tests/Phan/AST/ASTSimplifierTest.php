@@ -3,9 +3,9 @@
 namespace Phan\Tests\AST;
 
 use Phan\AST\ASTSimplifier;
-use Phan\Tests\AbstractPhanFileTest;
 use Phan\Config;
 use Phan\Debug;
+use Phan\Tests\AbstractPhanFileTest;
 
 /**
  * Tests of ASTSimplifier converting one AST to the expected AST.

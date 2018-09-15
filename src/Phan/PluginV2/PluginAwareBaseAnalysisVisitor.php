@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\PluginV2;
 
+use ast\Node;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\Issue;
-use ast\Node;
 
 /**
  * This augments AnalysisVisitor with public and internal methods.

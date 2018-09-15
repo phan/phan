@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use ast\Node;
 use Phan\CodeBase;
 use Phan\Language\Context;
-use Phan\Language\Type;
-use Phan\Language\Type\FunctionLikeDeclarationType;
-use Phan\Language\UnionType;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\ClosedScope;
-use ast\Node;
+use Phan\Language\Type;
+use Phan\Language\Type\FunctionLikeDeclarationType;
+use Phan\Language\UnionType;
 
 /**
  * Interface defining the behavior of both Methods

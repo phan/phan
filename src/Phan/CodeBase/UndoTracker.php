@@ -1,11 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\CodeBase;
 
+use Closure;
 use Phan\CodeBase;
 use Phan\Daemon;
 use Phan\Phan;
-
-use Closure;
 
 /**
  * UndoTracker maps a file path to a list of operations(e.g. Closures) that must be executed to

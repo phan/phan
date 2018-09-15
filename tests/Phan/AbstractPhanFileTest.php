@@ -3,9 +3,9 @@ namespace Phan\Tests;
 
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Language\Type;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\Printer\PlainTextPrinter;
-use Phan\Language\Type;
 use Phan\Phan;
 use Phan\Plugin\ConfigPluginSet;
 use Symfony\Component\Console\Output\BufferedOutput;

@@ -1,22 +1,22 @@
 <?php declare(strict_types=1);
 namespace Phan\Plugin\Internal;
 
+use ast;
+use ast\Node;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
+use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
-use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use ast\Node;
-use ast;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
 /**
  * Analyzes throw statements and compares them against the phpdoc (at)throws annotations

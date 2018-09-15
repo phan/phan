@@ -1,11 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\Plugin;
 
-use Phan\AST\Visitor\Element;
-
 use AssertionError;
 use Closure;
 use InvalidArgumentException;
+use Phan\AST\Visitor\Element;
 
 /**
  * Tracks the closures that need to be executed for the set of possible \ast\Node->kind values.

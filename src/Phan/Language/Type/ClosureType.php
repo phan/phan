@@ -1,11 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use AssertionError;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
-
-use AssertionError;
 
 /**
  * Phan's representation of `Closure` and of closures associated with a given function-like's FQSEN

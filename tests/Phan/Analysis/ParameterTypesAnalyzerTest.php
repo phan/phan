@@ -3,8 +3,8 @@ namespace Phan\Tests\Analysis;
 
 use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\Config;
-use Phan\Tests\BaseTest;
 use Phan\Language\UnionType;
+use Phan\Tests\BaseTest;
 
 /**
  * Unit tests of helper methods of ParameterTypesAnalyzer

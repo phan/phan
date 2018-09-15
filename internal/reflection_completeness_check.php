@@ -8,8 +8,8 @@
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 use Phan\Config;
-use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\UnionType;
 
 /**

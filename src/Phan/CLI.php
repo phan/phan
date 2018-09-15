@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use AssertionError;
+use InvalidArgumentException;
 use Phan\Config\Initializer;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\Filter\CategoryIssueFilter;
@@ -8,9 +10,6 @@ use Phan\Output\Filter\ChainedIssueFilter;
 use Phan\Output\Filter\FileIssueFilter;
 use Phan\Output\Filter\MinimumSeverityFilter;
 use Phan\Output\PrinterFactory;
-
-use AssertionError;
-use InvalidArgumentException;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;

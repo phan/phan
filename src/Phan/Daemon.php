@@ -1,13 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use Phan\Daemon\Request;
-use Phan\Daemon\Transport\StreamResponder;
-use Phan\Daemon\ExitException;
-
 use AssertionError;
 use Closure;
 use InvalidArgumentException;
+use Phan\Daemon\ExitException;
+use Phan\Daemon\Request;
+use Phan\Daemon\Transport\StreamResponder;
 use RuntimeException;
 
 /**

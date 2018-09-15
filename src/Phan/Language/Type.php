@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
+use AssertionError;
+use Error;
+use InvalidArgumentException;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
@@ -10,24 +13,24 @@ use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\Language\Element\Comment;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
-use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\ArrayShapeType;
+use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableDeclarationType;
 use Phan\Language\Type\CallableType;
-use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\ClosureDeclarationParameter;
 use Phan\Language\Type\ClosureDeclarationType;
+use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\GenericIterableType;
 use Phan\Language\Type\GenericMultiArrayType;
-use Phan\Language\Type\LiteralIntType;
-use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
+use Phan\Language\Type\LiteralIntType;
+use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NativeType;
 use Phan\Language\Type\NullType;
@@ -44,10 +47,6 @@ use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;
 use Phan\Library\Tuple5;
-
-use AssertionError;
-use Error;
-use InvalidArgumentException;
 
 /**
  * The base class for all of Phan's types.
@@ -1423,9 +1422,6 @@ class Type
         return $this->namespace;
     }
 
-    /**
-     *
-     */
     public function getIsNullable() : bool
     {
         return $this->is_nullable;

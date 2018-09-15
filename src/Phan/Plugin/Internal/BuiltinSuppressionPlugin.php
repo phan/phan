@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Plugin\Internal;
 
+use Generator;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
@@ -14,7 +15,6 @@ use Phan\Library\FileCache;
 use Phan\PluginV2;
 use Phan\PluginV2\SuppressionCapability;
 use Phan\Suggestion;
-use Generator;
 
 /**
  * Implements Phan's built in suppression kinds

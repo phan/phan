@@ -1,14 +1,13 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use AssertionError;
+use ast\Node;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\Language\Context;
 use Phan\Language\Scope;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
-
-use AssertionError;
-use ast\Node;
 
 /**
  * This will merge inferred variable types from multiple contexts in branched control structures

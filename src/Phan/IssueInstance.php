@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use Phan\Output\Colorizing;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Phan\Output\Colorizing;
 
 /**
  * Represents an instance of an issue at a given file and line for the given template parameters.

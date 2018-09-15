@@ -1,26 +1,25 @@
 <?php declare(strict_types=1);
 namespace Phan\Plugin\Internal;
 
-use Phan\CodeBase;
+use ast\Node;
 use Phan\Analysis\ArgumentType;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\AST\UnionTypeVisitor;
+use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
-use Phan\Language\Type\IntType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
-use Phan\PluginV2\ReturnTypeOverrideCapability;
 use Phan\PluginV2;
-
-use ast\Node;
+use Phan\PluginV2\ReturnTypeOverrideCapability;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.

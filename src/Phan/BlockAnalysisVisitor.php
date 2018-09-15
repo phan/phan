@@ -1,29 +1,28 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use Phan\AST\AnalysisVisitor;
-use Phan\AST\Visitor\Element;
-use Phan\AST\UnionTypeVisitor;
+use AssertionError;
+use ast\Node;
 use Phan\Analysis\BlockExitStatusChecker;
 use Phan\Analysis\ConditionVisitor;
-use Phan\Analysis\NegatedConditionVisitor;
 use Phan\Analysis\ContextMergeVisitor;
+use Phan\Analysis\NegatedConditionVisitor;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\PreOrderAnalysisVisitor;
+use Phan\AST\AnalysisVisitor;
+use Phan\AST\UnionTypeVisitor;
+use Phan\AST\Visitor\Element;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
-use Phan\Language\Type;
-use Phan\Language\UnionType;
 use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Scope\PropertyScope;
+use Phan\Language\Type;
+use Phan\Language\UnionType;
 use Phan\Plugin\ConfigPluginSet;
-
-use AssertionError;
-use ast\Node;
 
 /**
  * Analyze blocks of code

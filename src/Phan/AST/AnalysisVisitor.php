@@ -6,8 +6,8 @@ use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
-use Phan\Language\UnionType;
 use Phan\Language\Type;
+use Phan\Language\UnionType;
 use Phan\Suggestion;
 
 /**

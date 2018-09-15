@@ -1,23 +1,23 @@
 <?php declare(strict_types=1);
 namespace Phan\Plugin\Internal;
 
-use Phan\CodeBase;
+use ast\Node;
+use Closure;
 use Phan\Analysis\ArgumentType;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\AST\UnionTypeVisitor;
+use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
-use Phan\Language\Type\ClosureType;
 use Phan\Language\Type;
+use Phan\Language\Type\ClosureType;
 use Phan\Language\UnionType;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
-use ast\Node;
-use Closure;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.

@@ -3,13 +3,12 @@ declare(strict_types = 1);
 
 namespace Phan\LanguageServer;
 
+use AdvancedJsonRpc\Message as MessageBody;
+use Exception;
 use Phan\LanguageServer\Logger;
 use Phan\LanguageServer\Protocol\Message;
-use AdvancedJsonRpc\Message as MessageBody;
-use Sabre\Event\Loop;
 use Sabre\Event\Emitter;
-
-use Exception;
+use Sabre\Event\Loop;
 
 /**
  * Source: https://github.com/felixfbecker/php-language-server/tree/master/src/ProtocolStreamReader.php

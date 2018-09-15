@@ -1,13 +1,15 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use AssertionError;
+use ast\Node;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
-use Phan\Exception\UnanalyzableException;
 use Phan\Exception\NodeException;
+use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
@@ -22,9 +24,6 @@ use Phan\Language\Type;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
-
-use ast\Node;
-use AssertionError;
 
 /**
  * PreOrderAnalysisVisitor is where we do the pre-order part of the analysis

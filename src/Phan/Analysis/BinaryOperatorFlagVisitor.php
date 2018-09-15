@@ -1,24 +1,23 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use AssertionError;
+use ast\Node;
+use Closure;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\AST\Visitor\FlagVisitorImplementation;
 use Phan\CodeBase;
+use Phan\Issue;
 use Phan\Language\Context;
-use Phan\Language\UnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FloatType;
-use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\StringType;
-use Phan\Issue;
-
-use AssertionError;
-use ast\Node;
-use Closure;
+use Phan\Language\UnionType;
 
 /**
  * This implements Phan's analysis of the type of binary operators (Node->kind=ast\AST_BINARY_OP).

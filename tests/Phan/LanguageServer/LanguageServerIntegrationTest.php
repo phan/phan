@@ -1,8 +1,7 @@
 <?php declare(strict_types = 1);
 namespace Phan\Tests\LanguageServer;
 
-use Phan\Tests\BaseTest;
-
+use InvalidArgumentException;
 use Phan\Issue;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Protocol\ClientCapabilities;
@@ -11,7 +10,7 @@ use Phan\LanguageServer\Protocol\Position;
 use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
 use Phan\LanguageServer\ProtocolStreamReader;
 use Phan\LanguageServer\Utils;
-use InvalidArgumentException;
+use Phan\Tests\BaseTest;
 use stdClass;
 
 /**

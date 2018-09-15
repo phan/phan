@@ -1,18 +1,18 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use ast\Node;
+use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\AST\Visitor\FlagVisitorImplementation;
-use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
+use Phan\Issue;
 use Phan\Language\Context;
-use Phan\Language\UnionType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\StringType;
-use Phan\Issue;
-use ast\Node;
+use Phan\Language\UnionType;
 
 /**
  * TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed

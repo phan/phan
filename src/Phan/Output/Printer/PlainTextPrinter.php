@@ -4,8 +4,8 @@ namespace Phan\Output\Printer;
 use Phan\Config;
 use Phan\Issue;
 use Phan\IssueInstance;
-use Phan\Output\IssuePrinterInterface;
 use Phan\Output\Colorizing;
+use Phan\Output\IssuePrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**

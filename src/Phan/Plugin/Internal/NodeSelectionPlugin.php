@@ -2,13 +2,12 @@
 
 namespace Phan\Plugin\Internal;
 
-use Phan\Language\Context;
-use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-
 use ast\Node;
 use Closure;
+use Phan\Language\Context;
+use Phan\PluginV2;
+use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
 /**
  * This plugin checks for the definition of a region selected by a user.

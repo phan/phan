@@ -1,10 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use AssertionError;
 use Phan\Config;
 use Phan\Language\Type;
-
-use AssertionError;
 
 /**
  * Phan's representation of PHPDoc `false`

@@ -16,9 +16,6 @@ class LanguageClient
      */
     public $textDocument;
 
-    /**
-     *
-     */
     public function __construct(ProtocolReader $reader, ProtocolWriter $writer)
     {
         $handler = new ClientHandler($reader, $writer);

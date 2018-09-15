@@ -1,15 +1,14 @@
 <?php declare(strict_types=1);
 
+use ast\Node;
 use Phan\Config;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-
-use ast\Node;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
 /**
  * Mark all phpunit test cases as used for dead code detection during Phan's self analysis.

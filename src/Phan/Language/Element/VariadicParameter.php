@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use Phan\Language\UnionType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\UnionType;
 
 /**
  * Contains Phan's representation of a variadic parameter of a method declaration, and methods to access/modify/use the variadic parameters.

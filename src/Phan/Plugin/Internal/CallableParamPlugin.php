@@ -1,17 +1,17 @@
 <?php declare(strict_types=1);
 namespace Phan\Plugin\Internal;
 
-use Phan\CodeBase;
+use Closure;
 use Phan\AST\UnionTypeVisitor;
+use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
-use Phan\Language\Type\CallableType;
-use Phan\Language\Type\CallableDeclarationType;
 use Phan\Language\Type;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
+use Phan\Language\Type\CallableDeclarationType;
+use Phan\Language\Type\CallableType;
 use Phan\PluginV2;
-use Closure;
+use Phan\PluginV2\AnalyzeFunctionCallCapability;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.

@@ -2,8 +2,8 @@
 namespace Phan\Language\Type;
 
 use Phan\Language\Element\Parameter;
-use Phan\Language\UnionType;
 use Phan\Language\FileRef;
+use Phan\Language\UnionType;
 
 /**
  * Not a type, but used by ClosureDeclarationType

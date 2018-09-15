@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use AssertionError;
+use ast\Node;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
@@ -14,8 +16,8 @@ use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
-use Phan\Language\Element\PassByReferenceVariable;
 use Phan\Language\Element\Parameter;
+use Phan\Language\Element\PassByReferenceVariable;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -28,9 +30,6 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
-
-use AssertionError;
-use ast\Node;
 
 /**
  * Analyzes assignments.

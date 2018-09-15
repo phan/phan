@@ -1,10 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Output\Collector;
 
+use AssertionError;
 use Phan\IssueInstance;
 use Phan\Output\IssueCollectorInterface;
-
-use AssertionError;
 
 /**
  * A ParallelParentCollector collects issues as normal proxying

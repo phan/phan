@@ -2,9 +2,9 @@
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
-use Phan\Language\UnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\UnionType;
 
 /**
  * Phan's base class for native types such as IntType, ObjectType, etc.

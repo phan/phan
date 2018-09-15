@@ -1,17 +1,16 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use AssertionError;
+use Closure;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
+use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
-use Phan\Language\FileRef;
 use Phan\Language\UnionType;
 use Phan\Memoize;
-
-use AssertionError;
-use Closure;
 
 /**
  * An addressable element is a TypedElement with an FQSEN.

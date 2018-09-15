@@ -1,11 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\AST;
 
+use AssertionError;
 use ast;
 use ast\flags;
 use ast\Node;
-use AssertionError;
-
 use function array_map;
 use function array_pop;
 use function count;

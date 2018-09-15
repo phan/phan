@@ -1,16 +1,20 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use ast\Node;
+use CompileError;
+use InvalidArgumentException;
+use ParseError;
+use Phan\Analysis\DuplicateFunctionAnalyzer;
+use Phan\Analysis\ParameterTypesAnalyzer;
+use Phan\Analysis\ReferenceCountsAnalyzer;
+use Phan\Analysis\ReturnTypesAnalyzer;
+use Phan\Analysis\ThrowsTypesAnalyzer;
 use Phan\AST\ASTSimplifier;
 use Phan\AST\Parser;
 use Phan\AST\PhanAnnotationAdder;
 use Phan\AST\TolerantASTConverter\ParseException;
 use Phan\AST\Visitor\Element;
-use Phan\Analysis\DuplicateFunctionAnalyzer;
-use Phan\Analysis\ParameterTypesAnalyzer;
-use Phan\Analysis\ReturnTypesAnalyzer;
-use Phan\Analysis\ReferenceCountsAnalyzer;
-use Phan\Analysis\ThrowsTypesAnalyzer;
 use Phan\Daemon\Request;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
@@ -21,11 +25,6 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Library\FileCache;
 use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
-
-use ast\Node;
-use CompileError;
-use InvalidArgumentException;
-use ParseError;
 use Throwable;
 
 /**

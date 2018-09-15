@@ -3,9 +3,9 @@ namespace Phan\Language\Type;
 
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-use Phan\Language\Context;
 
 /**
  * The base class for various scalar types (BoolType, StringType, ScalarRawType,

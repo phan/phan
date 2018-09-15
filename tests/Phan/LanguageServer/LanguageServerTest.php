@@ -2,14 +2,14 @@
 namespace Phan\Tests\LanguageServer;
 
 use Phan\CodeBase;
-use Phan\Tests\BaseTest;
 use Phan\LanguageServer\LanguageServer;
-use Phan\LanguageServer\Protocol\InitializeResult;
 use Phan\LanguageServer\Protocol\ClientCapabilities;
+use Phan\LanguageServer\Protocol\InitializeResult;
 use Phan\LanguageServer\Protocol\SaveOptions;
 use Phan\LanguageServer\Protocol\ServerCapabilities;
 use Phan\LanguageServer\Protocol\TextDocumentSyncKind;
 use Phan\LanguageServer\Protocol\TextDocumentSyncOptions;
+use Phan\Tests\BaseTest;
 
 /**
  * Test functionality of the Language Server

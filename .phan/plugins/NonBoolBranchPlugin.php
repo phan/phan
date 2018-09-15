@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 // .phan/plugins/NonBoolBranchPlugin.php
 
+use ast\Node;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Exception\IssueException;
 use Phan\Language\Context;
 use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use ast\Node;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
 /**
  * This plugin warns if an expression which has types other than `bool` is used in an if/else if.

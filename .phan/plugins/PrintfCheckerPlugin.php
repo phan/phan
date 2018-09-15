@@ -2,6 +2,8 @@
 
 namespace Phan\Plugin\PrintfCheckerPlugin;  // Don't pollute the global namespace
 
+use ast;
+use ast\Node;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -14,10 +16,6 @@ use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
-
-use ast\Node;
-use ast;
-
 use function implode;
 use function var_export;
 

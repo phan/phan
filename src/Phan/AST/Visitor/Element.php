@@ -1,10 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\AST\Visitor;
 
-use Phan\Debug;
-
 use AssertionError;
 use ast\Node;
+use Phan\Debug;
 
 /**
  * This contains functionality needed by various visitor implementations

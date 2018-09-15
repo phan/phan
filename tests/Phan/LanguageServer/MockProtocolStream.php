@@ -3,11 +3,11 @@ declare(strict_types = 1);
 
 namespace Phan\Tests\LanguageServer;
 
+use Phan\LanguageServer\Protocol\Message;
 use Phan\LanguageServer\ProtocolReader;
 use Phan\LanguageServer\ProtocolWriter;
-use Phan\LanguageServer\Protocol\Message;
-use Sabre\Event\Loop;
 use Sabre\Event\Emitter;
+use Sabre\Event\Loop;
 use Sabre\Event\Promise;
 
 /**

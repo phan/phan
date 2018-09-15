@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
+use Closure;
+use Generator;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
@@ -18,10 +20,10 @@ use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayInterface;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\IntType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\LiteralTypeInterface;
-use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\MultiType;
 use Phan\Language\Type\NullType;
@@ -30,9 +32,6 @@ use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
-
-use Closure;
-use Generator;
 use Serializable;
 
 if (!\function_exists('spl_object_id')) {

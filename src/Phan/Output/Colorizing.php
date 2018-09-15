@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Phan\Output;
 
-use Phan\Issue;
 use Phan\Config;
+use Phan\Issue;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;

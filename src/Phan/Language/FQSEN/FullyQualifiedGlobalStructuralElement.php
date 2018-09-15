@@ -1,12 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\FQSEN;
 
+use AssertionError;
+use InvalidArgumentException;
 use Phan\Exception\EmptyFQSENException;
 use Phan\Language\Context;
 use Phan\Language\Type;
-
-use AssertionError;
-use InvalidArgumentException;
 
 /**
  * A Fully-Qualified Global Structural Element

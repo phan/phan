@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
+use ast\Node;
 use Phan\AST\ContextNode;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
 use Phan\Issue;
 use Phan\PluginV2;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use ast\Node;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
 /**
  * Checks for duplicate/equivalent array keys and case statements, as well as arrays mixing `key => value, with `value,`.

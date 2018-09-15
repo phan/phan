@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use ast\Node;
+use Closure;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Element\AddressableElementInterface;
@@ -13,8 +15,6 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Scope\ClosedScope;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-use Closure;
-use ast\Node;
 
 /**
  * Phan's base class for representations of `callable(MyClass):MyOtherClass` and `Closure(MyClass):MyOtherClass`

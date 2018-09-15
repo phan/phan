@@ -1,12 +1,16 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use ast\Node;
+use Closure;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\AST\Visitor\FlagVisitorImplementation;
-use Phan\Exception\IssueException;
 use Phan\CodeBase;
+use Phan\Exception\IssueException;
+use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
 use Phan\Language\Type;
@@ -17,10 +21,6 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
-use Phan\Issue;
-use Phan\IssueFixSuggester;
-use ast\Node;
-use Closure;
 
 /**
  * TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed

@@ -2,9 +2,13 @@
 
 namespace Phan\AST;
 
+use ast\Node;
+use CompileError;
+use Error;
+use ParseError;
+use Phan\AST\TolerantASTConverter\ParseException;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping;
-use Phan\AST\TolerantASTConverter\ParseException;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Daemon\Request;
@@ -12,11 +16,6 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Phan;
 use Phan\Plugin\ConfigPluginSet;
-
-use ast\Node;
-use CompileError;
-use Error;
-use ParseError;
 
 /**
  * Parser parses the passed in PHP code based on configuration settings.

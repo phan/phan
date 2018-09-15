@@ -2,15 +2,14 @@
 
 namespace Phan\Config;
 
+use ast\Node;
+use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Semver\VersionParser;
 use Phan\AST\Parser;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
-
-use ast\Node;
-use Composer\Semver\VersionParser;
-use Composer\Semver\Constraint\ConstraintInterface;
 use TypeError;
 
 /**

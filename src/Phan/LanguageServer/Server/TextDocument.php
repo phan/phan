@@ -2,6 +2,7 @@
 
 namespace Phan\LanguageServer\Server;
 
+use InvalidArgumentException;
 use Phan\Config;
 use Phan\LanguageServer\FileMapping;
 use Phan\LanguageServer\LanguageClient;
@@ -13,8 +14,6 @@ use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
 use Phan\LanguageServer\Protocol\TextDocumentItem;
 use Phan\LanguageServer\Protocol\VersionedTextDocumentIdentifier;
 use Phan\LanguageServer\Utils;
-
-use InvalidArgumentException;
 use Sabre\Event\Promise;
 
 /**

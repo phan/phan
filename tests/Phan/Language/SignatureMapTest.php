@@ -2,8 +2,8 @@
 
 namespace Phan\Tests\Language;
 
-use Phan\Tests\BaseTest;
 use Phan\Language\UnionType;
+use Phan\Tests\BaseTest;
 
 /**
  * This is a sanity check that Phan's function signature map has the correct structure

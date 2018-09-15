@@ -1,19 +1,18 @@
 <?php declare(strict_types=1);
 namespace Phan\Plugin\Internal;
 
+use AssertionError;
+use ast;
+use ast\Node;
 use Phan\Exception\CodeBaseException;
 use Phan\Issue;
 use Phan\Language\Element\Variable;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2;
 use Phan\Plugin\Internal\VariableTracker\VariableGraph;
-use Phan\Plugin\Internal\VariableTracker\VariableTrackingScope;
 use Phan\Plugin\Internal\VariableTracker\VariableTrackerVisitor;
-
-use AssertionError;
-use ast\Node;
-use ast;
+use Phan\Plugin\Internal\VariableTracker\VariableTrackingScope;
+use Phan\PluginV2;
+use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
+use Phan\PluginV2\PostAnalyzeNodeCapability;
 
 /**
  * NOTE: This is automatically loaded by phan based on config settings.

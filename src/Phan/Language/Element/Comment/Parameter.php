@@ -64,9 +64,6 @@ class Parameter
         $this->is_output_reference = $is_output_reference;
     }
 
-    /**
-     *
-     */
     public function asVariable(
         Context $context,
         int $flags = 0
@@ -79,9 +76,6 @@ class Parameter
         );
     }
 
-    /**
-     *
-     */
     public function asRealParameter(
         Context $context
     ) : \Phan\Language\Element\Parameter {

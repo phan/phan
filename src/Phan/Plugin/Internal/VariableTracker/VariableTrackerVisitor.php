@@ -1,13 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan\Plugin\Internal\VariableTracker;
 
+use AssertionError;
+use ast;
+use ast\Node;
 use Phan\Analysis\BlockExitStatusChecker;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\Visitor\Element;
-use ast\Node;
-use ast;  // TODO: Figure out why Phan isn't warning about Phan\Plugin\Internal\VariableTracker\ast\AST_VAR without this.
-
-use AssertionError;
 use function is_string;
 
 /**

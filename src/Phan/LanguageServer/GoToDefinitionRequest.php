@@ -1,26 +1,25 @@
 <?php declare(strict_types=1);
 namespace Phan\LanguageServer;
 
+use Exception;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Language\Context;
-use Phan\Language\FileRef;
 use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\MarkupDescription;
 use Phan\Language\Element\Variable;
+use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
-use Phan\LanguageServer\Protocol\Location;
 use Phan\LanguageServer\Protocol\Hover;
+use Phan\LanguageServer\Protocol\Location;
 use Phan\LanguageServer\Protocol\MarkupContent;
 use Phan\LanguageServer\Protocol\Position;
-
-use Exception;
 use Sabre\Event\Promise;
 
 /**
