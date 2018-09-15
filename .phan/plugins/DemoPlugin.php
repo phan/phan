@@ -171,7 +171,7 @@ class DemoPlugin extends PluginV2 implements
         Property $property
     ) {
         // As an example, we test to see if the name of the
-        // function is `foo`, and emit an issue if it is.
+        // property is `property`, and emit an issue if it is.
         if ($property->getName() == 'property') {
             $this->emitIssue(
                 $code_base,
