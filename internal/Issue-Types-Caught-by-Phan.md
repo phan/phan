@@ -864,7 +864,7 @@ Declaration of real/@method {METHOD} should be compatible with real/@method {MET
 ## PhanParamSignaturePHPDocMismatchHasParamType
 
 ```
-Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} has type '{TYPE}' cannot replace original parameter with no type) defined in {FILE}:{LINE}
+Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} has type '{TYPE}' which cannot replace original parameter with no type) defined in {FILE}:{LINE}
 ```
 
 ## PhanParamSignaturePHPDocMismatchParamIsNotReference
@@ -930,13 +930,13 @@ Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #
 ## PhanParamSignatureRealMismatchHasParamType
 
 ```
-Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} has type '{TYPE}' cannot replace original parameter with no type) defined in {FILE}:{LINE}
+Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} has type '{TYPE}' which cannot replace original parameter with no type) defined in {FILE}:{LINE}
 ```
 
 ## PhanParamSignatureRealMismatchHasParamTypeInternal
 
 ```
-Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} has type '{TYPE}' cannot replace original parameter with no type)
+Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} has type '{TYPE}' which cannot replace original parameter with no type)
 ```
 
 ## PhanParamSignatureRealMismatchParamIsNotReference
