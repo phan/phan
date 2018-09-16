@@ -855,7 +855,7 @@ class Type
         }
         if ($namespace === '') {
             throw new InvalidArgumentException("Type was not fully qualified");
-        };
+        }
 
         return self::make(
             $namespace,

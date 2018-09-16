@@ -163,7 +163,7 @@ class Request
         Request::reloadFilePathListForDaemon($code_base, $file_path_lister, $file_mapping_contents, $file_names);
         if ($error_message !== null) {
             Daemon::debugf($error_message);
-        };
+        }
         $result = new self(
             $responder,
             [

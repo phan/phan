@@ -19,6 +19,8 @@
     </properties>
   </rule>
   <rule ref="SlevomatCodingStandard.PHP.TypeCast" />
+  <rule ref="SlevomatCodingStandard.PHP.UselessSemicolon" />
+
   <rule ref="SlevomatCodingStandard.TypeHints.DeclareStrictTypes" >
     <properties>
       <property name="spacesCountAroundEqualsSign" type="bool" value="false" />

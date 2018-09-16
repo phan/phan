@@ -306,7 +306,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
                         $previous_type = $type;
                     }
-                };
+                }
 
                 if (\count($type_list) < 2) {
                     $result = \reset($type_list) ?: UnionType::empty();
