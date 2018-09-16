@@ -21,7 +21,7 @@ class ServerCapabilities
      *
      * @var CompletionOptions|null
      */
-    // public $completionProvider;
+    public $completionProvider;
 
     /**
      * The server provides goto definition support.

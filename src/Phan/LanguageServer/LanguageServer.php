@@ -13,6 +13,8 @@ use Phan\Daemon\Transport\StreamResponder;
 use Phan\Issue;
 use Phan\Language\FileRef;
 use Phan\LanguageServer\Protocol\ClientCapabilities;
+use Phan\LanguageServer\Protocol\CompletionContext;
+use Phan\LanguageServer\Protocol\CompletionOptions;
 use Phan\LanguageServer\Protocol\Diagnostic;
 use Phan\LanguageServer\Protocol\DiagnosticSeverity;
 use Phan\LanguageServer\Protocol\InitializeResult;
@@ -398,7 +400,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     }
 
     /**
-     * Asynchronously generates the definition for a given URL
+     * Asynchronously generates the definition for a given URL and position.
      * @return Promise <Location|Location[]|null>
      */
     public function awaitDefinition(
@@ -428,7 +430,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     }
 
     /**
-     * Asynchronously generates the definition for a given URL
+     * Asynchronously generates the hover text for a given URL and position.
+     *
      * @return Promise <Location|Location[]|null>
      */
     public function awaitHover(
@@ -444,6 +447,34 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $prev_definition_request->finalize();
         }
         $request = new GoToDefinitionRequest($uri, $position, GoToDefinitionRequest::REQUEST_HOVER);
+        $this->most_recent_definition_request = $request;
+
+        // We analyze this url so that Phan is aware enough of the types and namespace maps to trigger "Go to definition"
+        // E.g. going to the definition of `Bar` in `use Foo as Bar; Bar::method();` requires parsing other statements in this file, not just the name in question.
+        //
+        // NOTE: This also ensures that we will run analysis, because of the check for analyze_request_set being non-empty
+        $this->analyze_request_set[$path_to_analyze] = $uri;
+        return $request->getPromise();
+    }
+
+    /**
+     * Asynchronously generates the definition for a given URL
+     * @return Promise <Location|Location[]|null>
+     */
+    public function awaitCompletion(
+        string $uri,
+        Position $position,
+        CompletionContext $completion_context = null
+    ) : Promise {
+        // TODO: Add a way to "go to definition" without emitting analysis results as a side effect
+        $path_to_analyze = Utils::uriToPath($uri);
+        Logger::logInfo("Called LanguageServer->awaitCompletion, uri=$uri, position=" . json_encode($position));
+        $prev_definition_request = $this->most_recent_definition_request;
+        if ($prev_definition_request) {
+            // Discard the previous request silently
+            $prev_definition_request->finalize();
+        }
+        $request = new GoToDefinitionRequest($uri, $position, GoToDefinitionRequest::REQUEST_COMPLETION, $completion_context);
         $this->most_recent_definition_request = $request;
 
         // We analyze this url so that Phan is aware enough of the types and namespace maps to trigger "Go to definition"
@@ -807,38 +838,39 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                 );
             }
 
-            $serverCapabilities = new ServerCapabilities();
+            $server_capabilities = new ServerCapabilities();
 
             // FULL: Ask the client to return always return full documents (because we need to rebuild the AST from scratch)
             // NONE: Don't sync until the user explicitly saves a document.
-            $serverCapabilities->textDocumentSync = $this->makeTextDocumentSyncOptions();
+            $server_capabilities->textDocumentSync = $this->makeTextDocumentSyncOptions();
 
             // TODO: Support "Find all symbols"?
-            //$serverCapabilities->documentSymbolProvider = true;
+            //$server_capabilities->documentSymbolProvider = true;
             // TODO: Support "Find all symbols in workspace"?
-            //$serverCapabilities->workspaceSymbolProvider = true;
+            //$server_capabilities->workspaceSymbolProvider = true;
             // XXX do this next?
 
             $supports_go_to_definition = (bool)Config::getValue('language_server_enable_go_to_definition');
-            $serverCapabilities->definitionProvider = $supports_go_to_definition;
-            $serverCapabilities->typeDefinitionProvider = $supports_go_to_definition;
-            $serverCapabilities->hoverProvider = (bool)Config::getValue('language_server_enable_hover');
+            $server_capabilities->definitionProvider = $supports_go_to_definition;
+            $server_capabilities->typeDefinitionProvider = $supports_go_to_definition;
+            $server_capabilities->hoverProvider = (bool)Config::getValue('language_server_enable_hover');
+            if (Config::getValue('language_server_enable_completion')) {
+                // TODO: What about `:`?
+                $completion_provider = new CompletionOptions();
+                $completion_provider->resolveProvider = false;
+                $completion_provider->triggerCharacters = ['$', '>'];
+                $server_capabilities->completionProvider = $completion_provider;
+            }
 
             // TODO: (probably impractical, slow) Support "Find all references"? (We don't track this, except when checking for dead code elimination possibilities.
-            // $serverCapabilities->referencesProvider = false;
+            // $server_capabilities->referencesProvider = false;
             // Can't support "Hover" without phpdoc for internal functions, such as those from phpstorm
-            // XXX support completion next?
-            // Requires php-parser-to-php-ast (or tolerant php-parser)
-            // Support "Completion"
-            // $serverCapabilities->completionProvider = new CompletionOptions;
-            // $serverCapabilities->completionProvider->resolveProvider = false;
-            // $serverCapabilities->completionProvider->triggerCharacters = ['$', '>'];
             // Can't support global references at the moment, I think.
-            //$serverCapabilities->xworkspaceReferencesProvider = true;
-            //$serverCapabilities->xdefinitionProvider = true;
-            //$serverCapabilities->xdependenciesProvider = true;
+            //$server_capabilities->xworkspaceReferencesProvider = true;
+            //$server_capabilities->xdefinitionProvider = true;
+            //$server_capabilities->xdependenciesProvider = true;
 
-            return new InitializeResult($serverCapabilities);
+            return new InitializeResult($server_capabilities);
         });
     }
 

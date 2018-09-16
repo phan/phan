@@ -16,6 +16,7 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
+use Phan\LanguageServer\Protocol\CompletionContext;
 use Phan\LanguageServer\Protocol\Hover;
 use Phan\LanguageServer\Protocol\Location;
 use Phan\LanguageServer\Protocol\MarkupContent;
@@ -45,6 +46,8 @@ final class GoToDefinitionRequest
     private $promise;
     /** @var int self::REQUEST_* */
     private $request_type;
+    /** @var CompletionContext|null */
+    private $completion_context;
 
     /**
      * @var array<string,Location> the list of locations for a "Go to [Type] Definition" request
@@ -59,14 +62,21 @@ final class GoToDefinitionRequest
     const REQUEST_DEFINITION = 0;
     const REQUEST_TYPE_DEFINITION = 1;
     const REQUEST_HOVER = 2;
+    // TODO: Completion might make sense as a different Request class
+    const REQUEST_COMPLETION = 3;
 
-    public function __construct(string $uri, Position $position, int $request_type)
-    {
+    public function __construct(
+        string $uri,
+        Position $position,
+        int $request_type,
+        CompletionContext $completion_context = null
+    ) {
         $this->uri = $uri;
         $this->path = Utils::uriToPath($uri);
         $this->position = $position;
         $this->promise = new Promise();
         $this->request_type = $request_type;
+        $this->completion_context = $completion_context;
     }
 
     /**

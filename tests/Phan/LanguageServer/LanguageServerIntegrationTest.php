@@ -968,6 +968,7 @@ EOT;
                         'willSaveWaitUntil' => null,
                         'save' => ['includeText' => true],
                     ],
+                    'completionProvider' => true,
                     'definitionProvider' => true,
                     'typeDefinitionProvider' => true,
                     'hoverProvider' => true,

@@ -454,6 +454,9 @@ class CLI
                 case 'language-server-enable-hover':
                     Config::setValue('language_server_enable_hover', true);
                     break;
+                case 'language-server-enable-completion':
+                    Config::setValue('language_server_enable_completion', true);
+                    break;
                 case 'language-server-verbose':
                     Config::setValue('language_server_debug_level', 'info');
                     break;
@@ -889,6 +892,10 @@ Extended help:
 
  --language-server-enable-hover
   Enables support for "Hover" in the Phan Language Server.
+  Disabled by default.
+
+ --language-server-enable-completion
+  Enables support for "Completion" in the Phan Language Server.
   Disabled by default.
 
  --language-server-verbose
