@@ -661,10 +661,6 @@ class ParameterTypesAnalyzer
         // Get the parameters for that method
         $o_parameter_list = $o_method->getRealParameterList();
 
-        // Map overridden method return type through any template
-        // type parameters we may have
-        $o_return_union_type = $o_method->getRealReturnType();
-
         // Make sure the count of parameters matches
         if ($method->getNumberOfRequiredRealParameters()
             > $o_method->getNumberOfRequiredRealParameters()
@@ -698,6 +694,8 @@ class ParameterTypesAnalyzer
         }
         $is_possibly_compatible = true;
 
+        // TODO: Stricter checks for parameter types when this is a magic method?
+        // - If the overriding method is magic, then compare the magic method phpdoc types against the phpdoc+real types  of the parent
         foreach ($method->getRealParameterList() as $i => $parameter) {
             $offset = $i + 1;
             // TODO: check if variadic
@@ -808,7 +806,9 @@ class ParameterTypesAnalyzer
             }
         }
 
-        $return_union_type = $method->getRealReturnType();
+        $o_return_union_type = $o_method->getRealReturnType();
+
+        $return_union_type = $method->isFromPHPDoc() ? $method->getUnionType() : $method->getRealReturnType();
         // If the parent has a return type, then return types should be equal.
         // A non-nullable return type can override a nullable return type of the same type.
         if (!$o_return_union_type->isEmpty()) {
