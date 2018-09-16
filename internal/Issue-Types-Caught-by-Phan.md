@@ -2340,6 +2340,24 @@ This is emitted for some (but not all) comments which Phan thinks are invalid or
 Comment {STRING_LITERAL} refers to {TYPE} instead of \Closure - Assuming \Closure
 ```
 
+## PhanCommentDuplicateMagicMethod
+
+```
+Comment declares @method {METHOD} multiple times
+```
+
+## PhanCommentDuplicateMagicProperty
+
+```
+Comment declares @property* ${PROPERTY} multiple times
+```
+
+## PhanCommentDuplicateParam
+
+```
+Comment declares @param ${PARAMETER} multiple times
+```
+
 ## PhanCommentOverrideOnNonOverrideConstant
 
 ```
