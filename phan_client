@@ -323,7 +323,7 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
   Useful if you wish to report errors while editing the file, even if the file is currently syntactically invalid.
 
  -l, --syntax-check <file.php>
-  Syntax check, and if the Phan daemon is running, analyze the following file (absolute path or relative to current working ditectory)
+  Syntax check, and if the Phan daemon is running, analyze the following file (absolute path or relative to current working directory)
   This will only analyze the file if a full phan check (with .phan/config.php) would analyze the file.
 
  -t, --temporary-file-map '{"file.php":"/path/to/tmp/file_copy.php"}'
