@@ -224,9 +224,7 @@ class ContextNode
         if ($trait_fqsen === null) {
             // TODO: try to analyze this rare special case instead of giving up in a subsequent PR?
             // E.g. `use A, B{foo as bar}` is valid PHP, but hard to analyze.
-            Issue::maybeEmit(
-                $this->code_base,
-                $this->context,
+            $this->emitIssue(
                 Issue::AmbiguousTraitAliasSource,
                 $trait_method_node->lineno ?? 0,
                 $trait_new_method_name,
@@ -243,9 +241,7 @@ class ContextNode
         $adaptations_info = $adaptations_map[$fqsen_key] ?? null;
         if ($adaptations_info === null) {
             // This will probably correspond to a PHP fatal error, but keep going anyway.
-            Issue::maybeEmit(
-                $this->code_base,
-                $this->context,
+            $this->emitIssue(
                 Issue::RequiredTraitNotAdded,
                 $trait_original_class_name_node->lineno ?? 0,
                 $trait_fqsen->__toString()
@@ -259,6 +255,25 @@ class ContextNode
         if (strcasecmp($trait_new_method_name, $trait_original_method_name) === 0) {
             $adaptations_info->hidden_methods[\strtolower($trait_original_method_name)] = true;
         }
+    }
+
+    /**
+     * @param string|int|float|bool|Type|UnionType|FQSEN ...$parameters
+     * Template parameters for the issue's error message.
+     * If these are objects, they should define __toString()
+     */
+    private function emitIssue(
+        string $issue_type,
+        int $lineno,
+        ...$parameters
+    ) {
+        Issue::maybeEmit(
+            $this->code_base,
+            $this->context,
+            $issue_type,
+            $lineno,
+            ...$parameters
+        );
     }
 
     /**
@@ -295,9 +310,7 @@ class ContextNode
 
         if (($adaptations_map[\strtolower($trait_chosen_fqsen->__toString())] ?? null) === null) {
             // This will probably correspond to a PHP fatal error, but keep going anyway.
-            Issue::maybeEmit(
-                $this->code_base,
-                $this->context,
+            $this->emitIssue(
                 Issue::RequiredTraitNotAdded,
                 $trait_chosen_class_name_node->lineno ?? 0,
                 $trait_chosen_fqsen->__toString()
@@ -323,9 +336,7 @@ class ContextNode
             $adaptations_info = $adaptations_map[$fqsen_key] ?? null;
             if ($adaptations_info === null) {
                 // TODO: Make this into an issue type
-                Issue::maybeEmit(
-                    $this->code_base,
-                    $this->context,
+                $this->emitIssue(
                     Issue::RequiredTraitNotAdded,
                     $trait_insteadof_class_name->lineno ?? 0,
                     $trait_insteadof_fqsen->__toString()
@@ -385,7 +396,7 @@ class ContextNode
                 $int_or_string_type = new UnionType([StringType::instance(false), IntType::instance(false), NullType::instance(false)]);
             }
             if (!$name_node_type->canCastToUnionType($int_or_string_type)) {
-                Issue::maybeEmit($this->code_base, $this->context, Issue::TypeSuspiciousIndirectVariable, $name_node->lineno ?? 0, (string)$name_node_type);
+                $this->emitIssue(Issue::TypeSuspiciousIndirectVariable, $name_node->lineno ?? 0, (string)$name_node_type);
             }
 
             // return empty string on failure.
@@ -527,9 +538,7 @@ class ContextNode
                         $custom_issue_type = Issue::TypeExpectedObjectPropAccessButGotNull;
                     }
                 }
-                Issue::maybeEmit(
-                    $this->code_base,
-                    $this->context,
+                $this->emitIssue(
                     $custom_issue_type ?? ($expected_type_categories === self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME ? Issue::TypeExpectedObjectOrClassName : Issue::TypeExpectedObject),
                     $this->node->lineno ?? 0,
                     (string)$union_type->asNonLiteralType()
@@ -544,18 +553,14 @@ class ContextNode
                             if ($this->code_base->hasClassWithFQSEN($fqsen)) {
                                 $class_list[] = $this->code_base->getClassByFQSEN($fqsen);
                             } else {
-                                Issue::maybeEmit(
-                                    $this->code_base,
-                                    $this->context,
+                                $this->emitIssue(
                                     Issue::UndeclaredClass,
                                     $this->node->lineno ?? 0,
                                     (string)$fqsen
                                 );
                             }
                         } else {
-                            Issue::maybeEmit(
-                                $this->code_base,
-                                $this->context,
+                            $this->emitIssue(
                                 Issue::TypeExpectedObjectOrClassNameInvalidName,
                                 $this->node->lineno ?? 0,
                                 (string)$type_value
@@ -1902,17 +1907,21 @@ class ContextNode
         self::RESOLVE_KEYS_USE_FALLBACK_PLACEHOLDER;
 
     /**
-     * @param Node[]|string[]|float[]|int[] $children
      * @param int $flags - See self::RESOLVE_*
      * @return ?array - array if elements could be resolved.
      */
-    private function getEquivalentPHPArrayElements(array $children, int $flags)
+    private function getEquivalentPHPArrayElements(Node $node, int $flags)
     {
         $elements = [];
-        foreach ($children as $child_node) {
+        foreach ($node->children as $child_node) {
             if (!($child_node instanceof Node)) {
-                // This is probably an invalid Node generated by the fallback parser.
-                continue;
+                // NOTE: This won't be consistently emitted
+                $this->emitIssue(
+                    Issue::SyntaxError,
+                    $node->lineno,
+                    "Cannot use empty array elements in arrays"
+                );
+                return null;
             }
             $key_node = ($flags & self::RESOLVE_ARRAY_KEYS) != 0 ? $child_node->children['key'] : null;
             $value_node = $child_node->children['value'];
@@ -1962,7 +1971,7 @@ class ContextNode
             if (($flags & self::RESOLVE_ARRAYS) === 0) {
                 return $node;
             }
-            $elements = $this->getEquivalentPHPArrayElements($node->children, $flags);
+            $elements = $this->getEquivalentPHPArrayElements($node, $flags);
             if ($elements === null) {
                 // Attempted to resolve elements but failed at one or more elements.
                 return $node;

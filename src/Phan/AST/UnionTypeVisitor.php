@@ -811,18 +811,19 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitArray(Node $node) : UnionType
     {
         $children = $node->children;
-        if (!empty($children)
-            && $children[0] instanceof Node
-            && $children[0]->kind == \ast\AST_ARRAY_ELEM
-        ) {
+        if (count($children) > 0) {
             $value_types_builder = new UnionTypeBuilder();
 
-            $key_set = $this->getEquivalentArraySet($children);
+            $key_set = $this->getEquivalentArraySet($children, $node->lineno);
             if (\is_array($key_set) && \count($key_set) === \count($children)) {
                 return $this->createArrayShapeType($children, $key_set)->asUnionType();
             }
 
             foreach ($children as $child) {
+                if (!($child instanceof Node)) {
+                    // Skip this, we already emitted a syntax error.
+                    continue;
+                }
                 $value = $child->children['value'];
                 if ($value instanceof Node) {
                     $element_value_type = UnionTypeVisitor::unionTypeFromNode(
@@ -883,13 +884,23 @@ class UnionTypeVisitor extends AnalysisVisitor
      * Caller should check if the result size is too small and handle it (for duplicate keys)
      * Returns null if one or more keys could not be resolved
      *
-     * @see ContextNode->getEquivalentPHPArrayElements
+     * @see ContextNode->getEquivalentPHPArrayElements()
      */
-    private function getEquivalentArraySet(array $children)
+    private function getEquivalentArraySet(array $children, int $lineno)
     {
         $elements = [];
         $context_node = null;
         foreach ($children as $child_node) {
+            if (!($child_node instanceof Node)) {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    Issue::SyntaxError,
+                    $lineno,
+                    "Cannot use empty array elements in arrays"
+                );
+                continue;
+            }
             $key_node = $child_node->children['key'];
             // NOTE: this has some overlap with DuplicateKeyPlugin
             if ($key_node === null) {
