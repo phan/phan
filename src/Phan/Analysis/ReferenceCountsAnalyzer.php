@@ -439,7 +439,7 @@ class ReferenceCountsAnalyzer
         if ($old_fqsen instanceof FullyQualifiedGlobalStructuralElement) {
             $fqsen = $old_fqsen->getCanonicalFQSEN();
             if ($fqsen === $old_fqsen) {
-                return null;  // $old_fqsen was not an alternaive
+                return null;  // $old_fqsen was not an alternative
             }
             if ($fqsen instanceof FullyQualifiedFunctionName) {
                 if ($code_base->hasFunctionWithFQSEN($fqsen)) {

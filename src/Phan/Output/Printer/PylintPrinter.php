@@ -8,7 +8,7 @@ use Phan\Output\IssuePrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Prints `IssueInstance`s in the pylint error format to the configued OutputInterface
+ * Prints `IssueInstance`s in the pylint error format to the configured OutputInterface
  */
 final class PylintPrinter implements IssuePrinterInterface
 {
