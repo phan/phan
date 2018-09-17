@@ -178,7 +178,7 @@ New features(Analysis)
 New features(CLI)
 + Add `--daemonize-tcp-host` CLI option for specifying the hostname for daemon mode (#1868).
   The default will remain `127.0.0.1` when not specified.
-  It can be overidden to values such as `0.0.0.0` (publicly accessible, e.g. for usage with Docker)
+  It can be overridden to values such as `0.0.0.0` (publicly accessible, e.g. for usage with Docker)
 
 Language Server/Daemon mode:
 + Implement support for hover requests in the Language Server (#1738)
@@ -584,7 +584,7 @@ New Features(CLI, Configs)
   or with `@phan-file-suppress`, or with `@suppress`.
 + Add a `--strict-type-checking` CLI flag, to enable all of the new strict property/param/return type checks.
 + Add a `guess_unknown_parameter_type_using_default` config,
-  which can be enabled to make Phan more aggresively infer the types of undocument optional parameters
+  which can be enabled to make Phan more aggressively infer the types of undocumented optional parameters
   from the parameter's default value.
   E.g. `function($x = 'val')` would make Phan infer that the function expects $x to have a type of `string`, not `string|mixed`.
 

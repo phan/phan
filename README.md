@@ -364,7 +364,7 @@ Usage: ./phan [options] [files...]
   `phan_client` can be used to communicate with the Phan Daemon.
 
  -v, --version
-  Print phan's version number
+  Print Phan's version number
 
  -h, --help
   This help information
