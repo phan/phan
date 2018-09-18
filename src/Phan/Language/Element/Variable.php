@@ -156,6 +156,15 @@ class Variable extends UnaddressableTypedElement
     }
 
     /**
+     * Is $name a valid variable identifier?
+     */
+    public static function isValidIdentifier(
+        string $name
+    ) : bool {
+        return \preg_match('/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/', $name) > 0;
+    }
+
+    /**
      * Returns true for all superglobals and variables in globals_type_map.
      */
     public static function isHardcodedGlobalVariableWithName(

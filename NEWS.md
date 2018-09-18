@@ -7,6 +7,7 @@ New Features(Analysis)
 + Warn if a PHPDoc annotation for an element(`@param`, `@method`, or `@property*`) is repeated. (#1963)
 
   New issue types: `PhanCommentDuplicateMagicMethod`, `PhanCommentDuplicateMagicProperty`, `PhanCommentDuplicateParam`
++ Add basic support for `extract()` (#1978)
 
 Plugins:
 + Properly warn about code after `break` and `continue` in `UnreachableCodePlugin`.
