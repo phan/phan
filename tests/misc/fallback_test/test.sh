@@ -20,6 +20,8 @@ sed -i "s/ syntax error, unexpected new (T_NEW)/ syntax error, unexpected 'new' 
 sed -i "/src\/018_list_expression_18\.php:2 PhanSyntaxError syntax error, unexpected '0'/d" $ACTUAL_PATH
 # This has a varying order for src/020_issue.php
 sed -i "s/anonymous_class_\w\+/anonymous_class_%s/g" $ACTUAL_PATH $EXPECTED_PATH
+# This isn't emitted in newer PHP versions
+sed -i "/PhanSyntaxError syntax error, unexpected ',', expecting ']'/d" $ACTUAL_PATH
 
 # diff returns a non-zero exit code if files differ or are missing
 echo
