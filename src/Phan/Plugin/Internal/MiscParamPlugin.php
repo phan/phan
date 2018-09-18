@@ -13,6 +13,7 @@ use Phan\IssueInstance;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Variable;
+use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\GenericArrayType;
@@ -426,6 +427,105 @@ final class MiscParamPlugin extends PluginV2 implements
             $variable->setUnionType($old_types->withUnionType($added_types));
         };
 
+        $extract_callback = static function (
+            CodeBase $code_base,
+            Context $context,
+            FunctionInterface $unused_function,
+            array $args
+        ) {
+            // TODO: support nested adds, like AssignmentVisitor
+            // TODO: Could be more specific for arrays with known length and order
+            if (count($args) < 1) {
+                return;
+            }
+            $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+            $array_shape_types = [];
+            foreach ($union_type->getTypeSet() as $type) {
+                if ($type instanceof ArrayShapeType) {
+                    $array_shape_types[] = $type;
+                }
+            }
+            if (count($array_shape_types) === 0) {
+                return;
+            }
+            // TODO: Could be more nuanced and account for possibly undefined types in the combination.
+
+            // TODO: Handle unexpected types of flags and prefix and warn, low priority
+            $flags = isset($args[1]) ? (new ContextNode($code_base, $context, $args[1]))->getEquivalentPHPScalarValue() : null;
+
+            $prefix = isset($args[2]) ? (new ContextNode($code_base, $context, $args[2]))->getEquivalentPHPScalarValue() : null;
+
+            $shape = ArrayShapeType::union($array_shape_types);
+            if (!is_scalar($prefix)) {
+                $prefix = '';
+            }
+            $prefix = (string)$prefix;
+            $scope = $context->getScope();
+
+            foreach ($shape->getFieldTypes() as $field_name => $field_type) {
+                if (!is_string($field_name)) {
+                    continue;
+                }
+                $add_variable = function (string $name) use ($context, $field_type, $scope) {
+                    if (!Variable::isValidIdentifier($name)) {
+                        return;
+                    }
+                    if (Variable::isSuperglobalVariableWithName($name)) {
+                        return;
+                    }
+                    $scope->addVariable(new Variable(
+                        $context,
+                        $name,
+                        $field_type,
+                        0
+                    ));
+                };
+                // TODO: Ignore superglobals
+
+                // Some parts of this are probably wrong - EXTR_OVERWRITE and EXTR_SKIP are probably the most common?
+                switch ($flags & ~EXTR_REFS) {
+                default:
+                case EXTR_OVERWRITE:
+                    $add_variable($field_name);
+                    break;
+                case EXTR_SKIP:
+                    if ($scope->hasVariableWithName($field_name)) {
+                        break;
+                    }
+                    $add_variable($field_name);
+                    break;
+                    // TODO: Do all of these behave like EXTR_OVERWRITE or like EXTR_SKIP?
+                case EXTR_PREFIX_SAME:
+                    if ($scope->hasVariableWithName($field_name)) {
+                        $field_name = $prefix . $field_name;
+                    }
+                    $add_variable($field_name);
+                    break;
+                case EXTR_PREFIX_ALL:
+                    $field_name = $prefix . $field_name;
+                    $add_variable($field_name);
+                    break;
+                case EXTR_PREFIX_INVALID:
+                    if (!Variable::isValidIdentifier($field_name)) {
+                        $field_name = $prefix . $field_name;
+                    }
+                    $add_variable($field_name);
+                    break;
+                case EXTR_IF_EXISTS:
+                    if ($scope->hasVariableWithName($field_name)) {
+                        $add_variable($field_name);
+                    }
+                    break;
+                case EXTR_PREFIX_IF_EXISTS:
+                    if ($scope->hasVariableWithName($field_name) && $prefix !== '') {
+                        $add_variable($prefix . $field_name);
+                    }
+                    break;
+                }
+
+            }
+        };
+
         return [
             'array_udiff' => $array_udiff_callback,
             'array_diff_uassoc' => $array_udiff_callback,
@@ -440,6 +540,8 @@ final class MiscParamPlugin extends PluginV2 implements
             'array_unshift' => $array_add_callback,
 
             'array_splice' => $array_splice_callback,  // TODO: If this callback ever does anything other than flatten, then create a different callback
+
+            'extract' => $extract_callback,
 
             'join' => $join_callback,
             'implode' => $join_callback,
