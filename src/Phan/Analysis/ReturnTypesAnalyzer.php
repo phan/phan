@@ -97,7 +97,7 @@ class ReturnTypesAnalyzer
                             $code_base,
                             $context,
                             Issue::TypeMismatchDeclaredReturn,
-                            $context->getLineNumberStart(),
+                            ParameterTypesAnalyzer::guessCommentReturnLineNumber($method) ?? $context->getLineNumberStart(),
                             $method->getName(),
                             $phpdoc_type->__toString(),
                             $real_return_type->__toString()
@@ -116,7 +116,7 @@ class ReturnTypesAnalyzer
                                 $code_base,
                                 $context,
                                 Issue::TypeMismatchDeclaredReturnNullable,
-                                $context->getLineNumberStart(),
+                                ParameterTypesAnalyzer::guessCommentReturnLineNumber($method) ?? $context->getLineNumberStart(),
                                 $method->getName(),
                                 $phpdoc_type->__toString(),
                                 $real_return_type->__toString()

@@ -46,8 +46,8 @@ final class Builder
     /** @var Option<Type> the (at)inherits annotation */
     public $inherited_type;
     // TODO: Warn about multiple (at)returns
-    /** @var UnionType the (at)return annotation types*/
-    public $return_union_type;
+    /** @var ?ReturnComment the (at)return annotation details */
+    public $return_comment;
     /**
      * @var array<int,string> the list of issue names from (at)suppress annotations
      * @suppress PhanReadOnlyPublicProperty FIXME: array_push doesn't count as a write-reference
@@ -82,7 +82,7 @@ final class Builder
         $this->comment_type = $comment_type;
 
         $this->inherited_type = new None();
-        $this->return_union_type = UnionType::empty();
+        $this->return_comment = null;
         $this->closure_scope = new None();
         $this->throw_union_type = UnionType::empty();
     }
@@ -115,7 +115,7 @@ final class Builder
         // Warn if there is neither a union type nor a variable
         if ($matched && (isset($match[2]) || isset($match[21]))) {
             if (!isset($match[2])) {
-                return new Parameter('', UnionType::empty());
+                return new Parameter('', UnionType::empty(), $this->guessActualLineLocation($i));
             }
             if (!$is_var && !isset($match[21])) {
                 $this->checkParamWithoutVarName($line, $match[0], $match[2], $i);
@@ -153,6 +153,7 @@ final class Builder
             return new Parameter(
                 $variable_name,
                 $union_type,
+                $this->guessActualLineLocation($i),
                 $is_variadic,
                 false,  // has_default_value
                 $is_output_parameter
@@ -284,7 +285,7 @@ final class Builder
             $this->parameter_list,
             $this->template_type_list,
             $this->inherited_type,
-            $this->return_union_type,
+            $this->return_comment,
             $this->suppress_issue_list,
             $this->magic_property_list,
             $this->magic_method_list,
@@ -408,9 +409,12 @@ final class Builder
     private function maybeParseReturn(int $i, string $line)
     {
         $this->checkCompatible('@return', Comment::FUNCTION_LIKE, $i);
-        $type = $this->returnTypeFromCommentLine($line, $i)->withUnionType($this->return_union_type);
-        if (!$type->isEmpty()) {
-            $this->return_union_type = $type;
+        $return_comment = $this->return_comment;
+        $new_type = $this->returnTypeFromCommentLine($line, $i);
+        if ($return_comment) {
+            $return_comment->setType($return_comment->getType()->withUnionType($new_type));
+        } else {
+            $this->return_comment = new ReturnComment($new_type, $this->guessActualLineLocation($i));
         }
     }
 
@@ -484,7 +488,7 @@ final class Builder
                 $this->parameterFromCommentLine($line, false, $i);
         } elseif ($type === 'phan-return') {
             $this->checkCompatible('@phan-return', Comment::FUNCTION_LIKE, $i);
-            $this->phan_overrides['return'] = $this->returnTypeFromCommentLine($line, $i);
+            $this->phan_overrides['return'] = new ReturnComment($this->returnTypeFromCommentLine($line, $i), $this->guessActualLineLocation($i));
         } elseif ($type === 'phan-override') {
             $this->checkCompatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i);
             $this->comment_flags |= Flags::IS_OVERRIDE_INTENDED;
@@ -739,7 +743,7 @@ final class Builder
                 // placeholder names are p1, p2, ...
                 $var_name = 'p' . ($param_index + 1);
             }
-            return new Parameter($var_name, $union_type, $is_variadic, $has_default_value);
+            return new Parameter($var_name, $union_type, $this->guessActualLineLocation($param_index), $is_variadic, $has_default_value);
         }
         return null;
     }

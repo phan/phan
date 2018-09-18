@@ -11,6 +11,7 @@ use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\Comment\Method as CommentMethod;
 use Phan\Language\Element\Comment\Parameter as CommentParameter;
 use Phan\Language\Element\Comment\Property as CommentProperty;
+use Phan\Language\Element\Comment\ReturnComment;
 use Phan\Language\Element\Flags;
 use Phan\Language\Type;
 use Phan\Language\Type\TemplateType;
@@ -108,10 +109,10 @@ class Comment
     private $inherited_type;
 
     /**
-     * @var UnionType|null
-     * A UnionType defined by an (at)return directive
+     * @var ReturnComment|null
+     * the representation of an (at)return directive
      */
-    private $return_union_type = null;
+    private $return_comment = null;
 
     /**
      * @var array<int,string>
@@ -164,7 +165,7 @@ class Comment
      * @param Option<Type>|None $inherited_type (Note: some issues with templates and narrowing signature types to phpdoc type, added None as a workaround)
      * An override on the type of the extended class
      *
-     * @param UnionType $return_union_type
+     * @param ?ReturnComment $return_comment
      *
      * @param array<int,string> $suppress_issue_list
      * A list of tags for error type to be suppressed
@@ -188,7 +189,7 @@ class Comment
         array $parameter_list,
         array $template_type_list,
         Option $inherited_type,
-        UnionType $return_union_type,
+        $return_comment,
         array $suppress_issue_list,
         array $magic_property_list,
         array $magic_method_list,
@@ -203,7 +204,7 @@ class Comment
         $this->parameter_list = $parameter_list;
         $this->template_type_list = $template_type_list;
         $this->inherited_type = $inherited_type;
-        $this->return_union_type = $return_union_type;
+        $this->return_comment = $return_comment;
         $this->suppress_issue_list = $suppress_issue_list;
         $this->closure_scope = $closure_scope;
         $this->throw_union_type = $throw_union_type;
@@ -287,7 +288,7 @@ class Comment
                 return;
             case 'return':
                 // TODO: could check that @phan-return is compatible with the original @return
-                $this->return_union_type = $value;
+                $this->return_comment = $value;
                 return;
             case 'var':
                 // TODO: Remove pre-existing entries.
@@ -360,7 +361,7 @@ class Comment
                 [],
                 [],
                 new None(),
-                UnionType::empty(),
+                null,
                 [],
                 [],
                 [],
@@ -440,21 +441,47 @@ class Comment
      */
     public function getReturnType() : UnionType
     {
-        $return_union_type = $this->return_union_type;
-        if (!$return_union_type) {
+        $return_comment = $this->return_comment;
+        if (!$return_comment) {
             throw new AssertionError('Should check hasReturnUnionType');
         }
-        return $return_union_type;
+        return $return_comment->getType();
+    }
+
+    /**
+     * @return int
+     * A line of a (at)return directive
+     */
+    public function getReturnLineno() : int
+    {
+        $return_comment = $this->return_comment;
+        if (!$return_comment) {
+            throw new AssertionError('Should check hasReturnUnionType');
+        }
+        return $return_comment->getLineno();
     }
 
     /**
      * Sets A UnionType defined by a (at)return directive
      * @return void
      * @suppress PhanUnreferencedPublicMethod not used right now, but making it available for plugins
+     * @deprecated
+     * @suppress PhanDeprecatedFunction
      */
     public function setReturnType(UnionType $return_union_type)
     {
-        $this->return_union_type = $return_union_type;
+        $this->setReturnComment(new ReturnComment($return_union_type, 0));
+    }
+
+    /**
+     * Sets A UnionType defined by a (at)return directive
+     * @return void
+     * @suppress PhanUnreferencedPublicMethod not used right now, but making it available for plugins
+     * @deprecated
+     */
+    public function setReturnComment(ReturnComment $return_comment = null)
+    {
+        $this->return_comment = $return_comment;
     }
 
     /**
@@ -464,7 +491,7 @@ class Comment
      */
     public function hasReturnUnionType() : bool
     {
-        return !$this->return_union_type->isEmpty();
+        return $this->return_comment !== null;
     }
 
     /**
@@ -631,8 +658,8 @@ class Comment
             $string  .= " * @param $parameter\n";
         }
 
-        if ($this->return_union_type) {
-            $string .= " * @return {$this->return_union_type}\n";
+        if ($this->return_comment) {
+            $string .= " * @return {$this->return_comment->getType()}\n";
         }
         foreach ($this->throw_union_type->getTypeSet() as $type) {
             $string .= " * @throws {$type}\n";

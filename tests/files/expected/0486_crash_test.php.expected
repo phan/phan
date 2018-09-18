@@ -1,2 +1,2 @@
-%s:8 PhanTypeMismatchDeclaredReturn Doc-block of g contains declared return type iterable<int> which is incompatible with the return type \Traversable declared in the signature
-%s:11 PhanTypeMismatchDeclaredReturn Doc-block of h contains declared return type iterable<int> which is incompatible with the return type int declared in the signature
+%s:7 PhanTypeMismatchDeclaredReturn Doc-block of g contains declared return type iterable<int> which is incompatible with the return type \Traversable declared in the signature
+%s:10 PhanTypeMismatchDeclaredReturn Doc-block of h contains declared return type iterable<int> which is incompatible with the return type int declared in the signature

@@ -26,6 +26,12 @@ class Parameter
     private $type;
 
     /**
+     * @var int
+     * Get the line number.
+     */
+    private $lineno;
+
+    /**
      * @var bool
      * Whether or not the parameter is variadic (in the comment)
      */
@@ -53,12 +59,14 @@ class Parameter
     public function __construct(
         string $name,
         UnionType $type,
+        int $lineno = 0,
         bool $is_variadic = false,
         bool $has_default_value = false,
         bool $is_output_reference = false
     ) {
         $this->name = $name;
         $this->type = $type;
+        $this->lineno = $lineno;
         $this->is_variadic = $is_variadic;
         $this->has_default_value = $has_default_value;
         $this->is_output_reference = $is_output_reference;
@@ -117,6 +125,14 @@ class Parameter
         return $this->type;
     }
 
+    /**
+     * @return int
+     * The line number of the parameter
+     */
+    public function getLineno() : int
+    {
+        return $this->lineno;
+    }
     /**
      * @return bool
      * Whether or not the parameter is variadic
