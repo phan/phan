@@ -215,7 +215,8 @@ class ParameterTypesAnalyzer
         }
         $prev_index = -1;
         $prev_name = -1;
-        $expected_parameter_order = \array_flip(\array_keys($comment->getParameterMap()));
+        $comment_parameter_map = $comment->getParameterMap();
+        $expected_parameter_order = \array_flip(\array_keys($comment_parameter_map));
         foreach ($method->getParameterList() as $parameter) {
             $parameter_name = $parameter->getName();
             $parameter_index_in_comment = $expected_parameter_order[$parameter_name] ?? null;
@@ -223,11 +224,13 @@ class ParameterTypesAnalyzer
                 continue;
             }
             if ($parameter_index_in_comment < $prev_index) {
+                $comment_param = $comment_parameter_map[$parameter_name] ?? null;
+                $line = $comment_param ? $comment_param->getLineno() : $method->getFileRef()->getLineNumberStart();
                 Issue::maybeEmit(
                     $code_base,
                     $method->getContext(),
                     Issue::CommentParamOutOfOrder,
-                    $method->getFileRef()->getLineNumberStart(),
+                    $line,
                     $prev_name,
                     $parameter_name
                 );
@@ -672,6 +675,7 @@ class ParameterTypesAnalyzer
                 Issue::ParamSignatureRealMismatchTooManyRequiredParameters,
                 Issue::ParamSignatureRealMismatchTooManyRequiredParametersInternal,
                 Issue::ParamSignaturePHPDocMismatchTooManyRequiredParameters,
+                null,
                 $method->getNumberOfRequiredRealParameters(),
                 $o_method->getNumberOfRequiredRealParameters()
             );
@@ -686,6 +690,7 @@ class ParameterTypesAnalyzer
                 Issue::ParamSignatureRealMismatchTooFewParameters,
                 Issue::ParamSignatureRealMismatchTooFewParametersInternal,
                 Issue::ParamSignaturePHPDocMismatchTooFewParameters,
+                null,
                 $method->getNumberOfRealParameters(),
                 $o_method->getNumberOfRealParameters()
             );
@@ -717,6 +722,7 @@ class ParameterTypesAnalyzer
                     ($is_reference ? Issue::ParamSignatureRealMismatchParamIsReference         : Issue::ParamSignatureRealMismatchParamIsNotReference),
                     ($is_reference ? Issue::ParamSignatureRealMismatchParamIsReferenceInternal : Issue::ParamSignatureRealMismatchParamIsNotReferenceInternal),
                     ($is_reference ? Issue::ParamSignaturePHPDocMismatchParamIsReference       : Issue::ParamSignaturePHPDocMismatchParamIsNotReference),
+                    self::guessCommentParamLineNumber($method, $parameter),
                     $offset
                 );
                 return;
@@ -733,6 +739,7 @@ class ParameterTypesAnalyzer
                     ($is_variadic ? Issue::ParamSignatureRealMismatchParamVariadic         : Issue::ParamSignatureRealMismatchParamNotVariadic),
                     ($is_variadic ? Issue::ParamSignatureRealMismatchParamVariadicInternal : Issue::ParamSignatureRealMismatchParamNotVariadicInternal),
                     ($is_variadic ? Issue::ParamSignaturePHPDocMismatchParamVariadic       : Issue::ParamSignaturePHPDocMismatchParamNotVariadic),
+                    self::guessCommentParamLineNumber($method, $parameter),
                     $offset
                 );
                 return;
@@ -752,6 +759,7 @@ class ParameterTypesAnalyzer
                             Issue::ParamSignatureRealMismatchHasNoParamType,
                             Issue::ParamSignatureRealMismatchHasNoParamTypeInternal,
                             Issue::ParamSignaturePHPDocMismatchHasNoParamType,
+                            self::guessCommentParamLineNumber($method, $parameter),
                             $offset,
                             (string)$o_parameter_union_type
                         );
@@ -766,6 +774,7 @@ class ParameterTypesAnalyzer
                         Issue::ParamSignatureRealMismatchHasParamType,
                         Issue::ParamSignatureRealMismatchHasParamTypeInternal,
                         Issue::ParamSignaturePHPDocMismatchHasParamType,
+                        self::guessCommentParamLineNumber($method, $parameter),
                         $offset,
                         (string)$parameter_union_type
                     );
@@ -796,6 +805,7 @@ class ParameterTypesAnalyzer
                             Issue::ParamSignatureRealMismatchParamType,
                             Issue::ParamSignatureRealMismatchParamTypeInternal,
                             Issue::ParamSignaturePHPDocMismatchParamType,
+                            self::guessCommentParamLineNumber($method, $parameter),
                             $offset,
                             (string)$parameter_union_type,
                             (string)$o_parameter_union_type
@@ -824,6 +834,7 @@ class ParameterTypesAnalyzer
                     Issue::ParamSignatureRealMismatchReturnType,
                     Issue::ParamSignatureRealMismatchReturnTypeInternal,
                     Issue::ParamSignaturePHPDocMismatchReturnType,
+                    null,
                     (string)$return_union_type,
                     (string)$o_return_union_type
                 );
@@ -881,11 +892,21 @@ class ParameterTypesAnalyzer
      * @param Method $o_method the overridden method
      * @param string $issue_type the ParamSignatureRealMismatch* (issue type if overriding user-defined method)
      * @param string $internal_issue_type the ParamSignatureRealMismatch* (issue type if overriding internal method)
+     * @param string $phpdoc_issue_type the ParamSignaturePHPDocMismatch* (issue type if overriding internal method)
+     * @param ?int $lineno
      * @param int|string ...$args
      * @return void
      */
-    private static function emitSignatureRealMismatchIssue(CodeBase $code_base, Method $method, Method $o_method, string $issue_type, string $internal_issue_type, string $phpdoc_issue_type, ...$args)
-    {
+    private static function emitSignatureRealMismatchIssue(
+        CodeBase $code_base,
+        Method $method,
+        Method $o_method,
+        string $issue_type,
+        string $internal_issue_type,
+        string $phpdoc_issue_type,
+        $lineno,
+        ...$args
+    ) {
         if ($method->isFromPHPDoc() || $o_method->isFromPHPDoc()) {
             if ($method->checkHasSuppressIssueAndIncrementCount($phpdoc_issue_type)) {
                 return;
@@ -894,7 +915,7 @@ class ParameterTypesAnalyzer
                 $code_base,
                 $method->getContext(),
                 $phpdoc_issue_type,
-                $method->getFileRef()->getLineNumberStart(),
+                $lineno ?? $method->getFileRef()->getLineNumberStart(),
                 $method->toRealSignatureString(),
                 $o_method->toRealSignatureString(),
                 ...array_merge($args, [
@@ -910,7 +931,7 @@ class ParameterTypesAnalyzer
                 $code_base,
                 $method->getContext(),
                 $internal_issue_type,
-                $method->getFileRef()->getLineNumberStart(),
+                $lineno ?? $method->getFileRef()->getLineNumberStart(),
                 $method->toRealSignatureString(),
                 $o_method->toRealSignatureString(),
                 ...$args
@@ -923,7 +944,7 @@ class ParameterTypesAnalyzer
                 $code_base,
                 $method->getContext(),
                 $issue_type,
-                $method->getFileRef()->getLineNumberStart(),
+                $lineno ?? $method->getFileRef()->getLineNumberStart(),
                 $method->toRealSignatureString(),
                 $o_method->toRealSignatureString(),
                 ...array_merge($args, [
@@ -986,11 +1007,12 @@ class ParameterTypesAnalyzer
             ) {
                 $is_exclusively_narrowed = false;
                 if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchDeclaredParam)) {
+                    $param_name = $parameter->getName();
                     Issue::maybeEmit(
                         $code_base,
                         $context,
                         Issue::TypeMismatchDeclaredParam,
-                        $context->getLineNumberStart(),
+                        self::guessCommentParamLineNumber($method, $parameter) ?: $context->getLineNumberStart(),
                         $parameter->getName(),
                         $method->getName(),
                         $phpdoc_type->__toString(),
@@ -1009,15 +1031,20 @@ class ParameterTypesAnalyzer
                     $param_to_modify->setUnionType($normalized_phpdoc_param_union_type);
                 }
             } else {
+                $comment = $method->getComment();
+                if ($comment === null) {
+                    return;
+                }
                 // This check isn't urgent to fix, and is specific to nullable casting rules,
                 // so use a different issue type.
                 if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchDeclaredParamNullable)) {
+                    $param_name = $parameter->getName();
                     Issue::maybeEmit(
                         $code_base,
                         $context,
                         Issue::TypeMismatchDeclaredParamNullable,
-                        $context->getLineNumberStart(),
-                        $parameter->getName(),
+                        self::guessCommentParamLineNumber($method, $parameter) ?: $context->getLineNumberStart(),
+                        $param_name,
                         $method->getName(),
                         $phpdoc_param_union_type->__toString(),
                         $real_param_type->__toString()
@@ -1025,6 +1052,39 @@ class ParameterTypesAnalyzer
                 }
             }
         }
+    }
+
+    /**
+     * @return ?int
+     */
+    private static function guessCommentParamLineNumber(FunctionInterface $method, Parameter $param)
+    {
+        $comment = $method->getComment();
+        if ($comment === null) {
+            return null;
+        }
+        $parameter_map = $comment->getParameterMap();
+        $comment_param = $parameter_map[$param->getName()] ?? null;
+        if (!$comment_param) {
+            return null;
+        }
+        return $comment_param->getLineno();
+    }
+
+    /**
+     * @return ?int
+     * @internal
+     */
+    public static function guessCommentReturnLineNumber(FunctionInterface $method)
+    {
+        $comment = $method->getComment();
+        if ($comment === null) {
+            return null;
+        }
+        if (!$comment->hasReturnUnionType()) {
+            return null;
+        }
+        return $comment->getReturnLineno();
     }
 
     /**

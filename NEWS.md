@@ -8,6 +8,7 @@ New Features(Analysis)
 
   New issue types: `PhanCommentDuplicateMagicMethod`, `PhanCommentDuplicateMagicProperty`, `PhanCommentDuplicateParam`
 + Add basic support for `extract()` (#1978)
++ Improve line numbers for warnings about `@param` and `@return` annotations (#1369)
 
 Plugins:
 + Properly warn about code after `break` and `continue` in `UnreachableCodePlugin`.

@@ -10,4 +10,3 @@
 %s:42 PhanTypeInvalidDimOffsetArrayDestructuring Invalid offset 1 of array type array{k1:1,k2:'string'}|array{k1:2,k2:'string'} in an array destructuring assignment
 %s:42 PhanTypeMismatchArrayDestructuringKey Attempting an array destructing assignment with a key of type int but the only key types of the right hand side are of type string
 %s:46 PhanTypeInvalidDimOffsetArrayDestructuring Invalid offset "kMissing" of array type array{k1:1,k2:'string'}|array{k1:2,k2:'string'} in an array destructuring assignment
-

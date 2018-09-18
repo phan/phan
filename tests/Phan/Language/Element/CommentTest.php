@@ -59,7 +59,7 @@ final class CommentTest extends BaseTest
         $this->assertFalse($comment->isDeprecated());
         $this->assertFalse($comment->isOverrideIntended());
         $this->assertFalse($comment->isNSInternal());
-        $this->assertSame('', (string)$comment->getReturnType());
+        $this->assertFalse($comment->hasReturnUnionType());
         $this->assertFalse($comment->hasReturnUnionType());
         $this->assertInstanceOf(None::class, $comment->getClosureScopeOption());
         $this->assertSame([], $comment->getParameterList());

@@ -625,7 +625,7 @@ trait FunctionTrait
                     $code_base,
                     $context,
                     count($real_parameter_name_map) > 0 ? Issue::CommentParamWithoutRealParam : Issue::CommentParamOnEmptyParamList,
-                    $function->getFileRef()->getLineNumberStart(),
+                    $comment_parameter->getLineno(),
                     $comment_parameter_name,
                     (string)$function
                 );
@@ -680,7 +680,7 @@ trait FunctionTrait
                         $code_base,
                         $context,
                         $parameter->isVariadic() ? Issue::TypeMismatchVariadicParam : Issue::TypeMismatchVariadicComment,
-                        $function->getFileRef()->getLineNumberStart(),
+                        $comment_param->getLineno(),
                         $comment_param->__toString(),
                         $parameter->__toString()
                     );
