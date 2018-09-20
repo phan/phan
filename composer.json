@@ -23,7 +23,6 @@
     },
     "require": {
         "php": "^7.0.0",
-        "ext-ast": "^0.1.5",
         "ext-filter": "*",
         "ext-json": "*",
         "composer/semver": "^1.4",
@@ -34,6 +33,7 @@
         "symfony/console": "^2.3|^3.0|~4.0"
     },
     "suggest": {
+        "ext-ast": "^0.1.5",
         "ext-tokenizer": "Needed for non-AST support and file/line-based suppressions"
     },
     "require-dev": {

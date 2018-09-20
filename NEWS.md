@@ -10,6 +10,11 @@ New Features(Analysis)
 + Add basic support for `extract()` (#1978)
 + Improve line numbers for warnings about `@param` and `@return` annotations (#1369)
 
+Maintenance:
++ Make `ext-ast` a suggested composer dependency instead of a required composer dependency (#1981)
+
+  `--use-fallback-parser` allows Phan to analyze files even when php-ast is not installed or enabled.
+
 Plugins:
 + Properly warn about code after `break` and `continue` in `UnreachableCodePlugin`.
   Previously, Phan only warned about code after `throw` and `return`.
