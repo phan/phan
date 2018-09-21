@@ -18,6 +18,7 @@
       <property name="psr12Compatible" type="bool" value="true" />
     </properties>
   </rule>
+  <rule ref="SlevomatCodingStandard.Operators.RequireCombinedAssignmentOperator" />
   <rule ref="SlevomatCodingStandard.PHP.TypeCast" />
   <rule ref="SlevomatCodingStandard.PHP.UselessSemicolon" />
 

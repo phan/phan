@@ -220,10 +220,10 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
                 $start = $end = $length;
             }
             // quote a non re portion of the string
-            $temp = $temp . preg_quote(substr($wanted_re, $start_offset, ($start - $start_offset)), '/');
+            $temp .= preg_quote(substr($wanted_re, $start_offset, ($start - $start_offset)), '/');
             // add the re unquoted.
             if ($end > $start) {
-                $temp = $temp . '(' . substr($wanted_re, $start + 2, ($end - $start - 2)) . ')';
+                $temp .= '(' . substr($wanted_re, $start + 2, ($end - $start - 2)) . ')';
             }
             $start_offset = $end + 2;
         }

@@ -204,7 +204,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         // Try to cover all possible cases, such as try { return throwsException(); } catch(Exception $e) { break; }
         foreach ($node->children as $catch_node) {
             $catch_node_status = $this->visitStmtList($catch_node->children['stmts']);
-            $combined_status = $combined_status | $catch_node_status;
+            $combined_status |= $catch_node_status;
         }
         // No idea.
         return $combined_status;

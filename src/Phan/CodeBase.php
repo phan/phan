@@ -1057,7 +1057,7 @@ class CodeBase
                     $name = '&' . $name;
                 }
                 if ($param->isOptional()) {
-                    $name = $name . '=';
+                    $name .= '=';
                 }
                 $signature[$name] = $param_type;
             }
