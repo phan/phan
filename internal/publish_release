@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# TODO: Add an option to use Github API to create the release
+# TODO: Check that ./phan --version is not a dev version
+function publish_release() {
+	git rm -r tests internal phpcs.xml phpdoc.dist.xml phpunit.xml plugins
+	git commit -m 'Remove files which should not be published from the release'
+}
+publish_release
