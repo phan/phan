@@ -1,0 +1,1 @@
+src/036_namepace_name.php:3 PhanSyntaxError syntax error, unexpected ';', expecting identifier (T_STRING)
