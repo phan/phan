@@ -894,7 +894,7 @@ class TolerantASTConverter
                     $part = $name_parts[0];
                     $imploded_parts = static::tokenToString($part);
                     if ($part->kind === TokenKind::Name) {
-                        if (\preg_match('@__(LINE|FILE|DIR|FUNCTION|CLASS|TRAIT|METHOD|NAMESPACE)__@i', $imploded_parts) > 0) {
+                        if (\preg_match('@^__(LINE|FILE|DIR|FUNCTION|CLASS|TRAIT|METHOD|NAMESPACE)__$@i', $imploded_parts) > 0) {
                             return new \ast\Node(
                                 ast\AST_MAGIC_CONST,
                                 self::_MAGIC_CONST_LOOKUP[\strtoupper($imploded_parts)],
