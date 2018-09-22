@@ -1,1 +1,0 @@
-%s:13 PhanStaticCallToNonStatic Static call to non-static method \Test::baz() defined at %s:6

@@ -1,2 +1,0 @@
-%s:18 PhanTypeMismatchArgument Argument 1 (p) is \C177_1|\C177_2 but \f() takes \C177_0 defined at %s:14
-%s:19 PhanTypeMismatchArgument Argument 1 (p) is \C177_1 but \f() takes \C177_0 defined at %s:14

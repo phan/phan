@@ -1,1 +1,0 @@
-%s:9 PhanStaticCallToNonStatic Static call to non-static method \A::nonStaticMethod() defined at %s:4

@@ -1,2 +1,0 @@
-<?php
-new SplFileObject('string');

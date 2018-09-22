@@ -1,2 +1,0 @@
-%s:9 PhanNonClassMethodCall Call to method callMethod on non-class type 'Test394'
-%s:11 PhanNonClassMethodCall Call to method callMethod on non-class type array{0:'Test394'}

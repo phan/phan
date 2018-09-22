@@ -1,1 +1,0 @@
-src/008_declare_statement_12.php:3 PhanSyntaxError syntax error, unexpected ')', expecting identifier (T_STRING)

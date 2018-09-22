@@ -1,2 +1,0 @@
-<?php
-echo count("example " . );

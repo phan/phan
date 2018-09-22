@@ -1,3 +1,0 @@
-src/012_namespace_use_declaration10.php:3 PhanNoopConstant Unused constant
-src/012_namespace_use_declaration10.php:3 PhanSyntaxError syntax error, unexpected 'as' (T_AS), expecting identifier (T_STRING) or function (T_FUNCTION) or const (T_CONST) or \\ (T_NS_SEPARATOR)
-src/012_namespace_use_declaration10.php:3 PhanUndeclaredConstant Reference to undeclared constant \c

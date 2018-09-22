@@ -1,1 +1,0 @@
-%s:5 PhanTypeMismatchArgumentInternal Argument 1 (array_arg) is 'test string' but \key() takes array

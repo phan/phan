@@ -1,2 +1,0 @@
-%s:4 PhanUndeclaredExtendedClass Class extends undeclared class \foo\Foo
-%s:6 PhanUndeclaredProperty Reference to undeclared property \tests\Bar->_hmm

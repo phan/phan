@@ -1,6 +1,0 @@
-<?php
-
-function test() {
-    echo [];
-    |
-}

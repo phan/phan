@@ -1,7 +1,0 @@
-%s:4 PhanRedefineClass Class \Base493 defined at %s:4 was previously defined as Class \Base493 at %s:3
-%s:7 PhanRedefineClass Interface \I493 defined at %s:7 was previously defined as Interface \I493 at %s:6
-%s:10 PhanRedefineClass Trait \T493 defined at %s:10 was previously defined as Trait \T493 at %s:9
-%s:12 PhanClassContainsAbstractMethod non-abstract class \X493 contains abstract method \I493::abstract1 declared at %s:6
-%s:12 PhanRedefinedExtendedClass \X493 extends Class \Base493 declared at %s:3 which is also declared at %s:4. This may lead to confusing errors.
-%s:12 PhanRedefinedInheritedInterface \X493 inherits Interface \I493 declared at %s:6 which is also declared at %s:7. This may lead to confusing errors.
-%s:12 PhanRedefinedUsedTrait \X493 uses Trait \T493 declared at %s:9 which is also declared at %s:10. This may lead to confusing errors.

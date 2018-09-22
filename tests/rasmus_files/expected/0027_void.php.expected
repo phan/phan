@@ -1,1 +1,0 @@
-%s:6 PhanTypeMismatchReturn Returning type true but test() is declared to return void

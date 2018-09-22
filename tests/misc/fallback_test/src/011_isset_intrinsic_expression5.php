@@ -1,2 +1,0 @@
-<?php
-isSet ISSET

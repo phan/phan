@@ -1,5 +1,0 @@
-<?php
-/** @param ?string $x */
-function f344($x) : int {
-    if (is_string($x)) {} else {return $x;} return strlen($x); 
-}

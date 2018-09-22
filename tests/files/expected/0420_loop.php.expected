@@ -1,2 +1,0 @@
-%s:7 PhanUnusedVariable Unused definition of variable $reviewItem
-%s:9 PhanUnusedVariable Unused definition of variable $params

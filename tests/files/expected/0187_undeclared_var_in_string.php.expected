@@ -1,2 +1,0 @@
-%s:3 PhanUndeclaredVariable Variable $undef_a is undeclared
-%s:4 PhanUndeclaredVariable Variable $undef_b is undeclared

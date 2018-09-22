@@ -1,5 +1,0 @@
-<?php
-$x = rand() % 2; if (1 === $x)
-{
-    echo 'odd';
-}

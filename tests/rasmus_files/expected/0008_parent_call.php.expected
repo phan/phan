@@ -1,1 +1,0 @@
-%s:8 PhanUndeclaredStaticMethod Static call to undeclared method \A::func2 (Did you mean expr::func1())
