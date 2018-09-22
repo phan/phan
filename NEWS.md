@@ -1,6 +1,6 @@
 Phan NEWS
 
-?? ??? 2018, Phan 1.0.5 (dev)
+21 Sep 2018, Phan 1.0.5
 -----------------------
 
 New Features(Analysis)
@@ -14,6 +14,7 @@ Maintenance:
 + Make `ext-ast` a suggested composer dependency instead of a required composer dependency (#1981)
 
   `--use-fallback-parser` allows Phan to analyze files even when php-ast is not installed or enabled.
++ Remove test files from future published releases (#1982)
 
 Plugins:
 + Properly warn about code after `break` and `continue` in `UnreachableCodePlugin`.
@@ -24,8 +25,8 @@ Bug fixes:
 
   (also fixes other `array_*` functions taking references)
 + Fix false negatives in PHP5 backwards compatibility heuristic checks (#1939)
-+ Fix false positive PhanUnanalyzableInheritance for a method inherited from a trait (which itself uses trait) (#1968)
-+ Fix an uncaught RuntimeException when type checking an array that was roughly 12 or more levels deep (#1962)
++ Fix false positive `PhanUnanalyzableInheritance` for a method inherited from a trait (which itself uses trait) (#1968)
++ Fix an uncaught `RuntimeException` when type checking an array that was roughly 12 or more levels deep (#1962)
 + Improve checks of the return type of magic methods against methods inherited from ancestor classes (#1975)
 
   Don't emit a false positive `PhanParamSignaturePHPDocMismatchReturnType`
