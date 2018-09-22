@@ -1396,6 +1396,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
         foreach ($node->children as $elem) {
+            if (!($elem instanceof Node)) {
+                // We already emit PhanSyntaxError
+                continue;
+            }
             // Don't bother recursing more than one level to iterate over possible types.
             $value_node = $elem->children['value'];
             if ($value_node instanceof Node) {
