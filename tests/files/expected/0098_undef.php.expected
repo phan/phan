@@ -1,18 +1,17 @@
 %s:6 PhanUndeclaredClassCatch Catching undeclared class \Undef
-%s:9 PhanUndeclaredStaticMethod Static call to undeclared method \C::staticMethod
+%s:9 PhanUndeclaredStaticMethod Static call to undeclared method \C98::staticMethod
 %s:13 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \Undef
 %s:16 PhanUndeclaredTypeParameter Parameter of undeclared type \Undef
-%s:19 PhanUndeclaredTypeProperty Property \D::p has undeclared type \Undef
+%s:19 PhanUndeclaredTypeProperty Property \D98::p has undeclared type \Undef
 %s:22 PhanUndeclaredExtendedClass Class extends undeclared class \Undef
-%s:25 PhanParentlessClass Reference to parent of class \F that does not extend anything
+%s:25 PhanParentlessClass Reference to parent of class \F98 that does not extend anything
 %s:25 PhanUnusedVariable Unused definition of variable $v
-%s:28 PhanUndeclaredProperty Reference to undeclared property \C->undef
-%s:31 PhanUndeclaredProperty Reference to undeclared property \C->undef
+%s:28 PhanUndeclaredProperty Reference to undeclared property \C98->undef
+%s:31 PhanUndeclaredProperty Reference to undeclared property \C98->undef
 %s:34 PhanUndeclaredClassMethod Call to method f from undeclared class \Undef
 %s:34 PhanUndeclaredTypeParameter Parameter of undeclared type \Undef
-%s:37 PhanTraitParentReference Reference to parent from trait \T
-%s:40 PhanParentlessClass Reference to parent of class \G that does not extend anything
+%s:37 PhanTraitParentReference Reference to parent from trait \T98
+%s:40 PhanParentlessClass Reference to parent of class \G98 that does not extend anything
 %s:43 PhanUndeclaredExtendedClass Class extends undeclared class \Undef
 %s:46 PhanUndeclaredTypeReturnType Return type of j is undeclared type \Undef
 %s:49 PhanUndeclaredTypeReturnType Return type of k is undeclared type \self
-

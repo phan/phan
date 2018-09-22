@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-class C {
+class C89 {
     function __toString() { return 'str'; }
 }
-$v = strlen(new C);
+$v = strlen(new C89);

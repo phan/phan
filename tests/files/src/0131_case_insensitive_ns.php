@@ -1,9 +1,9 @@
 <?php
 
 namespace Name\Space\A {
-    class C {}
+    class C45 {}
 };
 
 namespace Name\Space\B {
-    class C extends \name\space\a\c {}
+    class C45 extends \name\space\a\c45 {}
 };
