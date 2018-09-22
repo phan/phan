@@ -2150,6 +2150,9 @@ class TolerantASTConverter
         $stmts = [];
         $node_line = static::getEndLine($node) ?? $start_line;
         foreach ($node->caseStatements as $case) {
+            if (!($case instanceof PhpParser\Node\CaseStatementNode)) {
+                continue;
+            }
             $case_line = static::getEndLine($case);
             $stmts[] = new ast\Node(
                 ast\AST_SWITCH_CASE,
