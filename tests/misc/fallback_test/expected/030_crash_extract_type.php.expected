@@ -1,0 +1,1 @@
+src/030_crash_extract_type.php:3 PhanSyntaxError Cannot use empty array elements in arrays
