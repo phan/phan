@@ -10,13 +10,13 @@ platform: x86
 environment:
   matrix:
     - PHP_EXT_VERSION: '7.0'
-      PHP_VERSION: '7.0.30'
+      PHP_VERSION: '7.0.32'
       VC_VERSION: 14
     - PHP_EXT_VERSION: '7.1'
-      PHP_VERSION: '7.1.19'
+      PHP_VERSION: '7.1.22'
       VC_VERSION: 14
     - PHP_EXT_VERSION: '7.2'
-      PHP_VERSION: '7.2.7'
+      PHP_VERSION: '7.2.10'
       VC_VERSION: 15
 
 init:
