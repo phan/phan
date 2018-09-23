@@ -1948,6 +1948,9 @@ class TolerantASTConverter
             }
             $interface_extends_name_list[] = static::phpParserNonValueNodeToAstNode($implement);
         }
+        if (\count($interface_extends_name_list) === 0) {
+            return null;
+        }
         return new ast\Node(ast\AST_NAME_LIST, 0, $interface_extends_name_list, $interface_extends_name_list[0]->lineno);
     }
 
