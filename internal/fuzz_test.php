@@ -45,10 +45,10 @@ class FuzzTest
             if ($c === '/') {
                 // do nothing
             } else {
-                $tokens[$j][1] = '0';
+                $tokens[$j][1] = "''";
             }
         } else {
-            $tokens[$j] = '0';
+            $tokens[$j] = "''";
         }
         return array_values($tokens);
     }

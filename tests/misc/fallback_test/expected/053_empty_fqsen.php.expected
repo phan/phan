@@ -1,0 +1,1 @@
+src/053_empty_fqsen.php:3 PhanEmptyFQSENInClasslike Possible use of a classlike '\' with an empty FQSEN.

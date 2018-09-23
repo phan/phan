@@ -521,9 +521,18 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         // Sometimes 0 for a fully qualified name?
 
-        return Type::fromFullyQualifiedString(
-            '\\' . $node->children['name']
-        )->asUnionType();
+        try {
+            return Type::fromFullyQualifiedString(
+                '\\' . $node->children['name']
+            )->asUnionType();
+        } catch (EmptyFQSENException $_) {
+            $this->emitIssue(
+                Issue::EmptyFQSENInClasslike,
+                $node->lineno ?? 0,
+                '\\' . $node->children['name']
+            );
+            return UnionType::empty();
+        }
     }
 
     /**
