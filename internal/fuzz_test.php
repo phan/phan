@@ -36,13 +36,13 @@ class FuzzTest
      */
     private static function mutateTokens(string $path, array $tokens, int $i)
     {
-        $N = count($tokens);
-        if ($i >= $N) {
+        if ($i >= count($tokens)) {
             return null;
         }
         $j = ($i + crc32($path) + 11142) % count($tokens);
         unset($tokens[$j]);
         unset($tokens[$j + 1]);
+        unset($tokens[$j + 2]);
         return array_values($tokens);
     }
 
@@ -52,22 +52,22 @@ class FuzzTest
     public static function main()
     {
         self::$basename = dirname(realpath(__DIR__));
-        $fileContents = self::readFileContents(self::$basename . '/tests/files/src');
-        $fileTokens = array_map('token_get_all', $fileContents);
+        $file_contents = self::readFileContents(self::$basename . '/tests/files/src');
+        $tokens_for_files = array_map('token_get_all', $file_contents);
         for ($i = 0; true; $i++) {
-            $newFileTokens = [];
-            foreach ($fileTokens as $path => $tokens) {
-                $newTokens = self::mutateTokens($path, $tokens, $i);
-                if ($newTokens) {
-                    $newFileTokens[$path] = $newTokens;
+            $new_tokens_for_files = [];
+            foreach ($tokens_for_files as $path => $tokens) {
+                $new_tokens = self::mutateTokens($path, $tokens, $i);
+                if ($new_tokens) {
+                    $new_tokens_for_files[$path] = $new_tokens;
                 }
             }
-            if (!$newFileTokens) {
+            if (!$new_tokens_for_files) {
                 // No mutations left to analyze
                 return;
             }
 
-            self::analyzeTemporaryDirectory($i, $newFileTokens);
+            self::analyzeTemporaryDirectory($i, $new_tokens_for_files);
         }
     }
 
@@ -87,12 +87,12 @@ class FuzzTest
     /**
      * @return void
      */
-    private static function analyzeTemporaryDirectory(int $i, array $newFileTokens)
+    private static function analyzeTemporaryDirectory(int $i, array $new_tokens_for_files)
     {
-        $tmpDir = self::$basename . "/tmp/mutate$i";
-        mkdir("$tmpDir/.phan", 0766, true);
-        mkdir("$tmpDir/src", 0766, true);
-        file_put_contents("$tmpDir/.phan/config.php", <<<'EOT'
+        $tmp_dir = self::$basename . "/tmp/mutate$i";
+        mkdir("$tmp_dir/.phan", 0766, true);
+        mkdir("$tmp_dir/src", 0766, true);
+        file_put_contents("$tmp_dir/.phan/config.php", <<<'EOT'
 <?php
 return [
     'directory_list' => ['src'],
@@ -121,14 +121,14 @@ return [
 EOT
         );
 
-        foreach ($newFileTokens as $file => $tokens) {
+        foreach ($new_tokens_for_files as $file => $tokens) {
             $contents = self::tokensToString($tokens);
-            $tmpPath = $tmpDir . '/src/' . basename($file);
-            file_put_contents($tmpPath, $contents);
+            $tmp_path = $tmp_dir . '/src/' . basename($file);
+            file_put_contents($tmp_path, $contents);
         }
 
         // TODO: Use proc_open
-        $cmd = self::$basename . '/phan --use-fallback-parser --project-root-directory ' . $tmpDir;
+        $cmd = self::$basename . '/phan --use-fallback-parser --project-root-directory ' . $tmp_dir;
         echo "Running $cmd\n";
         system($cmd);
     }
