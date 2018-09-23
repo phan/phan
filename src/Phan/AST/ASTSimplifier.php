@@ -273,7 +273,7 @@ class ASTSimplifier
                 continue;
             }
             if ($if_cond->kind === \ast\AST_ASSIGN &&
-                    $if_cond->children['var']->kind === \ast\AST_VAR) {
+                    ($if_cond->children['var']->kind ?? null) === \ast\AST_VAR) {
                 // if ($var = A) {X} -> $var = A; if ($var) {X}
                 // do this whether or not there is an else.
                 // TODO: Could also reduce `if (($var = A) && B) {X} else if (C) {Y} -> $var = A; ....
