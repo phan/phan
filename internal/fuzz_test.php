@@ -43,6 +43,7 @@ class FuzzTest
         unset($tokens[$j]);
         unset($tokens[$j + 1]);
         unset($tokens[$j + 2]);
+        unset($tokens[$j + 3]);
         return array_values($tokens);
     }
 

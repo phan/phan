@@ -19,7 +19,7 @@ use RuntimeException;
 
 // If php-ast isn't loaded already, then load this file to generate equivalent
 // class, constant, and function definitions.
-if (!class_exists('\ast\Node')) {
+if (!class_exists('ast\Node')) {
     require_once __DIR__ . '/ast_shim.php';
 }
 
@@ -97,7 +97,7 @@ class TolerantASTConverter
     protected static $php_version_id_parsing = PHP_VERSION_ID;
 
     /**
-     * @var int - Internal counter for declarations, to generate __declId in `\ast\Node`s for declarations.
+     * @var int - Internal counter for declarations, to generate __declId in `ast\Node`s for declarations.
      */
     protected static $decl_id = 0;
 
@@ -155,7 +155,7 @@ class TolerantASTConverter
 
     /**
      * @param Diagnostic[] &$errors @phan-output-reference
-     * @return \ast\Node
+     * @return ast\Node
      * @throws InvalidArgumentException if the requested AST version is invalid.
      */
     public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = [])
@@ -895,7 +895,7 @@ class TolerantASTConverter
                     $imploded_parts = static::tokenToString($part);
                     if ($part->kind === TokenKind::Name) {
                         if (\preg_match('@^__(LINE|FILE|DIR|FUNCTION|CLASS|TRAIT|METHOD|NAMESPACE)__$@i', $imploded_parts) > 0) {
-                            return new \ast\Node(
+                            return new ast\Node(
                                 ast\AST_MAGIC_CONST,
                                 self::_MAGIC_CONST_LOOKUP[\strtoupper($imploded_parts)],
                                 [],
@@ -2259,8 +2259,13 @@ class TolerantASTConverter
         );
     }
 
-    // Binary assignment operation such as +=
-    private static function astNodeAssignop(int $flags, PhpParser\Node\Expression\BinaryExpression $n, int $start_line) : \ast\Node
+    /**
+     * Binary assignment operation such as `+=`
+     *
+     * @return ast\Node|string|int|float
+     * (Can return non-Node for an invalid AST if the right hand is a scalar)
+     */
+    private static function astNodeAssignop(int $flags, PhpParser\Node\Expression\BinaryExpression $n, int $start_line)
     {
         try {
             $var_node = static::phpParserNodeToAstNode($n->leftOperand);
