@@ -12,6 +12,7 @@ use Phan\Analysis\PreOrderAnalysisVisitor;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
+use Phan\Exception\IssueException;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\Comment\Builder;
@@ -234,7 +235,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
             // Step into each child node and get an
             // updated context for the node
-            $context = $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
+            try {
+                $context = $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
+            } catch (IssueException $e) {
+                // This is a fallback - Exceptions should be caught at a deeper level if possible
+                Issue::maybeEmitInstance($this->code_base, $context, $e->getIssueInstance());
+            }
         }
         $plugin_set->postAnalyzeNode(
             $this->code_base,
