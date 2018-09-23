@@ -755,6 +755,10 @@ class ContextNode
         $code_base = $this->code_base;
         $context = $this->context;
 
+        if (!($expression instanceof Node)) {
+            // TODO: this might need to account for 'myFunction'()
+            return;
+        }
         if ($expression->kind == ast\AST_VAR) {
             $variable_name = (new ContextNode(
                 $code_base,
