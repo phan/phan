@@ -1167,8 +1167,15 @@ class TolerantASTConverter
                 }
                 return \count($ast_echos) === 1 ? $ast_echos[0] : $ast_echos;
             },
-            'Microsoft\PhpParser\Node\ForeachKey' => function (PhpParser\Node\ForeachKey $n, int $_) : ast\Node {
-                return static::phpParserNodeToAstNode($n->expression);
+            /**
+             * @return ?ast\Node
+             */
+            'Microsoft\PhpParser\Node\ForeachKey' => function (PhpParser\Node\ForeachKey $n, int $_) {
+                $result = static::phpParserNodeToAstNode($n->expression);
+                if (!$result instanceof ast\Node) {
+                    return null;
+                }
+                return $result;
             },
             'Microsoft\PhpParser\Node\Statement\ForeachStatement' => function (PhpParser\Node\Statement\ForeachStatement $n, int $start_line) : ast\Node {
                 $foreach_value = $n->foreachValue;

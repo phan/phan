@@ -1,0 +1,2 @@
+src/044_keys_in_lists.php:2 PhanSyntaxError syntax error, unexpected ''kMissing'' (T_CONSTANT_ENCAPSED_STRING)
+src/044_keys_in_lists.php:2 PhanUndeclaredVariable Variable $v1 is undeclared

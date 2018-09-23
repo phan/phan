@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 2018, Phan 1.0.6 (dev)
 -----------------------
 
+Bug fixes:
++ Fix various uncaught errors in Phan that occurred when parsing invalid ASTs
+
 21 Sep 2018, Phan 1.0.5
 -----------------------
 

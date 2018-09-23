@@ -12,7 +12,7 @@ if [[ $? != 0 ]]; then
 fi
 echo "Running phan in '$PWD' ..."
 rm $ACTUAL_PATH -f || exit 1
-../../../phan --use-fallback-parser | tee $ACTUAL_PATH
+../../../phan --use-fallback-parser 2>&1 | tee $ACTUAL_PATH
 # normalize output for https://github.com/phan/phan/issues/1130
 sed -i "s/ syntax error, unexpected return (T_RETURN)/ syntax error, unexpected 'return' (T_RETURN)/" $ACTUAL_PATH
 sed -i "s/ syntax error, unexpected new (T_NEW)/ syntax error, unexpected 'new' (T_NEW)/" $ACTUAL_PATH
