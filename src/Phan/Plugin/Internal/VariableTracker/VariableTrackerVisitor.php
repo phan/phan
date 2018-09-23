@@ -91,7 +91,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
             $this->scope = $this->analyze($this->scope, $expr);
         }
         $var_node = $node->children['var'];
-        if ($var_node->kind === \ast\AST_VAR) {
+        if ($var_node instanceof Node && $var_node->kind === \ast\AST_VAR) {
             $name = $var_node->children['name'];
             if (is_string($name)) {
                 self::$variable_graph->recordVariableUsage($name, $var_node, $this->scope);

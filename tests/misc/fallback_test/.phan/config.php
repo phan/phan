@@ -55,6 +55,8 @@ return [
 
     'analyzed_file_extensions' => ['php'],
 
+    'unused_variable_detection' => true,
+
     // A list of plugin files to execute
     'plugins' => [ ],
 ];

@@ -23,6 +23,7 @@ sed -i "s/anonymous_class_\w\+/anonymous_class_%s/g" $ACTUAL_PATH $EXPECTED_PATH
 # This isn't emitted in newer PHP versions
 sed -i "/PhanSyntaxError syntax error, unexpected ',', expecting ']'/d" $ACTUAL_PATH
 sed -i "/030_crash_extract_type.php:3 PhanSyntaxError syntax error, unexpected ',', expecting ')'/d" $ACTUAL_PATH
+sed -i "s/047_invalid_define.php:3 PhanSyntaxError syntax error, unexpected 'a' (T_STRING), expecting ',' or ')'/047_invalid_define.php:3 PhanSyntaxError syntax error, unexpected 'a' (T_STRING), expecting ')'/" $ACTUAL_PATH
 
 # diff returns a non-zero exit code if files differ or are missing
 echo

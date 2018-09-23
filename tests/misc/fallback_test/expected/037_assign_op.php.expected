@@ -1,1 +1,2 @@
 src/037_assign_op.php:3 PhanSyntaxError syntax error, unexpected '+=' (T_PLUS_EQUAL)
+src/037_assign_op.php:3 PhanUnusedVariable Unused definition of variable $y
