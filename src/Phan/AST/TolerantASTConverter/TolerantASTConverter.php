@@ -1473,10 +1473,17 @@ class TolerantASTConverter
      * @param ?int $parser_use_kind
      * @param int $start_line
      * @return ast\Node
+     *
+     * @throws InvalidNodeException
      */
     protected static function astStmtUseOrGroupUseFromUseClause(PhpParser\Node\NamespaceUseClause $use_clause, $parser_use_kind, int $start_line) : ast\Node
     {
-        $namespace_name = \rtrim(static::phpParserNameToString($use_clause->namespaceName), '\\');
+        $namespace_name_node = $use_clause->namespaceName;
+        if ($namespace_name_node instanceof PhpParser\Node\QualifiedName) {
+            $namespace_name = \rtrim(static::phpParserNameToString($namespace_name_node), '\\');
+        } else {
+            throw new InvalidNodeException();
+        }
         if ($use_clause->groupClauses !== null) {
             return static::astStmtGroupUse(
                 $parser_use_kind,  // E.g. kind is FunctionKeyword or ConstKeyword or null
