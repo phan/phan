@@ -1,0 +1,3 @@
+src/049_invalid_binary_condition.php:2 PhanInvalidNode Expected left side of assignment to be a variable
+src/049_invalid_binary_condition.php:2 PhanSyntaxError syntax error, unexpected '='
+src/049_invalid_binary_condition.php:3 PhanTypeConversionFromArray array to string conversion

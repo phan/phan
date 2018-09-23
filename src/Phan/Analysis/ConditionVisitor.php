@@ -498,6 +498,9 @@ class ConditionVisitor extends KindVisitorImplementation
 
             // Get the type that we're checking it against
             $class_node = $node->children['class'];
+            if (!($class_node instanceof Node)) {
+                return $context;
+            }
             $type = UnionTypeVisitor::unionTypeFromNode(
                 $this->code_base,
                 $this->context,

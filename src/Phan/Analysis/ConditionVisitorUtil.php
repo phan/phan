@@ -390,7 +390,10 @@ trait ConditionVisitorUtil
                 if (!$tmp instanceof Node) {
                     break;
                 }
-                $var = $tmp->children['var'];
+                $var = $tmp->children['var'] ?? null;
+                if (!$var instanceof Node) {
+                    break;
+                }
                 $kind = $var->kind;
                 if ($kind === \ast\AST_VAR) {
                     $this->context = (new BlockAnalysisVisitor($this->code_base, $this->context))->__invoke($tmp);

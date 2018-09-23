@@ -1167,6 +1167,9 @@ class UnionTypeVisitor extends AnalysisVisitor
         UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node->children['expr']);
         // Get the type that we're checking it against, check if it is valid.
         $class_node = $node->children['class'];
+        if (!($class_node instanceof Node)) {
+            return BoolType::instance(false)->asUnionType();
+        }
         $type = UnionTypeVisitor::unionTypeFromNode(
             $code_base,
             $context,
