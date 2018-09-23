@@ -366,7 +366,7 @@ class ContextNode
             && ($node->kind != ast\AST_STATIC)
             && ($node->kind != ast\AST_MAGIC_CONST)
         ) {
-            $node = \array_values($node->children)[0];
+            $node = \array_values($node->children)[0] ?? null;
         }
 
         if (!($node instanceof Node)) {

@@ -1,0 +1,3 @@
+src/043_unexpected_static.php:2 PhanContextNotObject Cannot access static when not in object context
+src/043_unexpected_static.php:2 PhanSyntaxError syntax error, unexpected ';', expecting :: (T_PAAMAYIM_NEKUDOTAYIM)
+src/043_unexpected_static.php:2 PhanUndeclaredConstant Reference to undeclared constant \static

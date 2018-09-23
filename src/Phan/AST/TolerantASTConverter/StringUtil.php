@@ -5,7 +5,10 @@ namespace Phan\AST\TolerantASTConverter;
 use Error;
 use function chr;
 use function hexdec;
+use function is_string;
 use function octdec;
+use function str_replace;
+use function substr;
 
 /**
  * This class is based on code from https://github.com/nikic/PHP-Parser/blob/master/lib/PhpParser/Node/Scalar/String_.php
@@ -76,10 +79,10 @@ final class StringUtil
         }
 
         if ('\'' === $str[$binary_length]) {
-            return \str_replace(
+            return str_replace(
                 ['\\\\', '\\\''],
                 ['\\', '\''],
-                \substr($str, $binary_length + 1, -1)
+                substr($str, $binary_length + 1, -1)
             );
         } else {
             return self::parseEscapeSequences(
@@ -95,16 +98,20 @@ final class StringUtil
      *
      * Parses escape sequences in strings (all string types apart from single quoted).
      *
-     * @param string      $str   String without quotes
+     * @param string|false $str  String without quotes
      * @param null|string $quote Quote type
      * @param bool $parse_unicode_escape Whether to parse PHP 7 \u escapes
      *
      * @return string String with escape sequences parsed
      */
-    public static function parseEscapeSequences(string $str, $quote, bool $parse_unicode_escape = true) : string
+    public static function parseEscapeSequences($str, $quote, bool $parse_unicode_escape = true) : string
     {
+        if (!is_string($str)) {
+            // Invalid AST input; give up
+            return '';
+        }
         if (null !== $quote) {
-            $str = \str_replace('\\' . $quote, $quote, $str);
+            $str = str_replace('\\' . $quote, $quote, $str);
         }
 
         $extra = '';

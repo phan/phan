@@ -19,7 +19,7 @@ use RuntimeException;
 
 // If php-ast isn't loaded already, then load this file to generate equivalent
 // class, constant, and function definitions.
-if (!class_exists('\ast\Node')) {
+if (!class_exists('ast\Node')) {
     require_once __DIR__ . '/ast_shim.php';
 }
 
@@ -97,7 +97,7 @@ class TolerantASTConverter
     protected static $php_version_id_parsing = PHP_VERSION_ID;
 
     /**
-     * @var int - Internal counter for declarations, to generate __declId in `\ast\Node`s for declarations.
+     * @var int - Internal counter for declarations, to generate __declId in `ast\Node`s for declarations.
      */
     protected static $decl_id = 0;
 
@@ -155,7 +155,7 @@ class TolerantASTConverter
 
     /**
      * @param Diagnostic[] &$errors @phan-output-reference
-     * @return \ast\Node
+     * @return ast\Node
      * @throws InvalidArgumentException if the requested AST version is invalid.
      */
     public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = [])
@@ -895,7 +895,7 @@ class TolerantASTConverter
                     $imploded_parts = static::tokenToString($part);
                     if ($part->kind === TokenKind::Name) {
                         if (\preg_match('@^__(LINE|FILE|DIR|FUNCTION|CLASS|TRAIT|METHOD|NAMESPACE)__$@i', $imploded_parts) > 0) {
-                            return new \ast\Node(
+                            return new ast\Node(
                                 ast\AST_MAGIC_CONST,
                                 self::_MAGIC_CONST_LOOKUP[\strtoupper($imploded_parts)],
                                 [],
@@ -1167,8 +1167,15 @@ class TolerantASTConverter
                 }
                 return \count($ast_echos) === 1 ? $ast_echos[0] : $ast_echos;
             },
-            'Microsoft\PhpParser\Node\ForeachKey' => function (PhpParser\Node\ForeachKey $n, int $_) : ast\Node {
-                return static::phpParserNodeToAstNode($n->expression);
+            /**
+             * @return ?ast\Node
+             */
+            'Microsoft\PhpParser\Node\ForeachKey' => function (PhpParser\Node\ForeachKey $n, int $_) {
+                $result = static::phpParserNodeToAstNode($n->expression);
+                if (!$result instanceof ast\Node) {
+                    return null;
+                }
+                return $result;
             },
             'Microsoft\PhpParser\Node\Statement\ForeachStatement' => function (PhpParser\Node\Statement\ForeachStatement $n, int $start_line) : ast\Node {
                 $foreach_value = $n->foreachValue;
@@ -1473,10 +1480,17 @@ class TolerantASTConverter
      * @param ?int $parser_use_kind
      * @param int $start_line
      * @return ast\Node
+     *
+     * @throws InvalidNodeException
      */
     protected static function astStmtUseOrGroupUseFromUseClause(PhpParser\Node\NamespaceUseClause $use_clause, $parser_use_kind, int $start_line) : ast\Node
     {
-        $namespace_name = \rtrim(static::phpParserNameToString($use_clause->namespaceName), '\\');
+        $namespace_name_node = $use_clause->namespaceName;
+        if ($namespace_name_node instanceof PhpParser\Node\QualifiedName) {
+            $namespace_name = \rtrim(static::phpParserNameToString($namespace_name_node), '\\');
+        } else {
+            throw new InvalidNodeException();
+        }
         if ($use_clause->groupClauses !== null) {
             return static::astStmtGroupUse(
                 $parser_use_kind,  // E.g. kind is FunctionKeyword or ConstKeyword or null
@@ -1948,6 +1962,9 @@ class TolerantASTConverter
             }
             $interface_extends_name_list[] = static::phpParserNonValueNodeToAstNode($implement);
         }
+        if (\count($interface_extends_name_list) === 0) {
+            return null;
+        }
         return new ast\Node(ast\AST_NAME_LIST, 0, $interface_extends_name_list, $interface_extends_name_list[0]->lineno);
     }
 
@@ -2259,8 +2276,13 @@ class TolerantASTConverter
         );
     }
 
-    // Binary assignment operation such as +=
-    private static function astNodeAssignop(int $flags, PhpParser\Node\Expression\BinaryExpression $n, int $start_line) : \ast\Node
+    /**
+     * Binary assignment operation such as `+=`
+     *
+     * @return ast\Node|string|int|float
+     * (Can return non-Node for an invalid AST if the right hand is a scalar)
+     */
+    private static function astNodeAssignop(int $flags, PhpParser\Node\Expression\BinaryExpression $n, int $start_line)
     {
         try {
             $var_node = static::phpParserNodeToAstNode($n->leftOperand);

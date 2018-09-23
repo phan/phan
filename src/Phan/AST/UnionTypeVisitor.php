@@ -1933,9 +1933,19 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         try {
-            foreach ($this->classListFromNode(
-                $node->children['class'] ?? $node->children['expr']
-            ) as $class) {
+            $class_node = $node->children['class'] ?? $node->children['expr'];
+            if (!($class_node instanceof Node)) {
+                // E.g. `'string_literal'->method()`
+                // Other places will also emit NonClassMethodCall for the same node
+                $this->emitIssue(
+                    Issue::NonClassMethodCall,
+                    $node->lineno ?? 0,
+                    $method_name,
+                    UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $class_node)
+                );
+                return UnionType::empty();
+            }
+            foreach ($this->classListFromNode($class_node) as $class) {
                 if (!$class->hasMethodWithName(
                     $this->code_base,
                     $method_name

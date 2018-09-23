@@ -139,7 +139,8 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     private function updateTargetWithType(Node $node, Closure $get_type) : Context
     {
         $left = $node->children['var'];
-        $kind = $left->kind;
+        // The left can be a non-Node for an invalid AST
+        $kind = $left->kind ?? null;
         if ($kind === \ast\AST_VAR) {
             return $this->updateTargetVariableWithType($node, $get_type);
         }

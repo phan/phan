@@ -1,0 +1,1 @@
+src/041_invalid_extend.php:3 PhanSyntaxError syntax error, unexpected '}', expecting identifier (T_STRING) or namespace (T_NAMESPACE) or \\ (T_NS_SEPARATOR)

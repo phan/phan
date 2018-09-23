@@ -1,0 +1,1 @@
+src/040_invalid_string_escape.php:3 PhanSyntaxError syntax error, unexpected ';'
