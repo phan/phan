@@ -180,6 +180,8 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      * The context in which the FQSEN string was found
      *
      * @return static
+     *
+     * @throws InvalidArgumentException if the $fqsen_string is invalid
      */
     public static function fromStringInContext(
         string $fqsen_string,
@@ -204,7 +206,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         $name = \array_pop($parts);
 
         if (!$name) {
-            throw new AssertionError("The name cannot be empty");
+            throw new InvalidArgumentException("The name cannot be empty");
         }
 
         // Check for a name map

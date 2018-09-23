@@ -150,6 +150,7 @@ class Issue
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
     const UnanalyzableInheritance   = 'PhanUnanalyzableInheritance';
+    const InvalidConstantFQSEN      = 'PhanInvalidConstantFQSEN';
 
     // Issue::CATEGORY_VARIABLE
     const VariableUseClause         = 'PhanVariableUseClause';
@@ -895,6 +896,14 @@ class Issue
                 "Unable to determine the method(s) which {METHOD} overrides, but Phan inferred that it did override something earlier. Please create an issue at https://github.com/phan/phan/issues/new with a test case.",
                 self::REMEDIATION_B,
                 2001
+            ),
+            new Issue(
+                self::InvalidConstantFQSEN,
+                self::CATEGORY_ANALYSIS,
+                self::SEVERITY_LOW,
+                "{CONST} is an invalid FQSEN for a constant",
+                self::REMEDIATION_B,
+                2002
             ),
 
             // Issue::CATEGORY_TYPE

@@ -1127,11 +1127,20 @@ class ParseVisitor extends ScopeVisitor
         int $flags,
         string $comment_string
     ) {
-        // Give it a fully-qualified name
-        $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
-            $name,
-            $this->context
-        );
+        try {
+            // Give it a fully-qualified name
+            $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
+                $name,
+                $this->context
+            );
+        } catch (InvalidArgumentException $_) {
+            $this->emitIssue(
+                Issue::InvalidConstantFQSEN,
+                $node->lineno,
+                $name
+            );
+            return;
+        }
 
         // Create the constant
         $constant = new GlobalConstant(
