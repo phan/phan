@@ -874,7 +874,7 @@ class ConditionVisitor extends KindVisitorImplementation
         if ($last_expression instanceof Node) {
             return $this($last_expression);
         } else {
-            // TODO: emit no-op warning
+            // Other code should warn about this invalid AST
             return $this->context;
         }
     }
@@ -894,6 +894,10 @@ class ConditionVisitor extends KindVisitorImplementation
     {
         $context = (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssign($node);
         $left = $node->children['var'];
+        if (!($left instanceof Node)) {
+            // Other code should warn about this invalid AST
+            return $this->context;
+        }
         return (new self($this->code_base, $context))->__invoke($left);
     }
 
@@ -911,6 +915,10 @@ class ConditionVisitor extends KindVisitorImplementation
     {
         $context = (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssignRef($node);
         $left = $node->children['var'];
+        if (!($left instanceof Node)) {
+            // TODO: Ensure this always warns
+            return $this->context;
+        }
         return (new self($this->code_base, $context))->__invoke($left);
     }
 }

@@ -40,10 +40,13 @@ class FuzzTest
             return null;
         }
         $j = ($i + crc32($path) + 11155) % count($tokens);
-        unset($tokens[$j]);
-        unset($tokens[$j + 1]);
-        unset($tokens[$j + 2]);
-        unset($tokens[$j + 3]);
+        if (is_array($tokens[$j])) {
+            if ($tokens[$j][1][0] !== '/') {
+                $tokens[$j][1] = substr($tokens[$j][1], 0, -1);
+            }
+        } else {
+            $tokens[$j] = substr($tokens[$j], 0, -1);
+        }
         return array_values($tokens);
     }
 
