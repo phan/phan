@@ -894,7 +894,7 @@ class TolerantASTConverter
                     $part = $name_parts[0];
                     $imploded_parts = static::tokenToString($part);
                     if ($part->kind === TokenKind::Name) {
-                        if (\preg_match('@__(LINE|FILE|DIR|FUNCTION|CLASS|TRAIT|METHOD|NAMESPACE)__@i', $imploded_parts) > 0) {
+                        if (\preg_match('@^__(LINE|FILE|DIR|FUNCTION|CLASS|TRAIT|METHOD|NAMESPACE)__$@i', $imploded_parts) > 0) {
                             return new \ast\Node(
                                 ast\AST_MAGIC_CONST,
                                 self::_MAGIC_CONST_LOOKUP[\strtoupper($imploded_parts)],
@@ -2066,9 +2066,14 @@ class TolerantASTConverter
             if (!($use_clause instanceof PhpParser\Node\NamespaceUseGroupClause)) {
                 continue;
             }
+            $raw_namespace_name = $use_clause->namespaceName;
+            if (!$raw_namespace_name instanceof PhpParser\Node\QualifiedName) {
+                // Invalid AST, ignore. We should have already warned about the syntax
+                continue;
+            }
             // ast doesn't fill in an alias if it's identical to the real name,
             // but phpParser does?
-            $namespace_name = \rtrim(static::phpParserNameToString($use_clause->namespaceName), '\\');
+            $namespace_name = \rtrim(static::phpParserNameToString($raw_namespace_name), '\\');
             $alias_token = $use_clause->namespaceAliasingClause->name ?? null;
             $alias = $alias_token !== null ? static::tokenToString($alias_token) : null;
 
@@ -2150,6 +2155,9 @@ class TolerantASTConverter
         $stmts = [];
         $node_line = static::getEndLine($node) ?? $start_line;
         foreach ($node->caseStatements as $case) {
+            if (!($case instanceof PhpParser\Node\CaseStatementNode)) {
+                continue;
+            }
             $case_line = static::getEndLine($case);
             $stmts[] = new ast\Node(
                 ast\AST_SWITCH_CASE,

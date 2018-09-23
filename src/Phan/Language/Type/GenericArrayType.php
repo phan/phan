@@ -465,6 +465,9 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
             $key_type_enum = GenericArrayType::KEY_EMPTY;
             // Check the all elements for key types.
             foreach ($children as $child) {
+                if (!($child instanceof Node)) {
+                    continue;
+                }
                 // Don't bother recursing more than one level to iterate over possible types.
                 $key_node = $child->children['key'];
                 if ($key_node instanceof Node) {

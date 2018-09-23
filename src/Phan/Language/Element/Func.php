@@ -261,7 +261,23 @@ class Func extends AddressableElement implements FunctionInterface
 
             // FIXME properly handle self/static in closures declared within methods.
             if ($union_type->hasSelfType()) {
-                throw new AssertionError("Function unexpectedly referencing self in $context");
+                $union_type = $union_type->makeFromFilter(function (Type $type) : bool {
+                    return !$type->isSelfType();
+                });
+                if ($context->isInClassScope()) {
+                    $union_type = $union_type->withType(
+                        $context->getClassFQSEN()->asType()
+                    );
+                } else {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::ContextNotObjectUsingSelf,
+                        $comment->getReturnLineno(),
+                        'self',
+                        $fqsen
+                    );
+                }
             }
 
             $func->setUnionType($func->getUnionType()->withUnionType($union_type));

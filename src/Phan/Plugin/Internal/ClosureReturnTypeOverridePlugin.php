@@ -37,8 +37,10 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
     {
         if (($arg_array_node instanceof Node) && $arg_array_node->kind === \ast\AST_ARRAY) {
             $arguments = [];
-            // TODO: Sanity check keys.
             foreach ($arg_array_node->children as $child) {
+                if (!($child instanceof Node)) {
+                    continue;
+                }
                 $arguments[] = $child->children['value'];
             }
             return $arguments;

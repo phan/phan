@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types=1)
 class C89 {
     function __toString() { return 'str'; }
 }

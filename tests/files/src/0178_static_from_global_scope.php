@@ -1,6 +1,6 @@
 <?php
 
-class C {
+class C178 {
     /** @return static */
     static function instance() {
         return new static;
@@ -13,10 +13,10 @@ class C {
 
 }
 
-class D extends C {}
+class D178 extends C178 {}
 
-class E {}
-function g(E $p) {}
+class E178 {}
+function g(E178 $p) {}
 
-g(D::instance()->f());
-g(C::instance()->f());
+g(D178::instance()->f());
+g(C178::instance()->f());

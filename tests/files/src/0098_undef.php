@@ -1,12 +1,12 @@
 <?php
 
-class C {}
+class C98 {}
 
 // Issue::UndeclaredClassCatch
 try {} catch (Undef $exception) {}
 
 // Issue::UndeclaredStaticMethod
-C::staticMethod();
+C98::staticMethod();
 
 // Issue::UndeclaredClassInstanceof
 $v = null;
@@ -16,31 +16,31 @@ if ($v instanceof Undef) {}
 function f(Undef $p) {}
 
 // Issue::UndeclaredTypeProperty
-class D { /** @var Undef */ public $p; }
+class D98 { /** @var Undef */ public $p; }
 
 // Issue::UndeclaredClassInherit
-class E extends Undef {}
+class E98 extends Undef {}
 
 // Issue::ParentlessClass
-class F { function f() { $v = parent::f(); } }
+class F98 { function f() { $v = parent::f(); } }
 
 // Issue::UndeclaredProperty
-$v = (new C)->undef;
+$v = (new C98)->undef;
 
 // TODO: Issue::?
-(new C)->undef = 'str';
+(new C98)->undef = 'str';
 
 // TODO: Issue::UndeclaredClassMethod
 function g(Undef $v) { $v->f(); }
 
 // Issue::TraitParentReference
-trait T { function f() { return parent::f(); } }
+trait T98 { function f() { return parent::f(); } }
 
 // Issue::UndeclaredClassParent
-class G { function f() { parent::f(); } }
+class G98 { function f() { parent::f(); } }
 
 // Issue::UndeclaredParentClass
-class H extends Undef {}
+class H98 extends Undef {}
 
 // Issue::UndeclaredTypeReturnType
 function j() : Undef {throw new RuntimeException('not implemented');}
