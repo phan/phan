@@ -1,0 +1,1 @@
+src/048_invalid_class.php:4 PhanSyntaxError syntax error, unexpected '0' (T_LNUMBER)

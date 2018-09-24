@@ -1,0 +1,2 @@
+src/045_invalid_assign_in_condition.php:3 PhanInvalidNode Expected left side of assignment to be a variable
+src/045_invalid_assign_in_condition.php:3 PhanSyntaxError syntax error, unexpected '='

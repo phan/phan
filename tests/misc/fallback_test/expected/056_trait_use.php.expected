@@ -1,0 +1,2 @@
+src/056_trait_use.php:11 PhanInvalidTraitUse Invalid trait use: Expected the insteadof method's name to be a string
+src/056_trait_use.php:11 PhanSyntaxError syntax error, unexpected '$'

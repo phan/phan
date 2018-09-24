@@ -451,7 +451,15 @@ final class MiscParamPlugin extends PluginV2 implements
             // TODO: Could be more nuanced and account for possibly undefined types in the combination.
 
             // TODO: Handle unexpected types of flags and prefix and warn, low priority
-            $flags = isset($args[1]) ? (new ContextNode($code_base, $context, $args[1]))->getEquivalentPHPScalarValue() : null;
+            if (isset($args[1])) {
+                $flags = (new ContextNode($code_base, $context, $args[1]))->getEquivalentPHPScalarValue();
+                if (!is_int($flags)) {
+                    // Could warn here, low priority
+                    $flags = null;
+                }
+            } else {
+                $flags = null;
+            }
 
             $prefix = isset($args[2]) ? (new ContextNode($code_base, $context, $args[2]))->getEquivalentPHPScalarValue() : null;
 

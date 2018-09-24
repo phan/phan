@@ -14,15 +14,18 @@ echo "Running phan in '$PWD' ..."
 rm $ACTUAL_PATH -f || exit 1
 ../../../phan --use-fallback-parser 2>&1 | tee $ACTUAL_PATH
 # normalize output for https://github.com/phan/phan/issues/1130
-sed -i "s/ syntax error, unexpected return (T_RETURN)/ syntax error, unexpected 'return' (T_RETURN)/" $ACTUAL_PATH
-sed -i "s/ syntax error, unexpected new (T_NEW)/ syntax error, unexpected 'new' (T_NEW)/" $ACTUAL_PATH
-# This warns in php 7.0 only, but the important thing to test is that the fallback doesn't crash.
-sed -i "/src\/018_list_expression_18\.php:2 PhanSyntaxError syntax error, unexpected '0'/d" $ACTUAL_PATH
 # This has a varying order for src/020_issue.php
 sed -i "s/anonymous_class_\w\+/anonymous_class_%s/g" $ACTUAL_PATH $EXPECTED_PATH
-# This isn't emitted in newer PHP versions
-sed -i "/PhanSyntaxError syntax error, unexpected ',', expecting ']'/d" $ACTUAL_PATH
-sed -i "/030_crash_extract_type.php:3 PhanSyntaxError syntax error, unexpected ',', expecting ')'/d" $ACTUAL_PATH
+# Normalize output that is seen only in certain minor version ranges
+sed -i \
+    -e "s/ syntax error, unexpected return (T_RETURN)/ syntax error, unexpected 'return' (T_RETURN)/" \
+    -e "s/ syntax error, unexpected new (T_NEW)/ syntax error, unexpected 'new' (T_NEW)/" \
+    -e "/src\/018_list_expression_18\.php:2 PhanSyntaxError syntax error, unexpected '0'/d" \
+    -e "/PhanSyntaxError syntax error, unexpected ',', expecting ']'/d" \
+    -e "/030_crash_extract_type.php:3 PhanSyntaxError syntax error, unexpected ',', expecting ')'/d" \
+    -e "s/047_invalid_define.php:3 PhanSyntaxError syntax error, unexpected 'a' (T_STRING), expecting ',' or ')'/047_invalid_define.php:3 PhanSyntaxError syntax error, unexpected 'a' (T_STRING), expecting ')'/" \
+    -e "s/052_invalid_assign_ref.php:3 PhanSyntaxError syntax error, unexpected '=', expecting ',' or ')'/052_invalid_assign_ref.php:3 PhanSyntaxError syntax error, unexpected '=', expecting ')'/" \
+    $ACTUAL_PATH
 
 # diff returns a non-zero exit code if files differ or are missing
 echo

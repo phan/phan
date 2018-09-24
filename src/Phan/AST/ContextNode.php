@@ -211,10 +211,20 @@ class ContextNode
         $trait_original_method_name = $trait_method_node->children['method'];
         $trait_new_method_name = $adaptation_node->children['alias'] ?? $trait_original_method_name;
         if (!\is_string($trait_original_method_name)) {
-            throw new AssertionError("Expected original method name of a trait use to be a string");
+            $this->emitIssue(
+                Issue::InvalidTraitUse,
+                $trait_original_class_name_node->lineno ?? 0,
+                "Expected original method name of a trait use to be a string"
+            );
+            return;
         }
         if (!\is_string($trait_new_method_name)) {
-            throw new AssertionError("Expected new method name of a trait use to be a string");
+            $this->emitIssue(
+                Issue::InvalidTraitUse,
+                $trait_original_class_name_node->lineno ?? 0,
+                "Expected new method name of a trait use to be a string"
+            );
+            return;
         }
         $trait_fqsen = (new ContextNode(
             $this->code_base,
@@ -291,7 +301,12 @@ class ContextNode
         $trait_chosen_method_name = $trait_method_node->children['method'];
         $trait_chosen_class_name_node = $trait_method_node->children['class'];
         if (!is_string($trait_chosen_method_name)) {
-            throw new AssertionError("Expected the insteadof method's name to be a string");
+            $this->emitIssue(
+                Issue::InvalidTraitUse,
+                $trait_method_node->lineno ?? 0,
+                "Expected the insteadof method's name to be a string"
+            );
+            return;
         }
 
         $trait_chosen_fqsen = (new ContextNode(
@@ -352,6 +367,7 @@ class ContextNode
      * A variable name associated with the given node
      *
      * TODO: Deprecate this and use more precise ways to locate the desired element
+     * TODO: Distinguish between the empty string and the lack of a name
      */
     public function getVariableName() : string
     {
@@ -373,8 +389,8 @@ class ContextNode
             return (string)$node;
         }
 
-        $name_node = $node->children['name'] ?? null;
-        if (empty($name_node)) {
+        $name_node = $node->children['name'] ?? '';
+        if ($name_node === '') {
             return '';
         }
 
@@ -755,6 +771,10 @@ class ContextNode
         $code_base = $this->code_base;
         $context = $this->context;
 
+        if (!($expression instanceof Node)) {
+            // TODO: this might need to account for 'myFunction'()
+            return;
+        }
         if ($expression->kind == ast\AST_VAR) {
             $variable_name = (new ContextNode(
                 $code_base,
@@ -1158,7 +1178,11 @@ class ContextNode
 
         // Give up for things like C::$prop_name
         if (!\is_string($property_name)) {
-            $property_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $property_name);
+            if ($property_name instanceof Node) {
+                $property_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $property_name);
+            } else {
+                $property_name = (string)$property_name;
+            }
             if (!\is_string($property_name)) {
                 throw new NodeException(
                     $node,

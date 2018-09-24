@@ -12,9 +12,10 @@ if [[ $? != 0 ]]; then
 fi
 echo "Running phan in '$PWD' ..."
 rm $ACTUAL_PATH -f || exit 1
-../../../phan | tee $ACTUAL_PATH
+# Run phan, using the fallback parser only if the AST is invalid
+../../../phan --use-fallback-parser | tee $ACTUAL_PATH
 # diff returns a non-zero exit code if files differ or are missing
-# This outputs the 
+# This outputs the
 echo
 echo "Comparing the output:"
 diff $EXPECTED_PATH $ACTUAL_PATH

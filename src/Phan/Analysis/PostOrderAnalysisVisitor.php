@@ -2939,20 +2939,23 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         $variable = null;
         if ($argument->kind == \ast\AST_VAR) {
-            $variable = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $argument
-            ))->getOrCreateVariable();
-        } elseif ($argument->kind == \ast\AST_STATIC_PROP) {
             try {
-                // TODO: shouldn't call getOrCreateProperty for a static property. You can't create a static property.
                 $variable = (new ContextNode(
                     $this->code_base,
                     $this->context,
                     $argument
-                ))->getOrCreateProperty(
-                    $argument->children['prop'] ?? '',
+                ))->getOrCreateVariable();
+            } catch (NodeException $_) {
+                // Could not figure out the node name
+                return;
+            }
+        } elseif ($argument->kind == \ast\AST_STATIC_PROP) {
+            try {
+                $variable = (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $argument
+                ))->getProperty(
                     true
                 );
             } catch (UnanalyzableException $_) {

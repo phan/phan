@@ -498,6 +498,9 @@ class ConditionVisitor extends KindVisitorImplementation
 
             // Get the type that we're checking it against
             $class_node = $node->children['class'];
+            if (!($class_node instanceof Node)) {
+                return $context;
+            }
             $type = UnionTypeVisitor::unionTypeFromNode(
                 $this->code_base,
                 $this->context,
@@ -874,7 +877,7 @@ class ConditionVisitor extends KindVisitorImplementation
         if ($last_expression instanceof Node) {
             return $this($last_expression);
         } else {
-            // TODO: emit no-op warning
+            // Other code should warn about this invalid AST
             return $this->context;
         }
     }
@@ -894,6 +897,10 @@ class ConditionVisitor extends KindVisitorImplementation
     {
         $context = (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssign($node);
         $left = $node->children['var'];
+        if (!($left instanceof Node)) {
+            // Other code should warn about this invalid AST
+            return $context;
+        }
         return (new self($this->code_base, $context))->__invoke($left);
     }
 
@@ -911,6 +918,10 @@ class ConditionVisitor extends KindVisitorImplementation
     {
         $context = (new BlockAnalysisVisitor($this->code_base, $this->context))->visitAssignRef($node);
         $left = $node->children['var'];
+        if (!($left instanceof Node)) {
+            // TODO: Ensure this always warns
+            return $context;
+        }
         return (new self($this->code_base, $context))->__invoke($left);
     }
 }
