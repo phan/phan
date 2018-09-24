@@ -950,7 +950,7 @@ EOT;
     {
         $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
         $diagnostics_response = $this->awaitResponse($proc_out);
-        $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method']);
+        $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method'] ?? null, "Unexpected response: " . json_encode($diagnostics_response));
         $uri = $diagnostics_response['params']['uri'];
         $this->assertSame($uri, $requested_uri);
         $diagnostics = $diagnostics_response['params']['diagnostics'];
