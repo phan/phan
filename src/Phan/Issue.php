@@ -24,6 +24,7 @@ class Issue
     const InvalidConstantExpression      = 'PhanInvalidConstantExpression';
     const InvalidNode                    = 'PhanInvalidNode';
     const InvalidWriteToTemporaryExpression = 'PhanInvalidWriteToTemporaryExpression';
+    const InvalidTraitUse                = 'PhanInvalidTraitUse';
 
     // Issue::CATEGORY_UNDEFINED
     const AmbiguousTraitAliasSource = 'PhanAmbiguousTraitAliasSource';
@@ -572,6 +573,14 @@ class Issue
                 "Cannot use temporary expression (of type {TYPE}) in write context",
                 self::REMEDIATION_A,
                 17003
+            ),
+            new Issue(
+                self::InvalidTraitUse,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                'Invalid trait use: {DETAILS}',
+                self::REMEDIATION_A,
+                17004
             ),
 
             // Issue::CATEGORY_UNDEFINED

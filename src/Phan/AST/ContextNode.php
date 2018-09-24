@@ -211,10 +211,20 @@ class ContextNode
         $trait_original_method_name = $trait_method_node->children['method'];
         $trait_new_method_name = $adaptation_node->children['alias'] ?? $trait_original_method_name;
         if (!\is_string($trait_original_method_name)) {
-            throw new AssertionError("Expected original method name of a trait use to be a string");
+            $this->emitIssue(
+                Issue::InvalidTraitUse,
+                $trait_original_class_name_node->lineno ?? 0,
+                "Expected original method name of a trait use to be a string"
+            );
+            return;
         }
         if (!\is_string($trait_new_method_name)) {
-            throw new AssertionError("Expected new method name of a trait use to be a string");
+            $this->emitIssue(
+                Issue::InvalidTraitUse,
+                $trait_original_class_name_node->lineno ?? 0,
+                "Expected new method name of a trait use to be a string"
+            );
+            return;
         }
         $trait_fqsen = (new ContextNode(
             $this->code_base,
@@ -291,7 +301,12 @@ class ContextNode
         $trait_chosen_method_name = $trait_method_node->children['method'];
         $trait_chosen_class_name_node = $trait_method_node->children['class'];
         if (!is_string($trait_chosen_method_name)) {
-            throw new AssertionError("Expected the insteadof method's name to be a string");
+            $this->emitIssue(
+                Issue::InvalidTraitUse,
+                $trait_method_node->lineno ?? 0,
+                "Expected the insteadof method's name to be a string"
+            );
+            return;
         }
 
         $trait_chosen_fqsen = (new ContextNode(
