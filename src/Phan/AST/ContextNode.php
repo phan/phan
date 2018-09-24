@@ -1945,7 +1945,7 @@ class ContextNode
                     $node->lineno,
                     "Cannot use empty array elements in arrays"
                 );
-                return null;
+                continue;
             }
             $key_node = ($flags & self::RESOLVE_ARRAY_KEYS) != 0 ? $child_node->children['key'] : null;
             $value_node = $child_node->children['value'];
