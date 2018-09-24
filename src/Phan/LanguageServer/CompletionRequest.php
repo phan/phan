@@ -4,9 +4,11 @@ namespace Phan\LanguageServer;
 use Exception;
 use Phan\CodeBase;
 use Phan\Language\Element\AddressableElementInterface;
+use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\LanguageServer\Protocol\CompletionContext;
 use Phan\LanguageServer\Protocol\CompletionItem;
+use Phan\LanguageServer\Protocol\CompletionItemKind;
 use Phan\LanguageServer\Protocol\Position;
 
 /**
@@ -92,14 +94,19 @@ final class CompletionRequest extends NodeInfoRequest
 
     private function labelForElement(AddressableElementInterface $element) : string
     {
-        return "TODO:" . $element->getFQSEN();
+        return $element->getName();
     }
 
     /**
-     * @return null placeholder
+     * @return ?int
      */
-    private function kindForElement(AddressableElementInterface $unused_element)
+    private function kindForElement(AddressableElementInterface $element)
     {
+        if ($element instanceof Property) {
+            return CompletionItemKind::PROPERTY;
+        } elseif ($element instanceof Method) {
+            return CompletionItemKind::METHOD;
+        }
         // TODO: Implement
         return null;
     }

@@ -5,6 +5,7 @@ use InvalidArgumentException;
 use Phan\Issue;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Protocol\ClientCapabilities;
+use Phan\LanguageServer\Protocol\CompletionItemKind;
 use Phan\LanguageServer\Protocol\CompletionTriggerKind;
 use Phan\LanguageServer\Protocol\MarkupContent;
 use Phan\LanguageServer\Protocol\Position;
@@ -201,10 +202,24 @@ EOT;
         }
     }
 
-    public function testCompletion()
+    /**
+     * @dataProvider completionProvider
+     */
+    public function testCompletion(Position $position, array $expected_completions)
     {
-        // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon(true);
+        if (function_exists('pcntl_fork')) {
+            $this->runTestCompletionWithPcntlSetting($position, $expected_completions, true);
+        }
+        $this->runTestCompletionWithPcntlSetting($position, $expected_completions, false);
+    }
+
+    public function runTestCompletionWithPcntlSetting(
+        Position $position,
+        array $expected_completions,
+        bool $pcntl_enabled
+    ) {
+        $this->messageId = 0;
+        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon($pcntl_enabled);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
@@ -215,6 +230,7 @@ class MyExample {
     public $myInstanceVar = 3;
 }
 echo MyExample::$  // line 5
+echo MyExample::$my
 EOT;
             $this->writeDidChangeNotificationToDefaultFile($proc_in, $new_file_contents);
             $this->assertHasNonEmptyPublishDiagnosticsNotification($proc_out);
@@ -222,20 +238,10 @@ EOT;
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
             // NOTE: Line numbers are 0-based for Position
             // TODO: Should I shift this back a character in the request?
-            $completion_response = $this->writeCompletionRequestAndAwaitResponse($proc_in, $proc_out, new Position(5, 16));
+            $completion_response = $this->writeCompletionRequestAndAwaitResponse($proc_in, $proc_out, $position);
 
             $this->assertSame([
-                'result' => [
-                    [
-                        'label' => 'TODO:\MyExample::myVar',
-                        'kind' => null,
-                        'detail' => 'int',
-                        'documentation' => null,
-                        'sortText' => null,
-                        'filterText' => null,
-                        'insertText' => '$myVar',
-                    ],
-                ],
+                'result' => $expected_completions,
                 'id' => 2,
                 'jsonrpc' => '2.0',
             ], $completion_response);
@@ -250,6 +256,25 @@ EOT;
             fclose($proc_out);
             proc_close($proc);
         }
+    }
+
+    public function completionProvider() : array
+    {
+        $staticPropertyCompletions = [
+            [
+                'label' => 'myVar',
+                'kind' => CompletionItemKind::PROPERTY,
+                'detail' => 'int',
+                'documentation' => null,
+                'sortText' => null,
+                'filterText' => null,
+                'insertText' => '$myVar',
+            ],
+        ];
+        return [
+            [new Position(5, 17), $staticPropertyCompletions],
+            [new Position(6, 19), $staticPropertyCompletions],
+        ];
     }
 
     /**

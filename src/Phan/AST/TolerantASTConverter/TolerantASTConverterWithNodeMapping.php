@@ -109,9 +109,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
             $parser_node = static::phpParserParse($file_contents, $errors);
             self::findNodeAtOffset($parser_node, $byte_offset);
             // fwrite(STDERR, "Seeking node: " . json_encode(self::$closest_node_or_token, JSON_PRETTY_PRINT) . "nearby: " . json_encode(self::$closest_node_or_token_symbol, JSON_PRETTY_PRINT) . "\n");
-            $result = $this->phpParserToPhpast($parser_node, $version, $file_contents);
-            fwrite(STDERR, \Phan\Debug::nodeToString($result));
-            return $result;
+            return $this->phpParserToPhpast($parser_node, $version, $file_contents);
         } catch (Throwable $e) {
             // fprintf(STDERR, "saw exception: %s\n", $e->getMessage());
             throw $e;
@@ -258,7 +256,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      */
     private static function markNodeAsSelected($n, $ast_node)
     {
-        fwrite(STDERR, "Marking corresponding node as flagged: " . json_encode($n) . "\n" . json_encode($ast_node) . "\n");
+        // fwrite(STDERR, "Marking corresponding node as flagged: " . json_encode($n) . "\n" . json_encode($ast_node) . "\n");
         // fflush(STDERR);
         if ($ast_node instanceof ast\Node) {
             if (self::$closest_node_or_token_symbol !== null) {
@@ -277,7 +275,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
                 $ast_node->isSelectedApproximate = self::$closest_node_or_token_symbol;
                 $ast_node->selectedFragment = $fragment;
             }
-            fwrite(STDERR, "Marking node with kind $ast_node->kind as selected\n");
+            // fwrite(STDERR, "Marking node with kind $ast_node->kind as selected\n");
             $ast_node->isSelected = true;
             $closure = self::$handle_selected_node;
             if ($closure) {
