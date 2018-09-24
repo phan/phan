@@ -367,6 +367,7 @@ class ContextNode
      * A variable name associated with the given node
      *
      * TODO: Deprecate this and use more precise ways to locate the desired element
+     * TODO: Distinguish between the empty string and the lack of a name
      */
     public function getVariableName() : string
     {
@@ -388,8 +389,8 @@ class ContextNode
             return (string)$node;
         }
 
-        $name_node = $node->children['name'] ?? null;
-        if (empty($name_node)) {
+        $name_node = $node->children['name'] ?? '';
+        if ($name_node === '') {
             return '';
         }
 

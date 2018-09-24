@@ -2939,11 +2939,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         $variable = null;
         if ($argument->kind == \ast\AST_VAR) {
-            $variable = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $argument
-            ))->getOrCreateVariable();
+            try {
+                $variable = (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $argument
+                ))->getOrCreateVariable();
+            } catch (NodeException $_) {
+                // Could not figure out the node name
+                return;
+            }
         } elseif ($argument->kind == \ast\AST_STATIC_PROP) {
             try {
                 $variable = (new ContextNode(
