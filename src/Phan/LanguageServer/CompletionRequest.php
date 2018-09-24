@@ -3,14 +3,11 @@ namespace Phan\LanguageServer;
 
 use Exception;
 use Phan\CodeBase;
-use Phan\Exception\CodeBaseException;
-use Phan\Language\Context;
 use Phan\Language\Element\AddressableElementInterface;
-use Phan\Language\Element\Prop;
+use Phan\Language\Element\Property;
 use Phan\LanguageServer\Protocol\CompletionContext;
 use Phan\LanguageServer\Protocol\CompletionItem;
 use Phan\LanguageServer\Protocol\Position;
-use Sabre\Event\Promise;
 
 /**
  * Represents the Language Server Protocol's "Completion" request for an element
@@ -24,16 +21,8 @@ use Sabre\Event\Promise;
  *
  * @phan-file-suppress PhanUnusedPublicMethodParameter
  */
-final class CompletionRequest
+final class CompletionRequest extends NodeInfoRequest
 {
-    /** @var string file URI */
-    private $uri;
-    /** @var string absolute path for $this->uri */
-    private $path;
-    /** @var Position */
-    private $position;
-    /** @var Promise|null */
-    private $promise;
     /** @var CompletionContext|null */
     private $completion_context;
 
@@ -47,11 +36,25 @@ final class CompletionRequest
         Position $position,
         CompletionContext $completion_context = null
     ) {
-        $this->uri = $uri;
-        $this->path = Utils::uriToPath($uri);
-        $this->position = $position;
-        $this->promise = new Promise();
+        parent::__construct($uri, $position);
         $this->completion_context = $completion_context;
+    }
+
+    /**
+     * @param ?Location|?array<int,Location> $locations
+     * @return void
+     */
+    public function recordCompletionList($completions)
+    {
+        if ($completions instanceof CompletionItem || isset($completions['uri'])) {
+            $completions = [$completions];
+        }
+        foreach ($completions ?? [] as $completion) {
+            if (is_array($completion)) {
+                $completion = CompletionItem::fromArray($completion);
+            }
+            $this->recordCompletionItem($completion);
+        }
     }
 
     /**
@@ -64,19 +67,41 @@ final class CompletionRequest
         CodeBase $code_base,
         AddressableElementInterface $element
     ) {
-        $item = $this->createCompletionItem($element);
+        $item = $this->createCompletionItem($code_base, $element);
+        $this->recordCompletionItem($item);
+    }
+
+    private function recordCompletionItem(CompletionItem $item)
+    {
         $this->completions[$item->insertText] = $item;
     }
 
-    private function createCompletionItem(AddressableElementInterface $element) : CompletionItem
+    private function createCompletionItem(CodeBase $unused_code_base, AddressableElementInterface $element) : CompletionItem
     {
         $item = new CompletionItem();
         $item->label = $this->labelForElement($element);
         $item->kind = $this->kindForElement($element);
         $item->detail = (string)$element->getUnionType();  // TODO: Better summary
         // TODO: Add documentation
-        if ($element instanceof Prop && $element->isStatic()) {
+        // TODO: Migrate to the non-deprecated version
+        if ($element instanceof Property && $element->isStatic()) {
+            $item->insertText = '$' . $element->getName();
         }
+        return $item;
+    }
+
+    private function labelForElement(AddressableElementInterface $element) : string
+    {
+        return "TODO:" . $element->getFQSEN();
+    }
+
+    /**
+     * @return null placeholder
+     */
+    private function kindForElement(AddressableElementInterface $unused_element)
+    {
+        // TODO: Implement
+        return null;
     }
 
     /**
@@ -95,30 +120,6 @@ final class CompletionRequest
             $promise->fulfill($result);
             $this->promise = null;
         }
-    }
-
-    /**
-     * @suppress PhanUnreferencedPublicMethod TODO: Compare against the context->getPath() to be sure we're looking up the right node
-     */
-    public function getUrl() : string
-    {
-        return $this->uri;
-    }
-
-    public function getPath() : string
-    {
-        return $this->path;
-    }
-
-    public function getPosition() : Position
-    {
-        return $this->position;
-    }
-
-    /** @return ?Promise */
-    public function getPromise()
-    {
-        return $this->promise;
     }
 
     public function __destruct()

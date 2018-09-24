@@ -126,14 +126,14 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     protected $analyze_request_set = [];
 
     /**
-     * @var ?GoToDefinitionRequest
+     * @var ?NodeInfoRequest
      *
      * Contains the promise for the most recent "Go to definition" request
      * If more than one such request exists, the earlier requests will be discarded.
      *
      * TODO: Will need to Resolve(null) for the older requests.
      */
-    protected $most_recent_definition_request = null;
+    protected $most_recent_node_info_request = null;
 
     /**
      * Constructs the only instance of the language server
@@ -412,14 +412,10 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $path_to_analyze = Utils::uriToPath($uri);
         $logType = $is_type_definition_request ? 'awaitTypeDefinition' : 'awaitDefinition';
         Logger::logInfo("Called LanguageServer->$logType, uri=$uri, position=" . json_encode($position));
-        $prev_definition_request = $this->most_recent_definition_request;
-        if ($prev_definition_request) {
-            // Discard the previous request silently
-            $prev_definition_request->finalize();
-        }
         $type = $is_type_definition_request ? GoToDefinitionRequest::REQUEST_TYPE_DEFINITION : GoToDefinitionRequest::REQUEST_DEFINITION;
+        $this->discardPreviousNodeInfoRequest();
         $request = new GoToDefinitionRequest($uri, $position, $type);
-        $this->most_recent_definition_request = $request;
+        $this->most_recent_node_info_request = $request;
 
         // We analyze this url so that Phan is aware enough of the types and namespace maps to trigger "Go to definition"
         // E.g. going to the definition of `Bar` in `use Foo as Bar; Bar::method();` requires parsing other statements in this file, not just the name in question.
@@ -441,13 +437,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         // TODO: Add a way to "go to definition" without emitting analysis results as a side effect
         $path_to_analyze = Utils::uriToPath($uri);
         Logger::logInfo("Called LanguageServer->awaitHover, uri=$uri, position=" . json_encode($position));
-        $prev_definition_request = $this->most_recent_definition_request;
-        if ($prev_definition_request) {
-            // Discard the previous request silently
-            $prev_definition_request->finalize();
-        }
+        $this->discardPreviousNodeInfoRequest();
         $request = new GoToDefinitionRequest($uri, $position, GoToDefinitionRequest::REQUEST_HOVER);
-        $this->most_recent_definition_request = $request;
+        $this->most_recent_node_info_request = $request;
 
         // We analyze this url so that Phan is aware enough of the types and namespace maps to trigger "Go to definition"
         // E.g. going to the definition of `Bar` in `use Foo as Bar; Bar::method();` requires parsing other statements in this file, not just the name in question.
@@ -469,13 +461,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         // TODO: Add a way to "go to definition" without emitting analysis results as a side effect
         $path_to_analyze = Utils::uriToPath($uri);
         Logger::logInfo("Called LanguageServer->awaitCompletion, uri=$uri, position=" . json_encode($position));
-        $prev_definition_request = $this->most_recent_definition_request;
-        if ($prev_definition_request) {
-            // Discard the previous request silently
-            $prev_definition_request->finalize();
-        }
-        $request = new GoToDefinitionRequest($uri, $position, GoToDefinitionRequest::REQUEST_COMPLETION, $completion_context);
-        $this->most_recent_definition_request = $request;
+        $this->discardPreviousNodeInfoRequest();
+        $request = new CompletionRequest($uri, $position, $completion_context);
+        $this->most_recent_node_info_request = $request;
 
         // We analyze this url so that Phan is aware enough of the types and namespace maps to trigger "Go to definition"
         // E.g. going to the definition of `Bar` in `use Foo as Bar; Bar::method();` requires parsing other statements in this file, not just the name in question.
@@ -483,6 +471,16 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         // NOTE: This also ensures that we will run analysis, because of the check for analyze_request_set being non-empty
         $this->analyze_request_set[$path_to_analyze] = $uri;
         return $request->getPromise();
+    }
+
+    private function discardPreviousNodeInfoRequest()
+    {
+        $prev_node_info_request = $this->most_recent_node_info_request;
+        if ($prev_node_info_request) {
+            // Discard the previous request silently
+            $prev_node_info_request->finalize();
+            $this->most_recent_node_info_request = null;
+        }
     }
 
     /**
@@ -525,12 +523,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $uris_to_analyze = $this->getFilteredURIsToAnalyze();
         // TODO: Add a better abstraction of
         if (\count($uris_to_analyze) === 0) {
-            // Do the same thing as Request->rejectLanguageServerRequestsRequiringAnalysis(), we haven't created a request yet.
-            $most_recent_definition_request = $this->most_recent_definition_request;
-            if ($most_recent_definition_request) {
-                $most_recent_definition_request->finalize();
-                $this->most_recent_definition_request = null;
-            }
+            // Discard any node info requests, we haven't created a request yet.
+            $this->discardPreviousNodeInfoRequest();
             return;
         }
 
@@ -591,7 +585,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $this->code_base,
             $this->file_path_lister,
             $this->file_mapping,
-            $this->most_recent_definition_request,
+            $this->most_recent_node_info_request,
             true  // We are the fork. Call exit() instead of throwing ExitException
         );
         // FIXME update the parsed file lists before and after (e.g. add to analyzeURI). See Daemon\Request::accept()
@@ -625,7 +619,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $code_base,
             $this->file_path_lister,
             $this->file_mapping,
-            $this->most_recent_definition_request,
+            $this->most_recent_node_info_request,
             false  // We aren't forking. Throw ExitException instead of calling exit()
         );
 
@@ -679,13 +673,17 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     private function handleJSONResponseFromWorker(array $uris_to_analyze, array $response_data)
     {
-        $most_recent_definition_request = $this->most_recent_definition_request;
-        if ($most_recent_definition_request) {
-            $most_recent_definition_request->recordDefinitionLocationList($response_data['definitions'] ?? null);
-            $most_recent_definition_request->finalize();
+        $most_recent_node_info_request = $this->most_recent_node_info_request;
+        if ($most_recent_node_info_request) {
+            if ($most_recent_node_info_request instanceof GoToDefinitionRequest) {
+                $most_recent_node_info_request->recordDefinitionLocationList($response_data['definitions'] ?? null);
+            } elseif ($most_recent_node_info_request instanceof CompletionRequest) {
+                $most_recent_node_info_request->recordCompletionList($response_data['completions'] ?? null);
+            }
+            $most_recent_node_info_request->finalize();
         }
 
-        $this->most_recent_definition_request = null;
+        $this->most_recent_node_info_request = null;
         if (!\array_key_exists('issues', $response_data)) {
             Logger::logInfo("Failed to fetch 'issues' from JSON:" . json_encode($response_data));
             return;
