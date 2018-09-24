@@ -212,8 +212,9 @@ EOT;
 <?php  // line 0
 class MyExample {
     public static $myVar = 2;
+    public $myInstanceVar = 3;
 }
-echo MyExample::$  // line 4
+echo MyExample::$  // line 5
 EOT;
             $this->writeDidChangeNotificationToDefaultFile($proc_in, $new_file_contents);
             $this->assertHasNonEmptyPublishDiagnosticsNotification($proc_out);
@@ -221,10 +222,20 @@ EOT;
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
             // NOTE: Line numbers are 0-based for Position
             // TODO: Should I shift this back a character in the request?
-            $completion_response = $this->writeCompletionRequestAndAwaitResponse($proc_in, $proc_out, new Position(4, 16));
+            $completion_response = $this->writeCompletionRequestAndAwaitResponse($proc_in, $proc_out, new Position(5, 16));
 
             $this->assertSame([
-                'result' => null,
+                'result' => [
+                    [
+                        'label' => 'TODO:\MyExample::myVar',
+                        'kind' => null,
+                        'detail' => 'int',
+                        'documentation' => null,
+                        'sortText' => null,
+                        'filterText' => null,
+                        'insertText' => '$myVar',
+                    ],
+                ],
                 'id' => 2,
                 'jsonrpc' => '2.0',
             ], $completion_response);

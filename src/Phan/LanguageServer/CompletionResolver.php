@@ -22,7 +22,7 @@ class CompletionResolver
      * and "go to type definition" in their implementations,
      * based on $request->getIsTypeDefinitionRequest()
      */
-    public static function createGoToDefinitionClosure(CompletionRequest $request, CodeBase $code_base)
+    public static function createCompletionClosure(CompletionRequest $request, CodeBase $code_base)
     {
         return function (Context $context, Node $node) use ($request, $code_base) {
             // @phan-suppress-next-line PhanUndeclaredProperty this is overridden

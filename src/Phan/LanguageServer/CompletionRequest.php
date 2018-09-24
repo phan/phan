@@ -41,12 +41,12 @@ final class CompletionRequest extends NodeInfoRequest
     }
 
     /**
-     * @param ?Location|?array<int,Location> $locations
+     * @param ?CompletionItem|?array<int,CompletionItem> $completions
      * @return void
      */
     public function recordCompletionList($completions)
     {
-        if ($completions instanceof CompletionItem || isset($completions['uri'])) {
+        if ($completions instanceof CompletionItem || isset($completions['label'])) {
             $completions = [$completions];
         }
         foreach ($completions ?? [] as $completion) {

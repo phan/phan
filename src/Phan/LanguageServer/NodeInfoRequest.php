@@ -33,28 +33,28 @@ abstract class NodeInfoRequest
     }
 
     /** @return void */
-    public abstract function finalize();
+    abstract public function finalize();
 
     /**
      * @suppress PhanUnreferencedPublicMethod TODO: Compare against the context->getPath() to be sure we're looking up the right node
      */
-    public final function getUrl() : string
+    final public function getUrl() : string
     {
         return $this->uri;
     }
 
-    public final function getPath() : string
+    final public function getPath() : string
     {
         return $this->path;
     }
 
-    public final function getPosition() : Position
+    final public function getPosition() : Position
     {
         return $this->position;
     }
 
     /** @return ?Promise */
-    public final function getPromise()
+    final public function getPromise()
     {
         return $this->promise;
     }

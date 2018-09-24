@@ -14,6 +14,7 @@ use Phan\Issue;
 use Phan\Language\FileRef;
 use Phan\LanguageServer\Protocol\ClientCapabilities;
 use Phan\LanguageServer\Protocol\CompletionContext;
+use Phan\LanguageServer\Protocol\CompletionItem;
 use Phan\LanguageServer\Protocol\CompletionOptions;
 use Phan\LanguageServer\Protocol\Diagnostic;
 use Phan\LanguageServer\Protocol\DiagnosticSeverity;
@@ -668,7 +669,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
     /**
      * @param array<string,string> $uris_to_analyze
-     * @param array{issues:array,definitions?:?Location|?(Location[])} $response_data
+     * @param array{issues:array,definitions?:?Location|?(Location[]),completions?:?(CompletionItem[])} $response_data
      * @return void
      */
     private function handleJSONResponseFromWorker(array $uris_to_analyze, array $response_data)

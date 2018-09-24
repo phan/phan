@@ -88,7 +88,7 @@ class Request
 
     /**
      * @param array{method:string,files:array<int,string>,format:string,temporary_file_mapping_contents:array<string,string>} $config
-     * @param ?GoToDefinitionRequest $most_recent_node_info_request
+     * @param ?NodeInfoRequest $most_recent_node_info_request
      */
     private function __construct(Responder $responder, array $config, $most_recent_node_info_request, bool $should_exit)
     {
@@ -227,8 +227,11 @@ class Request
             "issue_count" => $issue_count,
             "issues" => $issues,
         ];
-        if ($this->most_recent_node_info_request) {
-            $response['definitions'] = $this->most_recent_node_info_request->getDefinitionLocations();
+        $most_recent_node_info_request = $this->most_recent_node_info_request;
+        if ($most_recent_node_info_request instanceof GoToDefinitionRequest) {
+            $response['definitions'] = $most_recent_node_info_request->getDefinitionLocations();
+        } elseif ($most_recent_node_info_request instanceof CompletionRequest) {
+            $response['completions'] = $most_recent_node_info_request->getCompletions();
         }
         $this->sendJSONResponse($response);
     }
@@ -288,9 +291,9 @@ class Request
     }
 
     /**
-     * @return ?GoToDefinitionRequest
+     * @return ?NodeInfoRequest
      */
-    public function getMostRecentGoToDefinitionRequest()
+    public function getMostRecentNodeInfoRequest()
     {
         return $this->most_recent_node_info_request;
     }
