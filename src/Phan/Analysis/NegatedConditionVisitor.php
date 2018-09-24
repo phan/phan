@@ -934,7 +934,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         $left = $node->children['var'];
         if (!($left instanceof Node)) {
             // Other code should warn about this invalid AST
-            return $this->context;
+            return $context;
         }
         return (new self($this->code_base, $context))->__invoke($left);
     }
@@ -955,7 +955,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         $left = $node->children['var'];
         if (!($left instanceof Node)) {
             // Other code should warn about this invalid AST
-            return $this->context;
+            return $context;
         }
         return (new self($this->code_base, $context))->__invoke($left);
     }
