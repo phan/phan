@@ -1,0 +1,1 @@
+src/057_invalid_prop.php:8 PhanUndeclaredStaticProperty Static property '0' on \C57 is undeclared

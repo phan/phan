@@ -1177,7 +1177,11 @@ class ContextNode
 
         // Give up for things like C::$prop_name
         if (!\is_string($property_name)) {
-            $property_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $property_name);
+            if ($property_name instanceof Node) {
+                $property_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $property_name);
+            } else {
+                $property_name = (string)$property_name;
+            }
             if (!\is_string($property_name)) {
                 throw new NodeException(
                     $node,
