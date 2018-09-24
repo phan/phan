@@ -101,7 +101,7 @@ class RegexKeyExtractor
     {
         $pattern = \trim($pattern);
 
-        $start_chr = $pattern[0];
+        $start_chr = $pattern[0] ?? '/';
         // @phan-suppress-next-line PhanParamSuspiciousOrder this is deliberate
         $i = stripos('({[', $start_chr);
         if ($i !== false) {
