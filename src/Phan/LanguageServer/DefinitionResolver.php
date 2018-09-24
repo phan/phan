@@ -138,6 +138,32 @@ class DefinitionResolver
      */
     public static function locatePropDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
     {
+        if ($request->getIsCompletionRequest()) {
+            self::locatePropCompletion($request, $code_base, $context, $node);
+            return;
+        }
+        $is_static = $node->kind === ast\AST_STATIC_PROP;
+        try {
+            $property = (new ContextNode($code_base, $context, $node))->getProperty($is_static);
+        } catch (NodeException $_) {
+            return; // ignore
+        } catch (IssueException $_) {
+            return; // ignore
+        } catch (CodeBaseException $_) {
+            return; // ignore
+        }
+        $request->recordDefinitionElement($code_base, $property, true);
+    }
+
+    /**
+     * @return void
+     */
+    public static function locatePropCompletion(
+        GoToDefinitionRequest $request,
+        CodeBase $code_base,
+        Context $context,
+        Node $node
+    ) {
         $is_static = $node->kind === ast\AST_STATIC_PROP;
         try {
             $property = (new ContextNode($code_base, $context, $node))->getProperty($is_static);

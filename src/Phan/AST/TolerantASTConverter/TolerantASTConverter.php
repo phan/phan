@@ -615,12 +615,21 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Expression\ScopedPropertyAccessExpression' => function (PhpParser\Node\Expression\ScopedPropertyAccessExpression $n, int $start_line) {
                 $member_name = $n->memberName;
                 if ($member_name instanceof PhpParser\Node\Expression\Variable) {
+                    try {
+                        $prop_node = static::phpParserNodeToAstNode($member_name->name);
+                    } catch (InvalidNodeException $e) {
+                        if (self::$should_add_placeholders) {
+                            $prop_node = '';
+                        } else {
+                            throw $e;
+                        }
+                    }
                     return new ast\Node(
                         ast\AST_STATIC_PROP,
                         0,
                         [
                             'class' => static::phpParserNonValueNodeToAstNode($n->scopeResolutionQualifier),
-                            'prop' => static::phpParserNodeToAstNode($member_name->name),
+                            'prop' => $prop_node,
                         ],
                         $start_line
                     );

@@ -24,18 +24,16 @@ use Phan\LanguageServer\Protocol\Position;
 use Sabre\Event\Promise;
 
 /**
- * Represents the Language Server Protocol's "Go to Definition" or "Go to Type Definition" or "Hover" request for a usage of an Element
- * (class, property, function-like, constant, etc.)
+ * Represents the Language Server Protocol's "Completion" request for an element
+ * (property, method, class constant, etc.)
  *
- * @see https://microsoft.github.io/language-server-protocol/specification#textDocument_definition
- * @see https://microsoft.github.io/language-server-protocol/specification#textDocument_typeDefinition
- * @see https://microsoft.github.io/language-server-protocol/specification#textDocument_hover
+ * @see https://microsoft.github.io/language-server-protocol/specification#textDocument_completion
  *
- * @see \Phan\LanguageServer\DefinitionResolver for how this maps the found node to the type in the context.
+ * @see \Phan\LanguageServer\CompletionResolver for how this maps the found node to the type in the context.
  * @see \Phan\Plugin\Internal\NodeSelectionPlugin for how the node is found
  * @see \Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping for how isSelected is set
  */
-final class GoToDefinitionRequest
+final class CompletionRequest
 {
     /** @var string file URI */
     private $uri;
@@ -45,36 +43,23 @@ final class GoToDefinitionRequest
     private $position;
     /** @var Promise|null */
     private $promise;
-    /** @var int self::REQUEST_* */
-    private $request_type;
     /** @var CompletionContext|null */
     private $completion_context;
 
     /**
-     * @var array<string,Location> the list of locations for a "Go to [Type] Definition" request
+     * @var array<string,CompletionItem> the list of completion items.
      */
-    private $locations = [];
-
-    /**
-     * @var ?Hover the list of locations for a "Hover" request
-     */
-    private $hover_response = null;
-
-    const REQUEST_DEFINITION = 0;
-    const REQUEST_TYPE_DEFINITION = 1;
-    const REQUEST_HOVER = 2;
+    private $completions = [];
 
     public function __construct(
         string $uri,
         Position $position,
-        int $request_type,
         CompletionContext $completion_context = null
     ) {
         $this->uri = $uri;
         $this->path = Utils::uriToPath($uri);
         $this->position = $position;
         $this->promise = new Promise();
-        $this->request_type = $request_type;
         $this->completion_context = $completion_context;
     }
 
@@ -349,6 +334,11 @@ final class GoToDefinitionRequest
     public function getIsHoverRequest() : bool
     {
         return $this->request_type === self::REQUEST_HOVER;
+    }
+
+    public function getIsCompletionRequest() : bool
+    {
+        return $this->request_type === self::REQUEST_COMPLETION;
     }
 
     public function __destruct()

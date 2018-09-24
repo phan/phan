@@ -61,7 +61,7 @@ final class LanguageServerIntegrationTest extends BaseTest
             $this->markTestSkipped('requires pcntl extension');
         }
         $command = sprintf(
-            '%s -d %s --quick --language-server-on-stdin --language-server-enable-hover --language-server-enable-go-to-definition %s',
+            '%s -d %s --quick --use-fallback-parser --language-server-on-stdin --language-server-enable-hover --language-server-enable-go-to-definition %s',
             escapeshellarg(__DIR__ . '/../../../phan'),
             escapeshellarg(self::getLSPFolder()),
             ($pcntlEnabled ? '' : '--language-server-force-missing-pcntl')
@@ -220,7 +220,8 @@ EOT;
 
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
             // NOTE: Line numbers are 0-based for Position
-            $completion_response = $this->writeCompletionRequestAndAwaitResponse($proc_in, $proc_out, new Position(4, 17));
+            // TODO: Should I shift this back a character in the request?
+            $completion_response = $this->writeCompletionRequestAndAwaitResponse($proc_in, $proc_out, new Position(4, 16));
 
             $this->assertSame([
                 'result' => null,

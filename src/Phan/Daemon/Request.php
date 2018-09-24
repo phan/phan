@@ -114,6 +114,19 @@ class Request
     }
 
     /**
+     * @param string $file_path an absolute or relative path to be analyzed
+     */
+    public function shouldAddPlaceholdersForPath(string $file_path) : bool
+    {
+        $most_recent_definition_request = $this->most_recent_definition_request;
+        if ($most_recent_definition_request) {
+            return $most_recent_definition_request->getPath() === Config::projectPath($file_path) &&
+                $most_recent_definition_request->getIsCompletionRequest();
+        }
+        return false;
+    }
+
+    /**
      * @return int
      */
     public function getTargetByteOffset(string $file_contents) : int
