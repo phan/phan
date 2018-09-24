@@ -55,17 +55,23 @@ class CompletionResolver
      */
     public static function locatePropCompletion(CompletionRequest $request, CodeBase $code_base, Context $context, Node $node)
     {
+        $prop_name = $node->children['prop'];
+        if (!is_string($prop_name)) {
+            return;
+        }
 
         // Find all of the classes on the left hand side
         // TODO: Filter by properties that match $node->children['prop']
         $is_static = $node->kind === ast\AST_STATIC_PROP;
         $expected_type_categories = $is_static ? ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME : ContextNode::CLASS_LIST_ACCEPT_OBJECT;
         $expected_issue = $is_static ? Issue::TypeExpectedObjectStaticPropAccess : Issue::TypeExpectedObjectPropAccess;
+
         $class_list_generator = (new ContextNode(
             $code_base,
             $context,
             $node->children['class'] ?? $node->children['expr']
         ))->getClassList(true, $expected_type_categories, $expected_issue);
+
 
         // And find all of the instance/static properties that can be used as completions
         foreach ($class_list_generator as $class) {
@@ -73,7 +79,7 @@ class CompletionResolver
                 if ($prop->isStatic() !== $is_static) {
                     continue;
                 }
-                $request->recordCompletionElement($code_base, $prop);
+                $request->recordCompletionElement($code_base, $prop, '$' . $prop_name);
             }
         }
     }

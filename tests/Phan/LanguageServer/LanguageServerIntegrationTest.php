@@ -241,7 +241,10 @@ EOT;
             $completion_response = $this->writeCompletionRequestAndAwaitResponse($proc_in, $proc_out, $position);
 
             $this->assertSame([
-                'result' => $expected_completions,
+                'result' => [
+                    'isIncomplete' => false,
+                    'items' => $expected_completions,
+                ],
                 'id' => 2,
                 'jsonrpc' => '2.0',
             ], $completion_response);
@@ -265,15 +268,18 @@ EOT;
                 'label' => 'myVar',
                 'kind' => CompletionItemKind::PROPERTY,
                 'detail' => 'int',
-                'documentation' => null,
+                'documentation' => 'TODO',
                 'sortText' => null,
                 'filterText' => null,
-                'insertText' => '$myVar',
+                'insertText' => 'myVar',
             ],
         ];
+        $staticPropertyCompletionsSubstr = $staticPropertyCompletions;
+        $staticPropertyCompletionsSubstr[0]['insertText'] = 'Var';
+
         return [
             [new Position(5, 17), $staticPropertyCompletions],
-            [new Position(6, 19), $staticPropertyCompletions],
+            [new Position(6, 19), $staticPropertyCompletionsSubstr],
         ];
     }
 

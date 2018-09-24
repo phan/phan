@@ -9,6 +9,7 @@ use Phan\Language\Element\Property;
 use Phan\LanguageServer\Protocol\CompletionContext;
 use Phan\LanguageServer\Protocol\CompletionItem;
 use Phan\LanguageServer\Protocol\CompletionItemKind;
+use Phan\LanguageServer\Protocol\CompletionList;
 use Phan\LanguageServer\Protocol\Position;
 
 /**
@@ -67,9 +68,10 @@ final class CompletionRequest extends NodeInfoRequest
      */
     public function recordCompletionElement(
         CodeBase $code_base,
-        AddressableElementInterface $element
+        AddressableElementInterface $element,
+        string $prefix = null
     ) {
-        $item = $this->createCompletionItem($code_base, $element);
+        $item = $this->createCompletionItem($code_base, $element, $prefix);
         $this->recordCompletionItem($item);
     }
 
@@ -78,17 +80,26 @@ final class CompletionRequest extends NodeInfoRequest
         $this->completions[$item->insertText] = $item;
     }
 
-    private function createCompletionItem(CodeBase $unused_code_base, AddressableElementInterface $element) : CompletionItem
-    {
+    private function createCompletionItem(
+        CodeBase $unused_code_base,
+        AddressableElementInterface $element,
+        string $prefix = null
+    ) : CompletionItem {
         $item = new CompletionItem();
         $item->label = $this->labelForElement($element);
         $item->kind = $this->kindForElement($element);
-        $item->detail = (string)$element->getUnionType();  // TODO: Better summary
-        // TODO: Add documentation
-        // TODO: Migrate to the non-deprecated version
+        $item->detail = (string)$element->getUnionType() ?: 'detail';  // TODO: Better summary
+        $item->documentation = 'TODO';  // TODO: Better summary, use phpdoc summary
+
+        $insert_text = $element->getName();
         if ($element instanceof Property && $element->isStatic()) {
-            $item->insertText = '$' . $element->getName();
+            $insert_text = '$' . $element->getName();
         }
+        if (is_string($prefix) && strncmp($insert_text, $prefix, strlen($prefix)) === 0) {
+            $insert_text = (string)substr($insert_text, strlen($prefix));
+        }
+
+        $item->insertText = $insert_text;
         return $item;
     }
 
@@ -124,7 +135,7 @@ final class CompletionRequest extends NodeInfoRequest
         $promise = $this->promise;
         if ($promise) {
             $result = $this->completions ? array_values($this->completions) : null;
-            $promise->fulfill($result);
+            $promise->fulfill($result !== null ? new CompletionList($result) : null);
             $this->promise = null;
         }
     }
