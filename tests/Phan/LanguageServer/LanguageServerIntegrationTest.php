@@ -5,6 +5,7 @@ use InvalidArgumentException;
 use Phan\Issue;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Protocol\ClientCapabilities;
+use Phan\LanguageServer\Protocol\CompletionTriggerKind;
 use Phan\LanguageServer\Protocol\MarkupContent;
 use Phan\LanguageServer\Protocol\Position;
 use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
@@ -187,6 +188,45 @@ EOT;
                 'id' => 2,
                 'jsonrpc' => '2.0',
             ], $definition_response);
+
+            $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
+            $this->writeExitNotification($proc_in);
+        } finally {
+            fclose($proc_in);
+            // TODO: Make these pipes async if they aren't already
+            $unread_contents = fread($proc_out, 10000);
+            $this->assertSame('', $unread_contents);
+            fclose($proc_out);
+            proc_close($proc);
+        }
+    }
+
+    public function testCompletion()
+    {
+        // TODO: Move this into an OOP abstraction, add time limits, etc.
+        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon(true);
+        try {
+            $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
+            $this->writeInitializedNotification($proc_in);
+            $new_file_contents = <<<'EOT'
+<?php  // line 0
+class MyExample {
+    public static $myVar = 2;
+}
+echo MyExample::$  // line 4
+EOT;
+            $this->writeDidChangeNotificationToDefaultFile($proc_in, $new_file_contents);
+            $this->assertHasNonEmptyPublishDiagnosticsNotification($proc_out);
+
+            // Request the definition of the class "MyExample" with the cursor in the middle of that word
+            // NOTE: Line numbers are 0-based for Position
+            $completion_response = $this->writeCompletionRequestAndAwaitResponse($proc_in, $proc_out, new Position(4, 17));
+
+            $this->assertSame([
+                'result' => null,
+                'id' => 2,
+                'jsonrpc' => '2.0',
+            ], $completion_response);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
@@ -901,6 +941,21 @@ EOT;
         $this->assertSame([], $diagnostics);
     }
 
+    /**
+     * @param resource $proc_out
+     * @return void
+     */
+    private function assertHasNonEmptyPublishDiagnosticsNotification($proc_out, string $requested_uri = null)
+    {
+        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
+        $diagnostics_response = $this->awaitResponse($proc_out);
+        $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method']);
+        $uri = $diagnostics_response['params']['uri'];
+        $this->assertSame($uri, $requested_uri);
+        $diagnostics = $diagnostics_response['params']['diagnostics'];
+        $this->assertNotSame([], $diagnostics);
+    }
+
     public function pcntlEnabledProvider() : array
     {
         return [
@@ -968,7 +1023,10 @@ EOT;
                         'willSaveWaitUntil' => null,
                         'save' => ['includeText' => true],
                     ],
-                    'completionProvider' => true,
+                    'completionProvider' => [
+                        'resolveProvider' => false,
+                        'triggerCharacters' => ['$', '>'],
+                    ],
                     'definitionProvider' => true,
                     'typeDefinitionProvider' => true,
                     'hoverProvider' => true,
@@ -1000,6 +1058,37 @@ EOT;
         $this->writeMessage($proc_in, 'textDocument/definition', $params);
         if (self::shouldExpectDiagnosticNotificationForURI($requested_uri)) {
             $this->assertHasEmptyPublishDiagnosticsNotification($proc_out, $requested_uri);
+        }
+
+        $response = $this->awaitResponse($proc_out);
+
+        return $response;
+    }
+
+    /**
+     * @param resource $proc_in
+     * @param resource $proc_out
+     * @return array the response
+     * @throws InvalidArgumentException
+     */
+    private function writeCompletionRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null)
+    {
+        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
+        // Implementation detail: We simultaneously emit a notification with new diagnostics
+        // and the response for the definition request at the same time, even if files didn't change.
+
+        // NOTE: That could probably be refactored, but there's not much benefit to doing that.
+        $params = [
+            'textDocument' => new TextDocumentIdentifier($requested_uri),
+            'position' => $position,
+            'context' => [
+                'triggerKind' => CompletionTriggerKind::TRIGGER_CHARACTER,
+                'triggerCharacter' => '$',
+            ],
+        ];
+        $this->writeMessage($proc_in, 'textDocument/completion', $params);
+        if (self::shouldExpectDiagnosticNotificationForURI($requested_uri)) {
+            $this->assertHasNonEmptyPublishDiagnosticsNotification($proc_out, $requested_uri);
         }
 
         $response = $this->awaitResponse($proc_out);
