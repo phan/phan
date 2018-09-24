@@ -80,6 +80,7 @@ class CLI
         'language-server-enable',
         'language-server-enable-go-to-definition',
         'language-server-enable-hover',
+        'language-server-enable-completion',
         'markdown-issue-messages',
         'memory-limit:',
         'minimum-severity:',
