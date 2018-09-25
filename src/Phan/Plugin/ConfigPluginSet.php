@@ -21,7 +21,10 @@ use Phan\Language\Element\UnaddressableTypedElement;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Phan\LanguageServer\CompletionRequest;
+use Phan\LanguageServer\CompletionResolver;
 use Phan\LanguageServer\DefinitionResolver;
+use Phan\LanguageServer\GoToDefinitionRequest;
 use Phan\Library\RAII;
 use Phan\Plugin\Internal\ArrayReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\BuiltinSuppressionPlugin;
@@ -615,12 +618,18 @@ final class ConfigPluginSet extends PluginV2 implements
         if (!$request) {
             return null;
         }
-        $go_to_definition_request = $request->getMostRecentGoToDefinitionRequest();
-        if (!$go_to_definition_request) {
+        $node_info_request = $request->getMostRecentNodeInfoRequest();
+        if (!$node_info_request) {
             return null;
         }
         $node_selection_plugin = new NodeSelectionPlugin();
-        $node_selection_plugin->setNodeSelectorClosure(DefinitionResolver::createGoToDefinitionClosure($go_to_definition_request, $code_base));
+        if ($node_info_request instanceof GoToDefinitionRequest) {
+            $node_selection_plugin->setNodeSelectorClosure(DefinitionResolver::createGoToDefinitionClosure($node_info_request, $code_base));
+        } elseif ($node_info_request instanceof CompletionRequest) {
+            $node_selection_plugin->setNodeSelectorClosure(CompletionResolver::createCompletionClosure($node_info_request, $code_base));
+        } else {
+            throw new AssertionError("Unknown subclass of NodeInfoRequest - Should not happen");
+        }
         $this->node_selection_plugin = $node_selection_plugin;
 
         $old_post_analyze_node_plugin_set = $this->post_analyze_node_plugin_set;

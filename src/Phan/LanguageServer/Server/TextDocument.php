@@ -8,6 +8,7 @@ use Phan\LanguageServer\FileMapping;
 use Phan\LanguageServer\LanguageClient;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Logger;
+use Phan\LanguageServer\Protocol\CompletionContext;
 use Phan\LanguageServer\Protocol\Position;
 use Phan\LanguageServer\Protocol\TextDocumentContentChangeEvent;
 use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
@@ -244,5 +245,36 @@ class TextDocument
             return null;
         }
         return $this->server->awaitHover($uri, $position);
+    }
+
+    /**
+     * Implements textDocument/completion, to compute completion items at a given cursor position.
+     *
+     * TODO: Implement support for the cancel request LSP operation?
+     *
+     * @param TextDocumentIdentifier $textDocument @phan-unused-param
+     * @param Position $position @phan-unused-param
+     * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
+     * @return ?Promise <CompletionItem[]|CompletionList>
+     */
+    public function completion(TextDocumentIdentifier $textDocument, Position $position, CompletionContext $context = null)
+    {
+        if (!Config::getValue('language_server_enable_completion')) {
+            // Placeholder to avoid a performance degradation on clients
+            // that aren't respecting the configuration.
+            //
+            // (computing completion response may or may not slow down those clients)
+            return null;
+        }
+        try {
+            $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
+        } catch (InvalidArgumentException $e) {
+            Logger::logError(sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            return null;
+        }
+        // Workaround: Phan needs the cursor to be on the character that's within the expression in order to select it.
+        // So shift the cursor left by one.
+        $position->character = max(0, $position->character - 1);
+        return $this->server->awaitCompletion($uri, $position, $context);
     }
 }

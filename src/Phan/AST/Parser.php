@@ -115,7 +115,6 @@ class Parser
         // But if the user would see the syntax error, go ahead and retry.
 
         $converter = new TolerantASTConverter();
-        $converter->setShouldAddPlaceholders(false);
         $converter->setPHPVersionId(Config::get_closest_target_php_version_id());
         $converter->setParseAllDocComments(Config::getValue('polyfill_parse_all_element_doc_comments'));
         $errors = [];
@@ -144,7 +143,6 @@ class Parser
     public static function parseCodePolyfill(CodeBase $code_base, Context $context, string $file_path, string $file_contents, bool $suppress_parse_errors, $request)
     {
         $converter = self::createConverter($file_path, $file_contents, $request);
-        $converter->setShouldAddPlaceholders(false);
         $converter->setPHPVersionId(Config::get_closest_target_php_version_id());
         $converter->setParseAllDocComments(Config::getValue('polyfill_parse_all_element_doc_comments'));
         $errors = [];
@@ -200,13 +198,17 @@ class Parser
     {
         if ($request && $request->shouldUseMappingPolyfill($file_path)) {
             // TODO: Rename to something better
-            return new TolerantASTConverterWithNodeMapping(
+            $converter = new TolerantASTConverterWithNodeMapping(
                 $request->getTargetByteOffset($file_contents),
                 function (Node $node) {
                     // @phan-suppress-next-line PhanAccessMethodInternal
                     ConfigPluginSet::instance()->prepareNodeSelectionPluginForNode($node);
                 }
             );
+            if ($request->shouldAddPlaceholdersForPath($file_path)) {
+                $converter->setShouldAddPlaceholders(true);
+            }
+            return $converter;
         }
 
         return new TolerantASTConverter();

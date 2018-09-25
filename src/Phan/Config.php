@@ -752,6 +752,10 @@ class Config
         // Affects "hover" of LSP.
         'language_server_enable_hover' => false,
 
+        // This should only be set via CLI (--language-server-enable-completion)
+        // Affects "completion" of LSP.
+        'language_server_enable_completion' => false,
+
         // Don't show the category name in issue messages.
         // This makes error messages slightly shorter.
         'language_server_hide_category_of_issues' => false,

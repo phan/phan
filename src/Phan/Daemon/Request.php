@@ -9,8 +9,10 @@ use Phan\Daemon;
 use Phan\Daemon\Transport\Responder;
 use Phan\Language\FileRef;
 use Phan\Language\Type;
+use Phan\LanguageServer\CompletionRequest;
 use Phan\LanguageServer\FileMapping;
 use Phan\LanguageServer\GoToDefinitionRequest;
+use Phan\LanguageServer\NodeInfoRequest;
 use Phan\Library\FileCache;
 use Phan\Output\IssuePrinterInterface;
 use Phan\Output\PrinterFactory;
@@ -71,9 +73,9 @@ class Request
      * The most recent Language Server Protocol request to look up what an element is
      * (e.g. "go to definition", "go to type definition", "hover")
      *
-     * @var ?GoToDefinitionRequest
+     * @var ?NodeInfoRequest
      */
-    private $most_recent_definition_request;
+    private $most_recent_node_info_request;
 
     /**
      * If true, this process will exit() after finishing.
@@ -86,9 +88,9 @@ class Request
 
     /**
      * @param array{method:string,files:array<int,string>,format:string,temporary_file_mapping_contents:array<string,string>} $config
-     * @param ?GoToDefinitionRequest $most_recent_definition_request
+     * @param ?NodeInfoRequest $most_recent_node_info_request
      */
-    private function __construct(Responder $responder, array $config, $most_recent_definition_request, bool $should_exit)
+    private function __construct(Responder $responder, array $config, $most_recent_node_info_request, bool $should_exit)
     {
         $this->responder = $responder;
         $this->config = $config;
@@ -97,7 +99,7 @@ class Request
         if ($this->method === self::METHOD_ANALYZE_FILES) {
             $this->files = $config[self::PARAM_FILES];
         }
-        $this->most_recent_definition_request = $most_recent_definition_request;
+        $this->most_recent_node_info_request = $most_recent_node_info_request;
         $this->should_exit = $should_exit;
     }
 
@@ -106,9 +108,22 @@ class Request
      */
     public function shouldUseMappingPolyfill(string $file_path) : bool
     {
-        $most_recent_definition_request = $this->most_recent_definition_request;
-        if ($most_recent_definition_request) {
-            return $most_recent_definition_request->getPath() === Config::projectPath($file_path);
+        $most_recent_node_info_request = $this->most_recent_node_info_request;
+        if ($most_recent_node_info_request) {
+            return $most_recent_node_info_request->getPath() === Config::projectPath($file_path);
+        }
+        return false;
+    }
+
+    /**
+     * @param string $file_path an absolute or relative path to be analyzed
+     */
+    public function shouldAddPlaceholdersForPath(string $file_path) : bool
+    {
+        $most_recent_node_info_request = $this->most_recent_node_info_request;
+        if ($most_recent_node_info_request) {
+            return $most_recent_node_info_request->getPath() === Config::projectPath($file_path) &&
+                $most_recent_node_info_request instanceof CompletionRequest;
         }
         return false;
     }
@@ -118,9 +133,9 @@ class Request
      */
     public function getTargetByteOffset(string $file_contents) : int
     {
-        $most_recent_definition_request = $this->most_recent_definition_request;
-        if ($most_recent_definition_request) {
-            $position = $most_recent_definition_request->getPosition();
+        $most_recent_node_info_request = $this->most_recent_node_info_request;
+        if ($most_recent_node_info_request) {
+            $position = $most_recent_node_info_request->getPosition();
             return $position->toOffset($file_contents);
         }
         return -1;
@@ -145,7 +160,7 @@ class Request
      * @param CodeBase $code_base (for refreshing parse state)
      * @param Closure $file_path_lister (for refreshing parse state)
      * @param FileMapping $file_mapping object tracking the overrides made by a client.
-     * @param ?GoToDefinitionRequest $most_recent_definition_request contains a promise that we want the resolution of
+     * @param ?NodeInfoRequest $most_recent_node_info_request contains a promise that we want the resolution of
      * @param bool $should_exit - If this is true, calling $this->exit() will terminate the program. If false, ExitException will be thrown.
      */
     public static function makeLanguageServerAnalysisRequest(
@@ -154,7 +169,7 @@ class Request
         CodeBase $code_base,
         Closure $file_path_lister,
         FileMapping $file_mapping,
-        $most_recent_definition_request,
+        $most_recent_node_info_request,
         bool $should_exit
     ) : Request {
         FileCache::clear();
@@ -172,7 +187,7 @@ class Request
                 self::PARAM_FILES => $file_names,
                 self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS => $file_mapping_contents,
             ],
-            $most_recent_definition_request,
+            $most_recent_node_info_request,
             $should_exit
         );
         return $result;
@@ -212,8 +227,11 @@ class Request
             "issue_count" => $issue_count,
             "issues" => $issues,
         ];
-        if ($this->most_recent_definition_request) {
-            $response['definitions'] = $this->most_recent_definition_request->getDefinitionLocations();
+        $most_recent_node_info_request = $this->most_recent_node_info_request;
+        if ($most_recent_node_info_request instanceof GoToDefinitionRequest) {
+            $response['definitions'] = $most_recent_node_info_request->getDefinitionLocations();
+        } elseif ($most_recent_node_info_request instanceof CompletionRequest) {
+            $response['completions'] = $most_recent_node_info_request->getCompletions();
         }
         $this->sendJSONResponse($response);
     }
@@ -273,11 +291,11 @@ class Request
     }
 
     /**
-     * @return ?GoToDefinitionRequest
+     * @return ?NodeInfoRequest
      */
-    public function getMostRecentGoToDefinitionRequest()
+    public function getMostRecentNodeInfoRequest()
     {
-        return $this->most_recent_definition_request;
+        return $this->most_recent_node_info_request;
     }
 
     /**
@@ -285,10 +303,10 @@ class Request
      */
     public function rejectLanguageServerRequestsRequiringAnalysis()
     {
-        $most_recent_definition_request = $this->most_recent_definition_request;
-        if ($most_recent_definition_request) {
-            $most_recent_definition_request->finalize();
-            $this->most_recent_definition_request = null;
+        $most_recent_node_info_request = $this->most_recent_node_info_request;
+        if ($most_recent_node_info_request) {
+            $most_recent_node_info_request->finalize();
+            $this->most_recent_node_info_request = null;
         }
     }
 

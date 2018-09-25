@@ -20,29 +20,21 @@ use Phan\LanguageServer\Protocol\Hover;
 use Phan\LanguageServer\Protocol\Location;
 use Phan\LanguageServer\Protocol\MarkupContent;
 use Phan\LanguageServer\Protocol\Position;
-use Sabre\Event\Promise;
 
 /**
- * Represents the Language Server Protocol's "Go to Definition" or "Go to Type Definition" request for a usage of an Element
+ * Represents the Language Server Protocol's "Go to Definition" or "Go to Type Definition" or "Hover" request for a usage of an Element
  * (class, property, function-like, constant, etc.)
  *
  * @see https://microsoft.github.io/language-server-protocol/specification#textDocument_definition
  * @see https://microsoft.github.io/language-server-protocol/specification#textDocument_typeDefinition
+ * @see https://microsoft.github.io/language-server-protocol/specification#textDocument_hover
  *
  * @see \Phan\LanguageServer\DefinitionResolver for how this maps the found node to the type in the context.
  * @see \Phan\Plugin\Internal\NodeSelectionPlugin for how the node is found
  * @see \Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping for how isSelected is set
  */
-final class GoToDefinitionRequest
+final class GoToDefinitionRequest extends NodeInfoRequest
 {
-    /** @var string file URI */
-    private $uri;
-    /** @var string absolute path for $this->uri */
-    private $path;
-    /** @var Position */
-    private $position;
-    /** @var Promise|null */
-    private $promise;
     /** @var int self::REQUEST_* */
     private $request_type;
 
@@ -60,12 +52,12 @@ final class GoToDefinitionRequest
     const REQUEST_TYPE_DEFINITION = 1;
     const REQUEST_HOVER = 2;
 
-    public function __construct(string $uri, Position $position, int $request_type)
-    {
-        $this->uri = $uri;
-        $this->path = Utils::uriToPath($uri);
-        $this->position = $position;
-        $this->promise = new Promise();
+    public function __construct(
+        string $uri,
+        Position $position,
+        int $request_type
+    ) {
+        parent::__construct($uri, $position);
         $this->request_type = $request_type;
     }
 
@@ -308,30 +300,6 @@ final class GoToDefinitionRequest
         }
     }
 
-    /**
-     * @suppress PhanUnreferencedPublicMethod TODO: Compare against the context->getPath() to be sure we're looking up the right node
-     */
-    public function getUrl() : string
-    {
-        return $this->uri;
-    }
-
-    public function getPath() : string
-    {
-        return $this->path;
-    }
-
-    public function getPosition() : Position
-    {
-        return $this->position;
-    }
-
-    /** @return ?Promise */
-    public function getPromise()
-    {
-        return $this->promise;
-    }
-
     public function getIsTypeDefinitionRequest() : bool
     {
         return $this->request_type === self::REQUEST_TYPE_DEFINITION;
@@ -346,7 +314,7 @@ final class GoToDefinitionRequest
     {
         $promise = $this->promise;
         if ($promise) {
-            $promise->reject(new Exception('Failed to send a valid textDocument/definition result'));
+            $promise->reject(new Exception('Failed to send a valid textDocument/completion result'));
             $this->promise = null;
         }
     }

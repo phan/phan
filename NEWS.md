@@ -3,6 +3,17 @@ Phan NEWS
 ?? ??? 2018, Phan 1.0.6 (dev)
 -----------------------
 
+Language Server/Daemon mode:
++ Add early support for code completion suggestions. (#1706)
+
+  Known bugs: This may insert the prefix of the completed text twice,
+  depending on what language client you are using.
+
+  This can be enabled by passing `--language-server-enable-completion`
+
+  - This will complete global constants, functions, and class names.
+  - This will complete class constants, properties, and method names.
+
 Bug fixes:
 + Fix various uncaught errors in Phan that occurred when parsing invalid ASTs
 

@@ -13,6 +13,9 @@ use Phan\Daemon\Transport\StreamResponder;
 use Phan\Issue;
 use Phan\Language\FileRef;
 use Phan\LanguageServer\Protocol\ClientCapabilities;
+use Phan\LanguageServer\Protocol\CompletionContext;
+use Phan\LanguageServer\Protocol\CompletionItem;
+use Phan\LanguageServer\Protocol\CompletionOptions;
 use Phan\LanguageServer\Protocol\Diagnostic;
 use Phan\LanguageServer\Protocol\DiagnosticSeverity;
 use Phan\LanguageServer\Protocol\InitializeResult;
@@ -124,14 +127,14 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     protected $analyze_request_set = [];
 
     /**
-     * @var ?GoToDefinitionRequest
+     * @var ?NodeInfoRequest
      *
      * Contains the promise for the most recent "Go to definition" request
      * If more than one such request exists, the earlier requests will be discarded.
      *
      * TODO: Will need to Resolve(null) for the older requests.
      */
-    protected $most_recent_definition_request = null;
+    protected $most_recent_node_info_request = null;
 
     /**
      * Constructs the only instance of the language server
@@ -398,7 +401,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     }
 
     /**
-     * Asynchronously generates the definition for a given URL
+     * Asynchronously generates the definition for a given URL and position.
      * @return Promise <Location|Location[]|null>
      */
     public function awaitDefinition(
@@ -410,14 +413,34 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $path_to_analyze = Utils::uriToPath($uri);
         $logType = $is_type_definition_request ? 'awaitTypeDefinition' : 'awaitDefinition';
         Logger::logInfo("Called LanguageServer->$logType, uri=$uri, position=" . json_encode($position));
-        $prev_definition_request = $this->most_recent_definition_request;
-        if ($prev_definition_request) {
-            // Discard the previous request silently
-            $prev_definition_request->finalize();
-        }
         $type = $is_type_definition_request ? GoToDefinitionRequest::REQUEST_TYPE_DEFINITION : GoToDefinitionRequest::REQUEST_DEFINITION;
+        $this->discardPreviousNodeInfoRequest();
         $request = new GoToDefinitionRequest($uri, $position, $type);
-        $this->most_recent_definition_request = $request;
+        $this->most_recent_node_info_request = $request;
+
+        // We analyze this url so that Phan is aware enough of the types and namespace maps to trigger "Go to definition"
+        // E.g. going to the definition of `Bar` in `use Foo as Bar; Bar::method();` requires parsing other statements in this file, not just the name in question.
+        //
+        // NOTE: This also ensures that we will run analysis, because of the check for analyze_request_set being non-empty
+        $this->analyze_request_set[$path_to_analyze] = $uri;
+        return $request->getPromise();
+    }
+
+    /**
+     * Asynchronously generates the hover text for a given URL and position.
+     *
+     * @return Promise <Location|Location[]|null>
+     */
+    public function awaitHover(
+        string $uri,
+        Position $position
+    ) : Promise {
+        // TODO: Add a way to "go to definition" without emitting analysis results as a side effect
+        $path_to_analyze = Utils::uriToPath($uri);
+        Logger::logInfo("Called LanguageServer->awaitHover, uri=$uri, position=" . json_encode($position));
+        $this->discardPreviousNodeInfoRequest();
+        $request = new GoToDefinitionRequest($uri, $position, GoToDefinitionRequest::REQUEST_HOVER);
+        $this->most_recent_node_info_request = $request;
 
         // We analyze this url so that Phan is aware enough of the types and namespace maps to trigger "Go to definition"
         // E.g. going to the definition of `Bar` in `use Foo as Bar; Bar::method();` requires parsing other statements in this file, not just the name in question.
@@ -431,20 +454,17 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * Asynchronously generates the definition for a given URL
      * @return Promise <Location|Location[]|null>
      */
-    public function awaitHover(
+    public function awaitCompletion(
         string $uri,
-        Position $position
+        Position $position,
+        CompletionContext $completion_context = null
     ) : Promise {
         // TODO: Add a way to "go to definition" without emitting analysis results as a side effect
         $path_to_analyze = Utils::uriToPath($uri);
-        Logger::logInfo("Called LanguageServer->awaitHover, uri=$uri, position=" . json_encode($position));
-        $prev_definition_request = $this->most_recent_definition_request;
-        if ($prev_definition_request) {
-            // Discard the previous request silently
-            $prev_definition_request->finalize();
-        }
-        $request = new GoToDefinitionRequest($uri, $position, GoToDefinitionRequest::REQUEST_HOVER);
-        $this->most_recent_definition_request = $request;
+        Logger::logInfo("Called LanguageServer->awaitCompletion, uri=$uri, position=" . json_encode($position));
+        $this->discardPreviousNodeInfoRequest();
+        $request = new CompletionRequest($uri, $position, $completion_context);
+        $this->most_recent_node_info_request = $request;
 
         // We analyze this url so that Phan is aware enough of the types and namespace maps to trigger "Go to definition"
         // E.g. going to the definition of `Bar` in `use Foo as Bar; Bar::method();` requires parsing other statements in this file, not just the name in question.
@@ -452,6 +472,16 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         // NOTE: This also ensures that we will run analysis, because of the check for analyze_request_set being non-empty
         $this->analyze_request_set[$path_to_analyze] = $uri;
         return $request->getPromise();
+    }
+
+    private function discardPreviousNodeInfoRequest()
+    {
+        $prev_node_info_request = $this->most_recent_node_info_request;
+        if ($prev_node_info_request) {
+            // Discard the previous request silently
+            $prev_node_info_request->finalize();
+            $this->most_recent_node_info_request = null;
+        }
     }
 
     /**
@@ -494,12 +524,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $uris_to_analyze = $this->getFilteredURIsToAnalyze();
         // TODO: Add a better abstraction of
         if (\count($uris_to_analyze) === 0) {
-            // Do the same thing as Request->rejectLanguageServerRequestsRequiringAnalysis(), we haven't created a request yet.
-            $most_recent_definition_request = $this->most_recent_definition_request;
-            if ($most_recent_definition_request) {
-                $most_recent_definition_request->finalize();
-                $this->most_recent_definition_request = null;
-            }
+            // Discard any node info requests, we haven't created a request yet.
+            $this->discardPreviousNodeInfoRequest();
             return;
         }
 
@@ -560,7 +586,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $this->code_base,
             $this->file_path_lister,
             $this->file_mapping,
-            $this->most_recent_definition_request,
+            $this->most_recent_node_info_request,
             true  // We are the fork. Call exit() instead of throwing ExitException
         );
         // FIXME update the parsed file lists before and after (e.g. add to analyzeURI). See Daemon\Request::accept()
@@ -594,7 +620,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             $code_base,
             $this->file_path_lister,
             $this->file_mapping,
-            $this->most_recent_definition_request,
+            $this->most_recent_node_info_request,
             false  // We aren't forking. Throw ExitException instead of calling exit()
         );
 
@@ -643,18 +669,22 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
     /**
      * @param array<string,string> $uris_to_analyze
-     * @param array{issues:array,definitions?:?Location|?(Location[])} $response_data
+     * @param array{issues:array,definitions?:?Location|?(Location[]),completions?:?(CompletionItem[])} $response_data
      * @return void
      */
     private function handleJSONResponseFromWorker(array $uris_to_analyze, array $response_data)
     {
-        $most_recent_definition_request = $this->most_recent_definition_request;
-        if ($most_recent_definition_request) {
-            $most_recent_definition_request->recordDefinitionLocationList($response_data['definitions'] ?? null);
-            $most_recent_definition_request->finalize();
+        $most_recent_node_info_request = $this->most_recent_node_info_request;
+        if ($most_recent_node_info_request) {
+            if ($most_recent_node_info_request instanceof GoToDefinitionRequest) {
+                $most_recent_node_info_request->recordDefinitionLocationList($response_data['definitions'] ?? null);
+            } elseif ($most_recent_node_info_request instanceof CompletionRequest) {
+                $most_recent_node_info_request->recordCompletionList($response_data['completions'] ?? null);
+            }
+            $most_recent_node_info_request->finalize();
         }
 
-        $this->most_recent_definition_request = null;
+        $this->most_recent_node_info_request = null;
         if (!\array_key_exists('issues', $response_data)) {
             Logger::logInfo("Failed to fetch 'issues' from JSON:" . json_encode($response_data));
             return;
@@ -807,38 +837,39 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                 );
             }
 
-            $serverCapabilities = new ServerCapabilities();
+            $server_capabilities = new ServerCapabilities();
 
             // FULL: Ask the client to return always return full documents (because we need to rebuild the AST from scratch)
             // NONE: Don't sync until the user explicitly saves a document.
-            $serverCapabilities->textDocumentSync = $this->makeTextDocumentSyncOptions();
+            $server_capabilities->textDocumentSync = $this->makeTextDocumentSyncOptions();
 
             // TODO: Support "Find all symbols"?
-            //$serverCapabilities->documentSymbolProvider = true;
+            //$server_capabilities->documentSymbolProvider = true;
             // TODO: Support "Find all symbols in workspace"?
-            //$serverCapabilities->workspaceSymbolProvider = true;
+            //$server_capabilities->workspaceSymbolProvider = true;
             // XXX do this next?
 
             $supports_go_to_definition = (bool)Config::getValue('language_server_enable_go_to_definition');
-            $serverCapabilities->definitionProvider = $supports_go_to_definition;
-            $serverCapabilities->typeDefinitionProvider = $supports_go_to_definition;
-            $serverCapabilities->hoverProvider = (bool)Config::getValue('language_server_enable_hover');
+            $server_capabilities->definitionProvider = $supports_go_to_definition;
+            $server_capabilities->typeDefinitionProvider = $supports_go_to_definition;
+            $server_capabilities->hoverProvider = (bool)Config::getValue('language_server_enable_hover');
+            if (Config::getValue('language_server_enable_completion')) {
+                // TODO: What about `:`?
+                $completion_provider = new CompletionOptions();
+                $completion_provider->resolveProvider = false;
+                $completion_provider->triggerCharacters = ['$', '>'];
+                $server_capabilities->completionProvider = $completion_provider;
+            }
 
             // TODO: (probably impractical, slow) Support "Find all references"? (We don't track this, except when checking for dead code elimination possibilities.
-            // $serverCapabilities->referencesProvider = false;
+            // $server_capabilities->referencesProvider = false;
             // Can't support "Hover" without phpdoc for internal functions, such as those from phpstorm
-            // XXX support completion next?
-            // Requires php-parser-to-php-ast (or tolerant php-parser)
-            // Support "Completion"
-            // $serverCapabilities->completionProvider = new CompletionOptions;
-            // $serverCapabilities->completionProvider->resolveProvider = false;
-            // $serverCapabilities->completionProvider->triggerCharacters = ['$', '>'];
             // Can't support global references at the moment, I think.
-            //$serverCapabilities->xworkspaceReferencesProvider = true;
-            //$serverCapabilities->xdefinitionProvider = true;
-            //$serverCapabilities->xdependenciesProvider = true;
+            //$server_capabilities->xworkspaceReferencesProvider = true;
+            //$server_capabilities->xdefinitionProvider = true;
+            //$server_capabilities->xdependenciesProvider = true;
 
-            return new InitializeResult($serverCapabilities);
+            return new InitializeResult($server_capabilities);
         });
     }
 

@@ -5,6 +5,8 @@ use InvalidArgumentException;
 use Phan\Issue;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Protocol\ClientCapabilities;
+use Phan\LanguageServer\Protocol\CompletionItemKind;
+use Phan\LanguageServer\Protocol\CompletionTriggerKind;
 use Phan\LanguageServer\Protocol\MarkupContent;
 use Phan\LanguageServer\Protocol\Position;
 use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
@@ -60,7 +62,7 @@ final class LanguageServerIntegrationTest extends BaseTest
             $this->markTestSkipped('requires pcntl extension');
         }
         $command = sprintf(
-            '%s -d %s --quick --language-server-on-stdin --language-server-enable-hover --language-server-enable-go-to-definition %s',
+            '%s -d %s --quick --use-fallback-parser --language-server-on-stdin --language-server-enable-hover --language-server-enable-completion --language-server-enable-go-to-definition %s',
             escapeshellarg(__DIR__ . '/../../../phan'),
             escapeshellarg(self::getLSPFolder()),
             ($pcntlEnabled ? '' : '--language-server-force-missing-pcntl')
@@ -198,6 +200,200 @@ EOT;
             fclose($proc_out);
             proc_close($proc);
         }
+    }
+
+    /**
+     * @dataProvider completionProvider
+     */
+    public function testCompletion(Position $position, array $expected_completions)
+    {
+        if (function_exists('pcntl_fork')) {
+            $this->runTestCompletionWithPcntlSetting($position, $expected_completions, true);
+        }
+        $this->runTestCompletionWithPcntlSetting($position, $expected_completions, false);
+    }
+
+    public function runTestCompletionWithPcntlSetting(
+        Position $position,
+        array $expected_completions,
+        bool $pcntl_enabled
+    ) {
+        $this->messageId = 0;
+        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon($pcntl_enabled);
+        try {
+            $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
+            $this->writeInitializedNotification($proc_in);
+            $this->writeDidChangeNotificationToDefaultFile($proc_in, self::COMPLETION_FILE_CONTENTS);
+            $this->assertHasNonEmptyPublishDiagnosticsNotification($proc_out);
+
+            // Request the definition of the class "MyExample" with the cursor in the middle of that word
+            // NOTE: Line numbers are 0-based for Position
+            // TODO: Should I shift this back a character in the request?
+            $completion_response = $this->writeCompletionRequestAndAwaitResponse($proc_in, $proc_out, $position);
+
+            $expected_completion_response = [
+                'result' => [
+                    'isIncomplete' => false,
+                    'items' => $expected_completions,
+                ],
+                'id' => 2,
+                'jsonrpc' => '2.0',
+            ];
+            $this->assertEquals($expected_completion_response, $completion_response, "Failed completions at $position->line:$position->character");
+            $this->assertSame($expected_completion_response, $completion_response);
+
+            $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
+            $this->writeExitNotification($proc_in);
+        } finally {
+            fclose($proc_in);
+            // TODO: Make these pipes async if they aren't already
+            $unread_contents = fread($proc_out, 10000);
+            $this->assertSame('', $unread_contents);
+            fclose($proc_out);
+            proc_close($proc);
+        }
+    }
+
+    // Here, we use a prefix of M9 to avoid suggesting MYSQLI_...
+    const COMPLETION_FILE_CONTENTS = <<<'EOT'
+<?php namespace { // line 0
+class M9Example {
+    public static $myVar = 2;
+    public $myInstanceVar = 3;
+    public static function my_static_function () {}
+    const my_class_const = ['literalString'];  // line 5
+}
+
+
+
+echo M9Example::$  // line 10
+echo M9Example::$my
+echo M9Example::
+;
+
+function M9GlobalFunction() : array {  // line 15
+    return [];
+}
+const M9GlobalConst = 42;
+define('M9OtherGlobalConst', 43);
+echo M9  // line 20
+echo "test\n";
+echo InnerNS\M
+
+}  // end global namespace
+// line 25
+
+
+namespace InnerNS {
+
+// line 30
+const M9AnotherConst = 33;
+class M9InnerClass {}
+/** @return array<int,int>  */
+function M9InnerFunction() { return [2]; }
+
+}
+EOT;
+
+    public function completionProvider() : array
+    {
+        $propertyCompletionItem = [
+            'label' => 'myVar',
+            'kind' => CompletionItemKind::PROPERTY,
+            'detail' => 'int',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => 'myVar',
+        ];
+        $myClassConstantItem = [
+            'label' => 'my_class_const',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => "array{0:'literalString'}",
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myClassClassItem = [
+            'label' => 'class',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => "'M9Example'",
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $methodCompletionItem = [
+            'label' => 'my_static_function',
+            'kind' => CompletionItemKind::METHOD,
+            'detail' => 'mixed',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myClassItem = [
+            'label' => 'M9Example',
+            'kind' => CompletionItemKind::CLASS_,
+            'detail' => '\M9Example',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myGlobalConstantItem = [
+            'label' => 'M9GlobalConst',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => '42',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myOtherGlobalConstantItem = [
+            'label' => 'M9OtherGlobalConst',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => '43',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myGlobalFunctionItem = [
+            'label' => 'M9GlobalFunction',
+            'kind' => CompletionItemKind::FUNCTION,
+            'detail' => 'array',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $staticPropertyCompletions = [
+            $propertyCompletionItem,
+        ];
+        $staticPropertyCompletionsSubstr = [
+            array_merge($propertyCompletionItem, ['insertText' => 'Var']),
+        ];
+        $allStaticCompletions = [
+            $propertyCompletionItem,
+            $myClassConstantItem,
+            $myClassClassItem,
+            $methodCompletionItem,
+        ];
+        $allConstantCompletions = [
+            $myGlobalConstantItem,
+            $myOtherGlobalConstantItem,
+            $myClassItem,
+            $myGlobalFunctionItem,
+        ];
+
+        return [
+            [new Position(10, 17), $staticPropertyCompletions],
+            [new Position(11, 19), $staticPropertyCompletionsSubstr],
+            [new Position(12, 16), $allStaticCompletions],
+            [new Position(20, 7), $allConstantCompletions],
+        ];
     }
 
     /**
@@ -901,6 +1097,21 @@ EOT;
         $this->assertSame([], $diagnostics);
     }
 
+    /**
+     * @param resource $proc_out
+     * @return void
+     */
+    private function assertHasNonEmptyPublishDiagnosticsNotification($proc_out, string $requested_uri = null)
+    {
+        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
+        $diagnostics_response = $this->awaitResponse($proc_out);
+        $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method'] ?? null, "Unexpected response: " . json_encode($diagnostics_response));
+        $uri = $diagnostics_response['params']['uri'];
+        $this->assertSame($uri, $requested_uri);
+        $diagnostics = $diagnostics_response['params']['diagnostics'];
+        $this->assertNotSame([], $diagnostics);
+    }
+
     public function pcntlEnabledProvider() : array
     {
         return [
@@ -968,6 +1179,10 @@ EOT;
                         'willSaveWaitUntil' => null,
                         'save' => ['includeText' => true],
                     ],
+                    'completionProvider' => [
+                        'resolveProvider' => false,
+                        'triggerCharacters' => ['$', '>'],
+                    ],
                     'definitionProvider' => true,
                     'typeDefinitionProvider' => true,
                     'hoverProvider' => true,
@@ -999,6 +1214,37 @@ EOT;
         $this->writeMessage($proc_in, 'textDocument/definition', $params);
         if (self::shouldExpectDiagnosticNotificationForURI($requested_uri)) {
             $this->assertHasEmptyPublishDiagnosticsNotification($proc_out, $requested_uri);
+        }
+
+        $response = $this->awaitResponse($proc_out);
+
+        return $response;
+    }
+
+    /**
+     * @param resource $proc_in
+     * @param resource $proc_out
+     * @return array the response
+     * @throws InvalidArgumentException
+     */
+    private function writeCompletionRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null)
+    {
+        $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
+        // Implementation detail: We simultaneously emit a notification with new diagnostics
+        // and the response for the definition request at the same time, even if files didn't change.
+
+        // NOTE: That could probably be refactored, but there's not much benefit to doing that.
+        $params = [
+            'textDocument' => new TextDocumentIdentifier($requested_uri),
+            'position' => $position,
+            'context' => [
+                'triggerKind' => CompletionTriggerKind::TRIGGER_CHARACTER,
+                'triggerCharacter' => '$',
+            ],
+        ];
+        $this->writeMessage($proc_in, 'textDocument/completion', $params);
+        if (self::shouldExpectDiagnosticNotificationForURI($requested_uri)) {
+            $this->assertHasNonEmptyPublishDiagnosticsNotification($proc_out, $requested_uri);
         }
 
         $response = $this->awaitResponse($proc_out);

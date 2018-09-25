@@ -91,6 +91,8 @@ class TolerantASTConverter
     // (For debugging, may be removed in the future)
     const ENV_AST_THROW_INVALID = 'AST_THROW_INVALID';
 
+    const INCOMPLETE_CLASS_CONST = '__INCOMPLETE_CLASS_CONST__';
+
     /**
      * @var int - A version in SUPPORTED_AST_VERSIONS
      */
@@ -615,12 +617,21 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Expression\ScopedPropertyAccessExpression' => function (PhpParser\Node\Expression\ScopedPropertyAccessExpression $n, int $start_line) {
                 $member_name = $n->memberName;
                 if ($member_name instanceof PhpParser\Node\Expression\Variable) {
+                    try {
+                        $prop_node = static::phpParserNodeToAstNode($member_name->name);
+                    } catch (InvalidNodeException $e) {
+                        if (self::$should_add_placeholders) {
+                            $prop_node = '';
+                        } else {
+                            throw $e;
+                        }
+                    }
                     return new ast\Node(
                         ast\AST_STATIC_PROP,
                         0,
                         [
                             'class' => static::phpParserNonValueNodeToAstNode($n->scopeResolutionQualifier),
-                            'prop' => static::phpParserNodeToAstNode($member_name->name),
+                            'prop' => $prop_node,
                         ],
                         $start_line
                     );
@@ -628,7 +639,7 @@ class TolerantASTConverter
                     if ($member_name instanceof Token) {
                         if (\get_class($member_name) !== Token::class) {
                             if (self::$should_add_placeholders) {
-                                $member_name = '__INCOMPLETE_CLASS_CONST__';
+                                $member_name = self::INCOMPLETE_CLASS_CONST;
                             } else {
                                 throw new InvalidNodeException();
                             }
