@@ -202,20 +202,10 @@ EOT;
         }
     }
 
-    /**
-     * @dataProvider completionProvider
-     */
-    public function testCompletion(Position $position, array $expected_completions)
-    {
-        if (function_exists('pcntl_fork')) {
-            $this->runTestCompletionWithPcntlSetting($position, $expected_completions, true);
-        }
-        $this->runTestCompletionWithPcntlSetting($position, $expected_completions, false);
-    }
-
     public function runTestCompletionWithPcntlSetting(
         Position $position,
         array $expected_completions,
+        string $file_contents,
         bool $pcntl_enabled
     ) {
         $this->messageId = 0;
@@ -223,7 +213,7 @@ EOT;
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
-            $this->writeDidChangeNotificationToDefaultFile($proc_in, self::COMPLETION_FILE_CONTENTS);
+            $this->writeDidChangeNotificationToDefaultFile($proc_in, $file_contents);
             $this->assertHasNonEmptyPublishDiagnosticsNotification($proc_out);
 
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
@@ -254,8 +244,24 @@ EOT;
         }
     }
 
+    private function runTestCompletionWithAndWithoutPcntl(Position $position, array $expected_completions, string $file_contents)
+    {
+        if (function_exists('pcntl_fork')) {
+            $this->runTestCompletionWithPcntlSetting($position, $expected_completions, $file_contents, true);
+        }
+        $this->runTestCompletionWithPcntlSetting($position, $expected_completions, $file_contents, false);
+    }
+
+    /**
+     * @dataProvider completionBasicProvider
+     */
+    public function testCompletionBasic(Position $position, array $expected_completions)
+    {
+        $this->runTestCompletionWithAndWithoutPcntl($position, $expected_completions, self::COMPLETION_BASIC_FILE_CONTENTS);
+    }
+
     // Here, we use a prefix of M9 to avoid suggesting MYSQLI_...
-    const COMPLETION_FILE_CONTENTS = <<<'EOT'
+    const COMPLETION_BASIC_FILE_CONTENTS = <<<'EOT'
 <?php namespace { // line 0
 class M9Example {
     public static $myVar = 2;
@@ -295,7 +301,7 @@ function M9InnerFunction() { return [2]; }
 }
 EOT;
 
-    public function completionProvider() : array
+    public function completionBasicProvider() : array
     {
         $propertyCompletionItem = [
             'label' => 'myVar',
