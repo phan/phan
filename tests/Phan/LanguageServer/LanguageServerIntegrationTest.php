@@ -403,6 +403,152 @@ EOT;
     }
 
     /**
+     * @dataProvider completionVariableProvider
+     */
+    public function testCompletionVariable(Position $position, array $expected_completions)
+    {
+        $this->runTestCompletionWithAndWithoutPcntl($position, $expected_completions, self::COMPLETION_VARIABLE_FILE_CONTENTS);
+    }
+
+    // Here, we use a prefix of M9 to avoid suggesting MYSQLI_...
+    const COMPLETION_VARIABLE_FILE_CONTENTS = <<<'EOT'
+<?php  // line 0
+
+namespace LSP {
+
+/**
+ * @property int $myMagicProperty  line 5
+ * @phan-forbid-undeclared-magic-properties (should not affect suggestions)
+ */
+class M9Class {
+    public static $myStaticProp = 2;
+    public $myPublicVar = 3;  // line 10
+    /** @var string another variable */
+    public $otherPublicVar;
+    public $otherPublicInt = 0;
+    protected $myProtected = 3;
+    private $myPrivate = 3;  // line 15
+
+
+    public function myInstanceMethod() {}
+    public static function my_static_method() : array { return $_SERVER; }
+    // line 20
+
+    protected function myProtectedMethod() {}
+    private $myPrivateInstanceVar = 3;  // line 5
+    public static function my_other_static_method () : void {}
+    const my_class_const = ['literalString'];  // line 25
+
+    public function __get(string $x) {
+        return strlen($x);
+    }
+    // line 30
+
+    public static function main() {
+        $myLocalVar = new self();
+        echo $myLocalVar->
+        // line 35
+        echo $my
+
+
+
+        // line 40
+    }
+}
+
+
+// line 45
+$j = new M9Class;
+echo $j->otherP
+echo $j->my
+
+}  // end namespace LSP
+EOT;
+
+    public function completionVariableProvider() : array
+    {
+        $otherPublicVarPropertyItem = [
+            'label' => 'otherPublicVar',
+            'kind' => CompletionItemKind::PROPERTY,
+            'detail' => 'string',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $otherPublicPropertyItem = [
+            'label' => 'otherPublicInt',
+            'kind' => CompletionItemKind::PROPERTY,
+            'detail' => 'int',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myMagicPropertyItem = [
+            'label' => 'myMagicProperty',
+            'kind' => CompletionItemKind::PROPERTY,
+            'detail' => 'int',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myPublicVarItem = [
+            'label' => 'myPublicVar',
+            'kind' => CompletionItemKind::PROPERTY,
+            'detail' => 'int',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myInstanceMethodItem = [
+            'label' => 'myInstanceMethod',
+            'kind' => CompletionItemKind::METHOD,
+            'detail' => 'mixed',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myStaticMethodItem = [
+            'label' => 'my_static_method',
+            'kind' => CompletionItemKind::METHOD,
+            'detail' => 'array',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myOtherStaticMethodItem = [
+            'label' => 'my_other_static_method',
+            'kind' => CompletionItemKind::METHOD,
+            'detail' => 'void',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $publicM9OtherCompletions = [
+            $otherPublicVarPropertyItem,
+            $otherPublicPropertyItem,
+        ];
+        $publicM9MyCompletions = [
+            $myMagicPropertyItem,
+            $myPublicVarItem,
+            $myInstanceMethodItem,
+            $myStaticMethodItem,
+            $myOtherStaticMethodItem,
+        ];
+
+        return [
+            [new Position(47, 15), $publicM9OtherCompletions],
+            [new Position(48, 11), $publicM9MyCompletions],
+        ];
+    }
+
+    /**
      * @param ?int $expected_definition_line 0-based line number (null for nothing)
      *
      * @dataProvider definitionInOtherFileProvider

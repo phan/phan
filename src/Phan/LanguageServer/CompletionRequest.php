@@ -85,7 +85,7 @@ final class CompletionRequest extends NodeInfoRequest
 
     private function recordCompletionItem(CompletionItem $item)
     {
-        $this->completions[$item->kind . ':' . $item->label] = $item;
+        $this->completions[$item->label . ':' . $item->kind] = $item;
     }
 
     private function createCompletionItem(

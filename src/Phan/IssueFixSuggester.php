@@ -179,8 +179,9 @@ class IssueFixSuggester
 
     /**
      * @return ?FullyQualifiedClassName
+     * @internal
      */
-    private static function maybeGetClassInCurrentScope(Context $context)
+    public static function maybeGetClassInCurrentScope(Context $context)
     {
         if ($context->isInClassScope()) {
             return $context->getClassFQSEN();
@@ -191,8 +192,9 @@ class IssueFixSuggester
     /**
      * @param array<string,Method> $methods
      * @return array<string,Method> a subset of those methods
+     * @internal
      */
-    private static function filterSimilarMethods(CodeBase $code_base, Context $context, array $methods, bool $is_static)
+    public static function filterSimilarMethods(CodeBase $code_base, Context $context, array $methods, bool $is_static)
     {
         $class_fqsen_in_current_scope = self::maybeGetClassInCurrentScope($context);
 
@@ -278,8 +280,9 @@ class IssueFixSuggester
     /**
      * @param array<string,Property> $property_map
      * @return array<string,Property> a subset of those methods
+     * @internal
      */
-    private static function filterSimilarProperties(CodeBase $code_base, Context $context, array $property_map, bool $is_static)
+    public static function filterSimilarProperties(CodeBase $code_base, Context $context, array $property_map, bool $is_static)
     {
         $class_fqsen_in_current_scope = self::maybeGetClassInCurrentScope($context);
         $candidates = [];
@@ -350,8 +353,9 @@ class IssueFixSuggester
     /**
      * @param array<string,ClassConstant> $constant_map
      * @return array<string,ClassConstant> a subset of those methods
+     * @internal
      */
-    private static function filterSimilarConstants(CodeBase $code_base, Context $context, array $constant_map) : array
+    public static function filterSimilarConstants(CodeBase $code_base, Context $context, array $constant_map) : array
     {
         $class_fqsen_in_current_scope = self::maybeGetClassInCurrentScope($context);
 

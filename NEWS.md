@@ -12,7 +12,7 @@ Language Server/Daemon mode:
   This can be enabled by passing `--language-server-enable-completion`
 
   - This will complete global constants, functions, and class names.
-  - This will complete class constants, properties, and method names.
+  - This will complete class constants, instance and static properties, and instance and static method names.
 
 Bug fixes:
 + Fix various uncaught errors in Phan that occurred when parsing invalid ASTs
