@@ -64,7 +64,7 @@ class NumericalComparisonVisitor extends PluginAwarePostAnalysisVisitor
             ) {
                 $this->emit(
                     'PhanPluginNumericalComparison',
-                    "non numerical values compared by the operators '==' or '!=='",
+                    "non numerical values compared by the operators '==' or '!='",
                     []
                 );
             }
