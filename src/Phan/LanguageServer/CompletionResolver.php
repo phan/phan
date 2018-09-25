@@ -178,8 +178,7 @@ class CompletionResolver
             $class_node
         ))->getClassList(
             true,
-            ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME,
-            Issue::UndeclaredClassConstant
+            ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME
         );
 
         // And find all of the instance/static properties that can be used as completions
@@ -225,8 +224,7 @@ class CompletionResolver
             $node->children['class'] ?? $node->children['expr']
         ))->getClassList(
             true,
-            ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME,
-            Issue::UndeclaredClassMethod
+            ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME
         );
 
         // And find all of the instance/static properties that can be used as completions

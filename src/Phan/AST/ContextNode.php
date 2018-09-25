@@ -523,7 +523,8 @@ class ContextNode
      * If set to CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, this will warn if the inferred type is exclusively non-object and non-string types.
      *
      * @param ?string $custom_issue_type
-     * If this exists, emit the given issue type (passing in union type as format arg) instead of the default issue type.
+     * If this exists, emit the given issue type (passing in the class's union type as format arg) instead of the default issue type.
+     * The issue type passed in must have exactly one template string parameter (e.g. {CLASS}, {TYPE})
      *
      * @return array<int,Clazz>
      * A list of classes representing the non-native types
