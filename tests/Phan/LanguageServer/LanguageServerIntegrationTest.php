@@ -330,7 +330,7 @@ EOT;
             'filterText' => null,
             'insertText' => null,
         ];
-        $methodCompletionItem = [
+        $myStaticFunctionItem = [
             'label' => 'my_static_function',
             'kind' => CompletionItemKind::METHOD,
             'detail' => 'mixed',
@@ -375,6 +375,7 @@ EOT;
             'filterText' => null,
             'insertText' => null,
         ];
+        // These completions are returned to the language client in alphabetical order
         $staticPropertyCompletions = [
             $propertyCompletionItem,
         ];
@@ -382,16 +383,16 @@ EOT;
             array_merge($propertyCompletionItem, ['insertText' => 'Var']),
         ];
         $allStaticCompletions = [
-            $propertyCompletionItem,
-            $myClassConstantItem,
             $myClassClassItem,
-            $methodCompletionItem,
+            $myClassConstantItem,
+            $myStaticFunctionItem,
+            $propertyCompletionItem,
         ];
         $allConstantCompletions = [
-            $myGlobalConstantItem,
-            $myOtherGlobalConstantItem,
             $myClassItem,
+            $myGlobalConstantItem,
             $myGlobalFunctionItem,
+            $myOtherGlobalConstantItem,
         ];
 
         return [
@@ -531,17 +532,16 @@ EOT;
             'insertText' => null,
         ];
         $publicM9OtherCompletions = [
-            $otherPublicVarPropertyItem,
             $otherPublicPropertyItem,
+            $otherPublicVarPropertyItem,
         ];
         $publicM9MyCompletions = [
+            $myOtherStaticMethodItem,
+            $myStaticMethodItem,
+            $myInstanceMethodItem,
             $myMagicPropertyItem,
             $myPublicVarItem,
-            $myInstanceMethodItem,
-            $myStaticMethodItem,
-            $myOtherStaticMethodItem,
         ];
-
 
         $myLocalVarItem = [
             'label' => 'myLocalVar',
