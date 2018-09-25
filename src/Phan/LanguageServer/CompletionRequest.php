@@ -3,13 +3,14 @@ namespace Phan\LanguageServer;
 
 use Exception;
 use Phan\CodeBase;
-use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
+use Phan\Language\Element\TypedElementInterface;
+use Phan\Language\Element\Variable;
 use Phan\LanguageServer\Protocol\CompletionContext;
 use Phan\LanguageServer\Protocol\CompletionItem;
 use Phan\LanguageServer\Protocol\CompletionItemKind;
@@ -71,12 +72,12 @@ final class CompletionRequest extends NodeInfoRequest
      * Records the definition of an element that can be used for a code completion
      *
      * @param CodeBase $code_base used for resolving type location in "Go To Type Definition"
-     * @param ClassConstant|Clazz|Func|GlobalConstant|Method|Property $element
+     * @param ClassConstant|Clazz|Func|GlobalConstant|Method|Property|Variable $element
      * @return void
      */
     public function recordCompletionElement(
         CodeBase $code_base,
-        AddressableElementInterface $element,
+        TypedElementInterface $element,
         string $prefix = null
     ) {
         $item = $this->createCompletionItem($code_base, $element, $prefix);
@@ -90,7 +91,7 @@ final class CompletionRequest extends NodeInfoRequest
 
     private function createCompletionItem(
         CodeBase $unused_code_base,
-        AddressableElementInterface $element,
+        TypedElementInterface $element,
         string $prefix = null
     ) : CompletionItem {
         $item = new CompletionItem();
@@ -111,7 +112,7 @@ final class CompletionRequest extends NodeInfoRequest
         return $item;
     }
 
-    private function labelForElement(AddressableElementInterface $element) : string
+    private function labelForElement(TypedElementInterface $element) : string
     {
         return $element->getName();
     }
@@ -119,7 +120,7 @@ final class CompletionRequest extends NodeInfoRequest
     /**
      * @return ?int
      */
-    private function kindForElement(AddressableElementInterface $element)
+    private function kindForElement(TypedElementInterface $element)
     {
         if ($element instanceof ClassConstant) {
             return CompletionItemKind::VARIABLE;
@@ -133,6 +134,8 @@ final class CompletionRequest extends NodeInfoRequest
             return CompletionItemKind::METHOD;
         } elseif ($element instanceof Property) {
             return CompletionItemKind::PROPERTY;
+        } elseif ($element instanceof Variable) {
+            return CompletionItemKind::VARIABLE;
         }
         // TODO: Implement
         return null;

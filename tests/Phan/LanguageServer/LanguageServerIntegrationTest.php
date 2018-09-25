@@ -448,9 +448,9 @@ class M9Class {
         $myLocalVar = new self();
         echo $myLocalVar->
         // line 35
+        $mUnrelated = 3; $myVar = 4;
         echo $my
-
-
+        echo $_S
 
         // line 40
     }
@@ -542,7 +542,55 @@ EOT;
             $myOtherStaticMethodItem,
         ];
 
+
+        $myLocalVarItem = [
+            'label' => 'myLocalVar',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => '\LSP\M9Class',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myVarItem = [
+            'label' => 'myVar',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => '4',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $localVariableCompletions = [
+            $myLocalVarItem,
+            $myVarItem,
+        ];
+        $serverSuperglobal = [
+            'label' => '_SERVER',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => 'array<string,mixed>',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $sessionSuperglobal = [
+            'label' => '_SESSION',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => 'array<string,mixed>',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $superGlobalVariableCompletions = [
+            $serverSuperglobal,
+            $sessionSuperglobal,
+        ];
+
         return [
+            [new Position(37, 16), $localVariableCompletions],
+            [new Position(38, 16), $superGlobalVariableCompletions],
             [new Position(47, 15), $publicM9OtherCompletions],
             [new Position(48, 11), $publicM9MyCompletions],
         ];

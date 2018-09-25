@@ -1,8 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use Phan\CodeBase;
-use Phan\Language\Context;
 use Phan\Language\FileRef;
 use Phan\Language\UnionType;
 
@@ -34,79 +32,8 @@ interface TypedElementInterface
     public function setUnionType(UnionType $type);
 
     /**
-     * @return Context
-     * The context in which this structural element exists
-     */
-    public function getContext() : Context;
-
-    /**
      * @return FileRef
      * A reference to where this element was found
      */
     public function getFileRef() : FileRef;
-
-    /**
-     * @return bool
-     * True if this element is marked as deprecated
-     */
-    public function isDeprecated() : bool;
-
-    /**
-     * @param bool $is_deprecated
-     * Set this element as deprecated
-     *
-     * @return void
-     */
-    public function setIsDeprecated(bool $is_deprecated);
-
-    /**
-     * @param array<int,string> $suppress_issue_list
-     * Set the set of issue names to suppress
-     *
-     * @return void
-     */
-    public function setSuppressIssueList(array $suppress_issue_list);
-
-    /**
-     * @return array<string,int>
-     * Returns a map from issue name to count of suppressions
-     */
-    public function getSuppressIssueList() : array;
-
-    /**
-     * Increments the number of times $issue_name was suppressed.
-     * @return void
-     */
-    public function incrementSuppressIssueCount(string $issue_name);
-
-    /**
-     * return bool
-     * True if this element would like to suppress the given
-     * issue name
-     */
-    public function hasSuppressIssue(string $issue_name) : bool;
-
-    /**
-     * @return bool
-     * True if this element would like to suppress the given
-     * issue name.
-     *
-     * If this is true, this automatically calls incrementSuppressIssueCount.
-     * Most callers should use this, except for uses similar to UnusedSuppressionPlugin
-     */
-    public function checkHasSuppressIssueAndIncrementCount(string $issue_name) : bool;
-
-    /**
-     * @return bool
-     * True if this was an internal PHP object
-     */
-    public function isPHPInternal() : bool;
-
-    /**
-     * This method must be called before analysis
-     * begins.
-     *
-     * @return void
-     */
-    public function hydrate(CodeBase $code_base);
 }

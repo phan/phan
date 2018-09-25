@@ -8,11 +8,13 @@ use Closure;
 use Phan\AST\ContextNode;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\GlobalConstant;
+use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
 /**
@@ -91,6 +93,13 @@ class CompletionResolver
                     self::locateGlobalConstantCompletion($request, $code_base, $context, $node, $const_name);
                     self::locateClassCompletion($request, $code_base, $context, $node, $const_name);
                     self::locateGlobalFunctionCompletion($request, $code_base, $context, $node, $const_name);
+                    return;
+                case ast\AST_VAR:
+                    $var_name = $node->children['name'];
+                    if (!is_string($var_name)) {
+                        return;
+                    }
+                    self::locateVariableCompletion($request, $code_base, $context, $var_name);
                     return;
             }
             // $go_to_definition_request->recordDefinitionLocation(...)
@@ -334,6 +343,47 @@ class CompletionResolver
                 $code_base,
                 $func,
                 $function_name
+            );
+        }
+    }
+
+    /**
+     * @suppress PhanUnusedPrivateMethodParameter TODO: Use $node and check if fully qualified
+     */
+    private static function locateVariableCompletion(
+        CompletionRequest $request,
+        CodeBase $code_base,
+        Context $context,
+        string $incomplete_variable_name
+    ) {
+        $variable_candidates = $context->getScope()->getVariableMap();
+        // TODO: Use the alias map
+        // TODO: Remove the namespace
+        foreach ($variable_candidates as $suggested_variable_name => $variable) {
+            $suggested_variable_name = (string)$suggested_variable_name;
+            if ($incomplete_variable_name !== '' && stripos($suggested_variable_name, $incomplete_variable_name) === false) {
+                continue;
+            }
+            $request->recordCompletionElement(
+                $code_base,
+                $variable,
+                $suggested_variable_name
+            );
+        }
+        $superglobal_names = array_merge(array_keys(Variable::_BUILTIN_SUPERGLOBAL_TYPES), Config::getValue('runkit_superglobals'));
+        foreach ($superglobal_names as $superglobal_name) {
+            if ($incomplete_variable_name !== '' && stripos($superglobal_name, $incomplete_variable_name) === false) {
+                continue;
+            }
+            $request->recordCompletionElement(
+                $code_base,
+                new Variable(
+                    $context,
+                    $superglobal_name,
+                    Variable::getUnionTypeOfHardcodedGlobalVariableWithName($superglobal_name),
+                    0
+                ),
+                $superglobal_name
             );
         }
     }
