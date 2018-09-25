@@ -1201,8 +1201,18 @@ class ContextNode
                 $this->context,
                 $node->children['expr'] ??
                     $node->children['class']
-            ))->getClassList(true, $expected_type_categories, $expected_issue);
+            ))->getClassList(false, $expected_type_categories, $expected_issue);
         } catch (CodeBaseException $exception) {
+            $exception_fqsen = $exception->getFQSEN();
+            if ($exception_fqsen instanceof FullyQualifiedClassName) {
+                throw new IssueException(
+                    Issue::fromType($is_static ? Issue::UndeclaredClassStaticProperty : Issue::UndeclaredClassProperty)(
+                        $this->context->getFile(),
+                        $node->lineno ?? 0,
+                        [ $property_name, $exception_fqsen ]
+                    )
+                );
+            }
             // TODO: Is this ever used? The undeclared property issues should instead be caused by the hasPropertyWithFQSEN checks below.
             if ($is_static) {
                 throw new IssueException(

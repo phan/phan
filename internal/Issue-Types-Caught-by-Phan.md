@@ -271,6 +271,12 @@ Please do file an issue or otherwise get in touch if you get one of these (or an
 [![Gitter](https://badges.gitter.im/phan/phan.svg)](https://gitter.im/phan/phan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 
+## PhanInvalidConstantFQSEN
+
+```
+{CONST} is an invalid FQSEN for a constant
+```
+
 ## PhanUnanalyzable
 
 This issue will be emitted when we hit a structure that Phan doesn't know how to parse. More commonly this will be expressed by Phan having an uncaught exception or behaving poorly.
@@ -402,6 +408,12 @@ new parent;
 
 ```
 Cannot access {CLASS} when not in object context, but code is using callable {METHOD}
+```
+
+## PhanContextNotObjectUsingSelf
+
+```
+Cannot use {CLASS} as type when not in object context in {FUNCTION}
 ```
 
 # DeprecatedError
@@ -2023,10 +2035,22 @@ This issue will be emitted from the following code
 function g(Undef $v) { $v->f(); }
 ```
 
+## PhanUndeclaredClassProperty
+
+```
+Reference to instance property {PROPERTY} from undeclared class {CLASS}
+```
+
 ## PhanUndeclaredClassReference
 
 ```
 Reference to undeclared class {CLASS}
+```
+
+## PhanUndeclaredClassStaticProperty
+
+```
+Reference to static property {PROPERTY} from undeclared class {CLASS}
 ```
 
 ## PhanUndeclaredClosureScope
@@ -2462,6 +2486,12 @@ Constant expression contains invalid operations
 
 ```
 %s
+```
+
+## PhanInvalidTraitUse
+
+```
+Invalid trait use: {DETAILS}
 ```
 
 ## PhanInvalidWriteToTemporaryExpression
