@@ -1572,19 +1572,31 @@ class CodeBase
     /**
      * @return array<string,array<string,string>> a list of namespaces which have each class name
      */
-    private function getClassNamesInNamespace() : array
+    private function getClassNamesInNamespaceMap() : array
     {
         return $this->class_names_in_namespace ?? ($this->class_names_in_namespace = $this->computeClassNamesInNamespace());
     }
 
     /**
-     * This limits the suggested class names from getClassNamesInNamespace for $namespace_lower to
+     * @return array<string,string> a list of class names in $namespace
+     */
+    public function getClassNamesOfNamespace(string $namespace) : array
+    {
+        $namespace = strtolower($namespace);
+        if (substr($namespace, 0, 1) !== '\\') {
+            $namespace = "\\$namespace";
+        }
+        return $this->getClassNamesInNamespaceMap()[$namespace] ?? [];
+    }
+
+    /**
+     * This limits the suggested class names from getClassNamesOfNamespace for $namespace_lower to
      * the names which are similar enough in length to be a potential suggestion
      */
     private function getSimilarLengthClassNamesForNamespace(string $namespace, int $strlen) : array
     {
         $namespace = \strtolower($namespace);
-        $class_names = $this->getClassNamesInNamespace()[$namespace] ?? [];
+        $class_names = $this->getClassNamesOfNamespace($namespace);
         if (count($class_names) === 0) {
             return $class_names;
         }

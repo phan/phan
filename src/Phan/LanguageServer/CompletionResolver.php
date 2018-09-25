@@ -10,6 +10,9 @@ use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\Element\Func;
+use Phan\Language\Element\GlobalConstant;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 
 /**
  * This implements closures for finding completions for valid/invalid nodes where isSelected is set
@@ -61,6 +64,15 @@ class CompletionResolver
                     }
                     self::locateClassConstantCompletion($request, $code_base, $context, $node, $const_name);
                     self::locateMethodCompletion($request, $code_base, $context, $node, true, $const_name);
+                    return;
+                case ast\AST_CONST:
+                    $const_name = $node->children['name']->children['name'] ?? null;
+                    if (!is_string($const_name)) {
+                        return;
+                    }
+                    self::locateGlobalConstantCompletion($request, $code_base, $context, $node, $const_name);
+                    self::locateClassCompletion($request, $code_base, $context, $node, $const_name);
+                    self::locateGlobalFunctionCompletion($request, $code_base, $context, $node, $const_name);
                     return;
             }
             // $go_to_definition_request->recordDefinitionLocation(...)
@@ -177,6 +189,119 @@ class CompletionResolver
                 }
                 $request->recordCompletionElement($code_base, $method, $name);
             }
+        }
+    }
+
+    /**
+     * @param string $constant_name
+     * @suppress PhanUnusedPrivateMethodParameter
+     */
+    private static function locateGlobalConstantCompletion(
+        CompletionRequest $request,
+        CodeBase $code_base,
+        Context $context,
+        Node $node,
+        string $constant_name
+    ) {
+        // TODO: Limit this check to constants that are visible from the current namespace, with the shortest name from the alias map
+        // TODO: Use the alias map
+        $current_namespace = ltrim($context->getNamespace(), "\\");
+
+        foreach ($code_base->getGlobalConstantMap() as $constant) {
+            if (!$constant instanceof GlobalConstant) {
+                // TODO: Make Map templatized, this is impossible
+                continue;
+            }
+            $namespace = ltrim($constant->getFQSEN()->getNamespace(), "\\");
+            if ($namespace !== '' && strcasecmp($namespace, $current_namespace) !== 0) {
+                // Only allow accessing global constants in the same namespace or the global namespace
+                continue;
+            }
+            $fqsen_string = (string)$constant->getFQSEN();
+            if (stripos($fqsen_string, $constant_name) === false) {
+                continue;
+            }
+            $request->recordCompletionElement($code_base, $constant, $fqsen_string);
+        }
+    }
+
+    /**
+     * @suppress PhanUnusedPrivateMethodParameter
+     * @suppress PhanUnusedPrivateMethodParameter TODO: Use $node and check if fully qualified
+     */
+    private static function locateClassCompletion(
+        CompletionRequest $request,
+        CodeBase $code_base,
+        Context $context,
+        Node $node,
+        string $uncompleted_class_name
+    ) {
+        // TODO: Use the alias map
+        // TODO: Remove the namespace
+        // fwrite(STDERR, "Looking up classes in " . $context->getNamespace() . "\n");
+        // Only check class names in the same namespace
+        $class_names_in_namespace = $code_base->getClassNamesOfNamespace($context->getNamespace());
+
+        foreach ($class_names_in_namespace as $class_name) {
+            $class_name = ltrim($class_name, "\\");
+            // fwrite(STDERR, "Checking $class_name\n");
+            if (stripos($class_name, $uncompleted_class_name) === false) {
+                continue;
+            }
+            $constant_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_name);
+            $request->recordCompletionElement(
+                $code_base,
+                $code_base->getClassByFQSEN($constant_fqsen),
+                $class_name
+            );
+        }
+    }
+
+    private static function getNamespaceFromFQSENString(string $fqsen_name) : string
+    {
+        $fqsen_name = ltrim($fqsen_name, "\\");
+        $last_backslash = strrpos($fqsen_name, "\\");
+        if ($last_backslash !== false) {
+            return (string)substr($fqsen_name, $last_backslash);
+        }
+        return $fqsen_name;
+    }
+
+    /**
+     * @suppress PhanUnusedPrivateMethodParameter TODO: Use $node and check if fully qualified
+     */
+    private static function locateGlobalFunctionCompletion(
+        CompletionRequest $request,
+        CodeBase $code_base,
+        Context $context,
+        Node $node,
+        string $uncompleted_function_name
+    ) {
+        // TODO: Include FQSENs which have a namespace matching what was typed so far
+        $current_namespace = ltrim($context->getNamespace(), "\\");
+
+        // TODO: Use the alias map
+        // TODO: Remove the namespace
+        foreach ($code_base->getFunctionMap() as $func) {
+            if (!$func instanceof Func) {
+                // TODO: Make Map templatized, this is impossible
+                continue;
+            }
+            $fqsen = $func->getFQSEN();
+            $namespace = ltrim($fqsen->getNamespace(), "\\");
+            if ($namespace !== '' && strcasecmp($namespace, $current_namespace) !== 0) {
+                // Only allow accessing global functions in the same namespace or the global namespace
+                continue;
+            }
+            $function_name = $fqsen->getName();
+            if (stripos($function_name, $uncompleted_function_name) === false) {
+                continue;
+            }
+            $request->recordCompletionElement(
+                $code_base,
+                $func,
+                $function_name
+            );
         }
     }
 }

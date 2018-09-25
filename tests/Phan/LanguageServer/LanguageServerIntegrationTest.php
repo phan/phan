@@ -239,7 +239,7 @@ EOT;
                 'id' => 2,
                 'jsonrpc' => '2.0',
             ];
-            $this->assertEquals($expected_completion_response, $completion_response);
+            $this->assertEquals($expected_completion_response, $completion_response, "Failed completions at $position->line:$position->character");
             $this->assertSame($expected_completion_response, $completion_response);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
@@ -254,9 +254,10 @@ EOT;
         }
     }
 
+    // Here, we use a prefix of M9 to avoid suggesting MYSQLI_...
     const COMPLETION_FILE_CONTENTS = <<<'EOT'
-<?php  // line 0
-class MyExample {
+<?php namespace { // line 0
+class M9Example {
     public static $myVar = 2;
     public $myInstanceVar = 3;
     public static function my_static_function () {}
@@ -265,10 +266,33 @@ class MyExample {
 
 
 
-echo MyExample::$  // line 10
-echo MyExample::$my
-echo MyExample::
+echo M9Example::$  // line 10
+echo M9Example::$my
+echo M9Example::
 ;
+
+function M9GlobalFunction() : array {  // line 15
+    return [];
+}
+const M9GlobalConst = 42;
+define('M9OtherGlobalConst', 43);
+echo M9  // line 20
+echo "test\n";
+echo InnerNS\M
+
+}  // end global namespace
+// line 25
+
+
+namespace InnerNS {
+
+// line 30
+const M9AnotherConst = 33;
+class M9InnerClass {}
+/** @return array<int,int>  */
+function M9InnerFunction() { return [2]; }
+
+}
 EOT;
 
     public function completionProvider() : array
@@ -282,10 +306,64 @@ EOT;
             'filterText' => null,
             'insertText' => 'myVar',
         ];
+        $myClassConstantItem = [
+            'label' => 'my_class_const',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => "array{0:'literalString'}",
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myClassClassItem = [
+            'label' => 'class',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => "'M9Example'",
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
         $methodCompletionItem = [
             'label' => 'my_static_function',
             'kind' => CompletionItemKind::METHOD,
             'detail' => 'mixed',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myClassItem = [
+            'label' => 'M9Example',
+            'kind' => CompletionItemKind::CLASS_,
+            'detail' => '\M9Example',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myGlobalConstantItem = [
+            'label' => 'M9GlobalConst',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => '42',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myOtherGlobalConstantItem = [
+            'label' => 'M9OtherGlobalConst',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => '43',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myGlobalFunctionItem = [
+            'label' => 'M9GlobalFunction',
+            'kind' => CompletionItemKind::FUNCTION,
+            'detail' => 'array',
             'documentation' => null,
             'sortText' => null,
             'filterText' => null,
@@ -299,13 +377,22 @@ EOT;
         ];
         $allStaticCompletions = [
             $propertyCompletionItem,
+            $myClassConstantItem,
+            $myClassClassItem,
             $methodCompletionItem,
+        ];
+        $allConstantCompletions = [
+            $myGlobalConstantItem,
+            $myOtherGlobalConstantItem,
+            $myClassItem,
+            $myGlobalFunctionItem,
         ];
 
         return [
             [new Position(10, 17), $staticPropertyCompletions],
             [new Position(11, 19), $staticPropertyCompletionsSubstr],
             [new Position(12, 16), $allStaticCompletions],
+            [new Position(20, 7), $allConstantCompletions],
         ];
     }
 

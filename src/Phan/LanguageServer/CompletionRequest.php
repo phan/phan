@@ -5,6 +5,9 @@ use Exception;
 use Phan\CodeBase;
 use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\ClassConstant;
+use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Func;
+use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\LanguageServer\Protocol\CompletionContext;
@@ -19,7 +22,7 @@ use Phan\LanguageServer\Protocol\Position;
  *
  * @see https://microsoft.github.io/language-server-protocol/specification#textDocument_completion
  *
- * @see \Phan\LanguageServer\CompletionResolver for how this maps the found node to the type in the context.
+ * @see CompletionResolver for how this maps the found node to the type in the context.
  * @see \Phan\Plugin\Internal\NodeSelectionPlugin for how the node is found
  * @see \Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping for how isSelected is set
  *
@@ -65,7 +68,7 @@ final class CompletionRequest extends NodeInfoRequest
      * Records the definition of an element that can be used for a code completion
      *
      * @param CodeBase $code_base used for resolving type location in "Go To Type Definition"
-     * @param ClassConstant|Method|Property $element
+     * @param ClassConstant|Clazz|Func|GlobalConstant|Method|Property $element
      * @return void
      */
     public function recordCompletionElement(
@@ -79,7 +82,7 @@ final class CompletionRequest extends NodeInfoRequest
 
     private function recordCompletionItem(CompletionItem $item)
     {
-        $this->completions[$item->insertText] = $item;
+        $this->completions[$item->kind . ':' . $item->label] = $item;
     }
 
     private function createCompletionItem(
@@ -102,7 +105,6 @@ final class CompletionRequest extends NodeInfoRequest
         }
 
         $item->insertText = $insert_text;
-        // fwrite(STDERR, "Created item: " . json_encode($item)  . "\n");
         return $item;
     }
 
@@ -116,12 +118,18 @@ final class CompletionRequest extends NodeInfoRequest
      */
     private function kindForElement(AddressableElementInterface $element)
     {
-        if ($element instanceof Property) {
-            return CompletionItemKind::PROPERTY;
+        if ($element instanceof ClassConstant) {
+            return CompletionItemKind::VARIABLE;
+        } elseif ($element instanceof Clazz) {
+            return CompletionItemKind::CLASS_;
+        } elseif ($element instanceof Func) {
+            return CompletionItemKind::FUNCTION;
+        } elseif ($element instanceof GlobalConstant) {
+            return CompletionItemKind::VARIABLE;
         } elseif ($element instanceof Method) {
             return CompletionItemKind::METHOD;
-        } elseif ($element instanceof ClassConstant) {
-            return CompletionItemKind::VARIABLE;
+        } elseif ($element instanceof Property) {
+            return CompletionItemKind::PROPERTY;
         }
         // TODO: Implement
         return null;
@@ -140,7 +148,13 @@ final class CompletionRequest extends NodeInfoRequest
         $promise = $this->promise;
         if ($promise) {
             $result = $this->completions ? array_values($this->completions) : null;
-            $promise->fulfill($result !== null ? new CompletionList($result) : null);
+            if ($result !== null) {
+                uksort($result, 'strcasecmp');
+                $result_list = new CompletionList($result);
+            } else {
+                $result_list = null;
+            }
+            $promise->fulfill($result_list);
             $this->promise = null;
         }
     }
