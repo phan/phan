@@ -6,6 +6,7 @@ namespace Phan\LanguageServer\Protocol;
 /**
  * Represents a collection of completion items to be presented in
  * the editor.
+ * @phan-file-suppress PhanWriteOnlyPublicProperty these are sent to the language client
  */
 class CompletionList
 {

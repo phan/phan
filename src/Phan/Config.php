@@ -754,7 +754,7 @@ class Config
 
         // This should only be set via CLI (--language-server-enable-completion)
         // Affects "completion" of LSP.
-        'language_server_enable_completion' => true,
+        'language_server_enable_completion' => false,
 
         // Don't show the category name in issue messages.
         // This makes error messages slightly shorter.

@@ -5,6 +5,7 @@ namespace Phan\LanguageServer\Protocol;
 
 /**
  * Contains additional information about the context in which a completion request is triggered.
+ * @phan-file-suppress PhanWriteOnlyPublicProperty this is sent to the language client
  */
 class CompletionContext
 {

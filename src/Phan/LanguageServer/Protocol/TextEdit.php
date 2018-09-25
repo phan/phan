@@ -5,6 +5,10 @@ namespace Phan\LanguageServer\Protocol;
 
 /**
  * A textual edit applicable to a text document.
+ *
+ * TODO: Use this (e.g. for code completions) once we know what position to suggest.
+ *
+ * @phan-file-suppress PhanWriteOnlyPublicProperty these would be sent to a language client
  */
 class TextEdit
 {

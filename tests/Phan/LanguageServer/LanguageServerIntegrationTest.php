@@ -62,7 +62,7 @@ final class LanguageServerIntegrationTest extends BaseTest
             $this->markTestSkipped('requires pcntl extension');
         }
         $command = sprintf(
-            '%s -d %s --quick --use-fallback-parser --language-server-on-stdin --language-server-enable-hover --language-server-enable-go-to-definition %s',
+            '%s -d %s --quick --use-fallback-parser --language-server-on-stdin --language-server-enable-hover --language-server-enable-completion --language-server-enable-go-to-definition %s',
             escapeshellarg(__DIR__ . '/../../../phan'),
             escapeshellarg(self::getLSPFolder()),
             ($pcntlEnabled ? '' : '--language-server-force-missing-pcntl')

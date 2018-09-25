@@ -257,16 +257,6 @@ class CompletionResolver
         }
     }
 
-    private static function getNamespaceFromFQSENString(string $fqsen_name) : string
-    {
-        $fqsen_name = ltrim($fqsen_name, "\\");
-        $last_backslash = strrpos($fqsen_name, "\\");
-        if ($last_backslash !== false) {
-            return (string)substr($fqsen_name, $last_backslash);
-        }
-        return $fqsen_name;
-    }
-
     /**
      * @suppress PhanUnusedPrivateMethodParameter TODO: Use $node and check if fully qualified
      */

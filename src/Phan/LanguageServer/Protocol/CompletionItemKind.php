@@ -5,6 +5,7 @@ namespace Phan\LanguageServer\Protocol;
 
 /**
  * The kind of a completion entry.
+ * @phan-file-suppress PhanUnreferencedPublicClassConstant all constants are added for completeness
  */
 abstract class CompletionItemKind
 {

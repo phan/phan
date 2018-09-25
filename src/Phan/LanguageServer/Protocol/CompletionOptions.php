@@ -5,6 +5,8 @@ namespace Phan\LanguageServer\Protocol;
 
 /**
  * Completion options.
+ *
+ * @phan-file-suppress PhanWriteOnlyPublicProperty these are sent to the language client
  */
 class CompletionOptions
 {

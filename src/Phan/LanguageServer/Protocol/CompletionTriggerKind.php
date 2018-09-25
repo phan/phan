@@ -5,6 +5,7 @@ namespace Phan\LanguageServer\Protocol;
 
 /**
  * How a completion was triggered
+ * @suppress PhanUnreferencedPublicClassConstant these are listed for completeness
  */
 class CompletionTriggerKind
 {

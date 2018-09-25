@@ -30,7 +30,10 @@ use Phan\LanguageServer\Protocol\Position;
  */
 final class CompletionRequest extends NodeInfoRequest
 {
-    /** @var CompletionContext|null */
+    /**
+     * @var CompletionContext|null
+     * @suppress PhanWriteOnlyPrivateProperty may use this later when the implementation of code completion is finished
+     */
     private $completion_context;
 
     /**

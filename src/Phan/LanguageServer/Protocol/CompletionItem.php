@@ -5,6 +5,7 @@ namespace Phan\LanguageServer\Protocol;
 
 /**
  * A suggestion item for a completion suggested by the language server.
+ * @phan-file-suppress PhanWriteOnlyPublicProperty this is sent to the language client
  */
 class CompletionItem
 {
@@ -13,7 +14,7 @@ class CompletionItem
      * also the text that is inserted when selecting
      * this completion.
      *
-     * @var string|null
+     * @var string
      */
     public $label;
 
@@ -84,6 +85,7 @@ class CompletionItem
         string $filterText = null,
         string $insertText = null
     ) {
+        // @phan-suppress-next-line PhanPossiblyNullTypeMismatchProperty the '(at)var string' annotation is used by the RPC library
         $this->label = $label;
         $this->kind = $kind;
         $this->detail = $detail;
