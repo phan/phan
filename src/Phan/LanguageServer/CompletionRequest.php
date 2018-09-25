@@ -4,6 +4,7 @@ namespace Phan\LanguageServer;
 use Exception;
 use Phan\CodeBase;
 use Phan\Language\Element\AddressableElementInterface;
+use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\LanguageServer\Protocol\CompletionContext;
@@ -64,6 +65,7 @@ final class CompletionRequest extends NodeInfoRequest
      * Records the definition of an element that can be used for a code completion
      *
      * @param CodeBase $code_base used for resolving type location in "Go To Type Definition"
+     * @param ClassConstant|Method|Property $element
      * @return void
      */
     public function recordCompletionElement(
@@ -88,18 +90,19 @@ final class CompletionRequest extends NodeInfoRequest
         $item = new CompletionItem();
         $item->label = $this->labelForElement($element);
         $item->kind = $this->kindForElement($element);
-        $item->detail = (string)$element->getUnionType() ?: 'detail';  // TODO: Better summary
-        $item->documentation = 'TODO';  // TODO: Better summary, use phpdoc summary
+        $item->detail = (string)$element->getUnionType() ?: 'mixed';  // TODO: Better summary
+        $item->documentation = null;  // TODO: Better summary, use phpdoc summary
 
-        $insert_text = $element->getName();
+        $insert_text = null;
         if ($element instanceof Property && $element->isStatic()) {
             $insert_text = '$' . $element->getName();
         }
-        if (is_string($prefix) && strncmp($insert_text, $prefix, strlen($prefix)) === 0) {
+        if (is_string($prefix) && is_string($insert_text) && strncmp($insert_text, $prefix, strlen($prefix)) === 0) {
             $insert_text = (string)substr($insert_text, strlen($prefix));
         }
 
         $item->insertText = $insert_text;
+        // fwrite(STDERR, "Created item: " . json_encode($item)  . "\n");
         return $item;
     }
 
@@ -117,6 +120,8 @@ final class CompletionRequest extends NodeInfoRequest
             return CompletionItemKind::PROPERTY;
         } elseif ($element instanceof Method) {
             return CompletionItemKind::METHOD;
+        } elseif ($element instanceof ClassConstant) {
+            return CompletionItemKind::VARIABLE;
         }
         // TODO: Implement
         return null;

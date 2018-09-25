@@ -91,6 +91,8 @@ class TolerantASTConverter
     // (For debugging, may be removed in the future)
     const ENV_AST_THROW_INVALID = 'AST_THROW_INVALID';
 
+    const INCOMPLETE_CLASS_CONST = '__INCOMPLETE_CLASS_CONST__';
+
     /**
      * @var int - A version in SUPPORTED_AST_VERSIONS
      */
@@ -637,7 +639,7 @@ class TolerantASTConverter
                     if ($member_name instanceof Token) {
                         if (\get_class($member_name) !== Token::class) {
                             if (self::$should_add_placeholders) {
-                                $member_name = '__INCOMPLETE_CLASS_CONST__';
+                                $member_name = self::INCOMPLETE_CLASS_CONST;
                             } else {
                                 throw new InvalidNodeException();
                             }

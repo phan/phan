@@ -231,14 +231,16 @@ EOT;
             // TODO: Should I shift this back a character in the request?
             $completion_response = $this->writeCompletionRequestAndAwaitResponse($proc_in, $proc_out, $position);
 
-            $this->assertSame([
+            $expected_completion_response = [
                 'result' => [
                     'isIncomplete' => false,
                     'items' => $expected_completions,
                 ],
                 'id' => 2,
                 'jsonrpc' => '2.0',
-            ], $completion_response);
+            ];
+            $this->assertEquals($expected_completion_response, $completion_response);
+            $this->assertSame($expected_completion_response, $completion_response);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
@@ -258,7 +260,7 @@ class MyExample {
     public static $myVar = 2;
     public $myInstanceVar = 3;
     public static function my_static_function () {}
-// line 5
+    const my_class_const = ['literalString'];  // line 5
 }
 
 
@@ -275,10 +277,19 @@ EOT;
             'label' => 'myVar',
             'kind' => CompletionItemKind::PROPERTY,
             'detail' => 'int',
-            'documentation' => 'TODO',
+            'documentation' => null,
             'sortText' => null,
             'filterText' => null,
             'insertText' => 'myVar',
+        ];
+        $methodCompletionItem = [
+            'label' => 'my_static_function',
+            'kind' => CompletionItemKind::METHOD,
+            'detail' => 'mixed',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
         ];
         $staticPropertyCompletions = [
             $propertyCompletionItem,
@@ -288,6 +299,7 @@ EOT;
         ];
         $allStaticCompletions = [
             $propertyCompletionItem,
+            $methodCompletionItem,
         ];
 
         return [

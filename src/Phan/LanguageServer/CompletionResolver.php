@@ -6,6 +6,7 @@ use ast;
 use ast\Node;
 use Closure;
 use Phan\AST\ContextNode;
+use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -43,7 +44,23 @@ class CompletionResolver
             switch ($node->kind) {
                 case ast\AST_STATIC_PROP:
                 case ast\AST_PROP:
-                    self::locatePropCompletion($request, $code_base, $context, $node);
+                    self::locatePropertyCompletion(
+                        $request,
+                        $code_base,
+                        $context,
+                        $node,
+                        $node->kind === ast\AST_STATIC_PROP,
+                        $node->children['prop']
+                    );
+                    return;
+                case ast\AST_CLASS_CONST:
+                    $const_name = $node->children['const'];
+                    if ($const_name === TolerantASTConverter::INCOMPLETE_CLASS_CONST) {
+                        $const_name = '';
+                        self::locatePropertyCompletion($request, $code_base, $context, $node, true, '');
+                    }
+                    self::locateClassConstantCompletion($request, $code_base, $context, $node, $const_name);
+                    self::locateMethodCompletion($request, $code_base, $context, $node, true, $const_name);
                     return;
             }
             // $go_to_definition_request->recordDefinitionLocation(...)
@@ -51,18 +68,23 @@ class CompletionResolver
     }
 
     /**
+     * @param string|mixed $prop_name
      * @return void
      */
-    public static function locatePropCompletion(CompletionRequest $request, CodeBase $code_base, Context $context, Node $node)
-    {
-        $prop_name = $node->children['prop'];
+    public static function locatePropertyCompletion(
+        CompletionRequest $request,
+        CodeBase $code_base,
+        Context $context,
+        Node $node,
+        bool $is_static,
+        $prop_name
+    ) {
         if (!is_string($prop_name)) {
             return;
         }
 
         // Find all of the classes on the left hand side
         // TODO: Filter by properties that match $node->children['prop']
-        $is_static = $node->kind === ast\AST_STATIC_PROP;
         $expected_type_categories = $is_static ? ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME : ContextNode::CLASS_LIST_ACCEPT_OBJECT;
         $expected_issue = $is_static ? Issue::TypeExpectedObjectStaticPropAccess : Issue::TypeExpectedObjectPropAccess;
 
@@ -80,6 +102,80 @@ class CompletionResolver
                     continue;
                 }
                 $request->recordCompletionElement($code_base, $prop, '$' . $prop_name);
+            }
+        }
+    }
+
+    /**
+     * @param string|mixed $constant_name
+     */
+    private static function locateClassConstantCompletion(
+        CompletionRequest $request,
+        CodeBase $code_base,
+        Context $context,
+        Node $node,
+        $constant_name
+    ) {
+        if (!is_string($constant_name)) {
+            return;
+        }
+
+        // Find all of the classes on the left hand side
+        // TODO: Filter by properties that match $node->children['prop']
+        $class_list_generator = (new ContextNode(
+            $code_base,
+            $context,
+            $node->children['class'] ?? $node->children['expr']
+        ))->getClassList(
+            true,
+            ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME,
+            Issue::UndeclaredClassConstant
+        );
+
+        // And find all of the instance/static properties that can be used as completions
+        foreach ($class_list_generator as $class) {
+            foreach ($class->getConstantMap($code_base) as $name => $constant) {
+                // TODO: What about ::class?  (Exclude it for not static)
+                // TODO: Check if visible, the same way as the suggestion utility would
+                $request->recordCompletionElement($code_base, $constant, $name);
+            }
+        }
+    }
+
+    /**
+     * @param string|mixed $method_name
+     */
+    private static function locateMethodCompletion(
+        CompletionRequest $request,
+        CodeBase $code_base,
+        Context $context,
+        Node $node,
+        bool $is_static,
+        $method_name
+    ) {
+        if (!is_string($method_name)) {
+            return;
+        }
+
+        // Find all of the classes on the left hand side
+        // TODO: Filter by properties that match $node->children['prop']
+        $class_list_generator = (new ContextNode(
+            $code_base,
+            $context,
+            $node->children['class'] ?? $node->children['expr']
+        ))->getClassList(
+            true,
+            ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME,
+            Issue::UndeclaredClassMethod
+        );
+
+        // And find all of the instance/static properties that can be used as completions
+        foreach ($class_list_generator as $class) {
+            foreach ($class->getMethodMap($code_base) as $name => $method) {
+                if ($is_static && !$method->isStatic()) {
+                    continue;
+                }
+                $request->recordCompletionElement($code_base, $method, $name);
             }
         }
     }
