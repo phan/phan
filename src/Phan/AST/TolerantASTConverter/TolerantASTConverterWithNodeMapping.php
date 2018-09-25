@@ -256,7 +256,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      */
     private static function markNodeAsSelected($n, $ast_node)
     {
-        // fwrite(STDERR, "Marking corresponding node as flagged: " . json_encode($n) . "\n" . json_encode($ast_node) . "\n");
+        // fwrite(STDERR, "Marking corresponding node as flagged: " . json_encode($n) . "\n" . \Phan\Debug::nodeToString($ast_node) . "\n");
         // fflush(STDERR);
         if ($ast_node instanceof ast\Node) {
             if (self::$closest_node_or_token_symbol !== null) {

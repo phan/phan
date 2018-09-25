@@ -223,16 +223,7 @@ EOT;
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
-            $new_file_contents = <<<'EOT'
-<?php  // line 0
-class MyExample {
-    public static $myVar = 2;
-    public $myInstanceVar = 3;
-}
-echo MyExample::$  // line 5
-echo MyExample::$my
-EOT;
-            $this->writeDidChangeNotificationToDefaultFile($proc_in, $new_file_contents);
+            $this->writeDidChangeNotificationToDefaultFile($proc_in, self::COMPLETION_FILE_CONTENTS);
             $this->assertHasNonEmptyPublishDiagnosticsNotification($proc_out);
 
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
@@ -261,25 +252,48 @@ EOT;
         }
     }
 
+    const COMPLETION_FILE_CONTENTS = <<<'EOT'
+<?php  // line 0
+class MyExample {
+    public static $myVar = 2;
+    public $myInstanceVar = 3;
+    public static function my_static_function () {}
+// line 5
+}
+
+
+
+echo MyExample::$  // line 10
+echo MyExample::$my
+echo MyExample::
+;
+EOT;
+
     public function completionProvider() : array
     {
-        $staticPropertyCompletions = [
-            [
-                'label' => 'myVar',
-                'kind' => CompletionItemKind::PROPERTY,
-                'detail' => 'int',
-                'documentation' => 'TODO',
-                'sortText' => null,
-                'filterText' => null,
-                'insertText' => 'myVar',
-            ],
+        $propertyCompletionItem = [
+            'label' => 'myVar',
+            'kind' => CompletionItemKind::PROPERTY,
+            'detail' => 'int',
+            'documentation' => 'TODO',
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => 'myVar',
         ];
-        $staticPropertyCompletionsSubstr = $staticPropertyCompletions;
-        $staticPropertyCompletionsSubstr[0]['insertText'] = 'Var';
+        $staticPropertyCompletions = [
+            $propertyCompletionItem,
+        ];
+        $staticPropertyCompletionsSubstr = [
+            array_merge($propertyCompletionItem, ['insertText' => 'Var']),
+        ];
+        $allStaticCompletions = [
+            $propertyCompletionItem,
+        ];
 
         return [
-            [new Position(5, 17), $staticPropertyCompletions],
-            [new Position(6, 19), $staticPropertyCompletionsSubstr],
+            [new Position(10, 17), $staticPropertyCompletions],
+            [new Position(11, 19), $staticPropertyCompletionsSubstr],
+            [new Position(12, 16), $allStaticCompletions],
         ];
     }
 
