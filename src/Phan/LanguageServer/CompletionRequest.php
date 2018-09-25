@@ -153,10 +153,10 @@ final class CompletionRequest extends NodeInfoRequest
     {
         $promise = $this->promise;
         if ($promise) {
-            $result = $this->completions ? array_values($this->completions) : null;
+            $result = $this->completions ?: null;
             if ($result !== null) {
                 uksort($result, 'strcasecmp');
-                $result_list = new CompletionList($result);
+                $result_list = new CompletionList(array_values($result));
             } else {
                 $result_list = null;
             }
