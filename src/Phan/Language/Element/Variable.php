@@ -16,7 +16,7 @@ use Phan\Language\UnionType;
  *
  * This has subclasses for parameters, etc.
  */
-class Variable extends UnaddressableTypedElement
+class Variable extends UnaddressableTypedElement implements TypedElementInterface
 {
     /**
      * @access private

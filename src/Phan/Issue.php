@@ -41,7 +41,9 @@ class Issue
     const UndeclaredClassConstant   = 'PhanUndeclaredClassConstant';
     const UndeclaredClassInstanceof = 'PhanUndeclaredClassInstanceof';
     const UndeclaredClassMethod     = 'PhanUndeclaredClassMethod';
+    const UndeclaredClassProperty   = 'PhanUndeclaredClassProperty';
     const UndeclaredClassReference  = 'PhanUndeclaredClassReference';
+    const UndeclaredClassStaticProperty = 'PhanUndeclaredClassStaticProperty';
     const UndeclaredClosureScope    = 'PhanUndeclaredClosureScope';
     const UndeclaredConstant        = 'PhanUndeclaredConstant';
     const UndeclaredExtendedClass   = 'PhanUndeclaredExtendedClass';
@@ -663,6 +665,22 @@ class Issue
                 "Call to method {METHOD} from undeclared class {CLASS}",
                 self::REMEDIATION_B,
                 11009
+            ),
+            new Issue(
+                self::UndeclaredClassProperty,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Reference to instance property {PROPERTY} from undeclared class {CLASS}",
+                self::REMEDIATION_B,
+                11038
+            ),
+            new Issue(
+                self::UndeclaredClassStaticProperty,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_CRITICAL,
+                "Reference to static property {PROPERTY} from undeclared class {CLASS}",
+                self::REMEDIATION_B,
+                11039
             ),
             new Issue(
                 self::UndeclaredClassReference,

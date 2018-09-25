@@ -2,6 +2,7 @@
 %s:2 PhanUndeclaredVariable Variable $bar is undeclared
 %s:2 PhanUndeclaredVariable Variable $foo is undeclared
 %s:3 PhanCompatiblePHP7 Expression may not be PHP 7 compatible
+%s:3 PhanUndeclaredClassStaticProperty Reference to static property bar from undeclared class \Foo
 %s:4 PhanCompatiblePHP7 Expression may not be PHP 7 compatible
 %s:4 PhanUndeclaredVariable Variable $bar is undeclared
 %s:4 PhanUndeclaredVariable Variable $foo is undeclared

@@ -92,6 +92,7 @@ class TolerantASTConverter
     const ENV_AST_THROW_INVALID = 'AST_THROW_INVALID';
 
     const INCOMPLETE_CLASS_CONST = '__INCOMPLETE_CLASS_CONST__';
+    const INCOMPLETE_PROPERTY = '__INCOMPLETE_PROPERTY__';
 
     /**
      * @var int - A version in SUPPORTED_AST_VERSIONS
@@ -2641,7 +2642,7 @@ class TolerantASTConverter
             $name = static::phpParserNodeToAstNode($member_name);  // complex expression
         } catch (InvalidNodeException $e) {
             if (self::$should_add_placeholders) {
-                $name = '__INCOMPLETE_PROPERTY__';
+                $name = self::INCOMPLETE_PROPERTY;
             } else {
                 throw $e;
             }

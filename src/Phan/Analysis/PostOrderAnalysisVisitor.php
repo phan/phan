@@ -2181,6 +2181,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // We'll check out some reasons it might not exist
             // before logging the issue
             $exception_or_null = $exception;
+        } catch (NodeException $exception) {
+            $exception_or_null = $exception;
         } catch (\Exception $exception) {
             // Swallow any exceptions. We'll catch it later.
         }
@@ -2227,6 +2229,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                             $exception_or_null->getIssueInstance()
                         );
                     }
+                }
+            } else {
+                if ($exception_or_null instanceof IssueException) {
+                    Issue::maybeEmitInstance(
+                        $this->code_base,
+                        $this->context,
+                        $exception_or_null->getIssueInstance()
+                    );
                 }
             }
         }

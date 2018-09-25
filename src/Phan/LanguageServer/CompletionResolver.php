@@ -8,10 +8,13 @@ use Closure;
 use Phan\AST\ContextNode;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\GlobalConstant;
+use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
 /**
@@ -44,17 +47,34 @@ class CompletionResolver
             // Log as strings in case TolerantASTConverter generates the wrong type
             Logger::logInfo(sprintf("Saw a node of kind %s at line %s", (string)$node->kind, (string)$node->lineno));
 
-            switch ($node->kind) {
+            $kind = $node->kind;
+
+            switch ($kind) {
                 case ast\AST_STATIC_PROP:
                 case ast\AST_PROP:
+                    // fwrite(STDERR, \Phan\Debug::nodeToString($node));
+                    $prop_name = $node->children['prop'];
+                    if ($prop_name === TolerantASTConverter::INCOMPLETE_PROPERTY) {
+                        $prop_name = '';
+                    }
                     self::locatePropertyCompletion(
                         $request,
                         $code_base,
                         $context,
                         $node,
-                        $node->kind === ast\AST_STATIC_PROP,
-                        $node->children['prop']
+                        $kind === ast\AST_STATIC_PROP,
+                        $prop_name
                     );
+                    if ($kind === ast\AST_PROP) {
+                        self::locateMethodCompletion(
+                            $request,
+                            $code_base,
+                            $context,
+                            $node,
+                            false,
+                            $prop_name
+                        );
+                    }
                     return;
                 case ast\AST_CLASS_CONST:
                     $const_name = $node->children['const'];
@@ -74,13 +94,20 @@ class CompletionResolver
                     self::locateClassCompletion($request, $code_base, $context, $node, $const_name);
                     self::locateGlobalFunctionCompletion($request, $code_base, $context, $node, $const_name);
                     return;
+                case ast\AST_VAR:
+                    $var_name = $node->children['name'];
+                    if (!is_string($var_name)) {
+                        return;
+                    }
+                    self::locateVariableCompletion($request, $code_base, $context, $var_name);
+                    return;
             }
             // $go_to_definition_request->recordDefinitionLocation(...)
         };
     }
 
     /**
-     * @param string|mixed $prop_name
+     * @param string|mixed $incomplete_prop_name
      * @return void
      */
     public static function locatePropertyCompletion(
@@ -89,9 +116,9 @@ class CompletionResolver
         Context $context,
         Node $node,
         bool $is_static,
-        $prop_name
+        $incomplete_prop_name
     ) {
-        if (!is_string($prop_name)) {
+        if (!is_string($incomplete_prop_name)) {
             return;
         }
 
@@ -109,11 +136,19 @@ class CompletionResolver
 
         // And find all of the instance/static properties that can be used as completions
         foreach ($class_list_generator as $class) {
-            foreach ($class->getPropertyMap($code_base) as $prop) {
-                if ($prop->isStatic() !== $is_static) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $visible_properties = IssueFixSuggester::filterSimilarProperties($code_base, $context, $class->getPropertyMap($code_base), $is_static);
+
+            foreach ($visible_properties as $prop) {
+                // fprintf(STDERR, "Looking for %s in '%s'\n", $prop->getName(), $incomplete_prop_name);
+                if ($incomplete_prop_name !== '' && stripos($prop->getName(), $incomplete_prop_name) === false) {
                     continue;
                 }
-                $request->recordCompletionElement($code_base, $prop, '$' . $prop_name);
+                // fprintf(STDERR, "Adding %s", $prop->getName());
+
+                // A prefix for the prefix to remove from the completion element
+                $prefixPrefix = $is_static ? '$' : '';
+                $request->recordCompletionElement($code_base, $prop, $prefixPrefix . $incomplete_prop_name);
             }
         }
     }
@@ -132,12 +167,15 @@ class CompletionResolver
             return;
         }
 
+        $class_node = $node->children['class'] ?? $node->children['expr'];
+        $is_static = $class_node->kind === ast\AST_NAME;
+
         // Find all of the classes on the left hand side
         // TODO: Filter by properties that match $node->children['prop']
         $class_list_generator = (new ContextNode(
             $code_base,
             $context,
-            $node->children['class'] ?? $node->children['expr']
+            $class_node
         ))->getClassList(
             true,
             ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME,
@@ -146,8 +184,18 @@ class CompletionResolver
 
         // And find all of the instance/static properties that can be used as completions
         foreach ($class_list_generator as $class) {
-            foreach ($class->getConstantMap($code_base) as $name => $constant) {
-                // TODO: What about ::class?  (Exclude it for not static)
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $visible_constant_map = IssueFixSuggester::filterSimilarConstants(
+                $code_base,
+                $context,
+                $class->getConstantMap($code_base)
+            );
+            foreach ($visible_constant_map as $name => $constant) {
+                if (!$is_static && strcasecmp($name, 'class') === 0) {
+                    // Dynamic class names are not allowed in compile-time ::class fetch, it's a fatal error
+                    continue;
+                }
+                // TODO: What about ::class?  (Exclude it for not static?)
                 // TODO: Check if visible, the same way as the suggestion utility would
                 $request->recordCompletionElement($code_base, $constant, $name);
             }
@@ -155,7 +203,7 @@ class CompletionResolver
     }
 
     /**
-     * @param string|mixed $method_name
+     * @param string|mixed $incomplete_method_name
      */
     private static function locateMethodCompletion(
         CompletionRequest $request,
@@ -163,9 +211,9 @@ class CompletionResolver
         Context $context,
         Node $node,
         bool $is_static,
-        $method_name
+        $incomplete_method_name
     ) {
-        if (!is_string($method_name)) {
+        if (!is_string($incomplete_method_name)) {
             return;
         }
 
@@ -183,17 +231,21 @@ class CompletionResolver
 
         // And find all of the instance/static properties that can be used as completions
         foreach ($class_list_generator as $class) {
-            foreach ($class->getMethodMap($code_base) as $name => $method) {
-                if ($is_static && !$method->isStatic()) {
+            $methods = $class->getMethodMap($code_base);
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $filtered_methods = IssueFixSuggester::filterSimilarMethods($code_base, $context, $methods, $is_static);
+            foreach ($filtered_methods as $method) {
+                if ($incomplete_method_name !== '' && stripos($method->getName(), $incomplete_method_name) === false) {
+                    // Skip suggestions that don't have the original method as a substring
                     continue;
                 }
-                $request->recordCompletionElement($code_base, $method, $name);
+                $request->recordCompletionElement($code_base, $method, $method->getName());
             }
         }
     }
 
     /**
-     * @param string $constant_name
+     * @param string $incomplete_constant_name
      * @suppress PhanUnusedPrivateMethodParameter
      */
     private static function locateGlobalConstantCompletion(
@@ -201,7 +253,7 @@ class CompletionResolver
         CodeBase $code_base,
         Context $context,
         Node $node,
-        string $constant_name
+        string $incomplete_constant_name
     ) {
         // TODO: Limit this check to constants that are visible from the current namespace, with the shortest name from the alias map
         // TODO: Use the alias map
@@ -218,7 +270,7 @@ class CompletionResolver
                 continue;
             }
             $fqsen_string = (string)$constant->getFQSEN();
-            if (stripos($fqsen_string, $constant_name) === false) {
+            if ($incomplete_constant_name !== '' && stripos($fqsen_string, $incomplete_constant_name) === false) {
                 continue;
             }
             $request->recordCompletionElement($code_base, $constant, $fqsen_string);
@@ -234,7 +286,7 @@ class CompletionResolver
         CodeBase $code_base,
         Context $context,
         Node $node,
-        string $uncompleted_class_name
+        string $incomplete_class_name
     ) {
         // TODO: Use the alias map
         // TODO: Remove the namespace
@@ -245,7 +297,7 @@ class CompletionResolver
         foreach ($class_names_in_namespace as $class_name) {
             $class_name = ltrim($class_name, "\\");
             // fwrite(STDERR, "Checking $class_name\n");
-            if (stripos($class_name, $uncompleted_class_name) === false) {
+            if (stripos($class_name, $incomplete_class_name) === false) {
                 continue;
             }
             $constant_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_name);
@@ -265,7 +317,7 @@ class CompletionResolver
         CodeBase $code_base,
         Context $context,
         Node $node,
-        string $uncompleted_function_name
+        string $incomplete_function_name
     ) {
         // TODO: Include FQSENs which have a namespace matching what was typed so far
         $current_namespace = ltrim($context->getNamespace(), "\\");
@@ -284,13 +336,54 @@ class CompletionResolver
                 continue;
             }
             $function_name = $fqsen->getName();
-            if (stripos($function_name, $uncompleted_function_name) === false) {
+            if ($incomplete_function_name !== '' && stripos($function_name, $incomplete_function_name) === false) {
                 continue;
             }
             $request->recordCompletionElement(
                 $code_base,
                 $func,
                 $function_name
+            );
+        }
+    }
+
+    /**
+     * @suppress PhanUnusedPrivateMethodParameter TODO: Use $node and check if fully qualified
+     */
+    private static function locateVariableCompletion(
+        CompletionRequest $request,
+        CodeBase $code_base,
+        Context $context,
+        string $incomplete_variable_name
+    ) {
+        $variable_candidates = $context->getScope()->getVariableMap();
+        // TODO: Use the alias map
+        // TODO: Remove the namespace
+        foreach ($variable_candidates as $suggested_variable_name => $variable) {
+            $suggested_variable_name = (string)$suggested_variable_name;
+            if ($incomplete_variable_name !== '' && stripos($suggested_variable_name, $incomplete_variable_name) === false) {
+                continue;
+            }
+            $request->recordCompletionElement(
+                $code_base,
+                $variable,
+                $suggested_variable_name
+            );
+        }
+        $superglobal_names = array_merge(array_keys(Variable::_BUILTIN_SUPERGLOBAL_TYPES), Config::getValue('runkit_superglobals'));
+        foreach ($superglobal_names as $superglobal_name) {
+            if ($incomplete_variable_name !== '' && stripos($superglobal_name, $incomplete_variable_name) === false) {
+                continue;
+            }
+            $request->recordCompletionElement(
+                $code_base,
+                new Variable(
+                    $context,
+                    $superglobal_name,
+                    Variable::getUnionTypeOfHardcodedGlobalVariableWithName($superglobal_name),
+                    0
+                ),
+                $superglobal_name
             );
         }
     }

@@ -202,20 +202,10 @@ EOT;
         }
     }
 
-    /**
-     * @dataProvider completionProvider
-     */
-    public function testCompletion(Position $position, array $expected_completions)
-    {
-        if (function_exists('pcntl_fork')) {
-            $this->runTestCompletionWithPcntlSetting($position, $expected_completions, true);
-        }
-        $this->runTestCompletionWithPcntlSetting($position, $expected_completions, false);
-    }
-
     public function runTestCompletionWithPcntlSetting(
         Position $position,
         array $expected_completions,
+        string $file_contents,
         bool $pcntl_enabled
     ) {
         $this->messageId = 0;
@@ -223,7 +213,7 @@ EOT;
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
-            $this->writeDidChangeNotificationToDefaultFile($proc_in, self::COMPLETION_FILE_CONTENTS);
+            $this->writeDidChangeNotificationToDefaultFile($proc_in, $file_contents);
             $this->assertHasNonEmptyPublishDiagnosticsNotification($proc_out);
 
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
@@ -254,8 +244,24 @@ EOT;
         }
     }
 
+    private function runTestCompletionWithAndWithoutPcntl(Position $position, array $expected_completions, string $file_contents)
+    {
+        if (function_exists('pcntl_fork')) {
+            $this->runTestCompletionWithPcntlSetting($position, $expected_completions, $file_contents, true);
+        }
+        $this->runTestCompletionWithPcntlSetting($position, $expected_completions, $file_contents, false);
+    }
+
+    /**
+     * @dataProvider completionBasicProvider
+     */
+    public function testCompletionBasic(Position $position, array $expected_completions)
+    {
+        $this->runTestCompletionWithAndWithoutPcntl($position, $expected_completions, self::COMPLETION_BASIC_FILE_CONTENTS);
+    }
+
     // Here, we use a prefix of M9 to avoid suggesting MYSQLI_...
-    const COMPLETION_FILE_CONTENTS = <<<'EOT'
+    const COMPLETION_BASIC_FILE_CONTENTS = <<<'EOT'
 <?php namespace { // line 0
 class M9Example {
     public static $myVar = 2;
@@ -295,7 +301,7 @@ function M9InnerFunction() { return [2]; }
 }
 EOT;
 
-    public function completionProvider() : array
+    public function completionBasicProvider() : array
     {
         $propertyCompletionItem = [
             'label' => 'myVar',
@@ -393,6 +399,200 @@ EOT;
             [new Position(11, 19), $staticPropertyCompletionsSubstr],
             [new Position(12, 16), $allStaticCompletions],
             [new Position(20, 7), $allConstantCompletions],
+        ];
+    }
+
+    /**
+     * @dataProvider completionVariableProvider
+     */
+    public function testCompletionVariable(Position $position, array $expected_completions)
+    {
+        $this->runTestCompletionWithAndWithoutPcntl($position, $expected_completions, self::COMPLETION_VARIABLE_FILE_CONTENTS);
+    }
+
+    // Here, we use a prefix of M9 to avoid suggesting MYSQLI_...
+    const COMPLETION_VARIABLE_FILE_CONTENTS = <<<'EOT'
+<?php  // line 0
+
+namespace LSP {
+
+/**
+ * @property int $myMagicProperty  line 5
+ * @phan-forbid-undeclared-magic-properties (should not affect suggestions)
+ */
+class M9Class {
+    public static $myStaticProp = 2;
+    public $myPublicVar = 3;  // line 10
+    /** @var string another variable */
+    public $otherPublicVar;
+    public $otherPublicInt = 0;
+    protected $myProtected = 3;
+    private $myPrivate = 3;  // line 15
+
+
+    public function myInstanceMethod() {}
+    public static function my_static_method() : array { return $_SERVER; }
+    // line 20
+
+    protected function myProtectedMethod() {}
+    private $myPrivateInstanceVar = 3;  // line 5
+    public static function my_other_static_method () : void {}
+    const my_class_const = ['literalString'];  // line 25
+
+    public function __get(string $x) {
+        return strlen($x);
+    }
+    // line 30
+
+    public static function main() {
+        $myLocalVar = new self();
+        echo $myLocalVar->
+        // line 35
+        $mUnrelated = 3; $myVar = 4;
+        echo $my
+        echo $_S
+
+        // line 40
+    }
+}
+
+
+// line 45
+$j = new M9Class;
+echo $j->otherP
+echo $j->my
+
+}  // end namespace LSP
+EOT;
+
+    public function completionVariableProvider() : array
+    {
+        $otherPublicVarPropertyItem = [
+            'label' => 'otherPublicVar',
+            'kind' => CompletionItemKind::PROPERTY,
+            'detail' => 'string',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $otherPublicPropertyItem = [
+            'label' => 'otherPublicInt',
+            'kind' => CompletionItemKind::PROPERTY,
+            'detail' => 'int',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myMagicPropertyItem = [
+            'label' => 'myMagicProperty',
+            'kind' => CompletionItemKind::PROPERTY,
+            'detail' => 'int',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myPublicVarItem = [
+            'label' => 'myPublicVar',
+            'kind' => CompletionItemKind::PROPERTY,
+            'detail' => 'int',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myInstanceMethodItem = [
+            'label' => 'myInstanceMethod',
+            'kind' => CompletionItemKind::METHOD,
+            'detail' => 'mixed',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myStaticMethodItem = [
+            'label' => 'my_static_method',
+            'kind' => CompletionItemKind::METHOD,
+            'detail' => 'array',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myOtherStaticMethodItem = [
+            'label' => 'my_other_static_method',
+            'kind' => CompletionItemKind::METHOD,
+            'detail' => 'void',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $publicM9OtherCompletions = [
+            $otherPublicVarPropertyItem,
+            $otherPublicPropertyItem,
+        ];
+        $publicM9MyCompletions = [
+            $myMagicPropertyItem,
+            $myPublicVarItem,
+            $myInstanceMethodItem,
+            $myStaticMethodItem,
+            $myOtherStaticMethodItem,
+        ];
+
+
+        $myLocalVarItem = [
+            'label' => 'myLocalVar',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => '\LSP\M9Class',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $myVarItem = [
+            'label' => 'myVar',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => '4',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $localVariableCompletions = [
+            $myLocalVarItem,
+            $myVarItem,
+        ];
+        $serverSuperglobal = [
+            'label' => '_SERVER',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => 'array<string,mixed>',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $sessionSuperglobal = [
+            'label' => '_SESSION',
+            'kind' => CompletionItemKind::VARIABLE,
+            'detail' => 'array<string,mixed>',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $superGlobalVariableCompletions = [
+            $serverSuperglobal,
+            $sessionSuperglobal,
+        ];
+
+        return [
+            [new Position(37, 16), $localVariableCompletions],
+            [new Position(38, 16), $superGlobalVariableCompletions],
+            [new Position(47, 15), $publicM9OtherCompletions],
+            [new Position(48, 11), $publicM9MyCompletions],
         ];
     }
 
