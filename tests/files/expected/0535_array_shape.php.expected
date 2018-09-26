@@ -1,0 +1,3 @@
+%s:9 PhanTypeSuspiciousEcho Suspicious argument \stdClass for an echo/print statement
+%s:10 PhanTypeMismatchReturn Returning type array{0:2,1:null} but testArrayShape() is declared to return array{0:int,1:bool}
+%s:12 PhanTypeMismatchArgument Argument 1 (v) is array{0:2,1:'string'} but \testArrayShape() takes array{0:\stdClass,1:string} defined at %s:7

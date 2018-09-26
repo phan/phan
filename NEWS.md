@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 2018, Phan 1.0.7 (dev)
 -----------------------
 
+New features:
++ Support spaces after commas in array shapes (#1966)
+
 25 Sep 2018, Phan 1.0.6
 -----------------------
 
