@@ -552,6 +552,10 @@ final class TypeTest extends BaseTest
                 'array{0:int,1:string}'
             ],
             [
+                'array<int,int>|array<int,string>|array<string,stdClass>',
+                'array{0:int, 1:string, key : stdClass}'
+            ],
+            [
                 'array<int,int>|array<int,stdClass>|array<int,string>',
                 'array{0:int,1:string,2:stdClass}'
             ],
@@ -596,6 +600,7 @@ final class TypeTest extends BaseTest
             ['{}'],
             ['array{,field:int}'],
             ['array{field:}'],
+            ['array{ field:int}'],
             ['array{::int}'],
             ["-'a'"],
             ["'@var'"],  // Ambiguous to support @, force hex escape
