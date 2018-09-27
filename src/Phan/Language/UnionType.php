@@ -382,12 +382,12 @@ class UnionType implements Serializable
     }
 
     /**
-     * @return array
+     * @return array<string,array<string,string>>
      * A map from builtin class properties to type information
      *
      * @see \Phan\Language\Internal\PropertyMap
      */
-    private static function internalPropertyMap() : array
+    public static function internalPropertyMap() : array
     {
         static $map = [];
 

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Phan\Tests\Language;
+namespace Phan\Tests\Language\Internal;
 
 use Phan\Language\UnionType;
 use Phan\Tests\BaseTest;
@@ -8,10 +8,8 @@ use Phan\Tests\BaseTest;
 /**
  * This is a sanity check that Phan's function signature map has the correct structure
  * and can be parsed into a function signature.
- *
- * TODO: Add a test of the property signature map
  */
-final class SignatureMapTest extends BaseTest
+final class FunctionSignatureMapTest extends BaseTest
 {
     const FUNCTION_KEY_REGEX = '/^[a-z_][a-z0-9_]*(\\\\[a-z_][a-z0-9_]*)*(::[a-z_][a-z0-9_]*)?(\'[1-9][0-9]*)?$/i';
     const PARAM_KEY_REGEX = '/^\&?(\.\.\.)?[a-z_][a-z0-9_]*=?$/i';
