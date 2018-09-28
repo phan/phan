@@ -313,7 +313,7 @@ class CodeBase
     }
 
     /**
-     * Called when a file is unparseable.
+     * Called when a file is unparsable.
      * Removes the classes and functions, etc. from an older version of the file, if one exists.
      * @return void
      */

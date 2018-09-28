@@ -116,7 +116,7 @@ interface KindVisitor
     public function visitConstElem(Node $node);
 
     /**
-     * Visit a nod ewith kind `\ast\AST_DECLARE`
+     * Visit a node with kind `\ast\AST_DECLARE`
      */
     public function visitDeclare(Node $node);
 

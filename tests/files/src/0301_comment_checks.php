@@ -6,7 +6,7 @@
  * @return int
  * @phan-forbid-this-is-a-typo
  *
- * Doesn't warn about the unparseable template, but silently ignores it.
+ * Doesn't warn about the unparsable template, but silently ignores it.
  * @template [NotMatchingRegex]
  *
  * @method foo(string$invalidType $param1)

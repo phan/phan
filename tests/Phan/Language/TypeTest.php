@@ -582,14 +582,14 @@ final class TypeTest extends BaseTest
         ];
     }
 
-    /** @dataProvider unparseableTypeProvider */
+    /** @dataProvider unparsableTypeProvider */
     public function testUnparseableType(string $type_string)
     {
         $this->assertFalse(\preg_match('@^' . Type::type_regex . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex");
         $this->assertFalse(\preg_match('@^' . Type::type_regex_or_this . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex_or_this");
     }
 
-    public function unparseableTypeProvider() : array
+    public function unparsableTypeProvider() : array
     {
         return [
             ['array{'],

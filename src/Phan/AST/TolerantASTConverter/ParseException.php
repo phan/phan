@@ -11,7 +11,7 @@ use Throwable;
  */
 class ParseException extends Exception
 {
-    /** @var int the line number of the unparseable file where parsing failed. */
+    /** @var int the line number of the unparsable file where parsing failed. */
     private $line_number_start;
 
     public function __construct(string $message, int $line_number_start, Throwable $previous = null)

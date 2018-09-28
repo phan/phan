@@ -330,7 +330,7 @@ class UnionType implements Serializable
                 if ($delta <= 0) {
                     if ($delta === 0) {
                         $results[] = \implode('|', $prev_parts);
-                    }  // ignore unparseable data such as "<T,T2>>"
+                    }  // ignore unparsable data such as "<T,T2>>"
                     $prev_parts = [];
                     $delta = 0;
                     continue;
@@ -347,7 +347,7 @@ class UnionType implements Serializable
                 $results[] = $part;
             } elseif ($delta > 0) {
                 $prev_parts[] = $part;
-            }  // otherwise ignore unparseable data such as ">" (should be impossible)
+            }  // otherwise ignore unparsable data such as ">" (should be impossible)
         }
         return $results;
     }

@@ -99,13 +99,13 @@ class UndoTracker
     }
 
     /**
-     * Called when a file is unparseable.
+     * Called when a file is unparsable.
      * Removes the classes and functions, etc. from an older version of the file, if one exists.
      * @return void
      */
     public function recordUnparseableFile(CodeBase $code_base, string $current_parsed_file)
     {
-        Daemon::debugf("%s was unparseable, had a syntax error", $current_parsed_file);
+        Daemon::debugf("%s was unparsable, had a syntax error", $current_parsed_file);
         Phan::getIssueCollector()->removeIssuesForFiles([$current_parsed_file]);
         $this->undoFileChanges($code_base, $current_parsed_file);
         unset($this->file_modification_state[$current_parsed_file]);

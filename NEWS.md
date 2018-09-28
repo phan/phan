@@ -39,7 +39,7 @@ Bug fixes:
 + Fix various uncaught errors in Phan that occurred when parsing invalid ASTs.
   Instead of crashing, warn about the bug or invalid AST.
 
-  New issue types: `PhanInvalidConstantFQSEN`, `PhanContextNotObjectUsingSelf`, `PhanInvalidTraitUse` (for unparseable trait uses)
+  New issue types: `PhanInvalidConstantFQSEN`, `PhanContextNotObjectUsingSelf`, `PhanInvalidTraitUse` (for unparsable trait uses)
 
 21 Sep 2018, Phan 1.0.5
 -----------------------
@@ -337,7 +337,7 @@ Bug fixes:
   For example, don't add `array` to a property declared with PHPDoc type `/** @var string[] */`
 + Fix uncaught `AssertionError` when `parent` is used in PHPDoc (#1758)
 + Fix various bugs that can cause crashes in the polyfill/fallback parser when parsing invalid or incomplete ASTs.
-+ Fix unparseable/invalid function signature entries of rarely used functions
++ Fix unparsable/invalid function signature entries of rarely used functions
 + Warn about undefined variables on the left hand side of assignment operations (e.g. `$x .= 'string'`) (#1613)
 
 08 Jun 2018, Phan 0.12.12

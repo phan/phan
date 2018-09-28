@@ -565,7 +565,7 @@ class ContextNode
                     if ($type instanceof LiteralStringType) {
                         $type_value = $type->getValue();
                         if (\preg_match('/^\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\]*$/', $type_value)) {
-                            // TODO: warn about invalid types and unparseable types
+                            // TODO: warn about invalid types and unparsable types
                             $fqsen = FullyQualifiedClassName::makeFromExtractedNamespaceAndName($type_value);
                             if ($this->code_base->hasClassWithFQSEN($fqsen)) {
                                 $class_list[] = $this->code_base->getClassByFQSEN($fqsen);
