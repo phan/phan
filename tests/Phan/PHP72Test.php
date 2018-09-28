@@ -25,7 +25,7 @@ class PHP72Test extends AbstractPhanFileTest
     /**
      * This reads all files in a test directory (e.g. `tests/files/src`), runs
      * the analyzer on each and compares the output
-     * to the files's counterpart in `tests/files/expected`
+     * to the files' counterpart in `tests/files/expected`
      *
      * @param string[] $test_file_list
      * @param string $expected_file_path
