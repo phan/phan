@@ -44,7 +44,7 @@ As well as these extension-specific tests that are skipped if the extension isn'
 
 ### multi\_files
 
-Contain tests of expected behaviour for multi-file project analysis.
+Contain tests of expected behavior for multi-file project analysis.
 This also contains regression tests.
 Add a test here if the bug can *only* be reproduced with multiple files.
 

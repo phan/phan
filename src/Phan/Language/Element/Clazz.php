@@ -204,7 +204,7 @@ class Clazz extends AddressableElement
         // Note: If there are multiple calls to Clazz->addProperty(),
         // the UnionType from the first one will be used, subsequent calls to addProperty()
         // will have no effect.
-        // As a result, we set the types from phan's documented internal property types first,
+        // As a result, we set the types from Phan's documented internal property types first,
         // preferring them over the default values (which may be null, etc.).
         foreach (UnionType::internalPropertyMapForClassName(
             $clazz->getName()
@@ -1080,7 +1080,7 @@ class Clazz extends AddressableElement
 
         // Check to see if missing properties are allowed
         // or we're working with a class with dynamic
-        // properties such as stdclass.
+        // properties such as stdClass.
         if (!$is_static && (Config::getValue('allow_missing_properties')
             || $this->getHasDynamicProperties($code_base))
         ) {
@@ -1709,7 +1709,7 @@ class Clazz extends AddressableElement
 
     /**
      * @return array<int,FullyQualifiedClassName>
-     * A list of FQSEN's for included traits
+     * A list of FQSENs for included traits
      */
     public function getTraitFQSENList() : array
     {

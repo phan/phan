@@ -134,7 +134,7 @@ class Colorizing
     /**
      * @param string $template_type (A key of _UNCOLORED_FORMAT_STRING_FOR_TEMPLATE, e.g. "FILE")
      * @param int|string|float|FQSEN|Type|UnionType $arg (Argument for format string, e.g. a type name, method fqsen, line number, etc.)
-     * @return string - Colorized for unix terminals.
+     * @return string - Colorized for Unix terminals.
      */
     public static function colorizeField(string $template_type, $arg) : string
     {

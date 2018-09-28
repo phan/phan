@@ -71,7 +71,7 @@ class CodeBase
      * @var Map
      * A map from FQSEN to an internal or user defined class
      *
-     * TODO: Improve phan's self analysis, allow the shorthand array access set syntax to be used without making bad inferences
+     * TODO: Improve Phan's self analysis, allow the shorthand array access set syntax to be used without making bad inferences
      * (e.g. $this->fqsen_class_map[$fqsen] = $clazz;
      */
     private $fqsen_class_map;
@@ -313,14 +313,14 @@ class CodeBase
     }
 
     /**
-     * Called when a file is unparseable.
+     * Called when a file is unparsable.
      * Removes the classes and functions, etc. from an older version of the file, if one exists.
      * @return void
      */
-    public function recordUnparseableFile(string $current_parsed_file)
+    public function recordUnparsableFile(string $current_parsed_file)
     {
         if ($this->undo_tracker) {
-            $this->undo_tracker->recordUnparseableFile($this, $current_parsed_file);
+            $this->undo_tracker->recordUnparsableFile($this, $current_parsed_file);
         }
     }
 
@@ -649,7 +649,7 @@ class CodeBase
 
     /**
      * This should be called in the analysis phase.
-     * It retrieves the NamespaceMapEntry built in the parse pharse
+     * It retrieves the NamespaceMapEntry built in the parse phase
      * (This is implemented this way to allow Phan to know if 'use Foo\Bar' was ever used and warn if it wasn't.)
      *
      * @param string $file the value of $context->getFile()

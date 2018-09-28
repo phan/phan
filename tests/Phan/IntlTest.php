@@ -12,7 +12,7 @@ final class IntlTest extends AbstractPhanFileTest
     /**
      * This reads all files in `tests/intl_files/src`, runs
      * the analyzer on each and compares the output
-     * to the files's counterpart in
+     * to the files' counterpart in
      * `tests/intl_files/expected`
      *
      * @param string[] $test_file_list

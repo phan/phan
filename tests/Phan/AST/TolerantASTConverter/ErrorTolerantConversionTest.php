@@ -296,7 +296,7 @@ EOT;
     private function runTestFallbackFromParserForASTVersion(string $incomplete_contents, string $valid_contents, int $ast_version, bool $should_add_placeholders)
     {
         $ast = \ast\parse_code($valid_contents, $ast_version);
-        $this->assertInstanceOf('\ast\Node', $ast, 'Examples(for validContents) must be syntactically valid PHP parseable by php-ast');
+        $this->assertInstanceOf('\ast\Node', $ast, 'Examples(for validContents) must be syntactically valid PHP parsable by php-ast');
         $errors = [];
         $converter = new TolerantASTConverter();
         $converter->setShouldAddPlaceholders($should_add_placeholders);

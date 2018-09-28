@@ -4,7 +4,7 @@ namespace Phan\Library;
 use Closure;
 
 /**
- * Implements Resource Acquizition Is Initialization.
+ * Implements Resource Acquisition Is Initialization.
  * An unused variable in the local scope can be used to call this.
  *
  * Note: This assumes that the garbage collector eagerly calls __destruct.

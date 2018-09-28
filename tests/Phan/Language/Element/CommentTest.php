@@ -284,7 +284,7 @@ EOT;
 /**
  * @var int $my_int
  * @var array<string , stdClass> $array
- * @var float (Unparseable)
+ * @var float (Unparsable)
  */
 EOT;
         $comment = Comment::fromStringInContext(

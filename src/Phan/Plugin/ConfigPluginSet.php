@@ -96,12 +96,12 @@ final class ConfigPluginSet extends PluginV2 implements
     private $post_analyze_node_plugin_set;
 
     /**
-     * @var array<int,BeforeAnalyzeFileCapability> - plugins to analyze files before phan's analysis of that file is completed.
+     * @var array<int,BeforeAnalyzeFileCapability> - plugins to analyze files before Phan's analysis of that file is completed.
      */
     private $before_analyze_file_plugin_set;
 
     /**
-     * @var array<int,AfterAnalyzeFileCapability> - plugins to analyze files after phan's analysis of that file is completed.
+     * @var array<int,AfterAnalyzeFileCapability> - plugins to analyze files after Phan's analysis of that file is completed.
      */
     private $after_analyze_file_plugin_set;
 
@@ -364,7 +364,7 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
-     * This will be called if phan's file and element-based suppressions did not suppress the issue.
+     * This will be called if Phan's file and element-based suppressions did not suppress the issue.
      *
      * @param CodeBase $code_base
      *

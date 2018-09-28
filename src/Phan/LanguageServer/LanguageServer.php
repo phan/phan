@@ -171,7 +171,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                     // If a ResponseError is thrown, send it back in the Response
                     $error = $e;
                 } catch (Throwable $e) {
-                    Logger::logInfo('Saw throwable: ' . get_class($e) . ': ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+                    Logger::logInfo('Saw Throwable: ' . get_class($e) . ': ' . $e->getMessage() . "\n" . $e->getTraceAsString());
                     // If an unexpected error occurred, send back an INTERNAL_ERROR error response
                     $error = new AdvancedJsonRpc\Error(
                         (string)$e,
@@ -529,7 +529,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             return;
         }
 
-        // Add anything that's open in the IDE to the uris to analyze.
+        // Add anything that's open in the IDE to the URIs to analyze.
         // In the future, this behavior may be configurable.
         foreach ($this->file_mapping->getOverrides() as $path => $_) {
             if (!isset($uris_to_analyze[$path])) {
@@ -863,7 +863,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
             // TODO: (probably impractical, slow) Support "Find all references"? (We don't track this, except when checking for dead code elimination possibilities.
             // $server_capabilities->referencesProvider = false;
-            // Can't support "Hover" without phpdoc for internal functions, such as those from phpstorm
+            // Can't support "Hover" without phpdoc for internal functions, such as those from PHPStorm
             // Can't support global references at the moment, I think.
             //$server_capabilities->xworkspaceReferencesProvider = true;
             //$server_capabilities->xdefinitionProvider = true;
@@ -914,7 +914,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     public function exit()
     {
-        // This is handled by the main process. No forks are aftive.
+        // This is handled by the main process. No forks are active.
         Logger::logInfo("Called exit on language server");
         exit(0);
     }

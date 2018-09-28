@@ -625,7 +625,7 @@ class ASTSimplifier
 
     /**
      * Converts if (!x) {Y} else {Z} -> if (x) {Z} else {Y}
-     * This improves phan's analysis for cases such as `if (!is_string($x))`.
+     * This improves Phan's analysis for cases such as `if (!is_string($x))`.
      */
     private function applyIfNegateReduction(Node $node) : Node
     {
@@ -646,7 +646,7 @@ class ASTSimplifier
 
     /**
      * Converts if (!!(x)) {Y} -> if (x) {Y}
-     * This improves phan's analysis for cases such as `if (!!x)`
+     * This improves Phan's analysis for cases such as `if (!!x)`
      */
     private function applyIfDoubleNegateReduction(Node $node) : Node
     {
@@ -669,7 +669,7 @@ class ASTSimplifier
 
     /**
      * Converts while (!!(x)) {Y} -> if (x) {Y}
-     * This improves phan's analysis for cases such as `if (!!x)`
+     * This improves Phan's analysis for cases such as `if (!!x)`
      */
     private function applyWhileDoubleNegateReduction(Node $node) : Node
     {
@@ -693,7 +693,7 @@ class ASTSimplifier
 
     /**
      * Converts for (INIT; !!(x); LOOP) {Y} -> if (INIT; x; LOOP) {Y}
-     * This improves phan's analysis for cases such as `if (!!x)`
+     * This improves Phan's analysis for cases such as `if (!!x)`
      */
     private function applyForDoubleNegateReduction(Node $node) : Node
     {

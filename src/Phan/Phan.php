@@ -53,7 +53,7 @@ class Phan implements IgnoredFilesFilterInterface
     }
 
     /**
-     * Take an array of serialized issues, deserialize them and then add
+     * Take an array of serialized issues, unserialize them and then add
      * them to the issue collector.
      *
      * @param array[] $results
@@ -162,7 +162,7 @@ class Phan implements IgnoredFilesFilterInterface
             } catch (\Throwable $throwable) {
                 // Catch miscellaneous errors such as $throwable and print their stack traces.
                 error_log("While parsing $file_path, caught: " . $throwable . "\n");
-                $code_base->recordUnparseableFile($file_path);
+                $code_base->recordUnparsableFile($file_path);
             }
         }
         $code_base->setCurrentParsedFile(null);

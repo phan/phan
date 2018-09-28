@@ -24,7 +24,7 @@ use Phan\Library\Map;
 use TypeError;
 
 /**
- * This emits PhanUnreferenced* issues for classlikes, constants, properties, and functions/methods.
+ * This emits PhanUnreferenced* issues for class-likes, constants, properties, and functions/methods.
  *
  * TODO: Make references to methods of interfaces also count as references to traits which are used by classes to implement those methods.
  * (Maybe track these in addMethod when checking for inheritance?)

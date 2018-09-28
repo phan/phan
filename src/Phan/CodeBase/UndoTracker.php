@@ -91,7 +91,7 @@ class UndoTracker
         if (!file_exists($real)) {
             return null;
         }
-        $stat = @stat($real);  // Double check: suppress to prevent phan's error_handler from terminating on error.
+        $stat = @stat($real);  // Double check: suppress to prevent Phan's error_handler from terminating on error.
         if (!$stat) {
             return null;  // It was missing or unreadable.
         }
@@ -99,13 +99,13 @@ class UndoTracker
     }
 
     /**
-     * Called when a file is unparseable.
+     * Called when a file is unparsable.
      * Removes the classes and functions, etc. from an older version of the file, if one exists.
      * @return void
      */
-    public function recordUnparseableFile(CodeBase $code_base, string $current_parsed_file)
+    public function recordUnparsableFile(CodeBase $code_base, string $current_parsed_file)
     {
-        Daemon::debugf("%s was unparseable, had a syntax error", $current_parsed_file);
+        Daemon::debugf("%s was unparsable, had a syntax error", $current_parsed_file);
         Phan::getIssueCollector()->removeIssuesForFiles([$current_parsed_file]);
         $this->undoFileChanges($code_base, $current_parsed_file);
         unset($this->file_modification_state[$current_parsed_file]);

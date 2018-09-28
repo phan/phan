@@ -350,7 +350,7 @@ class Type
      * @return Type
      * A single canonical instance of the given type.
      *
-     * @throws AssertionError if an unparseable string is passed in
+     * @throws AssertionError if an unparsable string is passed in
      */
     protected static function make(
         string $namespace,
@@ -1773,7 +1773,7 @@ class Type
         if ($this->namespace !== '\\') {
             return null;
         }
-        // TODO: check for traversable and generator and other subclasses of traversable
+        // TODO: check for Traversable and Generator and other subclasses of Traversable
         */
         return null;
     }
@@ -2519,7 +2519,7 @@ class Type
                 if ($delta <= 0) {
                     if ($delta === 0) {
                         $results[] = \implode(',', $prev_parts);
-                    }  // ignore unparseable data such as "<T,T2>>" or "T, T2{}}"
+                    }  // ignore unparsable data such as "<T,T2>>" or "T, T2{}}"
                     $prev_parts = [];
                     $delta = 0;
                 }
@@ -2534,7 +2534,7 @@ class Type
                 $results[] = $result;
             } elseif ($delta > 0) {
                 $prev_parts[] = $result;
-            }  // otherwise ignore unparseable data such as ">" (should be impossible)
+            }  // otherwise ignore unparsable data such as ">" (should be impossible)
 
             // e.g. we're breaking up T1<T2<X,Y>> into "T1<T2<X" and "Y>>"
         }

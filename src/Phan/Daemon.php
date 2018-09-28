@@ -11,7 +11,7 @@ use RuntimeException;
 
 /**
  * A simple analyzing daemon that can be used by IDEs. (see `phan_client`)
- * Accepts requests (Currently only JSON blobs) over a unix socket or TCP sockets.
+ * Accepts requests (Currently only JSON blobs) over a Unix socket or TCP socket.
  *
  * @see \Phan\LanguageServer\LanguageServer for an implementation of the Language Server Protocol
  */
@@ -29,7 +29,7 @@ class Daemon
      * @param Closure $file_path_lister
      * Returns string[] - A list of files to scan. This may be different from the previous contents.
      *
-     * @return Request|null - A writeable request, which has been fully read from.
+     * @return Request|null - A writable request, which has been fully read from.
      * Callers should close after they are finished writing.
      */
     public static function run(CodeBase $code_base, Closure $file_path_lister)
@@ -118,7 +118,7 @@ class Daemon
     }
 
     /**
-     * @return void - A writeable request, which has been fully read from.
+     * @return void - A writable request, which has been fully read from.
      * Callers should close after they are finished writing.
      */
     private static function runWithoutPcntl(CodeBase $code_base, Closure $file_path_lister)
@@ -236,7 +236,7 @@ class Daemon
         );
         $socket_server = stream_socket_server($listen_url, $errno, $errstr);
         if (!$socket_server) {
-            error_log("Failed to create unix socket server $listen_url: $errstr ($errno)\n");
+            error_log("Failed to create Unix socket server $listen_url: $errstr ($errno)\n");
             exit(1);
         }
         return $socket_server;

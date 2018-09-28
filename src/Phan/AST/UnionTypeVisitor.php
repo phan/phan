@@ -1576,7 +1576,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * given node
      *
      * @throws IssueException
-     * if variable is undeclined and being fetched
+     * if variable is undefined and being fetched
      */
     public function visitVar(Node $node) : UnionType
     {
@@ -2273,7 +2273,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     $is_valid = false;
                     continue;
                 }
-                // TODO: warn about invalid types and unparseable types
+                // TODO: warn about invalid types and unparsable types
                 $fqsen = FullyQualifiedClassName::makeFromExtractedNamespaceAndName($value);
                 if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
                     $is_valid = false;

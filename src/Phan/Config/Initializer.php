@@ -477,7 +477,7 @@ EOT;
         $contents = file_get_contents($absolute_path);
         try {
             // PHP binaries can have many forms, may begin with #/usr/bin/env php.
-            // We assume that if it's parseable and contains at least one PHP executable line, it's valid.
+            // We assume that if it's parsable and contains at least one PHP executable line, it's valid.
             $ast = Parser::parseCode(
                 new CodeBase([], [], [], [], []),
                 new Context(),

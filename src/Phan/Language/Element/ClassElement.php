@@ -226,7 +226,7 @@ abstract class ClassElement extends AddressableElement
             return true;
         }
         if (!$accessing_class_fqsen) {
-            // Accesses from outside class scopes can only access public fqsens
+            // Accesses from outside class scopes can only access public FQSENs
             return false;
         }
         $defining_fqsen = $this->getDefiningClassFQSEN();

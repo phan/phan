@@ -12,6 +12,6 @@
 %s:28 PhanInvalidCommentForDeclarationType The phpdoc comment for @method cannot occur on a method
 %s:28 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @method int $wrongPlaceForMethod'
 %s:35 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @param'
-%s:36 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @param <>$x $x (not parseable)'
+%s:36 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @param <>$x $x (not parsable)'
 %s:42 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @param <'
 %s:43 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @param > */'

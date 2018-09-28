@@ -715,7 +715,7 @@ final class ArgumentType
                         }
                     }
                 } catch (IssueException $_) {
-                    // Swallow any issue esceptions here. They'll be caught elsewhere.
+                    // Swallow any issue exceptions here. They'll be caught elsewhere.
                 }
             }
         }
