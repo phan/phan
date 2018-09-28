@@ -1080,7 +1080,7 @@ class Clazz extends AddressableElement
 
         // Check to see if missing properties are allowed
         // or we're working with a class with dynamic
-        // properties such as stdclass.
+        // properties such as stdClass.
         if (!$is_static && (Config::getValue('allow_missing_properties')
             || $this->getHasDynamicProperties($code_base))
         ) {
@@ -1709,7 +1709,7 @@ class Clazz extends AddressableElement
 
     /**
      * @return array<int,FullyQualifiedClassName>
-     * A list of FQSEN's for included traits
+     * A list of FQSENs for included traits
      */
     public function getTraitFQSENList() : array
     {

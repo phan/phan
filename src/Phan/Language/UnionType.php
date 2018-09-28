@@ -87,7 +87,7 @@ class UnionType implements Serializable
 
     /**
      * @param array<int,Type> $type_list
-     * @param bool $is_unique - Whether or not this is already unique. Only set to true within UnionSet code.
+     * @param bool $is_unique - Whether or not this is already unique. Only set to true within UnionType code.
      *
      * An optional list of types represented by this union
      */

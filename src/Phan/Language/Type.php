@@ -1773,7 +1773,7 @@ class Type
         if ($this->namespace !== '\\') {
             return null;
         }
-        // TODO: check for traversable and generator and other subclasses of traversable
+        // TODO: check for Traversable and Generator and other subclasses of Traversable
         */
         return null;
     }

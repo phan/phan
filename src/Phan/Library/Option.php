@@ -2,7 +2,7 @@
 namespace Phan\Library;
 
 /**
- * An Option is a safer equivalent to nullable values, indicating that callers should check for absenses of values.
+ * An Option is a safer equivalent to nullable values, indicating that callers should check for absences of values.
  * This demonstrates Phan's template support.
  *
  * It is either `None` (analogous to `null`) or `Some<T>` (analogous to `T`).

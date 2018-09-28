@@ -16,6 +16,6 @@ if (!(file_exists(__DIR__ . '/../vendor/autoload.php') || file_exists(__DIR__ . 
     exit(1);
 }
 
-// Fix turkish locales(tr_TR) - strtolower('I') is not 'i', so phan lookup might fail.
+// Fix Turkish locales(tr_TR) - strtolower('I') is not 'i', so phan lookup might fail.
 // (But continue formatting times, etc. in the user's locale)
 setlocale(LC_CTYPE, 'C');

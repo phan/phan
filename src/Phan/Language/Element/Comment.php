@@ -23,7 +23,7 @@ use Phan\Library\Option;
  * Handles extracting information(param types, return types, magic methods/properties, etc.) from phpdoc comments.
  * Instances of Comment contain the extracted information.
  *
- * TODO: Pass the doccomment line's index to the Element that will use the client,
+ * TODO: Pass the doc comment line's index to the Element that will use the client,
  * so that it can be used for more precise line numbers (E.g. for where magic methods were declared,
  * where functions with no signature types but phpdoc types declared types that are invalid class names, etc.
  *

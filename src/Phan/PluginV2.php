@@ -12,7 +12,7 @@ use Phan\PluginV2\IssueEmitter;
  * (And at least one of the interfaces corresponding to plugin capabilities)
  * and return an instance of themselves.
  *
- * @link https://github.com/phan/phan/wiki/Writing-Plugins-for-Phan has addititional resources for users writing a plugin.
+ * @link https://github.com/phan/phan/wiki/Writing-Plugins-for-Phan has additional resources for users writing a plugin.
  *
  * List of capabilities which a plugin may implement:
  *
