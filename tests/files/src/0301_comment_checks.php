@@ -33,7 +33,7 @@ class Foo {
     /**
      * The below annotation is invalid without type OR a variable, and silently ignored:
      * @param
-     * @param <>$x $x (not parseable)
+     * @param <>$x $x (not parsable)
      */
     public function foo($x) {
     }

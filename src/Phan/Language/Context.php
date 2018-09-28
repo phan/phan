@@ -228,7 +228,7 @@ class Context extends FileRef
         // TODO: Warn if namespace_map already exists? Then again, `php -l` already does.
         $parse_entry = $this->parse_namespace_map[$flags][$alias] ?? null;
         if ($parse_entry !== null) {
-            // We add entries to namespace_map only after encounting them
+            // We add entries to namespace_map only after encountering them
             // This is because statements can appear before 'use Foo\Bar;' (and those don't use the 'use' statement.)
             $this->namespace_map[$flags][$alias] = $parse_entry;
             return $this;

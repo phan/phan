@@ -866,8 +866,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // to this method, we analyze all children of the
         // node.
         foreach ($child_nodes as $child_node) {
-            // The conditions need to communicate to the outter
-            // scope for things like assigning veriables.
+            // The conditions need to communicate to the outer
+            // scope for things like assigning variables.
             $child_context = clone($fallthrough_context);
 
             $child_context->withLineNumberStart(
@@ -947,7 +947,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $try_node = $node->children['try'];
 
         // The conditions need to communicate to the outer
-        // scope for things like assigning veriables.
+        // scope for things like assigning variables.
         $try_context = $context->withScope(
             new BranchScope($context->getScope())
         );
@@ -985,7 +985,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             }
 
             // The conditions need to communicate to the outer
-            // scope for things like assigning veriables.
+            // scope for things like assigning variables.
             $catch_context = $context->withScope(
                 new BranchScope($context->getScope())
             );
@@ -1022,7 +1022,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // Because finally is always executed, we reuse $context
 
             // The conditions need to communicate to the outer
-            // scope for things like assigning veriables.
+            // scope for things like assigning variables.
             $context = $context->withScope(
                 new BranchScope($context->getScope())
             );

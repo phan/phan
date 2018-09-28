@@ -103,7 +103,7 @@ class UndoTracker
      * Removes the classes and functions, etc. from an older version of the file, if one exists.
      * @return void
      */
-    public function recordUnparseableFile(CodeBase $code_base, string $current_parsed_file)
+    public function recordUnparsableFile(CodeBase $code_base, string $current_parsed_file)
     {
         Daemon::debugf("%s was unparsable, had a syntax error", $current_parsed_file);
         Phan::getIssueCollector()->removeIssuesForFiles([$current_parsed_file]);

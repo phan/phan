@@ -236,7 +236,7 @@ class Daemon
         );
         $socket_server = stream_socket_server($listen_url, $errno, $errstr);
         if (!$socket_server) {
-            error_log("Failed to create unix socket server $listen_url: $errstr ($errno)\n");
+            error_log("Failed to create Unix socket server $listen_url: $errstr ($errno)\n");
             exit(1);
         }
         return $socket_server;

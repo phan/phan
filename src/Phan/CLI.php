@@ -407,7 +407,7 @@ class CLI
                     $this->checkCanDaemonize('unix', $key);
                     $socket_dirname = realpath(dirname($value));
                     if (!file_exists($socket_dirname) || !is_dir($socket_dirname)) {
-                        $msg = sprintf('Requested to create unix socket server in %s, but folder %s does not exist', json_encode($value), json_encode($socket_dirname));
+                        $msg = sprintf('Requested to create Unix socket server in %s, but folder %s does not exist', json_encode($value), json_encode($socket_dirname));
                         $this->usage($msg, 1);
                     } else {
                         Config::setValue('daemonize_socket', $value);  // Daemonize. Assumes the file list won't change. Accepts requests over a Unix socket, or some other IPC mechanism.
@@ -1089,7 +1089,7 @@ EOB;
         string $exclude_file_regex,
         string $path_name
     ) : bool {
-        // Make this behave the same way on linux/unix and on Windows.
+        // Make this behave the same way on Linux/Unix and on Windows.
         if (DIRECTORY_SEPARATOR === '\\') {
             $path_name = str_replace(DIRECTORY_SEPARATOR, '/', $path_name);
         }

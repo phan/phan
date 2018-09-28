@@ -144,7 +144,7 @@ final class ConversionTest extends BaseTest
         }
         $ast = ast\parse_code($contents, $ast_version, $file_name);
         self::normalizeOriginalAST($ast);
-        $this->assertInstanceOf('\ast\Node', $ast, 'Examples must be syntactically valid PHP parseable by php-ast');
+        $this->assertInstanceOf('\ast\Node', $ast, 'Examples must be syntactically valid PHP parsable by php-ast');
         $converter = new TolerantASTConverter();
         $converter->setPHPVersionId(PHP_VERSION_ID);
         try {

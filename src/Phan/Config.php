@@ -139,7 +139,7 @@ class Config
         // n.b.: If you'd like to parse but not analyze 3rd
         //       party code, directories containing that code
         //       should be added to the `directory_list` as
-        //       to `excluce_analysis_directory_list`.
+        //       to `exclude_analysis_directory_list`.
         'exclude_analysis_directory_list' => [],
 
         // A file list that defines files that will be included
@@ -715,7 +715,7 @@ class Config
         // since this may result in strange error messages for invalid files (e.g. if parsed but not analyzed).
         'use_polyfill_parser' => false,
 
-        // Path to a unix socket for a daemon to listen to files to analyze. Use command line option instead.
+        // Path to a Unix socket for a daemon to listen to files to analyze. Use command line option instead.
         'daemonize_socket' => false,
 
         // If a daemon should listen to files to analyze over TCP.

@@ -401,7 +401,7 @@ EOB;
                     $socket_dirname = realpath(dirname($value));
                     if (!file_exists($socket_dirname) || !is_dir($socket_dirname)) {
                         // The client doesn't require that the file exists if the daemon isn't running, but we do require that the folder exists.
-                        $msg = sprintf('Configured to connect to unix socket server at socket %s, but folder %s does not exist', json_encode($value), json_encode($socket_dirname));
+                        $msg = sprintf('Configured to connect to Unix socket server at socket %s, but folder %s does not exist', json_encode($value), json_encode($socket_dirname));
                         $this->usage($msg, 1);
                     } else {
                         $this->url = sprintf('unix://%s/%s', $socket_dirname, basename($value));
