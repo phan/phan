@@ -2292,7 +2292,7 @@ constant {CONST} may not have a template type
 
 ## PhanTemplateTypeStaticMethod
 
-This is emitted when a static method's PHPdoc contains a param/return type declared in a class's phpdoc template annotations.
+This is emitted when a static method's PHPDoc contains a param/return type declared in a class's phpdoc template annotations.
 
 ```
 static method {METHOD} may not use template types
@@ -2300,7 +2300,7 @@ static method {METHOD} may not use template types
 
 ## PhanTemplateTypeStaticProperty
 
-This is emitted when a static property's PHPdoc contains an `@var` type declared in the class's phpdoc template annotations.
+This is emitted when a static property's PHPDoc contains an `@var` type declared in the class's phpdoc template annotations.
 
 ```
 static property {PROPERTY} may not have a template type
@@ -2335,7 +2335,7 @@ Cannot access internal {CLASS} defined at {FILE}:{LINE}
 This issue comes up when there is an attempt to access an `@internal` global constant outside of the namespace in which it's defined.
 
 ```
-Cannot access internal constant {CONST} of namepace {NAMESPACE} defined at {FILE}:{LINE} from namespace {NAMESPACE}
+Cannot access internal constant {CONST} of namespace {NAMESPACE} defined at {FILE}:{LINE} from namespace {NAMESPACE}
 ```
 
 ## PhanAccessMethodInternal

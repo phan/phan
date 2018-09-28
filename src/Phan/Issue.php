@@ -2852,7 +2852,7 @@ class Issue
                 self::AccessConstantInternal,
                 self::CATEGORY_INTERNAL,
                 self::SEVERITY_NORMAL,
-                "Cannot access internal constant {CONST} of namepace {NAMESPACE} defined at {FILE}:{LINE} from namespace {NAMESPACE}",
+                "Cannot access internal constant {CONST} of namespace {NAMESPACE} defined at {FILE}:{LINE} from namespace {NAMESPACE}",
                 self::REMEDIATION_B,
                 15000
             ),
