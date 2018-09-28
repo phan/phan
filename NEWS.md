@@ -366,7 +366,7 @@ Language Server/Daemon mode:
 
 Bug fixes:
 + Don't crash if `ext-tokenizer` isn't installed (#1747)
-+ Fix invalid output of `tool/make_stubs` for apcu (#1745)
++ Fix invalid output of `tool/make_stubs` for APCu (#1745)
 
 27 May 2018, Phan 0.12.10
 -------------------------
@@ -587,7 +587,7 @@ New features(Analysis)
 
   Warnings about the inferred keys/values of `yield from` being invalid reuse `PhanTypeMismatchGeneratorYieldValue` and `PhanTypeMismatchGeneratorYieldKey`
 + Make the union types within the phpdoc template syntax of `iterator`/`Traversable`/`Iterator`/`Generator` affect analysis of the keys/values of `foreach` statements
-+ Improve phan's analysis of array functions modifying arguments by reference, reducing false positives. (#1662)
++ Improve Phan's analysis of array functions modifying arguments by reference, reducing false positives. (#1662)
   Affects `array_shift`/`array_unshift`/`array_push`/`array_pop`/`array_splice`.
 
 Misc
@@ -1126,7 +1126,7 @@ New Features (CLI, Configs)
   along with stubs for Phan to use (instead of ReflectionFunction, etc) if the PHP binary used to run Phan doesn't have those extensions enabled. (#627)
   Add a script (`tool/make_stubs`) to output the contents of stubs to use for `autoload_internal_extension_signatures` (#627).
 + By default, automatically restart Phan without xdebug if xdebug is enabled. (#1161)
-  If you wish to analyze a project using xdebug's functions, set `autoload_internal_extension_signatures`
+  If you wish to analyze a project using XDebug's functions, set `autoload_internal_extension_signatures`
   (e.g. `['xdebug' => 'vendor/phan/phan/.phan/internal_stubs/xdebug.phan_php']`)
   If you wish to use xdebug to debug Phan's analysis itself, set and export the environment variable `PHAN_ALLOW_XDEBUG=1`.
 + Improve analysis of return types of `array_pop`, `array_shift`, `current`, `end`, `next`, `prev`, `reset`, `array_map`, `array_filter`, etc.

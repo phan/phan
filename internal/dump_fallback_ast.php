@@ -60,7 +60,7 @@ EOB;
     }
     $expr = $argv[1];
     if (!is_string($expr)) {
-        throw new AssertionError("missing 2nd argumen");
+        throw new AssertionError("missing 2nd argument");
     }
 
     // Guess if this is a snippet or file contents
