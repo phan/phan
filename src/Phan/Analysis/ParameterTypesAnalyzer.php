@@ -849,7 +849,7 @@ class ParameterTypesAnalyzer
 
     /**
      * Inherit any missing phpdoc types for (at)return and (at)param of $method from $o_method.
-     * This is the default behaviour, see https://www.phpdoc.org/docs/latest/guides/inheritance.html
+     * This is the default behavior, see https://www.phpdoc.org/docs/latest/guides/inheritance.html
      *
      * @return void
      */

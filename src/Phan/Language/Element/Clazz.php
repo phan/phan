@@ -204,7 +204,7 @@ class Clazz extends AddressableElement
         // Note: If there are multiple calls to Clazz->addProperty(),
         // the UnionType from the first one will be used, subsequent calls to addProperty()
         // will have no effect.
-        // As a result, we set the types from phan's documented internal property types first,
+        // As a result, we set the types from Phan's documented internal property types first,
         // preferring them over the default values (which may be null, etc.).
         foreach (UnionType::internalPropertyMapForClassName(
             $clazz->getName()

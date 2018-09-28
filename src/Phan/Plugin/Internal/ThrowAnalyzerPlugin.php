@@ -66,7 +66,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
         $union_type = $this->withoutCaughtUnionTypes($union_type);
         if ($union_type->isEmpty()) {
             // Give up if we don't know
-            // TODO: Infer throwable, if the original $union_type was empty
+            // TODO: Infer Throwable, if the original $union_type was empty
             // and there are no try/catch blocks wrapping this.
             return;
         }

@@ -91,7 +91,7 @@ class UndoTracker
         if (!file_exists($real)) {
             return null;
         }
-        $stat = @stat($real);  // Double check: suppress to prevent phan's error_handler from terminating on error.
+        $stat = @stat($real);  // Double check: suppress to prevent Phan's error_handler from terminating on error.
         if (!$stat) {
             return null;  // It was missing or unreadable.
         }

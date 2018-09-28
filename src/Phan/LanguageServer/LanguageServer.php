@@ -171,7 +171,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                     // If a ResponseError is thrown, send it back in the Response
                     $error = $e;
                 } catch (Throwable $e) {
-                    Logger::logInfo('Saw throwable: ' . get_class($e) . ': ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+                    Logger::logInfo('Saw Throwable: ' . get_class($e) . ': ' . $e->getMessage() . "\n" . $e->getTraceAsString());
                     // If an unexpected error occurred, send back an INTERNAL_ERROR error response
                     $error = new AdvancedJsonRpc\Error(
                         (string)$e,

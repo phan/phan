@@ -131,7 +131,7 @@ class AssignmentVisitor extends AnalysisVisitor
     }
 
     /**
-     * The following is an example of how this'd happen.
+     * The following is an example of how this would happen.
      * (TODO: Check if the right hand side is an object with offsetSet() or a reference?
      *
      * ```php
@@ -156,7 +156,7 @@ class AssignmentVisitor extends AnalysisVisitor
     }
 
     /**
-     * The following is an example of how this'd happen.
+     * The following is an example of how this would happen.
      * TODO: Check that the left hand side is a reference or defines offsetSet()?
      *
      * ```php
@@ -179,7 +179,7 @@ class AssignmentVisitor extends AnalysisVisitor
     }
 
     /**
-     * The following is an example of how this'd happen.
+     * The following is an example of how this would happen.
      *
      * ```php
      * class A{
@@ -761,7 +761,7 @@ class AssignmentVisitor extends AnalysisVisitor
         // TODO: Iterate over individual types, don't look at the whole type at once?
 
         // If we're assigning to an array element then we don't
-        // know what the constitutation of the parameter is
+        // know what the array structure of the parameter is
         // outside of the scope of this assignment, so we add to
         // its union type rather than replace it.
         $property_union_type = $property->getUnionType();
@@ -1067,7 +1067,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 );
 
             // If we're assigning to an array element then we don't
-            // know what the constitutation of the parameter is
+            // know what the array structure of the parameter is
             // outside of the scope of this assignment, so we add to
             // its union type rather than replace it.
             if ($this->dim_depth > 0) {

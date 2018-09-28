@@ -903,7 +903,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             // Check if the return type is compatible with the declared return type.
             if (!$method->isReturnTypeUndefined()) {
-                // We allow base classes to cast to subclasses, and subclasses to cast to baseclasses,
+                // We allow base classes to cast to subclasses, and subclasses to cast to base classes,
                 // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
                 if (!$this->checkCanCastToReturnType($code_base, $expression_type, $method_return_type)) {
                     $this->emitIssue(
@@ -957,7 +957,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $code_base = $this->code_base;
 
         foreach ($this->getReturnTypes($context, $node->children['expr'], $node->lineno) as $lineno => $expression_type) {
-            // We allow base classes to cast to subclasses, and subclasses to cast to baseclasses,
+            // We allow base classes to cast to subclasses, and subclasses to cast to base classes,
             // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
             if (!$this->checkCanCastToReturnType($code_base, $expression_type, $expected_return_type)) {
                 $this->emitIssue(
@@ -1152,7 +1152,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // TODO: Better casting logic for template types (E.g. should be able to cast None to Option<MyClass>, but not Some<int> to Option<MyClass>
             return $expression_type->canCastToExpandedUnionType($method_return_type, $code_base);
         }
-        // We allow base classes to cast to subclasses, and subclasses to cast to baseclasses,
+        // We allow base classes to cast to subclasses, and subclasses to cast to base classes,
         // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
         return $expression_type->asExpandedTypes($code_base)->canCastToUnionType($method_return_type) ||
             $expression_type->canCastToUnionType($method_return_type->asExpandedTypes($code_base));
@@ -2218,7 +2218,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // (Only check if looking for instance properties)
                 $has_getter = $this->hasGetter($class_list);
 
-                // If they don't, then analyze for Noops.
+                // If they don't, then analyze for No-ops.
                 if (!$has_getter) {
                     $this->analyzeNoOp($node, Issue::NoopProperty);
 
@@ -2935,7 +2935,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // For now, give up and work on it later.
         //
         // TODO (Issue #376): It's possible to have a
-        // parameter `&...$args`. Analysing that is going to
+        // parameter `&...$args`. Analyzing that is going to
         // be a problem. Is it possible to create
         // `PassByReferenceVariableCollection extends Variable`
         // or something similar?

@@ -92,14 +92,14 @@ trait FunctionTrait
     /**
      * @var int
      * The number of required (real) parameters for the method declaration.
-     * For internal methods, ignores phan's annotations.
+     * For internal methods, ignores Phan's annotations.
      */
     private $number_of_required_real_parameters = 0;
 
     /**
      * @var int
      * The number of optional (real) parameters for the method declaration.
-     * For internal methods, ignores phan's annotations.
+     * For internal methods, ignores Phan's annotations.
      * For user-defined methods, ignores presence of func_get_arg*()
      */
     private $number_of_optional_real_parameters = 0;

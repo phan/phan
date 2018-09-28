@@ -6,7 +6,7 @@ use Phan\Issue;
 use Phan\Language\Element\Clazz;
 
 /**
- * This verifies that the inherited abstract methods are all implemented on non-abstract clases.
+ * This verifies that the inherited abstract methods are all implemented on non-abstract classes.
  * NOTE: This step must be run after adding methods from this class and each of its ancestors.
  */
 class AbstractMethodAnalyzer

@@ -904,7 +904,7 @@ Extended help:
   This is useful when developing or debugging language server clients.
 
  --language-server-allow-missing-pcntl
-  Noop (This is the default behavior).
+  No-op (This is the default behavior).
   Allow the fallback that doesn't use pcntl (New and experimental) to be used if the pcntl extension is not installed.
   This is useful for running the language server on Windows.
 
