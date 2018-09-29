@@ -157,7 +157,7 @@ class VariableTrackingScope
         VariableGraph $graph
     ) {
         foreach ($scope->getDefinitionsRecursively() as $variable_name => $defs) {
-            $defs_for_variable = $result->defs[$variable_name] ?? [];
+            $defs_for_variable = $result->getDefinition($variable_name) ?? [];
             $loop_uses_of_own_variable = $scope->uses[$variable_name] ?? null;
 
             foreach ($defs as $def_id => $_) {

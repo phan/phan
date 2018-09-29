@@ -578,7 +578,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node $node a node of kind AST_CATCH_LIST
+     * @param Node $node a node of kind AST_TRY
      * Analyzes catch statement lists.
      * @return VariableTrackingScope
      *
@@ -599,7 +599,10 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
         $catch_node_list = $node->children['catches']->children;
         if (count($catch_node_list) > 0) {
-            $main_scope = $this->analyze($main_scope, $node->children['catches']);
+            $catches_scope = new VariableTrackingBranchScope($main_scope);
+            $catches_scope = $this->analyze($catches_scope, $node->children['catches']);
+            // @phan-suppress-next-line PhanTypeMismatchArgument
+            $main_scope = $main_scope->mergeBranchScopeList([$catches_scope], true, []);
         }
         $finally_node = $node->children['finally'];
         if ($finally_node !== null) {
