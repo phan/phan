@@ -733,7 +733,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             // array element we're assigning to
             // TODO: Check key types are valid?
             $key_node = $child_node->children['key'];
-            $key_value = null;
 
             if ($key_node === null) {
                 $key_set[] = true;

@@ -72,7 +72,6 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
      */
     private function readMessages() : int
     {
-        $c = '';
         $emitted_messages = 0;
         while (($c = fgetc($this->input)) !== false && $c !== '') {
             $this->buffer .= $c;

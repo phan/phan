@@ -2012,7 +2012,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     }
 
                     return $union_type;
-                } catch (IssueException $exception) {
+                } catch (IssueException $_) {
                     return UnionType::empty();
                 }
             }
@@ -2410,7 +2410,6 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         // We're going to convert the class reference to a type
-        $type = null;
 
         // Check to see if the name is fully qualified
         if ($node->flags & \ast\flags\NAME_NOT_FQ) {

@@ -100,11 +100,11 @@ class Analysis
         }
         try {
             $node = Parser::parseCode($code_base, $context, null, $file_path, $file_contents, $suppress_parse_errors);
-        } catch (ParseError $e) {
+        } catch (ParseError $_) {
             return $context;
-        } catch (CompileError $e) {
+        } catch (CompileError $_) {
             return $context;
-        } catch (ParseException $e) {
+        } catch (ParseException $_) {
             return $context;
         }
 

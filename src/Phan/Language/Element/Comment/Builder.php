@@ -136,7 +136,6 @@ final class Builder
             // If the type looks like a variable name, make it an
             // empty type so that other stuff can match it. We can't
             // just skip it or we'd mess up the parameter order.
-            $union_type = null;
             if (0 !== \strpos($type, '$')) {
                 $union_type =
                     UnionType::fromStringInContext(

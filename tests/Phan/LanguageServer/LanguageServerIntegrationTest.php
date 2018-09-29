@@ -1595,7 +1595,6 @@ EOT;
         $content_length = 0;
         $headers = [];
         '@phan-var array<string,string> $headers';
-        $c = false;
         $parsing_mode = ProtocolStreamReader::PARSE_HEADERS;
         while (($c = fgetc($proc_out)) !== false && $c !== '') {
             $buffer .= $c;
