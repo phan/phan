@@ -303,8 +303,11 @@ final class UnionTypeTest extends BaseTest
         )->asExpandedTypes(self::$code_base)->__toString();
     }
 
+    const VALID_UNION_TYPE_REGEX = '(^(' . UnionType::union_type_regex_or_this . ')$)';
+
     private static function makePHPDocUnionType(string $union_type_string) : UnionType
     {
+        self::assertTrue(preg_match(self::VALID_UNION_TYPE_REGEX, $union_type_string) > 0, "$union_type_string should be parsed by regex");
         return UnionType::fromStringInContext($union_type_string, new Context(), Type::FROM_PHPDOC);
     }
 
@@ -428,6 +431,15 @@ final class UnionTypeTest extends BaseTest
         $union_type = self::makePHPDocUnionType('array<int|string>');
         $this->assertSame('int[]|string[]', (string)$union_type);
         $this->assertSame(2, $union_type->typeCount());
+
+        // array keys are integers, values are strings
+        $union_type = self::makePHPDocUnionType('(int|string)[]');
+        $this->assertSame('int[]|string[]', (string)$union_type);
+        $this->assertSame(2, $union_type->typeCount());
+
+        $union_type = self::makePHPDocUnionType('((int)|(string))[]');
+        $this->assertSame('int[]|string[]', (string)$union_type);
+        $this->assertSame(2, $union_type->typeCount());
         $types = $union_type->getTypeSet();
         $type = reset($types);
 
@@ -448,6 +460,61 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame($array_type($array_type($array_type(IntType::instance(false)))), $type);
         $type = next($types);
         $this->assertSame($array_type($array_type($array_type(StringType::instance(false)))), $type);
+    }
+
+    /**
+     * Assert values that should not be matched by the regular expression for a valid union type.
+     * This regular expression controls what can get passed to UnionType::from...()
+     *
+     * @dataProvider unparseableUnionTypeProvider
+     */
+    public function testUnparseableUnionType(string $type)
+    {
+        $this->assertSame(0, preg_match(self::VALID_UNION_TYPE_REGEX, $type), "'$type' should be unparseable");
+    }
+
+    public function unparseableUnionTypeProvider() : array
+    {
+        return [
+            ['()'],
+            ['()'],
+            [')('],
+            ['<>'],
+            ['[]'],
+            ['{}'],
+            ['?()'],
+            ['<=>'],
+            ['()[]'],
+            ['array<>'],
+            ['[(a|b)]'],
+            ['int|'],
+            ['|int'],
+            ['int|?'],
+            ['int|()'],
+            ['(int|)'],
+            ['array{'],
+            ['array{}}'],
+            ['(int){}'],
+        ];
+    }
+
+    public function testComplexUnionType()
+    {
+        // array keys are integers, values are strings
+        $union_type = self::makePHPDocUnionType('(int|string)|Closure():(int|stdClass)');
+        $this->assertSame('Closure():(\stdClass|int)|int|string', (string)$union_type);
+        $this->assertSame(3, $union_type->typeCount());
+    }
+
+    public function testNullableBasicArrayType()
+    {
+        // array keys are integers, values are strings
+        $union_type = self::makePHPDocUnionType('?(int|string)[]');
+        $this->assertSame('?int[]|?string[]', (string)$union_type);
+        $this->assertSame(2, $union_type->typeCount());
+        $union_type = self::makePHPDocUnionType('?((int|string))[]');
+        $this->assertSame('?int[]|?string[]', (string)$union_type);
+        $this->assertSame(2, $union_type->typeCount());
     }
 
     public function testNullableArrayType()

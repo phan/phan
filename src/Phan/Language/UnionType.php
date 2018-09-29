@@ -267,7 +267,13 @@ class UnionType implements Serializable
             // Exclude empty type names
             // Exclude namespaces without type names (e.g. `\`, `\NS\`)
             if ($type_name !== '' && \preg_match('@\\\\[\[\]]*$@', $type_name) === 0) {
-                $parts[] = $type_name;
+                if (($type_name[0] ?? '') === '(' && \substr($type_name, -1) === ')') {
+                    foreach (self::extractTypePartsForStringInContext(\substr($type_name, 1, -1)) as $inner_type_name) {
+                        $parts[] = $inner_type_name;
+                    }
+                } else {
+                    $parts[] = $type_name;
+                }
             }
         }
         $cache[$type_string] = $parts;

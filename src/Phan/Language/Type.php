@@ -115,8 +115,7 @@ class Type
      */
     const type_regex =
         '('
-        . '(?:\??\((?-1)\)|'  // Recursion: "?(T)" or "(T)" with brackets
-        // TODO: Allow parsing nesting.
+        . '(?:\??\((?-1)(?:\|(?-1))*\)|'  // Recursion: "?(T)" or "(T)" with brackets. Also allow parsing (a|b) within brackets.
         . '(?:'
           . '\??(?:\\\\?Closure|callable)(\([^()]*\))'
           . '(?:\s*:\s*'  // optional return type, can be ":T" or ":(T1|T2)" or ": ?(T1|T2)"
@@ -158,8 +157,7 @@ class Type
         '('
         . '('
           . '(?:'
-            . '\??\((?-1)\)|'
-            // TODO: Support nesting
+            . '\??\((?-1)(?:\|(?-1))*\)|'  // Recursion: "?(T)" or "(T)" with brackets. Also allow parsing (a|b) within brackets.
             . '(?:'
               . '\??(?:\\\\?Closure|callable)(\([^()]*\))'
               . '(?:\s*:\s*'  // optional return type, can be ":T" or ":(T1|T2)"
@@ -1028,16 +1026,27 @@ class Type
             if ($substring === '') {
                 return ArrayType::instance($is_nullable);
             }
-            return GenericArrayType::fromElementType(
-                self::fromStringInContext(
-                    $substring,
-                    $context,
-                    $source,
-                    $code_base
-                ),
-                $is_nullable,
-                GenericArrayType::KEY_MIXED
+            $types = UnionType::fromStringInContext(
+                $substring,
+                $context,
+                $source,
+                $code_base
             );
+
+            $type_set = $types->getTypeSet();
+            if (count($type_set) === 1) {
+                return GenericArrayType::fromElementType(
+                    \reset($type_set),
+                    $is_nullable,
+                    GenericArrayType::KEY_MIXED
+                );
+            } else {
+                return new GenericMultiArrayType(
+                    $type_set,
+                    $is_nullable,
+                    GenericArrayType::KEY_MIXED
+                );
+            }
         }
 
         // Extract the namespace, type and parameter type name list
