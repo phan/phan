@@ -1,1 +1,2 @@
+%s:4 PhanUnusedVariable Unused definition of variable $x
 %s:13 PhanTypeMismatchArgumentInternal Argument 1 (var) is ?array{} but \count() takes \Countable|array

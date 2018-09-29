@@ -1,2 +1,4 @@
+%s:4 PhanUnusedVariable Unused definition of variable $val
 %s:11 PhanTypeMismatchArgumentInternal Argument 1 (var) is false but \count() takes \Countable|array
+%s:13 PhanUnusedVariable Unused definition of variable $v2
 %s:24 PhanTypeMismatchArgumentInternal Argument 1 (var) is \stdClass|float but \count() takes \Countable|array
