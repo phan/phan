@@ -39,6 +39,19 @@ class VariableTrackingBranchScope extends VariableTrackingScope
     }
 
     /**
+     * @return array<string,array<int,true>>
+     */
+    public function getDefinitionsRecursively()
+    {
+        $defs = $this->parent_scope->getDefinitionsRecursively();
+        foreach ($this->defs as $variable_name => $def) {
+            // TODO: Distinguish between being defined in *some* cases and being defined in *all* cases in this branch
+            $defs[$variable_name] = $def;
+        }
+        return $defs;
+    }
+
+    /**
      * Record a statement that was unreachable due to break/continue statements.
      *
      * @param VariableTrackingBranchScope $inner_scope @phan-unused-param

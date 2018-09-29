@@ -85,6 +85,14 @@ class VariableTrackingScope
         return $this->defs[$variable_name] ?? null;
     }
 
+    /**
+     * @return array<string,array<int,true>>
+     */
+    public function getDefinitionsRecursively()
+    {
+        return $this->defs;
+    }
+
     public function mergeInnerLoopScope(
         VariableTrackingLoopScope $scope,
         VariableGraph $graph
@@ -148,7 +156,7 @@ class VariableTrackingScope
         VariableTrackingBranchScope $scope,
         VariableGraph $graph
     ) {
-        foreach ($scope->defs as $variable_name => $defs) {
+        foreach ($scope->getDefinitionsRecursively() as $variable_name => $defs) {
             $defs_for_variable = $result->defs[$variable_name] ?? [];
             $loop_uses_of_own_variable = $scope->uses[$variable_name] ?? null;
 

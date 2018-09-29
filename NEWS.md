@@ -9,6 +9,9 @@ New features:
   e.g. `@param (int|string)[] $paramName`, `@return (int|string)[]`
 + Support spaces after commas in array shapes (#1966)
 
+Bug fixes:
++ Fix false positive `PhanUnusedVariable` for variables declared before break/continue that are used after the loop. (#1985)
+
 25 Sep 2018, Phan 1.0.6
 -----------------------
 

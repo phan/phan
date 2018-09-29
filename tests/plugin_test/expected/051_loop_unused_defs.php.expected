@@ -1,0 +1,1 @@
+src/051_loop_unused_defs.php:33 PhanUnusedVariable Unused definition of variable $b
