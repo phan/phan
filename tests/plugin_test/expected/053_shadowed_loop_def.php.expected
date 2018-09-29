@@ -1,0 +1,1 @@
+src/053_shadowed_loop_def.php:3 PhanUnusedVariable Unused definition of variable $a

@@ -38,6 +38,18 @@ class VariableTrackingBranchScope extends VariableTrackingScope
     }
 
     /**
+     * @return ?array<int,true>
+     * @override
+     */
+    public function getDefinitionUpToScope(string $variable_name, VariableTrackingScope $forbidden_scope)
+    {
+        if ($this === $forbidden_scope) {
+            return null;
+        }
+        return $this->defs[$variable_name] ?? $this->parent_scope->getDefinitionUpToScope($variable_name, $forbidden_scope);
+    }
+
+    /**
      * @return array<string,array<int,true>>
      */
     public function getDefinitionsRecursively()

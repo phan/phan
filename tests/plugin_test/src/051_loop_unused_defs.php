@@ -28,8 +28,8 @@ function foo51b(): bool {
     return $a;
 }
 
-function foo51c(int $value): bool {
-    $a = true; // PhanUnusedVariable should not be emitted
+
+function foo51c(int $value) {
     $b = true; // PhanUnusedVariable should be emitted
 
     do {
@@ -38,11 +38,7 @@ function foo51c(int $value): bool {
             echo $b;
             break;
         }
-
-        $a = false;
     } while (false);
-
-    return $a;
 }
 foo51(1);
 foo51b();
