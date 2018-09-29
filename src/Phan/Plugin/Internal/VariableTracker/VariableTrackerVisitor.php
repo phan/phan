@@ -433,10 +433,12 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
         $inner_scope = new VariableTrackingLoopScope($outer_scope);
         $inner_scope = $this->analyze($inner_scope, $node->children['stmts']);
+        $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['cond']);
 
         // Merge inner scope into outer scope
         // @phan-suppress-next-line PhanTypeMismatchArgument
         $outer_scope = $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
+        // @phan-suppress-next-line PhanTypeMismatchArgument
         return $outer_scope_unbranched->mergeWithSingleBranchScope($outer_scope);
     }
 

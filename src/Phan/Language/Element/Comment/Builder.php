@@ -569,7 +569,6 @@ final class Builder
         // Search up to 10 lines before $lineno_search
         $lineno_stop = \max(1, $lineno_search - 9);
         $lines_array = $entry->getLines();
-        $j = $i;
 
         $line = $this->lines[$i];
         for ($check_lineno = $lineno_search; $check_lineno >= $lineno_stop; $check_lineno--) {
