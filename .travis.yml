@@ -1,17 +1,20 @@
 language: php
 
-# The 0.12 releases can be used with any PHP version from 7.0 to 7.2.
+# The 1.0 releases can be used with any PHP version from 7.0 to 7.2.
+# Some small tasks remain for php 7.3.
 php:
   - 7.0
   - 7.1
   - 7.2
+  - 7.3.0RC1
 
-# NOTE: Travis starts up 5 tests at a time. So, it's easier to run all of the tests at once.
+# NOTE: Travis starts up 5 test suites at a time.
+# So, it's faster to run all of the tests at once per supported PHP version.
 #env:
-#  - TEST_SUITES="PhanTest UtilTest PHP72Test RasmusTest LanguageTest __FakePHP70Test __FakeSelfTest __FakeSelfFallbackTest __FakeRewritingTest __FakePluginTest __FakeFallbackTest __FakeToolTest __FakeConfigOverrideTest"
 
-sudo: false
-dist: trusty
+# TODO: Clean up 'sudo: required' once https://github.com/travis-ci/travis-ci/issues/9717 is resolved
+dist: xenial
+sudo: required
 
 cache:
   directories:
@@ -19,22 +22,23 @@ cache:
     - $HOME/.cache/phan-ast/build
 
 # We invoke php multiple times via CLI in several tests, so enable the opcache file cache.
+# TODO: Clean up installing libzip4 once php 7.3 build issues are resolved
 before_install:
+  - sudo apt-get update -y
+  - sudo apt-get install -y libzip4
   - ./tests/travis_setup.sh
   - mkdir /tmp/opcache || true; echo -e 'opcache.enable_cli=1\nopcache.file_cache=/tmp/opcache' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
   - composer validate
 
-# --classmap-authoritative shouldn't affect phan's behavior, but is faster.
-# Use it for travis and published phars.
+# --classmap-authoritative shouldn't affect Phan's behavior, but is faster.
+# Use it for Travis and published Phars.
 install:
   - composer --prefer-dist --classmap-authoritative install
 
-# TEST_SUITES contains 1 or more space-separated value for TEST_SUITE
-# We have a fake TEST_SUITE which runs phan, and check if the exit code is non-zero and the standard output is non-empty.
+# We have a fake TEST_SUITE in tests/run_all_tests which runs Phan, and check if the exit code is non-zero and the standard output is non-empty.
 # This is used instead of a unit test because Phan currently caches too much state for this to be run with other unit tests, and the configuration might end up different within a unit test.
 # This was moved into a separate script to stop cluttering up .travis.yml
 script:
-  # Previously - for TEST_SUITE in $TEST_SUITES; do echo "Running $TEST_SUITE"; tests/run_test "$TEST_SUITE" || exit $?; done
-  # NOTE: GNU parallel is not available on travis, and because we don't have sudo, it's inconvenient to install
+  # NOTE: GNU parallel is not available on travis, and because we don't plan to depend on sudo in the future, it's inconvenient to install
   - tests/run_all_tests
   - php internal/package.php
