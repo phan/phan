@@ -1,0 +1,2 @@
+%s:11 PhanTypeMismatchReturn Returning type array{0:1,1:'x',2:false} but intAndStrings() is declared to return int[]|string[]
+%s:17 PhanTypeMismatchArgument Argument 1 (values) is array{0:array{}} but \intAndStrings() takes int[]|string[] defined at %s:7

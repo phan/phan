@@ -4,6 +4,9 @@ Phan NEWS
 -----------------------
 
 New features:
++ Support the `(int|string)[]` syntax of union types (union of multiple types converted to an array) in PHPDoc (#2008)
+
+  e.g. `@param (int|string)[] $paramName`, `@return (int|string)[]`
 + Support spaces after commas in array shapes (#1966)
 
 25 Sep 2018, Phan 1.0.6
