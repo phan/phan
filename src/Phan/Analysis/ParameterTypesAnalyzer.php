@@ -1007,7 +1007,6 @@ class ParameterTypesAnalyzer
             ) {
                 $is_exclusively_narrowed = false;
                 if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchDeclaredParam)) {
-                    $param_name = $parameter->getName();
                     Issue::maybeEmit(
                         $code_base,
                         $context,

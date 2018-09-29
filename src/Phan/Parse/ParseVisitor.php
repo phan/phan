@@ -688,7 +688,6 @@ class ParseVisitor extends ScopeVisitor
 
         // Hunt for an un-taken alternate ID
         $alternate_id = 0;
-        $function_fqsen = null;
         do {
             $function_fqsen =
                 FullyQualifiedFunctionName::fromStringInContext(

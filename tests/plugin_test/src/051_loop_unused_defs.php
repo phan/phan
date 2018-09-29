@@ -28,22 +28,17 @@ function foo51b(): bool {
     return $a;
 }
 
-function foo51c(int $value): bool {
-    $a = true; // PhanUnusedVariable should not be emitted
+
+function foo51c(int $value) {
     $b = true; // PhanUnusedVariable should be emitted
 
     do {
         if ($value == 1) {
-            // TODO: Figure out why this would mark $b from the top as being used and implement a fix
-            // $b = 3;
-            // echo $b;
+            $b = 'a string';
+            echo $b;
             break;
         }
-
-        $a = false;
     } while (false);
-
-    return $a;
 }
 foo51(1);
 foo51b();

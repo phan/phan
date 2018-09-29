@@ -209,7 +209,6 @@ class ASTSimplifier
      */
     private function normalizeIfStatement(Node $original_node) : array
     {
-        $old_nodes = [];
         $nodes = [$original_node];
         // Repeatedly apply these rules
         do {

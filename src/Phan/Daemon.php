@@ -221,7 +221,6 @@ class Daemon
      */
     private static function createDaemonStreamSocketServer()
     {
-        $listen_url = null;
         if (Config::getValue('daemonize_socket')) {
             $listen_url = 'unix://' . Config::getValue('daemonize_socket');
         } elseif (Config::getValue('daemonize_tcp')) {

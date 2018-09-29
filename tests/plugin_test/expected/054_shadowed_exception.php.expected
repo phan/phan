@@ -1,0 +1,1 @@
+src/054_shadowed_exception.php:6 PhanUnusedVariableCaughtException Unused definition of variable $e as a caught exception
