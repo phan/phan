@@ -26,15 +26,14 @@ class VariableTrackingBranchScope extends VariableTrackingScope
      */
     public function getDefinition(string $variable_name)
     {
-        $parent_definitions = $this->parent_scope->getDefinition($variable_name);
         $definitions = $this->defs[$variable_name] ?? null;
-        if ($parent_definitions === null) {
-            return $definitions;
-        }
         if ($definitions === null) {
+            $parent_definitions = $this->parent_scope->getDefinition($variable_name);
+            if (is_array($parent_definitions)) {
+                $this->defs[$variable_name] = $parent_definitions;
+            }
             return $parent_definitions;
         }
-        $definitions += $parent_definitions;
         return $definitions;
     }
 

@@ -209,29 +209,16 @@ class VariableTrackingScope
             // TODO: Make this properly recurse until it reaches the right depth (unnecessary right now)
             $result->mergeUses($scope->uses);
         }
-        if ($merge_parent_scope) {
-            $is_redefined_in_all_scopes = function (string $variable_name) use ($branch_scopes) : bool {
-                foreach ($branch_scopes as $scope) {
-                    if (isset($scope->defs[$variable_name])) {
-                        return false;
-                    }
-                }
-                return true;
-            };
-        } else {
-            $is_redefined_in_all_scopes = function (string $unused_variable_name) : bool {
-                return false;
-            };
-        }
+
         foreach ($def_key_set as $variable_name => $_) {
-            if ($is_redefined_in_all_scopes($variable_name)) {
-                $defs_for_variable = [];
+            if ($merge_parent_scope) {
+                $defs_for_variable = $result->getDefinition($variable_name) ?? [];
             } else {
-                $defs_for_variable = $result->defs[$variable_name] ?? [];
+                $defs_for_variable = [];
             }
 
             foreach ($branch_scopes as $scope) {
-                foreach ($scope->defs[$variable_name] ?? [] as $def_id => $_) {
+                foreach ($scope->getDefinition($variable_name) ?? [] as $def_id => $_) {
                     $defs_for_variable[$def_id] = true;
                 }
             }

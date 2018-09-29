@@ -34,9 +34,8 @@ function foo51c(int $value): bool {
 
     do {
         if ($value == 1) {
-            // TODO: Figure out why this would mark $b from the top as being used and implement a fix
-            // $b = 3;
-            // echo $b;
+            $b = 'a string';
+            echo $b;
             break;
         }
 
