@@ -418,7 +418,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         $outer_scope = $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
 
         // @phan-suppress-next-line PhanTypeMismatchArgument
-        return $outer_scope_unbranched->mergeBranchScopeList([$outer_scope], true, []);
+        return $outer_scope_unbranched->mergeWithSingleBranchScope($outer_scope);
     }
 
     /**
@@ -437,7 +437,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         // Merge inner scope into outer scope
         // @phan-suppress-next-line PhanTypeMismatchArgument
         $outer_scope = $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
-        return $outer_scope_unbranched->mergeBranchScopeList([$outer_scope], true, []);
+        return $outer_scope_unbranched->mergeWithSingleBranchScope($outer_scope);
     }
 
     /**
@@ -476,7 +476,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         if ($loop_node instanceof Node) {
             $loop_scope = $this->analyze(new VariableTrackingBranchScope($inner_scope), $loop_node);
             // @phan-suppress-next-line PhanTypeMismatchArgument
-            $inner_scope = $inner_scope->mergeBranchScopeList([$loop_scope], true, []);
+            $inner_scope = $inner_scope->mergeWithSingleBranchScope($loop_scope);
         }
         // TODO: If the graph analysis is improved, look into making this stop analyzing 'loop' twice
         $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['cond']);
@@ -484,14 +484,14 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         if ($loop_node instanceof Node) {
             $loop_scope = $this->analyze(new VariableTrackingBranchScope($inner_scope), $loop_node);
             // @phan-suppress-next-line PhanTypeMismatchArgument
-            $inner_scope = $inner_scope->mergeBranchScopeList([$loop_scope], true, []);
+            $inner_scope = $inner_scope->mergeWithSingleBranchScope($loop_scope);
         }
 
         // Merge inner scope into outer scope
         // @phan-suppress-next-line PhanTypeMismatchArgument
         $outer_scope = $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
         // @phan-suppress-next-line PhanTypeMismatchArgument
-        return $outer_scope_unbranched->mergeBranchScopeList([$outer_scope], true, []);
+        return $outer_scope_unbranched->mergeWithSingleBranchScope($outer_scope);
     }
 
     /**
@@ -620,14 +620,14 @@ final class VariableTrackerVisitor extends AnalysisVisitor
 
         // TODO: Use BlockExitStatusChecker, like BlockAnalysisVisitor
         // TODO: Optimize
-        $main_scope = $outer_scope->mergeBranchScopeList([$try_scope], true, []);
+        $main_scope = $outer_scope->mergeWithSingleBranchScope($try_scope);
 
         $catch_node_list = $node->children['catches']->children;
         if (count($catch_node_list) > 0) {
             $catches_scope = new VariableTrackingBranchScope($main_scope);
             $catches_scope = $this->analyze($catches_scope, $node->children['catches']);
             // @phan-suppress-next-line PhanTypeMismatchArgument
-            $main_scope = $main_scope->mergeBranchScopeList([$catches_scope], true, []);
+            $main_scope = $main_scope->mergeWithSingleBranchScope($catches_scope);
         }
         $finally_node = $node->children['finally'];
         if ($finally_node !== null) {
