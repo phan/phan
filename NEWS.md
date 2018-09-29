@@ -11,7 +11,9 @@ New features:
 
 Bug fixes:
 + Fix false positive `PhanUnusedVariable` for variables declared before break/continue that are used after the loop. (#1985)
-+ Emit `PhanUnusedVariable` for variables where definitions are shadowed by definitions in branches. (#2012)
++ Properly emit `PhanUnusedVariable` for variables where definitions are shadowed by definitions in branches and/or loops. (#2012)
++ Properly emit `PhanUnusedVariable` for variables which are redefined in a 'do while' loop.
++ Be more consistent about emitting `PhanUnusedVariableCaughtException` when exception variable names are reused later on.
 
 25 Sep 2018, Phan 1.0.6
 -----------------------
