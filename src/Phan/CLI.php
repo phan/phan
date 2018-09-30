@@ -20,6 +20,7 @@ use Symfony\Component\Console\Output\StreamOutput;
  * for the analyzed project.
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class CLI
 {

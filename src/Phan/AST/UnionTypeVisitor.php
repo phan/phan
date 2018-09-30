@@ -63,6 +63,7 @@ use function is_string;
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument node is complicated
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal node is complicated
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class UnionTypeVisitor extends AnalysisVisitor
 {

@@ -106,7 +106,8 @@ class ClassConstant extends ClassElement implements ConstantInterface
     }
 
     /**
-     * @param bool $is_override_intended - True if this class constant is intended to be an override of another class constant (contains (at)override)
+     * Records whether or not this class constant is intended to be an override of another class constant (contains (at)override in PHPDoc)
+     * @param bool $is_override_intended
 
      * @return void
      */
@@ -137,7 +138,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
         return $string;
     }
 
-    private function getVisibilityName() : string
+    public function getVisibilityName() : string
     {
         if ($this->isPrivate()) {
             return 'private';

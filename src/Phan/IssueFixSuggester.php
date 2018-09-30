@@ -25,6 +25,7 @@ use function strtolower;
  * self::suggestSimilarMethod(CodeBase, Context, Clazz, string $wanted_method_name, bool $is_static)
  * self::suggestSimilarProperty(CodeBase, Context, Clazz, string $wanted_property_name, bool $is_static)
  * self::suggestSimilarClassConstant(CodeBase, Context, FullyQualifiedClassConstantName)
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class IssueFixSuggester
 {

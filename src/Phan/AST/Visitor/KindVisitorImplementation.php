@@ -10,6 +10,7 @@ use Phan\Debug;
  * A visitor of AST nodes based on the node's kind value
  * which does nothing upon visiting a node of any kind
  * @phan-file-suppress PhanPluginUnknownMethodReturnType - TODO: Make this and FlagVisitorImplementation use Phan templates?
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 abstract class KindVisitorImplementation implements KindVisitor
 {

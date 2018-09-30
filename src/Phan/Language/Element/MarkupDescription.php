@@ -25,7 +25,6 @@ class MarkupDescription
      * Extracts a plaintext description of the element from the doc comment of an element.
      *
      * @return ?string
-     * @internal
      */
     public static function extractDescriptionFromDocComment(AddressableElementInterface $element)
     {
@@ -38,6 +37,8 @@ class MarkupDescription
             $comment_category = Comment::ON_PROPERTY;
         } elseif ($element instanceof ConstantInterface) {
             $comment_category = Comment::ON_CONST;
+        } elseif ($element instanceof FunctionInterface) {
+            $comment_category = Comment::ON_FUNCTION;
         }
         $extracted_doc_comment = self::extractDocComment($doc_comment, $comment_category);
         return $extracted_doc_comment ?: null;
@@ -57,9 +58,11 @@ class MarkupDescription
 
         $results = [];
         $lines = explode("\n", $doc_comment);
+        $saw_phpdoc_tag = false;
         foreach ($lines as $i => $line) {
             $line = self::trimLine($line);
             if (!is_string($line) || preg_match('/^\s*@/', $line) > 0) {
+                $saw_phpdoc_tag = true;
                 if (count($results) === 0) {
                     // Special cases:
                     if (\in_array($comment_category, [Comment::ON_PROPERTY, Comment::ON_CONST])) {
@@ -71,13 +74,14 @@ class MarkupDescription
                     } elseif (\in_array($comment_category, Comment::FUNCTION_LIKE)) {
                         // Treat `@return T description of return value` as a valid single-line comment of closures, functions, and methods.
                         // Variables don't currently have associated comments
-                        if (preg_match('/^\s*@return\s/', $line) > 0) {
+                        if (preg_match('/^\s*@return(\s|$)/', $line) > 0) {
                             $results = array_merge($results, self::extractTagSummary($lines, $i));
                         }
                     }
                 }
-                // Assume that the description stopped after the first phpdoc tag.
-                break;
+            }
+            if ($saw_phpdoc_tag) {
+                continue;
             }
             if (\trim($line) === '') {
                 $line = '';
@@ -109,8 +113,9 @@ class MarkupDescription
      * @param array<int,string> $lines
      * @param int $i the offset of the tag in $lines
      * @return array<int,string> the trimmed lines
+     * @internal
      */
-    private static function extractTagSummary(array $lines, int $i): array
+    public static function extractTagSummary(array $lines, int $i): array
     {
         $summary = [];
         $summary[] = self::trimLine($lines[$i]);

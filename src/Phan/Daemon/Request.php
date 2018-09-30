@@ -20,6 +20,7 @@ use Symfony\Component\Console\Output\BufferedOutput;
 
 /**
  * Represents the state of a client request to a daemon, and contains methods for sending formatted responses.
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class Request
 {

@@ -23,6 +23,7 @@ use Closure;
  *    Same for $x in $x ?? null, empty($x['offset']), and so on.
  * 2. Mark $x and $x['key'] in "$x['key'] = $y" as being acceptable to be null or undefined.
  *    and so on (e.g. ['key' => $x[0]] = $y)
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class PhanAnnotationAdder
 {

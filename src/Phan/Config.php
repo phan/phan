@@ -12,6 +12,7 @@ namespace Phan;
  *
  * For efficiency, all of these methods are static methods.
  * Configuration is fetched frequently, and static methods were much faster than magic __get().
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class Config
 {

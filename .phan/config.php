@@ -261,6 +261,12 @@ return [
         // TODO: Fix and remove suppression for this plugin
         'PhanPluginDescriptionlessCommentOnPrivateProperty',
         'PhanPluginDescriptionlessCommentOnProtectedProperty',
+
+        'PhanPluginNoCommentOnProtectedMethod',
+        'PhanPluginDescriptionlessCommentOnProtectedMethod',
+        'PhanPluginNoCommentOnPrivateMethod',
+        'PhanPluginDescriptionlessCommentOnPrivateMethod',
+        'PhanPluginNoCommentOnPublicMethod', // TODO: Maybe fix this issue type
     ],
 
     // If empty, no filter against issues types will be applied.

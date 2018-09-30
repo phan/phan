@@ -7,6 +7,7 @@ use Phan\Language\Element\Property;
 
 /**
  * Maps for elements associated with an individual class
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class ClassMap
 {

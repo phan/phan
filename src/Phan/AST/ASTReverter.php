@@ -35,6 +35,10 @@ class ASTReverter
     }
 
     /**
+     * Convert $node to a short PHP string representing $node.
+     *
+     * This does not work for all node kinds, and may be ambiguous.
+     *
      * @param Node|string|int|float $node
      * @return string
      */
@@ -48,6 +52,8 @@ class ASTReverter
     }
 
     /**
+     * Static initializer.
+     *
      * @return void
      */
     public static function init()

@@ -21,6 +21,8 @@ use Phan\PluginV2\FinalizeProcessCapability;
  *      This can replace the default binary (PHP_BINARY) with an array of absolute path or program names(in $PATH)
  *       E.g. have 'plugin_config' => ['php_native_syntax_check_binaries' => ['php72', 'php70', 'php56']]
  * Note: This may cause Phan to take over twice as long. This is recommended for use with `--processes N`.
+ *
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
     AfterAnalyzeFileCapability,

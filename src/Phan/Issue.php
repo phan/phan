@@ -14,6 +14,7 @@ use Phan\Plugin\ConfigPluginSet;
 
 /**
  * An issue emitted during the course of analysis
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class Issue
 {

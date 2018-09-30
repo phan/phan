@@ -41,7 +41,7 @@ class CapturerResponder implements Responder
     }
 
     /**
-     * @return ?array
+     * @return ?array the raw response data that the analysis would have sent back serialized if this was actually a fork.
      */
     public function getResponseData()
     {

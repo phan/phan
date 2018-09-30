@@ -117,6 +117,11 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
             }
         }
     }
+
+
+    /**
+     * @return bool true if $method is a PHPUnit test case
+     */
     protected static function isTestCase(Method $method) : bool
     {
         if (!$method->isPublic()) {
@@ -132,6 +137,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
+     * Static initializer for this plugin - Must be called before using methods.
      * @return void
      */
     public static function init()

@@ -261,6 +261,8 @@ class UnusedSuppressionPlugin extends PluginV2 implements
     }
 
     /**
+     * Record the fact that $plugin caused suppressions in $file_path for issue $issue_path due to an annotation around $line
+     *
      * @return void
      * @internal
      */

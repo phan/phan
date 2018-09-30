@@ -14,6 +14,7 @@ use TypeError;
 
 /**
  * This class is used by 'phan --init' to generate a phan config for a composer project.
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class Initializer
 {
