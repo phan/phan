@@ -26,6 +26,9 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Emit an issue with the provided arguments,
+     * unless that issue is suppressed.
+     *
      * @param string $issue_type
      * A name for the type of issue such as 'PhanPluginMyIssue'
      *

@@ -32,6 +32,7 @@ use Phan\Tests\BaseTest;
 
 /**
  * Unit tests of Type
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 final class TypeTest extends BaseTest
 {

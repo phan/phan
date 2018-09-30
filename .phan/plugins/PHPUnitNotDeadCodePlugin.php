@@ -118,7 +118,6 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-
     /**
      * @return bool true if $method is a PHPUnit test case
      */
@@ -137,7 +136,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * Static initializer for this plugin - Must be called before using methods.
+     * Static initializer for this plugin - Gets called below before any methods can be used
      * @return void
      */
     public static function init()

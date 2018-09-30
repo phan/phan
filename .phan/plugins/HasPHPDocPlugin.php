@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\MarkupDescription;
@@ -171,6 +172,14 @@ final class HasPHPDocPlugin extends PluginV2 implements
             // This reduces the number of false positives
             return;
         }
+        $method_filter = Config::getValue('plugin_config')['has_phpdoc_method_ignore_regex'] ?? null;
+        if (is_string($method_filter)) {
+            $fqsen_string = ltrim((string)$method->getFQSEN(), '\\');
+            if (preg_match($method_filter, $fqsen_string) > 0) {
+                return;
+            }
+        }
+
         $doc_comment = $method->getDocComment();
         if (!$doc_comment) {
             $visibility_upper = ucfirst($method->getVisibilityName());
@@ -178,7 +187,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
                 $code_base,
                 $method->getContext(),
                 "PhanPluginNoCommentOn${visibility_upper}Method",
-                "$visibility_upper method {PROPERTY} has no doc comment",
+                "$visibility_upper method {METHOD} has no doc comment",
                 [$method->getFQSEN()]
             );
             return;
@@ -190,7 +199,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
                 $code_base,
                 $method->getContext(),
                 "PhanPluginDescriptionlessCommentOn${visibility_upper}Method",
-                "$visibility_upper method {PROPERTY} has no readable description: {STRING_LITERAL}",
+                "$visibility_upper method {METHOD} has no readable description: {STRING_LITERAL}",
                 [$method->getFQSEN(), json_encode($method->getDocComment(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)]
             );
             return;

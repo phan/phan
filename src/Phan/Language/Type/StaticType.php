@@ -18,6 +18,8 @@ final class StaticType extends Type
     const NAME = 'static';
 
     /**
+     * Returns a nullable/non-nullable instance of this StaticType
+     *
      * @param bool $is_nullable
      * An optional parameter, which if true returns a
      * nullable instance of this native type

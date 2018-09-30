@@ -73,6 +73,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      * @return static
      *
      * @deprecated - use fromFullyQualifiedString
+     * @suppress PhanUnreferencedPublicMethod
      */
     public static function makeFromExtractedNamespaceAndName(string $name)
     {

@@ -12,6 +12,8 @@ use Phan\Language\Context;
 interface AfterAnalyzeFileCapability
 {
     /**
+     * This method is called after Phan analyzes a file.
+     *
      * @param CodeBase $code_base
      * The code base in which the node exists
      *

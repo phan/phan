@@ -35,7 +35,7 @@ use Microsoft\PhpParser\Parser;
 dump_main();
 
 /**
- * Dumps a snippet provided on stdin.
+ * Dumps a snippet provided as a command line argument
  * @return void
  */
 function dump_main()

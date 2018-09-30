@@ -13,6 +13,12 @@ Plugins:
 + In HasPHPDocPlugin, warn about global functions without extractable PHPDoc summaries.
 
   New issue types: `PhanPluginNoCommentOnFunction`, `PhanPluginDescriptionlessCommentOnFunction`
++ In HasPHPDocPlugin, warn about methods without extractable PHPDoc summaries.
+
+  New issue types: `PhanPluginNoCommentOn*Method`, `PhanPluginDescriptionlessCommentOn*Method`
+
+  These can be suppressed based on the method FQSEN with `plugin_config => [..., 'has_phpdoc_method_ignore_regex' => (a PCRE regex)]`
+  (e.g. to suppress issues about tests, or about missing documentation about getters and setters, etc.)
 
 Bug fixes:
 + Fix false positive `PhanUnusedVariable` for variables declared before break/continue that are used after the loop. (#1985)

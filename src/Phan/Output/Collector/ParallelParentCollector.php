@@ -82,13 +82,12 @@ class ParallelParentCollector implements IssueCollectorInterface
     }
 
     /**
+     * Read the entire queue and write all issues to the
+     * base collector
      * @return void
      */
     public function readQueuedIssues()
     {
-        // Read the entire queue and write all issues to the
-        // base collector
-
         // Get the status of the queue
         $status = msg_stat_queue(
             $this->message_queue_resource

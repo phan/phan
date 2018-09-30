@@ -28,6 +28,8 @@ class ClosuresForKind
     }
 
     /**
+     * Record the fact that the resulting closure for Node kind $kind should invoke $c
+     *
      * @param int $kind - A valid value of a node kind
      * @param Closure $c
      * @return void
@@ -45,7 +47,7 @@ class ClosuresForKind
     }
 
     /**
-     * Record the fact that a Closure needs to be the given subset of values of node->kind
+     * Record the fact that the resulting Closure needs to call $c for the given subset of values of node->kind
      *
      * @param array<int,int> $kinds - A list of unique values of node kinds
      * @param Closure $c - The closure to execute on each of those kinds

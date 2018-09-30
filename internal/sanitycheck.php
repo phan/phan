@@ -120,7 +120,7 @@ class PhanParameterInfo
 }
 
 /**
- * Extracts a list of representations of parameters from the compact array descriptions in FunctionSignatureMap.php
+ * Extracts a list of representations of parameters from the compact array description ($fields) from FunctionSignatureMap.php
  *
  * @param string[] $fields
  * @phan-param array{0:string}|array<string,string> $fields

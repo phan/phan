@@ -22,6 +22,7 @@ use Phan\Language\UnionType;
 
 /**
  * This implements closures for finding definitions for nodes where isSelected is set
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class DefinitionResolver
 {
@@ -101,6 +102,8 @@ class DefinitionResolver
     }
 
     /**
+     * Record information about this definition, to send back to the language client after all possible definitions were found.
+     *
      * @return void
      */
     public static function locateClassDefinition(
