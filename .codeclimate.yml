@@ -1,5 +1,4 @@
 ---
-# TODO: Fix https://github.com/phan/phan/issues/826
 engines:
   duplication:
     enabled: true
@@ -10,21 +9,11 @@ engines:
     enabled: false
   phpmd:
     enabled: true
-    checks:
-      # Phan has its own unused variable/parameter detection and variable patterns it ignores (e.g. $_)
-      UnusedFormalParameter:
-        enabled: false
-      UnusedLocalVariable:
-        enabled: false
-      CleanCode/ElseExpression:
-        enabled: false
-      CleanCode/StaticAccess:
-        enabled: false
-      # Phan uses $snake_case
-      Controversial/CamelCaseVariableName:
-        enabled: false
-      Controversial/CamelCaseParameterName:
-        enabled: false
+    config:
+      # cleancode : most rules are not practical
+      # unused is false positives (Phan's own dead code detection is used in CI)
+      # controversial is the opposite of Phan's naming conventions
+      rulesets: "codesize,naming,design"
   phan:
     enabled: false
     config:
