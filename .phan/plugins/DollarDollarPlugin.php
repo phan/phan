@@ -74,5 +74,5 @@ class DollarDollarVisitor extends PluginAwarePostAnalysisVisitor
 }
 
 // Every plugin needs to return an instance of itself at the
-// end of the file in which its defined.
+// end of the file in which it's defined.
 return new DollarDollarPlugin();
