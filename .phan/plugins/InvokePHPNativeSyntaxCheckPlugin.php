@@ -172,7 +172,7 @@ class InvokeExecutionPromise
     /** @var resource result of proc_open() */
     private $process;
 
-    /** @var array{0:resource,1:resource,2:resource} */
+    /** @var array{0:resource,1:resource,2:resource} stdin, stdout, stderr */
     private $pipes;
 
     /** @var ?string an error message */

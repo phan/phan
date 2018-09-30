@@ -14,7 +14,7 @@ trait ConstantTrait
 {
     use ElementFutureUnionType;
 
-    /** @var Node|string|float|int */
+    /** @var Node|string|float|int the node which defined the value of this constant. */
     protected $defining_node;
 
     /**

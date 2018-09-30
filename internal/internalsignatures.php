@@ -345,10 +345,10 @@ EOT;
  */
 class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
 {
-    /** @var string */
+    /** @var string the directory for english PHP element references */
     private $reference_directory;
 
-    /** @var string */
+    /** @var string the base directory of the svn phpdoc repo */
     private $doc_base_directory;
 
     private function __construct(string $dir)
@@ -451,6 +451,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
 
     /**
      * @var array<string,array<string,string>>
+     * Maps class names to a unique set of folders [$class_name => [$folder_name => $folder_name]]
      */
     private $folders_for_class_name_list;
 
@@ -473,6 +474,9 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         $this->folders_for_class_name_list = [];
         $reference_directory = $this->reference_directory;
         // TODO: Extract inheritance from classname.xml
+
+        // TODO: Just parse every single xml file and extract the class name (including namespace)
+        // from the XML itself instead of guessing based on heuristics.
         foreach (static::scandir($reference_directory) as $subpath) {
             $extension_directory = "$reference_directory/$subpath";
             foreach (static::scandir($extension_directory) as $subsubpath) {
@@ -665,7 +669,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         return $this->parseFunctionLikeSignatureForXML("{$class_name}::{$method_name}", $xml);
     }
 
-    /** @var array<string,?SimpleXMLElement */
+    /** @var array<string,?SimpleXMLElement> maps file paths to cached parsed XML elements */
     private $simple_xml_cache = [];
 
     /** @return ?SimpleXMLElement */
@@ -807,7 +811,8 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
 
 
     /**
-     * @var array<string,true>
+     * @var array<string,true> a list of known expandable PHPDoc entities.
+     * We expand these into stub strings before parsing XML to avoid being overwhelmed with PHPDoc notices from SimpleXMLElement
      */
     private $known_entities = null;
 
@@ -914,10 +919,10 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
  */
 class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBase
 {
-    /** @var string */
+    /** @var string a directory which contains stubs written in PHP for classes, functions, etc. of PHP modules (extensions)  */
     private $directory;
 
-    /** @var CodeBase */
+	/** @var CodeBase The code base within which we're operating */
     private $code_base;
 
     public function __construct(string $dir)
@@ -967,7 +972,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
         return 0;
     }
 
-    /** @var bool */
+    /** @var bool has this initialized and parsed all of the stubs yet? */
     private $initialized = false;
 
     private function getFileList() : array

@@ -19,7 +19,7 @@ use Phan\Tests\BaseTest;
 final class ContextTest extends BaseTest
 {
 
-    /** @var CodeBase|null */
+    /** @var CodeBase|null The code base within which this unit test is running */
     protected $code_base = null;
 
     protected function setUp()

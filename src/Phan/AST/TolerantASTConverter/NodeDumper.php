@@ -35,13 +35,13 @@ use function substr;
  */
 class NodeDumper
 {
-    /** @var string */
+    /** @var string the contents of the file containing the tolerant-php-parser node to be dumped. */
     private $file_contents;
-    /** @var bool */
+    /** @var bool whether we should print byte offsets along with the node */
     private $include_offset;
-    /** @var bool */
+    /** @var bool whether we should print the node kind of tokens*/
     private $include_token_kind;
-    /** @var string */
+    /** @var string the indentation string to print before each level of nodes (whitespace) */
     private $indent;
 
     // TODO: Pass an options array instead, or add setters?

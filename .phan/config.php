@@ -260,7 +260,6 @@ return [
         'PhanPossiblyNullTypeArgumentInternal',
         // TODO: Fix and remove suppression for this plugin
         'PhanPluginDescriptionlessCommentOnPrivateProperty',
-        'PhanPluginDescriptionlessCommentOnProtectedProperty',
 
         'PhanPluginNoCommentOnProtectedMethod',
         'PhanPluginDescriptionlessCommentOnProtectedMethod',

@@ -27,7 +27,7 @@ use Phan\Language\UnionType;
  */
 trait ConditionVisitorUtil
 {
-    /** @var CodeBase */
+    /** @var CodeBase The code base within which we're operating */
     protected $code_base;
 
     /**

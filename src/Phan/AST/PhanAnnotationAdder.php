@@ -38,7 +38,7 @@ class PhanAnnotationAdder
     {
     }
 
-    /** @var array<int,Closure(Node):void> */
+    /** @var array<int,Closure(Node):void> maps values of ast\Node->kind to closures that can be used to generate annotations (on the ast\Node instance) for that node kind */
     private static $closures_for_kind;
 
     /** @return void */

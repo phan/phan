@@ -18,16 +18,18 @@ use Phan\Tests\BaseTest;
 final class FQSENTest extends BaseTest
 {
 
-    /** @var Context|null */
+    /** @var Context|null the context within which this unit test will run */
     protected $context = null;
 
     protected function setUp()
     {
+        // Deliberately not calling parent::setUp()
         $this->context = new Context();
     }
 
     protected function tearDown()
     {
+        // Deliberately not calling parent::tearDown()
         $this->context = null;
     }
 
