@@ -2570,7 +2570,9 @@ class Type
     }
 
     /**
-     * @internal - Used to check for quick mode
+     * Used to check if this type can be replaced by more specific types, for non-quick mode
+     *
+     * @internal
      */
     public function shouldBeReplacedBySpecificTypes() : bool
     {

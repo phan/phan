@@ -24,7 +24,8 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     }
 
     /**
-     * @internal - Only exists to prevent accidentally calling this on the parent class
+     * Only exists to prevent accidentally calling this on the parent class
+     * @internal
      * @deprecated
      * @throws RuntimeException to prevent this from being called
      */

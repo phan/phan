@@ -305,8 +305,9 @@ class CodeBase
     }
 
     /**
+     * Returns the most recently parsed or analyzed file.
      * @return ?string
-     * @internal - For use only by the phan error handler
+     * @internal - For use only by the phan error handler, to help with debugging crashes
      */
     public static function getMostRecentlyParsedOrAnalyzedFile()
     {

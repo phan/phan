@@ -2856,7 +2856,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @internal - Used by daemon mode to restore an element to the state it had before parsing.
+     * Used by daemon mode to restore an element to the state it had before parsing.
      * @return Closure
      */
     public function createRestoreCallback()

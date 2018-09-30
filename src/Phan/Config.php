@@ -905,6 +905,7 @@ class Config
     }
 
     /**
+     * Resets the configuration to the initial state, prior to parsing config files and CLI arguments.
      * @return void
      * @internal - this should only be used in unit tests.
      */

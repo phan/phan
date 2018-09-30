@@ -189,7 +189,8 @@ class Property extends ClassElement
     }
 
     /**
-     * @internal - Used by daemon mode to restore an element to the state it had before parsing.
+     * Used by daemon mode to restore an element to the state it had before parsing.
+     * @internal
      * @return ?Closure
      */
     public function createRestoreCallback()
