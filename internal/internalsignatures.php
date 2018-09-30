@@ -922,7 +922,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
     /** @var string a directory which contains stubs written in PHP for classes, functions, etc. of PHP modules (extensions)  */
     private $directory;
 
-	/** @var CodeBase The code base within which we're operating */
+    /** @var CodeBase The code base within which we're operating */
     private $code_base;
 
     public function __construct(string $dir)
