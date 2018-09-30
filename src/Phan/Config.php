@@ -461,6 +461,9 @@ class Config
         // If empty, no filter against issues types will be applied.
         // If this white-list is non-empty, only issues within the list
         // will be emitted by Phan.
+        //
+        // See https://github.com/phan/phan/wiki/Issue-Types-Caught-by-Phan
+        // for the full list of issues that Phan detects.
         'whitelist_issue_types' => [
             // 'PhanAccessClassConstantInternal',
             // 'PhanAccessClassConstantPrivate',
