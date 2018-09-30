@@ -3,11 +3,16 @@ Phan NEWS
 ?? ??? 2018, Phan 1.0.7 (dev)
 -----------------------
 
-New features:
+New features(Analysis):
 + Support the `(int|string)[]` syntax of union types (union of multiple types converted to an array) in PHPDoc (#2008)
 
   e.g. `@param (int|string)[] $paramName`, `@return (int|string)[]`
 + Support spaces after commas in array shapes (#1966)
+
+Plugins:
++ In HasPHPDocPlugin, warn about global functions without extractable PHPDoc summaries.
+
+  New issue types: `PhanPluginNoCommentOnFunction`, `PhanPluginDescriptionlessCommentOnFunction`
 
 Bug fixes:
 + Fix false positive `PhanUnusedVariable` for variables declared before break/continue that are used after the loop. (#1985)
@@ -15,7 +20,7 @@ Bug fixes:
 25 Sep 2018, Phan 1.0.6
 -----------------------
 
-New features:
+New features(Analysis):
 + Be more consistent about warning about undeclared properties in some edge cases.
   New issue types: `PhanUndeclaredClassProperty`, `PhanUndeclaredClassStaticProperty`
 

@@ -354,6 +354,14 @@ class Func extends AddressableElement implements FunctionInterface
     }
 
     /**
+     * True if this is a closure
+     */
+    public function isClosure() : bool
+    {
+        return $this->getFQSEN()->isClosure();
+    }
+
+    /**
      * @suppress PhanUnreferencedPublicMethod (toStubInfo is used by callers for more flexibility)
      */
     public function toStub() : string

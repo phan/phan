@@ -2,10 +2,12 @@
 
 use Phan\CodeBase;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Func;
 use Phan\Language\Element\MarkupDescription;
 use Phan\Language\Element\Property;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeClassCapability;
+use Phan\PluginV2\AnalyzeFunctionCapability;
 use Phan\PluginV2\AnalyzePropertyCapability;
 
 /**
@@ -38,6 +40,7 @@ use Phan\PluginV2\AnalyzePropertyCapability;
  */
 final class HasPHPDocPlugin extends PluginV2 implements
     AnalyzeClassCapability,
+    AnalyzeFunctionCapability,
     AnalyzePropertyCapability
 {
     /**
@@ -82,7 +85,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
 
     /**
      * @param CodeBase $code_base
-     * The code base in which the function exists
+     * The code base in which the property exists
      *
      * @param Property $property
      * A property being analyzed
@@ -129,6 +132,54 @@ final class HasPHPDocPlugin extends PluginV2 implements
                 "PhanPluginDescriptionlessCommentOn${visibility_upper}Property",
                 "$visibility_upper property {PROPERTY} has no readable description: {STRING_LITERAL}",
                 [$property->getFQSEN(), json_encode($property->getDocComment(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)]
+            );
+            return;
+        }
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base in which the function exists
+     *
+     * @param Func $function
+     * A function being analyzed
+     *
+     * @return void
+     *
+     * @override
+     */
+    public function analyzeFunction(
+        CodeBase $code_base,
+        Func $function
+    ) {
+        $doc_comment = $function->getDocComment();
+        if ($function->isPHPInternal()) {
+            // This isn't user-defined, there's no reason to warn or way to change it.
+            return;
+        }
+        if ($function->isClosure()) {
+            // Probably not useful in many cases to document a short closure passed to array_map, etc.
+            return;
+        }
+        if (!$doc_comment) {
+            $this->emitIssue(
+                $code_base,
+                $function->getContext(),
+                "PhanPluginNoCommentOnFunction",
+                "Function {FUNCTION} has no doc comment",
+                [$function->getFQSEN()]
+            );
+            return;
+        }
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $description = MarkupDescription::extractDescriptionFromDocComment($function);
+        if (!$description) {
+            $this->emitIssue(
+                $code_base,
+                $function->getContext(),
+                "PhanPluginDescriptionlessCommentOnFunction",
+                "Function {FUNCTION} has no readable description: {STRING_LITERAL}",
+                [$function->getFQSEN(), json_encode($function->getDocComment(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)]
             );
             return;
         }
