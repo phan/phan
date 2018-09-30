@@ -11,7 +11,17 @@ engines:
   phpmd:
     enabled: true
     checks:
+      # Phan has its own unused variable/parameter detection and variable patterns it ignores (e.g. $_)
+      UnusedFormalParameter:
+        enabled: false
+      UnusedLocalVariable:
+        enabled: false
+      CleanCode/ElseExpression:
+        enabled: false
+      # Phan uses $snake_case
       Controversial/CamelCaseVariableName:
+        enabled: false
+      Controversial/CamelCaseParameterName:
         enabled: false
   phan:
     enabled: false
