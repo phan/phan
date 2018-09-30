@@ -12,9 +12,12 @@ use Phan\Issue;
  */
 class WikiWriter
 {
-    /** @var string */
+    /** @var string the built up contents to save as markdown */
     private $contents = '';
-    /** @var bool */
+    /**
+     * @var bool should this print to stdout while building up the markdown contents?
+     * Useful for debugging.
+     */
     private $print_to_stdout;
 
     public function __construct(bool $print_to_stdout = true)

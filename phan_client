@@ -289,7 +289,9 @@ class PhanPHPLinterOpts
     /** @var bool should this client request analysis from the Phan server when the file has syntax errors */
     public $use_fallback_parser;
 
-    /** @var bool */
+    /**
+     * @var bool should this client print a usage text if an **unexpected** error occurred.
+     */
     private $print_usage_on_error = true;
 
     /**

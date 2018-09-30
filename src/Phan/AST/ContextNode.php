@@ -56,19 +56,19 @@ if (!\function_exists('spl_object_id')) {
 class ContextNode
 {
 
-    /** @var CodeBase */
+    /** @var CodeBase The code base within which we're operating */
     private $code_base;
 
-    /** @var Context */
+    /** @var Context The context in which we are requesting information about the Node $this->node */
     private $context;
 
-    /** @var Node|array|bool|string|float|int|bool|null */
+    /** @var Node|array|bool|string|float|int|bool|null the node which we're requesting information about. */
     private $node;
 
     /**
-     * @param CodeBase $code_base
-     * @param Context $context
-     * @param Node|array|string|float|int|bool|null $node
+     * @param CodeBase $code_base The code base within which we're operating
+     * @param Context $context The context in which we are requesting information about the Node.
+     * @param Node|array|string|float|int|bool|null $node the node which we're requesting information about.
      */
     public function __construct(
         CodeBase $code_base,
