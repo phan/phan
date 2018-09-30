@@ -99,7 +99,8 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
-     * @param bool $from_phpdoc - True if this is a magic phpdoc method (declared via (at)method on class declaration phpdoc)
+     * Sets whether this is a magic phpdoc method (declared via (at)method on class declaration phpdoc)
+     * @param bool $from_phpdoc - True if this is a magic phpdoc method
      * @return void
      */
     public function setIsFromPHPDoc(bool $from_phpdoc)
@@ -123,7 +124,8 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
-     * @param bool $is_override_intended - True if this method is intended to be an override of another method (contains (at)override)
+     * Sets whether this method is intended to be an override of another method (contains (at)override)
+     * @param bool $is_override_intended
 
      * @return void
      */

@@ -27,6 +27,7 @@ use Phan\Language\UnionType;
 /**
  * This contains functionality common to global functions, closures, and methods
  * @see FunctionInterface - Classes using this trait use that interface
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 trait FunctionTrait
 {

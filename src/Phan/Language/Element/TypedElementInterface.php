@@ -24,8 +24,8 @@ interface TypedElementInterface
     public function getUnionType() : UnionType;
 
     /**
-     * @param UnionType $type
      * Set the type of this element
+     * @param UnionType $type
      *
      * @return void
      */

@@ -10,6 +10,7 @@ use Phan\Language\UnionType;
  * Any PHP structural element that also has a type and is
  * addressable such as a class, method, closure, property,
  * constant, variable, ...
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 abstract class TypedElement implements TypedElementInterface
 {

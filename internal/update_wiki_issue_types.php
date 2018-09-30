@@ -22,7 +22,10 @@ class WikiWriter
         $this->print_to_stdout = $print_to_stdout;
     }
 
-    /** @return void */
+    /**
+     * Append $text to the buffer of text to save.
+     * @return void
+     */
     public function append(string $text)
     {
         $this->contents .= $text;

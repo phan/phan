@@ -2275,7 +2275,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     continue;
                 }
                 // TODO: warn about invalid types and unparsable types
-                $fqsen = FullyQualifiedClassName::makeFromExtractedNamespaceAndName($value);
+                $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($value);
                 if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
                     $is_valid = false;
                     continue;
@@ -2675,7 +2675,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return $class->getParentClassFQSEN();  // may or may not exist.
             default:
                 // TODO: Reject invalid/empty class names earlier
-                return FullyQualifiedClassName::makeFromExtractedNamespaceAndName($class_name);
+                return FullyQualifiedClassName::fromFullyQualifiedString($class_name);
         }
     }
 

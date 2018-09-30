@@ -20,10 +20,8 @@ interface AddressableElementInterface extends TypedElementInterface
     public function getFQSEN();
 
     /**
+     * Sets the fully qualified structural element name of this element.
      * @param FQSEN $fqsen
-     * A fully qualified structural element name to set on
-     * this element
-     *
      * @return void
      */
     public function setFQSEN(FQSEN $fqsen);
@@ -53,10 +51,10 @@ interface AddressableElementInterface extends TypedElementInterface
     public function isPrivate() : bool;
 
     /**
-     * @param FileRef $file_ref
-     * A reference to a location in which this typed structural
-     * element is referenced.
+     * Track a location $file_ref in which this typed structural element
+     * is referenced.
      *
+     * @param FileRef $file_ref
      * @return void
      */
     public function addReference(FileRef $file_ref);
@@ -102,16 +100,18 @@ interface AddressableElementInterface extends TypedElementInterface
     public function isDeprecated() : bool;
 
     /**
+     * Set this element as deprecated or not deprecated
+     *
      * @param bool $is_deprecated
-     * Set this element as deprecated
      *
      * @return void
      */
     public function setIsDeprecated(bool $is_deprecated);
 
     /**
+     * Set the set of issue names ($suppress_issue_list) to suppress
+     *
      * @param array<int,string> $suppress_issue_list
-     * Set the set of issue names to suppress
      *
      * @return void
      */

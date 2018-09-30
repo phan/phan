@@ -567,7 +567,7 @@ class ContextNode
                         $type_value = $type->getValue();
                         if (\preg_match('/^\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\]*$/', $type_value)) {
                             // TODO: warn about invalid types and unparsable types
-                            $fqsen = FullyQualifiedClassName::makeFromExtractedNamespaceAndName($type_value);
+                            $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($type_value);
                             if ($this->code_base->hasClassWithFQSEN($fqsen)) {
                                 $class_list[] = $this->code_base->getClassByFQSEN($fqsen);
                             } else {

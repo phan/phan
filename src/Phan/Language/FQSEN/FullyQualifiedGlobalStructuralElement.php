@@ -64,10 +64,15 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     }
 
     /**
+     * Construct a fully-qualified global structural element from a namespace and name
+     * (such as 'is_string', '\is_int', 'stdClass', 'PHP_VERSION_ID', 'ast\parse_code', etc.)
+     *
      * @param string $name
      * The name of this structural element, may contain a namespace.
      *
      * @return static
+     *
+     * @deprecated - use fromFullyQualifiedString
      */
     public static function makeFromExtractedNamespaceAndName(string $name)
     {
@@ -81,11 +86,13 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     }
 
     /**
+     * Construct a fully-qualified global structural element from a namespace and name.
+     *
      * @param string $namespace
      * The namespace in this element's scope
      *
      * @param string $name
-     * The name of this structural element
+     * The name of this structural element (additional namespace prefixes here are properly handled)
      *
      * @param int $alternate_id
      * An alternate ID for the element for use when
@@ -262,7 +269,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     }
 
     /**
-     * @return static
+     * @return static a copy of this global structural element with a different namespace
      */
     public function withNamespace(
         string $namespace

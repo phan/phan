@@ -429,6 +429,9 @@ class ReferenceCountsAnalyzer
     }
 
     /**
+     * Find Elements with FQSENs that are the same as $element's FQSEN,
+     * apart from the alternate id.
+     * (i.e. duplicate declarations)
      * @return ?AddressableElement
      */
     public static function findAlternateReferencedElementDeclaration(

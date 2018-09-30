@@ -16,6 +16,7 @@ trait ClosedScopeElement
     private $internal_scope;
 
     /**
+     * Sets the internal scope of this closed scope element.
      * @return void
      */
     public function setInternalScope(ClosedScope $internal_scope)

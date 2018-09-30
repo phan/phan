@@ -87,7 +87,8 @@ abstract class Scope
     }
 
     /**
-     * @return FQSEN
+     * @return FQSEN in which this scope was declared
+     * (e.g. a FullyQualifiedFunctionName, FullyQualifiedClassName, etc.)
      * @suppress PhanPossiblyNullTypeReturn callers should call hasFQSEN
      */
     public function getFQSEN()
@@ -175,7 +176,8 @@ abstract class Scope
     }
 
     /**
-     * @return Variable
+     * Locates the variable with name $name.
+     * Callers should check $this->hasVariableWithName() first.
      */
     public function getVariableByName(string $name) : Variable
     {
@@ -195,7 +197,7 @@ abstract class Scope
      * @param Variable $variable
      * A variable to add to the local scope
      *
-     * @return Scope
+     * @return Scope a clone of this scope with $variable added
      */
     public function withVariable(Variable $variable) : Scope
     {
@@ -235,6 +237,9 @@ abstract class Scope
     }
 
     /**
+     * Add $variable to the current scope.
+     *
+     * @see $this->withVariable() for creating a clone of a scope with $variable instead
      * @return void
      */
     public function addVariable(Variable $variable)
@@ -249,6 +254,8 @@ abstract class Scope
     }
 
     /**
+     * Add $variable to the set of global variables
+     *
      * @param Variable $variable
      * A variable to add to the set of global variables
      *
@@ -336,6 +343,11 @@ abstract class Scope
     }
 
     /**
+     * Adds a template type to the current scope.
+     *
+     * The TemplateType is resolved during analysis based on the passed in union types
+     * for the parameters (e.g. of __construct()) using those template types
+     *
      * @param TemplateType $template_type
      * A template type parameterizing the generic class in scope
      *

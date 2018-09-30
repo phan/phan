@@ -11,6 +11,7 @@ use TypeError;
 
 /**
  * Phan's representation of a class/trait/interface's property (including magic and dynamic properties)
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class Property extends ClassElement
 {

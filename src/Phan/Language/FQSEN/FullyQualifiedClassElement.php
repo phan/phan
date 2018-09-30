@@ -46,6 +46,10 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
     }
 
     /**
+     * Construct a fully-qualified class element from the class,
+     * the element name in the class.
+     * (and an alternate id to account for duplicate element definitions)
+     *
      * @param FullyQualifiedClassName $fully_qualified_class_name
      * The fully qualified class name of the class in which
      * this element exists

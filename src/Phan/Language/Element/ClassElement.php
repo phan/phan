@@ -96,9 +96,10 @@ abstract class ClassElement extends AddressableElement
     }
 
     /**
+     * Sets the FQSEN of the class element in the location in which
+     * the element was originally defined.
+     *
      * @param FullyQualifiedClassElement $defining_fqsen
-     * The FQSEN of this class element in the location in which
-     * it was originally defined
      * @return void
      */
     public function setDefiningFQSEN(
@@ -171,6 +172,8 @@ abstract class ClassElement extends AddressableElement
     }
 
     /**
+     * Sets whether this method overrides another method
+     *
      * @param bool $is_override
      * True if this method overrides another method
      *
@@ -219,6 +222,7 @@ abstract class ClassElement extends AddressableElement
      * @param CodeBase $code_base used for access checks to protected properties
      * @param ?FullyQualifiedClassName $accessing_class_fqsen the class FQSEN of the current scope.
      *                                    null if in the global scope.
+     * @return bool true if this can be accessed from the scope of $accessing_class_fqsen
      */
     public function isAccessibleFromClass(CodeBase $code_base, $accessing_class_fqsen) : bool
     {

@@ -439,7 +439,7 @@ class CodeBase
     private function addInternalFunctionsByNames(array $internal_function_name_list)
     {
         foreach ($internal_function_name_list as $function_name) {
-            $this->internal_function_fqsen_set->attach(FullyQualifiedFunctionName::makeFromExtractedNamespaceAndName($function_name));
+            $this->internal_function_fqsen_set->attach(FullyQualifiedFunctionName::fromFullyQualifiedString($function_name));
         }
     }
 

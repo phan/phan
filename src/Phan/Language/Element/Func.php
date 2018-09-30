@@ -362,6 +362,7 @@ class Func extends AddressableElement implements FunctionInterface
     }
 
     /**
+     * Returns a string that can be used as a stand-alone PHP stub for this global function.
      * @suppress PhanUnreferencedPublicMethod (toStubInfo is used by callers for more flexibility)
      */
     public function toStub() : string
