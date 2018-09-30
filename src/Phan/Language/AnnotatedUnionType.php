@@ -13,7 +13,10 @@ namespace Phan\Language;
  */
 class AnnotatedUnionType extends UnionType
 {
-    /** @var bool */
+    /**
+     * @var bool is this union type possibly undefined
+     * (e.g. a possibly undefined array shape offset)
+     */
     protected $is_possibly_undefined = false;
 
     /**

@@ -105,13 +105,13 @@ class TolerantASTConverter
      */
     protected static $decl_id = 0;
 
-    /** @var bool */
+    /** @var bool should placeholder nodes be added as child nodes instead of refusing to generate a Node for an invalid statement? */
     protected static $should_add_placeholders = false;
 
-    /** @var string */
+    /** @var string the contents of the file currently being parsed */
     protected static $file_contents = '';
 
-    /** @var FilePositionMap */
+    /** @var FilePositionMap maps byte offsets of the currently parsed file to line numbers */
     protected static $file_position_map;
 
     /** @var bool */

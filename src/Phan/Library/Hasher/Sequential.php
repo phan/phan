@@ -9,9 +9,9 @@ use Phan\Library\Hasher;
  */
 class Sequential implements Hasher
 {
-    /** @var int */
+    /** @var int an incrementing counter mapping the first key to group 0, the second key to 1, etc. (modulo group_count) */
     protected $counter;
-    /** @var int */
+    /** @var int the total number of groups. */
     protected $group_count;
 
     public function __construct(int $group_count)

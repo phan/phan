@@ -42,7 +42,7 @@ $internal_function_name_list = get_defined_functions()['internal'];
  */
 final class UnionTypeTest extends BaseTest
 {
-    /** @var CodeBase|null */
+    /** @var CodeBase|null The code base within which this unit test is operating */
     protected static $code_base = null;
 
     /**
@@ -78,6 +78,7 @@ final class UnionTypeTest extends BaseTest
 
     protected function setUp()
     {
+        // Deliberately not calling parent::setUp()
         global $internal_class_name_list;
         global $internal_interface_name_list;
         global $internal_trait_name_list;

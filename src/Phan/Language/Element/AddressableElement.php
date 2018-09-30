@@ -23,6 +23,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
 
     /**
      * @var FQSEN
+     * A fully qualified name for the element
      */
     protected $fqsen;
 
@@ -36,8 +37,16 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
 
     /**
      * @var ?string
+     * The doc comment of the element
      */
     protected $doc_comment;
+
+    /**
+     * @var bool
+     * Has this element been hydrated yet?
+     * (adding information from ancestor classes for more detailed type information)
+     */
+    protected $is_hydrated = false;
 
     /**
      * @param Context $context
@@ -254,9 +263,6 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     ) : int {
         return \count($this->reference_list);
     }
-
-    /** @var bool */
-    protected $is_hydrated = false;
 
     /**
      * This method must be called before analysis

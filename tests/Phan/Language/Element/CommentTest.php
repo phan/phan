@@ -15,17 +15,17 @@ use Phan\Tests\BaseTest;
  */
 final class CommentTest extends BaseTest
 {
-    /** @var CodeBase */
+    /** @var CodeBase The code base within which we're operating */
     protected $code_base;
+
+    /** @var array<string,mixed> the old values of Phan's Config. */
+    protected $old_values = [];
 
     const OVERRIDES = [
         'read_type_annotations' => true,
         'read_magic_property_annotations' => true,
         'read_magic_method_annotations' => true,
     ];
-
-    /** @var array<string,mixed> */
-    protected $old_values = [];
 
     protected function setUp()
     {

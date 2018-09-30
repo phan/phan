@@ -23,17 +23,19 @@ use Phan\Language\Type\TemplateType;
 abstract class Scope
 {
     /**
-     * @var Scope|null
+     * @var Scope|null the parent scope, if this is not the global scope
      */
     protected $parent_scope = null;
 
     /**
-     * @var FQSEN|null
+     * @var FQSEN|null the FQSEN that this scope is within,
+     * if this scope is within an element such as a function body or class definition.
      */
     protected $fqsen = null;
 
     /**
-     * @var array<string,Variable>
+     * @var array<string,Variable> the map of variable names to variables within this scope.
+     * Some variable definitions must be retrieved from parent scopes.
      */
     protected $variable_map = [];
 

@@ -2775,7 +2775,10 @@ class Clazz extends AddressableElement
         $this->did_finish_parsing = $did_finish_parsing;
     }
 
-    /** @var bool */
+    /**
+     * @var bool have the class constants been hydrated
+     * (must be done before hydrating properties and methods to avoid recursive dependencies)
+     */
     protected $are_constants_hydrated;
 
     /**

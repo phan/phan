@@ -73,16 +73,19 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
     /**
      * @var ProtocolReader
+     * This reads and unserializes requests(or responses) and notifications from the language server client.
      */
     protected $protocolReader;
 
     /**
      * @var ProtocolWriter
+     * This serializes and sends responses(or requests) and notifications to the language server client.
      */
     protected $protocolWriter;
 
     /**
      * @var LanguageClient
+     * Used to interact with the remote language server client.
      */
     protected $client;
 
@@ -95,26 +98,39 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     public $textDocument;
 
     /**
+     * This contains the most recent daemon request to analyze a set of files (and optionally return information).
+     *
+     * Phan's support for the language server protocol is based on an earlier asynchronous mode called "Daemon mode"
+     *
+     * The most recent request is temporarily saved in this property so that Phan knows which forked process to communicate with.
+     *
      * @var Request|null
      */
     protected $most_recent_request;
 
     /**
-     * @var CodeBase
+     * @var CodeBase The code base within which we're operating
      */
     protected $code_base;
 
     /**
+     * Lister of files that Phan would parse - many of these won't change and won't require re-analysis
      * @var Closure
      */
     protected $file_path_lister;
 
     /**
+     * This maps file URIs from the language client to/from absolute paths of files on disk.
+     *
+     * This is useful to send the language client the same URI that it sent us in requests back in our responses.
+     *
      * @var FileMapping
      */
     protected $file_mapping;
 
     /**
+     * Is the language server still accepting new requests from clients?
+     *
      * @var bool
      */
     private $is_accepting_new_requests = true;
