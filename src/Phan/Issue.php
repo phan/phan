@@ -15,6 +15,7 @@ use Phan\Plugin\ConfigPluginSet;
 /**
  * An issue emitted during the course of analysis
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ * @SuppressWarnings(PHPMD.ConstantNamingConventions) these constant names are deliberately used to match the values
  */
 class Issue
 {
