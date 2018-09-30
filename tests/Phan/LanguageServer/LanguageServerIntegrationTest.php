@@ -22,6 +22,7 @@ use stdClass;
  * (integration test timeouts weren't implemented or tested yet).
  *
  * @phan-file-suppress PhanThrowTypeAbsent, PhanThrowTypeAbsentForCall it's a test
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 final class LanguageServerIntegrationTest extends BaseTest
 {

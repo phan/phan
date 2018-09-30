@@ -26,6 +26,7 @@ if (!class_exists('\ast\Node')) {
  * These are regular PHP files stubbing PHP modules, containing empty method implementations, etc.
  *
  * Configured stubs can be used in IDEs, analysis, etc. where extensions aren't installed or enabled (e.g. xdebug)
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class StubsGenerator {
 

@@ -217,6 +217,10 @@ final class HasPHPDocPlugin extends PluginV2 implements
             // This isn't user-defined, there's no reason to warn or way to change it.
             return;
         }
+        if ($function->isNSInternal($code_base)) {
+            // (at)internal are internal to the library, and there's less of a need to document them
+            return;
+        }
         if ($function->isClosure()) {
             // Probably not useful in many cases to document a short closure passed to array_map, etc.
             return;
