@@ -30,6 +30,7 @@ use Phan\Parse\ParseVisitor;
  * (e.g. of a function, closure, method, a PHPDoc closure/callable signature such as `Closure(MyClass=):void`, or phpdoc method.
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class Parameter extends Variable
 {

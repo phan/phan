@@ -10,6 +10,7 @@ use Sabre\Event\Promise;
  * @see \Phan\LanguageServer\DefinitionResolver for how this maps the found node to the type in the context.
  * @see \Phan\Plugin\Internal\NodeSelectionPlugin for how the node is found
  * @see \Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping for how isSelected is set
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 abstract class NodeInfoRequest
 {

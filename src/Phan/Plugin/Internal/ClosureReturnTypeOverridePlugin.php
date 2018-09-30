@@ -258,7 +258,11 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
     }
 
     /**
-     * @phan-return Closure(mixed,int):UnionType
+     * This caches the arguments inferred as the union types of arguments passed to function calls.
+     * This is used in case there are multiple function-likes that need to be analyzed
+     *
+     * TODO: Is this still needed?
+     * @return Closure(mixed,int):UnionType
      */
     public static function createNormalArgumentCache(CodeBase $code_base, Context $context) : Closure
     {

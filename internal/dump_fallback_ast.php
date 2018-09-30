@@ -34,7 +34,10 @@ use Microsoft\PhpParser\Parser;
 
 dump_main();
 
-// Dumps a snippet provided on stdin.
+/**
+ * Dumps a snippet provided as a command line argument
+ * @return void
+ */
 function dump_main()
 {
     error_reporting(E_ALL);
@@ -75,11 +78,20 @@ EOB;
     }
 }
 
+/**
+ * Parses $expr and echoes the compact AST representation to stdout.
+ * @return void
+ */
 function dump_expr_as_ast(string $expr)
 {
     $ast_data = (new \Phan\AST\TolerantASTConverter\TolerantASTConverter())->parseCodeAsPHPAST($expr, 50);
     echo \Phan\Debug::nodeToString($ast_data);
 }
+
+/**
+ * Parses $expr and echoes the tolerant-php-parser AST to stdout.
+ * @return void
+ */
 function dump_expr(string $expr)
 {
     // Instantiate new parser instance

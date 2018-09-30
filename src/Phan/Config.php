@@ -12,6 +12,7 @@ namespace Phan;
  *
  * For efficiency, all of these methods are static methods.
  * Configuration is fetched frequently, and static methods were much faster than magic __get().
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class Config
 {
@@ -904,6 +905,7 @@ class Config
     }
 
     /**
+     * Resets the configuration to the initial state, prior to parsing config files and CLI arguments.
      * @return void
      * @internal - this should only be used in unit tests.
      */

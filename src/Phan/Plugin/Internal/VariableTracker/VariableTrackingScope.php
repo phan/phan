@@ -10,6 +10,7 @@ use function spl_object_id;
  * Instead of tracking the union types for variable names, this will instead track definitions and uses of variable names.
  *
  * @see ContextMergeVisitor for something similar for union types.
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class VariableTrackingScope
 {

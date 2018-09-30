@@ -44,7 +44,14 @@ set_exception_handler(function (Throwable $throwable) {
 });
 
 /**
+ * Executes $closure with Phan's default error handler disabled.
+ *
+ * This is useful in cases where PHP notices are unavoidable,
+ * e.g. notices in preg_match() when checking if a regex is valid
+ * and you don't want the default behavior of terminating the program.
+ *
  * @return mixed
+ * @see PregRegexCheckerPlugin
  */
 function with_disabled_phan_error_handler(Closure $closure)
 {

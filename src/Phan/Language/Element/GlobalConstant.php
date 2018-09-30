@@ -73,6 +73,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     }
 
     /**
+     * Returns a standalone stub of PHP code for this global constant.
      * @suppress PhanUnreferencedPublicMethod toStubInfo is used by callers instead
      */
     public function toStub() : string

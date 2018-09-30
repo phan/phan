@@ -496,7 +496,7 @@ class Comment
 
     /**
      * @return Option<Type>
-     * An optional Type defined by a (at)PhanClosureScope
+     * An optional Type defined by a (at)phan-closure-scope
      * directive specifying a single type.
      *
      * @suppress PhanPartialTypeMismatchReturn (Null)
@@ -633,7 +633,7 @@ class Comment
     }
 
     /**
-     * @return array<int,CommentParameter>
+     * @return array<int,CommentParameter> the list of (at)var annotations
      */
     public function getVariableList() : array
     {

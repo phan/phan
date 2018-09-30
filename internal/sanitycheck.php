@@ -3,6 +3,8 @@
 declare(strict_types = 1);
 // @phan-file-suppress PhanNativePHPSyntaxCheckPlugin
 /**
+ * Loads the ReflectionFunction or ReflectionMethod for the given function or method name.
+ * Method names must use '::' to separate the class and method names.
  * @throws ReflectionException
  */
 function load_internal_function(string $function_name) : ReflectionFunctionAbstract
@@ -17,6 +19,11 @@ function load_internal_function(string $function_name) : ReflectionFunctionAbstr
 }
 
 /**
+ * Returns the number of required and optional parameters from Phan's internal signature map entry for some function.
+ * as well as whether that map entry has the mistake of putting a required parameter after an optional parameter
+ *
+ * @param array<int|string,string> $fields - E.g. `['returnType', 'paramNameWithAnnotations'=>'paramType']`
+ * @return array{0:int,1:int,2:bool} [int $num_required, int $num_optional, bool $saw_optional_after_required]
  * @throws InvalidArgumentException for invalid fields
  */
 function getParametersCountsFromPhan(array $fields) : array
@@ -46,7 +53,12 @@ function getParametersCountsFromPhan(array $fields) : array
     return [$num_required, $num_optional, $saw_optional_after_required];
 }
 /**
+ * Gets the number of required and actual parameters from reflection.
+ *
+ * Variadic functions are treated as if they have 10000 optional parameters.
+ *
  * @param ReflectionParameter[] $args
+ * @return array{0:int,1:int} [$num_required, $num_optional]
  */
 function getParameterCountsFromReflection(array $args) : array
 {
@@ -108,11 +120,13 @@ class PhanParameterInfo
 }
 
 /**
+ * Extracts a list of representations of parameters from the compact array description ($fields) from FunctionSignatureMap.php
+ *
  * @param string[] $fields
  * @phan-param array{0:string}|array<string,string> $fields
  * @return array<int,PhanParameterInfo>
  */
-function get_parameters_from_phan($fields)
+function get_parameters_from_phan($fields) : array
 {
     unset($fields[0]);
     $result = [];
@@ -123,9 +137,17 @@ function get_parameters_from_phan($fields)
 }
 
 /**
+ * Check if Phan's function signature map has any contradictions with PHP's function signature map.
+ *
+ * This may either be a bug in Phan's signature map or in the reflection info.
+ *
+ * Note that certain bugs in the reflection info may be backwards incompatible changes
+ * (e.g. making an optional method parameter required, changing real param/return types in certain ways, etc.
+ * may be backwards incompatible for classes that subclass a class,
+ * and would have to wait for the next PHP major version (8.0))
+ *
  * @return void
  * @throws InvalidArgumentException for invalid return types
- * TODO: consistent naming
  */
 function check_fields(string $function_name, array $fields, array $signatures)
 {
@@ -281,6 +303,9 @@ function check_fields(string $function_name, array $fields, array $signatures)
     }
 }
 
+/**
+ * Load Phan's function signatures and check that they are compatible with Reflection's real function/method signatures
+ */
 function main_check_fields()
 {
     error_reporting(E_ALL);

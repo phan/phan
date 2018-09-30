@@ -66,6 +66,8 @@ use function is_null;
  *
  * (Note: This is called almost once per each AST node being analyzed.
  * Speed is preferred over using Phan\Memoize.)
+ *
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod TODO: Document
  */
 final class ConfigPluginSet extends PluginV2 implements
     AfterAnalyzeFileCapability,
@@ -182,6 +184,9 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
+     * Resets this set of plugins to the state it had before any user-defined or internal plugins were added,
+     * then re-initialize plugins based on the current configuration.
+     *
      * @suppress PhanDeprecatedInterface
      * @internal - Used only for testing
      */

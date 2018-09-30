@@ -160,8 +160,23 @@ and that Phan can extract a plaintext summary/description from that comment.
 
 - **PhanPluginNoCommentOnClass**: `Class {CLASS} has no doc comment`
 - **PhanPluginDescriptionlessCommentOnClass**: `Class {CLASS} has no readable description: {STRING_LITERAL}`
+- **PhanPluginNoCommentOnFunction**: `Function {FUNCTION} has no doc comment`
+- **PhanPluginDescriptionlessCommentOnFunction**: `Function {FUNCTION} has no readable description: {STRING_LITERAL}`
 - **PhanPluginNoCommentOnPublicProperty**: `Public property {PROPERTY} has no doc comment` (Also exists for Private and Protected)
 - **PhanPluginDescriptionlessCommentOnPublicProperty**: `Public property {PROPERTY} has no readable description: {STRING_LITERAL}` (Also exists for Private and Protected)
+
+Warnings about method verbosity also exist, many categories may need to be completely disabled due to the large number of method declarations in a typical codebase:
+
+- Warnings are not emitted for `@internal` methods.
+- Warnings are not emitted for methods that override methods in the parent class.
+- Warnings can be suppressed based on the method FQSEN with `plugin_config => [..., 'has_phpdoc_method_ignore_regex' => (a PCRE regex)]`
+
+  (e.g. to suppress issues about tests, or about missing documentation about getters and setters, etc.)
+
+The warning types for methods are below:
+
+- **PhanPluginNoCommentOnPublicMethod**: `Public method {METHOD} has no doc comment` (Also exists for Private and Protected)
+- **PhanPluginDescriptionlessCommentOnPublicMethod**: `Public method {METHOD} has no readable description: {STRING_LITERAL}` (Also exists for Private and Protected)
 
 #### InvalidVariableIssetPlugin.php
 

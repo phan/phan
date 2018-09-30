@@ -19,9 +19,9 @@ interface IssueCollectorInterface
     public function collectIssue(IssueInstance $issue);
 
     /**
-     * @return array<int,IssueInstance>
+     * @return array<int,IssueInstance> the list of collected issues from calls to collectIssue()
      */
-    public function getCollectedIssues():array;
+    public function getCollectedIssues(): array;
 
     /**
      * Remove all collected issues (from the parse phase) for the given file paths.

@@ -15,6 +15,7 @@ use Phan\Memoize;
 /**
  * An addressable element is a TypedElement with an FQSEN.
  * (E.g. a class, property, function, method, etc.)
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 abstract class AddressableElement extends TypedElement implements AddressableElementInterface
 {
@@ -294,7 +295,8 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     }
 
     /**
-     * @internal - Used by daemon mode to restore an element to the state it had before parsing.
+     * Used by daemon mode to restore an element to the state it had before parsing.
+     * @internal
      * @return ?Closure
      */
     abstract public function createRestoreCallback();

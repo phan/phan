@@ -17,6 +17,7 @@ use Phan\Phan;
  *
  * (We don't garbage collect reference cycles, so this attempts to work in a way that avoids cycles.
  *  Haven't verified that it does that as expected, yet)
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class UndoTracker
 {

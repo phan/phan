@@ -42,6 +42,7 @@ use Phan\Plugin\ConfigPluginSet;
  * @see CodeBase for the data structures used for looking up classes or elements of classes (properties, methods, constants, etc)
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class Clazz extends AddressableElement
 {
@@ -601,10 +602,10 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @param FQSEN $fqsen
      * Add the given FQSEN to the list of implemented
-     * interfaces for this class
+     * interfaces for this class.
      *
+     * @param FQSEN $fqsen
      * @return void
      */
     public function addInterfaceClassFQSEN(FQSEN $fqsen)
@@ -619,8 +620,8 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return array<int,FullyQualifiedClassName>
      * Get the list of interfaces implemented by this class
+     * @return array<int,FullyQualifiedClassName>
      */
     public function getInterfaceFQSENList() : array
     {
@@ -2855,7 +2856,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @internal - Used by daemon mode to restore an element to the state it had before parsing.
+     * Used by daemon mode to restore an element to the state it had before parsing.
      * @return Closure
      */
     public function createRestoreCallback()

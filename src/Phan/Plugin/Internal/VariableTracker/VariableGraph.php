@@ -6,6 +6,7 @@ use function spl_object_id;
 
 /**
  * This represents a summary of all of the definitions and uses of all variable within a scope.
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 final class VariableGraph
 {
@@ -55,6 +56,7 @@ final class VariableGraph
     }
 
     /**
+     * Record the fact that $node is a definition of the variable with name $name in the scope $scope
      * @return void
      */
     public function recordVariableDefinition(string $name, Node $node, VariableTrackingScope $scope)

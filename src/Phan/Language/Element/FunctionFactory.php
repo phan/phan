@@ -82,7 +82,8 @@ class FunctionFactory
     }
 
     /**
-     * @return array<int,Method>
+     * @return array<int,Method> a list of 1 or more method signatures from a ReflectionMethod
+     * and Phan's alternate signatures for that method's FQSEN in FunctionSignatureMap.
      */
     public static function methodListFromReflectionClassAndMethod(
         Context $context,

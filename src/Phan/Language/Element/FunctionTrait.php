@@ -27,6 +27,7 @@ use Phan\Language\UnionType;
 /**
  * This contains functionality common to global functions, closures, and methods
  * @see FunctionInterface - Classes using this trait use that interface
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 trait FunctionTrait
 {
@@ -1020,7 +1021,8 @@ trait FunctionTrait
     public abstract function setUnionType(UnionType $type);
 
     /**
-     * @internal - Used by daemon mode to restore an element to the state it had before parsing.
+     * Creates a callback that can restore this element to the state it had before parsing.
+     * @internal - Used by daemon mode
      * @return Closure
      */
     public function createRestoreCallback()

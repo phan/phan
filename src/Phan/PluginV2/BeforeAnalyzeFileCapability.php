@@ -12,6 +12,8 @@ use Phan\Language\Context;
 interface BeforeAnalyzeFileCapability
 {
     /**
+     * This method is called before analyzing a file.
+     *
      * @param CodeBase $code_base
      * The code base in which the node exists
      *

@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Library;
 
+use RuntimeException;
+
 /**
  * An LRU cache for the contents of files (FileCacheEntry), and data structures derived from contents of files.
  */
@@ -26,6 +28,9 @@ final class FileCache
     }
 
     /**
+     * Adds an entry recording that $file_name has contents $file_contents,
+     * overwriting any previous entries
+     *
      * @return FileCacheEntry
      */
     public static function addEntry(string $file_name, string $contents) : FileCacheEntry
@@ -49,7 +54,8 @@ final class FileCache
     }
 
     /**
-     * @return ?FileCacheEntry
+     * @return ?FileCacheEntry if the entry exists in cache, return it.
+     * Otherwise, return null.
      */
     public static function getEntry(string $file_name)
     {
@@ -64,8 +70,9 @@ final class FileCache
     }
 
     /**
-     * @throws \RuntimeException if the file could not be loaded
-     * @return FileCacheEntry
+     * @param string $file_name an absolute path to a file on disk
+     * @return FileCacheEntry This will load the file from the filesystem if it could not be found.
+     * @throws RuntimeException if the file could not be loaded
      */
     public static function getOrReadEntry(string $file_name) : FileCacheEntry
     {
@@ -74,14 +81,14 @@ final class FileCache
             return $entry;
         }
         if (!\file_exists($file_name)) {
-            throw new \RuntimeException("FileCache::getOrReadEntry: unable to find '$file_name'\n");
+            throw new RuntimeException("FileCache::getOrReadEntry: unable to find '$file_name'\n");
         }
         if (!\is_readable($file_name)) {
-            throw new \RuntimeException("FileCache::getOrReadEntry: unable to read '$file_name'\n");
+            throw new RuntimeException("FileCache::getOrReadEntry: unable to read '$file_name'\n");
         }
         $contents = file_get_contents($file_name);
         if (!\is_string($contents)) {
-            throw new \RuntimeException("FileCache::getOrReadEntry: file_get_contents failed for '$file_name'\n");
+            throw new RuntimeException("FileCache::getOrReadEntry: file_get_contents failed for '$file_name'\n");
         }
         $entry = self::addEntry($file_name, $contents);
         return $entry;

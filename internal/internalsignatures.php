@@ -27,6 +27,8 @@ define('ORIGINAL_SIGNATURE_PATH', dirname(__DIR__) . '/src/Phan/Language/Interna
  * - Compare the signatures against Phan's to report incomplete or inaccurate signatures of Phan itself (or the external signature)
  *
  * TODO: could extend this to properties (the use of properties in extensions is rare).
+ *
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 abstract class IncompatibleSignatureDetectorBase
 {

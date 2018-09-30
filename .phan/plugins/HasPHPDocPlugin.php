@@ -1,11 +1,16 @@
 <?php declare(strict_types=1);
 
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Func;
 use Phan\Language\Element\MarkupDescription;
+use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeClassCapability;
+use Phan\PluginV2\AnalyzeFunctionCapability;
+use Phan\PluginV2\AnalyzeMethodCapability;
 use Phan\PluginV2\AnalyzePropertyCapability;
 
 /**
@@ -38,6 +43,8 @@ use Phan\PluginV2\AnalyzePropertyCapability;
  */
 final class HasPHPDocPlugin extends PluginV2 implements
     AnalyzeClassCapability,
+    AnalyzeFunctionCapability,
+    AnalyzeMethodCapability,
     AnalyzePropertyCapability
 {
     /**
@@ -66,7 +73,6 @@ final class HasPHPDocPlugin extends PluginV2 implements
             );
             return;
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $description = MarkupDescription::extractDescriptionFromDocComment($class);
         if (!$description) {
             $this->emitIssue(
@@ -82,7 +88,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
 
     /**
      * @param CodeBase $code_base
-     * The code base in which the function exists
+     * The code base in which the property exists
      *
      * @param Property $property
      * A property being analyzed
@@ -119,7 +125,6 @@ final class HasPHPDocPlugin extends PluginV2 implements
             );
             return;
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $description = MarkupDescription::extractDescriptionFromDocComment($property);
         if (!$description) {
             $visibility_upper = ucfirst($property->getVisibilityName());
@@ -133,8 +138,126 @@ final class HasPHPDocPlugin extends PluginV2 implements
             return;
         }
     }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base in which the method exists
+     *
+     * @param Method $method
+     * A method being analyzed
+     *
+     * @return void
+     *
+     * @override
+     */
+    public function analyzeMethod(
+        CodeBase $code_base,
+        Method $method
+    ) {
+        if ($method->isFromPHPDoc()) {
+            // Phan does not track descriptions of (at)method.
+            return;
+        }
+        if ($method->getIsMagic()) {
+            // Don't require a description for `__construct()`, `__sleep()`, etc.
+            return;
+        }
+        if ($method->getFQSEN() !== $method->getRealDefiningFQSEN()) {
+            // Only warn once for the original definition of this method.
+            // Don't warn about subclasses inheriting this method.
+            return;
+        }
+        if ($method->getIsOverride()) {
+            // Note: This deliberately avoids requiring a summary for methods that are just overrides of other methods
+            // This reduces the number of false positives
+            return;
+        }
+        $method_filter = Config::getValue('plugin_config')['has_phpdoc_method_ignore_regex'] ?? null;
+        if (is_string($method_filter)) {
+            $fqsen_string = ltrim((string)$method->getFQSEN(), '\\');
+            if (preg_match($method_filter, $fqsen_string) > 0) {
+                return;
+            }
+        }
+
+        $doc_comment = $method->getDocComment();
+        if (!$doc_comment) {
+            $visibility_upper = ucfirst($method->getVisibilityName());
+            $this->emitIssue(
+                $code_base,
+                $method->getContext(),
+                "PhanPluginNoCommentOn${visibility_upper}Method",
+                "$visibility_upper method {METHOD} has no doc comment",
+                [$method->getFQSEN()]
+            );
+            return;
+        }
+        $description = MarkupDescription::extractDescriptionFromDocComment($method);
+        if (!$description) {
+            $visibility_upper = ucfirst($method->getVisibilityName());
+            $this->emitIssue(
+                $code_base,
+                $method->getContext(),
+                "PhanPluginDescriptionlessCommentOn${visibility_upper}Method",
+                "$visibility_upper method {METHOD} has no readable description: {STRING_LITERAL}",
+                [$method->getFQSEN(), json_encode($method->getDocComment(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)]
+            );
+            return;
+        }
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base in which the function exists
+     *
+     * @param Func $function
+     * A function being analyzed
+     *
+     * @return void
+     *
+     * @override
+     */
+    public function analyzeFunction(
+        CodeBase $code_base,
+        Func $function
+    ) {
+        $doc_comment = $function->getDocComment();
+        if ($function->isPHPInternal()) {
+            // This isn't user-defined, there's no reason to warn or way to change it.
+            return;
+        }
+        if ($function->isNSInternal($code_base)) {
+            // (at)internal are internal to the library, and there's less of a need to document them
+            return;
+        }
+        if ($function->isClosure()) {
+            // Probably not useful in many cases to document a short closure passed to array_map, etc.
+            return;
+        }
+        if (!$doc_comment) {
+            $this->emitIssue(
+                $code_base,
+                $function->getContext(),
+                "PhanPluginNoCommentOnFunction",
+                "Function {FUNCTION} has no doc comment",
+                [$function->getFQSEN()]
+            );
+            return;
+        }
+        $description = MarkupDescription::extractDescriptionFromDocComment($function);
+        if (!$description) {
+            $this->emitIssue(
+                $code_base,
+                $function->getContext(),
+                "PhanPluginDescriptionlessCommentOnFunction",
+                "Function {FUNCTION} has no readable description: {STRING_LITERAL}",
+                [$function->getFQSEN(), json_encode($function->getDocComment(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)]
+            );
+            return;
+        }
+    }
 }
 
 // Every plugin needs to return an instance of itself at the
-// end of the file in which its defined.
+// end of the file in which it's defined.
 return new HasPHPDocPlugin();

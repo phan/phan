@@ -26,6 +26,7 @@ use Phan\PluginV2\StopParamAnalysisException;
  * and emits issues for incorrect argument types.
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 final class ArgumentType
 {

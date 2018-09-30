@@ -117,6 +117,10 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
             }
         }
     }
+
+    /**
+     * @return bool true if $method is a PHPUnit test case
+     */
     protected static function isTestCase(Method $method) : bool
     {
         if (!$method->isPublic()) {
@@ -132,6 +136,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
+     * Static initializer for this plugin - Gets called below before any methods can be used
      * @return void
      */
     public static function init()
@@ -144,5 +149,5 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
 PHPUnitNotDeadPluginVisitor::init();
 
 // Every plugin needs to return an instance of itself at the
-// end of the file in which its defined.
+// end of the file in which it's defined.
 return new PHPUnitNotDeadCodePlugin();

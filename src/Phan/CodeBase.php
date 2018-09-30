@@ -64,6 +64,7 @@ use function strtolower;
  * for a background daemon analyzing single files. (Phan\CodeBase\UndoTracker)
  *
  * @phan-file-suppress PhanPartialTypeMismatchReturn the way generic objects is type hinted is inadequate, etc.
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class CodeBase
 {
@@ -304,8 +305,9 @@ class CodeBase
     }
 
     /**
+     * Returns the most recently parsed or analyzed file.
      * @return ?string
-     * @internal - For use only by the phan error handler
+     * @internal - For use only by the phan error handler, to help with debugging crashes
      */
     public static function getMostRecentlyParsedOrAnalyzedFile()
     {
@@ -437,7 +439,7 @@ class CodeBase
     private function addInternalFunctionsByNames(array $internal_function_name_list)
     {
         foreach ($internal_function_name_list as $function_name) {
-            $this->internal_function_fqsen_set->attach(FullyQualifiedFunctionName::makeFromExtractedNamespaceAndName($function_name));
+            $this->internal_function_fqsen_set->attach(FullyQualifiedFunctionName::fromFullyQualifiedString($function_name));
         }
     }
 

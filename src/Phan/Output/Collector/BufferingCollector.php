@@ -67,6 +67,10 @@ final class BufferingCollector implements IssueCollectorInterface
     }
 
     /**
+     * Clear the array of issues without outputting anything.
+     *
+     * Called after analysis ends.
+     *
      * @return void
      */
     public function flush()

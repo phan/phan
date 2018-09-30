@@ -60,6 +60,8 @@ class FutureUnionType
     }
 
     /**
+     * Gets the codebase singleton which created this FutureUnionType.
+     * (used to resolve class references, constants, etc.)
      * @internal (May rethink exposing the codebase in the future)
      */
     public function getCodebase() : CodeBase
@@ -68,6 +70,8 @@ class FutureUnionType
     }
 
     /**
+     * Gets the context in which this FutureUnionType was created
+     * (used to resolve class references, constants, etc.)
      * @internal (May rethink exposing the codebase in the future)
      */
     public function getContext() : Context

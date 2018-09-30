@@ -256,6 +256,8 @@ class ContextMergeVisitor extends KindVisitorImplementation
     }
 
     /**
+     * Returns a new scope which combines the parent scope with a list of 2 or more child scopes
+     * (one of those scopes is permitted to be the parent scope)
      * @param array<int,Scope> $scope_list
      */
     public function combineScopeList(array $scope_list) : Context

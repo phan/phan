@@ -34,7 +34,7 @@ class Phan implements IgnoredFilesFilterInterface
     private static $issue_collector;
 
     /**
-     * @return IssueCollectorInterface
+     * @return IssueCollectorInterface used to gather issues to be printed (or used) once analysis is finished
      */
     public static function getIssueCollector() : IssueCollectorInterface
     {
@@ -42,6 +42,7 @@ class Phan implements IgnoredFilesFilterInterface
     }
 
     /**
+     * Set the IssueCollectorInterface used to gather issues to be printed (or used) once analysis is finished
      * @param IssueCollectorInterface $issue_collector
      *
      * @return void
@@ -236,6 +237,9 @@ class Phan implements IgnoredFilesFilterInterface
     }
 
     /**
+     * Finish analyzing any files that need to be analyzed
+     * (for full analysis, or a limited number of files for daemon mode, etc.)
+     *
      * @param CodeBase $code_base
      * A code base needs to be passed in because we require
      * it to be initialized before any classes or files are
@@ -553,6 +557,7 @@ class Phan implements IgnoredFilesFilterInterface
     }
 
     /**
+     * Set the printer to use to emit issues to.
      * @return void
      */
     public static function setPrinter(

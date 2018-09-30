@@ -12,8 +12,8 @@ use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\UnionType;
 
 /**
- * Interface defining the behavior of both Methods
- *  and Functions
+ * Interface defining the behavior of both Methods and Functions
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 interface FunctionInterface extends AddressableElementInterface
 {
@@ -38,6 +38,8 @@ interface FunctionInterface extends AddressableElementInterface
     public function getRepresentationForIssue() : string;
 
     /**
+     * Sets the scope within this function-like element's body,
+     * for tracking variables within the function-like.
      * @return void
      */
     public function setInternalScope(ClosedScope $internal_scope);
@@ -107,10 +109,12 @@ interface FunctionInterface extends AddressableElementInterface
     public function isReturnTypeUndefined() : bool;
 
     /**
-     * @param bool $is_return_type_undefined
-     * True if this method had no return type defined when it
+     * Sets whether this method had no return type defined when it
      * was defined (either in the signature itself or in the
      * docblock).
+     *
+     * @param bool $is_return_type_undefined
+     * True if it was undefined
      *
      * @return void
      */

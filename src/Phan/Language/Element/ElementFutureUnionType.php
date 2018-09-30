@@ -26,14 +26,17 @@ trait ElementFutureUnionType
     protected $future_union_type = null;
 
     /**
-     * @param UnionType $type
      * Set the type of this element
+     * @param UnionType $type
      *
      * @return void
      */
     abstract public function setUnionType(UnionType $type);
 
     /**
+     * Sets a value that can be used once parsing/hydration is completed,
+     * to resolve the union type of this element.
+     *
      * @return void
      */
     public function setFutureUnionType(
@@ -46,8 +49,8 @@ trait ElementFutureUnionType
      * @return bool
      * Returns true if this element has an unresolved union type.
      *
-     * @internal - Mostly useful for Phan internals
-     *             (e.g. a property with an unresolved future union type can't have a template type)
+     * @internal because this is mostly useful for Phan internals
+     *           (e.g. a property with an unresolved future union type can't have a template type)
      */
     public function hasUnresolvedFutureUnionType() : bool
     {

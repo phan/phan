@@ -466,7 +466,7 @@ final class Builder
     private function maybeParsePhanClosureScope(int $i, string $line)
     {
         // TODO: different type for closures
-        $this->checkCompatible('@PhanClosureScope', Comment::FUNCTION_LIKE, $i);
+        $this->checkCompatible('@phan-closure-scope', Comment::FUNCTION_LIKE, $i);
         $this->closure_scope = $this->getPhanClosureScopeFromCommentLine($line, $i);
     }
 

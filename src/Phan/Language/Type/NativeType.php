@@ -23,6 +23,7 @@ abstract class NativeType extends Type
      * If true, returns a nullable instance of this native type
      *
      * @return static
+     * Returns a nullable/non-nullable instance of this native type (possibly unchanged)
      */
     public static function instance(bool $is_nullable)
     {

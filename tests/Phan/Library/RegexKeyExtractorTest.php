@@ -10,6 +10,8 @@ use Phan\Tests\BaseTest;
 final class RegexKeyExtractorTest extends BaseTest
 {
     /**
+     * Test that $expected_keys are extracted from $regex
+     *
      * @param string $regex a regular expression for preg_match
      * @param array<int,int|string> $expected_keys
      * @return void

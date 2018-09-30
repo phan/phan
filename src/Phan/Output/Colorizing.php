@@ -103,6 +103,10 @@ class Colorizing
     private static $color_scheme = null;
 
     /**
+     * Returns a version of $template where template strings (e.g. `{FILE}`
+     * are replaced with printf conversion specifiers (e.g. `%s`)
+     * and color control codes are inserted before/after those conversion specifiers.
+     *
      * @param string $template
      * @param array<int,int|string|float|FQSEN|Type|UnionType> $template_parameters
      */

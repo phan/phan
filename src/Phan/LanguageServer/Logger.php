@@ -7,7 +7,7 @@ use Phan\Config;
 
 /**
  * A logger used by Phan for developing or debugging the language server.
- * Logs to stderr.
+ * Logs to stderr by default.
  */
 class Logger
 {
@@ -19,7 +19,10 @@ class Logger
         return Config::getValue('language_server_debug_level') === 'info';
     }
 
-    /** @return void */
+    /**
+     * Logs a request received from the client
+     * @return void
+     */
     public static function logRequest(array $headers, string $buffer)
     {
         if (!self::shouldLog()) {
@@ -28,7 +31,10 @@ class Logger
         self::logInfo(sprintf("Request:\n%s\nData:\n%s\n\n", json_encode($headers), $buffer));
     }
 
-    /** @return void */
+    /**
+     * Logs a response this is about to send back to the client
+     * @return void
+     */
     public static function logResponse(array $headers, string $buffer)
     {
         if (!self::shouldLog()) {
@@ -37,7 +43,15 @@ class Logger
         self::logInfo(sprintf("Response:\n%s\nData:\n%s\n\n", json_encode($headers), $buffer));
     }
 
-    /** @return void */
+    /**
+     * Logs an info message to a configured file (defaults to STDERR),
+     * if debugging is turned on.
+     *
+     * This is used by code related to the language server.
+     * Phan is slower when verbose logging is enabled.
+     *
+     * @return void
+     */
     public static function logInfo(string $msg)
     {
         if (!self::shouldLog()) {
@@ -47,7 +61,11 @@ class Logger
         fwrite($file, $msg . "\n");
     }
 
-    /** @return void */
+    /**
+     * Logs an error related to the language server protocol
+     * to the configured log file (defaults to STDERR)
+     * @return void
+     */
     public static function logError(string $msg)
     {
         $file = self::getLogFile();
@@ -55,7 +73,7 @@ class Logger
     }
 
     /**
-     * @return resource the log file handle
+     * @return resource the log file handle (defaults to STDERR)
      */
     private static function getLogFile()
     {
@@ -67,6 +85,7 @@ class Logger
     }
 
     /**
+     * Overrides the log file to a different one
      * @param resource $newFile
      * @return void
      * @suppress PhanUnreferencedPublicMethod this is made available for debugging issues
@@ -80,8 +99,9 @@ class Logger
             if (self::$file === $newFile) {
                 return;
             }
-            fclose(self::$file);
-            self::$file = false;
+            if (self::$file !== STDERR) {
+                fclose(self::$file);
+            }
         }
         self::$file = $newFile;
     }

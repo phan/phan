@@ -18,6 +18,10 @@ use Throwable;
 class Utils
 {
     /**
+     * Causes the sabre event loop to crash, for debugging.
+     *
+     * E.g. this is called if there is an unrecoverable error elsewhere.
+     *
      * @return void
      * @suppress PhanUnreferencedPublicMethod
      */

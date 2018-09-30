@@ -23,6 +23,7 @@ use RuntimeException;
 /**
  * An object representing the context in which any
  * structural element (such as a class or method) lives.
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class Context extends FileRef
 {

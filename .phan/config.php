@@ -261,6 +261,12 @@ return [
         // TODO: Fix and remove suppression for this plugin
         'PhanPluginDescriptionlessCommentOnPrivateProperty',
         'PhanPluginDescriptionlessCommentOnProtectedProperty',
+
+        'PhanPluginNoCommentOnProtectedMethod',
+        'PhanPluginDescriptionlessCommentOnProtectedMethod',
+        'PhanPluginNoCommentOnPrivateMethod',
+        'PhanPluginDescriptionlessCommentOnPrivateMethod',
+        'PhanPluginNoCommentOnPublicMethod', // TODO: Maybe fix this issue type
     ],
 
     // If empty, no filter against issues types will be applied.
@@ -542,6 +548,9 @@ return [
         // The maximum number of `php --syntax-check` processes to run at any point in time (Minimum: 1).
         // This may be temporarily higher if php_native_syntax_check_binaries has more elements than this process count.
         'php_native_syntax_check_max_processes' => 4,
+
+        // blacklist of methods to warn about for HasPHPDocPlugin
+        'has_phpdoc_method_ignore_regex' => '@^Phan\\\\Tests\\\\.*::(test.*|.*Provider)$@',
     ],
 
     // A list of plugin files to execute

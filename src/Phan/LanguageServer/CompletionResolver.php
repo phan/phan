@@ -20,6 +20,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 /**
  * This implements closures for finding completions for valid/invalid nodes where isSelected is set
  * @phan-file-suppress PhanUnusedPublicMethodParameter
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class CompletionResolver
 {

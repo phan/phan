@@ -48,6 +48,7 @@ class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
     // A plugin's visitors should not override visit() unless they need to.
 
     /**
+     * This is the catch-all for Nodes with kinds that don't have specialized methods
      * @param Node $node
      * A node to check
      *
@@ -70,5 +71,5 @@ class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
 }
 
 // Every plugin needs to return an instance of itself at the
-// end of the file in which its defined.
+// end of the file in which it's defined.
 return new NodeSelectionPlugin();

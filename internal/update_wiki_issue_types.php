@@ -22,7 +22,10 @@ class WikiWriter
         $this->print_to_stdout = $print_to_stdout;
     }
 
-    /** @return void */
+    /**
+     * Append $text to the buffer of text to save.
+     * @return void
+     */
     public function append(string $text)
     {
         $this->contents .= $text;
@@ -97,6 +100,8 @@ EOT;
     }
 
     /**
+     * Updates the markdown document of issue types with minimal documentation of missing issue types.
+     *
      * @return void
      * @throws InvalidArgumentException (uncaught) if the documented issue types can't be found.
      */

@@ -41,7 +41,7 @@ final class ConversionTest extends BaseTest
     }
 
     /**
-     * @return bool
+     * @return bool does php-ast support $ast_version
      */
     public static function hasNativeASTSupport(int $ast_version)
     {

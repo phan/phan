@@ -1,0 +1,1 @@
+%s:8 PhanTypeInvalidClosureScope Invalid @phan-closure-scope: expected a class name, got int

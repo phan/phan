@@ -20,7 +20,8 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     }
 
     /**
-     * @internal - Only exists to prevent accidentally calling this
+     * Only exists to prevent accidentally calling this
+     * @internal - do not call
      * @deprecated
      */
     public static function instance(bool $unused_is_nullable)
@@ -29,7 +30,7 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     }
 
     /**
-     * @return LiteralIntType
+     * @return LiteralIntType a unique LiteralIntType for $value (and the nullability)
      */
     public static function instanceForValue(int $value, bool $is_nullable)
     {
