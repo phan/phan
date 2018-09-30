@@ -394,7 +394,7 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
     const CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE = 1;
 
     /**
-     * @return UnionType
+     * @return UnionType a union type corresponding to $key_type
      */
     public static function unionTypeForKeyType(int $key_type, int $behavior = self::CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE) : UnionType
     {

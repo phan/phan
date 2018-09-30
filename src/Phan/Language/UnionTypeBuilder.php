@@ -8,6 +8,7 @@ namespace Phan\Language;
  *
  * @see UnionType->withType()
  * @see UnionType->withoutType()
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 final class UnionTypeBuilder
 {

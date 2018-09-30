@@ -35,6 +35,7 @@ class ParallelChildCollector implements IssueCollectorInterface
     }
 
     /**
+     * Assert that the dependencies needed for communicating with the child or parent process are available.
      * @throws AssertionError if PHP modules needed for shared communication aren't loaded
      * @internal
      */

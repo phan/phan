@@ -27,6 +27,8 @@ class ClosureScope extends FunctionLikeScope
 
     /**
      * @return FullyQualifiedClassName|null
+     * If the (at)phan-closure-scope annotation is used, returns the corresponding override class FQSEN.
+     * Returns the class FQSEN inside this closure's scope (with an (at)phan-closure-scope annotation).
      */
     public function getOverrideClassFQSEN()
     {
@@ -35,7 +37,7 @@ class ClosureScope extends FunctionLikeScope
 
     /**
      * @return bool
-     * True if we're in a class scope
+     * True if this closure should be analyzed as if we're in a class scope
      */
     public function isInClassScope() : bool
     {

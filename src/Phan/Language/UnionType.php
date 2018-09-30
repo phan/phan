@@ -54,6 +54,7 @@ if (!\function_exists('spl_object_id')) {
  * > or a union of any other types such as string|int|null|DateTime|DateTime[],
  * > and many other types
  *
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod TODO: Document the public methods
  */
 class UnionType implements Serializable
 {

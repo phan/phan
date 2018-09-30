@@ -28,6 +28,7 @@ use Phan\LanguageServer\Protocol\Position;
  * @see \Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping for how isSelected is set
  *
  * @phan-file-suppress PhanUnusedPublicMethodParameter
+ * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 final class CompletionRequest extends NodeInfoRequest
 {

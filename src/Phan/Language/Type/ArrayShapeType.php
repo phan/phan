@@ -73,6 +73,8 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
+     * Returns an immutable array shape type instance without $field_key.
+     *
      * @param int|string|float|bool $field_key
      */
     public function withoutField($field_key) : ArrayShapeType

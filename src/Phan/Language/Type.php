@@ -462,6 +462,9 @@ class Type
 
 
     /**
+     * Constructs a type based on the input type and the provided mapping
+     * from template type identifiers to concrete union types.
+     *
      * @param Type $type
      * The base type of this generic type referencing a
      * generic class
@@ -759,6 +762,7 @@ class Type
      * A fully qualified type name
      *
      * @return Type
+     * The type with that fully qualified type name (cached for efficiency)
      */
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
@@ -768,10 +772,13 @@ class Type
     }
 
     /**
+     * Extracts the parts of this Type from the passed in fully qualified type name.
+     * Callers should ensure that the type regex accepts $fully_qualified_string
+     *
      * @throws EmptyFQSENException if the type name was the empty string
      * @throws InvalidArgumentException if namespace is missing from something that should have a namespace
      */
-    public static function fromFullyQualifiedStringInner(
+    protected static function fromFullyQualifiedStringInner(
         string $fully_qualified_string
     ) : Type {
         if ($fully_qualified_string === '') {
@@ -2581,6 +2588,12 @@ class Type
     }
 
     /**
+     * Converts this type to one where array shapes are flattened to generic arrays, and literal scalars are converted to the general type for that scalar.
+     *
+     * E.g. converts the type `array{0:2}` to `array<int,int>`
+     *
+     * This is overridden by subclasses.
+     *
      * @return Type[]
      */
     public function withFlattenedArrayShapeOrLiteralTypeInstances() : array

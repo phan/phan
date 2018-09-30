@@ -5,14 +5,17 @@ use Closure;
 
 /**
  * Implements Resource Acquisition Is Initialization.
- * An unused variable in the local scope can be used to call this.
+ * An defined but unused variable in a function/method scope can be used to create this,
+ * and the passed in finalizer closure will be called when that function/method returns.
  *
  * Note: This assumes that the garbage collector eagerly calls __destruct.
  * This may not be the case in alternate PHP implementations.
+ *
+ * @see https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization
  */
 class RAII
 {
-    /** @var Closure():void */
+    /** @var null|Closure():void */
     private $finalizer;
 
     /**
@@ -24,6 +27,7 @@ class RAII
     }
 
     /**
+     * Calls the finalizer, unless it has already been called.
      * @return void
      */
     public function callFinalizerOnce()
@@ -31,6 +35,7 @@ class RAII
         $finalizer = $this->finalizer;
         if ($finalizer) {
             $finalizer();
+            $this->finalizer = null;
         }
     }
 

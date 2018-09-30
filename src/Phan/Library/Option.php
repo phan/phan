@@ -15,17 +15,24 @@ namespace Phan\Library;
 abstract class Option
 {
     /**
+     * If this has a value, return that value.
+     * Otherwise, return $else
+     *
      * @param T $else
      * @return T
      */
     abstract public function getOrElse($else);
 
     /**
-     * @return bool
+     * @return bool true if this is defined (i.e. this is an instance of Some)
      */
     abstract public function isDefined() : bool;
 
     /**
+     * Gets the value, or throws if this was an instance of None.
+     *
+     * The caller should check if $this->isDefined()
+     *
      * @return T
      */
     abstract public function get();

@@ -35,7 +35,11 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     }
 
     /**
-     * @return StringType|LiteralStringType
+     * @return StringType|LiteralStringType a StringType for $value
+     * This will construct an StringType instead if the value is longer than the longest supported string type
+     *
+     * - This avoids making error messages excessively long
+     * - This avoids running out of memory tracking string representations when analyzing code that may build up long strings.
      */
     public static function instanceForValue(string $value, bool $is_nullable)
     {

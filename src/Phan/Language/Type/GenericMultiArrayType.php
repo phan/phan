@@ -9,9 +9,11 @@ use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
 
 /**
+ * A temporary representation of `array<KeyType, T1|T2...>`
+ *
  * Callers should split this up into multiple GenericArrayType instances.
  *
- * This is generated from phpdoc array<int, T1|T2> where callers expect a subclass of Type.
+ * This is generated from phpdoc `array<int, T1|T2>` where callers expect a subclass of Type.
  */
 final class GenericMultiArrayType extends ArrayType implements MultiType, GenericArrayInterface
 {
@@ -89,8 +91,11 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
     }
 
     /**
+     * Public creator of GenericMultiArrayType instances
+     *
      * @param array<int,Type> $element_types
      * @param bool $is_nullable
+     * @param int $key_type
      * @return GenericMultiArrayType
      */
     public static function fromElementTypes(

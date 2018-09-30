@@ -751,6 +751,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     /**
      * @param int $severity
      * @return int
+     * A DiagnosticSeverity constant used by the language server protocol.
      */
     public static function diagnosticSeverityFromPhanSeverity($severity) : int
     {
@@ -886,7 +887,12 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     }
 
     /**
-     * @suppress PhanUnreferencedPublicMethod this is called by the client through AdvancedJsonRpc
+     * Currently a no-op.
+     *
+     * The initialized notification is sent from the client to the server after the client received the result of the initialize request
+     * but before the client is sending any other request or notification to the server.
+     *
+     * @suppress PhanUnreferencedPublicMethod
      * @return void
      */
     public function initialized()

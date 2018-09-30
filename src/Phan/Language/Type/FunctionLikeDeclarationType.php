@@ -115,7 +115,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /**
-     * @return ?ClosureDeclarationParameter
+     * @return ?ClosureDeclarationParameter the parameter which the argument at the index $i would be passed in as
      */
     public function getClosureParameterForArgument(int $i)
     {

@@ -10,6 +10,7 @@ interface MultiType
 {
     /**
      * @return array<int,Type>
+     * A list of 2 or more types that this MultiType represents
      */
     public function asIndividualTypeInstances() : array;
 }
