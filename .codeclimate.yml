@@ -18,6 +18,8 @@ engines:
         enabled: false
       CleanCode/ElseExpression:
         enabled: false
+      CleanCode/StaticAccess:
+        enabled: false
       # Phan uses $snake_case
       Controversial/CamelCaseVariableName:
         enabled: false
