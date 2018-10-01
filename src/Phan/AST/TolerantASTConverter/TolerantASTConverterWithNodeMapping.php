@@ -56,15 +56,15 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      */
     private static $closest_node_or_token_symbol;
 
-    /** @var int */
-    private static $expected_byte_offset;
+    /** @var int the byte offset we are looking for, to mark the corresponding Node as within the selected location */
+    private static $desired_byte_offset;
 
-    /** @var int */
-    private $instance_expected_byte_offset;
+    /** @var int the byte offset we are looking for, to mark the corresponding Node as within the selected location */
+    private $instance_desired_byte_offset;
 
     /**
-     * @var ?Closure(ast\Node):void
-     * @see $this->instance_handle_selected_node
+     * @var ?Closure(ast\Node):void This is optional. If it is set, this is invoked on the Node we marked.
+     * Currently, this is used to add plugin methods at runtime (limited to what is needed to handle that node's kind)
      */
     private static $handle_selected_node;
 
@@ -75,13 +75,13 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
     private $instance_handle_selected_node;
 
     /**
-     * @param int $expected_byte_offset the byte offset of the cursor
+     * @param int $desired_byte_offset the byte offset of the cursor
      * @param ?Closure(ast\Node):void $handle_selected_node this can be passed in.
      *                      If a node corresponding to a reference was found, then this closure will be invoked once with that node.
      */
-    public function __construct(int $expected_byte_offset, Closure $handle_selected_node = null)
+    public function __construct(int $desired_byte_offset, Closure $handle_selected_node = null)
     {
-        $this->instance_expected_byte_offset = $expected_byte_offset;
+        $this->instance_desired_byte_offset = $desired_byte_offset;
         $this->instance_handle_selected_node = $handle_selected_node;
     }
 
@@ -96,8 +96,8 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
     public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = [])
     {
         // Force the byte offset to be within the
-        $byte_offset = \max(0, \min(\strlen($file_contents), $this->instance_expected_byte_offset));
-        self::$expected_byte_offset = $byte_offset;
+        $byte_offset = \max(0, \min(\strlen($file_contents), $this->instance_desired_byte_offset));
+        self::$desired_byte_offset = $byte_offset;
         self::$handle_selected_node = $this->instance_handle_selected_node;
 
         if (!\in_array($version, self::SUPPORTED_AST_VERSIONS)) {
@@ -299,7 +299,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      */
     private static function extractFragmentFromCommentLike()
     {
-        $offset = self::$expected_byte_offset;
+        $offset = self::$desired_byte_offset;
         $contents = self::$file_contents;
 
         // fwrite(STDERR, __METHOD__ . " looking for $offset\n");

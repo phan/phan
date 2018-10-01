@@ -23,18 +23,20 @@ use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 
 /**
+ * This visitor determines the returned union type of an assignment operation.
+ *
  * TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed
  */
 class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
 {
 
     /**
-     * @var CodeBase
+     * @var CodeBase The code base within which we're operating
      */
     private $code_base;
 
     /**
-     * @var Context
+     * @var Context The context in which we are analyzing an assignment operator
      */
     private $context;
 

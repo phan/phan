@@ -17,7 +17,7 @@ use TypeError;
  */
 abstract class ClassElement extends AddressableElement
 {
-    /** @var FullyQualifiedClassName */
+    /** @var FullyQualifiedClassName the FQSEN of the class this ClassElement belongs to */
     private $class_fqsen;
 
     public function __construct(

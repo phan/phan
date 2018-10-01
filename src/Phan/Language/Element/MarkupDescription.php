@@ -45,7 +45,40 @@ class MarkupDescription
     }
 
     /**
-     * @return string non-empty on success
+     * Returns a doc comment with:
+     *
+     * - leading `/**` and trailing `*\/` removed
+     * - leading/trailing space on lines removed,
+     * - blank lines removed from the beginning and end.
+     *
+     * @return string simplified version of the doc comment, with leading `*` on lines preserved.
+     */
+    public static function getDocCommentWithoutWhitespace(string $doc_comment) : string
+    {
+        // Trim the start and the end of the doc comment.
+        //
+        // We leave in the second `*` of `/**` so that every single non-empty line
+        // of a typical doc comment will begin with a `*`
+        $doc_comment = preg_replace('@(^/\*)|(\*/$)@', '', $doc_comment);
+
+        $lines = explode("\n", $doc_comment);
+        $lines = array_map('trim', $lines);
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $lines = MarkupDescription::trimLeadingWhitespace($lines);
+        while (\in_array(\end($lines), ['*', ''], true)) {
+            \array_pop($lines);
+        }
+        while (\in_array(\reset($lines), ['*', ''], true)) {
+            \array_shift($lines);
+        }
+        return implode("\n", $lines);
+    }
+
+    /**
+     * Returns a markup string with the extracted description of this element (known to be a comment of an element with type $comment_category).
+     * On success, this is a non-empty string.
+     *
+     * @return string markup string
      * @internal
      */
     public static function extractDocComment(string $doc_comment, int $comment_category = null) : string

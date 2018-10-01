@@ -205,4 +205,93 @@ EOT
             ],
         ];
     }
+
+    /**
+     * @dataProvider getDocCommentWithoutWhitespaceProvider
+     */
+    public function testGetDocCommentWithoutWhitespace(string $expected, string $doc_comment)
+    {
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $this->assertSame($expected, MarkupDescription::getDocCommentWithoutWhitespace($doc_comment));
+    }
+
+    /**
+     * @return array<int,array{0:string,1:string}>
+     */
+    public function getDocCommentWithoutWhitespaceProvider()
+    {
+        return [
+            [
+                '',
+                '/** */',
+            ],
+            [
+                '',
+                <<<'EOT'
+/**
+ *
+ *
+ *
+ */
+EOT
+            ],
+            [
+                '* A description goes here',
+                '/** A description goes here */',
+            ],
+            [
+                '* @param T $x A parameter annotation goes here',
+                '/** @param T $x A parameter annotation goes here */',
+            ],
+            [
+                '* @var T $x A local variable annotation of a function goes here',
+                '/** @var T $x A local variable annotation of a function goes here*/',
+            ],
+            [
+                <<<'EOT'
+* @var MyClass A annotation of a constant goes here
+*
+* Rest of this comment
+EOT
+                ,
+                <<<'EOT'
+/**
+ * @var MyClass A annotation of a constant goes here
+ *
+ * Rest of this comment
+ */
+EOT
+                ,
+            ],
+            // Preserve leading whitespace when parsing the comment description
+            [
+                <<<'EOT'
+* A description goes here
+*
+* Rest of this description
+
+*
+* -  Example markup list
+*    Rest of that list
+EOT
+                ,
+            <<<'EOT'
+/**
+ *
+ *
+ *
+ * A description goes here
+ *
+ * Rest of this description
+
+ *
+ * -  Example markup list
+ *    Rest of that list
+ *
+ *
+ */
+EOT
+            ],
+        ];
+    }
 }

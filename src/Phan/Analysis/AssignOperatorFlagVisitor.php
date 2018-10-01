@@ -15,20 +15,20 @@ use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 
 /**
- * TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed
+ * This visitor returns a Context with the updated changes caused by an assignment operation (e.g. changes to Variables, Variable types)
  *
- * TODO: Move many of these checks to AssignOperatorAnalysisVisitor
+ * TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed
  */
 class AssignOperatorFlagVisitor extends FlagVisitorImplementation
 {
 
     /**
-     * @var CodeBase
+     * @var CodeBase The code base within which we're operating
      */
     private $code_base;
 
     /**
-     * @var Context
+     * @var Context The context in which we are determining the union type of the result of an assignment operator
      */
     private $context;
 

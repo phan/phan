@@ -8,12 +8,14 @@ use Exception;
  */
 class EmptyFQSENException extends Exception
 {
-    /** @var string */
+    /** @var string the empty, unparseable FQSEN */
     private $fqsen;
 
     /**
      * @param string $message
      * The error message
+     * @param string $fqsen
+     * the empty, unparseable FQSEN
      */
     public function __construct(
         string $message,

@@ -25,7 +25,8 @@ trait Analyzable
     private $node = null;
 
     /**
-     * @var bool
+     * @var bool has $this->node already been annotated with any extra information
+     * from the class using this trait?
      */
     private $did_annotate_node = false;
 

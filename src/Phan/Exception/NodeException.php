@@ -16,6 +16,7 @@ class NodeException extends Exception
 
     /**
      * @var Node
+     * The node causing the exception
      */
     private $node;
 

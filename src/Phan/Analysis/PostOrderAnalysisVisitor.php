@@ -47,7 +47,8 @@ use Phan\Language\UnionType;
 class PostOrderAnalysisVisitor extends AnalysisVisitor
 {
     /**
-     * @var array<int,Node>
+     * @var array<int,Node> a list of parent nodes of the currently analyzed node,
+     * within the current global or function-like scope
      */
     private $parent_node_list;
 

@@ -114,7 +114,7 @@ class TolerantASTConverter
     /** @var FilePositionMap maps byte offsets of the currently parsed file to line numbers */
     protected static $file_position_map;
 
-    /** @var bool */
+    /** @var bool if true, force all doc comments to be parsed */
     private static $parse_all_doc_comments = false;
 
     /** @var bool Sets equivalent static option in self::_start_parsing() */
@@ -127,7 +127,7 @@ class TolerantASTConverter
     protected $instance_php_version_id_parsing = PHP_VERSION_ID;
 
     /**
-     * @var bool can be used to force all doc comments to be parsed
+     * @var bool if true, force all doc comments to be parsed
      */
     private $instance_parse_all_doc_comments = false;
 
