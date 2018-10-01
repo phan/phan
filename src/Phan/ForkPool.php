@@ -2,6 +2,7 @@
 namespace Phan;
 
 use AssertionError;
+use Closure;
 use InvalidArgumentException;
 
 /**
@@ -11,13 +12,13 @@ use InvalidArgumentException;
 class ForkPool
 {
 
-    /** @var array<int,int> */
+    /** @var array<int,int> a list of process ids that have been forked*/
     private $child_pid_list = [];
 
-    /** @var array<int,resource> */
+    /** @var array<int,resource> a list of read strings for $this->child_pid_list */
     private $read_streams = [];
 
-    /** @var bool */
+    /** @var bool did any of the child processes fail (e.g. crash or send data that couldn't be unserialized) */
     private $did_have_error = false;
 
     /**
@@ -25,23 +26,23 @@ class ForkPool
      * An array of task data items to be divided up among the
      * workers. The size of this is the number of forked processes.
      *
-     * @param \Closure $startup_closure
+     * @param Closure $startup_closure
      * A closure to execute upon starting a child
      *
-     * @param \Closure $task_closure
+     * @param Closure $task_closure
      * A method to execute on each task data.
      * This closure must return an array (to be gathered).
      *
-     * @param \Closure $shutdown_closure
+     * @param Closure $shutdown_closure
      * A closure to execute upon shutting down a child
      * @throws InvalidArgumentException if count($process_task_data_iterator) < 2
      * @throws AssertionError if pcntl is disabled before using this
      */
     public function __construct(
         array $process_task_data_iterator,
-        \Closure $startup_closure,
-        \Closure $task_closure,
-        \Closure $shutdown_closure
+        Closure $startup_closure,
+        Closure $task_closure,
+        Closure $shutdown_closure
     ) {
 
         $pool_size = count($process_task_data_iterator);

@@ -10,7 +10,7 @@ use Phan\Language\FQSEN;
 class CodeBaseException extends \Exception
 {
 
-    /** @var FQSEN|null */
+    /** @var FQSEN|null the FQSEN that cannot be found in the code base */
     private $missing_fqsen;
 
     /**

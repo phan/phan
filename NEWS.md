@@ -10,6 +10,7 @@ New features(Analysis):
 + Support spaces after commas in array shapes (#1966)
 
 Plugins:
++ In HasPHPDocPlugin, use a more compact representation to show what Phan sees from the raw doc comment.
 + In HasPHPDocPlugin, warn about global functions without extractable PHPDoc summaries.
 
   New issue types: `PhanPluginNoCommentOnFunction`, `PhanPluginDescriptionlessCommentOnFunction`

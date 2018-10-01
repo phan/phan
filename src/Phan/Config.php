@@ -47,35 +47,35 @@ class Config
     private static $configuration = self::DEFAULT_CONFIGURATION;
 
     // The most commonly accessed configs:
-    /** @var bool */
+    /** @var bool mirror of configuration with the same name */
     private static $null_casts_as_any_type = false;
 
-    /** @var bool */
+    /** @var bool replicates configuration with the same name */
     private static $null_casts_as_array = false;
 
-    /** @var bool */
+    /** @var bool replicates configuration with the same name */
     private static $array_casts_as_null = false;
 
-    /** @var bool */
+    /** @var bool replicates configuration with the same name */
     private static $strict_param_checking = false;
 
-    /** @var bool */
+    /** @var bool replicates configuration with the same name */
     private static $strict_property_checking = false;
 
-    /** @var bool */
+    /** @var bool replicates configuration with the same name */
     private static $strict_return_checking = false;
 
-    /** @var bool */
+    /** @var bool replicates configuration with the same name */
     private static $track_references = false;
 
-    /** @var bool */
+    /** @var bool replicates configuration with the same name */
     private static $backward_compatibility_checks = false;
 
-    /** @var bool */
+    /** @var bool replicates configuration with the same name */
     private static $quick_mode = false;
-    // End of the 4 most commonly accessed configs.
+    // End of the most commonly accessed configs.
 
-    /** @var int */
+    /** @var int the 5-digit PHP version id which is closest to matching the PHP_VERSION_ID for the 'target_php_version' string */
     private static $closest_target_php_version_id;
 
     const DEFAULT_CONFIGURATION = [

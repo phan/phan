@@ -460,33 +460,36 @@ class Issue
         'VARIABLE'      => '%s',
     ];
 
-    /** @var string */
+    /** @var string the type of this issue */
     private $type;
 
-    /** @var int */
+    /**
+     * @var int (a preferably unique integer for $type, for the pylint output formatter)
+     * Built in issue types must have a unique type id.
+     */
     private $type_id;
 
-    /** @var int */
+    /** @var int the category of this issue (self::CATEGORY_*) */
     private $category;
 
-    /** @var int */
+    /** @var int the severity of this issue (self::SEVERITY_*) */
     private $severity;
 
-    /** @var string - Used for colorizing option. */
+    /** @var string The format string for this issue type. Contains a mix of {CLASS} and %s/%d annotations. Used for colorizing option. */
     private $template_raw;
 
-    /** @var string */
+    /** @var string The printf format string for this issue type. If --color is enabled, this will have unix color codes. */
     private $template;
 
-    /** @var int */
+    /** @var int self::REMEDIATION_* */
     private $remediation_difficulty;
 
     /**
-     * @param string $type
-     * @param int $category
-     * @param int $severity
-     * @param string $template_raw - Contains a mix of {CLASS} and %s/%d annotations.
-     * @param int $remediation_difficulty
+     * @param string $type the type of this issue
+     * @param int $category the category of this issue (self::CATEGORY_*)
+     * @param int $severity the severity of this issue (self::SEVERITY_*)
+     * @param string $template_raw the template string for issue messages. Contains a mix of {CLASS} and %s/%d annotations.
+     * @param int $remediation_difficulty self::REMEDIATION_*
      * @param int $type_id (unique integer id for $type)
      */
     public function __construct(

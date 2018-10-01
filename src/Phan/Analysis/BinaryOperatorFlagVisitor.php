@@ -32,17 +32,18 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 {
 
     /**
-     * @var CodeBase
+     * @var CodeBase The code base within which we're operating
      */
     private $code_base;
 
     /**
-     * @var Context
+     * @var Context The context in which we are determining the union type of the result of a binary operator
      */
     private $context;
 
     /**
-     * @var bool
+     * @var bool should we catch issue exceptions while analyzing and proceed with the best guess at the resulting union type?
+     * If false, exceptions will be propogated to the caller.
      */
     private $should_catch_issue_exception;
 

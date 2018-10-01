@@ -11,7 +11,7 @@ trait ClosedScopeElement
 {
 
     /**
-     * @var ClosedScope
+     * @var ClosedScope the scope within this closed scope element.
      */
     private $internal_scope;
 

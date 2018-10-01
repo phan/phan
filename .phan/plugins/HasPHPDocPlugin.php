@@ -80,7 +80,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
                 $class->getContext(),
                 'PhanPluginDescriptionlessCommentOnClass',
                 'Class {CLASS} has no readable description: {STRING_LITERAL}',
-                [$class->getFQSEN(), json_encode($class->getDocComment(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)]
+                [$class->getFQSEN(), self::getDocCommentRepresentation($doc_comment)]
             );
             return;
         }
@@ -133,7 +133,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
                 $property->getContext(),
                 "PhanPluginDescriptionlessCommentOn${visibility_upper}Property",
                 "$visibility_upper property {PROPERTY} has no readable description: {STRING_LITERAL}",
-                [$property->getFQSEN(), json_encode($property->getDocComment(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)]
+                [$property->getFQSEN(), self::getDocCommentRepresentation($doc_comment)]
             );
             return;
         }
@@ -200,7 +200,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
                 $method->getContext(),
                 "PhanPluginDescriptionlessCommentOn${visibility_upper}Method",
                 "$visibility_upper method {METHOD} has no readable description: {STRING_LITERAL}",
-                [$method->getFQSEN(), json_encode($method->getDocComment(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)]
+                [$method->getFQSEN(), self::getDocCommentRepresentation($doc_comment)]
             );
             return;
         }
@@ -251,10 +251,15 @@ final class HasPHPDocPlugin extends PluginV2 implements
                 $function->getContext(),
                 "PhanPluginDescriptionlessCommentOnFunction",
                 "Function {FUNCTION} has no readable description: {STRING_LITERAL}",
-                [$function->getFQSEN(), json_encode($function->getDocComment(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)]
+                [$function->getFQSEN(), self::getDocCommentRepresentation($doc_comment)]
             );
             return;
         }
+    }
+
+    private function getDocCommentRepresentation(string $doc_comment) : string
+    {
+        return (string)json_encode(MarkupDescription::getDocCommentWithoutWhitespace($doc_comment), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 }
 
