@@ -106,7 +106,9 @@ trait FunctionTrait
     private $number_of_optional_real_parameters = 0;
 
     /**
-     * @var bool
+     * @var bool|null
+     * Does any parameter type possibly require recursive analysis if more specific types are provided?
+     * Caches the return value for $this->needsRecursiveAnalysis()
      */
     private $needs_recursive_analysis = null;
 

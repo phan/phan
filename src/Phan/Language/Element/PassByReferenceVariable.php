@@ -15,10 +15,16 @@ use Phan\Language\UnionType;
 class PassByReferenceVariable extends Variable
 {
 
-    /** @var Variable */
+    /**
+     * @var Variable the parameter which accepts references
+     */
     private $parameter;
 
-    /** @var TypedElement|UnaddressableTypedElement TODO: Make a common interface which has methods implemented */
+    /**
+     * The element that was passed in as an argument (e.g. variable or static property)
+     * @var TypedElement|UnaddressableTypedElement
+     * TODO: Make a common interface which has methods implemented
+     */
     private $element;
 
     /** @param TypedElement|UnaddressableTypedElement $element */

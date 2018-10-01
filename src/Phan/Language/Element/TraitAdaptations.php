@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 
 /**
  * This contains info for a single sub-node of a node of type \ast\AST_USE_TRAIT
@@ -10,7 +10,8 @@ use Phan\Language\FQSEN;
 class TraitAdaptations
 {
     /**
-     * @var FQSEN
+     * @var FullyQualifiedClassName
+     * the FQSEN of the trait
      */
     private $trait_fqsen;
 
@@ -26,17 +27,15 @@ class TraitAdaptations
      */
     public $hidden_methods = [];
 
-    public function __construct(FQSEN $trait_fqsen)
+    public function __construct(FullyQualifiedClassName $trait_fqsen)
     {
         $this->trait_fqsen = $trait_fqsen;
     }
 
     /**
-     * Gets the FQSEN
-     *
-     * @return FQSEN the trait's FQSEN
+     * Gets the trait's FQSEN
      */
-    public function getTraitFQSEN() : FQSEN
+    public function getTraitFQSEN() : FullyQualifiedClassName
     {
         return $this->trait_fqsen;
     }

@@ -116,7 +116,7 @@ class ContextNode
     /**
      * Gets the FQSEN for a trait.
      * NOTE: does not validate that it is really used on a trait
-     * @return array<int,FQSEN>
+     * @return array<int,FullyQualifiedClassName>
      */
     public function getTraitFQSENList() : array
     {
@@ -127,7 +127,7 @@ class ContextNode
         /**
          * @param Node|int|string|float|null $name_node
          */
-        return \array_map(function ($name_node) : FQSEN {
+        return \array_map(function ($name_node) : FullyQualifiedClassName {
             return (new ContextNode(
                 $this->code_base,
                 $this->context,
@@ -140,7 +140,7 @@ class ContextNode
      * Gets the FQSEN for a trait.
      * NOTE: does not validate that it is really used on a trait
      * @param array<string,TraitAdaptations> $adaptations_map
-     * @return ?FQSEN (If this returns null, the caller is responsible for emitting an issue or falling back)
+     * @return ?FullyQualifiedClassName (If this returns null, the caller is responsible for emitting an issue or falling back)
      */
     public function getTraitFQSEN(array $adaptations_map)
     {
@@ -163,7 +163,7 @@ class ContextNode
      * Get a list of traits adaptations from a node of kind ast\AST_TRAIT_ADAPTATIONS
      * (with fully qualified names and `as`/`instead` info)
      *
-     * @param array<int,FQSEN> $trait_fqsen_list TODO: use this for sanity check
+     * @param array<int,FullyQualifiedClassName> $trait_fqsen_list TODO: use this for sanity check
      *
      * @return array<string,TraitAdaptations> maps the lowercase trait fqsen to the corresponding adaptations.
      *

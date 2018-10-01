@@ -16,7 +16,7 @@ final class ClosureType extends Type
     const NAME = 'Closure';
 
     /**
-     * @var FQSEN|null
+     * @var FQSEN|null the FQSEN of the function-like from which this ClosureType was derived
      */
     private $fqsen;
 

@@ -10,16 +10,16 @@ use Phan\Language\UnionType;
  */
 final class ClosureDeclarationParameter
 {
-    /** @var UnionType */
+    /** @var UnionType the union type of the arguments expected for this variadic/non-variadic parameter */
     private $type;
 
-    /** @var bool */
+    /** @var bool is this parameter variadic? */
     private $is_variadic;
 
-    /** @var bool */
+    /** @var bool is this parameter pass-by-reference? */
     private $is_reference;
 
-    /** @var bool */
+    /** @var bool is this parameter optional? */
     private $is_optional;
 
     public function __construct(UnionType $type, bool $is_variadic, bool $is_reference, bool $is_optional)

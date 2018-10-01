@@ -26,21 +26,31 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     private $field_types = [];
 
     /**
+     * This array shape converted to a list of 0 or more ArrayTypes.
+     * This is lazily set.
      * @var ?array<int,ArrayType>
      */
     private $as_generic_array_type_instances = null;
 
     /**
-     * @var ?int
+     * @var ?int the key type enum value (constant from GenericArrayType)
      */
     private $key_type = null;
 
     /**
+     * The union type of all possible value types of this array shape.
+     * Lazily set.
      * @var ?UnionType
      */
     private $generic_array_element_union_type = null;
 
-    /** @var ?array<int,UnionType> */
+    /**
+     * The list of all unique union types of values of this array shape.
+     * E.g. `array{a:int,b:int,c:int|string}` will have two unique union types of values: `int`, and `int|string`
+     * Lazily set.
+     *
+     * @var ?array<int,UnionType>
+     */
     private $unique_value_union_types;
 
     /**

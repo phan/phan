@@ -13,6 +13,7 @@ abstract class UnaddressableTypedElement
 {
     /**
      * @var FileRef
+     * Reference to the file and line number in which the structural element lives
      */
     private $file_ref;
 
