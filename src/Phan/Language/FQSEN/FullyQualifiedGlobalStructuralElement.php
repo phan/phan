@@ -358,7 +358,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         return $fqsen_string;
     }
 
-    /** @var string|null */
+    /** @var string|null caches the value of $this->__toString() */
     private $as_string = null;
 
     /**

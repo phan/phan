@@ -38,11 +38,13 @@ class AssignmentVisitor extends AnalysisVisitor
 {
     /**
      * @var Node
+     * The AST node containing the assignment
      */
     private $assignment_node;
 
     /**
      * @var UnionType
+     * The type of the element on the right side of the assignment
      */
     private $right_type;
 
