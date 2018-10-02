@@ -707,7 +707,8 @@ final class Builder
      */
     private function magicParamFromMagicMethodParamString(
         string $param_string,
-        int $param_index
+        int $param_index,
+        int $comment_line_offset
     ) {
         $param_string = trim($param_string);
         // Don't support trailing commas, or omitted params. Provide at least one of [type] or [parameter]
@@ -741,7 +742,7 @@ final class Builder
                 // placeholder names are p1, p2, ...
                 $var_name = 'p' . ($param_index + 1);
             }
-            return new Parameter($var_name, $union_type, $this->guessActualLineLocation($param_index), $is_variadic, $has_default_value);
+            return new Parameter($var_name, $union_type, $this->guessActualLineLocation($comment_line_offset), $is_variadic, $has_default_value);
         }
         return null;
     }
@@ -793,7 +794,7 @@ final class Builder
                 $params_strings = explode(',', $arg_list);
                 $failed = false;
                 foreach ($params_strings as $i => $param_string) {
-                    $param = $this->magicParamFromMagicMethodParamString($param_string, $i);
+                    $param = $this->magicParamFromMagicMethodParamString($param_string, $i, $comment_line_offset);
                     if ($param === null) {
                         $this->emitIssue(
                             Issue::UnextractableAnnotationPart,

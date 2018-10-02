@@ -26,6 +26,7 @@ Bug fixes:
 + Properly emit `PhanUnusedVariable` for variables where definitions are shadowed by definitions in branches and/or loops. (#2012)
 + Properly emit `PhanUnusedVariable` for variables which are redefined in a 'do while' loop.
 + Be more consistent about emitting `PhanUnusedVariableCaughtException` when exception variable names are reused later on.
++ Fix a crash when parsing `@method` annotations with many parameters (#2019)
 
 25 Sep 2018, Phan 1.0.6
 -----------------------
