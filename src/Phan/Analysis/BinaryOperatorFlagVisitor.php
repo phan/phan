@@ -43,7 +43,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
     /**
      * @var bool should we catch issue exceptions while analyzing and proceed with the best guess at the resulting union type?
-     * If false, exceptions will be propogated to the caller.
+     * If false, exceptions will be propagated to the caller.
      */
     private $should_catch_issue_exception;
 

@@ -1534,6 +1534,12 @@ In a place where phan was expecting a callable, saw an array with an unexpected 
 In a place where phan was expecting a callable, saw an array of size {COUNT}, but callable arrays must be of size 2
 ```
 
+## PhanTypeInvalidCallableMethodName
+
+```
+Method name of callable must be a string, got {TYPE}
+```
+
 ## PhanTypeInvalidCallableObjectOfMethod
 
 ```
@@ -1588,6 +1594,12 @@ Invalid operator: left operand is {TYPE} (expected array or number)
 Invalid operator: left operand is {TYPE} (expected number)
 ```
 
+## PhanTypeInvalidMethodName
+
+```
+Instance method name must be a string, got {TYPE}
+```
+
 ## PhanTypeInvalidRightOperand
 
 ```
@@ -1604,6 +1616,12 @@ Invalid operator: right operand is {TYPE} (expected array or number)
 
 ```
 Invalid operator: right operand is {TYPE} (expected number)
+```
+
+## PhanTypeInvalidStaticMethodName
+
+```
+Static method name must be a string, got {TYPE}
 ```
 
 ## PhanTypeInvalidThrowsIsInterface
