@@ -32,6 +32,7 @@ use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
+use Phan\Language\Type\StringType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 
@@ -1633,8 +1634,20 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // Give up on things like Class::$var
         if (!\is_string($method_name)) {
-            $method_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $method_name);
+            if ($method_name instanceof Node) {
+                $method_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $method_name);
+            }
             if (!\is_string($method_name)) {
+                $method_name_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['method']);
+                if (!$method_name_type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+                    Issue::maybeEmit(
+                        $this->code_base,
+                        $this->context,
+                        Issue::TypeInvalidStaticMethodName,
+                        $node->lineno,
+                        $method_name_type
+                    );
+                }
                 return $this->context;
             }
         }
@@ -2013,8 +2026,20 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $method_name = $node->children['method'];
 
         if (!\is_string($method_name)) {
-            $method_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $method_name);
+            if ($method_name instanceof Node) {
+                $method_name = UnionTypeVisitor::anyStringLiteralForNode($this->code_base, $this->context, $method_name);
+            }
             if (!\is_string($method_name)) {
+                $method_name_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['method']);
+                if (!$method_name_type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+                    Issue::maybeEmit(
+                        $this->code_base,
+                        $this->context,
+                        Issue::TypeInvalidMethodName,
+                        $node->lineno,
+                        $method_name_type
+                    );
+                }
                 return $this->context;
             }
         }
