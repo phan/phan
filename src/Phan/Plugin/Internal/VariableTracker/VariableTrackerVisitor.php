@@ -417,7 +417,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         // @phan-suppress-next-line PhanTypeMismatchArgument
         $outer_scope = $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
 
-        // @phan-suppress-next-line PhanTypeMismatchArgument
         return $outer_scope_unbranched->mergeWithSingleBranchScope($outer_scope);
     }
 
@@ -434,31 +433,36 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         $inner_scope = new VariableTrackingLoopScope($outer_scope);
         $inner_scope = $this->analyze($inner_scope, $node->children['stmts']);
         $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['cond']);
+        '@phan-var VariableTrackingLoopScope $inner_scope';
 
         // Merge inner scope into outer scope
-        // @phan-suppress-next-line PhanTypeMismatchArgument
         $outer_scope = $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
-        // @phan-suppress-next-line PhanTypeMismatchArgument
         return $outer_scope_unbranched->mergeWithSingleBranchScope($outer_scope);
     }
 
     /**
      * Analyzes `do { stmts } while (cond);`
+     *
+     * TODO: Fix https://github.com/phan/phan/issues/2029
+     *
      * @param Node $node a node of type AST_DO_WHILE
      * @return VariableTrackingScope
      * @override
      */
     public function visitDoWhile(Node $node)
     {
-        $outer_scope = $this->scope;
+        $outer_scope_unbranched = $this->scope;
+        $outer_scope = new VariableTrackingBranchScope($outer_scope_unbranched);
 
         $inner_scope = new VariableTrackingLoopScope($outer_scope);
         $inner_scope = $this->analyze($inner_scope, $node->children['stmts']);
         $inner_scope = $this->analyzeWhenValidNode($inner_scope, $node->children['cond']);
+        '@phan-var VariableTrackingLoopScope $inner_scope';
 
         // Merge inner scope into outer scope
-        // @phan-suppress-next-line PhanTypeMismatchArgument
-        return $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
+        $outer_scope = $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
+        '@phan-var VariableTrackingLoopScope $inner_scope';
+        return $outer_scope_unbranched->mergeWithSingleBranchScope($outer_scope);
     }
 
     /**
@@ -492,7 +496,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         // Merge inner scope into outer scope
         // @phan-suppress-next-line PhanTypeMismatchArgument
         $outer_scope = $outer_scope->mergeInnerLoopScope($inner_scope, self::$variable_graph);
-        // @phan-suppress-next-line PhanTypeMismatchArgument
         return $outer_scope_unbranched->mergeWithSingleBranchScope($outer_scope);
     }
 
