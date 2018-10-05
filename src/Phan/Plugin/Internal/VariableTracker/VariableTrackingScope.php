@@ -130,6 +130,7 @@ class VariableTrackingScope
      * This creates a new scope where the definitions both inside and outside of the loop are accounted for.
      *
      * Additionally, it will mark references to variables at the beginning of the inner body of the loop as being uses of variables defined at the end of the loop.
+     * @return static
      */
     public function mergeInnerLoopScope(
         VariableTrackingLoopScope $inner_loop_scope,
@@ -137,6 +138,7 @@ class VariableTrackingScope
     ) : VariableTrackingScope {
         $result = clone($this);
         // TODO: Can this be optimized for common use cases?
+        // TODO: Track continue and break separately - May require a more complicated graph
         foreach ($inner_loop_scope->skipped_loop_scopes as $alternate_scope) {
             $this->flattenScopeToMergedLoopResult($inner_loop_scope, $alternate_scope, $graph);
         }
@@ -194,9 +196,10 @@ class VariableTrackingScope
         VariableTrackingBranchScope $scope,
         VariableGraph $graph
     ) {
+        // @phan-suppress-next-line PhanUndeclaredProperty
+        $parent_scope = $result->parent_scope ?? $result;
         foreach ($scope->getDefinitionsRecursively() as $variable_name => $defs) {
-            // @phan-suppress-next-line PhanUndeclaredProperty
-            $defs_for_variable = $result->getDefinitionUpToScope($variable_name, $result->parent_scope ?? $result) ?? [];
+            $defs_for_variable = $result->getDefinitionUpToScope($variable_name, $parent_scope) ?? [];
             $loop_uses_of_own_variable = $scope->uses[$variable_name] ?? null;
 
             foreach ($defs as $def_id => $_) {
@@ -228,6 +231,7 @@ class VariableTrackingScope
      * Equivalent to mergeBranchScopeList([$scope], true, [])
      *
      * @param VariableTrackingBranchScope $scope
+     * @return static
      */
     public function mergeWithSingleBranchScope(
         VariableTrackingBranchScope $scope
