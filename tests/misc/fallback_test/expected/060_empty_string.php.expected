@@ -1,0 +1,1 @@
+src/060_empty_string.php:8 PhanSyntaxError syntax error, unexpected ''unmatched' (T_ENCAPSED_AND_WHITESPACE)

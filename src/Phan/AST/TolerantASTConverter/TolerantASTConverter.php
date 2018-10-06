@@ -953,7 +953,7 @@ class TolerantASTConverter
             /**
              * @return ast\Node|string
              */
-            'Microsoft\PhpParser\Node\StringLiteral' => function (PhpParser\Node\StringLiteral $n, int $_) {
+            'Microsoft\PhpParser\Node\StringLiteral' => function (PhpParser\Node\StringLiteral $n, int $start_line) {
                 $children = $n->children;
                 if ($children instanceof Token) {
                     $inner_node = static::parseQuotedString($n);
@@ -984,7 +984,7 @@ class TolerantASTConverter
                     $inner_node = new ast\Node(ast\AST_ENCAPS_LIST, 0, $inner_node_parts, self::getStartLine($children[0]));
                 }
                 if ($n->startQuote !== null && $n->startQuote->kind === TokenKind::BacktickToken) {
-                    return new ast\Node(ast\AST_SHELL_EXEC, 0, ['expr' => $inner_node], self::getStartLine($children[0]));
+                    return new ast\Node(ast\AST_SHELL_EXEC, 0, ['expr' => $inner_node], isset($children[0]) ? self::getStartLine($children[0]) : $start_line);
                     // TODO: verify match
                 }
                 return $inner_node;
