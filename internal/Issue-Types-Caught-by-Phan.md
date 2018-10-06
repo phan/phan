@@ -2101,7 +2101,7 @@ Class extends undeclared class {CLASS}
 This issue will be emitted from the following code
 
 ```php
-class E extends Undef {}
+class E extends UndeclaredClass {}
 ```
 
 ## PhanUndeclaredFunction
@@ -2115,7 +2115,7 @@ Call to undeclared function {FUNCTION}
 This issue will be emitted for the code
 
 ```php
-f10();
+some_missing_function();
 ```
 
 ## PhanUndeclaredFunctionInCallable
@@ -2135,7 +2135,7 @@ Class implements undeclared interface {INTERFACE}
 The following code will express this issue.
 
 ```php
-class C17 implements C18 {}
+class C17 implements UndeclaredInterface {}
 ```
 
 ## PhanUndeclaredMethod
@@ -2204,11 +2204,6 @@ If you attempt to use a trait that doesn't exist, you'll see this issue.
 Class uses undeclared trait {TRAIT}
 ```
 
-An example would be
-
-```php
-class C20 { use T2; }
-```
 
 ## PhanUndeclaredTypeParameter
 
@@ -2256,12 +2251,6 @@ Trying to use a variable that hasn't been defined anywhere in scope will produce
 
 ```
 Variable ${VARIABLE} is undeclared
-```
-
-An example would be
-
-```php
-$v9 = $v10;
 ```
 
 ## PhanUndeclaredVariableAssignOp
