@@ -120,7 +120,7 @@ class Config
         // This is useful for excluding groups of test or example
         // directories/files, unanalyzable files, or files that
         // can't be removed for whatever reason.
-        // (e.g. '@Test\.php$@', or '@vendor/.*/(tests|Tests)/@')
+        // (e.g. `'@Test\.php$@'`, or `'@vendor/.*/(tests|Tests)/@'`)
         'exclude_file_regex' => '',
 
         // A file list that defines files that will be excluded
@@ -152,6 +152,8 @@ class Config
         // it before upgrading your version of PHP to a
         // new version that has backward compatibility
         // breaks.
+        // You should also look into other tools such as php7cc and php7mar,
+        // which have different checks.
         'backward_compatibility_checks' => true,
 
         // A set of fully qualified class-names for which
@@ -191,22 +193,27 @@ class Config
 
         // If enabled, check all methods that override a
         // parent method to make sure its signature is
-        // compatible with the parent's. This check
-        // can add quite a bit of time to the analysis.
+        // compatible with the parent's.
+        //
+        // This check can add quite a bit of time to the analysis.
+        //
         // This will also check if final methods are overridden, etc.
         'analyze_signature_compatibility' => true,
 
         // Set this to true to allow contravariance in real parameter types of method overrides
         // (Users may enable this if analyzing projects that support only php 7.2+)
+        //
         // See https://secure.php.net/manual/en/migration72.new-features.php#migration72.new-features.param-type-widening
         // This is false by default. (Will warn if real parameter types are omitted in an override)
+        //
         // If this is null, this will be inferred from target_php_version.
         'allow_method_param_type_widening' => false,
 
         // Set this to true to make Phan guess that undocumented parameter types
         // (for optional parameters) have the same type as default values
         // (Instead of combining that type with `mixed`).
-        // E.g. `function($x = 'val')` would make Phan infer that $x had a type of `string`, not `string|mixed`.
+        //
+        // E.g. `function my_method($x = 'val')` would make Phan infer that $x had a type of `string`, not `string|mixed`.
         // Phan will not assume it knows specific types if the default value is false or null.
         'guess_unknown_parameter_type_using_default' => false,
 
@@ -217,8 +224,8 @@ class Config
         'inherit_phpdoc_types' => true,
 
         // The minimum severity level to report on. This can be
-        // set to Issue::SEVERITY_LOW, Issue::SEVERITY_NORMAL or
-        // Issue::SEVERITY_CRITICAL. Setting it to only
+        // set to `Issue::SEVERITY_LOW`, `Issue::SEVERITY_NORMAL` or
+        // `Issue::SEVERITY_CRITICAL`. Setting it to only
         // critical issues is a good place to start on a big
         // sloppy mature code base.
         'minimum_severity' => Issue::SEVERITY_LOW,
@@ -231,16 +238,17 @@ class Config
         'allow_missing_properties' => false,
 
         // If enabled, allow null to be cast as any array-like type.
-        // This is an incremental step in migrating away from null_casts_as_any_type.
-        // If null_casts_as_any_type is true, this has no effect.
+        //
+        // This is an incremental step in migrating away from `null_casts_as_any_type`.
+        // If `null_casts_as_any_type` is true, this has no effect.
         'null_casts_as_array' => false,
 
         // If enabled, allow any array-like type to be cast to null.
-        // This is an incremental step in migrating away from null_casts_as_any_type.
-        // If null_casts_as_any_type is true, this has no effect.
+        // This is an incremental step in migrating away from `null_casts_as_any_type`.
+        // If `null_casts_as_any_type` is true, this has no effect.
         'array_casts_as_null' => false,
 
-        // If enabled, null can be cast as any type and any
+        // If enabled, null can be cast to any type and any
         // type can be cast to null. Setting this to true
         // will cut down on false positives.
         'null_casts_as_any_type' => false,
@@ -270,15 +278,17 @@ class Config
 
         // If this has entries, scalars (int, float, bool, string, null)
         // are allowed to perform the casts listed.
-        // E.g. ['int' => ['float', 'string'], 'float' => ['int'], 'string' => ['int'], 'null' => ['string']]
+        //
+        // E.g. `['int' => ['float', 'string'], 'float' => ['int'], 'string' => ['int'], 'null' => ['string']]`
         // allows casting null to a string, but not vice versa.
         // (subset of scalar_implicit_cast)
         'scalar_implicit_partial' => [],
 
         // If true, seemingly undeclared variables in the global
-        // scope will be ignored. This is useful for projects
-        // with complicated cross-file globals that you have no
-        // hope of fixing.
+        // scope will be ignored.
+        //
+        // This is useful for projects with complicated cross-file
+        // globals that you have no hope of fixing.
         'ignore_undeclared_variables_in_global_scope' => false,
 
         // If true, check to make sure the return type declared
@@ -291,20 +301,23 @@ class Config
         // declared in the method signature.
         'check_docblock_signature_param_type_match' => true,
 
-        // (*Requires check_docblock_signature_param_type_match to be true*)
         // If true, make narrowed types from phpdoc params override
         // the real types from the signature, when real types exist.
         // (E.g. allows specifying desired lists of subclasses,
         //  or to indicate a preference for non-nullable types over nullable types)
         // Affects analysis of the body of the method and the param types passed in by callers.
+        //
+        // (*Requires `check_docblock_signature_param_type_match` to be true*)
         'prefer_narrowed_phpdoc_param_type' => true,
 
         // (*Requires check_docblock_signature_return_type_match to be true*)
+        //
         // If true, make narrowed types from phpdoc returns override
         // the real types from the signature, when real types exist.
         // (E.g. allows specifying desired lists of subclasses,
         //  or to indicate a preference for non-nullable types over nullable types)
-        // Affects analysis of return statements in the body of the method and the return types passed in by callers.
+        //
+        // This setting affects the analysis of return statements in the body of the method and the return types passed in by callers.
         'prefer_narrowed_phpdoc_return_type' => true,
 
         // Set to true in order to attempt to detect dead
@@ -318,22 +331,25 @@ class Config
 
         // Set to true in order to attempt to detect unused variables.
         // dead_code_detection will also enable unused variable detection.
+        //
         // This has a few known false positives, e.g. for loops or branches.
         'unused_variable_detection' => false,
 
         // Set to true in order to force tracking references to elements
         // (functions/methods/consts/protected).
-        // dead_code_detection is another option which also causes references
+        //
+        // `dead_code_detection` is another option which also causes references
         // to be tracked.
         'force_tracking_references' => false,
 
         // If true, the dead code detection rig will
         // prefer false negatives (not report dead code) to
         // false positives (report dead code that is not
-        // actually dead) which is to say that the graph of
-        // references will create too many edges rather than
-        // too few edges when guesses have to be made about
-        // what references what.
+        // actually dead).
+        //
+        // In other words, the graph of references will have
+        // too many edges rather than too few edges when guesses
+        // have to be made about what references what.
         'dead_code_detection_prefer_false_negative' => true,
 
         // If true, then before analysis, try to simplify AST into a form
@@ -346,11 +362,13 @@ class Config
         // into $a = value(); if ($a) { if ($a > 0) {...}}`
         'simplify_ast' => true,
 
-        // If true, Phan will read `class_alias` calls in the global scope,
-        // then (1) create aliases from the *parsed* files if no class definition was found,
-        // and (2) emit issues in the global scope if the source or target class is invalid.
-        // (If there are multiple possible valid original classes for an aliased class name,
-        //  the one which will be created is unspecified.)
+        // If true, Phan will read `class_alias` calls in the global scope, then
+        //
+        // 1. create aliases from the *parsed* files if no class definition was found, and
+        // 2. emit issues in the global scope if the source or target class is invalid.
+        //    (If there are multiple possible valid original classes for an aliased class name,
+        //    the one which will be created is unspecified.)
+        //
         // NOTE: THIS IS EXPERIMENTAL, and the implementation may change.
         'enable_class_alias_support' => false,
 
@@ -358,17 +376,19 @@ class Config
         // annotation comments for @property.
         // @property-read and @property-write are treated exactly the
         // same as @property for now.
+        //
         // Note: read_type_annotations must also be enabled.
         'read_magic_property_annotations' => true,
 
         // If disabled, Phan will not read docblock type
         // annotation comments for @method.
+        //
         // Note: read_type_annotations must also be enabled.
         'read_magic_method_annotations' => true,
 
         // If disabled, Phan will not read docblock type
-        // annotation comments (such as for @return, @param,
-        // @var, @suppress, @deprecated) and only rely on
+        // annotation comments (such as for `@return`, `@param`,
+        // `@var`, `@suppress`, `@deprecated`) and only rely on
         // types expressed in code.
         'read_type_annotations' => true,
 
@@ -389,9 +409,14 @@ class Config
         'exception_classes_with_optional_throws_phpdoc' => [ ],
 
         // This setting maps case insensitive strings to union types.
+        //
         // This is useful if a project uses phpdoc that differs from the phpdoc2 standard.
-        // If the corresponding value is the empty string, Phan will ignore that union type (E.g. can ignore 'the' in `@return the value`)
-        // If the corresponding value is not empty, Phan will act as though it saw the corresponding unionTypes(s) when the keys show up in a UnionType of @param, @return, @var, @property, etc.
+        //
+        // If the corresponding value is the empty string,
+        // then Phan will ignore that union type (E.g. can ignore 'the' in `@return the value`)
+        //
+        // If the corresponding value is not empty,
+        // then Phan will act as though it saw the corresponding unionTypes(s) when the keys show up in a UnionType of @param, @return, @var, @property, etc.
         //
         // This matches the **entire string**, not parts of the string.
         // (E.g. `@return the|null` will still look for a class with the name `the`, but `@return the` will be ignored with the below setting)
@@ -399,7 +424,7 @@ class Config
         // (These are not aliases, this setting is ignored outside of doc comments).
         // (Phan does not check if classes with these names exist)
         //
-        // Example setting: ['unknown' => '', 'number' => 'int|float', 'char' => 'string', 'long' => 'int', 'the' => '']
+        // Example setting: `['unknown' => '', 'number' => 'int|float', 'char' => 'string', 'long' => 'int', 'the' => '']`
         'phpdoc_type_mapping' => [ ],
 
         // Set to true in order to ignore issue suppression.
@@ -636,7 +661,7 @@ class Config
         // A custom list of additional superglobals and their types, for projects using runkit.
         // (Corresponding keys are declared in runkit.superglobal ini directive)
         // global_type_map should be set for entries.
-        // E.g ['_FOO'];
+        // E.g `['_FOO']`;
         'runkit_superglobals' => [],
 
         // Override to hardcode existence and types of (non-builtin) globals in the global scope.
@@ -655,8 +680,8 @@ class Config
         // Allow overriding color scheme in .phan/config.php for printing issues, for individual types.
         // See the keys of Phan\Output\Colorizing::styles for valid color names,
         // and the keys of Phan\Output\Colorizing::default_color_for_template for valid color names.
-        // E.g. to change the color for the file(of an issue instance) to red, set this to ['FILE' => 'red']
-        // E.g. to use the terminal's default color for the line(of an issue instance), set this to ['LINE' => 'none']
+        // E.g. to change the color for the file (of an issue instance) to red, set this to `['FILE' => 'red']`
+        // E.g. to use the terminal's default color for the line (of an issue instance), set this to `['LINE' => 'none']`
         'color_scheme' => [],
 
         // Enable or disable support for generic templated
@@ -671,9 +696,11 @@ class Config
 
         // Setting this to true makes the process assignment for file analysis
         // as predictable as possible, using consistent hashing.
+        //
         // Even if files are added or removed, or process counts change,
         // relatively few files will move to a different group.
         // (use when the number of files is much larger than the process count)
+        //
         // NOTE: If you rely on Phan parsing files/directories in the order
         // that they were provided in this config, don't use this)
         // See https://github.com/phan/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
@@ -734,12 +761,13 @@ class Config
 
         // If this is an array, it configures the way clients will communicate with the Phan language server.
         // Possibilities: Exactly one of
-        // ['stdin' => true],
-        // ['tcp-server' => string (address this server should listen on)],
-        // ['tcp' => string (address client is listening on)
+        //
+        // 1. `['stdin' => true]`
+        // 2. `['tcp-server' => string (address this server should listen on)]`
+        // 3. `['tcp' => string (address client is listening on)]`
         'language_server_config' => false,
 
-        // Valid values: false, true. Should only be set via CLI (--language-server-analyze-only-on-save)
+        // Valid values: false, true. Should only be set via CLI (`--language-server-analyze-only-on-save`)
         'language_server_analyze_only_on_save' => false,
 
         // Valid values: null, 'info'. Used when developing or debugging a language server client of Phan.
@@ -748,15 +776,15 @@ class Config
         // Use the command line option instead
         'language_server_use_pcntl_fallback' => true,
 
-        // This should only be set via CLI (--language-server-enable-go-to-definition)
+        // This should only be set via CLI (`--language-server-enable-go-to-definition`)
         // Affects "go to definition" and "go to type definition" of LSP.
         'language_server_enable_go_to_definition' => false,
 
-        // This should only be set via CLI (--language-server-enable-hover)
+        // This should only be set via CLI (`--language-server-enable-hover`)
         // Affects "hover" of LSP.
         'language_server_enable_hover' => false,
 
-        // This should only be set via CLI (--language-server-enable-completion)
+        // This should only be set via CLI (`--language-server-enable-completion`)
         // Affects "completion" of LSP.
         'language_server_enable_completion' => false,
 
@@ -768,17 +796,23 @@ class Config
         // Phan is slightly faster when these are disabled.
         'enable_internal_return_type_plugins' => true,
 
-        // This setting can be used if users wish to store strings that are even longer than 50 bytes.
-        // If a literal string type exceeds this length, Phan converts it to a regular string type.
+        // If a literal string type exceeds this length,
+        // then Phan converts it to a regular string type.
         // This setting cannot be used to decrease the maximum.
+        //
+        // This setting can be used if users wish to store strings that are even longer than 50 bytes.
         'max_literal_string_type_length' => \Phan\Language\Type\LiteralStringType::MINIMUM_MAX_STRING_LENGTH,
 
-        // A list of plugin files to execute
+        // A list of plugin files to execute.
+        //
         // Plugins which are bundled with Phan can be added here by providing their name (e.g. 'AlwaysReturnPlugin')
-        // Alternately, you can pass in the full path to a PHP file with the plugin's implementation (e.g. 'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php')
+        //
+        // Alternately, you can pass in the full path to a PHP file with the plugin's implementation (e.g. `'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php'`)
         'plugins' => [
         ],
 
+        // This can be used by third-party plugins that expect configuration.
+        //
         // E.g. this is used by InvokePHPNativeSyntaxCheckPlugin
         'plugin_config' => [
         ],

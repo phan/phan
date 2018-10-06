@@ -444,6 +444,7 @@ return [
         "internal/package.php",
         "internal/reflection_completeness_check.php",
         "internal/sanitycheck.php",
+        "internal/update_wiki_config_types.php",
         "internal/update_wiki_issue_types.php",
         // 'vendor/phpunit/phpunit/src/Framework/TestCase.php',
     ],
@@ -478,6 +479,7 @@ return [
     // Thus, both first-party and third-party code being used by
     // your application should be included in this list.
     'directory_list' => [
+        'internal/lib',
         'src',
         'tests/Phan',
         'vendor/composer/semver/src',

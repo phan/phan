@@ -79,7 +79,7 @@ class Initializer
     /**
      * @return array<string,string[]> maps a config name to a list of comment lines about that config
      */
-    private static function computeCommentNameDocumentationMap() : array
+    public static function computeCommentNameDocumentationMap() : array
     {
         // Hackish way of extracting comment lines from Config::DEFAULT_CONFIGURATION
         $config_file_lines = explode("\n", file_get_contents(dirname(__DIR__) . '/Config.php'));
