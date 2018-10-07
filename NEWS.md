@@ -3,6 +3,11 @@ Phan NEWS
 ?? ??? 2018, Phan 1.0.8 (dev)
 -----------------------
 
+Bug fixes:
++ Fix a crash parsing an empty `shell\_exec` shorthand string when using the fallback parser
+  (i.e. two backticks in a row)
++ Fix a false positive `PhanUnusedVariable` warning about a variable declared prior to a do/while loop (#2026)
+
 02 Oct 2018, Phan 1.0.7
 -----------------------
 
