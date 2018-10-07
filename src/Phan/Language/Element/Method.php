@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+// Note: This file uses both class Phan\Language\Element\Flags and namespace ast\flags
+use ast;
 use ast\Node;
 use Phan\Analysis\Analyzable;
 use Phan\AST\UnionTypeVisitor;
@@ -146,7 +148,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function isAbstract() : bool
     {
-        return $this->getFlagsHasState(\ast\flags\MODIFIER_ABSTRACT);
+        return $this->getFlagsHasState(ast\flags\MODIFIER_ABSTRACT);
     }
 
     /**
@@ -155,7 +157,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function isFinal() : bool
     {
-        return $this->getFlagsHasState(\ast\flags\MODIFIER_FINAL);
+        return $this->getFlagsHasState(ast\flags\MODIFIER_FINAL);
     }
 
     /**
@@ -164,7 +166,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function returnsRef() : bool
     {
-        return $this->getFlagsHasState(\ast\flags\RETURNS_REF);
+        return $this->getFlagsHasState(ast\flags\FUNC_RETURNS_REF);
     }
 
     /**
@@ -263,7 +265,7 @@ class Method extends ClassElement implements FunctionInterface
      * An alias from a trait use, which is treated as though it was defined in $clazz
      * E.g. if you import a trait's method as private/protected, it becomes private/protected **to the class which used the trait**
      *
-     * The resulting alias doesn't inherit the \ast\Node of the method body, so aliases won't have a redundant analysis step.
+     * The resulting alias doesn't inherit the Node of the method body, so aliases won't have a redundant analysis step.
      */
     public function createUseAlias(
         Clazz $clazz,
@@ -286,14 +288,14 @@ class Method extends ClassElement implements FunctionInterface
         );
         $method->setPhanFlags($this->getPhanFlags());
         switch ($new_visibility_flags) {
-            case \ast\flags\MODIFIER_PUBLIC:
-            case \ast\flags\MODIFIER_PROTECTED:
-            case \ast\flags\MODIFIER_PRIVATE:
+            case ast\flags\MODIFIER_PUBLIC:
+            case ast\flags\MODIFIER_PROTECTED:
+            case ast\flags\MODIFIER_PRIVATE:
                 // Replace the visibility with the new visibility.
                 $method->setFlags(Flags::bitVectorWithState(
                     Flags::bitVectorWithState(
                         $method->getFlags(),
-                        \ast\flags\MODIFIER_PUBLIC | \ast\flags\MODIFIER_PROTECTED | \ast\flags\MODIFIER_PRIVATE,
+                        ast\flags\MODIFIER_PUBLIC | ast\flags\MODIFIER_PROTECTED | ast\flags\MODIFIER_PRIVATE,
                         false
                     ),
                     $new_visibility_flags,

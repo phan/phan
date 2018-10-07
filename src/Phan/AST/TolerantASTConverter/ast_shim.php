@@ -15,6 +15,11 @@ declare(strict_types=1);
  * However, this file does not define any global functions such as
  * ast\parse_code() and ast\parse_file(). (to avoid confusion)
  *
+ * TODO: Make it so that constant values will be identical to php-ast
+ * for PHP 7.0-7.3
+ *
+ * @phan-file-suppress PhanUnreferencedConstant - Plugins may reference some of these constants
+ *
  * @author Tyson Andre
  */
 
@@ -135,6 +140,7 @@ const MODIFIER_STATIC = 1;
 const MODIFIER_ABSTRACT = 2;
 const MODIFIER_FINAL = 4;
 const RETURNS_REF = 67108864;
+const FUNC_RETURNS_REF = 67108864;
 const CLASS_ABSTRACT = 32;
 const CLASS_FINAL = 4;
 const CLASS_TRAIT = 128;

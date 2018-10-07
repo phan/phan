@@ -2,6 +2,8 @@
 namespace Phan\Language\Element;
 
 use AssertionError;
+use ast;
+use ast\flags;
 use ast\Node;
 use Phan\Analysis\Analyzable;
 use Phan\AST\UnionTypeVisitor;
@@ -97,7 +99,7 @@ class Func extends AddressableElement implements FunctionInterface
         Type $closure_scope_type,
         Node $node
     ) {
-        if ($node->kind !== \ast\AST_CLOSURE) {
+        if ($node->kind !== ast\AST_CLOSURE) {
             return null;
         }
         if ($closure_scope_type->isNativeType()) {
@@ -342,7 +344,7 @@ class Func extends AddressableElement implements FunctionInterface
      */
     public function returnsRef() : bool
     {
-        return $this->getFlagsHasState(\ast\flags\RETURNS_REF);
+        return $this->getFlagsHasState(flags\FUNC_RETURNS_REF);
     }
 
     /**

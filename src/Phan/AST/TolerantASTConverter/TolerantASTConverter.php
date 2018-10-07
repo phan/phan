@@ -1122,7 +1122,7 @@ class TolerantASTConverter
                 }
                 return static::newAstDecl(
                     ast\AST_METHOD,
-                    static::phpParserVisibilityToAstVisibility($n->modifiers) | ($n->byRefToken !== null ? flags\RETURNS_REF : 0),
+                    static::phpParserVisibilityToAstVisibility($n->modifiers) | ($n->byRefToken !== null ? flags\FUNC_RETURNS_REF : 0),
                     [
                         'params' => static::phpParserParamsToAstParams($n->parameters, $start_line),
                         'uses' => null,
@@ -1891,7 +1891,7 @@ class TolerantASTConverter
     ) : ast\Node {
         return static::newAstDecl(
             ast\AST_CLOSURE,
-            ($by_ref ? flags\RETURNS_REF : 0) | ($static ? flags\MODIFIER_STATIC : 0),
+            ($by_ref ? flags\FUNC_RETURNS_REF : 0) | ($static ? flags\MODIFIER_STATIC : 0),
             [
                 'params' => $params,
                 'uses' => $uses,
@@ -1923,7 +1923,7 @@ class TolerantASTConverter
     ) : ast\Node {
         return static::newAstDecl(
             ast\AST_FUNC_DECL,
-            $by_ref ? flags\RETURNS_REF : 0,
+            $by_ref ? flags\FUNC_RETURNS_REF : 0,
             [
                 'params' => $params,
                 'uses' => null,
