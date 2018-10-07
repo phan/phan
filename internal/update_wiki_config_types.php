@@ -102,7 +102,7 @@ class ConfigEntry
         'markdown_issue_messages' => self::CATEGORY_HIDDEN_CLI_ONLY, // self::CATEGORY_OUTPUT,
         'color_issue_messages' => self::CATEGORY_HIDDEN_CLI_ONLY, // self::CATEGORY_OUTPUT,
         'color_scheme' => self::CATEGORY_OUTPUT,
-        'generic_types_enabled' => self::CATEGORY_OUTPUT,
+        'generic_types_enabled' => self::CATEGORY_ANALYSIS,
         'randomize_file_order' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'consistent_hashing_file_order' => self::CATEGORY_FILES,
         'print_memory_usage_summary' => self::CATEGORY_HIDDEN_CLI_ONLY,

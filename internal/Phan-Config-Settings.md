@@ -1,7 +1,21 @@
 <!-- This is mirrored at https://github.com/phan/phan/wiki/Phan-Config-Settings -->
 <!-- The copy distributed with Phan is in the internal folder because it may be removed or moved elsewhere -->
+<!-- This is regenerated from the comments and defaults in src/Phan/Config.php by the script internal/update_wiki_config_types.php -->
 
 See [`\Phan\Config`](https://github.com/phan/phan/blob/master/src/Phan/Config.php) for the most up to date list of configuration settings.
+
+Table of Contents
+=================
+
+Phan's configuration settings fall into the following categories:
+
+- [Configuring Files](#configuring-files)
+- [Issue Filtering](#issue-filtering)
+- [Analysis](#analysis)
+- [Analysis (of a PHP version)](#analysis-of-a-php-version)
+- [Type Casting](#type-casting)
+- [Dead Code Detection](#dead-code-detection)
+- [Output](#Output)
 
 # Configuring Files
 
@@ -78,7 +92,7 @@ directories/files, unanalyzable files, or files that
 can't be removed for whatever reason.
 (e.g. `'@Test\.php$@'`, or `'@vendor/.*/(tests|Tests)/@'`)
 
-(Default: `''`)
+(Default: `""`)
 
 ## file_list
 
@@ -251,6 +265,13 @@ The default is the empty array (Don't suppress any warnings)
 (E.g. ['RuntimeException', 'AssertionError', 'TypeError'])
 
 (Default: `[]`)
+
+## generic_types_enabled
+
+Enable or disable support for generic templated
+class types.
+
+(Default: `true`)
 
 ## globals_type_map
 
@@ -532,7 +553,8 @@ of the php executable used to execute Phan.
 
 # Type Casting
 
-TODO: Document issue category Type Casting
+These configuration settings affect the rules Phan uses to check if a given type can be cast to another type.
+These affect what issues will be emitted, as well as the types that Phan will infer for elements.
 
 ## array_casts_as_null
 
@@ -607,7 +629,7 @@ Setting this to true will introduce a large number of false positives
 
 # Dead Code Detection
 
-TODO: Document issue category Dead Code Detection
+These settings affect how Phan will track what elements are referenced to warn about them.
 
 ## dead_code_detection
 
@@ -655,7 +677,8 @@ This has a few known false positives, e.g. for loops or branches.
 
 # Output
 
-TODO: Document issue category Output
+These settings will affect how the issues that Phan detects will be output,
+as well as how Phan will warn about being misconfigured.
 
 ## color_scheme
 
@@ -674,13 +697,6 @@ E.g. to use the terminal's default color for the line (of an issue instance), se
 Set this to true to disable suggestions for what to use instead of undeclared variables/classes/etc.
 
 (Default: `false`)
-
-## generic_types_enabled
-
-Enable or disable support for generic templated
-class types.
-
-(Default: `true`)
 
 ## skip_missing_tokenizer_warning
 
