@@ -6,6 +6,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 require_once __DIR__ . '/lib/WikiWriter.php';
 
+use Phan\Config;
 use Phan\Config\Initializer;
 
 /**
@@ -189,6 +190,17 @@ class ConfigEntry
     {
         return $this->category === self::CATEGORY_HIDDEN_CLI_ONLY;
     }
+
+    public function getRepresentationOfDefault() : string
+    {
+        if ($this->config_name === 'minimum_severity') {
+            return '`Issue::SEVERITY_LOW`';
+        }
+        $value = Config::DEFAULT_CONFIGURATION[$this->config_name];
+        $result = json_encode($value, JSON_UNESCAPED_SLASHES);
+
+        return '`' . $result . '`';
+    }
 }
 
 /**
@@ -340,10 +352,13 @@ EOT;
         $header = '## ' . $config_entry->getConfigName();
 
         $message = $config_entry->getMarkdown();
+        $default = $config_entry->getRepresentationOfDefault();
         $message = rtrim($message, "\n");
         $placeholder = <<<EOT
 
 $message
+
+(Default: $default)
 
 
 EOT;
