@@ -1,6 +1,12 @@
+<!-- This is mirrored at https://github.com/phan/phan/wiki/Phan-Config-Settings -->
+<!-- The copy distributed with Phan is in the internal folder because it may be removed or moved elsewhere -->
+
+See [`\Phan\Config`](https://github.com/phan/phan/blob/master/src/Phan/Config.php) for the most up to date list of configuration settings.
+
 # Configuring Files
 
-TODO: Document issue category Configuring Files
+These settings can be used to control the files that Phan will parse and analyze,
+as well as the order in which these will be analyzed.
 
 ## analyzed_file_extensions
 
@@ -17,8 +23,8 @@ relatively few files will move to a different group.
 (use when the number of files is much larger than the process count)
 
 NOTE: If you rely on Phan parsing files/directories in the order
-that they were provided in this config, don't use this)
-See https://github.com/phan/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
+that they were provided in this config, don't use this.
+See [this note in Phan's wiki](https://github.com/phan/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs)
 
 ## directory_list
 
@@ -155,8 +161,12 @@ and expensive, but you should consider running
 it before upgrading your version of PHP to a
 new version that has backward compatibility
 breaks.
-You should also look into other tools such as php7cc and php7mar,
-which have different checks.
+
+If you are migrating from PHP 5 to PHP 7,
+you should also look into using
+[php7cc (no longer maintained)](https://github.com/sstalle/php7cc)
+and [php7mar](https://github.com/Alexia/php7mar),
+which have different backwards compatibility checks.
 
 ## check_docblock_signature_param_type_match
 
@@ -172,7 +182,7 @@ declared in the method signature.
 
 ## enable_class_alias_support
 
-If true, Phan will read `class_alias` calls in the global scope, then
+If true, Phan will read `class_alias()` calls in the global scope, then
 
 1. create aliases from the *parsed* files if no class definition was found, and
 2. emit issues in the global scope if the source or target class is invalid.
@@ -276,7 +286,7 @@ E.g. this is used by `InvokePHPNativeSyntaxCheckPlugin`
 
 A list of plugin files to execute.
 
-Plugins which are bundled with Phan can be added here by providing their name (e.g. 'AlwaysReturnPlugin')
+Plugins which are bundled with Phan can be added here by providing their name (e.g. `'AlwaysReturnPlugin'`)
 
 Documentation about available bundled plugins can be found [here](https://github.com/phan/phan/tree/master/.phan/plugins).
 
@@ -343,7 +353,7 @@ detect that it is actually returning the passed in
 ## read_magic_method_annotations
 
 If disabled, Phan will not read docblock type
-annotation comments for @method.
+annotation comments for `@method`.
 
 Note: `read_type_annotations` must also be enabled.
 
@@ -353,7 +363,7 @@ If disabled, Phan will not read docblock type
 annotation comments for `@property`.
 
 `@property-read` and `@property-write` are treated exactly the
-same as @property for now.
+same as `@property` for now.
 
 Note: `read_type_annotations` must also be enabled.
 
@@ -369,6 +379,7 @@ types expressed in code.
 A custom list of additional superglobals and their types. **Only needed by projects using runkit/runkit7.**
 
 (Corresponding keys are declared in runkit.superglobal ini directive)
+
 `global_type_map` should be set for setting the types of these superglobals.
 E.g `['_FOO']`;
 
@@ -377,11 +388,11 @@ E.g `['_FOO']`;
 If true, then before analysis, try to simplify AST into a form
 which improves Phan's type inference in edge cases.
 
-This may conflict with 'dead_code_detection'.
+This may conflict with `dead_code_detection`.
 When this is true, this slows down analysis slightly.
 
 E.g. rewrites `if ($a = value() && $a > 0) {...}`
-into $a = value(); if ($a) { if ($a > 0) {...}}`
+into `$a = value(); if ($a) { if ($a > 0) {...}}`
 
 ## warn_about_undocumented_throw_statements
 
@@ -397,10 +408,10 @@ TODO: Document issue category Analysis (of a PHP Version)
 Set this to true to allow contravariance in real parameter types of method overrides
 (Users may enable this if analyzing projects that support only php 7.2+)
 
-See https://secure.php.net/manual/en/migration72.new-features.php#migration72.new-features.param-type-widening
-This is false by default. (Will warn if real parameter types are omitted in an override)
+See [this note about PHP 7.2's new features](https://secure.php.net/manual/en/migration72.new-features.php#migration72.new-features.param-type-widening).
+This is false by default. (By default, Phan will warn if real parameter types are omitted in an override)
 
-If this is null, this will be inferred from `target_php_version`.
+If this is overridden to be null, this will be inferred from `target_php_version`.
 
 ## polyfill_parse_all_element_doc_comments
 
@@ -456,7 +467,7 @@ Normally, a scalar type such as int could only cast to/from int and mixed.
 
 If enabled, scalars (int, float, bool, string, null)
 are treated as if they can cast to each other.
-This does not affect checks of array keys. See scalar_array_key_cast.
+This does not affect checks of array keys. See `scalar_array_key_cast`.
 
 ## scalar_implicit_partial
 
@@ -517,7 +528,7 @@ to be tracked.
 ## unused_variable_detection
 
 Set to true in order to attempt to detect unused variables.
-dead_code_detection will also enable unused variable detection.
+`dead_code_detection` will also enable unused variable detection.
 
 This has a few known false positives, e.g. for loops or branches.
 
@@ -528,9 +539,11 @@ TODO: Document issue category Output
 ## color_scheme
 
 Allow overriding color scheme in .phan/config.php for printing issues, for individual types.
-See the keys of Phan\Output\Colorizing::styles for valid color names,
-and the keys of Phan\Output\Colorizing::default_color_for_template for valid color names.
+
+See the keys of `Phan\Output\Colorizing::STYLES` for valid color names,
+and the keys of `Phan\Output\Colorizing::DEFAULT_COLOR_FOR_TEMPLATE` for valid color names.
 E.g. to change the color for the file (of an issue instance) to red, set this to `['FILE' => 'red']`
+
 E.g. to use the terminal's default color for the line (of an issue instance), set this to `['LINE' => 'none']`
 
 ## disable_suggestions
@@ -544,7 +557,7 @@ class types.
 
 ## skip_missing_tokenizer_warning
 
-By default, Phan will warn if 'tokenizer' isn't installed.
+By default, Phan will warn if the 'tokenizer' module isn't installed and enabled.
 
 ## skip_slow_php_options_warning
 
@@ -554,7 +567,8 @@ By default, Phan will log error messages to stdout if PHP is using options that 
 ## suggestion_check_limit
 
 Phan will give up on suggesting a different name in issue messages
-if the number of candidates (for a given suggestion category) is greater than suggestion_check_limit
-Set this to 0 to disable most suggestions for similar names, to other namespaces.
-Set this to INT_MAX (or other large value) to always suggesting similar names to other namespaces.
-(Phan will be a bit slower with larger values)
+if the number of candidates (for a given suggestion category) is greater than `suggestion_check_limit`.
+
+Set this to `0` to disable most suggestions for similar names, to other namespaces.
+Set this to `INT_MAX` (or other large value) to always suggesting similar names to other namespaces.
+(Phan will be a bit slower when this config setting is a larger value)
