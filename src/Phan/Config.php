@@ -79,17 +79,17 @@ class Config
     private static $closest_target_php_version_id;
 
     const DEFAULT_CONFIGURATION = [
-        // Supported values: '7.0', '7.1', '7.2', '7.3', null.
-        // If this is set to null,
+        // Supported values: `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `null`.
+        // If this is set to `null`,
         // then Phan assumes the PHP version which is closest to the minor version
-        // of the php executable used to execute phan.
+        // of the php executable used to execute Phan.
         'target_php_version' => null,
 
         // Default: true. If this is set to true,
         // and target_php_version is newer than the version used to run Phan,
         // Phan will act as though functions added in newer PHP versions exist.
         //
-        // NOTE: Currently, this only affects Closure::fromCallable
+        // NOTE: Currently, this only affects `Closure::fromCallable()`
         'pretend_newer_core_methods_exist' => true,
 
         // Make the tolerant-php-parser polyfill generate doc comments
@@ -98,12 +98,12 @@ class Config
 
         // A list of individual files to include in analysis
         // with a path relative to the root directory of the
-        // project
+        // project.
         'file_list' => [],
 
         // A list of directories that should be parsed for class and
         // method information. After excluding the directories
-        // defined in exclude_analysis_directory_list, the remaining
+        // defined in `exclude_analysis_directory_list`, the remaining
         // files will be statically analyzed for errors.
         //
         // Thus, both first-party and third-party code being used by
@@ -111,7 +111,7 @@ class Config
         'directory_list' => [],
 
         // List of case-insensitive file extensions supported by Phan.
-        // (e.g. php, html, htm)
+        // (e.g. `['php', 'html', 'htm']`)
         'analyzed_file_extensions' => ['php'],
 
         // A regular expression to match files to be excluded
@@ -206,7 +206,7 @@ class Config
         // See https://secure.php.net/manual/en/migration72.new-features.php#migration72.new-features.param-type-widening
         // This is false by default. (Will warn if real parameter types are omitted in an override)
         //
-        // If this is null, this will be inferred from target_php_version.
+        // If this is null, this will be inferred from `target_php_version`.
         'allow_method_param_type_widening' => false,
 
         // Set this to true to make Phan guess that undocumented parameter types
@@ -281,7 +281,7 @@ class Config
         //
         // E.g. `['int' => ['float', 'string'], 'float' => ['int'], 'string' => ['int'], 'null' => ['string']]`
         // allows casting null to a string, but not vice versa.
-        // (subset of scalar_implicit_cast)
+        // (subset of `scalar_implicit_cast`)
         'scalar_implicit_partial' => [],
 
         // If true, seemingly undeclared variables in the global
@@ -373,17 +373,18 @@ class Config
         'enable_class_alias_support' => false,
 
         // If disabled, Phan will not read docblock type
-        // annotation comments for @property.
-        // @property-read and @property-write are treated exactly the
+        // annotation comments for `@property`.
+        //
+        // `@property-read` and `@property-write` are treated exactly the
         // same as @property for now.
         //
-        // Note: read_type_annotations must also be enabled.
+        // Note: `read_type_annotations` must also be enabled.
         'read_magic_property_annotations' => true,
 
         // If disabled, Phan will not read docblock type
         // annotation comments for @method.
         //
-        // Note: read_type_annotations must also be enabled.
+        // Note: `read_type_annotations` must also be enabled.
         'read_magic_method_annotations' => true,
 
         // If disabled, Phan will not read docblock type
@@ -416,7 +417,8 @@ class Config
         // then Phan will ignore that union type (E.g. can ignore 'the' in `@return the value`)
         //
         // If the corresponding value is not empty,
-        // then Phan will act as though it saw the corresponding unionTypes(s) when the keys show up in a UnionType of @param, @return, @var, @property, etc.
+        // then Phan will act as though it saw the corresponding UnionTypes(s)
+        // when the keys show up in a UnionType of `@param`, `@return`, `@var`, `@property`, etc.
         //
         // This matches the **entire string**, not parts of the string.
         // (E.g. `@return the|null` will still look for a class with the name `the`, but `@return the` will be ignored with the below setting)
@@ -657,15 +659,16 @@ class Config
             // 'PhanVariableUseClause',
         ],
 
-        // Override if runkit.superglobal ini directive is used.
-        // A custom list of additional superglobals and their types, for projects using runkit.
+        // A custom list of additional superglobals and their types. **Only needed by projects using runkit/runkit7.**
+        //
         // (Corresponding keys are declared in runkit.superglobal ini directive)
-        // global_type_map should be set for entries.
+        // `global_type_map` should be set for setting the types of these superglobals.
         // E.g `['_FOO']`;
         'runkit_superglobals' => [],
 
         // Override to hardcode existence and types of (non-builtin) globals in the global scope.
         // Class names should be prefixed with '\\'.
+        //
         // (E.g. ['_FOO' => '\\FooClass', 'page' => '\\PageClass', 'userId' => 'int'])
         'globals_type_map' => [],
 
@@ -710,21 +713,22 @@ class Config
         'print_memory_usage_summary' => false,
 
         // By default, Phan will log error messages to stdout if PHP is using options that slow the analysis.
-        // (e.g. PHP is compiled with --enable-debug or when using XDebug)
+        // (e.g. PHP is compiled with `--enable-debug` or when using XDebug)
         'skip_slow_php_options_warning' => false,
 
         // By default, Phan will warn if 'tokenizer' isn't installed.
         'skip_missing_tokenizer_warning' => false,
 
         // You can put paths to stubs of internal extensions in this config option.
-        // If the corresponding extension is **not** loaded, then phan will use the stubs instead.
+        // If the corresponding extension is **not** loaded, then Phan will use the stubs instead.
         // Phan will continue using its detailed type annotations,
         // but load the constants, classes, functions, and classes (and their Reflection types)
         // from these stub files (doubling as valid php files).
         // Use a different extension from php to avoid accidentally loading these.
-        // The 'tools/make_stubs' script can be used to generate your own stubs (compatible with php 7.0+ right now)
+        // The `tools/make_stubs` script can be used to generate your own stubs (compatible with php 7.0+ right now)
+        //
+        // (e.g. `['xdebug' => '.phan/internal_stubs/xdebug.phan_php']`)
         'autoload_internal_extension_signatures' => [
-            // 'xdebug' => '.phan/internal_stubs/xdebug.phan_php',
         ],
 
         // Set this to false to emit PhanUndeclaredFunction issues for internal functions that Phan has signatures for,
@@ -736,13 +740,16 @@ class Config
         // If a file to be analyzed can't be parsed,
         // then use a slower PHP substitute for php-ast to try to parse the files.
         // This setting is ignored if a file is excluded from analysis.
-        // NOTE: it is strongly recommended to enable this via the --allow-polyfill-parser CLI flag instead,
+        //
+        // NOTE: it is strongly recommended to enable this via the `--use-fallback-parser` CLI flag instead,
         // since this may result in strange error messages for invalid files (e.g. if parsed but not analyzed).
         'use_fallback_parser' => false,
 
         // Use the polyfill parser based on tolerant-php-parser instead of the possibly missing native implementation
+        //
         // NOTE: This makes parsing several times slower than the native implementation.
-        // NOTE: it is strongly recommended to enable this via the --use-polyfill-parser or --force-polyfill-parser
+        //
+        // NOTE: it is strongly recommended to enable this via the `--use-polyfill-parser` or `--force-polyfill-parser`
         // since this may result in strange error messages for invalid files (e.g. if parsed but not analyzed).
         'use_polyfill_parser' => false,
 
@@ -750,7 +757,7 @@ class Config
         'daemonize_socket' => false,
 
         // If a daemon should listen to files to analyze over TCP.
-        // This setting is mutually exclusive with 'daemonize_socket'.
+        // This setting is mutually exclusive with `daemonize_socket`.
         'daemonize_tcp' => false,
 
         // TCP host for a daemon to listen to files to analyze.
@@ -773,7 +780,7 @@ class Config
         // Valid values: null, 'info'. Used when developing or debugging a language server client of Phan.
         'language_server_debug_level' => null,
 
-        // Use the command line option instead
+        // You can use the command line option `--language-server-require-pcntl` to set this to false for debugging.
         'language_server_use_pcntl_fallback' => true,
 
         // This should only be set via CLI (`--language-server-enable-go-to-definition`)
@@ -790,9 +797,11 @@ class Config
 
         // Don't show the category name in issue messages.
         // This makes error messages slightly shorter.
+        // Use `--language-server-hide-category` if you want to enable this.
         'language_server_hide_category_of_issues' => false,
 
-        // Can be set to false to disable the plugins Phan uses to infer more accurate return types of array_map, array_filter, etc.
+        // Can be set to false to disable the plugins Phan uses to infer more accurate return types of array_map, array_filter, and many other functions.
+        //
         // Phan is slightly faster when these are disabled.
         'enable_internal_return_type_plugins' => true,
 
@@ -807,13 +816,15 @@ class Config
         //
         // Plugins which are bundled with Phan can be added here by providing their name (e.g. 'AlwaysReturnPlugin')
         //
+        // Documentation about available bundled plugins can be found [here](https://github.com/phan/phan/tree/master/.phan/plugins).
+        //
         // Alternately, you can pass in the full path to a PHP file with the plugin's implementation (e.g. `'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php'`)
         'plugins' => [
         ],
 
         // This can be used by third-party plugins that expect configuration.
         //
-        // E.g. this is used by InvokePHPNativeSyntaxCheckPlugin
+        // E.g. this is used by `InvokePHPNativeSyntaxCheckPlugin`
         'plugin_config' => [
         ],
     ];
