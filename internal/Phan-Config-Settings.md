@@ -438,7 +438,7 @@ test("abc");
 
 This would normally generate:
 
-```sh
+```
 test.php:3 TypeError return string but `test()` is declared to return int
 ```
 
