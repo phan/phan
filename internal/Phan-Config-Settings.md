@@ -40,7 +40,7 @@ relatively few files will move to a different group.
 
 NOTE: If you rely on Phan parsing files/directories in the order
 that they were provided in this config, don't use this.
-See [this note in Phan's wiki](https://github.com/phan/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs)
+See [this note in Phan's wiki](https://github.com/phan/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs).
 
 (Default: `false`)
 
@@ -146,7 +146,7 @@ sloppy mature code base.
 
 ## suppress_issue_types
 
-Add any issue types (such as 'PhanUndeclaredMethod')
+Add any issue types (such as `'PhanUndeclaredMethod'`)
 to this black-list to inhibit them from being reported.
 
 (Default: `[]`)
@@ -259,8 +259,9 @@ Phan is slightly faster when these are disabled.
 ## exception_classes_with_optional_throws_phpdoc
 
 Phan will not warn about lack of documentation of `@throws` for any of the configured classes or their subclasses.
-This only matters when warn_about_undocumented_throw_statements is true.
+This only matters when [`warn_about_undocumented_throw_statements`](#warn_about_undocumented_throw_statements) is true.
 The default is the empty array (Don't suppress any warnings)
+
 (E.g. `['RuntimeException', 'AssertionError', 'TypeError']`)
 
 (Default: `[]`)
@@ -275,9 +276,9 @@ class types.
 ## globals_type_map
 
 Override to hardcode existence and types of (non-builtin) globals in the global scope.
-Class names should be prefixed with '\\'.
+Class names should be prefixed with `\`.
 
-(E.g. ['_FOO' => '\\FooClass', 'page' => '\\PageClass', 'userId' => 'int'])
+(E.g. `['_FOO' => '\FooClass', 'page' => '\PageClass', 'userId' => 'int']`)
 
 (Default: `[]`)
 
@@ -294,9 +295,10 @@ Phan will not assume it knows specific types if the default value is `false` or 
 
 ## ignore_undeclared_functions_with_known_signatures
 
-Set this to false to emit PhanUndeclaredFunction issues for internal functions that Phan has signatures for,
-but aren't available in the codebase, or the internal functions used to run phan
+Set this to false to emit `PhanUndeclaredFunction` issues for internal functions that Phan has signatures for,
+but aren't available in the codebase, or the internal functions used to run Phan
 (may lead to false positives if an extension isn't loaded)
+
 If this is true(default), then Phan will not warn.
 
 (Default: `true`)
@@ -333,7 +335,7 @@ This setting can be used if users wish to store strings that are even longer tha
 ## parent_constructor_required
 
 A set of fully qualified class-names for which
-a call to parent::__construct() is required.
+a call to `parent::__construct()` is required.
 
 (Default: `[]`)
 
@@ -386,6 +388,7 @@ If true, make narrowed types from phpdoc params override
 the real types from the signature, when real types exist.
 (E.g. allows specifying desired lists of subclasses,
  or to indicate a preference for non-nullable types over nullable types)
+
 Affects analysis of the body of the method and the param types passed in by callers.
 
 (*Requires [`check_docblock_signature_param_type_match`](#check_docblock_signature_param_type_match) to be true*)
@@ -394,12 +397,13 @@ Affects analysis of the body of the method and the param types passed in by call
 
 ## prefer_narrowed_phpdoc_return_type
 
-(*Requires check_docblock_signature_return_type_match to be true*)
+(*Requires [`check_docblock_signature_return_type_match`](#check_docblock_signature_return_type_match) to be true*)
 
 If true, make narrowed types from phpdoc returns override
 the real types from the signature, when real types exist.
+
 (E.g. allows specifying desired lists of subclasses,
- or to indicate a preference for non-nullable types over nullable types)
+or to indicate a preference for non-nullable types over nullable types)
 
 This setting affects the analysis of return statements in the body of the method and the return types passed in by callers.
 
@@ -440,7 +444,7 @@ test.php:3 TypeError return string but `test()` is declared to return int
 
 The initial scan of the function's code block has no
 type information for `$arg`. It isn't until we see
-the call and rescan test()'s code block that we can
+the call and rescan `test()`'s code block that we can
 detect that it is actually returning the passed in
 `string` instead of an `int` as declared.
 
@@ -480,9 +484,9 @@ types expressed in code.
 
 A custom list of additional superglobals and their types. **Only needed by projects using runkit/runkit7.**
 
-(Corresponding keys are declared in runkit.superglobal ini directive)
+(Corresponding keys are declared in `runkit.superglobal` ini directive)
 
-`global_type_map` should be set for setting the types of these superglobals.
+[`globals_type_map`](#globals_type_map) should be set for setting the types of these superglobals.
 E.g `['_FOO']`;
 
 (Default: `[]`)
@@ -534,7 +538,7 @@ for all types of elements, even if php-ast wouldn't (for an older PHP version)
 ## pretend_newer_core_methods_exist
 
 Default: true. If this is set to true,
-and target_php_version is newer than the version used to run Phan,
+and `target_php_version` is newer than the version used to run Phan,
 Phan will act as though functions added in newer PHP versions exist.
 
 NOTE: Currently, this only affects `Closure::fromCallable()`
@@ -584,7 +588,7 @@ If [`null_casts_as_any_type`](#null_casts_as_any_type) is true, this has no effe
 
 If enabled, any scalar array keys (int, string)
 are treated as if they can cast to each other.
-E.g. array<int,stdClass> can cast to array<string,stdClass> and vice versa.
+E.g. `array<int,stdClass>` can cast to `array<string,stdClass>` and vice versa.
 Normally, a scalar type such as int could only cast to/from int and mixed.
 
 (Default: `false`)
@@ -681,10 +685,11 @@ as well as how Phan will warn about being misconfigured.
 
 ## color_scheme
 
-Allow overriding color scheme in .phan/config.php for printing issues, for individual types.
+Allow overriding color scheme in `.phan/config.php` for printing issues, for individual types.
 
 See the keys of `Phan\Output\Colorizing::STYLES` for valid color names,
 and the keys of `Phan\Output\Colorizing::DEFAULT_COLOR_FOR_TEMPLATE` for valid color names.
+
 E.g. to change the color for the file (of an issue instance) to red, set this to `['FILE' => 'red']`
 
 E.g. to use the terminal's default color for the line (of an issue instance), set this to `['LINE' => 'none']`

@@ -98,7 +98,7 @@ class Config
         'target_php_version' => null,
 
         // Default: true. If this is set to true,
-        // and target_php_version is newer than the version used to run Phan,
+        // and `target_php_version` is newer than the version used to run Phan,
         // Phan will act as though functions added in newer PHP versions exist.
         //
         // NOTE: Currently, this only affects `Closure::fromCallable()`
@@ -173,7 +173,7 @@ class Config
         'backward_compatibility_checks' => true,
 
         // A set of fully qualified class-names for which
-        // a call to parent::__construct() is required.
+        // a call to `parent::__construct()` is required.
         'parent_constructor_required' => [],
 
         // If true, this run a quick version of checks that takes less
@@ -202,7 +202,7 @@ class Config
         //
         // The initial scan of the function's code block has no
         // type information for `$arg`. It isn't until we see
-        // the call and rescan test()'s code block that we can
+        // the call and rescan `test()`'s code block that we can
         // detect that it is actually returning the passed in
         // `string` instead of an `int` as declared.
         'quick_mode' => false,
@@ -288,7 +288,7 @@ class Config
 
         // If enabled, any scalar array keys (int, string)
         // are treated as if they can cast to each other.
-        // E.g. array<int,stdClass> can cast to array<string,stdClass> and vice versa.
+        // E.g. `array<int,stdClass>` can cast to `array<string,stdClass>` and vice versa.
         // Normally, a scalar type such as int could only cast to/from int and mixed.
         'scalar_array_key_cast' => false,
 
@@ -321,17 +321,19 @@ class Config
         // the real types from the signature, when real types exist.
         // (E.g. allows specifying desired lists of subclasses,
         //  or to indicate a preference for non-nullable types over nullable types)
+        //
         // Affects analysis of the body of the method and the param types passed in by callers.
         //
         // (*Requires `check_docblock_signature_param_type_match` to be true*)
         'prefer_narrowed_phpdoc_param_type' => true,
 
-        // (*Requires check_docblock_signature_return_type_match to be true*)
+        // (*Requires `check_docblock_signature_return_type_match` to be true*)
         //
         // If true, make narrowed types from phpdoc returns override
         // the real types from the signature, when real types exist.
+        //
         // (E.g. allows specifying desired lists of subclasses,
-        //  or to indicate a preference for non-nullable types over nullable types)
+        // or to indicate a preference for non-nullable types over nullable types)
         //
         // This setting affects the analysis of return statements in the body of the method and the return types passed in by callers.
         'prefer_narrowed_phpdoc_return_type' => true,
@@ -420,8 +422,9 @@ class Config
         'warn_about_undocumented_exceptions_thrown_by_invoked_functions' => false,
 
         // Phan will not warn about lack of documentation of `@throws` for any of the configured classes or their subclasses.
-        // This only matters when warn_about_undocumented_throw_statements is true.
+        // This only matters when `warn_about_undocumented_throw_statements` is true.
         // The default is the empty array (Don't suppress any warnings)
+        //
         // (E.g. `['RuntimeException', 'AssertionError', 'TypeError']`)
         'exception_classes_with_optional_throws_phpdoc' => [ ],
 
@@ -496,7 +499,7 @@ class Config
         // Set this to true to disable suggestions for what to use instead of undeclared variables/classes/etc.
         'disable_suggestions' => false,
 
-        // Add any issue types (such as 'PhanUndeclaredMethod')
+        // Add any issue types (such as `'PhanUndeclaredMethod'`)
         // to this black-list to inhibit them from being reported.
         'suppress_issue_types' => [
             // 'PhanUndeclaredMethod',
@@ -678,30 +681,31 @@ class Config
 
         // A custom list of additional superglobals and their types. **Only needed by projects using runkit/runkit7.**
         //
-        // (Corresponding keys are declared in runkit.superglobal ini directive)
+        // (Corresponding keys are declared in `runkit.superglobal` ini directive)
         //
-        // `global_type_map` should be set for setting the types of these superglobals.
+        // `globals_type_map` should be set for setting the types of these superglobals.
         // E.g `['_FOO']`;
         'runkit_superglobals' => [],
 
         // Override to hardcode existence and types of (non-builtin) globals in the global scope.
-        // Class names should be prefixed with '\\'.
+        // Class names should be prefixed with `\`.
         //
-        // (E.g. ['_FOO' => '\\FooClass', 'page' => '\\PageClass', 'userId' => 'int'])
+        // (E.g. `['_FOO' => '\FooClass', 'page' => '\PageClass', 'userId' => 'int']`)
         'globals_type_map' => [],
 
-        // Emit issue messages with markdown formatting
+        // Enable this to emit issue messages with markdown formatting.
         'markdown_issue_messages' => false,
 
         // Emit colorized issue messages.
-        // NOTE: it is strongly recommended to enable this via the --color CLI flag instead,
+        // NOTE: it is strongly recommended to enable this via the `--color` CLI flag instead,
         // since this is incompatible with most output formatters.
         'color_issue_messages' => false,
 
-        // Allow overriding color scheme in .phan/config.php for printing issues, for individual types.
+        // Allow overriding color scheme in `.phan/config.php` for printing issues, for individual types.
         //
         // See the keys of `Phan\Output\Colorizing::STYLES` for valid color names,
         // and the keys of `Phan\Output\Colorizing::DEFAULT_COLOR_FOR_TEMPLATE` for valid color names.
+        //
         // E.g. to change the color for the file (of an issue instance) to red, set this to `['FILE' => 'red']`
         //
         // E.g. to use the terminal's default color for the line (of an issue instance), set this to `['LINE' => 'none']`
@@ -726,7 +730,7 @@ class Config
         //
         // NOTE: If you rely on Phan parsing files/directories in the order
         // that they were provided in this config, don't use this.
-        // See [this note in Phan's wiki](https://github.com/phan/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs)
+        // See [this note in Phan's wiki](https://github.com/phan/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs).
         'consistent_hashing_file_order' => false,
 
         // Set by `--print-memory-usage-summary`. Prints a memory usage summary to stderr after analysis.
@@ -751,9 +755,10 @@ class Config
         'autoload_internal_extension_signatures' => [
         ],
 
-        // Set this to false to emit PhanUndeclaredFunction issues for internal functions that Phan has signatures for,
-        // but aren't available in the codebase, or the internal functions used to run phan
+        // Set this to false to emit `PhanUndeclaredFunction` issues for internal functions that Phan has signatures for,
+        // but aren't available in the codebase, or the internal functions used to run Phan
         // (may lead to false positives if an extension isn't loaded)
+        //
         // If this is true(default), then Phan will not warn.
         'ignore_undeclared_functions_with_known_signatures' => true,
 
