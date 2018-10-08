@@ -244,7 +244,9 @@ if (!class_exists('\ast\Node')) {
             $this->lineno = $lineno;
         }
     }
+}
 
+if (!class_exists('ast\Metadata')) {
     /**
      * Metadata entry for a single AST kind, as returned by ast\get_metadata().
      * @suppress PhanRedefineClassInternal
