@@ -1209,7 +1209,7 @@ EOB;
             fwrite(
                 STDERR,
                 // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-                'The php-ast extension must be loaded in order for Phan to work. See https://github.com/phan/phan#getting-it-running for more details. Alternately, invoke Phan with the CLI option --allow-polyfill-parser (which is noticeably slower)'
+                "The php-ast extension must be loaded in order for Phan to work. See https://github.com/phan/phan#getting-it-running for more details. Alternately, invoke Phan with the CLI option --allow-polyfill-parser (which is noticeably slower)\n"
             );
             exit(EXIT_FAILURE);
         }
@@ -1226,8 +1226,7 @@ EOB;
                 'Unknown AST version ('
                 . Config::AST_VERSION
                 . ') in configuration. '
-                . 'You may need to rebuild the latest '
-                . 'version of the php-ast extension.'
+                . "You may need to rebuild the latest version of the php-ast extension.\n"
             );
             exit(EXIT_FAILURE);
         }
@@ -1243,8 +1242,7 @@ EOB;
                 'Expected ast\\parse_code to throw ParseError on invalid inputs. Configured AST version: '
                 . Config::AST_VERSION
                 . '. '
-                . 'You may need to rebuild the latest '
-                . 'version of the php-ast extension.'
+                . "You may need to rebuild the latest version of the php-ast extension.\n"
             );
             exit(EXIT_FAILURE);
         } catch (\ParseError $_) {
