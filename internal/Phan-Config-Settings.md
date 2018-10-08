@@ -67,7 +67,7 @@ third-party code (such as "vendor/") in this list.
 
 n.b.: If you'd like to parse but not analyze 3rd
       party code, directories containing that code
-      should be added to the [`directory_list`](#directory_list) as
+      should be added to the [`directory_list`](#directory_list) as well as
       to `exclude_analysis_directory_list`.
 
 (Default: `[]`)

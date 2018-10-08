@@ -151,7 +151,7 @@ class Config
         //
         // n.b.: If you'd like to parse but not analyze 3rd
         //       party code, directories containing that code
-        //       should be added to the `directory_list` as
+        //       should be added to the `directory_list` as well as
         //       to `exclude_analysis_directory_list`.
         'exclude_analysis_directory_list' => [],
 
