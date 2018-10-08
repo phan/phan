@@ -229,14 +229,14 @@ class Config
         // (for optional parameters) have the same type as default values
         // (Instead of combining that type with `mixed`).
         //
-        // E.g. `function my_method($x = 'val')` would make Phan infer that $x had a type of `string`, not `string|mixed`.
-        // Phan will not assume it knows specific types if the default value is false or null.
+        // E.g. `function my_method($x = 'val')` would make Phan infer that `$x` had a type of `string`, not `string|mixed`.
+        // Phan will not assume it knows specific types if the default value is `false` or `null`.
         'guess_unknown_parameter_type_using_default' => false,
 
         // If enabled, inherit any missing phpdoc for types from
         // the parent method if none is provided.
         //
-        // NOTE: This step will only be performed if analyze_signature_compatibility is also enabled.
+        // NOTE: This step will only be performed if `analyze_signature_compatibility` is also enabled.
         'inherit_phpdoc_types' => true,
 
         // The minimum severity level to report on. This can be
@@ -419,10 +419,10 @@ class Config
 
         'warn_about_undocumented_exceptions_thrown_by_invoked_functions' => false,
 
-        // Phan will not warn about lack of documentation of (at)throws for any of the configured classes or their subclasses.
+        // Phan will not warn about lack of documentation of `@throws` for any of the configured classes or their subclasses.
         // This only matters when warn_about_undocumented_throw_statements is true.
         // The default is the empty array (Don't suppress any warnings)
-        // (E.g. ['RuntimeException', 'AssertionError', 'TypeError'])
+        // (E.g. `['RuntimeException', 'AssertionError', 'TypeError']`)
         'exception_classes_with_optional_throws_phpdoc' => [ ],
 
         // This setting maps case insensitive strings to union types.
@@ -820,7 +820,7 @@ class Config
         // Use `--language-server-hide-category` if you want to enable this.
         'language_server_hide_category_of_issues' => false,
 
-        // Can be set to false to disable the plugins Phan uses to infer more accurate return types of array_map, array_filter, and many other functions.
+        // Can be set to false to disable the plugins Phan uses to infer more accurate return types of `array_map`, `array_filter`, and many other functions.
         //
         // Phan is slightly faster when these are disabled.
         'enable_internal_return_type_plugins' => true,

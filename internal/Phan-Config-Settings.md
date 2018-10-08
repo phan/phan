@@ -48,7 +48,7 @@ See [this note in Phan's wiki](https://github.com/phan/phan/wiki/Different-Issue
 
 A list of directories that should be parsed for class and
 method information. After excluding the directories
-defined in `exclude_analysis_directory_list`, the remaining
+defined in [`exclude_analysis_directory_list`](#exclude_analysis_directory_list), the remaining
 files will be statically analyzed for errors.
 
 Thus, both first-party and third-party code being used by
@@ -67,7 +67,7 @@ third-party code (such as "vendor/") in this list.
 
 n.b.: If you'd like to parse but not analyze 3rd
       party code, directories containing that code
-      should be added to the `directory_list` as
+      should be added to the [`directory_list`](#directory_list) as
       to `exclude_analysis_directory_list`.
 
 (Default: `[]`)
@@ -112,7 +112,6 @@ in static analysis, to the exclusion of others.
 # Issue Filtering
 
 These settings can be used to control what issues show up in Phan's output.
-(
 
 ## disable_file_based_suppression
 
@@ -251,7 +250,7 @@ NOTE: THIS IS EXPERIMENTAL, and the implementation may change.
 
 ## enable_internal_return_type_plugins
 
-Can be set to false to disable the plugins Phan uses to infer more accurate return types of array_map, array_filter, and many other functions.
+Can be set to false to disable the plugins Phan uses to infer more accurate return types of `array_map`, `array_filter`, and many other functions.
 
 Phan is slightly faster when these are disabled.
 
@@ -259,10 +258,10 @@ Phan is slightly faster when these are disabled.
 
 ## exception_classes_with_optional_throws_phpdoc
 
-Phan will not warn about lack of documentation of (at)throws for any of the configured classes or their subclasses.
+Phan will not warn about lack of documentation of `@throws` for any of the configured classes or their subclasses.
 This only matters when warn_about_undocumented_throw_statements is true.
 The default is the empty array (Don't suppress any warnings)
-(E.g. ['RuntimeException', 'AssertionError', 'TypeError'])
+(E.g. `['RuntimeException', 'AssertionError', 'TypeError']`)
 
 (Default: `[]`)
 
@@ -288,8 +287,8 @@ Set this to true to make Phan guess that undocumented parameter types
 (for optional parameters) have the same type as default values
 (Instead of combining that type with `mixed`).
 
-E.g. `function my_method($x = 'val')` would make Phan infer that $x had a type of `string`, not `string|mixed`.
-Phan will not assume it knows specific types if the default value is false or null.
+E.g. `function my_method($x = 'val')` would make Phan infer that `$x` had a type of `string`, not `string|mixed`.
+Phan will not assume it knows specific types if the default value is `false` or `null`.
 
 (Default: `false`)
 
@@ -317,7 +316,7 @@ globals that you have no hope of fixing.
 If enabled, inherit any missing phpdoc for types from
 the parent method if none is provided.
 
-NOTE: This step will only be performed if analyze_signature_compatibility is also enabled.
+NOTE: This step will only be performed if [`analyze_signature_compatibility`](#analyze_signature_compatibility) is also enabled.
 
 (Default: `true`)
 
@@ -389,7 +388,7 @@ the real types from the signature, when real types exist.
  or to indicate a preference for non-nullable types over nullable types)
 Affects analysis of the body of the method and the param types passed in by callers.
 
-(*Requires `check_docblock_signature_param_type_match` to be true*)
+(*Requires [`check_docblock_signature_param_type_match`](#check_docblock_signature_param_type_match) to be true*)
 
 (Default: `true`)
 
@@ -452,7 +451,7 @@ detect that it is actually returning the passed in
 If disabled, Phan will not read docblock type
 annotation comments for `@method`.
 
-Note: `read_type_annotations` must also be enabled.
+Note: [`read_type_annotations`](#read_type_annotations) must also be enabled.
 
 (Default: `true`)
 
@@ -464,7 +463,7 @@ annotation comments for `@property`.
 `@property-read` and `@property-write` are treated exactly the
 same as `@property` for now.
 
-Note: `read_type_annotations` must also be enabled.
+Note: [`read_type_annotations`](#read_type_annotations) must also be enabled.
 
 (Default: `true`)
 
@@ -493,7 +492,7 @@ E.g `['_FOO']`;
 If true, then before analysis, try to simplify AST into a form
 which improves Phan's type inference in edge cases.
 
-This may conflict with `dead_code_detection`.
+This may conflict with [`dead_code_detection`](#dead_code_detection).
 When this is true, this slows down analysis slightly.
 
 E.g. rewrites `if ($a = value() && $a > 0) {...}`
@@ -559,8 +558,8 @@ These affect what issues will be emitted, as well as the types that Phan will in
 ## array_casts_as_null
 
 If enabled, allow any array-like type to be cast to null.
-This is an incremental step in migrating away from `null_casts_as_any_type`.
-If `null_casts_as_any_type` is true, this has no effect.
+This is an incremental step in migrating away from [`null_casts_as_any_type`](#null_casts_as_any_type).
+If [`null_casts_as_any_type`](#null_casts_as_any_type) is true, this has no effect.
 
 (Default: `false`)
 
@@ -576,8 +575,8 @@ will cut down on false positives.
 
 If enabled, allow null to be cast as any array-like type.
 
-This is an incremental step in migrating away from `null_casts_as_any_type`.
-If `null_casts_as_any_type` is true, this has no effect.
+This is an incremental step in migrating away from [`null_casts_as_any_type`](#null_casts_as_any_type).
+If [`null_casts_as_any_type`](#null_casts_as_any_type) is true, this has no effect.
 
 (Default: `false`)
 
@@ -594,7 +593,7 @@ Normally, a scalar type such as int could only cast to/from int and mixed.
 
 If enabled, scalars (int, float, bool, string, null)
 are treated as if they can cast to each other.
-This does not affect checks of array keys. See `scalar_array_key_cast`.
+This does not affect checks of array keys. See [`scalar_array_key_cast`](#scalar_array_key_cast).
 
 (Default: `false`)
 
@@ -605,7 +604,7 @@ are allowed to perform the casts listed.
 
 E.g. `['int' => ['float', 'string'], 'float' => ['int'], 'string' => ['int'], 'null' => ['string']]`
 allows casting null to a string, but not vice versa.
-(subset of `scalar_implicit_cast`)
+(subset of [`scalar_implicit_cast`](#scalar_implicit_cast))
 
 (Default: `[]`)
 
@@ -661,7 +660,7 @@ have to be made about what references what.
 Set to true in order to force tracking references to elements
 (functions/methods/consts/protected).
 
-`dead_code_detection` is another option which also causes references
+[`dead_code_detection`](#dead_code_detection) is another option which also causes references
 to be tracked.
 
 (Default: `false`)
@@ -669,7 +668,7 @@ to be tracked.
 ## unused_variable_detection
 
 Set to true in order to attempt to detect unused variables.
-`dead_code_detection` will also enable unused variable detection.
+[`dead_code_detection`](#dead_code_detection) will also enable unused variable detection.
 
 This has a few known false positives, e.g. for loops or branches.
 

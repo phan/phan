@@ -160,6 +160,18 @@ class ConfigEntry
             $line = preg_replace('@^//( |$)@', '', trim($line));
             $result .= $line . "\n";
         }
+        $result = preg_replace_callback(
+            '@(?<!\[)`([A-Za-z_0-9]+)`@',
+            /** @param array{0:string,1:string} $matches */
+            function (array $matches) : string {
+                list($markdown, $name) = $matches;
+                if ($name !== $this->config_name && isset(Config::DEFAULT_CONFIGURATION[$name])) {
+                    return sprintf('[%s](#%s)', $markdown, $name);
+                }
+                return $markdown;
+            },
+            $result
+        );
         return $result;
     }
 
@@ -372,16 +384,6 @@ EOT;
         if (self::$verbose) {
             fwrite(STDERR, $message);
         }
-    }
-
-    /**
-     * Returns the section with an updated issue template string (if there already was an issue template)
-     */
-    private static function updateTextForSection(string $text, string $header) : string
-    {
-        $config_name = preg_replace('@^[# ]*@', '', $header);
-        self::debugLog("TODO: Write code to update text for $config_name\n");
-        return $text;
     }
 }
 
