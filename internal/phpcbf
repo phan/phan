@@ -7,5 +7,5 @@ if [[ "$#" != 0 ]]; then
 	php -d memory_limit=2G "$PHPCBF" --standard=phpcs.xml "$@"
 else
 	# Automatically detect PSR-2 and PSR-12 syntax issues in Phan itself
-	php -d memory_limit=2G "$PHPCBF" --standard=phpcs.xml tests/Phan src internal/*.php .phan tool/make_stubs phan_client
+	php -d memory_limit=2G "$PHPCBF" --standard=phpcs.xml tests/Phan src internal/lib internal/*.php .phan tool/make_stubs phan_client
 fi
