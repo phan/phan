@@ -723,6 +723,8 @@ EOT
 ```php
 public static function myMethod() : \MyOtherClass
 ```
+
+@return MyOtherClass details
 EOT
             ],
             [
