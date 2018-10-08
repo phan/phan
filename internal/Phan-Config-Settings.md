@@ -439,7 +439,7 @@ test("abc");
 This would normally generate:
 
 ```
-test.php:3 TypeError return string but `test()` is declared to return int
+test.php:3 PhanTypeMismatchReturn Returning type string but test() is declared to return int
 ```
 
 The initial scan of the function's code block has no
