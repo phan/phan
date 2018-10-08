@@ -55,7 +55,6 @@ class Element
         ast\AST_CLOSURE            => 'visitClosure',
         ast\AST_CLOSURE_USES       => 'visitClosureUses',
         ast\AST_CLOSURE_VAR        => 'visitClosureVar',
-        ast\AST_COALESCE           => 'visitCoalesce',
         ast\AST_CONST              => 'visitConst',
         ast\AST_CONST_DECL         => 'visitConstDecl',
         ast\AST_CONST_ELEM         => 'visitConstElem',
@@ -71,8 +70,6 @@ class Element
         ast\AST_FUNC_DECL          => 'visitFuncDecl',
         ast\AST_ISSET              => 'visitIsset',
         ast\AST_GLOBAL             => 'visitGlobal',
-        ast\AST_GREATER            => 'visitGreater',
-        ast\AST_GREATER_EQUAL      => 'visitGreaterEqual',
         ast\AST_GROUP_USE          => 'visitGroupUse',
         ast\AST_IF                 => 'visitIf',
         ast\AST_IF_ELEM            => 'visitIfElem',
@@ -100,14 +97,12 @@ class Element
         ast\AST_SWITCH_LIST        => 'visitSwitchList',
         ast\AST_TYPE               => 'visitType',
         ast\AST_NULLABLE_TYPE      => 'visitNullableType',
-        ast\AST_UNARY_MINUS        => 'visitUnaryMinus',
         ast\AST_UNARY_OP           => 'visitUnaryOp',
         ast\AST_USE                => 'visitUse',
         ast\AST_USE_ELEM           => 'visitUseElem',
         ast\AST_USE_TRAIT          => 'visitUseTrait',
         ast\AST_VAR                => 'visitVar',
         ast\AST_WHILE              => 'visitWhile',
-        ast\AST_AND                => 'visitAnd',
         ast\AST_CATCH_LIST         => 'visitCatchList',
         ast\AST_CLONE              => 'visitClone',
         ast\AST_CONDITIONAL        => 'visitConditional',
@@ -119,19 +114,16 @@ class Element
         ast\AST_LABEL              => 'visitLabel',
         ast\AST_METHOD_REFERENCE   => 'visitMethodReference',
         ast\AST_NAME_LIST          => 'visitNameList',
-        ast\AST_OR                 => 'visitOr',
         ast\AST_POST_DEC           => 'visitPostDec',
         ast\AST_POST_INC           => 'visitPostInc',
         ast\AST_PRE_DEC            => 'visitPreDec',
         ast\AST_REF                => 'visitRef',
         ast\AST_SHELL_EXEC         => 'visitShellExec',
-        ast\AST_SILENCE            => 'visitSilence',
         ast\AST_THROW              => 'visitThrow',
         ast\AST_TRAIT_ADAPTATIONS  => 'visitTraitAdaptations',
         ast\AST_TRAIT_ALIAS        => 'visitTraitAlias',
         ast\AST_TRAIT_PRECEDENCE   => 'visitTraitPrecedence',
         ast\AST_TRY                => 'visitTry',
-        ast\AST_UNARY_PLUS         => 'visitUnaryPlus',
         ast\AST_UNPACK             => 'visitUnpack',
         ast\AST_UNSET              => 'visitUnset',
         ast\AST_YIELD              => 'visitYield',
@@ -294,10 +286,6 @@ class Element
                 return $visitor->visitUnaryBitwiseNot($this->node);
             case flags\UNARY_BOOL_NOT:
                 return $visitor->visitUnaryBoolNot($this->node);
-            case flags\UNARY_MINUS:
-                return $visitor->visitUnaryMinus($this->node);
-            case flags\UNARY_PLUS:
-                return $visitor->visitUnaryPlus($this->node);
             case flags\UNARY_SILENCE:
                 return $visitor->visitUnarySilence($this->node);
             default:

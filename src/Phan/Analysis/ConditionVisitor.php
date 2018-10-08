@@ -191,32 +191,6 @@ class ConditionVisitor extends KindVisitorImplementation
     }
 
     /**
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitAnd(Node $node) : Context
-    {
-        return $this->analyzeShortCircuitingAnd($node->children['left'], $node->children['right']);
-    }
-
-    /**
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitOr(Node $node) : Context
-    {
-        return $this->analyzeShortCircuitingOr($node->children['left'], $node->children['right']);
-    }
-
-    /**
      * Helper method
      * @param Node|mixed $left
      * a Node or non-node to parse (possibly an AST literal)
@@ -306,20 +280,6 @@ class ConditionVisitor extends KindVisitorImplementation
         if ($expr_node instanceof Node) {
             return (new NegatedConditionVisitor($this->code_base, $this->context))->__invoke($expr_node);
         }
-        return $this->context;
-    }
-
-    /**
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitCoalesce(Node $node) : Context
-    {
-        $this->checkVariablesDefined($node);
         return $this->context;
     }
 

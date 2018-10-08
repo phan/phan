@@ -651,13 +651,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         );
 
         // NOTE: This is different from other analysis visitors because analyzing 'cond' with `||` has side effects
-        // after supporting visitAnd() and visitOr() in BlockAnalysisVisitor
+        // after supporting `BlockAnalysisVisitor->visitBinaryOp()`
         // TODO: Calling analyzeAndGetUpdatedContext before preOrderAnalyze is a hack.
 
         // TODO: This is redundant and has worse knowledge of the specific types of blocks than ConditionVisitor does.
         // TODO: Implement a hybrid BlockAnalysisVisitor+ConditionVisitor that will do a better job of inferences and reducing false positives? (and reduce the redundant work)
 
-        // E.g. the below code would update the context of BlockAnalysisVisitor in BlockAnalysisVisitor->visitOr()
+        // E.g. the below code would update the context of BlockAnalysisVisitor in BlockAnalysisVisitor->visitBinaryOp()
         //
         //     if (!(is_string($x) || $x === null)) {}
         //
@@ -1106,9 +1106,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     {
         $flags = $node->flags;
         if ($flags === \ast\flags\BINARY_BOOL_AND) {
-            return $this->visitAnd($node);
+            return $this->analyzeBinaryBoolAnd($node);
         } elseif ($flags === \ast\flags\BINARY_BOOL_OR) {
-            return $this->visitOr($node);
+            return $this->analyzeBinaryBoolOr($node);
         }
         return $this->visit($node);
     }
@@ -1121,7 +1121,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitAnd(Node $node) : Context
+    public function analyzeBinaryBoolAnd(Node $node) : Context
     {
         $context = $this->context->withLineNumberStart(
             $node->lineno ?? 0
@@ -1180,7 +1180,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitOr(Node $node) : Context
+    public function analyzeBinaryBoolOr(Node $node) : Context
     {
         $context = $this->context->withLineNumberStart(
             $node->lineno ?? 0

@@ -1,7 +1,15 @@
 Phan NEWS
 
-?? ??? 2018, Phan 1.0.8 (dev)
+?? ??? 2018, Phan 1.1.0 (dev)
 -----------------------
+
+Maintenance:
++ Work on making this compatible with `php-ast` 1.0.0dev. (#2038)
+  (Phan continues to support php-ast 0.1.5 and newer)
+
+  Remove dead code (such as helper functions and references to constants) that aren't needed when using AST version 50 (which Phan uses).
+
+  Some plugins may be affected if they call these helper methods or use those constants when the shim is used.
 
 Bug fixes:
 + Fix a crash parsing an empty `shell\_exec` shorthand string when using the fallback parser

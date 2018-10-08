@@ -121,11 +121,6 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
-    public function visitCoalesce(Node $node)
-    {
-        return $this->visit($node);
-    }
-
     public function visitConst(Node $node)
     {
         return $this->visit($node);
@@ -197,16 +192,6 @@ abstract class KindVisitorImplementation implements KindVisitor
     }
 
     public function visitGlobal(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitGreater(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitGreaterEqual(Node $node)
     {
         return $this->visit($node);
     }
@@ -346,11 +331,6 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
-    public function visitUnaryMinus(Node $node)
-    {
-        return $this->visit($node);
-    }
-
     public function visitUnaryOp(Node $node)
     {
         return $this->visit($node);
@@ -377,12 +357,6 @@ abstract class KindVisitorImplementation implements KindVisitor
     }
 
     public function visitWhile(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-
-    public function visitAnd(Node $node)
     {
         return $this->visit($node);
     }
@@ -442,11 +416,6 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
-    public function visitOr(Node $node)
-    {
-        return $this->visit($node);
-    }
-
     public function visitPostDec(Node $node)
     {
         return $this->visit($node);
@@ -472,11 +441,6 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
-    public function visitSilence(Node $node)
-    {
-        return $this->visit($node);
-    }
-
     public function visitThrow(Node $node)
     {
         return $this->visit($node);
@@ -498,11 +462,6 @@ abstract class KindVisitorImplementation implements KindVisitor
     }
 
     public function visitTry(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitUnaryPlus(Node $node)
     {
         return $this->visit($node);
     }

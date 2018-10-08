@@ -79,6 +79,7 @@ class TolerantASTConverter
     const AST_VERSION = 50;
 
     // The versions that this supports
+    // TODO: Also enable support for version 60 once there is a stable 1.0.0 release. (Issue #2038)
     const SUPPORTED_AST_VERSIONS = [self::AST_VERSION];
 
     const _IGNORED_STRING_TOKEN_KIND_SET = [
