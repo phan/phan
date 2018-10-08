@@ -96,11 +96,6 @@ interface KindVisitor
     public function visitClosureVar(Node $node);
 
     /**
-     * Visit a node with kind `\ast\AST_COALESCE`
-     */
-    public function visitCoalesce(Node $node);
-
-    /**
      * Visit a node with kind `\ast\AST_CONST`
      */
     public function visitConst(Node $node);
@@ -174,16 +169,6 @@ interface KindVisitor
      * Visit a node with kind `\ast\AST_GLOBAL`
      */
     public function visitGlobal(Node $node);
-
-    /**
-     * Visit a node with kind `\ast\AST_GREATER`
-     */
-    public function visitGreater(Node $node);
-
-    /**
-     * Visit a node with kind `\ast\AST_GREATER_EQUAL`
-     */
-    public function visitGreaterEqual(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_GROUP_USE`
@@ -321,11 +306,6 @@ interface KindVisitor
     public function visitNullableType(Node $node);
 
     /**
-     * Visit a node with kind `\ast\AST_UNARY_MINUS`
-     */
-    public function visitUnaryMinus(Node $node);
-
-    /**
      * Visit a node with kind `\ast\AST_UNARY_OP`
      */
     public function visitUnaryOp(Node $node);
@@ -354,11 +334,6 @@ interface KindVisitor
      * Visit a node with kind `\ast\AST_WHILE`
      */
     public function visitWhile(Node $node);
-
-    /**
-     * Visit a node with kind `\ast\AST_AND`
-     */
-    public function visitAnd(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_CATCH_LIST`
@@ -416,11 +391,6 @@ interface KindVisitor
     public function visitNameList(Node $node);
 
     /**
-     * Visit a node with kind `\ast\AST_OR`
-     */
-    public function visitOr(Node $node);
-
-    /**
      * Visit a node with kind `\ast\AST_POST_DEC`
      */
     public function visitPostDec(Node $node);
@@ -446,11 +416,6 @@ interface KindVisitor
     public function visitShellExec(Node $node);
 
     /**
-     * Visit a node with kind `\ast\AST_SILENCE`
-     */
-    public function visitSilence(Node $node);
-
-    /**
      * Visit a node with kind `\ast\AST_THROW`
      */
     public function visitThrow(Node $node);
@@ -474,11 +439,6 @@ interface KindVisitor
      * Visit a node with kind `\ast\AST_TRY`
      */
     public function visitTry(Node $node);
-
-    /**
-     * Visit a node with kind `\ast\AST_UNARY_PLUS`
-     */
-    public function visitUnaryPlus(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_UNPACK`

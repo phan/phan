@@ -1299,7 +1299,6 @@ class ParseVisitor extends ScopeVisitor
         ast\AST_ARRAY => true,
         ast\AST_BINARY_OP => true,
         ast\AST_CLASS_CONST => true,
-        ast\AST_COALESCE => true,
         ast\AST_CONDITIONAL => true,
         ast\AST_CONST => true,
         ast\AST_DIM => true,

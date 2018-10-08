@@ -338,16 +338,25 @@ abstract class FlagVisitorImplementation implements FlagVisitor
         return $this->visit($node);
     }
 
+    /**
+     * Visit a node with kind `ast\AST_UNARY_OP` and flags `ast\flags\UNARY_MINUS`
+     */
     public function visitUnaryMinus(Node $node)
     {
         return $this->visit($node);
     }
 
+    /**
+     * Visit a node with kind `ast\AST_UNARY_OP` and flags `ast\flags\UNARY_PLUS`
+     */
     public function visitUnaryPlus(Node $node)
     {
         return $this->visit($node);
     }
 
+    /**
+     * Visit a node with kind `ast\AST_UNARY_OP` and flags `ast\flags\UNARY_SILENCE`
+     */
     public function visitUnarySilence(Node $node)
     {
         return $this->visit($node);

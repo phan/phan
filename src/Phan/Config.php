@@ -20,6 +20,8 @@ class Config
      * The version of the AST (defined in php-ast) that we're using.
      * Other versions are likely to have edge cases we no longer support,
      * and version 50 got rid of Decl.
+     *
+     * TODO: Also enable support for version 60 once there is a stable php-ast 1.0.0 release. (Issue #2038)
      */
     const AST_VERSION = 50;
 
@@ -32,7 +34,7 @@ class Config
      * New features increment minor versions, and bug fixes increment patch versions.
      * @suppress PhanUnreferencedPublicClassConstant
      */
-    const PHAN_PLUGIN_VERSION = '2.5.0';
+    const PHAN_PLUGIN_VERSION = '2.6.0';
 
     /**
      * @var string|null

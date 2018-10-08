@@ -130,19 +130,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
     }
 
     /**
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitOr(Node $node) : Context
-    {
-        return $this->analyzeShortCircuitingOr($node->children['left'], $node->children['right']);
-    }
-
-    /**
      * Helper method
      * @param Node|mixed $left
      * a Node or non-node to parse (possibly an AST literal)
@@ -623,20 +610,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
             'is_scalar' => $remove_scalar_callback,
             'is_string' => $make_basic_negated_assertion_callback(StringType::class),
         ];
-    }
-
-    /**
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitCoalesce(Node $node) : Context
-    {
-        $this->checkVariablesDefined($node);
-        return $this->context;
     }
 
     /**
