@@ -1,9 +1,9 @@
 <?php
 class Test {
-    /** @var Client */
+    /** @var ClientOfPropertyTypeCheck58 */
     public $client;
 
-    function fn(Client $client) {
+    function fn(ClientOfPropertyTypeCheck58 $client) {
         $this->client = $client;
         $this->client->test();
     }

@@ -1,5 +1,5 @@
 %s:4 PhanUndeclaredTypeParameter Parameter of undeclared type \boolean
-%s:4 PhanUndeclaredTypeParameter Parameter of undeclared type \callback
+%s:4 PhanUndeclaredTypeParameter Parameter of undeclared type \callback%S
 %s:4 PhanUndeclaredTypeParameter Parameter of undeclared type \double
 %s:4 PhanUndeclaredTypeParameter Parameter of undeclared type \integer
 %s:4 PhanUndeclaredTypeParameter Parameter of undeclared type array<int,\double>
