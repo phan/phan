@@ -1,5 +1,5 @@
-%s:5 PhanAccessPropertyPrivate Cannot access private property \C1::$p
-%s:9 PhanAccessPropertyProtected Cannot access protected property \C2::$p
+%s:5 PhanAccessPropertyPrivate Cannot access private property \C1::$p defined at %s:4
+%s:9 PhanAccessPropertyProtected Cannot access protected property \C2::$p defined at %s:8
 %s:14 PhanCompatiblePHP7 Expression may not be PHP 7 compatible
 %s:14 PhanUndeclaredVariable Variable $v1 is undeclared
 %s:14 PhanUndeclaredVariable Variable $v2 is undeclared

@@ -2511,7 +2511,7 @@ class Issue
                 self::AccessPropertyProtected,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
-                "Cannot access protected property {PROPERTY}",
+                "Cannot access protected property {PROPERTY} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 1000
             ),
@@ -2519,7 +2519,7 @@ class Issue
                 self::AccessPropertyPrivate,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
-                "Cannot access private property {PROPERTY}",
+                "Cannot access private property {PROPERTY} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 1001
             ),

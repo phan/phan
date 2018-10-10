@@ -1,2 +1,2 @@
-%s:7 PhanAccessPropertyPrivate Cannot access private property \Subclass::$privateProp
+%s:7 PhanAccessPropertyPrivate Cannot access private property \Subclass::$privateProp defined at %s:15
 %s:9 PhanAccessMethodPrivate Cannot access private method \Subclass::privateMethod defined at %s:20
