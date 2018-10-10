@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 2018, Phan 1.1.1 (dev)
 -----------------------
 
+New features(Analysis)
++ Add `defined at {FILE}:{LINE}` to warnings about property visibility.
+
 08 Oct 2018, Phan 1.1.0
 -----------------------
 
