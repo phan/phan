@@ -520,7 +520,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.0.7/tests/files/expected/0
 
 # NOOPError
 
-This category of issues are emitted when you have reasonable code but it isn't doing anything. They're all low severity.
+Issues in this category are emitted when you have reasonable code but it isn't doing anything. They're all low severity.
 
 ## PhanNoopArray
 
@@ -1947,7 +1947,7 @@ strlen(42);
 ## PhanTypeMismatchArrayDestructuringKey
 
 ```
-Attempting an array destructing assignment with a key of type {TYPE} but the only key types of the right hand side are of type {TYPE}
+Attempting an array destructing assignment with a key of type {TYPE} but the only key types of the right-hand side are of type {TYPE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.0.7/tests/files/expected/0402_array_destructuring.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.0.7/tests/files/src/0402_array_destructuring.php#L4).
@@ -2573,7 +2573,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.0.7/tests/misc/fallback_te
 ## PhanUndeclaredVariableAssignOp
 
 ```
-Variable ${VARIABLE} was undeclared, but it is being used as the left hand side of an assignment operation
+Variable ${VARIABLE} was undeclared, but it is being used as the left-hand side of an assignment operation
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.0.7/tests/files/expected/0300_misc_types.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.0.7/tests/files/src/0300_misc_types.php#L21).

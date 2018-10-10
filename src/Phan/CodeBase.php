@@ -40,7 +40,8 @@ use function strtolower;
  * before any classes are loaded.
  *
  * # Example
- * ```
+ *
+ * ```php
  * // Grab these before we define our own classes
  * $internal_class_name_list = get_declared_classes();
  * $internal_interface_name_list = get_declared_interfaces();
@@ -55,9 +56,9 @@ use function strtolower;
  *     $internal_trait_name_list,
  *     CodeBase::getPHPInternalConstantNameList(),
  *     $internal_function_name_list
- *  );
+ * );
  *
- *  // Do stuff ...
+ * // Do stuff ...
  * ```
  *
  * This supports undoing some operations in the parse phase,

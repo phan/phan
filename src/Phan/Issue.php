@@ -838,7 +838,7 @@ class Issue
                 self::UndeclaredVariableAssignOp,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_LOW,
-                "Variable \${VARIABLE} was undeclared, but it is being used as the left hand side of an assignment operation",
+                "Variable \${VARIABLE} was undeclared, but it is being used as the left-hand side of an assignment operation",
                 self::REMEDIATION_B,
                 11037
             ),
@@ -1482,7 +1482,7 @@ class Issue
                 self::TypeMismatchArrayDestructuringKey,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                'Attempting an array destructing assignment with a key of type {TYPE} but the only key types of the right hand side are of type {TYPE}',
+                'Attempting an array destructing assignment with a key of type {TYPE} but the only key types of the right-hand side are of type {TYPE}',
                 self::REMEDIATION_B,
                 10043
             ),
