@@ -250,7 +250,7 @@ NOTE: THIS IS EXPERIMENTAL, and the implementation may change.
 
 ## enable_internal_return_type_plugins
 
-Can be set to false to disable the plugins Phan uses to infer more accurate return types of `array_map`, `array_filter`, and many other functions.
+Set this to false to disable the plugins that Phan uses to infer more accurate return types of `array_map`, `array_filter`, and many other functions.
 
 Phan is slightly faster when these are disabled.
 
@@ -341,7 +341,7 @@ a call to `parent::__construct()` is required.
 
 ## phpdoc_type_mapping
 
-This setting maps case insensitive strings to union types.
+This setting maps case-insensitive strings to union types.
 
 This is useful if a project uses phpdoc that differs from the phpdoc2 standard.
 
@@ -616,7 +616,7 @@ allows casting null to a string, but not vice versa.
 
 If enabled, Phan will warn if **any** type in the argument's type
 cannot be cast to a type in the parameter's expected type.
-Setting this to true will introduce a large number of false positives
+Setting this to true will introduce numerous false positives
 (and reveal some bugs).
 
 (Default: `false`)
@@ -625,7 +625,7 @@ Setting this to true will introduce a large number of false positives
 
 If enabled, Phan will warn if **any** type in the return value's type
 cannot be cast to a type in the declared return type.
-Setting this to true will introduce a large number of false positives
+Setting this to true will introduce numerous false positives
 (and reveal some bugs).
 
 (Default: `false`)

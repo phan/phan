@@ -1493,7 +1493,7 @@ New Features (Analysis)
   This is enabled by default.
 
   Phan also supports the `@phan-forbid-undeclared-magic-properties` annotation,
-  which will make Phan warn about undeclared properties if no real property or `@property` annotation exists.
+  which will make it warn about undeclared properties if no real property or `@property` annotation exists.
 
 New Features (CLI, Configs)
 + Add `--version` CLI flag
