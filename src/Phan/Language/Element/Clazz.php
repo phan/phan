@@ -1030,7 +1030,7 @@ class Clazz extends AddressableElement
                     Issue::fromType(Issue::AccessPropertyPrivate)(
                         $context->getFile(),
                         $context->getLineNumberStart(),
-                        [ (string)$property_fqsen ]
+                        [ (string)$property_fqsen, $method->getContext()->getFile(), $method->getContext()->getLineNumberStart() ]
                     )
                 );
             } elseif ($method->isProtected()) {
@@ -1038,7 +1038,7 @@ class Clazz extends AddressableElement
                     Issue::fromType(Issue::AccessPropertyProtected)(
                         $context->getFile(),
                         $context->getLineNumberStart(),
-                        [ (string)$property_fqsen ]
+                        [ (string)$property_fqsen, $method->getContext()->getFile(), $method->getContext()->getLineNumberStart() ]
                     )
                 );
             }
@@ -1064,7 +1064,7 @@ class Clazz extends AddressableElement
                     Issue::fromType(Issue::AccessPropertyPrivate)(
                         $context->getFile(),
                         $context->getLineNumberStart(),
-                        [ "{$this->getFQSEN()}::\${$property->getName()}" ]
+                        [ "{$this->getFQSEN()}::\${$property->getName()}", $property->getContext()->getFile(), $property->getContext()->getLineNumberStart() ]
                     )
                 );
             }
@@ -1073,7 +1073,7 @@ class Clazz extends AddressableElement
                     Issue::fromType(Issue::AccessPropertyProtected)(
                         $context->getFile(),
                         $context->getLineNumberStart(),
-                        [ "{$this->getFQSEN()}::\${$property->getName()}" ]
+                        [ "{$this->getFQSEN()}::\${$property->getName()}", $property->getContext()->getFile(), $property->getContext()->getLineNumberStart() ]
                     )
                 );
             }
