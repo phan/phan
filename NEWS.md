@@ -15,7 +15,7 @@ Maintenance:
   Some plugins may be affected if they call these helper methods or use those constants when the shim is used.
 
 Bug fixes:
-+ Fix a crash parsing an empty `shell\_exec` shorthand string when using the fallback parser
++ Fix a crash parsing an empty `shell_exec` shorthand string when using the fallback parser
   (i.e. two backticks in a row)
 + Fix a false positive `PhanUnusedVariable` warning about a variable declared prior to a do/while loop (#2026)
 
@@ -297,7 +297,7 @@ Bug fixes:
   - `?'a string'`      can cast to `?string`
   - `?Closure(T1):T2`  can cast to `?Closure`
   - `?callable(T1):T2` can cast to `?callable`,
-+ Make `exclude_file_list` work more consistently on Windows
++ Make `exclude_file_list` work more consistently on Windows.
 
 08 Jul 2018, Phan 0.12.14
 -------------------------
@@ -384,7 +384,7 @@ Bug fixes:
 + Fix uncaught `AssertionError` when `parent` is used in PHPDoc (#1758)
 + Fix various bugs that can cause crashes in the polyfill/fallback parser when parsing invalid or incomplete ASTs.
 + Fix unparsable/invalid function signature entries of rarely used functions
-+ Warn about undefined variables on the left hand side of assignment operations (e.g. `$x .= 'string'`) (#1613)
++ Warn about undefined variables on the left-hand side of assignment operations (e.g. `$x .= 'string'`) (#1613)
 
 08 Jun 2018, Phan 0.12.12
 -------------------------
@@ -430,7 +430,7 @@ New features(Analysis):
 
   The built in unused variable detection support will currently not warn about any of the following issue types, to reduce false positives.
 
-  - Variables beginning with `$unused` or `$raii` (case insensitive)
+  - Variables beginning with `$unused` or `$raii` (case-insensitive)
   - `$_` (the exact variable name)
   - Superglobals, used globals (`global $myGlobal;`), and static variables within function scopes.
   - Any references, globals, or static variables in a function scope.
@@ -450,7 +450,7 @@ New features(Analysis):
   - Emits fewer/different false positives (e.g. when analyzing loops), but also detects fewer potential issues.
   - Reimplemented using visitors extensively (Similar to the code for `BlockAnalysisVisitor`)
   - Uses a different data structure from `PhanUnusedVariable`.
-    This represent all definitions of a variable, instead of just the most recent one.
+    This represents all definitions of a variable, instead of just the most recent one.
     This approximately tracks the full graph of definitions and uses of variables within a function body.
     (This allows warning about all unused definitions, or about definitions that are hidden by subsequent definitions)
   - Integration: This is planned to be integrated with other features of Phan, e.g. "Go to Definition" for variables. (Planned for #1211 and #1705)
@@ -516,7 +516,7 @@ New features(Analysis):
   Phan will act as though functions added in newer PHP versions exist.
 
   Note: Currently only affects `Closure::fromCallable()`, which was added in PHP 7.1.
-  This will affect more functions and methods in the future.
+  This setting will affect more functions and methods in the future.
 
 Language Server/Daemon mode:
 + Support "Go to definition" for properties, classes, global/class constants, and methods/global functions (Issue #1483)
@@ -541,7 +541,7 @@ Misc:
 
 Bug fixes:
 + Be more consistent about emitting `PhanUndeclaredType*` for invalid types within array shapes.
-+ Avoid a crash when the left hand side of an assignment is invalid. (#1693)
++ Avoid a crash when the left-hand side of an assignment is invalid. (#1693)
 + Prevent an uncaught `TypeError` when integer variable names (e.g. `${42}`) are used in branches (Issue #1699)
 
 12 May 2018, Phan 0.12.8
@@ -671,7 +671,7 @@ New Features(CLI, Configs)
   NOTE: This option does not make Phan check if all possible expressions have a given property, but may do that in the future.
 + Add a `strict_return_checking` config setting. (And a `--strict-return-checking` CLI flag)
   If this is set to true, then Phan will warn if at least one of the types
-  in a return statement's union type can't cast to the expected return type type.
+  in a return statement's union type can't cast to the expected return type.
   New issue types: `PhanPartialTypeMismatchReturn`, `PhanPossiblyNullTypeReturn`, and `PhanPossiblyFalseTypeReturn`
 
   Setting this to true will likely introduce large numbers of warnings.
@@ -735,8 +735,8 @@ New Features(Analysis)
 + Add `PhanTypeSuspiciousEcho` to warn about suspicious types being passed to echo/print statements.
   This now warns about booleans, arrays, resources, null, non-stringable classes, combinations of those types, etc.
   (`var_export` or JSON encoding usually makes more sense for a boolean/null)
-+ Make Phan infer that top level array keys for expressions such as `if (isset($x['keyName']))` exist and are non-null. (#1514)
-+ Make Phan infer that top level array keys for expressions such as `if (array_key_exists('keyName', $x))` exist. (#1514)
++ Make Phan infer that top-level array keys for expressions such as `if (isset($x['keyName']))` exist and are non-null. (#1514)
++ Make Phan infer that top-level array keys for expressions such as `if (array_key_exists('keyName', $x))` exist. (#1514)
 + Make Phan aware of types after negated of `isset`/`array_key_exists` checks for array shapes (E.g. `if (!array_key_exists('keyName', $x)) { var_export($x['keyName']); }`)
   Note: This will likely fail to warn if the variable is already a mix of generic arrays and array shapes.
 + Make Phan check that types in `@throws` annotations are valid; don't warn about classes in `@throws` being unreferenced. (#1555)
@@ -852,7 +852,7 @@ New Features(Analysis)
   `; '@phan-var T $varName'; expression_using($varName);` and
   `; '@phan-var-force T $varName'; expression_using($varName);`
 
-  If Phan sees a string literal containing `@phan-var` in the top level of a statement list, it will immediately set the type of `$varName` to `T` without any type checks.
+  If Phan sees a string literal containing `@phan-var` as a top-level statement of a statement list, it will immediately set the type of `$varName` to `T` without any type checks.
   (`@phan-var-force T $x` will do the same thing, and will create the variable if it didn't already exist).
 
   Note: Due to limitations of the `php-ast` parser, Phan isn't able to use inline doc comments, so this is the solution that was used instead.
@@ -1003,7 +1003,7 @@ New Features(Analysis)
 
   Another example: `[$strKey => new MyClass(), $strKey2 => $unknown]` will be represented as
   `array<string,MyClass>|array<string,mixed>`.
-  (If Phan can't infer a type of a key or value, `mixed` gets added to that key or value.)
+  (If Phan can't infer the union type of a key or value, `mixed` gets added to that key or value.)
 + Improve analysis of try/catch/finally blocks (#1408)
   Analyze `catch` blocks with the inferences about the `try` block.
   Analyze a `finally` block with the combined inferences from the `try` and `catch` blocks.
@@ -1012,8 +1012,8 @@ New Features(Analysis)
 + Improve analysis of expressions within conditionals, such as `if (!($x instanceof MyClass) || $x->method())`
   or `if (!(cond($x) && othercond($x)))`
 
-  (Phan is now aware of the types of the right hand side of `||` and `&&` in more cases)
-+ Add a large number of param and return type signatures for internal functions and methods,
+  (Phan is now aware of the types of the right-hand side of `||` and `&&` in more cases)
++ Add many param and return type signatures for internal functions and methods,
   for params and return types that were previously untyped.
   (Imported from docs.php.net's SVN repo)
 + More precise analysis of the return types of `var_export()`, `print_r()`, and `json_decode()` (#1326, #1327)
@@ -1090,7 +1090,7 @@ New Features(Analysis)
   (passed to a function/method expecting a callable param) does not exist.
 
   This change also reduces false positives in dead code detection (Passing in these callable arrays/strings counts as a reference now)
-+ Warn if attempting to read/write to an property or constant when the expression is a non-object. (or not a class name, for static elements) (#1268)
++ Warn if attempting to read/write to a property or constant when the expression is a non-object. (or not a class name, for static elements) (#1268)
 + Split `PhanUnreferencedClosure` out of `PhanUnreferencedFunction`. (Emitted by `--dead-code-detection`)
 + Split `PhanUnreferencedMethod` into `PhanUnreferencedPublicMethod`, `PhanUnreferencedProtectedMethod`, and `PhanUnreferencedPrivateMethod`.
 + Split errors for class constants out of `PhanUnreferencedConst`:
@@ -1134,7 +1134,7 @@ Bug Fixes
   Fix the way that uses of private/protected methods from traits were tracked.
   Also, start warning about a subset of issues from interfaces and abstract classes (e.g. unused interface constants)
 + Properly handle `static::class` as a class name in an array callable, or `static::method_name` in a string callable (#1232)
-+ Make `@template` tag for [Generic Types](https://github.com/phan/phan/wiki/Generic-Types) case sensitive. (#1243)
++ Make `@template` tag for [Generic Types](https://github.com/phan/phan/wiki/Generic-Types) case-sensitive. (#1243)
 + Fix a bug causing Phan to infer an empty union type (which can cast to any type) for arrays with elements of empty union types. (#1296)
 
 Plugins
@@ -1479,7 +1479,7 @@ Bug Fixes
 
 Backwards Incompatible Changes
 - Declarations of user-defined constants are now consistently
-  analyzed in a case sensitive way.
+  analyzed in a case-sensitive way.
   This may affect projects using `define(name, value, case_insensitive = true)`.
   Change the code being analyzed to exactly match the constant name in define())
 
@@ -1487,11 +1487,12 @@ Backwards Incompatible Changes
 ------------------
 
 New Features (Analysis)
-+ Conditions in `if(cond(A) && expr(A))` (e.g. `instanceof`, `is_string`, etc) now affect analysis of right hand side of `&&` (PR #540)
++ Conditions in `if(cond(A) && expr(A))` (e.g. `instanceof`, `is_string`, etc) now affect analysis of right-hand side of `&&` (PR #540)
 + Add `PhanDeprecatedInterface` and `PhanDeprecatedTrait`, similar to `PhanDeprecatedClass`
 + Supports magic `@property` annotations, with aliases `@property-read` and @property-write`. (Issue #386)
   This is enabled by default.
-  Also adds `@phan-forbid-undeclared-magic-properties` annotation,
+
+  Phan also supports the `@phan-forbid-undeclared-magic-properties` annotation,
   which will make Phan warn about undeclared properties if no real property or `@property` annotation exists.
 
 New Features (CLI, Configs)

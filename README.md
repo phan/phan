@@ -51,7 +51,7 @@ Phan is able to perform the following kinds of analysis.
 * Check for unused `use` statements.
 * Check for classes, functions and methods being redefined.
 * Check for sanity with class inheritance (e.g. checks method signature compatibility).
-  Phan also checks for final classes/methods being overridden, that abstract methods are implemented, and that the implemented interface is really a interface (and so on).
+  Phan also checks for final classes/methods being overridden, that abstract methods are implemented, and that the implemented interface is really an interface (and so on).
 * Supports namespaces, traits and variadics.
 * Supports [Union Types](https://github.com/phan/phan/wiki/About-Union-Types).
 * Supports generic arrays such as `int[]`, `UserObject[]`, `array<int,UserObject>`, etc..
@@ -247,7 +247,7 @@ Usage: ./phan [options] [files...]
   The logic used to generate the config file is currently very simple.
   Some third party classes (e.g. in vendor/)
   will need to be manually added to 'directory_list' or excluded,
-  and you may end up with a large number of issues to be manually suppressed.
+  and you may end up with numerous issues to be manually suppressed.
   See https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base
 
   [--init-level] affects the generated settings in `.phan/config.php`
@@ -296,7 +296,7 @@ Usage: ./phan [options] [files...]
  -x, --dead-code-detection
   Emit issues for classes, methods, functions, constants and
   properties that are probably never referenced and can
-  possibly be removed. This implies `--unused-variable-detection`.
+  be removed. This implies `--unused-variable-detection`.
 
  --unused-variable-detection
   Emit issues for variables, parameters and closure use variables
@@ -315,7 +315,7 @@ Usage: ./phan [options] [files...]
   Don't run any plugins. Slightly faster.
 
  --plugin <pluginName|path/to/Plugin.php>
-  Add an additional plugin to run. This flag can be repeated.
+  Add a plugin to run. This flag can be repeated.
   (Either pass the name of the plugin or a relative/absolute path to the plugin)
 
  --strict-param-checking
@@ -441,12 +441,12 @@ This static analyzer does not track includes or try to figure out autoloader mag
 all the files you throw at it as one big application. For code encapsulated in classes this
 works well. For code running in the global scope it gets a bit tricky because order
 matters. If you have an `index.php` including a file that sets a bunch of global variables and
-you then try to access those after the include in `index.php` the static analyzer won't
+you then try to access those after the `include(...)` in `index.php` the static analyzer won't
 know anything about these.
 
 In practical terms this simply means that you should put your entry points and any files
 setting things in the global scope at the top of your file list. If you have a `config.php`
-that sets global variables that everything else needs put that first in the list followed by your
+that sets global variables that everything else needs, then you should put that first in the list followed by your
 various entry points, then all your library files containing your classes.
 
 # Development
