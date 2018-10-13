@@ -1040,6 +1040,7 @@ trait FunctionTrait
 
         return function () use ($clone_this, $union_type) {
             $this->memoizeFlushAll();
+            // @phan-suppress-next-line PhanTypeSuspiciousNonTraversableForeach this is intentionally iterating over private properties of the clone.
             foreach ($clone_this as $key => $value) {
                 $this->{$key} = $value;
             }

@@ -2869,6 +2869,7 @@ class Clazz extends AddressableElement
         $original_union_type = $this->getUnionType();
 
         return function () use ($original_union_type, $original_this) {
+            // @phan-suppress-next-line PhanTypeSuspiciousNonTraversableForeach this is intentionally iterating over private properties of the clone.
             foreach ($original_this as $key => $value) {
                 $this->{$key} = $value;
             }
@@ -2922,5 +2923,51 @@ class Clazz extends AddressableElement
             return UnionType::empty();
         }
         return Type::fromType($parent_type, $parent_template_parameter_type_list)->asUnionType();
+    }
+
+    /**
+     * @return array<string,Property>
+     */
+    public function getPropertyMapExcludingDynamicAndMagicProperties(CodeBase $code_base) : array
+    {
+        /**
+         * @return array<string,Property>
+         */
+        return $this->memoize(__METHOD__, function () use ($code_base) : array {
+            // TODO: This won't work if a class declares both a real property and a magic property of the same name.
+            // Low priority because that is uncommon
+            return array_filter(
+                $this->getPropertyMap($code_base),
+                function (Property $property) : bool {
+                    return !$property->isDynamicOrFromPHPDoc();
+                }
+            );
+        });
+    }
+
+    const CAN_ITERATE_STATUS_NO_PROPERTIES = 0;
+    const CAN_ITERATE_STATUS_NO_ACCESSIBLE_PROPERTIES = 1;
+    const CAN_ITERATE_STATUS_HAS_ACCESSIBLE_PROPERTIES = 2;
+
+    public function checkCanIterateFromContext(
+        CodeBase $code_base,
+        Context $context
+    ) : int {
+        $accessing_class = $context->getClassFQSENOrNull();
+        return $this->memoize(
+            'can_iterate:' . (string)$accessing_class,
+            function () use ($accessing_class, $code_base) : int {
+                $properties = $this->getPropertyMapExcludingDynamicAndMagicProperties($code_base);
+                foreach ($properties as $property) {
+                    if ($property->isAccessibleFromClass($code_base, $accessing_class)) {
+                        return self::CAN_ITERATE_STATUS_HAS_ACCESSIBLE_PROPERTIES;
+                    }
+                }
+                if (count($properties) > 0) {
+                    return self::CAN_ITERATE_STATUS_NO_ACCESSIBLE_PROPERTIES;
+                }
+                return self::CAN_ITERATE_STATUS_NO_PROPERTIES;
+            }
+        );
     }
 }

@@ -121,6 +121,9 @@ class Issue
     const TypeMismatchVariadicComment = 'PhanMismatchVariadicComment';
     const TypeMismatchVariadicParam = 'PhanMismatchVariadicParam';
     const TypeMismatchForeach       = 'PhanTypeMismatchForeach';
+    const TypeNoAccessiblePropertiesForeach = 'PhanTypeNoAccessiblePropertiesForeach';
+    const TypeNoPropertiesForeach = 'PhanTypeNoPropertiesForeach';
+    const TypeSuspiciousNonTraversableForeach = 'PhanTypeSuspiciousNonTraversableForeach';
     const TypeMismatchProperty      = 'PhanTypeMismatchProperty';
     const PossiblyNullTypeMismatchProperty = 'PhanPossiblyNullTypeMismatchProperty';
     const PossiblyFalseTypeMismatchProperty = 'PhanPossiblyFalseTypeMismatchProperty';
@@ -370,23 +373,39 @@ class Issue
     // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     // end of issue name constants
 
-
+    /** This category of issue is emitted when you're trying to access things that you can't access. */
     const CATEGORY_ACCESS            = 1 << 1;
+    /** This category will be emitted when Phan doesn't know how to analyze something. */
     const CATEGORY_ANALYSIS          = 1 << 2;
+    /** This category of issue is emitted when there are compatibility issues between PHP versions */
     const CATEGORY_COMPATIBLE        = 1 << 3;
+    /** This category of issue is for when you're doing stuff out of the context in which you're allowed to do it, e.g. referencing `self` or `parent` when not in a class, interface or trait. */
     const CATEGORY_CONTEXT           = 1 << 4;
+    /** This category of issue comes up when you're accessing deprecated elements (as marked by the `@deprecated` comment). */
     const CATEGORY_DEPRECATED        = 1 << 5;
+    /** Issues in this category are emitted when you have reasonable code but it isn't doing anything. */
     const CATEGORY_NOOP              = 1 << 6;
+    /** This category of error comes up when you're messing up your method or function parameters in some way. */
     const CATEGORY_PARAMETER         = 1 << 7;
+    /** This category of issue comes up when more than one thing of whatever type have the same name and namespace. */
     const CATEGORY_REDEFINE          = 1 << 8;
+    /** Static access to non-static methods, etc. */
     const CATEGORY_STATIC            = 1 << 9;
+    /** This category of issue come from using incorrect types or types that cannot cast to the expected types. */
     const CATEGORY_TYPE              = 1 << 10;
+    /** This category of issue comes up when there are references to undefined things. */
     const CATEGORY_UNDEFINED         = 1 << 11;
+    /** This category is for using non-variables where variables are expected. */
     const CATEGORY_VARIABLE          = 1 << 12;
+    /** This category is for plugins. */
     const CATEGORY_PLUGIN            = 1 << 13;
+    /** This category contains issues related to [Phan's generic type support](https://github.com/phan/phan/wiki/Generic-Types). */
     const CATEGORY_GENERIC           = 1 << 14;
+    /** This issue category comes up when there is an attempt to access an `(at)internal` element outside of the namespace in which it's defined. */
     const CATEGORY_INTERNAL          = 1 << 15;
+    /** This is emitted for some (but not all) comments which Phan thinks are invalid or unparsable. */
     const CATEGORY_COMMENT           = 1 << 16;
+    /** Emitted for syntax errors. */
     const CATEGORY_SYNTAX            = 1 << 17;
 
     const CATEGORY_NAME = [
@@ -1599,6 +1618,30 @@ class Issue
                 "Suspicious attempt to unset class {TYPE}'s property {PROPERTY} declared at {FILE}:{LINE} (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)",
                 self::REMEDIATION_B,
                 10081
+            ),
+            new Issue(
+                self::TypeNoAccessiblePropertiesForeach,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Class {TYPE} was passed to foreach, but it does not extend Traversable and none of its declared properties are accessible from this context. (This check excludes dynamic properties)",
+                self::REMEDIATION_B,
+                10082
+            ),
+            new Issue(
+                self::TypeNoPropertiesForeach,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Class {TYPE} was passed to foreach, but it does not extend Traversable and doesn't have any declared properties. (This check excludes dynamic properties)",
+                self::REMEDIATION_B,
+                10083
+            ),
+            new Issue(
+                self::TypeSuspiciousNonTraversableForeach,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Class {TYPE} was passed to foreach, but it does not extend Traversable. This may be intentional, because some of that class's declared properties are accessible from this context. (This check excludes dynamic properties)",
+                self::REMEDIATION_B,
+                10084
             ),
 
             // Issue::CATEGORY_VARIABLE

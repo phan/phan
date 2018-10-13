@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Scope;
 
+use AssertionError;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
 /**
@@ -31,8 +32,8 @@ class ClassScope extends ClosedScope
 
     /**
      * @return FullyQualifiedClassName
-     * Get the FullyQualifiedClassName of the class who's scope
-     * we're in
+     * Get the FullyQualifiedClassName of the class whose scope
+     * we're in.
      */
     public function getClassFQSEN() : FullyQualifiedClassName
     {
@@ -42,6 +43,22 @@ class ClassScope extends ClosedScope
             return $fqsen;
         }
 
-        throw new \AssertionError("FQSEN must be a FullyQualifiedClassName");
+        throw new AssertionError("FQSEN must be a FullyQualifiedClassName");
+    }
+
+    /**
+     * @return FullyQualifiedClassName
+     * Get the FullyQualifiedClassName of the class whose scope
+     * we're in. This subclass does not return null.
+     */
+    public function getClassFQSENOrNull()
+    {
+        $fqsen = $this->getFQSEN();
+
+        if ($fqsen instanceof FullyQualifiedClassName) {
+            return $fqsen;
+        }
+
+        throw new AssertionError("FQSEN must be a FullyQualifiedClassName");
     }
 }

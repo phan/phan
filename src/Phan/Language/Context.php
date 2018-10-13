@@ -307,7 +307,7 @@ class Context extends FileRef
         Variable $variable
     ) : Context {
         return $this->withScope(
-            $this->getScope()->withVariable($variable)
+            $this->scope->withVariable($variable)
         );
     }
 
@@ -320,7 +320,7 @@ class Context extends FileRef
      */
     public function addGlobalScopeVariable(Variable $variable)
     {
-        $this->getScope()->addGlobalVariable($variable);
+        $this->scope->addGlobalVariable($variable);
     }
 
     /**
@@ -337,7 +337,7 @@ class Context extends FileRef
     public function addScopeVariable(
         Variable $variable
     ) {
-        $this->getScope()->addVariable($variable);
+        $this->scope->addVariable($variable);
     }
 
     /**
@@ -354,7 +354,7 @@ class Context extends FileRef
     public function unsetScopeVariable(
         string $variable_name
     ) {
-        $this->getScope()->unsetVariable($variable_name);
+        $this->scope->unsetVariable($variable_name);
     }
 
     /**
@@ -364,7 +364,7 @@ class Context extends FileRef
      */
     public function isInClassScope() : bool
     {
-        return $this->getScope()->isInClassScope();
+        return $this->scope->isInClassScope();
     }
 
     /**
@@ -374,7 +374,15 @@ class Context extends FileRef
      */
     public function getClassFQSEN() : FullyQualifiedClassName
     {
-        return $this->getScope()->getClassFQSEN();
+        return $this->scope->getClassFQSEN();
+    }
+
+    /**
+     * @return ?FullyQualifiedClassName
+     */
+    public function getClassFQSENOrNull()
+    {
+        return $this->scope->getClassFQSENOrNull();
     }
 
     /**
@@ -384,7 +392,7 @@ class Context extends FileRef
      */
     public function isInPropertyScope() : bool
     {
-        return $this->getScope()->isInPropertyScope();
+        return $this->scope->isInPropertyScope();
     }
 
     /**
@@ -394,7 +402,7 @@ class Context extends FileRef
      */
     public function getPropertyFQSEN() : FullyQualifiedPropertyName
     {
-        return $this->getScope()->getPropertyFQSEN();
+        return $this->scope->getPropertyFQSEN();
     }
 
     /**
@@ -463,7 +471,7 @@ class Context extends FileRef
      */
     public function isInFunctionLikeScope() : bool
     {
-        return $this->getScope()->isInFunctionLikeScope();
+        return $this->scope->isInFunctionLikeScope();
     }
 
     /**
@@ -485,7 +493,7 @@ class Context extends FileRef
      */
     public function getFunctionLikeFQSEN()
     {
-        $scope = $this->getScope();
+        $scope = $this->scope;
         if (!$scope->isInFunctionLikeScope()) {
             throw new AssertionError("Must be in function-like scope to get function-like FQSEN");
         }
@@ -550,7 +558,7 @@ class Context extends FileRef
      * The code base from which to retrieve the TypedElement
      *
      * @return TypedElement
-     * The element who's scope we're in. If we're in the global
+     * The element whose scope we're in. If we're in the global
      * scope this method will go down in flames and take your
      * process with it.
      *

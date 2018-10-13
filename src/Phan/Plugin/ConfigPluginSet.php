@@ -194,6 +194,7 @@ final class ConfigPluginSet extends PluginV2 implements
     {
         $instance = self::instance();
         // Set all of the private properties to their uninitialized default values
+        // @phan-suppress-next-line PhanTypeSuspiciousNonTraversableForeach this is intentionally iterating over private properties of the clone.
         foreach (new self() as $k => $v) {
             $instance->{$k} = $v;
         }

@@ -55,4 +55,13 @@ class ClosureScope extends FunctionLikeScope
     {
         return $this->override_class_fqsen ?? parent::getClassFQSEN();
     }
+
+    /**
+     * @return ?FullyQualifiedClassName
+     * Crawl the scope hierarchy to get a class FQSEN.
+     */
+    public function getClassFQSENOrNull()
+    {
+        return $this->override_class_fqsen ?? parent::getClassFQSENOrNull();
+    }
 }

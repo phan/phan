@@ -90,7 +90,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
                 $value = $type->getValue();
                 $result[$value] = $value;
             } elseif ($type instanceof IterableType) {
-                foreach ($type->iterableValueUnionType($code_base) as $element_type) {
+                foreach ($type->iterableValueUnionType($code_base)->getTypeSet() as $element_type) {
                     if ($element_type instanceof LiteralStringType) {
                         $value = $element_type->getValue();
                         $result[$value] = $value;
@@ -105,7 +105,8 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
      * @param array<int,string> $patterns 1 or more regex patterns
      * @throws InvalidArgumentException if any regex could not be parsed by the heuristics
      */
-    private function computePatternKeys(array $patterns) : array {
+    private function computePatternKeys(array $patterns) : array
+    {
         $result = [];
         foreach ($patterns as $regex) {
             $result += RegexKeyExtractor::getKeys($regex);
@@ -116,7 +117,8 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
     /**
      * @return array<int|string,string> references to indices in the pattern
      */
-    private function extractTemplateKeys(string $template) : array {
+    private function extractTemplateKeys(string $template) : array
+    {
         $result = [];
         // > replacement may contain references of the form \\n or $n,
         // ...
@@ -139,7 +141,8 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
      * @param string[] $patterns 1 or more regex patterns
      * @param Node|string|int|float $replacement_node
      */
-    private function analyzeReplacementTemplate(CodeBase $code_base, Context $context, array $patterns, $replacement_node) {
+    private function analyzeReplacementTemplate(CodeBase $code_base, Context $context, array $patterns, $replacement_node)
+    {
         $replacement_templates = $this->extractStringsFromStringOrArray($code_base, $context, $replacement_node);
         $pattern_keys = null;
 

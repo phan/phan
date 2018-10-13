@@ -590,13 +590,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         // Check the expression type to make sure it's
         // something we can iterate over
-        if ($expression_union_type->isScalar()) {
-            $this->emitIssue(
-                Issue::TypeMismatchForeach,
-                $node->lineno ?? 0,
-                (string)$expression_union_type
-            );
-        }
+        $this->checkCanIterate($expression_union_type, $node);
 
         $value_node = $node->children['value'];
         if (!($value_node instanceof Node)) {
@@ -667,6 +661,64 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // Note that we're not creating a new scope, just
         // adding variables to the existing scope
         return $context;
+    }
+
+    /**
+     * @param UnionType $union_type the type of $node->children['expr']
+     * @param Node $node a node of kind AST_FOREACH
+     */
+    private function checkCanIterate(UnionType $union_type, Node $node)
+    {
+        if ($union_type->isScalar()) {
+            $this->emitIssue(
+                Issue::TypeMismatchForeach,
+                $node->children['expr']->lineno ?? $node->lineno,
+                (string)$union_type
+            );
+        }
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type->asExpandedTypes($this->code_base)->hasTraversable()) {
+                continue;
+            }
+            if (!$type->isObjectWithKnownFQSEN()) {
+                continue;
+            }
+            $this->warnAboutNonTraversableType($node, $type);
+        }
+    }
+
+    private function warnAboutNonTraversableType(Node $node, Type $type)
+    {
+        $fqsen = FullyQualifiedClassName::fromType($type);
+        if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
+            return;
+        }
+        if ($fqsen->__toString() === '\stdClass') {
+            // stdClass is the only non-Traversable that I'm aware of that's commonly traversed over.
+            return;
+        }
+        $class = $this->code_base->getClassByFQSEN($fqsen);
+        $status = $class->checkCanIterateFromContext(
+            $this->code_base,
+            $this->context
+        );
+        switch ($status) {
+            case Clazz::CAN_ITERATE_STATUS_NO_ACCESSIBLE_PROPERTIES:
+                $issue = Issue::TypeNoAccessiblePropertiesForeach;
+                break;
+            case Clazz::CAN_ITERATE_STATUS_NO_PROPERTIES:
+                $issue = Issue::TypeNoPropertiesForeach;
+                break;
+            default:
+                $issue = Issue::TypeSuspiciousNonTraversableForeach;
+                break;
+        }
+
+        $this->emitIssue(
+            $issue,
+            $node->children['expr']->lineno ?? $node->lineno,
+            $type
+        );
     }
 
     private function analyzeArrayAssignBackwardsCompatibility(Node $node)

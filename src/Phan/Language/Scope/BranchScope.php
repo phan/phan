@@ -68,6 +68,16 @@ class BranchScope extends Scope
     }
 
     /**
+     * @return ?FullyQualifiedClassName
+     * Crawl the scope hierarchy to get a class FQSEN.
+     * Return null if there is no class FQSEN.
+     */
+    public function getClassFQSENOrNull()
+    {
+        return $this->parent_scope->getClassFQSENOrNull();
+    }
+
+    /**
      * @return FullyQualifiedMethodName|FullyQualifiedFunctionName
      * Get the FQSEN for the closure, method or function we're in
      */

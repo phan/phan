@@ -272,6 +272,20 @@ class Property extends ClassElement
     }
 
     /**
+     * @internal
+     */
+    const _IS_DYNAMIC_OR_MAGIC = Flags::IS_FROM_PHPDOC | Flags::IS_DYNAMIC_PROPERTY;
+
+    /**
+     * Equivalent to $this->isDynamic() || $this->isFromPHPDoc()
+     * i.e. this is a property that is not created from an AST_PROP_ELEM Node.
+     */
+    public function isDynamicOrFromPHPDoc() : bool
+    {
+        return ($this->getPhanFlags() & self::_IS_DYNAMIC_OR_MAGIC) !== 0;
+    }
+
+    /**
      * @return bool
      * True if this is a magic phpdoc property (declared via (at)property (-read,-write,) on class declaration phpdoc)
      */

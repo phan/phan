@@ -10,6 +10,12 @@ New features(Analysis):
   New issue type: `PhanTypeObjectUnsetDeclaredProperty`
 
   - This warning is emitted because declared properties are commonly expected to exist when they are accessed.
++ Warn about iterating over an object that's not a `Traversable` and not `stdClass` (#1115)
+  New issue types (for those objects) were added for the following cases:
+
+  1. Has no declared properties (`TypeNoPropertiesForeach`)
+  2. Has properties and none are accessible. (`TypeNoAccessiblePropertiesForeach`)
+  3. Has properties and some are accessible. (`TypeSuspiciousNonTraversableForeach`)
 
 Bug fixes:
 + Don't crash when parsing an invalid cast expression. Only the fallback/polyfill parsers were affected.
