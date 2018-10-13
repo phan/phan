@@ -165,7 +165,8 @@ $message
 
 EOT;
             $writer->append($header . "\n");
-            $writer->append($placeholder);
+            // Append both the issue message and an example instance of that issue message (if possible)
+            $writer->append(self::updateTextForSection($placeholder, $header));
         }
     }
 
