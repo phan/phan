@@ -587,4 +587,13 @@ class Parameter extends Variable
             $this->isOptional()
         );
     }
+
+    /**
+     * @param FunctionInterface $function - The function that has this Parameter.
+     * @return Context a Context with the line number of this parameter
+     */
+    public function createContext(FunctionInterface $function) : Context
+    {
+        return clone($function->getContext())->withLineNumberStart($this->getFileRef()->getLineNumberStart());
+    }
 }

@@ -49,7 +49,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
             if ($parameter->getUnionType()->isEmpty()) {
                 $this->emitIssue(
                     $code_base,
-                    $method->getContext(),
+                    $parameter->createContext($method),
                     'PhanPluginUnknownMethodParamType',
                     'Method {METHOD} has no declared or inferred parameter type for ${PARAMETER}',
                     [(string)$method->getFQSEN(), $parameter->getName()]
@@ -101,7 +101,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
             if ($parameter->getUnionType()->isEmpty()) {
                 $this->emitIssue(
                     $code_base,
-                    $function->getContext(),
+                    $parameter->createContext($function),
                     $issue,
                     $message,
                     [(string)$function->getFQSEN(), $parameter->getName()]
