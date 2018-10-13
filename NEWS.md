@@ -5,6 +5,7 @@ Phan NEWS
 
 New features(Analysis)
 + Add `defined at {FILE}:{LINE}` to warnings about property visibility.
++ Warn about missing references (`\n` or `$n`) in the replacement template string of `preg_replace()` (#2047)
 
 08 Oct 2018, Phan 1.1.0
 -----------------------
