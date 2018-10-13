@@ -1,0 +1,10 @@
+src/061_cast_crash.php:12 PhanSyntaxError syntax error, unexpected ')', expecting '('
+src/061_cast_crash.php:12 PhanTypeMismatchArgument Argument 1 (x) is array but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
+src/061_cast_crash.php:18 PhanTypeMismatchArgument Argument 1 (x) is bool but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
+src/061_cast_crash.php:21 PhanTypeMismatchArgument Argument 1 (x) is bool but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
+src/061_cast_crash.php:24 PhanTypeMismatchArgument Argument 1 (x) is float but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
+src/061_cast_crash.php:27 PhanTypeMismatchArgument Argument 1 (x) is int but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
+src/061_cast_crash.php:30 PhanTypeMismatchArgument Argument 1 (x) is int but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
+src/061_cast_crash.php:33 PhanTypeMismatchArgument Argument 1 (x) is float but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
+src/061_cast_crash.php:36 PhanTypeMismatchArgument Argument 1 (x) is object but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3
+src/061_cast_crash.php:45 PhanTypeMismatchArgument Argument 1 (x) is null but \accepts_cast_argument() takes string defined at src/061_cast_crash.php:3

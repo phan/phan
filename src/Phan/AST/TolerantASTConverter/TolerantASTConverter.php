@@ -573,6 +573,7 @@ class TolerantASTConverter
             },
             'Microsoft\PhpParser\Node\Expression\CastExpression' => function (PhpParser\Node\Expression\CastExpression $n, int $start_line) : ast\Node {
                 static $lookup = [
+                    // From Parser->parseCastExpression()
                     TokenKind::ArrayCastToken   => flags\TYPE_ARRAY,
                     TokenKind::BoolCastToken    => flags\TYPE_BOOL,
                     TokenKind::DoubleCastToken  => flags\TYPE_DOUBLE,
@@ -580,6 +581,21 @@ class TolerantASTConverter
                     TokenKind::ObjectCastToken  => flags\TYPE_OBJECT,
                     TokenKind::StringCastToken  => flags\TYPE_STRING,
                     TokenKind::UnsetCastToken   => flags\TYPE_NULL,
+
+                    // From Parser->parseCastExpressionGranular()
+                    // This is a syntax error, but try to match what the intent was
+                    TokenKind::ArrayKeyword         => flags\TYPE_ARRAY,
+                    TokenKind::BinaryReservedWord   => flags\TYPE_STRING,
+                    TokenKind::BoolReservedWord     => flags\TYPE_BOOL,
+                    TokenKind::BooleanReservedWord  => flags\TYPE_BOOL,
+                    TokenKind::DoubleReservedWord   => flags\TYPE_DOUBLE,
+                    TokenKind::IntReservedWord      => flags\TYPE_LONG,
+                    TokenKind::IntegerReservedWord  => flags\TYPE_LONG,
+                    TokenKind::FloatReservedWord    => flags\TYPE_DOUBLE,
+                    TokenKind::ObjectReservedWord   => flags\TYPE_OBJECT,
+                    TokenKind::RealReservedWord     => flags\TYPE_DOUBLE,
+                    TokenKind::StringReservedWord   => flags\TYPE_STRING,
+                    TokenKind::UnsetKeyword         => flags\TYPE_NULL,
                 ];
                 $kind = $n->castType->kind;
                 $ast_kind = $lookup[$kind] ?? null;

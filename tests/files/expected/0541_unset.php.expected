@@ -1,0 +1,7 @@
+%s:7 PhanTypeObjectUnsetDeclaredProperty Suspicious attempt to unset class \A541's property myPublicVar declared at %s:4 (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)
+%s:8 PhanTypeObjectUnsetDeclaredProperty Suspicious attempt to unset class \A541's property myPrivateVar declared at %s:5 (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)
+%s:9 PhanUndeclaredProperty Reference to undeclared property \A541->myDynamicVar
+%s:11 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression with type array{}
+%s:16 PhanAccessPropertyPrivate Cannot access private property \A541::$myPrivateVar defined at %s:5
+%s:16 PhanTypeObjectUnsetDeclaredProperty Suspicious attempt to unset class \A541's property myPrivateVar declared at %s:5 (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)
+%s:17 PhanTypeObjectUnsetDeclaredProperty Suspicious attempt to unset class \A541's property myPublicVar declared at %s:4 (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)

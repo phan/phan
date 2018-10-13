@@ -25,6 +25,7 @@ use Phan\Language\Element\Parameter;
 use Phan\Language\Element\PassByReferenceVariable;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
@@ -212,6 +213,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // I think DollarDollarPlugin already warns, so don't warn here.
         } elseif ($kind === \ast\AST_DIM) {
             $this->analyzeUnsetDim($var_node);
+        } elseif ($kind === \ast\AST_PROP) {
+            $this->analyzeUnsetProp($var_node);
         }
         return $context;
     }
@@ -266,6 +269,54 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 return;
             }
             $variable->setUnionType($variable->getUnionType()->withoutArrayShapeField($dim_value));
+        }
+    }
+
+    /**
+     * @param Node $node a node of type AST_PROP in unset()
+     * @return void
+     * @see UnionTypeVisitor::resolveArrayShapeElementTypes()
+     * @see UnionTypeVisitor::visitDim()
+     */
+    private function analyzeUnsetProp(Node $node)
+    {
+        $expr_node = $node->children['expr'];
+        if (!($expr_node instanceof Node)) {
+            // php -l would warn
+            return;
+        }
+        $prop_name = $node->children['prop'];
+        if (!\is_string($prop_name)) {
+            $prop_name = (new ContextNode($this->code_base, $this->context, $prop_name))->getEquivalentPHPScalarValue();
+            if (!\is_string($prop_name)) {
+                return;
+            }
+        }
+
+        $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr_node);
+        $type_fqsens = $union_type->objectTypesWithKnownFQSENs();
+        foreach ($type_fqsens->getTypeSet() as $type) {
+            $fqsen = FullyQualifiedClassName::fromType($type);
+            if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
+                continue;
+            }
+            $class = $this->code_base->getClassByFQSEN($fqsen);
+            if ($class->hasPropertyWithName($this->code_base, $prop_name)) {
+                // NOTE: We deliberately emit this issue whether or not the access is to a public or private variable,
+                // because unsetting a private variable at runtime is also a (failed) attempt to unset a declared property.
+                $prop = $class->getPropertyByName($this->code_base, $prop_name);
+                if ($prop->isFromPHPDoc() || $prop->isDynamicProperty()) {
+                    continue;
+                }
+                $this->emitIssue(
+                    Issue::TypeObjectUnsetDeclaredProperty,
+                    $node->lineno ?? 0,
+                    (string)$type,
+                    $prop_name,
+                    $prop->getFileRef()->getFile(),
+                    $prop->getFileRef()->getLineNumberStart()
+                );
+            }
         }
     }
 
