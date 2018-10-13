@@ -100,7 +100,7 @@ function dump_expr(string $expr)
     $ast_node = $parser->parseSourceFile($expr);
     foreach ($ast_node->getDescendantNodes() as $descendant) {
         // echo "unsetting " . get_class($descendant) . $descendant->getStart() . "\n";
-        unset($descendant->parent);
+        $descendant->parent = null;
     }
 
     $ast_node->parent = null;

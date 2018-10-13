@@ -3,9 +3,16 @@ Phan NEWS
 ?? ??? 2018, Phan 1.1.1 (dev)
 -----------------------
 
-New features(Analysis)
+New features(Analysis):
 + Add `defined at {FILE}:{LINE}` to warnings about property visibility.
 + Warn about missing references (`\n` or `$n`) in the replacement template string of `preg_replace()` (#2047)
++ Warn when attempting to unset a property that was declared (i.e. not a dynamic or magic property) (#569)
+  New issue type: `PhanTypeObjectUnsetDeclaredProperty`
+
+  - This warning is emitted because declared properties are commonly expected to exist when they are accessed.
+
+Bug fixes:
++ Don't crash when parsing an invalid cast expression. Only the fallback/polyfill parsers were affected.
 
 08 Oct 2018, Phan 1.1.0
 -----------------------

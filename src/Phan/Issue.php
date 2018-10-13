@@ -77,6 +77,7 @@ class Issue
     const TypeArrayUnsetSuspicious  = 'PhanTypeArrayUnsetSuspicious';
     const TypeArraySuspiciousNullable = 'PhanTypeArraySuspiciousNullable';
     const TypeSuspiciousIndirectVariable = 'PhanTypeSuspiciousIndirectVariable';
+    const TypeObjectUnsetDeclaredProperty  = 'PhanTypeObjectUnsetDeclaredProperty';
     const TypeComparisonFromArray   = 'PhanTypeComparisonFromArray';
     const TypeComparisonToArray     = 'PhanTypeComparisonToArray';
     const TypeConversionFromArray   = 'PhanTypeConversionFromArray';
@@ -1590,6 +1591,14 @@ class Issue
                 "Method name of callable must be a string, got {TYPE}",
                 self::REMEDIATION_B,
                 10080
+            ),
+            new Issue(
+                self::TypeObjectUnsetDeclaredProperty,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Suspicious attempt to unset class {TYPE}'s property {PROPERTY} declared at {FILE}:{LINE} (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)",
+                self::REMEDIATION_B,
+                10081
             ),
 
             // Issue::CATEGORY_VARIABLE

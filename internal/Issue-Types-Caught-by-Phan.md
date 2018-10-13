@@ -182,7 +182,7 @@ $x = A::$prop;
 This issue comes up when there is an attempt to access a private property outside of the scope in which it's defined.
 
 ```
-Cannot access private property {PROPERTY}
+Cannot access private property {PROPERTY} defined at {FILE}:{LINE}
 ```
 
 This will be emitted for the following code.
@@ -197,7 +197,7 @@ print C1::$p;
 This issue comes up when there is an attempt to access a protected property outside of the scope in which it's defined or an implementing child class.
 
 ```
-Cannot access protected property {PROPERTY}
+Cannot access protected property {PROPERTY} defined at {FILE}:{LINE}
 ```
 
 This will be emitted for the following code.
@@ -2117,6 +2117,14 @@ This issue is emitted from the following code
 ```php
 class F { static function f(&$v) {} } F::f('string');
 ```
+
+## PhanTypeObjectUnsetDeclaredProperty
+
+```
+Suspicious attempt to unset class {TYPE}'s property {PROPERTY} declared at {FILE}:{LINE} (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/1.0.7/tests/files/expected/0541_unset.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.0.7/tests/files/src/0541_unset.php#L7).
 
 ## PhanTypeParentConstructorCalled
 
