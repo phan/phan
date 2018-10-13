@@ -1,0 +1,7 @@
+src/059_invalid_regex_2.php:7 PhanPluginInvalidPregRegexReplacement Call to \preg_replace was passed an invalid replacement reference '${1}' to pattern '/foo/i'
+src/059_invalid_regex_2.php:9 PhanPluginInvalidPregRegexReplacement Call to \preg_replace was passed an invalid replacement reference '${01}' to pattern '/foo/i'
+src/059_invalid_regex_2.php:13 PhanPluginInvalidPregRegexReplacement Call to \preg_replace was passed an invalid replacement reference '${99}' to pattern '/foo/i'
+src/059_invalid_regex_2.php:16 PhanPluginInvalidPregRegexReplacement Call to \preg_replace was passed an invalid replacement reference '${12}' to pattern '/(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)(k)/i'
+src/059_invalid_regex_2.php:18 PhanPluginInvalidPregRegexReplacement Call to \preg_replace was passed an invalid replacement reference '$12' to pattern '/(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)(k)/i'
+src/059_invalid_regex_2.php:20 PhanPluginInvalidPregRegexReplacement Call to \preg_replace was passed an invalid replacement reference '$12' to pattern '/(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)(k)/i'
+src/059_invalid_regex_2.php:25 PhanPluginInvalidPregRegexReplacement Call to \preg_replace was passed an invalid replacement reference '\\1' to pattern '/foo/i'
