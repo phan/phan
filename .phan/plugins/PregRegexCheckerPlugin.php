@@ -121,9 +121,12 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
         // > replacement may contain references of the form \\n or $n,
         // ...
         // > n can be from 0 to 99, and \\0 or $0 refers to the text matched by the whole pattern.
-        preg_match_all('/[$\\\\]([0-9]{1,2}|[^0-9])/', $template, $all_matches, PREG_SET_ORDER);
+        preg_match_all('/[$\\\\]([0-9]{1,2}|[^0-9{]|(?<=\$)\{[0-9]{1,2}\})/', $template, $all_matches, PREG_SET_ORDER);
         foreach ($all_matches as $match) {
             $key = $match[1];
+            if ($key[0] === '{') {
+                $key = (string)\substr($key, 1, -1);
+            }
             if ($key[0] >= '0' && $key[0] <= '9') {
                 // Edge case: Convert '09' to 9
                 $result[(int)$key] = $match[0];
