@@ -101,6 +101,22 @@ class Phan implements IgnoredFilesFilterInterface
         $is_daemon_request = Config::getValue('daemonize_socket') || Config::getValue('daemonize_tcp');
         $language_server_config = Config::getValue('language_server_config');
         $is_undoable_request = is_array($language_server_config) || $is_daemon_request;
+        if (Config::getValue('language_server_use_pcntl_fallback')) {
+            // The PCNTL fallback generates cyclic references (to the CodeBase instance which references many other things) in createRestorePoint,
+            // so we need to garbage collect that.
+            // This is probably the only part of the code which generates cyclic references
+            //
+            // 1. Phan clones the old codebase to restore it, and cyclic references exist as a side effect.
+            //
+            //    This causes memory usage to increase while typing.
+            //
+            //    Memory inspection/profiling would help with creating a better fix.
+            // 2. It's possible that some plugins may benefit from garbage collection.
+            //
+            // This fix works in PHP 7.3, which has an improved garbage collector.
+            // It might not work as well in earlier PHP versions on large codebases.
+            gc_enable();
+        }
         if ($is_daemon_request) {
             $code_base->eagerlyLoadAllSignatures();
         }

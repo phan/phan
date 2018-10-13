@@ -215,6 +215,7 @@ class Request
     /**
      * Respond with issues in the requested format
      * @return void
+     * @see LanguageServer->handleJSONResponseFromWorker() for one possible usage of this
      */
     public function respondWithIssues(int $issue_count)
     {
@@ -235,6 +236,7 @@ class Request
         $most_recent_node_info_request = $this->most_recent_node_info_request;
         if ($most_recent_node_info_request instanceof GoToDefinitionRequest) {
             $response['definitions'] = $most_recent_node_info_request->getDefinitionLocations();
+            $response['hover_response'] = $most_recent_node_info_request->getHoverResponse();
         } elseif ($most_recent_node_info_request instanceof CompletionRequest) {
             $response['completions'] = $most_recent_node_info_request->getCompletions();
         }
@@ -354,6 +356,7 @@ class Request
      */
     public static function childSignalHandler($signo, $status = null, $pid = null)
     {
+        // test
         if ($signo !== SIGCHLD) {
             return;
         }
@@ -502,7 +505,7 @@ class Request
             error_log("The daemon failed to fork. Going to terminate");
         } elseif ($fork_result == 0) {
             Daemon::debugf("This is the fork");
-            self::$child_pids = [];
+            self::handleBecomingChildAnalysisProcess();
             // @phan-suppress-next-line PhanPartialTypeMismatchArgument pre-existing
             $request_obj = new self($responder, $request, null, true);
             $temporary_file_mapping = $request_obj->getTemporaryFileMapping();
@@ -512,20 +515,35 @@ class Request
             return $request_obj;
         } else {
             $pid = $fork_result;
-            $status = self::$exited_pid_status[$pid] ?? null;
-            if (isset($status)) {
-                Daemon::debugf("child process %d already exited", $pid);
-                self::childSignalHandler(SIGCHLD, $status, $pid);
-                unset(self::$exited_pid_status[$pid]);
-            } else {
-                self::$child_pids[$pid] = true;
-            }
-
-            // TODO: Use http://php.net/manual/en/book.inotify.php if available, watch all directories if available.
-            // Daemon continues to execute.
-            Daemon::debugf("Created a child pid %d", $fork_result);
+            self::handleBecomingParentOfChildAnalysisProcess($pid);
         }
         return null;
+    }
+
+    /**
+     * @param int $pid the child PID of this process that is performing analysis
+     * @return void
+     */
+    public static function handleBecomingParentOfChildAnalysisProcess(int $pid) {
+        $status = self::$exited_pid_status[$pid] ?? null;
+        if (isset($status)) {
+            Daemon::debugf("child process %d already exited", $pid);
+            self::childSignalHandler(SIGCHLD, $status, $pid);
+            unset(self::$exited_pid_status[$pid]);
+        } else {
+            self::$child_pids[$pid] = true;
+        }
+
+        // TODO: Use http://php.net/manual/en/book.inotify.php if available, watch all directories if available.
+        // Daemon continues to execute.
+        Daemon::debugf("Created a child pid %d", $pid);
+    }
+
+    /**
+     * @return void
+     */
+    public static function handleBecomingChildAnalysisProcess() {
+        self::$child_pids = [];
     }
 
     /**

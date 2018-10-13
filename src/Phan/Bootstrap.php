@@ -82,6 +82,11 @@ function phan_error_handler($errno, $errstr, $errfile, $errline)
     if ($__no_echo_phan_errors) {
         return false;
     }
+    // php-src/ext/standard/streamsfuncs.c suggests that this is the only error caused by signal handlers and there are no translations
+    if ($errno === E_WARNING && preg_match('/^stream_select.*unable to select/', $errstr)) {
+        // Don't execute the PHP internal error handler
+        return true;
+    }
     error_log("$errfile:$errline [$errno] $errstr\n");
     if (class_exists(CodeBase::class, false)) {
         $most_recent_file = CodeBase::getMostRecentlyParsedOrAnalyzedFile();

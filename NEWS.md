@@ -14,6 +14,18 @@ New features(Analysis):
 Bug fixes:
 + Don't crash when parsing an invalid cast expression. Only the fallback/polyfill parsers were affected.
 
+Language Server/Daemon mode:
++ Fix bugs in the language server.
+
+  1. The language server was previously using the non-PCNTL fallback
+     implementation unconditionally due to an incorrect default configuration value.
+     After this fix, the language server properly uses PCNTL by default
+     if PCNTL is available.
+
+     This bug was introduced by PR #1743
+
+  2. Fix a bug causing the language server to eventually run out of memory when PCNTL was disabled.
+
 08 Oct 2018, Phan 1.1.0
 -----------------------
 

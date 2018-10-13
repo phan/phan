@@ -18,6 +18,7 @@ use Phan\LanguageServer\Protocol\CompletionItem;
 use Phan\LanguageServer\Protocol\CompletionOptions;
 use Phan\LanguageServer\Protocol\Diagnostic;
 use Phan\LanguageServer\Protocol\DiagnosticSeverity;
+use Phan\LanguageServer\Protocol\Hover;
 use Phan\LanguageServer\Protocol\InitializeResult;
 use Phan\LanguageServer\Protocol\Location;
 use Phan\LanguageServer\Protocol\Message;
@@ -248,6 +249,17 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         if (!$code_base->isUndoTrackingEnabled()) {
             throw new AssertionError("Expected undo tracking to be enabled");
         }
+        pcntl_signal(
+            SIGCHLD,
+            /**
+             * @param mixed ...$args
+             * @return void
+             */
+            function (...$args) use (&$got_signal) {
+                $got_signal = true;
+                Request::childSignalHandler(...$args);
+            }
+        );
 
         $make_language_server = function (ProtocolStreamReader $in, ProtocolStreamWriter $out) use ($code_base, $file_path_lister) : LanguageServer {
             return new LanguageServer(
@@ -567,15 +579,21 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
         $this->most_recent_request = null;
 
+        // Give our signal handler time to collect the status of any zombie processes
+        // so that they don't accumulate.
+        pcntl_signal_dispatch();
+
+        // Fork a new process to handle the analysis request
         $pid = pcntl_fork();
         if ($pid < 0) {
             error_log(posix_strerror(posix_get_last_error()));
             exit(EXIT_FAILURE);
         }
 
-        // Parent
         // FIXME: make this async as well, and rate limit it.
         if ($pid > 0) {
+            // This is the parent - The worker process that was forked has pid $pid
+            Request::handleBecomingParentOfChildAnalysisProcess($pid);
             $read_stream = self::streamForParent($sockets);
             $concatenated = '';
             while (!feof($read_stream)) {
@@ -593,6 +611,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             return;
         }
         // This is the worker process.
+        Request::handleBecomingChildAnalysisProcess();
 
         $child_stream = self::streamForChild($sockets);
         $paths_to_analyze = array_keys($uris_to_analyze);
@@ -685,8 +704,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
     /**
      * @param array<string,string> $uris_to_analyze
-     * @param array{issues:array,definitions?:?Location|?(Location[]),completions?:?(CompletionItem[])} $response_data
+     * @param array{issues:array,definitions?:?Location|?(Location[]),completions?:?(CompletionItem[]),hover_response?:Hover} $response_data
      * @return void
+     * @see Request->respondWithIssues() for where $response_data is serialized
      */
     private function handleJSONResponseFromWorker(array $uris_to_analyze, array $response_data)
     {
@@ -694,6 +714,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         if ($most_recent_node_info_request) {
             if ($most_recent_node_info_request instanceof GoToDefinitionRequest) {
                 $most_recent_node_info_request->recordDefinitionLocationList($response_data['definitions'] ?? null);
+                $most_recent_node_info_request->setHoverResponse($response_data['hover_response'] ?? null);
             } elseif ($most_recent_node_info_request instanceof CompletionRequest) {
                 $most_recent_node_info_request->recordCompletionList($response_data['completions'] ?? null);
             }

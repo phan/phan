@@ -807,8 +807,9 @@ class Config
         // Valid values: null, 'info'. Used when developing or debugging a language server client of Phan.
         'language_server_debug_level' => null,
 
-        // You can use the command line option `--language-server-require-pcntl` to set this to false for debugging.
-        'language_server_use_pcntl_fallback' => true,
+        // This should only be set by CLI (`--language-server-force-missing-pcntl` or `language-server-require-pcntl`), which will set this to true for debugging.
+        // When true, this will manually back up the state of the PHP process and restore it.
+        'language_server_use_pcntl_fallback' => false,
 
         // This should only be set via CLI (`--language-server-enable-go-to-definition`)
         // Affects "go to definition" and "go to type definition" of LSP.

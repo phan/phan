@@ -25,4 +25,11 @@ class Hover
         $this->contents = $contents;
         $this->range = $range;
     }
+
+    public static function fromArray(array $data) : self {
+        return new self(
+            MarkupContent::fromArray($data['contents']),
+            isset($data['range']) ? Range::fromArray($data['range']) : null
+        );
+    }
 }
