@@ -6,15 +6,12 @@ php:
   - 7.0
   - 7.1
   - 7.2
-  - 7.3.0RC1
+  - 7.3
 
 # NOTE: Travis starts up 5 test suites at a time.
 # So, it's faster to run all of the tests at once per supported PHP version.
-#env:
-
-# TODO: Clean up 'sudo: required' once https://github.com/travis-ci/travis-ci/issues/9717 is resolved
-dist: xenial
-sudo: required
+dist: trusty
+sudo: false
 
 cache:
   directories:
@@ -22,10 +19,7 @@ cache:
     - $HOME/.cache/phan-ast/build
 
 # We invoke php multiple times via CLI in several tests, so enable the opcache file cache.
-# TODO: Clean up installing libzip4 once php 7.3 build issues are resolved
 before_install:
-  - sudo apt-get update -y
-  - sudo apt-get install -y libzip4
   - ./tests/travis_setup.sh
   - mkdir /tmp/opcache || true; echo -e 'opcache.enable_cli=1\nopcache.file_cache=/tmp/opcache' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
   - composer validate
