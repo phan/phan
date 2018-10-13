@@ -7,17 +7,24 @@ clone_folder: C:\projects\phan
 clone_depth: 1
 # Test 32-bit builds
 platform: x86
+
+# Test with a given PHP version
+# 1. (PHP_VERSION is the only version tested of PHP_EXT_VERSION, and it can only be built with VC_VERSION)
+# 2. Also, run tests with a variety of supported php-ast versions. Phan should work properly with php-ast 0.1.5+
 environment:
   matrix:
     - PHP_EXT_VERSION: '7.0'
       PHP_VERSION: '7.0.32'
       VC_VERSION: 14
+      PHP_AST_VERSION: 0.1.5
     - PHP_EXT_VERSION: '7.1'
-      PHP_VERSION: '7.1.22'
+      PHP_VERSION: '7.1.23'
       VC_VERSION: 14
+      PHP_AST_VERSION: 0.1.6
     - PHP_EXT_VERSION: '7.2'
-      PHP_VERSION: '7.2.10'
+      PHP_VERSION: '7.2.11'
       VC_VERSION: 15
+      PHP_AST_VERSION: 0.1.7
 
 init:
     - SET PATH=c:\projects\php;C:\projects\composer;%PATH%
@@ -31,8 +38,6 @@ cache:
 branches:
   only:
     - master
-    - 0.8
-    - 0.9
 
 install:
 - cmd: choco feature enable -n=allowGlobalConfirmation
@@ -53,9 +58,9 @@ build_script:
 
     cd C:\projects\php\ext
 
-    SET AST_ZIP_BASENAME=php_ast-0.1.6-%PHP_EXT_VERSION%-nts-vc%VC_VERSION%-x86.zip
+    SET AST_ZIP_BASENAME=php_ast-%PHP_AST_VERSION%-%PHP_EXT_VERSION%-nts-vc%VC_VERSION%-x86.zip
 
-    curl -fsS https://windows.php.net/downloads/pecl/releases/ast/0.1.6/%AST_ZIP_BASENAME% -o %AST_ZIP_BASENAME%
+    curl -fsS https://windows.php.net/downloads/pecl/releases/ast/%PHP_AST_VERSION%/%AST_ZIP_BASENAME% -o %AST_ZIP_BASENAME%
 
     7z x %AST_ZIP_BASENAME% php_ast.dll -y >nul
 
