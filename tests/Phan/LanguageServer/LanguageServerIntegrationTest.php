@@ -1293,11 +1293,12 @@ EOT;
     {
         $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
         $diagnostics_response = $this->awaitResponse($proc_out);
-        $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method']);
+        $error_message = "Unexpected response: " . json_encode($diagnostics_response);
+        $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method'] ?? null, $error_message);
         $uri = $diagnostics_response['params']['uri'];
-        $this->assertSame($uri, $requested_uri);
+        $this->assertSame($uri, $requested_uri, $error_message);
         $diagnostics = $diagnostics_response['params']['diagnostics'];
-        $this->assertSame([], $diagnostics);
+        $this->assertSame([], $diagnostics, $error_message);
     }
 
     /**

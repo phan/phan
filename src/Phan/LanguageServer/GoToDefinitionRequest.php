@@ -288,6 +288,25 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         return array_values($this->locations);
     }
 
+    /**
+     * @return ?Hover
+     */
+    public function getHoverResponse()
+    {
+        return $this->hover_response;
+    }
+
+    /**
+     * @param ?Hover|?array $hover
+     */
+    public function setHoverResponse($hover)
+    {
+        if (is_array($hover)) {
+            $hover = Hover::fromArray($hover);
+        }
+        $this->hover_response = $hover;
+    }
+
     public function finalize()
     {
         $promise = $this->promise;
