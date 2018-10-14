@@ -6,7 +6,7 @@ function f246_1(array $p) {
     foreach ($p as $v) {}
 }
 function f246_2(\ArrayAccess $p) {
-    foreach ($p as $v) {}
+    foreach ($p as $v) {}  // This should warn - There's no guarantee that the ArrayAccess interface is used together with Traversable.
 }
 function f246_3(\Traversable $p) {
     foreach ($p as $v) {}

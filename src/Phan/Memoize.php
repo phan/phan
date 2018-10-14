@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use Closure;
+
 /**
  * A utility trait to memoize (cache) the result of instance methods and static methods.
  */
@@ -22,14 +24,14 @@ trait Memoize
      * The key to use for storing the result of the
      * computation.
      *
-     * @param \Closure $fn
+     * @param Closure():mixed $fn
      * A function to compute only once for the given
      * $key.
      *
      * @return mixed
      * The result of the given computation is returned
      */
-    protected function memoize(string $key, \Closure $fn)
+    protected function memoize(string $key, Closure $fn)
     {
         if (!\array_key_exists($key, $this->memoized_data)) {
             $this->memoized_data[$key] = $fn();
@@ -64,14 +66,14 @@ trait Memoize
      * The key to use for storing the result of the
      * computation.
      *
-     * @param \Closure $fn
+     * @param Closure():mixed $fn
      * A function to compute only once for the given
      * $key.
      *
      * @return mixed
      * The result of the given computation is returned
      */
-    protected static function memoizeStatic(string $key, \Closure $fn)
+    protected static function memoizeStatic(string $key, Closure $fn)
     {
         static $memoized_data = [];
 

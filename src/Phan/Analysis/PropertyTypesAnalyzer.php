@@ -24,6 +24,9 @@ class PropertyTypesAnalyzer
     public static function analyzePropertyTypes(CodeBase $code_base, Clazz $clazz)
     {
         foreach ($clazz->getPropertyMap($code_base) as $property) {
+            // This phase is done before the analysis phase, so there aren't any dynamic properties to filter out.
+
+            // Get the union type of this property. This may throw (e.g. it can refers to missing elements).
             try {
                 $union_type = $property->getUnionType();
             } catch (IssueException $exception) {

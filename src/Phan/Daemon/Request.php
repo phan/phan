@@ -524,7 +524,8 @@ class Request
      * @param int $pid the child PID of this process that is performing analysis
      * @return void
      */
-    public static function handleBecomingParentOfChildAnalysisProcess(int $pid) {
+    public static function handleBecomingParentOfChildAnalysisProcess(int $pid)
+    {
         $status = self::$exited_pid_status[$pid] ?? null;
         if (isset($status)) {
             Daemon::debugf("child process %d already exited", $pid);
@@ -542,7 +543,8 @@ class Request
     /**
      * @return void
      */
-    public static function handleBecomingChildAnalysisProcess() {
+    public static function handleBecomingChildAnalysisProcess()
+    {
         self::$child_pids = [];
     }
 

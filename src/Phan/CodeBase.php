@@ -506,6 +506,7 @@ class CodeBase
         // TODO: Restore the inner state of Clazz objects as well
         // (e.g. memoizations, types added in method/analysis phases, plugin changes, etc.
         // NOTE: Type::clearAllMemoizations is called elsewhere already.
+        // @phan-suppress-next-line PhanTypeSuspiciousNonTraversableForeach this is intentionally iterating over the private properties of $clone
         foreach ($clone as $key => $value) {
             $this->{$key} = $value;
         }

@@ -1,5 +1,6 @@
 %s:4 PhanUnusedVariable Unused definition of variable $v
 %s:7 PhanUnusedVariable Unused definition of variable $v
+%s:10 PhanTypeNoPropertiesForeach Class \ArrayAccess was passed to foreach, but it does not extend Traversable and doesn't have any declared properties. (This check excludes dynamic properties)
 %s:10 PhanUnusedVariable Unused definition of variable $v
 %s:13 PhanUnusedVariable Unused definition of variable $v
 %s:18 PhanTypeMismatchArgument Argument 1 (p) is iterable but \f246_1() takes array defined at %s:6

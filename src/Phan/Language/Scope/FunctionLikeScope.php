@@ -30,6 +30,16 @@ class FunctionLikeScope extends ClosedScope
     }
 
     /**
+     * @return ?FullyQualifiedClassName
+     * Crawl the scope hierarchy to get a class FQSEN.
+     * Return null if there is no class FQSEN.
+     */
+    public function getClassFQSENOrNull()
+    {
+        return $this->parent_scope->getClassFQSENOrNull();
+    }
+
+    /**
      * @return bool
      * True if we're in a function scope
      */

@@ -122,6 +122,19 @@ abstract class Scope
     }
 
     /**
+     * @return ?FullyQualifiedClassName
+     * Crawl the scope hierarchy to get a class FQSEN.
+     */
+    public function getClassFQSENOrNull()
+    {
+        if (!$this->hasParentScope()) {
+            return null;
+        }
+
+        return $this->getParentScope()->getClassFQSENOrNull();
+    }
+
+    /**
      * @return bool
      * True if we're in a property scope
      */

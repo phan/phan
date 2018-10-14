@@ -255,7 +255,7 @@ class ReferenceCountsAnalyzer
                 // Skip properties on classes that were derived from (at)property annotations on classes
                 // or were automatically generated for classes with __get or __set methods
                 // (or undeclared properties that were automatically added depending on configs)
-                if ($element->isDynamicProperty() || $element->isFromPHPDoc()) {
+                if ($element->isDynamicOrFromPHPDoc()) {
                     continue;
                 }
                 // TODO: may want to continue to skip `if ($defining_class->hasGetOrSetMethod($code_base)) {`
