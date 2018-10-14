@@ -66,6 +66,7 @@ This plugin checks for invalid regexes.
 This plugin is able to resolve literals, global constants, and class constants as regexes.
 
 - **PhanPluginInvalidPregRegex**: The provided regex is invalid, according to PHP.
+- **PhanPluginInvalidPregRegexReplacement**: The replacement string template of `preg_replace` refers to a match group that doesn't exist. (e.g. `preg_replace('/x(a)/', 'y$2', $strVal)`)
 
 #### PrintfCheckerPlugin
 
