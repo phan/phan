@@ -243,7 +243,6 @@ class ForkPool
             }
 
             // Check to see if the child died a graceful death
-            $status = 0;
             if (pcntl_wifsignaled($status)) {
                 $return_code = pcntl_wexitstatus($status);
                 $term_sig = pcntl_wtermsig($status);
