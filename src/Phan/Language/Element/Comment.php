@@ -9,6 +9,7 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\Comment\Method as CommentMethod;
+use Phan\Language\Element\Comment\NullComment;
 use Phan\Language\Element\Comment\Parameter as CommentParameter;
 use Phan\Language\Element\Comment\Property as CommentProperty;
 use Phan\Language\Element\Comment\ReturnComment;
@@ -74,75 +75,75 @@ class Comment
      * Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS
      * Flags::IS_DEPRECATED
      */
-    private $comment_flags = 0;
+    protected $comment_flags = 0;
 
     /**
      * @var array<int,CommentParameter>
      * A list of CommentParameters from var declarations
      */
-    private $variable_list = [];
+    protected $variable_list = [];
 
     /**
      * @var array<int,CommentParameter>
      * A list of CommentParameters from param declarations
      */
-    private $parameter_list = [];
+    protected $parameter_list = [];
 
     /**
      * @var array<string,CommentParameter>
      * A map from variable name to CommentParameters from
      * param declarations
      */
-    private $parameter_map = [];
+    protected $parameter_map = [];
 
     /**
      * @var array<int,TemplateType>
      * A list of template types parameterizing a generic class
      */
-    private $template_type_list = [];
+    protected $template_type_list = [];
 
     /**
      * @var Option<Type>|None
      * Classes may specify their inherited type explicitly
      * via `(at)inherits Type`.
      */
-    private $inherited_type;
+    protected $inherited_type;
 
     /**
      * @var ReturnComment|null
      * the representation of an (at)return directive
      */
-    private $return_comment = null;
+    protected $return_comment = null;
 
     /**
      * @var array<int,string>
      * A list of issue types to be suppressed
      */
-    private $suppress_issue_list = [];
+    protected $suppress_issue_list = [];
 
     /**
      * @var array<string,CommentProperty>
      * A mapping from magic property parameters to types.
      */
-    private $magic_property_map = [];
+    protected $magic_property_map = [];
 
     /**
      * @var array<string,CommentMethod>
      * A mapping from magic methods to parsed parameters, name, and return types.
      */
-    private $magic_method_map = [];
+    protected $magic_method_map = [];
 
     /**
      * @var UnionType a list of types for (at)throws annotations
      */
-    private $throw_union_type;
+    protected $throw_union_type;
 
     /**
      * @var Option<Type>|None
      * An optional class name defined by an (at)phan-closure-scope directive.
      * (overrides the class in which it is analyzed)
      */
-    private $closure_scope;
+    protected $closure_scope;
 
     /**
      * A private constructor meant to ingest a parsed comment
@@ -355,22 +356,7 @@ class Comment
 
         // Don't parse the comment if this doesn't need to.
         if (!$comment || !Config::getValue('read_type_annotations') || \strpos($comment, '@') === false) {
-            return new Comment(
-                0,
-                [],
-                [],
-                [],
-                new None(),
-                null,
-                [],
-                [],
-                [],
-                [],
-                new None(),
-                UnionType::empty(),
-                $code_base,
-                $context
-            );
+            return NullComment::instance();
         }
 
         // @phan-suppress-next-line PhanAccessMethodInternal
@@ -459,29 +445,6 @@ class Comment
             throw new AssertionError('Should check hasReturnUnionType');
         }
         return $return_comment->getLineno();
-    }
-
-    /**
-     * Sets A UnionType defined by a (at)return directive
-     * @return void
-     * @suppress PhanUnreferencedPublicMethod not used right now, but making it available for plugins
-     * @deprecated
-     * @suppress PhanDeprecatedFunction
-     */
-    public function setReturnType(UnionType $return_union_type)
-    {
-        $this->setReturnComment(new ReturnComment($return_union_type, 0));
-    }
-
-    /**
-     * Sets A UnionType defined by a (at)return directive
-     * @return void
-     * @suppress PhanUnreferencedPublicMethod not used right now, but making it available for plugins
-     * @deprecated
-     */
-    public function setReturnComment(ReturnComment $return_comment = null)
-    {
-        $this->return_comment = $return_comment;
     }
 
     /**

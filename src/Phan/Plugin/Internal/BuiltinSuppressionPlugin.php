@@ -136,6 +136,12 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
         CodeBase $unused_code_base,
         string $file_contents
     ) : array {
+        if (!\preg_match(self::SUPPRESS_ISSUE_REGEX, $file_contents)) {
+            // If the **file** doesn't contain the regex we're looking for,
+            // then none of the comments will.
+            // (Much faster than tokenizing and checking tokens in the most common case)
+            return [];
+        }
         $suggestion_list = [];
         foreach (self::yieldSuppressionComments($file_contents) as list(
             $comment_text,

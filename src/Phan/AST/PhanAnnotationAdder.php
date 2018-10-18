@@ -177,10 +177,6 @@ class PhanAnnotationAdder
             foreach ($node->children as $inner) {
                 self::applyFull($inner);
             }
-        } elseif (\is_array($node)) {
-            foreach ($node as $inner) {
-                self::applyFull($inner);
-            }
         }
     }
 
@@ -201,10 +197,6 @@ class PhanAnnotationAdder
                 $closure($node);
             }
             foreach ($node->children as $inner) {
-                self::applyToScopeInner($inner);
-            }
-        } elseif (\is_array($node)) {
-            foreach ($node as $inner) {
                 self::applyToScopeInner($inner);
             }
         }
