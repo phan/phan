@@ -1,0 +1,1 @@
+%s:18 PhanTypeMismatchReturn Returning type array<string,string> but test543b() is declared to return array<string,int>
