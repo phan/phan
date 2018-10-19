@@ -396,12 +396,33 @@ final class Builder
         }
     }
 
+    private function maybeParsePhanTemplateType(int $i, string $line)
+    {
+        // Make sure support for generic types is enabled
+        if (Config::getValue('generic_types_enabled')) {
+            $this->checkCompatible('@template', [Comment::ON_CLASS], $i);
+            $template_type = $this->templateTypeFromCommentLine($line);
+            if ($template_type) {
+                $this->phan_overrides['template'][] = $template_type;
+            }
+        }
+    }
+
     private function maybeParseInherits(int $i, string $line)
     {
         $this->checkCompatible('@inherits', [Comment::ON_CLASS], $i);
         // Make sure support for generic types is enabled
         if (Config::getValue('generic_types_enabled')) {
             $this->inherited_type = $this->inheritsFromCommentLine($line);
+        }
+    }
+
+    private function maybeParsePhanInherits(int $i, string $line)
+    {
+        $this->checkCompatible('@inherits', [Comment::ON_CLASS], $i);
+        // Make sure support for generic types is enabled
+        if (Config::getValue('generic_types_enabled')) {
+            $this->phan_overrides['inherits'] = $this->inheritsFromCommentLine($line);
         }
     }
 
@@ -508,12 +529,34 @@ final class Builder
             $this->parsePhanMethod($i, $line);
         } elseif ($case_sensitive_type === 'phan-suppress-next-line' || $case_sensitive_type === 'phan-suppress-current-line') {
             // Do nothing, see BuiltinSuppressionPlugin
+        } elseif ($type === 'phan-template') {
+            $this->maybeParsePhanTemplateType($i, $line);
+        } elseif ($type === 'phan-inherits') {
+            $this->maybeParsePhanInherits($i, $line);
         } else {
             $this->emitIssue(
                 Issue::MisspelledAnnotation,
                 $this->guessActualLineLocation($i),
                 '@' . $case_sensitive_type,
-                '@phan-forbid-undeclared-magic-methods @phan-forbid-undeclared-magic-properties @phan-closure-scope @phan-override'
+                implode(' ', [
+                    '@phan-closure-scope',
+                    '@phan-file-suppress',
+                    '@phan-forbid-undeclared-magic-methods',
+                    '@phan-forbid-undeclared-magic-properties',
+                    '@phan-inherits',
+                    '@phan-method',
+                    '@phan-override',
+                    '@phan-param',
+                    '@phan-property',
+                    '@phan-property-read',
+                    '@phan-property-write',
+                    '@phan-return',
+                    '@phan-suppress',
+                    '@phan-suppress-current-line',
+                    '@phan-suppress-next-line',
+                    '@phan-template',
+                    '@phan-var',
+                ])
             );
         }
     }
@@ -629,7 +672,7 @@ final class Builder
         string $line
     ) {
         // TODO: Just use WORD_REGEX? Backslashes or nested templates wouldn't make sense.
-        if (preg_match('/@template\s+(' . Type::simple_type_regex . ')/', $line, $match)) {
+        if (preg_match('/@(?:phan-)?template\s+(' . Type::simple_type_regex . ')/', $line, $match)) {
             $template_type_identifier = $match[1];
             return new TemplateType($template_type_identifier);
         }
@@ -648,7 +691,7 @@ final class Builder
         string $line
     ) {
         $match = [];
-        if (preg_match('/@inherits\s+(' . Type::type_regex . ')/', $line, $match)) {
+        if (preg_match('/@(?:phan-)?inherits\s+(' . Type::type_regex . ')/', $line, $match)) {
             $type_string = $match[1];
 
             $type = new Some(Type::fromStringInContext(
