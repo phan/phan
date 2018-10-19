@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
 /**
- * @template T0
+ * @phan-template T0
  * The type of element 0
  *
- * @template T1
+ * @phan-template T1
  * The type of element 1
  */
-class Tuple2 {
+class PhanTuple2 {
 
     /** @var T0 */
     public $e0;
@@ -59,7 +59,7 @@ class Tuple2 {
 }
 
 function f(string $p0, int $p1) {}
-$tuple_a = new Tuple2(42, 'string');
+$tuple_a = new PhanTuple2(42, 'string');
 
 f($tuple_a->e0, $tuple_a->e1);
 f($tuple_a->getE0(), $tuple_a->getE1());

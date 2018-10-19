@@ -313,6 +313,12 @@ class Comment
                     }
                 }
                 return;
+            case 'template':
+                $this->template_type_list = $value;
+                return;
+            case 'inherits':
+                $this->inherited_type = $value;
+                return;
         }
     }
 
