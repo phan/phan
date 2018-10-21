@@ -66,6 +66,9 @@ final class Builder
     /** @var UnionType the union type of the set of (at)throws annotations */
     public $throw_union_type;
 
+    /** @var array<int,array{0:string,1:int,2:array<int,mixed>}> */
+    private $issues = [];
+
     public function __construct(
         string $comment,
         CodeBase $code_base,
@@ -275,6 +278,10 @@ final class Builder
                 continue;
             }
             $this->parseCommentLine($i, \trim($line));
+        }
+
+        if ($this->issues) {
+            $this->emitDeferredIssues();
         }
 
         // @phan-suppress-next-line PhanAccessMethodInternal
@@ -983,12 +990,27 @@ final class Builder
         int $issue_lineno,
         ...$parameters
     ) {
-        Issue::maybeEmitWithParameters(
-            $this->code_base,
-            $this->context,
+        $this->issues[] = [
             $issue_type,
             $issue_lineno,
             $parameters
-        );
+        ];
+    }
+
+    protected function emitDeferredIssues()
+    {
+        foreach ($this->issues as list($issue_type, $issue_lineno, $parameters)) {
+            if (\in_array($issue_type, $this->suppress_issue_list, true)) {
+                continue;
+            }
+            Issue::maybeEmitWithParameters(
+                $this->code_base,
+                $this->context,
+                $issue_type,
+                $issue_lineno,
+                $parameters
+            );
+        }
+        $this->issues = [];
     }
 }

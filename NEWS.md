@@ -7,6 +7,7 @@ New features(Analysis):
 + Add `defined at {FILE}:{LINE}` to warnings about property visibility.
 + Warn about missing references (`\n` or `$n`) in the replacement template string of `preg_replace()` (#2047)
 + Make `@suppress` on closures/functions/methods apply more consistently to issues emitted when analyzing the closure/function/method declaration. (#2071)
++ Make `@suppress` on warnings about unparseable doc comments work as expected (e.g. for `PhanInvalidCommentForDeclarationType on a class`) (#1429)
 + Warn about missing/invalid files in `require`/`include`/`require_once`/`include_once` statements.
 
   New issue types: `PhanRelativePathUsed`, `PhanTypeInvalidEval`, `PhanTypeInvalidRequire`, `PhanInvalidRequireFile`, `PhanMissingRequiredFile`
