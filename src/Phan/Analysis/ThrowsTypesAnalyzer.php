@@ -49,9 +49,6 @@ class ThrowsTypesAnalyzer
          * @param array<int,int|string|Type> $args
          */
         $maybe_emit_for_method = function (string $issue_type, array $args, Suggestion $suggestion = null) use ($code_base, $method) {
-            if ($method->hasSuppressIssue($issue_type)) {
-                return;
-            }
             Issue::maybeEmitWithParameters(
                 $code_base,
                 $method->getContext(),
@@ -94,9 +91,6 @@ class ThrowsTypesAnalyzer
 
         $type_fqsen = FullyQualifiedClassName::fromType($type);
         if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
-            if ($method->hasSuppressIssue(Issue::UndeclaredTypeThrowsType)) {
-                return false;
-            }
             $maybe_emit_for_method(
                 Issue::UndeclaredTypeThrowsType,
                 [$method->getName(), $type],

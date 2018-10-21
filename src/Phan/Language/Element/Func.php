@@ -58,6 +58,18 @@ class Func extends AddressableElement implements FunctionInterface
         FullyQualifiedFunctionName $fqsen,
         $parameter_list
     ) {
+        if ($fqsen->isClosure()) {
+            $internal_scope = new ClosureScope(
+                $context->getScope(),
+                $fqsen
+            );
+        } else {
+            $internal_scope = new FunctionLikeScope(
+                $context->getScope(),
+                $fqsen
+            );
+        }
+        $context = $context->withScope($internal_scope);
         parent::__construct(
             $context,
             $name,
@@ -66,17 +78,9 @@ class Func extends AddressableElement implements FunctionInterface
             $fqsen
         );
 
-        if ($fqsen->isClosure()) {
-            $this->setInternalScope(new ClosureScope(
-                $context->getScope(),
-                $fqsen
-            ));
-        } else {
-            $this->setInternalScope(new FunctionLikeScope(
-                $context->getScope(),
-                $fqsen
-            ));
-        }
+        // TODO: Is internal scope even necessary to track separately??
+        $this->setInternalScope($internal_scope);
+
         if ($parameter_list !== null) {
             $this->setParameterList($parameter_list);
         }

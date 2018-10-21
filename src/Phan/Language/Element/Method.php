@@ -65,6 +65,11 @@ class Method extends ClassElement implements FunctionInterface
         FullyQualifiedMethodName $fqsen,
         $parameter_list
     ) {
+        $internal_scope = new FunctionLikeScope(
+            $context->getScope(),
+            $fqsen
+        );
+        $context = $context->withScope($internal_scope);
         parent::__construct(
             $context,
             FullyQualifiedMethodName::canonicalName($name),
@@ -81,10 +86,7 @@ class Method extends ClassElement implements FunctionInterface
 
         // Record the FQSEN of this method (With the current Clazz),
         // to prevent recursing from a method into itself in non-quick mode.
-        $this->setInternalScope(new FunctionLikeScope(
-            $context->getScope(),
-            $fqsen
-        ));
+        $this->setInternalScope($internal_scope);
 
         if ($parameter_list !== null) {
             $this->setParameterList($parameter_list);
