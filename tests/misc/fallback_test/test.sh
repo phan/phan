@@ -12,7 +12,7 @@ if [[ $? != 0 ]]; then
 fi
 echo "Running phan in '$PWD' ..."
 rm $ACTUAL_PATH -f || exit 1
-../../../phan --use-fallback-parser 2>&1 | tee $ACTUAL_PATH
+../../../phan --use-fallback-parser | tee $ACTUAL_PATH
 # normalize output for https://github.com/phan/phan/issues/1130
 # This has a varying order for src/020_issue.php
 sed -i "s/anonymous_class_\w\+/anonymous_class_%s/g" $ACTUAL_PATH $EXPECTED_PATH
