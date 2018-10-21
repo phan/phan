@@ -82,4 +82,22 @@ return [
     // Set this to `PHP_INT_MAX` (or other large value) to always suggesting similar names to other namespaces.
     // (Phan will be a bit slower when this config setting is a larger value)
     'suggestion_check_limit' => PHP_INT_MAX,
+
+    // Increase the string length tracked in this test so that Phan can check dynamic require_once paths.
+    'max_literal_string_type_length' => 2000,
+
+    // A list of include paths to check when checking if `require_once`, `include`, etc. are valid.
+    //
+    // To refer to the directory of the file being analyzed, use `'.'`
+    // To refer to the project root directory, you must use \Phan\Config::getProjectRootDirectory()
+    //
+    // (E.g. `['.', \Phan\Config::getProjectRootDirectory() . '/src/folder-added-to-include_path']`)
+    'include_paths' => [
+        '.',
+        \Phan\Config::getProjectRootDirectory() . '/tests/files/include',
+    ],
+
+    // Enable this to warn about the use of relative paths in `require_once`, `include`, etc.
+    // Relative paths are harder to reason about, and opcache may have issues with relative paths in edge cases.
+    'warn_about_relative_include_statement' => true,
 ];

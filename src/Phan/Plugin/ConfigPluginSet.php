@@ -35,6 +35,7 @@ use Phan\Plugin\Internal\DependentReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\MiscParamPlugin;
 use Phan\Plugin\Internal\NodeSelectionPlugin;
 use Phan\Plugin\Internal\NodeSelectionVisitor;
+use Phan\Plugin\Internal\RequireExistsPlugin;
 use Phan\Plugin\Internal\StringFunctionPlugin;
 use Phan\Plugin\Internal\ThrowAnalyzerPlugin;
 use Phan\Plugin\Internal\VariableTrackerPlugin;
@@ -747,6 +748,7 @@ final class ConfigPluginSet extends PluginV2 implements
             ];
             $plugin_set = array_merge($internal_return_type_plugins, $plugin_set);
         }
+        $plugin_set[] = new RequireExistsPlugin();
         if (Config::getValue('warn_about_undocumented_throw_statements')) {
             $plugin_set[] = new ThrowAnalyzerPlugin();
         }

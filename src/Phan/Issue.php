@@ -33,6 +33,8 @@ class Issue
     const ClassContainsAbstractMethodInternal = 'PhanClassContainsAbstractMethodInternal';
     const ClassContainsAbstractMethod = 'PhanClassContainsAbstractMethod';
     const EmptyFile                 = 'PhanEmptyFile';
+    const MissingRequireFile        = 'PhanMissingRequireFile';
+    const InvalidRequireFile        = 'PhanInvalidRequireFile';
     const ParentlessClass           = 'PhanParentlessClass';
     const RequiredTraitNotAdded     = 'PhanRequiredTraitNotAdded';
     const TraitParentReference      = 'PhanTraitParentReference';
@@ -158,6 +160,9 @@ class Issue
     const TypeInvalidMethodName           = 'PhanTypeInvalidMethodName';
     const TypeInvalidStaticMethodName     = 'PhanTypeInvalidStaticMethodName';
     const TypeInvalidCallableMethodName   = 'PhanTypeInvalidCallableMethodName';
+    const TypeInvalidRequire              = 'PhanTypeInvalidRequire';
+    const TypeInvalidEval                 = 'PhanTypeInvalidEval';
+    const RelativePathUsed                = 'PhanRelativePathUsed';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -621,6 +626,22 @@ class Issue
                 "Empty file {FILE}",
                 self::REMEDIATION_B,
                 11000
+            ),
+            new Issue(
+                self::MissingRequireFile,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Missing required file {FILE}",
+                self::REMEDIATION_B,
+                11040
+            ),
+            new Issue(
+                self::InvalidRequireFile,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Required file {FILE} is not a file",
+                self::REMEDIATION_B,
+                11041
             ),
             new Issue(
                 self::ParentlessClass,
@@ -1643,7 +1664,30 @@ class Issue
                 self::REMEDIATION_B,
                 10084
             ),
-
+            new Issue(
+                self::TypeInvalidRequire,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Require statement was passed an invalid expression of type {TYPE} (expected a string)",
+                self::REMEDIATION_B,
+                10085
+            ),
+            new Issue(
+                self::TypeInvalidEval,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Eval statement was passed an invalid expression of type {TYPE} (expected a string)",
+                self::REMEDIATION_B,
+                10086
+            ),
+            new Issue(
+                self::RelativePathUsed,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "{FUNCTION}() statement was passed a relative path {STRING_LITERAL} instead of an absolute path",
+                self::REMEDIATION_B,
+                10087
+            ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
                 self::VariableUseClause,

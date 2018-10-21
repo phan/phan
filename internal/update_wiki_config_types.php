@@ -46,6 +46,8 @@ class ConfigEntry
         'analyzed_file_extensions' => self::CATEGORY_FILES,
         'exclude_file_regex' => self::CATEGORY_FILES,
         'exclude_file_list' => self::CATEGORY_FILES,
+        'include_paths' => self::CATEGORY_ANALYSIS,
+        'warn_about_relative_include_statement' => self::CATEGORY_ANALYSIS,
         'exclude_analysis_directory_list' => self::CATEGORY_FILES,
         'include_analysis_file_list' => self::CATEGORY_FILES,
         'backward_compatibility_checks' => self::CATEGORY_ANALYSIS,

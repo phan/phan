@@ -1582,6 +1582,18 @@ Returning type {TYPE} but {FUNCTIONLIKE}() is declared to return {TYPE} ({TYPE} 
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.0.7/tests/plugin_test/expected/026_strict_return_checks.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.0.7/tests/plugin_test/src/026_strict_return_checks.php#L16).
 
+## PhanRelativePathUsed
+
+The config setting `warn_about_relative_include_statement` can be used to enable checks for this issue.
+
+Relative paths are harder to reason about, and opcache may have issues with relative paths in edge cases.
+
+```
+{FUNCTION}() statement was passed a relative path {STRING_LITERAL} instead of an absolute path
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/1.0.7/tests/files/expected/0545_require_testing.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.0.7/tests/files/src/0545_require_testing.php#L5).
+
 ## PhanTypeArrayOperator
 
 ```
@@ -1776,6 +1788,14 @@ Invalid offset {SCALAR} of array type {TYPE} in an array destructuring assignmen
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.0.7/tests/files/expected/0402_array_destructuring.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.0.7/tests/files/src/0402_array_destructuring.php#L4).
 
+## PhanTypeInvalidEval
+
+```
+Eval statement was passed an invalid expression of type {TYPE} (expected a string)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/1.0.7/tests/files/expected/0546_require_other_testing.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.0.7/tests/files/src/0546_require_other_testing.php#L7).
+
 ## PhanTypeInvalidExpressionArrayDestructuring
 
 ```
@@ -1821,6 +1841,14 @@ Instance method name must be a string, got {TYPE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.0.7/tests/files/expected/0540_invalid_method_name.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.0.7/tests/files/src/0540_invalid_method_name.php#L4).
+
+## PhanTypeInvalidRequire
+
+```
+Require statement was passed an invalid expression of type {TYPE} (expected a string)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/1.0.7/tests/files/expected/0545_require_testing.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.0.7/tests/files/src/0545_require_testing.php#L2).
 
 ## PhanTypeInvalidRightOperand
 
@@ -2257,6 +2285,28 @@ This would be emitted if you have a file with the contents
 
 ```php
 ```
+
+## PhanInvalidRequireFile
+
+```
+Required file {FILE} is not a file
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/1.0.7/tests/files/expected/0545_require_testing.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.0.7/tests/files/src/0545_require_testing.php#L5).
+
+## PhanMissingRequireFile
+
+This is emitted when a statement such as `require` or `include_once` refers to a path that doesn't exist.
+
+If this is warning about a relative include, then you may want to adjust the config settings for `include_paths` and optionally `warn_about_relative_include_paths`.
+
+Phan may fail to emit this issue when the resolved path length exceeds the config setting `max_literal_string_type_length` (which defaults to `200`)
+
+```
+Missing required file {FILE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/1.0.7/tests/files/expected/0545_require_testing.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.0.7/tests/files/src/0545_require_testing.php#L10).
 
 ## PhanParentlessClass
 
