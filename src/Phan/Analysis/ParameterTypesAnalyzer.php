@@ -312,9 +312,6 @@ class ParameterTypesAnalyzer
         if ($method->getDefiningFQSEN() !== $method->getFQSEN()) {
             return;
         }
-        if ($method->checkHasSuppressIssueAndIncrementCount(Issue::CommentOverrideOnNonOverrideMethod)) {
-            return;
-        }
         Issue::maybeEmit(
             $code_base,
             $method->getContext(),
@@ -581,58 +578,50 @@ class ParameterTypesAnalyzer
 
         if (!$signatures_match) {
             if ($o_method->isPHPInternal()) {
-                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::ParamSignatureMismatchInternal)) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $method->getContext(),
-                        Issue::ParamSignatureMismatchInternal,
-                        $method->getFileRef()->getLineNumberStart(),
-                        $method,
-                        $o_method
-                    );
-                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
+                    Issue::ParamSignatureMismatchInternal,
+                    $method->getFileRef()->getLineNumberStart(),
+                    $method,
+                    $o_method
+                );
             } else {
-                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::ParamSignatureMismatch)) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $method->getContext(),
-                        Issue::ParamSignatureMismatch,
-                        $method->getFileRef()->getLineNumberStart(),
-                        $method,
-                        $o_method,
-                        $o_method->getFileRef()->getFile(),
-                        $o_method->getFileRef()->getLineNumberStart()
-                    );
-                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
+                    Issue::ParamSignatureMismatch,
+                    $method->getFileRef()->getLineNumberStart(),
+                    $method,
+                    $o_method,
+                    $o_method->getFileRef()->getFile(),
+                    $o_method->getFileRef()->getLineNumberStart()
+                );
             }
         }
 
         // Access must be compatible
         if ($o_method->isStrictlyMoreVisibileThan($method)) {
             if ($o_method->isPHPInternal()) {
-                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::AccessSignatureMismatchInternal)) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $method->getContext(),
-                        Issue::AccessSignatureMismatchInternal,
-                        $method->getFileRef()->getLineNumberStart(),
-                        $method,
-                        $o_method
-                    );
-                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
+                    Issue::AccessSignatureMismatchInternal,
+                    $method->getFileRef()->getLineNumberStart(),
+                    $method,
+                    $o_method
+                );
             } else {
-                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::AccessSignatureMismatch)) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $method->getContext(),
-                        Issue::AccessSignatureMismatch,
-                        $method->getFileRef()->getLineNumberStart(),
-                        $method,
-                        $o_method,
-                        $o_method->getFileRef()->getFile(),
-                        $o_method->getFileRef()->getLineNumberStart()
-                    );
-                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
+                    Issue::AccessSignatureMismatch,
+                    $method->getFileRef()->getLineNumberStart(),
+                    $method,
+                    $o_method,
+                    $o_method->getFileRef()->getFile(),
+                    $o_method->getFileRef()->getLineNumberStart()
+                );
             }
         }
     }
@@ -908,9 +897,6 @@ class ParameterTypesAnalyzer
         ...$args
     ) {
         if ($method->isFromPHPDoc() || $o_method->isFromPHPDoc()) {
-            if ($method->checkHasSuppressIssueAndIncrementCount($phpdoc_issue_type)) {
-                return;
-            }
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),
@@ -924,9 +910,6 @@ class ParameterTypesAnalyzer
                 ])
             );
         } elseif ($o_method->isPHPInternal()) {
-            if ($method->checkHasSuppressIssueAndIncrementCount($internal_issue_type)) {
-                return;
-            }
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),
@@ -937,9 +920,6 @@ class ParameterTypesAnalyzer
                 ...$args
             );
         } else {
-            if ($method->checkHasSuppressIssueAndIncrementCount($issue_type)) {
-                return;
-            }
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),
@@ -1006,18 +986,16 @@ class ParameterTypesAnalyzer
             )
             ) {
                 $is_exclusively_narrowed = false;
-                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchDeclaredParam)) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeMismatchDeclaredParam,
-                        self::guessCommentParamLineNumber($method, $parameter) ?: $context->getLineNumberStart(),
-                        $parameter->getName(),
-                        $method->getName(),
-                        $phpdoc_type->__toString(),
-                        $real_param_type->__toString()
-                    );
-                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypeMismatchDeclaredParam,
+                    self::guessCommentParamLineNumber($method, $parameter) ?: $context->getLineNumberStart(),
+                    $parameter->getName(),
+                    $method->getName(),
+                    $phpdoc_type->__toString(),
+                    $real_param_type->__toString()
+                );
             }
         }
         // TODO: test edge cases of variadic signatures
@@ -1036,19 +1014,17 @@ class ParameterTypesAnalyzer
                 }
                 // This check isn't urgent to fix, and is specific to nullable casting rules,
                 // so use a different issue type.
-                if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchDeclaredParamNullable)) {
-                    $param_name = $parameter->getName();
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeMismatchDeclaredParamNullable,
-                        self::guessCommentParamLineNumber($method, $parameter) ?: $context->getLineNumberStart(),
-                        $param_name,
-                        $method->getName(),
-                        $phpdoc_param_union_type->__toString(),
-                        $real_param_type->__toString()
-                    );
-                }
+                $param_name = $parameter->getName();
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypeMismatchDeclaredParamNullable,
+                    self::guessCommentParamLineNumber($method, $parameter) ?: $context->getLineNumberStart(),
+                    $param_name,
+                    $method->getName(),
+                    $phpdoc_param_union_type->__toString(),
+                    $real_param_type->__toString()
+                );
             }
         }
     }
@@ -1147,8 +1123,7 @@ class ParameterTypesAnalyzer
     {
         if ($method->isFromPHPDoc()) {
             // TODO: Track phpdoc methods separately from real methods
-            if ($method->checkHasSuppressIssueAndIncrementCount(Issue::AccessOverridesFinalMethodPHPDoc) ||
-                $class->checkHasSuppressIssueAndIncrementCount(Issue::AccessOverridesFinalMethodPHPDoc)) {
+            if ($class->checkHasSuppressIssueAndIncrementCount(Issue::AccessOverridesFinalMethodPHPDoc)) {
                 return;
             }
             Issue::maybeEmit(
@@ -1162,9 +1137,6 @@ class ParameterTypesAnalyzer
                 $o_method->getFileRef()->getLineNumberStart()
             );
         } elseif ($o_method->isPHPInternal()) {
-            if ($method->hasSuppressIssue(Issue::AccessOverridesFinalMethodInternal)) {
-                return;
-            }
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),
@@ -1174,9 +1146,6 @@ class ParameterTypesAnalyzer
                 $o_method->getFQSEN()
             );
         } else {
-            if ($method->hasSuppressIssue(Issue::AccessOverridesFinalMethod)) {
-                return;
-            }
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),

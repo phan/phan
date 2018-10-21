@@ -50,31 +50,27 @@ class DuplicateFunctionAnalyzer
         $method_name = $method->getName();
 
         if ($original_method->isPHPInternal()) {
-            if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::RedefineFunctionInternal)) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $method->getContext(),
-                    Issue::RedefineFunctionInternal,
-                    $method->getFileRef()->getLineNumberStart(),
-                    $method_name,
-                    $method->getFileRef()->getFile(),
-                    $method->getFileRef()->getLineNumberStart()
-                );
-            }
+            Issue::maybeEmit(
+                $code_base,
+                $method->getContext(),
+                Issue::RedefineFunctionInternal,
+                $method->getFileRef()->getLineNumberStart(),
+                $method_name,
+                $method->getFileRef()->getFile(),
+                $method->getFileRef()->getLineNumberStart()
+            );
         } else {
-            if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::RedefineFunction)) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $method->getContext(),
-                    Issue::RedefineFunction,
-                    $method->getFileRef()->getLineNumberStart(),
-                    $method_name,
-                    $method->getFileRef()->getFile(),
-                    $method->getFileRef()->getLineNumberStart(),
-                    $original_method->getFileRef()->getFile(),
-                    $original_method->getFileRef()->getLineNumberStart()
-                );
-            }
+            Issue::maybeEmit(
+                $code_base,
+                $method->getContext(),
+                Issue::RedefineFunction,
+                $method->getFileRef()->getLineNumberStart(),
+                $method_name,
+                $method->getFileRef()->getFile(),
+                $method->getFileRef()->getLineNumberStart(),
+                $original_method->getFileRef()->getFile(),
+                $original_method->getFileRef()->getLineNumberStart()
+            );
         }
     }
 }

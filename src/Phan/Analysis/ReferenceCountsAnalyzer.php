@@ -267,7 +267,7 @@ class ReferenceCountsAnalyzer
     }
 
     /**
-     * Check to see if the given Clazz is a duplicate
+     * Check to see if the given AddressableElement is a duplicate
      *
      * @return void
      */
@@ -320,6 +320,10 @@ class ReferenceCountsAnalyzer
                 return;
             }
             if ($element->getFQSEN()->isClosure()) {
+                if (self::hasSuppressionForUnreferencedClosure($code_base, $element)) {
+                    // $element->getContext() is the context within the closure - We also want to check the context of the function-like outside of the closure(s).
+                    return;
+                }
                 $issue_type = Issue::UnreferencedClosure;
             }
         }
@@ -370,6 +374,12 @@ class ReferenceCountsAnalyzer
             $element->getFileRef()->getLineNumberStart(),
             (string)$element->getFQSEN()
         );
+    }
+
+    private static function hasSuppressionForUnreferencedClosure(CodeBase $code_base, Func $func) : bool
+    {
+        $context = $func->getContext();
+        return $context->withScope($context->getScope()->getParentScope())->hasSuppressIssue($code_base, Issue::UnreferencedClosure);
     }
 
     private static function maybeWarnWriteOnlyProperty(CodeBase $code_base, Property $property)

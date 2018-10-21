@@ -52,7 +52,7 @@ call_user_func(function () {
     ) {
         var_export($v);
     }
-    foreach ((new HasNoProperties()) as $v) {  // should warn about absense of any properties
+    foreach ((new HasNoProperties()) as $v) {  // should warn about absence of any properties
         var_export($v);
     }
 });

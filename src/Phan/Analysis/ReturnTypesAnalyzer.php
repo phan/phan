@@ -92,17 +92,15 @@ class ReturnTypesAnalyzer
                 // or equivalent form of the syntax-level declared
                 // return type.
                 if (!$is_exclusively_narrowed) {
-                    if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchDeclaredReturn)) {
-                        Issue::maybeEmit(
-                            $code_base,
-                            $context,
-                            Issue::TypeMismatchDeclaredReturn,
-                            ParameterTypesAnalyzer::guessCommentReturnLineNumber($method) ?? $context->getLineNumberStart(),
-                            $method->getName(),
-                            $phpdoc_type->__toString(),
-                            $real_return_type->__toString()
-                        );
-                    }
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::TypeMismatchDeclaredReturn,
+                        ParameterTypesAnalyzer::guessCommentReturnLineNumber($method) ?? $context->getLineNumberStart(),
+                        $method->getName(),
+                        $phpdoc_type->__toString(),
+                        $real_return_type->__toString()
+                    );
                 }
                 if ($is_exclusively_narrowed && Config::getValue('prefer_narrowed_phpdoc_return_type')) {
                     $normalized_phpdoc_return_type = ParameterTypesAnalyzer::normalizeNarrowedParamType($phpdoc_return_type, $real_return_type);
@@ -111,17 +109,15 @@ class ReturnTypesAnalyzer
                     } else {
                         // This check isn't urgent to fix, and is specific to nullable casting rules,
                         // so use a different issue type.
-                        if (!$method->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchDeclaredReturnNullable)) {
-                            Issue::maybeEmit(
-                                $code_base,
-                                $context,
-                                Issue::TypeMismatchDeclaredReturnNullable,
-                                ParameterTypesAnalyzer::guessCommentReturnLineNumber($method) ?? $context->getLineNumberStart(),
-                                $method->getName(),
-                                $phpdoc_type->__toString(),
-                                $real_return_type->__toString()
-                            );
-                        }
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TypeMismatchDeclaredReturnNullable,
+                            ParameterTypesAnalyzer::guessCommentReturnLineNumber($method) ?? $context->getLineNumberStart(),
+                            $method->getName(),
+                            $phpdoc_type->__toString(),
+                            $real_return_type->__toString()
+                        );
                     }
                 }
             }

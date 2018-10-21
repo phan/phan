@@ -1264,7 +1264,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
 
-        // If we have TypeMismatchReturn already, then also suppress the partial mismatch warnings as well.
+        // If we have TypeMismatchReturn already, then also suppress the partial mismatch warnings (e.g. PartialTypeMismatchReturn) as well.
         if ($this->context->hasSuppressIssue($code_base, Issue::TypeMismatchReturn)) {
             return;
         }
