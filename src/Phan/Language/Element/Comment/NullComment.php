@@ -22,11 +22,13 @@ final class NullComment extends Comment
     /** @var NullComment the only instance of NullComment. Will be immutable. */
     private static $instance;
 
-    public static function instance() : NullComment {
+    public static function instance() : NullComment
+    {
         return self::$instance;
     }
 
-    public static function init() {
+    public static function init()
+    {
         self::$instance = new NullComment();
     }
 }
