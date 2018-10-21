@@ -34,6 +34,9 @@ abstract class IncompatibleSignatureDetectorBase
 {
     use Memoize;
 
+    /** @var array<string,string> maps aliases to originals - only set for xml parser */
+    protected $aliases = [];
+
     const FUNCTIONLIKE_BLACKLIST = '@(^___PHPSTORM_HELPERS)|PS_UNRESERVE_PREFIX@';
 
     /**
@@ -202,6 +205,9 @@ EOT;
      */
     public function parseFunctionLikeSignature(string $method_name)
     {
+        if (isset($this->aliases[$method_name])) {
+            $method_name = $this->aliases[$method_name];
+        }
         if (stripos($method_name, '::') !== false) {
             $parts = \explode('::', $method_name);
             if (\count($parts) !== 2) {
@@ -366,6 +372,24 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         }
         $this->reference_directory = self::realpath($en_reference_dir);
         $this->doc_base_directory = self::realpath($dir);
+        $this->aliases = $this->parseAliases($this->doc_base_directory . '/en/appendices/aliases.xml');
+    }
+
+    private function parseAliases(string $fileName) : array {
+        $xml = $this->getSimpleXMLForFile($fileName);
+        $result = [];
+        foreach ($xml->children()[2]->table->tgroup->tbody->children() as $row) {
+            $entry = $row->entry;
+            $alias = (string)$entry[0];
+            $original = (string)$entry[1]->function;
+            if (!$original || !$alias) {
+                // E.g. an alias to a method such as ociassignelem
+                continue;
+            }
+            $result[$alias] = $original;
+            echo "Parsed $original $alias\n";
+        }
+        return $result;
     }
 
     /**
@@ -562,6 +586,8 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     {
         $this->expectFunctionLikeSignaturesMatch('strlen', ['int', 'string' => 'string']);
         $this->expectFunctionLikeSignaturesMatch('ob_clean', ['void']);
+        $this->expectFunctionLikeSignaturesMatch('disk_free_space', ['float', 'directory'=>'string']);
+        $this->expectFunctionLikeSignaturesMatch('EvWatcher::feed', ['void', 'revents'=>'int']);
         $this->expectFunctionLikeSignaturesMatch('intdiv', ['int', 'dividend' => 'int', 'divisor' => 'int']);
         $this->expectFunctionLikeSignaturesMatch('ArrayIterator::seek', ['void', 'position' => 'int']);
         $this->expectFunctionLikeSignaturesMatch('mb_chr', ['string', 'cp' => 'int', 'encoding=' => 'string']);
@@ -953,7 +979,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
     {
         $failures = 0;
         $failures += $this->expectFunctionLikeSignaturesMatch('strlen', ['int', 'string' => 'string']);
-        // $this->expectFunctionLikeSignaturesMatch('ob_clean', ['void']);
+        // $failures += $this->expectFunctionLikeSignaturesMatch('ob_clean', ['void']);
         $failures += $this->expectFunctionLikeSignaturesMatch('intdiv', ['int', 'numerator' => 'int', 'divisor' => 'int']);
         $failures += $this->expectFunctionLikeSignaturesMatch('ArrayIterator::seek', ['void', 'position' => 'int']);
         $failures += $this->expectFunctionLikeSignaturesMatch('Redis::hGet', ['string', 'key' => 'string', 'hashKey' => 'string']);
