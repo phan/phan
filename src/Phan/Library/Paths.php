@@ -12,14 +12,15 @@ class Paths
      */
     public static function isAbsolutePath(string $path) : bool
     {
+        $first_character = \substr($path, 0, 1);
         // Make sure it's actually relative
-        if (\DIRECTORY_SEPARATOR === \substr($path, 0, 1)) {
+        if (\DIRECTORY_SEPARATOR === $first_character || '/' === $first_character) {
             return true;
         }
         // Check for absolute path in windows, e.g. C:\
         if (\DIRECTORY_SEPARATOR === "\\" &&
                 \strlen($path) > 3 &&
-                \ctype_alpha($path[0]) &&
+                \ctype_alpha($first_character) &&
                 $path[1] === ':' &&
                 \strspn($path, '/\\', 2, 1)) {
             return true;
