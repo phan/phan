@@ -1,0 +1,3 @@
+%s:2 PhanTypeInvalidCloneNotObject Expected an object to be passed to clone() but got array{}
+%s:4 PhanTypeInvalidCloneNotObject Expected an object to be passed to clone() but got 'str'
+%s:5 PhanTypeInvalidCloneNotObject Expected an object to be passed to clone() but got null

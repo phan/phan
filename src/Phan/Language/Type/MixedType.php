@@ -73,4 +73,9 @@ final class MixedType extends NativeType
     {
         return true;
     }
+
+    public function isPossiblyObject() : bool
+    {
+        return true;  // It's possible.
+    }
 }

@@ -85,6 +85,7 @@ class Issue
     const TypeConversionFromArray   = 'PhanTypeConversionFromArray';
     const TypeInstantiateAbstract   = 'PhanTypeInstantiateAbstract';
     const TypeInstantiateInterface  = 'PhanTypeInstantiateInterface';
+    const TypeInvalidCloneNotObject = 'PhanTypeInvalidCloneNotObject';
     const TypeInvalidClosureScope   = 'PhanTypeInvalidClosureScope';
     const TypeInvalidLeftOperand    = 'PhanTypeInvalidLeftOperand';
     const TypeInvalidRightOperand   = 'PhanTypeInvalidRightOperand';
@@ -1687,6 +1688,14 @@ class Issue
                 "{FUNCTION}() statement was passed a relative path {STRING_LITERAL} instead of an absolute path",
                 self::REMEDIATION_B,
                 10087
+            ),
+            new Issue(
+                self::TypeInvalidCloneNotObject,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Expected an object to be passed to clone() but got {TYPE}",
+                self::REMEDIATION_B,
+                10088
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

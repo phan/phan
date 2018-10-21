@@ -1764,6 +1764,14 @@ In a place where phan was expecting a callable, saw a two-element array with a c
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.0.7/tests/files/expected/0521_misuse_closure_type.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.0.7/tests/files/src/0521_misuse_closure_type.php#L18).
 
+## PhanTypeInvalidCloneNotObject
+
+```
+Expected an object to be passed to clone() but got {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/1.0.7/tests/files/expected/0549_invalid_clone.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.0.7/tests/files/src/0549_invalid_clone.php#L2).
+
 ## PhanTypeInvalidClosureScope
 
 ```

@@ -2226,6 +2226,35 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Default visitor for node kinds that do not have
+     * an overriding method
+     *
+     * @param Node $node (@phan-unused-param)
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitClone(Node $node) : Context
+    {
+        $type = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['expr'],
+            true
+        );
+        if (!$type->isEmpty() && !$type->hasPossiblyObjectTypes()) {
+            $this->emitIssue(
+                Issue::TypeInvalidCloneNotObject,
+                $node->children['expr']->lineno ?? $node->lineno,
+                $type
+            );
+        }
+        return $this->context;
+    }
+
+    /**
      * Analyze a node with kind `\ast\AST_PROP` or `\ast\AST_STATIC_PROP`
      *
      * @param Node $node
