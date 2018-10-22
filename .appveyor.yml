@@ -1,4 +1,4 @@
-# This tests against the supported versions of Phan 0.12.x (PHP 7.0, 7.1, 7.2)
+# This tests against the supported versions of Phan 1.x.y (PHP 7.0, 7.1, 7.2)
 # The project name is the same as the build id used, e.g. https://www.appveyor.com/docs/environment-variables/
 
 version: '{branch}.{build}'
@@ -10,7 +10,7 @@ platform: x86
 
 # Test with a given PHP version
 # 1. (PHP_VERSION is the only version tested of PHP_EXT_VERSION, and it can only be built with VC_VERSION)
-# 2. Also, run tests with a variety of supported php-ast versions. Phan should work properly with php-ast 0.1.5+
+# 2. Also, run tests with a variety of supported php-ast versions. Phan should work properly with php-ast 0.1.5+ and 1.0.0+
 environment:
   matrix:
     - PHP_EXT_VERSION: '7.0'
