@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use Phan\CLI;
 use Phan\CodeBase;
 
 // Listen for all errors
@@ -37,9 +38,20 @@ assert_options(ASSERT_BAIL, false);
 assert_options(ASSERT_QUIET_EVAL, false);
 assert_options(ASSERT_CALLBACK, '');  // Can't explicitly set ASSERT_CALLBACK to null?
 
-// Print more of the backtrace than is done by default
+/**
+ * Print more of the backtrace than is done by default
+ * @suppress PhanAccessMethodInternal
+ */
 set_exception_handler(function (Throwable $throwable) {
     error_log("$throwable\n");
+    if (class_exists(CodeBase::class, false)) {
+        $most_recent_file = CodeBase::getMostRecentlyParsedOrAnalyzedFile();
+        if (is_string($most_recent_file)) {
+            error_log(sprintf("(Phan %s crashed due to an uncaught Throwable when parsing/analyzing '%s')\n", CLI::PHAN_VERSION, $most_recent_file));
+        } else {
+            error_log(sprintf("(Phan %s crashed due to an uncaught Throwable)\n", CLI::PHAN_VERSION));
+        }
+    }
     exit(EXIT_FAILURE);
 });
 
@@ -91,7 +103,9 @@ function phan_error_handler($errno, $errstr, $errfile, $errline)
     if (class_exists(CodeBase::class, false)) {
         $most_recent_file = CodeBase::getMostRecentlyParsedOrAnalyzedFile();
         if (is_string($most_recent_file)) {
-            error_log("(Crashed when parsing/analyzing '$most_recent_file')\n");
+            error_log(sprintf("(Phan %s crashed when parsing/analyzing '%s')\n", CLI::PHAN_VERSION, $most_recent_file));
+        } else {
+            error_log(sprintf("(Phan %s crashed)\n", CLI::PHAN_VERSION));
         }
     }
     if (error_reporting() === 0) {

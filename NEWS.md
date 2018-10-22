@@ -29,6 +29,7 @@ New features(Analysis):
 Maintenance:
 + Minor performance improvements.
 + Increase the default value of `max_literal_string_type_length` from 50 to 200.
++ Include Phan version in Phan's error handler and exception handler output. (#1639)
 
 Bug fixes:
 + Don't crash when parsing an invalid cast expression. Only the fallback/polyfill parsers were affected.
