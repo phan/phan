@@ -33,8 +33,8 @@
         "symfony/console": "^2.3|^3.0|~4.0"
     },
     "suggest": {
-        "ext-ast": "^0.1.5",
-        "ext-tokenizer": "Needed for non-AST support and file/line-based suppressions"
+        "ext-ast": "Needed for parsing ASTs (unless --use-fallback-parser is used). php-ast ^0.1.5|^1.0.0 is needed.",
+        "ext-tokenizer": "Needed for non-AST support and file/line-based suppressions."
     },
     "require-dev": {
         "phpunit/phpunit": "^6.3.0"
