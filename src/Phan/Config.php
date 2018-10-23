@@ -146,16 +146,23 @@ class Config
         // files that can't be removed for whatever reason.
         'exclude_file_list' => [],
 
+        // Enable this to enable checks of require/include statements referring to valid paths.
+        'enable_include_path_checks' => false,
+
         // A list of [include paths](https://secure.php.net/manual/en/ini.core.php#ini.include-path) to check when checking if `require_once`, `include`, etc. are pointing to valid files.
         //
         // To refer to the directory of the file being analyzed, use `'.'`
         // To refer to the project root directory, use \Phan\Config::getProjectRootDirectory()
         //
         // (E.g. `['.', \Phan\Config::getProjectRootDirectory() . '/src/folder-added-to-include_path']`)
+        //
+        // This is ignored if `enable_include_path_checks` is not `true`.
         'include_paths' => ['.'],
 
         // Enable this to warn about the use of relative paths in `require_once`, `include`, etc.
         // Relative paths are harder to reason about, and opcache may have issues with relative paths in edge cases.
+        //
+        // This is ignored if `enable_include_path_checks` is not `true`.
         'warn_about_relative_include_statement' => false,
 
         // A directory list that defines files that will be excluded

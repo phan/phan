@@ -308,6 +308,7 @@ EOT;
             'exclude_analysis_directory_list' => $vendor_path !== null ? [
                 'vendor/'
             ] : [],
+            'enable_include_path_checks' => !$is_weak_level,
             'processes' => 1,
             'analyzed_file_extensions' => ['php'],
             'autoload_internal_extension_signatures' => [],

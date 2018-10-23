@@ -248,6 +248,12 @@ NOTE: THIS IS EXPERIMENTAL, and the implementation may change.
 
 (Default: `false`)
 
+## enable_include_path_checks
+
+Enable this to enable checks of require/include statements referring to valid paths.
+
+(Default: `false`)
+
 ## enable_internal_return_type_plugins
 
 Set this to false to disable the plugins that Phan uses to infer more accurate return types of `array_map`, `array_filter`, and many other functions.
@@ -321,6 +327,8 @@ To refer to the directory of the file being analyzed, use `'.'`
 To refer to the project root directory, use \Phan\Config::getProjectRootDirectory()
 
 (E.g. `['.', \Phan\Config::getProjectRootDirectory() . '/src/folder-added-to-include_path']`)
+
+This is ignored if [`enable_include_path_checks`](#enable_include_path_checks) is not `true`.
 
 (Default: `["."]`)
 
@@ -519,6 +527,8 @@ into `$a = value(); if ($a) { if ($a > 0) {...}}`
 
 Enable this to warn about the use of relative paths in `require_once`, `include`, etc.
 Relative paths are harder to reason about, and opcache may have issues with relative paths in edge cases.
+
+This is ignored if [`enable_include_path_checks`](#enable_include_path_checks) is not `true`.
 
 (Default: `false`)
 

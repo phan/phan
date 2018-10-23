@@ -461,6 +461,9 @@ return [
     // (e.g. '@Test\.php$@', or '@vendor/.*/(tests|Tests)/@')
     'exclude_file_regex' => '@^vendor/.*/(tests?|Tests?)/@',
 
+    // Enable this to enable checks of require/include statements referring to valid paths.
+    'enable_include_path_checks' => true,
+
     // A list of include paths to check when checking if `require_once`, `include`, etc. are valid.
     //
     // To refer to the directory of the file being analyzed, use `'.'`
