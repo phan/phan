@@ -8,11 +8,13 @@ New features(Analysis):
 + Warn about missing references (`\n` or `$n`) in the replacement template string of `preg_replace()` (#2047)
 + Make `@suppress` on closures/functions/methods apply more consistently to issues emitted when analyzing the closure/function/method declaration. (#2071)
 + Make `@suppress` on warnings about unparseable doc comments work as expected (e.g. for `PhanInvalidCommentForDeclarationType on a class`) (#1429)
-+ Warn about missing/invalid files in `require`/`include`/`require_once`/`include_once` statements.
++ Support checking for missing/invalid files in `require`/`include`/`require_once`/`include_once` statements.
+
+  To enable these checks, set `enable_include_path_checks` to `true` in your Phan config.
 
   New issue types: `PhanRelativePathUsed`, `PhanTypeInvalidEval`, `PhanTypeInvalidRequire`, `PhanInvalidRequireFile`, `PhanMissingRequiredFile`
 
-  New config settings: `include_paths`, `warn_about_relative_include_statement`
+  New config settings: `enable_include_path_checks`, `include_paths`, `warn_about_relative_include_statement`
 + Warn when attempting to unset a property that was declared (i.e. not a dynamic or magic property) (#569)
   New issue type: `PhanTypeObjectUnsetDeclaredProperty`
 

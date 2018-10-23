@@ -166,6 +166,8 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             foreach (require($config_file_path) as $key => $value) {
                 Config::setValue($key, $value);
             }
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            ConfigPluginSet::reset();
         }
 
         $stream = new BufferedOutput();
@@ -251,5 +253,12 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             $output,
             "Unexpected output in {$test_file_list[0]}"
         );
+        if ($config_file_path) {
+            foreach (require($config_file_path) as $key => $_) {
+                Config::setValue($key, Config::DEFAULT_CONFIGURATION[$key]);
+            }
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            ConfigPluginSet::reset();
+        }
     }
 }
