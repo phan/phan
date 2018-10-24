@@ -15831,7 +15831,7 @@ return [
 'ZMQSocket::getSockOpt' => ['mixed', 'key'=>'string'],
 'ZMQSocket::isPersistent' => ['bool'],
 'ZMQSocket::recv' => ['string', 'mode='=>'int'],
-'ZMQSocket::recvMulti' => ['string', 'mode='=>'int'],
+'ZMQSocket::recvMulti' => ['array', 'mode='=>'int'],
 'ZMQSocket::send' => ['ZMQSocket', 'message'=>'array', 'mode='=>'int'],
 'ZMQSocket::send\'1' => ['ZMQSocket', 'message'=>'string', 'mode='=>'int'],
 'ZMQSocket::sendmulti' => ['ZMQSocket', 'message'=>'array', 'mode='=>'int'],
