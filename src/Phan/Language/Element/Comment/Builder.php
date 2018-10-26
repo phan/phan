@@ -433,6 +433,17 @@ final class Builder
         }
     }
 
+    private function setPhanAccessFlag(int $i, bool $write_only)
+    {
+        // Make sure support for generic types is enabled
+        if ($this->comment_type === Comment::ON_PROPERTY) {
+            $this->comment_flags |= ($write_only ? Flags::IS_WRITE_ONLY : Flags::IS_READ_ONLY);
+        } else {
+            // Emit warning message
+            $this->checkCompatible($write_only ? '@phan-write-only' : '@phan-read-only', [Comment::ON_PROPERTY], $i);
+        }
+    }
+
     private function maybeParseReturn(int $i, string $line)
     {
         $this->checkCompatible('@return', Comment::FUNCTION_LIKE, $i);
@@ -540,6 +551,10 @@ final class Builder
             $this->maybeParsePhanTemplateType($i, $line);
         } elseif ($type === 'phan-inherits') {
             $this->maybeParsePhanInherits($i, $line);
+        } elseif ($type === 'phan-read-only') {
+            $this->setPhanAccessFlag($i, false);
+        } elseif ($type === 'phan-write-only') {
+            $this->setPhanAccessFlag($i, true);
         } else {
             $this->emitIssue(
                 Issue::MisspelledAnnotation,
@@ -557,12 +572,14 @@ final class Builder
                     '@phan-property',
                     '@phan-property-read',
                     '@phan-property-write',
+                    '@phan-read-only',
                     '@phan-return',
                     '@phan-suppress',
                     '@phan-suppress-current-line',
                     '@phan-suppress-next-line',
                     '@phan-template',
                     '@phan-var',
+                    '@phan-write-only',
                 ])
             );
         }
@@ -883,8 +900,8 @@ final class Builder
     /**
      * @param string $line
      * An individual line of a comment
-     * Currently treats property-read and property-write the same way
-     * because of the rewrites required for read-only properties.
+     * Analysis will handle (at)property-read and (at)property-write differently from
+     * (at)property.
      *
      * @return Property|null
      * magic property with the union type.
@@ -899,6 +916,14 @@ final class Builder
         // TODO: properly handle duplicates...
         // TODO: support read-only/write-only checks elsewhere in the codebase?
         if (\preg_match('/@(?:phan-)?(property|property-read|property-write)(?:\s+(' . UnionType::union_type_regex . '))?(?:\s+(?:\\$' . self::WORD_REGEX . '))/', $line, $match)) {
+            $category = $match[1];
+            if ($category === 'property-read') {
+                $flags = Flags::IS_READ_ONLY;
+            } elseif ($category === 'property-write') {
+                $flags = Flags::IS_WRITE_ONLY;
+            } else {
+                $flags = 0;
+            }
             $type = $match[2] ?? '';
 
             $property_name = $match[20] ?? '';
@@ -919,7 +944,8 @@ final class Builder
             return new Property(
                 $property_name,
                 $union_type,
-                $this->guessActualLineLocation($i)
+                $this->guessActualLineLocation($i),
+                $flags
             );
         } else {
             $this->emitIssue(

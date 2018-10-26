@@ -1,0 +1,6 @@
+%s:29 PhanAccessReadOnlyMagicProperty Cannot modify read-only magic property \TestReadWriteOnly->read_only defined at %s:4
+%s:34 PhanAccessWriteOnlyMagicProperty Cannot read write-only magic property \TestReadWriteOnly->write_only defined at %s:5
+%s:35 PhanAccessWriteOnlyMagicProperty Cannot read write-only magic property \TestReadWriteOnly->write_only defined at %s:5
+%s:39 PhanAccessReadOnlyProperty Cannot modify read-only property \TestReadWriteOnly->real_read_only defined at %s:12
+%s:44 PhanAccessWriteOnlyProperty Cannot read write-only property \TestReadWriteOnly->real_write_only defined at %s:17
+%s:45 PhanAccessWriteOnlyProperty Cannot read write-only property \TestReadWriteOnly->real_write_only defined at %s:17

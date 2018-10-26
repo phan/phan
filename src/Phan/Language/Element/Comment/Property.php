@@ -18,7 +18,7 @@ class Property
 
     /**
      * @var UnionType
-     * The type of the parameter
+     * The type of the property
      */
     private $type;
 
@@ -29,25 +29,37 @@ class Property
     private $line;
 
     /**
+     * @var int
+     * The flags of this comment property
+     * (0 or IS_READ_ONLY_PROPERTY or IS_WRITE_ONLY_PROPERTY)
+     */
+    private $flags;
+
+    /**
      * @param string $name
-     * The name of the parameter
+     * The name of the property
      *
      * @param UnionType $type
-     * The type of the parameter
+     * The type of the property
+     *
+     * @param int $flags
+     * Additional flags added to a property
      */
     public function __construct(
         string $name,
         UnionType $type,
-        int $line
+        int $line,
+        int $flags
     ) {
         $this->name = $name;
         $this->type = $type;
         $this->line = $line;
+        $this->flags = $flags;
     }
 
     /**
      * @return string
-     * The name of the parameter
+     * The name of the property
      */
     public function getName() : string
     {
@@ -56,7 +68,7 @@ class Property
 
     /**
      * @return UnionType
-     * The type of the parameter
+     * The type of the property
      */
     public function getUnionType() : UnionType
     {
@@ -65,11 +77,20 @@ class Property
 
     /**
      * @return int
-     * The line of the parameter
+     * The line of the property
      */
     public function getLine() : int
     {
         return $this->line;
+    }
+
+    /**
+     * @return int
+     * The flags of the property
+     */
+    public function getFlags() : int
+    {
+        return $this->flags;
     }
 
     public function __toString() : string
