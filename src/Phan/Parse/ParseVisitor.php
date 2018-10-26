@@ -457,6 +457,8 @@ class ParseVisitor extends ScopeVisitor
                 $node->flags ?? 0,
                 $property_fqsen
             );
+
+            $property->setPhanFlags($comment->getPhanFlagsForProperty());
             $property->setDocComment($doc_comment);
 
             // Add the property to the class
@@ -524,9 +526,6 @@ class ParseVisitor extends ScopeVisitor
             if ($union_type->isType(NullType::instance(false))) {
                 $union_type = UnionType::empty();
             }
-
-            $property->setIsDeprecated($comment->isDeprecated());
-            $property->setIsNSInternal($comment->isNSInternal());
 
             // Wait until after we've added the (at)var type
             // before setting the future so that calling

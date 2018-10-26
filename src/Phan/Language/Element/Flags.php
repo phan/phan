@@ -42,6 +42,10 @@ class Flags
     const WAS_PROPERTY_WRITTEN = (1 << 19);
 
     const IS_DYNAMIC_PROPERTY = (1 << 20);
+    // A property can be read-only, write-only, or neither, but not both.
+    // This is independent of being a magic property.
+    const IS_READ_ONLY = (1 << 21);
+    const IS_WRITE_ONLY = (1 << 22);
 
     /**
      * Either enable or disable the given flag on

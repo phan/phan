@@ -297,6 +297,7 @@ class Property extends ClassElement
     /**
      * @param bool $from_phpdoc - True if this is a magic phpdoc property (declared via (at)property (-read,-write,) on class declaration phpdoc)
      * @return void
+     * @suppress PhanUnreferencedPublicMethod the caller now just sets all phan flags at once (including IS_READ_ONLY)
      */
     public function setIsFromPHPDoc(bool $from_phpdoc)
     {
@@ -312,6 +313,16 @@ class Property extends ClassElement
     public function isDynamicProperty() : bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_DYNAMIC_PROPERTY);
+    }
+
+    public function isReadOnly() : bool
+    {
+        return $this->getPhanFlagsHasState(Flags::IS_READ_ONLY);
+    }
+
+    public function isWriteOnly() : bool
+    {
+        return $this->getPhanFlagsHasState(Flags::IS_WRITE_ONLY);
     }
 
     /**

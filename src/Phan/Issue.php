@@ -301,6 +301,12 @@ class Issue
     // Issue::CATEGORY_ACCESS
     const AccessPropertyPrivate     = 'PhanAccessPropertyPrivate';
     const AccessPropertyProtected   = 'PhanAccessPropertyProtected';
+
+    const AccessReadOnlyProperty       = 'PhanAccessReadOnlyProperty';
+    const AccessWriteOnlyProperty      = 'PhanAccessWriteOnlyProperty';
+    const AccessReadOnlyMagicProperty  = 'PhanAccessReadOnlyMagicProperty';
+    const AccessWriteOnlyMagicProperty = 'PhanAccessWriteOnlyMagicProperty';
+
     const AccessMethodPrivate       = 'PhanAccessMethodPrivate';
     const AccessMethodPrivateWithCallMagicMethod = 'PhanAccessMethodPrivateWithCallMagicMethod';
     const AccessMethodProtected     = 'PhanAccessMethodProtected';
@@ -2627,6 +2633,38 @@ class Issue
                 "Cannot access private property {PROPERTY} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 1001
+            ),
+            new Issue(
+                self::AccessReadOnlyProperty,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_LOW,
+                "Cannot modify read-only property {PROPERTY} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1028
+            ),
+            new Issue(
+                self::AccessWriteOnlyProperty,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_LOW,
+                "Cannot read write-only property {PROPERTY} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1029
+            ),
+            new Issue(
+                self::AccessReadOnlyMagicProperty,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_NORMAL,
+                "Cannot modify read-only magic property {PROPERTY} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1030
+            ),
+            new Issue(
+                self::AccessWriteOnlyMagicProperty,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_NORMAL,
+                "Cannot read write-only magic property {PROPERTY} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1031
             ),
             new Issue(
                 self::AccessMethodProtected,

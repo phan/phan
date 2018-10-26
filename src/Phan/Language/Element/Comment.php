@@ -73,6 +73,8 @@ class Comment
      * @var int - contains a subset of flags to set on elements
      * Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES
      * Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS
+     * Flags::IS_READ_ONLY
+     * Flags::IS_WRITE_ONLY
      * Flags::IS_DEPRECATED
      */
     protected $comment_flags = 0;
@@ -405,6 +407,16 @@ class Comment
     public function isNSInternal() : bool
     {
         return ($this->comment_flags & Flags::IS_NS_INTERNAL) != 0;
+    }
+
+    /**
+     * @internal
+     */
+    const FLAGS_FOR_PROPERTY = Flags::IS_NS_INTERNAL | Flags::IS_DEPRECATED | Flags::IS_READ_ONLY | Flags::IS_WRITE_ONLY;
+
+    public function getPhanFlagsForProperty() : int
+    {
+        return $this->comment_flags & self::FLAGS_FOR_PROPERTY;
     }
 
     /**

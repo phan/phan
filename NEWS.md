@@ -3,6 +3,13 @@ Phan NEWS
 ?? ??? 2018, Phan 1.1.2 (dev)
 -----------------------
 
+New features(Analysis):
++ Warn when attempting to read from a write-only real/magic property (or vice-versa) (#595)
+
+  New issue types: `PhanAccessReadOnlyProperty`, `PhanAccessReadOnlyMagicProperty`, `PhanAccessWriteOnlyProperty`, `PhanAccessWriteOnlyMagicProperty`
+
+  New annotations: `@phan-read-only` and `@phan-write-only` (on its own line) in the doc comment of a real property.
+
 22 Oct 2018, Phan 1.1.1
 -----------------------
 

@@ -782,9 +782,9 @@ class Clazz extends AddressableElement
             $this->getInternalScope()
         );
         foreach ($magic_property_map as $comment_parameter) {
-            // $flags is the same as the flags for `public` and non-internal?
-            // Or \ast\flags\MODIFIER_PUBLIC.
+            // $phan_flags can be used to indicate if something is property-read or property-write
             $flags = 0;
+            $phan_flags = $comment_parameter->getFlags();
             $property_name = $comment_parameter->getName();
             $property_fqsen = FullyQualifiedPropertyName::make(
                 $class_fqsen,
@@ -797,7 +797,7 @@ class Clazz extends AddressableElement
                 $flags,
                 $property_fqsen
             );
-            $property->setIsFromPHPDoc(true);
+            $property->setPhanFlags($phan_flags | Flags::IS_FROM_PHPDOC);
 
             $this->addProperty($code_base, $property, new None());
         }
@@ -958,7 +958,9 @@ class Clazz extends AddressableElement
      * The context of the caller requesting the property
      *
      * @return Property
-     * A property with the given name
+     * A property with the given name.
+     * Callers can check if the property is read-only when writing,
+     * or write-only when reading.
      *
      * @throws IssueException
      * An exception may be thrown if the caller does not
@@ -1056,9 +1058,8 @@ class Clazz extends AddressableElement
 
             return $property;
         } elseif ($has_property) {
-            // If we have a property, but its inaccessible, emit
+            // If we have a property, but it's inaccessible, emit
             // an issue
-            // TODO: Add defined at %s:%d for the property definition - see https://github.com/phan/phan/issues/1375
             if ($property->isPrivate()) {
                 throw new IssueException(
                     Issue::fromType(Issue::AccessPropertyPrivate)(

@@ -1,0 +1,4 @@
+%s:33 PhanAccessReadOnlyMagicProperty Cannot modify read-only magic property \PropertyChecks->read_only defined at %s:4
+%s:36 PhanAccessWriteOnlyMagicProperty Cannot read write-only magic property \PropertyChecks->write_only defined at %s:5
+%s:47 PhanAccessReadOnlyProperty Cannot modify read-only property \PropertyChecks::$real_static_read_only defined at %s:23
+%s:50 PhanAccessWriteOnlyProperty Cannot read write-only property \PropertyChecks::$real_static_write_only defined at %s:28

@@ -16,6 +16,7 @@ use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\PassByReferenceVariable;
 use Phan\Language\Element\Property;
@@ -759,6 +760,9 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     private function analyzePropAssignment(Clazz $clazz, Property $property, Node $node) : Context
     {
+        if ($property->isReadOnly()) {
+            $this->analyzeAssignmentToReadOnlyProperty($property, $node);
+        }
         // TODO: Iterate over individual types, don't look at the whole type at once?
 
         // If we're assigning to an array element then we don't
@@ -841,6 +845,30 @@ class AssignmentVisitor extends AnalysisVisitor
         $this->addTypesToProperty($property, $node);
 
         return $this->context;
+    }
+
+    private function analyzeAssignmentToReadOnlyProperty(Property $property, Node $node)
+    {
+        $is_from_phpdoc = $property->isFromPHPDoc();
+        $context = $property->getContext();
+        if (!$is_from_phpdoc && $this->context->isInFunctionLikeScope()) {
+            $method = $this->context->getFunctionLikeInScope($this->code_base);
+            if ($method instanceof Method && strcasecmp($method->getName(), '__construct') === 0) {
+                $class_type = $method->getClassFQSEN()->asType();
+                if ($class_type->asExpandedTypes($this->code_base)->hasType($property->getClassFQSEN()->asType())) {
+                    // This is a constructor setting its own properties or a base class's properties.
+                    // TODO: Could support private methods
+                    return;
+                }
+            }
+        }
+        $this->emitIssue(
+            $is_from_phpdoc ? Issue::AccessReadOnlyMagicProperty : Issue::AccessReadOnlyProperty,
+            $node->lineno ?? 0,
+            $property->asPropertyFQSENString(),
+            $context->getFile(),
+            $context->getLineNumberStart()
+        );
     }
 
     private function analyzePropertyAssignmentStrict(Clazz $clazz, Property $property, UnionType $assignment_type, Node $node)

@@ -222,6 +222,29 @@ class A { public static $prop = 'value'; }
 $x = (new A())->prop;
 ```
 
+## PhanAccessReadOnlyMagicProperty
+
+This is emitted when attempting to assign to magic properties declared with `@property-read`.
+This does not attempt to catch all possible operations that modify magic properties.
+
+```
+Cannot modify read-only magic property {PROPERTY} defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0550_property_read_write_flags.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0550_property_read_write_flags.php#L29).
+
+## PhanAccessReadOnlyProperty
+
+This is emitted when attempting to read from real properties with a doc comment containing `@phan-write-only`.
+This does not attempt to catch all possible operations that read magic properties.
+This does not warn when the assignment is **directly** inside of the object's constructor.
+
+```
+Cannot modify read-only property {PROPERTY} defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0550_property_read_write_flags.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0550_property_read_write_flags.php#L39).
+
 ## PhanAccessSignatureMismatch
 
 ```
@@ -251,6 +274,28 @@ Cannot make static property {PROPERTY} into the non static property {PROPERTY}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.1/tests/files/expected/0492_class_constant_visibility.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.1/tests/files/src/0492_class_constant_visibility.php#L26).
+
+## PhanAccessWriteOnlyMagicProperty
+
+This is emitted when attempting to write to magic properties declared with `@property-read`.
+This does not attempt to catch all possible operations that modify properties (e.g. references, assignment operations).
+
+```
+Cannot read write-only magic property {PROPERTY} defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0550_property_read_write_flags.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0550_property_read_write_flags.php#L34).
+
+## PhanAccessWriteOnlyProperty
+
+This is emitted when attempting to write to real properties with a doc comment containing `@phan-read-only`.
+This does not attempt to catch all possible operations that modify properties (e.g. references, assignment operations).
+
+```
+Cannot read write-only property {PROPERTY} defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0550_property_read_write_flags.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0550_property_read_write_flags.php#L44).
 
 ## PhanAccessWrongInheritanceCategory
 
