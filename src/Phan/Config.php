@@ -416,8 +416,9 @@ class Config
         // If disabled, Phan will not read docblock type
         // annotation comments for `@property`.
         //
-        // `@property-read` and `@property-write` are treated exactly the
-        // same as `@property` for now.
+        // - When enabled, in addition to inferring existence of magic properties,
+        //   Phan will also warn when writing to `@property-read` and reading from `@property-read`.
+        // Phan will warn when writing to read-only properties and reading from write-only properties.
         //
         // Note: `read_type_annotations` must also be enabled.
         'read_magic_property_annotations' => true,

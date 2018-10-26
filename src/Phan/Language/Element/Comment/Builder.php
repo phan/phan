@@ -900,8 +900,8 @@ final class Builder
     /**
      * @param string $line
      * An individual line of a comment
-     * Currently treats property-read and property-write the same way
-     * because of the rewrites required for read-only properties.
+     * Analysis will handle (at)property-read and (at)property-write differently from
+     * (at)property.
      *
      * @return Property|null
      * magic property with the union type.

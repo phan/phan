@@ -245,8 +245,6 @@ class Comment
                 }
                 // Add it to the named map
                 // TODO: Detect duplicates, emit warning for duplicates.
-                // TODO(optional): Emit Issues when a property with only property-read is written to
-                // or vice versa.
                 $this->magic_property_map[$name] = $property;
             }
         }

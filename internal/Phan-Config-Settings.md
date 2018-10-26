@@ -483,8 +483,8 @@ Note: [`read_type_annotations`](#read_type_annotations) must also be enabled.
 If disabled, Phan will not read docblock type
 annotation comments for `@property`.
 
-`@property-read` and `@property-write` are treated exactly the
-same as `@property` for now.
+- When enabled, in addition to inferring existence of magic properties,
+  Phan will also warn when writing to `@property-read` and reading from `@property-read`.
 
 Note: [`read_type_annotations`](#read_type_annotations) must also be enabled.
 
