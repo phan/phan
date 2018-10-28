@@ -283,7 +283,7 @@ class Method extends ClassElement implements FunctionInterface
         $method = new Method(
             $this->getContext(),
             $alias_method_name,
-            $this->getUnionType(),
+            $this->getUnionTypeWithUnmodifiedStatic(),
             $this->getFlags(),
             $method_fqsen,
             $this->getParameterList()
@@ -428,16 +428,18 @@ class Method extends ClassElement implements FunctionInterface
             $method->setNumberOfRequiredParameters(0);
         }
 
+        $is_trait = $context->getScope()->isInTraitScope();
         // Add the syntax-level return type to the method's union type
         // if it exists
-        $return_union_type = UnionType::empty();
         if ($node->children['returnType'] !== null) {
-            $return_union_type = UnionTypeVisitor::unionTypeFromNode(
-                $code_base,
-                $context,
+            // TODO: Avoid resolving this, but only in traits
+            $return_union_type = (new UnionTypeVisitor($code_base, $context))->fromTypeInSignature(
                 $node->children['returnType']
             );
             $method->setUnionType($method->getUnionType()->withUnionType($return_union_type));
+            // TODO: Replace 'self' with the real class when not in a trait
+        } else {
+            $return_union_type = UnionType::empty();
         }
         $method->setRealReturnType($return_union_type);
 
@@ -445,20 +447,8 @@ class Method extends ClassElement implements FunctionInterface
         // for the method.
         if ($comment->hasReturnUnionType()) {
             $comment_return_union_type = $comment->getReturnType();
-            if ($comment_return_union_type->hasSelfType()) {
-                // We can't actually figure out 'static' at this
-                // point, but fill it in regardless. It will be partially
-                // correct
-                if ($context->isInClassScope()) {
-                    // n.b.: We're leaving the reference to self, static
-                    //       or $this in the type because I'm guessing
-                    //       it doesn't really matter. Apologies if it
-                    //       ends up being an issue.
-                    $comment_return_union_type = $comment_return_union_type->withType(
-                        $context->getClassFQSEN()->asType()
-                    );
-                    // $comment->setReturnType($comment_return_union_type);
-                }
+            if (!$is_trait) {
+                $comment_return_union_type = $comment_return_union_type->withSelfResolvedInContext($context);
             }
 
             $method->setUnionType($method->getUnionType()->withUnionType($comment_return_union_type));
@@ -499,6 +489,11 @@ class Method extends ClassElement implements FunctionInterface
         }
 
         return $union_type;
+    }
+
+    public function getUnionTypeWithUnmodifiedStatic() : UnionType
+    {
+        return parent::getUnionType();
     }
 
     /**
@@ -618,8 +613,9 @@ class Method extends ClassElement implements FunctionInterface
 
         $string .= '(' . \implode(', ', $this->getParameterList()) . ')';
 
-        if (!$this->getUnionType()->isEmpty()) {
-            $string .= ' : ' . (string)$this->getUnionType();
+        $union_type = $this->getUnionTypeWithUnmodifiedStatic();
+        if (!$union_type->isEmpty()) {
+            $string .= ' : ' . (string)$union_type;
         }
 
         return $string;

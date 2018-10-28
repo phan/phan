@@ -1,24 +1,27 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
-use AssertionError;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
 /**
- * Represents the PHPDoc type `static`.
+ * Represents the PHPDoc type `self`.
  * This is converted to a real class when necessary.
  * @see $this->withStaticResolvedInContext()
  */
-final class StaticType extends StaticOrSelfType
+final class SelfType extends StaticOrSelfType
 {
     /** Not an override */
-    const NAME = 'static';
+    const NAME = 'self';
 
+    protected function __construct(bool $is_nullable)
+    {
+        parent::__construct('\\', self::NAME, [], $is_nullable);
+    }
     /**
-     * Returns a nullable/non-nullable instance of this StaticType
+     * Returns a nullable/non-nullable instance of this SelfType
      *
      * @param bool $is_nullable
      * An optional parameter, which if true returns a
@@ -32,22 +35,16 @@ final class StaticType extends StaticOrSelfType
             static $nullable_instance = null;
 
             if ($nullable_instance === null) {
-                $nullable_instance = static::make('\\', static::NAME, [], true, Type::FROM_TYPE);
+                $nullable_instance = new self(true);
             }
 
-            if (!($nullable_instance instanceof static)) {
-                throw new AssertionError('Expected StaticType::make to return StaticType');
-            }
             return $nullable_instance;
         }
 
         static $instance;
 
         if (!$instance) {
-            $instance = static::make('\\', static::NAME, [], false, Type::FROM_TYPE);
-            if (!($instance instanceof static)) {
-                throw new AssertionError('Expected StaticType::make to return StaticType');
-            }
+            $instance = new self(false);
         }
         return $instance;
     }
@@ -57,12 +54,12 @@ final class StaticType extends StaticOrSelfType
         return false;
     }
 
-    public function isSelfType() : bool
+    public function isStaticType() : bool
     {
         return false;
     }
 
-    public function isStaticType() : bool
+    public function isSelfType() : bool
     {
         return true;
     }
@@ -80,7 +77,7 @@ final class StaticType extends StaticOrSelfType
 
     /**
      * @return Type
-     * Either this or 'static' resolved in the given context.
+     * Either this or 'self' resolved in the given context.
      */
     public function withStaticResolvedInContext(
         Context $context

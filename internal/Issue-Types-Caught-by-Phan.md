@@ -2005,6 +2005,22 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.1/tests/files/expected/0
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.1/tests/files/expected/0454_throws.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.1/tests/files/src/0454_throws.php#L30).
 
+## PhanTypeInvalidTraitParam
+
+```
+Method {METHOD} is declared to have a parameter ${PARAMETER} with a real type of trait {TYPE} (expected a class or interface or built-in type)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0560_trait_in_param_return.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0560_trait_in_param_return.php#L8).
+
+## PhanTypeInvalidTraitReturn
+
+```
+Expected a class or interface (or built-in type) to be the real return type of method {METHOD} but got trait {TRAIT}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0560_trait_in_param_return.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0560_trait_in_param_return.php#L8).
+
 ## PhanTypeInvalidUnaryOperandBitwiseNot
 
 ```
@@ -2700,7 +2716,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.1/tests/files/expected/0
 If you have a parameter on a function or method of a type that is not defined, you'll see this issue.
 
 ```
-Parameter of undeclared type {TYPE}
+Parameter ${PARAMETER} has undeclared type {TYPE}
 ```
 
 This issue will be emitted from the following code

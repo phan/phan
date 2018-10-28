@@ -1,1 +1,1 @@
-%s:31 PhanUndeclaredTypeParameter Parameter of undeclared type \stdClas (Did you mean class \stdClass)
+%s:33 PhanUndeclaredTypeParameter Parameter $param4 has undeclared type \stdClas (Did you mean class \stdClass)

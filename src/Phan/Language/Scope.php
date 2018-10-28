@@ -129,6 +129,20 @@ abstract class Scope
         return ($this->flags & self::IN_CLASS_LIKE_SCOPE) !== 0;
     }
 
+    public function isInTraitScope() : bool
+    {
+        return ($this->flags & self::IN_TRAIT_SCOPE) !== 0;
+    }
+
+    /**
+     * Checks if we're in an interface's scope.
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function isInInterfaceScope() : bool
+    {
+        return ($this->flags & self::IN_INTERFACE_SCOPE) !== 0;
+    }
+
     /**
      * Returns true if we're in an element scope (i.e. not in the global scope)
      */

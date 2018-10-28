@@ -276,11 +276,7 @@ class Parameter extends Variable
     ) : Parameter {
         // Get the type of the parameter
         $type_node = $node->children['type'];
-        $union_type = UnionTypeVisitor::unionTypeFromNode(
-            $code_base,
-            $context,
-            $type_node
-        );
+        $union_type = $type_node ? (new UnionTypeVisitor($code_base, $context))->fromTypeInSignature($type_node) : UnionType::empty();
 
         // Create the skeleton parameter from what we know so far
         $parameter = Parameter::create(

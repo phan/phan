@@ -14,6 +14,7 @@ use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\Type\StaticOrSelfType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 use Phan\LanguageServer\Protocol\Hover;
@@ -135,7 +136,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
             if ($type instanceof TemplateType) {
                 continue;
             }
-            if ($type->isSelfType() || $type->isStaticType()) {
+            if ($type instanceof StaticOrSelfType) {
                 if (!$context->isInClassScope()) {
                     // Phan already warns elsewhere
                     continue;
@@ -188,7 +189,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
             if ($type instanceof TemplateType) {
                 continue;
             }
-            if ($type->isSelfType() || $type->isStaticType()) {
+            if ($type instanceof StaticOrSelfType) {
                 if (!$context->isInClassScope()) {
                     // Phan already warns elsewhere
                     continue;

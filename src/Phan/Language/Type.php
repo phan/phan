@@ -38,6 +38,7 @@ use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\ScalarRawType;
 use Phan\Language\Type\ScalarType;
+use Phan\Language\Type\SelfType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
@@ -403,7 +404,7 @@ class Type
 
         if ($template_parameter_type_list) {
             $key .= '<' . \implode(',', \array_map(function (UnionType $union_type) : string {
-                return (string)$union_type;
+                return $union_type->__toString();
             }, $template_parameter_type_list)) . '>';
         }
 
@@ -750,7 +751,7 @@ class Type
     ) : Type {
 
         return self::fromStringInContext(
-            (string)$reflection_type,
+            $reflection_type->__toString(),
             new Context(),
             Type::FROM_NODE
         );
@@ -1196,7 +1197,7 @@ class Type
                 $element_type = self::maybeFindParentType($non_generic_array_type_name[0] === '?', $context, $code_base);
             } else {
                 $element_type = static::fromFullyQualifiedString(
-                    (string)$context->getClassFQSEN()
+                    $context->getClassFQSEN()->__toString()
                 );
             }
 
@@ -1216,8 +1217,11 @@ class Type
                 // Will throw if $code_base is null or there is no parent type
                 return self::maybeFindParentType($is_nullable, $context, $code_base);
             }
+            if ($source === self::FROM_PHPDOC && $context->getScope()->isInTraitScope()) {
+                return SelfType::instance($is_nullable);
+            }
             return static::fromFullyQualifiedString(
-                (string)$context->getClassFQSEN()
+                $context->getClassFQSEN()->__toString()
             )->withIsNullable($is_nullable);
         }
 
@@ -1584,6 +1588,7 @@ class Type
      */
     public function isSelfType() : bool
     {
+        // TODO: Ensure that this is always a SelfType instance
         return $this->namespace === '\\' && self::isSelfTypeString($this->name);
     }
 
@@ -1595,6 +1600,20 @@ class Type
      */
     public function isStaticType() : bool
     {
+        return false;
+    }
+
+    public function hasStaticOrSelfTypesRecursive(CodeBase $code_base) : bool
+    {
+        $union_type = $this->iterableValueUnionType($code_base);
+        if (!$union_type) {
+            return false;
+        }
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type->hasStaticOrSelfTypesRecursive($code_base)) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -1795,6 +1814,8 @@ class Type
 
     /**
      * @return ?UnionType returns the iterable value's union type if this is a subtype of iterable, null otherwise.
+     *
+     * This is overridden by the array subclasses
      */
     public function iterableValueUnionType(CodeBase $unused_code_base)
     {
@@ -2246,23 +2267,9 @@ class Type
      * Either this or 'static' resolved in the given context.
      */
     public function withStaticResolvedInContext(
-        Context $context
+        Context $_
     ) : Type {
-        // TODO: Create SelfType, to go along with StaticType
-        if (\strcasecmp($this->name, 'self') !== 0) {
-            return $this;
-        }
-
-        // If the context isn't in a class scope, there's nothing
-        // we can do
-        if (!$context->isInClassScope()) {
-            return $this;
-        }
-        $type = $context->getClassFQSEN()->asType();
-        if ($this->getIsNullable()) {
-            return $type->withIsNullable(true);
-        }
-        return $type;
+        return $this;
     }
 
     /**

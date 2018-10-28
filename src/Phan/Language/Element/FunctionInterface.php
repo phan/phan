@@ -382,4 +382,6 @@ interface FunctionInterface extends AddressableElementInterface
      * Converts Generator|array<int,stdClass> to Generator<int,stdClass>, etc.
      */
     public function getReturnTypeAsGeneratorTemplateType() : Type;
+
+    public function getUnionTypeWithUnmodifiedStatic() : UnionType;
 }
