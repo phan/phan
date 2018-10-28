@@ -233,7 +233,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
 
     /**
      * @param PhpParser\Node|Token $n - The node from PHP-Parser
-     * @return ast\Node|ast\Node[]|string|int|float|bool - whatever ast\parse_code would return as the equivalent.
+     * @return ast\Node|ast\Node[]|string|int|float|bool|null - whatever ast\parse_code would return as the equivalent.
      * @throws InvalidNodeException when self::$should_add_placeholders is false, like many of these methods.
      * @override
      */

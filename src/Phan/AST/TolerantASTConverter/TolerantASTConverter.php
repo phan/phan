@@ -71,6 +71,13 @@ if (!class_exists('ast\Node')) {
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
+ *
+ * NOTE: EchoExpression can get converted to multiple `ast\Node`s (e.g. for `echo 'first', 'second';`, which is why this has so many partial mismatches.
+ * The current version of tolerant-php-parser prevents EchoExpression (and UnsetIntrinsicExpression) from being anything other than a top-level statement.
+ *
+ * @phan-file-suppress PhanPartialTypeMismatchReturn
+ * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  */
 class TolerantASTConverter
 {
@@ -279,7 +286,7 @@ class TolerantASTConverter
                 continue;
             }
             if (\is_array($child_node)) {
-                // Echo_ returns multiple children.
+                // EchoExpression returns multiple children.
                 foreach ($child_node as $child_node_part) {
                     $children[] = $child_node_part;
                 }
@@ -309,7 +316,7 @@ class TolerantASTConverter
             }
             $child_node = static::phpParserNodeToAstNode($expr);
             if (\is_array($child_node)) {
-                // Echo_ returns multiple children in php-ast
+                // EchoExpression returns multiple children in php-ast
                 foreach ($child_node as $child_node_part) {
                     $children[] = $child_node_part;
                 }
@@ -362,7 +369,7 @@ class TolerantASTConverter
 
     /**
      * @param PhpParser\Node|Token $n - The node from PHP-Parser
-     * @return ast\Node|ast\Node[]|string|int|float|bool - whatever ast\parse_code would return as the equivalent.
+     * @return ast\Node|ast\Node[]|string|int|float|bool|null - whatever ast\parse_code would return as the equivalent.
      * @throws InvalidNodeException when self::$should_add_placeholders is false, like many of these methods.
      */
     protected static function phpParserNodeToAstNodeOrPlaceholderExpr($n)
@@ -1021,7 +1028,7 @@ class TolerantASTConverter
                 foreach ($n->statements as $parser_node) {
                     $child_node = static::phpParserNodeToAstNode($parser_node);
                     if (\is_array($child_node)) {
-                        // Echo_ returns multiple children.
+                        // EchoExpression returns multiple children.
                         foreach ($child_node as $child_node_part) {
                             $children[] = $child_node_part;
                         }

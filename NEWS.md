@@ -10,6 +10,10 @@ New features(Analysis):
 
   New annotations: `@phan-read-only` and `@phan-write-only` (on its own line) in the doc comment of a real property.
 
+Bug fixes:
++ Properly type check `static::someMethodName()`.
+  Previously, Phan would fail to infer types for the results of those method calls.
+
 22 Oct 2018, Phan 1.1.1
 -----------------------
 
