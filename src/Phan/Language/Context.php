@@ -389,6 +389,7 @@ class Context extends FileRef
      * @return bool
      * True if this context is currently within a property
      * scope, else false.
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function isInPropertyScope() : bool
     {
@@ -418,7 +419,7 @@ class Context extends FileRef
      */
     public function getClassInScope(CodeBase $code_base) : Clazz
     {
-        if (!$this->isInClassScope()) {
+        if (!$this->scope->isInClassScope()) {
             throw new AssertionError("Must be in class scope to get class");
         }
 
@@ -447,7 +448,7 @@ class Context extends FileRef
      */
     public function getPropertyInScope(CodeBase $code_base) : Property
     {
-        if (!$this->isInPropertyScope()) {
+        if (!$this->scope->isInPropertyScope()) {
             throw new AssertionError("Must be in property scope to get property");
         }
 
@@ -480,10 +481,7 @@ class Context extends FileRef
      */
     public function isInMethodScope() : bool
     {
-        return (
-            $this->isInClassScope()
-            && $this->isInFunctionLikeScope()
-        );
+        return $this->scope->isInMethodLikeScope();
     }
 
     /**
@@ -534,13 +532,11 @@ class Context extends FileRef
      * True if we're within the scope of a class, method,
      * function or closure. False if we're in the global
      * scope
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function isInElementScope() : bool
     {
-        return (
-            $this->isInFunctionLikeScope()
-            || $this->isInClassScope()  // isInPropertyScope implies isInClassScope
-        );
+        return $this->scope->isInElementScope();
     }
 
     /**
@@ -550,7 +546,7 @@ class Context extends FileRef
      */
     public function isInGlobalScope() : bool
     {
-        return !$this->isInElementScope();
+        return !$this->scope->isInElementScope();
     }
 
     /**
@@ -567,11 +563,11 @@ class Context extends FileRef
      */
     public function getElementInScope(CodeBase $code_base) : TypedElement
     {
-        if ($this->isInFunctionLikeScope()) {
+        if ($this->scope->isInFunctionLikeScope()) {
             return $this->getFunctionLikeInScope($code_base);
-        } elseif ($this->isInPropertyScope()) {
+        } elseif ($this->scope->isInPropertyScope()) {
             return $this->getPropertyInScope($code_base);
-        } elseif ($this->isInClassScope()) {
+        } elseif ($this->scope->isInClassScope()) {
             return $this->getClassInScope($code_base);
         }
 
@@ -597,7 +593,7 @@ class Context extends FileRef
         if ($code_base->hasFileLevelSuppression($this->getFile(), $issue_name)) {
             return true;
         }
-        if (!$this->isInElementScope()) {
+        if (!$this->scope->isInElementScope()) {
             return false;
         }
 

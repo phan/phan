@@ -13,6 +13,10 @@ use Phan\Language\Scope;
  */
 class BranchScope extends Scope
 {
+    public function __construct(Scope $scope)
+    {
+        parent::__construct($scope, null, $scope->flags);
+    }
 
     /**
      * @return bool
@@ -50,15 +54,6 @@ class BranchScope extends Scope
     }
 
     /**
-     * @return bool
-     * True if we're in a class scope
-     */
-    public function isInClassScope() : bool
-    {
-        return $this->parent_scope->isInClassScope();
-    }
-
-    /**
      * @return FullyQualifiedClassName
      * Crawl the scope hierarchy to get a class FQSEN.
      */
@@ -84,14 +79,5 @@ class BranchScope extends Scope
     public function getFunctionLikeFQSEN()
     {
         return $this->parent_scope->getFunctionLikeFQSEN();
-    }
-
-    /**
-     * @return bool
-     * True if we're in a class scope
-     */
-    public function isInFunctionLikeScope() : bool
-    {
-        return $this->parent_scope->isInFunctionLikeScope();
     }
 }

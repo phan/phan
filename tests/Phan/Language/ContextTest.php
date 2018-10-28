@@ -41,10 +41,12 @@ final class ContextTest extends BaseTest
         $context_namespace =
             $context->withNamespace('\A');
 
+        $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\A\\B');
         $context_class = $context_namespace->withScope(
             new ClassScope(
                 $context_namespace->getScope(),
-                FullyQualifiedClassName::fromFullyQualifiedString('\\A\\B')
+                $class_fqsen,
+                0
             )
         );
 

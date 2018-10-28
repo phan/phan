@@ -22,16 +22,34 @@ use Phan\Language\Type\TemplateType;
  */
 abstract class Scope
 {
+    const IN_FUNCTION_LIKE_SCOPE = 0x01;
+    // If this is set, and neither IN_TRAIT_SCOPE and IN_INTERFACE_SCOPE are set, this is
+    const IN_CLASS_SCOPE         = 0x02;
+    // If this is set, this is a trait (self::IN_CLASS_SCOPE will also be set)
+    const IN_TRAIT_SCOPE         = 0x04;
+    // If this is set, this is an interface (self::IN_CLASS_SCOPE will also be set)
+    const IN_INTERFACE_SCOPE     = 0x08;
+    const IN_CLASS_LIKE_SCOPE    = self::IN_CLASS_SCOPE | self::IN_TRAIT_SCOPE | self::IN_INTERFACE_SCOPE;
+    const IN_PROPERTY_SCOPE      = 0x10;
+
     /**
-     * @var Scope|null the parent scope, if this is not the global scope
+     * @var Scope the parent scope, if this is not the global scope
      */
     protected $parent_scope = null;
 
     /**
      * @var FQSEN|null the FQSEN that this scope is within,
      * if this scope is within an element such as a function body or class definition.
+     *
+     * This is null only in the subclass GlobalScope
      */
     protected $fqsen = null;
+
+    /**
+     * @var int flags - Combination of self::IN_*
+     * This allows us to check if we are in a class-like scope, function-like scope, etc. without recursing.
+     */
+    protected $flags = 0;
 
     /**
      * @var array<string,Variable> the map of variable names to variables within this scope.
@@ -48,24 +66,28 @@ abstract class Scope
     private $template_type_map = [];
 
     /**
-     * @param ?Scope $parent_scope
+     * @param Scope $parent_scope
      * @param ?FQSEN $fqsen
+     * @param int $flags
      */
     public function __construct(
-        Scope $parent_scope = null,
-        FQSEN $fqsen = null
+        Scope $parent_scope,
+        $fqsen,
+        int $flags
     ) {
         $this->parent_scope = $parent_scope;
         $this->fqsen = $fqsen;
+        $this->flags = $flags;
     }
 
     /**
      * @return bool
      * True if this scope has a parent scope
+     * @suppress PhanUnreferencedPublicMethod this was optimized out within the class
      */
     public function hasParentScope() : bool
     {
-        return $this->parent_scope !== null;
+        return true;
     }
 
     /**
@@ -100,12 +122,28 @@ abstract class Scope
 
     /**
      * @return bool
-     * True if we're in a class scope
+     * True if we're in a class-like scope
      */
     public function isInClassScope() : bool
     {
-        return $this->hasParentScope()
-            ? $this->getParentScope()->isInClassScope() : false;
+        return ($this->flags & self::IN_CLASS_LIKE_SCOPE) !== 0;
+    }
+
+    /**
+     * Returns true if we're in an element scope (i.e. not in the global scope)
+     */
+    public function isInElementScope() : bool
+    {
+        return $this->flags !== 0;
+    }
+
+    /**
+     * @return bool
+     * True if we're in a method-like scope
+     */
+    public function isInMethodLikeScope() : bool
+    {
+        return ($this->flags & self::IN_CLASS_LIKE_SCOPE) !== 0 && $this->flags & self::IN_FUNCTION_LIKE_SCOPE !== 0;
     }
 
     /**
@@ -114,11 +152,7 @@ abstract class Scope
      */
     public function getClassFQSEN() : FullyQualifiedClassName
     {
-        if (!$this->hasParentScope()) {
-            throw new AssertionError("Cannot get class FQSEN on scope");
-        }
-
-        return $this->getParentScope()->getClassFQSEN();
+        return $this->parent_scope->getClassFQSEN();
     }
 
     /**
@@ -127,11 +161,7 @@ abstract class Scope
      */
     public function getClassFQSENOrNull()
     {
-        if (!$this->hasParentScope()) {
-            return null;
-        }
-
-        return $this->getParentScope()->getClassFQSENOrNull();
+        return $this->parent_scope->getClassFQSENOrNull();
     }
 
     /**
@@ -140,8 +170,7 @@ abstract class Scope
      */
     public function isInPropertyScope() : bool
     {
-        return $this->hasParentScope()
-            ? $this->getParentScope()->isInPropertyScope() : false;
+        return (self::IN_PROPERTY_SCOPE & $this->flags) !== 0;
     }
 
     /**
@@ -150,11 +179,7 @@ abstract class Scope
      */
     public function getPropertyFQSEN() : FullyQualifiedPropertyName
     {
-        if (!$this->hasParentScope()) {
-            throw new AssertionError("Cannot get class FQSEN on scope");
-        }
-
-        return $this->getParentScope()->getPropertyFQSEN();
+        return $this->parent_scope->getPropertyFQSEN();
     }
 
     /**
@@ -163,8 +188,7 @@ abstract class Scope
      */
     public function isInFunctionLikeScope() : bool
     {
-        return $this->hasParentScope()
-            ? $this->getParentScope()->isInFunctionLikeScope() : false;
+        return ($this->flags & self::IN_FUNCTION_LIKE_SCOPE) !== 0;
     }
 
     /**
@@ -173,11 +197,7 @@ abstract class Scope
      */
     public function getFunctionLikeFQSEN()
     {
-        if (!$this->hasParentScope()) {
-            throw new AssertionError("Cannot get method/function/closure FQSEN on scope");
-        }
-
-        return $this->getParentScope()->getFunctionLikeFQSEN();
+        return $this->parent_scope->getFunctionLikeFQSEN();
     }
 
     /**
@@ -278,11 +298,7 @@ abstract class Scope
      */
     public function addGlobalVariable(Variable $variable)
     {
-        if (!$this->hasParentScope()) {
-            throw new AssertionError("No global scope available. This should not happen.");
-        }
-
-        $this->getParentScope()->addGlobalVariable($variable);
+        $this->parent_scope->addGlobalVariable($variable);
     }
 
     /**
@@ -291,11 +307,7 @@ abstract class Scope
      */
     public function hasGlobalVariableWithName(string $name) : bool
     {
-        if (!$this->hasParentScope()) {
-            throw new AssertionError("No global scope available. This should not happen.");
-        }
-
-        return $this->getParentScope()->hasGlobalVariableWithName($name);
+        return $this->parent_scope->hasGlobalVariableWithName($name);
     }
 
     /**
@@ -304,11 +316,7 @@ abstract class Scope
      */
     public function getGlobalVariableByName(string $name) : Variable
     {
-        if (!$this->hasParentScope()) {
-            throw new AssertionError("No global scope available. This should not happen.");
-        }
-
-        return $this->getParentScope()->getGlobalVariableByName($name);
+        return $this->parent_scope->getGlobalVariableByName($name);
     }
 
     /**
@@ -323,7 +331,7 @@ abstract class Scope
         }
 
         return \count($this->template_type_map) > 0
-            || ($this->hasParentScope() && $this->getParentScope()->hasAnyTemplateType());
+            || $this->parent_scope->hasAnyTemplateType();
     }
 
     /**
@@ -335,9 +343,7 @@ abstract class Scope
     {
         return \array_merge(
             $this->template_type_map,
-            $this->hasParentScope()
-                ? $this->getParentScope()->getTemplateTypeMap()
-                : []
+            $this->parent_scope->getTemplateTypeMap()
         );
     }
 
@@ -352,9 +358,9 @@ abstract class Scope
 
         return isset(
             $this->template_type_map[$template_type_identifier]
-        ) || ($this->hasParentScope() ? $this->getParentScope()->hasTemplateType(
+        ) || $this->parent_scope->hasTemplateType(
             $template_type_identifier
-        ) : false);
+        );
     }
 
     /**
@@ -389,9 +395,7 @@ abstract class Scope
         }
 
         return $this->template_type_map[$template_type_identifier]
-            ?? $this->getParentScope()->getTemplateType(
-                $template_type_identifier
-            );
+            ?? $this->parent_scope->getTemplateType($template_type_identifier);
     }
 
     /**
