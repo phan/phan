@@ -3,7 +3,6 @@ namespace Phan\Language\Type;
 
 use Phan\CodeBase;
 use Phan\Language\Type;
-use Phan\Language\Type\ArrayType;
 use Phan\Language\UnionType;
 
 /**

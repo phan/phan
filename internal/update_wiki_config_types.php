@@ -77,6 +77,7 @@ class ConfigEntry
         'unused_variable_detection' => self::CATEGORY_DEAD_CODE_DETECTION,
         'force_tracking_references' => self::CATEGORY_DEAD_CODE_DETECTION,
         'dead_code_detection_prefer_false_negative' => self::CATEGORY_DEAD_CODE_DETECTION,
+        'warn_about_redundant_use_namespaced_class' => self::CATEGORY_DEAD_CODE_DETECTION,
         'simplify_ast' => self::CATEGORY_ANALYSIS,
         'enable_class_alias_support' => self::CATEGORY_ANALYSIS,
         'read_magic_property_annotations' => self::CATEGORY_ANALYSIS,

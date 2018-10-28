@@ -9,6 +9,12 @@ New features(Analysis):
   New issue types: `PhanAccessReadOnlyProperty`, `PhanAccessReadOnlyMagicProperty`, `PhanAccessWriteOnlyProperty`, `PhanAccessWriteOnlyMagicProperty`
 
   New annotations: `@phan-read-only` and `@phan-write-only` (on its own line) in the doc comment of a real property.
++ Warn about use statements that are redundant. (#2048)
+
+  New issue types: `PhanUseConstantNoEffect`, `PhanUseFunctionNoEffect`, `PhanUseNormalNamespacedNoEffect`, `PhanUseNormalNoEffect`
+
+  By default, this will only warn about use statements made from the global namespace, of elements also in the global namespace.
+  To also warn about redundant **namespaced** uses of classes/namespaces (e.g. `namespace Foo; use Foo\MyClass;`), enable `warn_about_redundant_use_namespaced_class`
 
 Bug fixes:
 + Properly type check `static::someMethodName()`.

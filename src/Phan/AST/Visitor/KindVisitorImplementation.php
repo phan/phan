@@ -3,7 +3,6 @@ namespace Phan\AST\Visitor;
 
 use AssertionError;
 use ast\Node;
-use Phan\AST\Visitor\Element;
 use Phan\Debug;
 
 /**

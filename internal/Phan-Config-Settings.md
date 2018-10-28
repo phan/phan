@@ -485,6 +485,7 @@ annotation comments for `@property`.
 
 - When enabled, in addition to inferring existence of magic properties,
   Phan will also warn when writing to `@property-read` and reading from `@property-read`.
+Phan will warn when writing to read-only properties and reading from write-only properties.
 
 Note: [`read_type_annotations`](#read_type_annotations) must also be enabled.
 
@@ -703,6 +704,14 @@ Set to true in order to attempt to detect unused variables.
 [`dead_code_detection`](#dead_code_detection) will also enable unused variable detection.
 
 This has a few known false positives, e.g. for loops or branches.
+
+(Default: `false`)
+
+## warn_about_redundant_use_namespaced_class
+
+Enable this to warn about harmless redundant use for classes and namespaces such as `use Foo\bar` in namespace Foo.
+
+Note: This does not affect warnings about redundant uses in the global namespace.
 
 (Default: `false`)
 

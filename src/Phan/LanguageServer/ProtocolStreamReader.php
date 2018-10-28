@@ -5,7 +5,6 @@ namespace Phan\LanguageServer;
 
 use AdvancedJsonRpc\Message as MessageBody;
 use Exception;
-use Phan\LanguageServer\Logger;
 use Phan\LanguageServer\Protocol\Message;
 use Sabre\Event\Emitter;
 use Sabre\Event\Loop;

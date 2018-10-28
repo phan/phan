@@ -2,7 +2,6 @@
 namespace Phan;
 
 use Closure;
-use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;

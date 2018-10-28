@@ -8,7 +8,6 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
-use Phan\Language\Element\Comment;
 use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;

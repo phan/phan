@@ -58,6 +58,11 @@ return [
     // dead_code_detection will also enable unused variable detection.
     'unused_variable_detection' => true,
 
+    // Enable this to warn about harmless redundant use for classes and namespaces such as `use Foo\bar` in namespace Foo.
+    //
+    // Note: This does not affect warnings about redundant uses in the global namespace.
+    'warn_about_redundant_use_namespaced_class' => true,
+
     // If true, Phan will read `class_alias` calls in the global scope,
     // then (1) create aliases from the *parsed* files if no class definition was found,
     // and (2) emit issues in the global scope if the source or target class is invalid.

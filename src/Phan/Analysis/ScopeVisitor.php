@@ -2,6 +2,7 @@
 namespace Phan\Analysis;
 
 use AssertionError;
+use ast;
 use ast\Node;
 use Phan\AST\AnalysisVisitor;
 use Phan\Config;
@@ -156,6 +157,9 @@ abstract class ScopeVisitor extends AnalysisVisitor
             if ($flags === \ast\flags\USE_NORMAL && $target_php_version < 70200) {
                 self::analyzeUseElemCompatibility($alias, $target, $target_php_version, $lineno);
             }
+            if (\strcasecmp($target->getNamespace(), $context->getNamespace()) === 0) {
+                $this->maybeWarnSameNamespaceUse($target, $flags, $lineno);
+            }
             $context = $context->withNamespaceMap(
                 $flags,
                 $alias,
@@ -165,6 +169,35 @@ abstract class ScopeVisitor extends AnalysisVisitor
         }
 
         return $context;
+    }
+
+    private function maybeWarnSameNamespaceUse(FullyQualifiedGlobalStructuralElement $target, int $flags, int $lineno)
+    {
+        if ($flags === ast\flags\USE_FUNCTION) {
+            if ($target->getNamespace() !== '\\') {
+                return;
+            }
+            $issue_type = Issue::UseFunctionNoEffect;
+        } elseif ($flags === ast\flags\USE_CONST) {
+            if ($target->getNamespace() !== '\\') {
+                return;
+            }
+            $issue_type = Issue::UseContantNoEffect;
+        } else {
+            if ($target->getNamespace() !== '\\') {
+                if (!Config::getValue('warn_about_relative_include_statement')) {
+                    return;
+                }
+                $issue_type = Issue::UseNormalNamespacedNoEffect;
+            } else {
+                $issue_type = Issue::UseNormalNoEffect;
+            }
+        }
+        $this->emitIssue(
+            $issue_type,
+            $lineno,
+            $target
+        );
     }
 
     /** @return void */
