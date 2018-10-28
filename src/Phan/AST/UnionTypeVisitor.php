@@ -2443,7 +2443,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->code_base,
             $this->context,
             $node
-        );
+        )->withStaticResolvedInContext($this->context);
 
         // Iterate over each viable class type to see if any
         // have the constant we're looking for

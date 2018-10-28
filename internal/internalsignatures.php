@@ -89,7 +89,7 @@ EOT;
     }
 
     /**
-     * @return array|null
+     * @return array
      */
     private function updateSignature(string $function_like_name, array $arguments_from_phan)
     {
