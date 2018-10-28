@@ -461,11 +461,20 @@ class TolerantASTConverter
                 }
                 return $result;
             },
-            'Microsoft\PhpParser\Node\Expression\SubscriptExpression' => function (PhpParser\Node\Expression\SubscriptExpression $n, int $start_line) : ast\Node {
-                return new ast\Node(ast\AST_DIM, 0, [
-                    'expr' => static::phpParserNodeToAstNode($n->postfixExpression),
-                    'dim' => $n->accessExpression !== null ? static::phpParserNodeToAstNode($n->accessExpression) : null,
-                ], $start_line);
+            /**
+             * @return ast\Node|string|int|float
+             * @throws InvalidNodeException
+             */
+            'Microsoft\PhpParser\Node\Expression\SubscriptExpression' => function (PhpParser\Node\Expression\SubscriptExpression $n, int $start_line) {
+                $expr = static::phpParserNodeToAstNode($n->postfixExpression);
+                try {
+                    return new ast\Node(ast\AST_DIM, 0, [
+                        'expr' => $expr,
+                        'dim' => $n->accessExpression !== null ? static::phpParserNodeToAstNode($n->accessExpression) : null,
+                    ], $start_line);
+                } catch (InvalidNodeException $_) {
+                    return $expr;
+                }
             },
             /** @return ?ast\Node */
             'Microsoft\PhpParser\Node\Expression\AssignmentExpression' => function (PhpParser\Node\Expression\AssignmentExpression $n, int $start_line) {

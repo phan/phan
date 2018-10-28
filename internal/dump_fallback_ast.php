@@ -43,11 +43,19 @@ function dump_main()
     error_reporting(E_ALL);
     global $argv;
 
-    $as_php_ast = ($argv[1] ?? null) === '--php-ast';
-    if ($as_php_ast) {
-        unset($argv[1]);
-        $argv = array_values($argv);
+    $as_php_ast = false;
+    $as_php_ast_with_placeholders = false;
+    foreach ($argv as $i => $arg) {
+        if ($arg === '--php-ast') {
+            $as_php_ast = true;
+            unset($argv[$i]);
+        } elseif ($arg === '--php-ast-with-placeholders') {
+            $as_php_ast = true;
+            $as_php_ast_with_placeholders = true;
+            unset($argv[$i]);
+        }
     }
+    $argv = array_values($argv);
 
     if (count($argv) !== 2) {
         $help = <<<"EOB"
@@ -72,7 +80,7 @@ EOB;
     }
 
     if ($as_php_ast) {
-        dump_expr_as_ast($expr);
+        dump_expr_as_ast($expr, $as_php_ast_with_placeholders);
     } else {
         dump_expr($expr);
     }
@@ -82,9 +90,11 @@ EOB;
  * Parses $expr and echoes the compact AST representation to stdout.
  * @return void
  */
-function dump_expr_as_ast(string $expr)
+function dump_expr_as_ast(string $expr, bool $with_placeholders)
 {
-    $ast_data = (new \Phan\AST\TolerantASTConverter\TolerantASTConverter())->parseCodeAsPHPAST($expr, 50);
+    $converter = new \Phan\AST\TolerantASTConverter\TolerantASTConverter();
+    $converter->setShouldAddPlaceholders($with_placeholders);
+    $ast_data = $converter->parseCodeAsPHPAST($expr, 50);
     echo \Phan\Debug::nodeToString($ast_data);
 }
 

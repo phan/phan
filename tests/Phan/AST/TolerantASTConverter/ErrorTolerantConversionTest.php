@@ -258,6 +258,54 @@ EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents);
     }
 
+    public function testIncompleteMethodCallBeforeIfWithPlaceholders()
+    {
+        $incomplete_contents = <<<'EOT'
+<?php
+$obj->
+if (true) {
+}
+$obj->
+if (true) {
+    echo "example";
+}
+EOT;
+        $valid_contents = <<<'EOT'
+<?php
+$obj->
+if (true)[];
+
+$obj->
+if (true);
+echo "example";
+EOT;
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, true);
+    }
+
+    public function testIncompleteMethodCallBeforeIfWithoutPlaceholders()
+    {
+        $incomplete_contents = <<<'EOT'
+<?php
+$obj->
+if (true) {
+}
+$obj->
+if (true) {
+    echo "example";
+}
+EOT;
+        $valid_contents = <<<'EOT'
+<?php
+$obj->
+if (true)[];
+
+$obj->
+if (true);
+echo "example";
+EOT;
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
+    }
+
 // Another test (Won't work with php-parser, might work with tolerant-php-parser
 /**
         $incomplete_contents = <<<'EOT'
