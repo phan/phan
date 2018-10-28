@@ -2,6 +2,8 @@
 namespace Phan\Language\Scope;
 
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\Scope;
 
 /**
  * Represents the Scope of a closure declaration, used by a Closure's Context.
@@ -10,6 +12,15 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
  */
 class ClosureScope extends FunctionLikeScope
 {
+    public function __construct(
+        Scope $parent_scope,
+        FullyQualifiedFunctionName $fqsen
+    ) {
+        $this->parent_scope = $parent_scope;
+        $this->fqsen = $fqsen;
+        $this->flags = $parent_scope->flags | Scope::IN_FUNCTION_LIKE_SCOPE;
+    }
+
     /**
      * The optional FQSEN of an (at)phan-closure-scope annotation. (an annotation used for closures that will be bound to a different class)
      * @var FullyQualifiedClassName|null
@@ -22,6 +33,7 @@ class ClosureScope extends FunctionLikeScope
      */
     public function overrideClassFQSEN(FullyQualifiedClassName $fqsen = null)
     {
+        $this->flags |= Scope::IN_CLASS_SCOPE;
         $this->override_class_fqsen = $fqsen;
     }
 
@@ -33,18 +45,6 @@ class ClosureScope extends FunctionLikeScope
     public function getOverrideClassFQSEN()
     {
         return $this->override_class_fqsen;
-    }
-
-    /**
-     * @return bool
-     * True if this closure should be analyzed as if we're in a class scope
-     */
-    public function isInClassScope() : bool
-    {
-        if ($this->override_class_fqsen !== null) {
-            return true;
-        }
-        return parent::isInClassScope();
     }
 
     /**

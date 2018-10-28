@@ -136,7 +136,8 @@ class Clazz extends AddressableElement
 
         $this->setInternalScope(new ClassScope(
             $context->getScope(),
-            $fqsen
+            $fqsen,
+            $flags
         ));
     }
 
@@ -202,6 +203,8 @@ class Clazz extends AddressableElement
             $clazz->addAdditionalType(IterableType::instance(false));
         }
 
+        $class_scope = new ClassScope(new GlobalScope(), $class_fqsen, $flags);
+
         // Note: If there are multiple calls to Clazz->addProperty(),
         // the UnionType from the first one will be used, subsequent calls to addProperty()
         // will have no effect.
@@ -217,9 +220,7 @@ class Clazz extends AddressableElement
                 continue;
             }
 
-            $property_context = $context->withScope(
-                new ClassScope(new GlobalScope(), $clazz->getFQSEN())
-            );
+            $property_context = $context->withScope($class_scope);
 
             $property_type =
                 UnionType::fromStringInContext(
@@ -251,9 +252,7 @@ class Clazz extends AddressableElement
         //       `$class->getStaticProperties()`.
 
         foreach ($class->getDefaultProperties() as $name => $value) {
-            $property_context = $context->withScope(
-                new ClassScope(new GlobalScope(), $clazz->getFQSEN())
-            );
+            $property_context = $context->withScope($class_scope);
 
             $property_fqsen = FullyQualifiedPropertyName::make(
                 $clazz->getFQSEN(),
@@ -308,9 +307,7 @@ class Clazz extends AddressableElement
         }
 
         foreach ($class->getMethods() as $reflection_method) {
-            $method_context = $context->withScope(
-                new ClassScope(new GlobalScope(), $clazz->getFQSEN())
-            );
+            $method_context = $context->withScope($class_scope);
 
             $method_list =
                 FunctionFactory::methodListFromReflectionClassAndMethod(

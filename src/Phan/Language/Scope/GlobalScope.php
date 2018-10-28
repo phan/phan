@@ -1,7 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Scope;
 
+use AssertionError;
 use Phan\Language\Element\Variable;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope;
 
 /**
@@ -9,6 +12,12 @@ use Phan\Language\Scope;
  */
 class GlobalScope extends Scope
 {
+    /**
+     * Deliberate no-op
+     */
+    public function __construct()
+    {
+    }
 
     /**
      * @var array<string,Variable>
@@ -33,6 +42,26 @@ class GlobalScope extends Scope
     public function isInFunctionLikeScope() : bool
     {
         return false;
+    }
+
+    public function isInElementScope() : bool
+    {
+        return false;
+    }
+
+    public function isInMethodLikeScope() : bool
+    {
+        return false;
+    }
+
+    public function hasAnyTemplateType() : bool
+    {
+        return false;
+    }
+
+    public function getTemplateTypeMap() : array
+    {
+        return [];
     }
 
     /**
@@ -116,5 +145,53 @@ class GlobalScope extends Scope
     public function getGlobalVariableByName(string $name) : Variable
     {
         return $this->getVariableByName($name);
+    }
+
+    /**
+     * @return bool
+     * True if this scope has a parent scope
+     */
+    public function hasParentScope() : bool
+    {
+        return false;
+    }
+
+    /**
+     * @return Scope
+     * Get the parent scope of this scope
+     * @suppress PhanPossiblyNullTypeReturn callers should call hasParentScope
+     */
+    public function getParentScope() : Scope
+    {
+        throw new AssertionError("Global scope has no parent scope");
+    }
+
+    public function getClassFQSEN() : FullyQualifiedClassName
+    {
+        throw new AssertionError("Cannot get class FQSEN on scope");
+    }
+
+    public function getPropertyFQSEN() : FullyQualifiedPropertyName
+    {
+        throw new AssertionError("Cannot get class FQSEN on scope");
+    }
+
+    /**
+     * @return null
+     */
+    public function getClassFQSENOrNull()
+    {
+        return null;
+    }
+
+    public function getFunctionLikeFQSEN()
+    {
+        throw new AssertionError("Cannot get method/function/closure FQSEN on scope");
+    }
+
+    public function hasTemplateType(
+        string $unused_template_type_identifier
+    ) : bool {
+        return false;
     }
 }

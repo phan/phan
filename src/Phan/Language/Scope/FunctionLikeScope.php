@@ -1,9 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Scope;
 
+use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\Scope;
 
 /**
  * The scope of a function, method, or closure.
@@ -11,13 +13,13 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
  */
 class FunctionLikeScope extends ClosedScope
 {
-    /**
-     * @return bool
-     * True if we're in a class scope
-     */
-    public function isInClassScope() : bool
-    {
-        return $this->parent_scope->isInClassScope();
+    public function __construct(
+        Scope $parent_scope,
+        FQSEN $fqsen
+    ) {
+        $this->parent_scope = $parent_scope;
+        $this->fqsen = $fqsen;
+        $this->flags = $parent_scope->flags | Scope::IN_FUNCTION_LIKE_SCOPE;
     }
 
     /**
@@ -55,6 +57,15 @@ class FunctionLikeScope extends ClosedScope
     public function isInPropertyScope() : bool
     {
         return false;
+    }
+
+    /**
+     * @return bool
+     * True if we're in a class-like scope
+     */
+    public function isInMethodLikeScope() : bool
+    {
+        return ($this->flags & self::IN_CLASS_LIKE_SCOPE) !== 0;
     }
 
     /**

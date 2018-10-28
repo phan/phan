@@ -3,12 +3,21 @@ namespace Phan\Language\Scope;
 
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\Scope;
 
 /**
  * Represents the Scope of the Context of a class's property declaration.
  */
 class PropertyScope extends ClosedScope
 {
+    public function __construct(
+        Scope $parent_scope,
+        FullyQualifiedPropertyName $fqsen
+    ) {
+        $this->parent_scope = $parent_scope;
+        $this->fqsen = $fqsen;
+        $this->flags = $parent_scope->flags;
+    }
 
     /**
      * @return bool
