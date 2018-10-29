@@ -17,6 +17,8 @@ use Microsoft\PhpParser\Token;
 use Microsoft\PhpParser\TokenKind;
 use RuntimeException;
 
+use function substr;
+
 // If php-ast isn't loaded already, then load this file to generate equivalent
 // class, constant, and function definitions.
 if (!class_exists('ast\Node')) {
@@ -995,26 +997,7 @@ class TolerantASTConverter
                 } elseif (\count($children) === 1 && $children[0] instanceof Token) {
                     $inner_node = static::parseQuotedString($n);
                 } else {
-                    $inner_node_parts = [];
-                    foreach ($children as $part) {
-                        if ($part instanceof PhpParser\Node) {
-                            $inner_node_parts[] = static::phpParserNodeToAstNode($part);
-                        } else {
-                            $kind = $part->kind;
-                            if (\array_key_exists($kind, self::_IGNORED_STRING_TOKEN_KIND_SET)) {
-                                continue;
-                            }
-                            // ($part->kind === TokenKind::EncapsedAndWhitespace)
-                            $start_quote_text = static::tokenToString($n->startQuote);
-                            $end_quote_text = static::tokenToString($n->endQuote);
-                            $raw_string = static::tokenToRawString($part);
-
-                            // Pass in '"\\n"' and get "\n" (somewhat inefficient)
-                            $represented_string = StringUtil::parse($start_quote_text . $raw_string . $end_quote_text);
-                            $inner_node_parts[] = $represented_string;
-                        }
-                    }
-                    $inner_node = new ast\Node(ast\AST_ENCAPS_LIST, 0, $inner_node_parts, self::getStartLine($children[0]));
+                    $inner_node = self::parseMultiPartString($n, $children);
                 }
                 if ($n->startQuote !== null && $n->startQuote->kind === TokenKind::BacktickToken) {
                     return new ast\Node(ast\AST_SHELL_EXEC, 0, ['expr' => $inner_node], isset($children[0]) ? self::getStartLine($children[0]) : $start_line);
@@ -2562,8 +2545,8 @@ class TolerantASTConverter
     {
         // TODO: is this applicable?
         if (\is_string($class)) {
-            if (\substr($class, 0, 1) === '\\') {
-                $class = \substr($class, 1);
+            if (substr($class, 0, 1) === '\\') {
+                $class = substr($class, 1);
             }
             $class = new ast\Node(ast\AST_NAME, flags\NAME_FQ, ['name' => $class], $start_line);
         }
@@ -2708,7 +2691,7 @@ class TolerantASTConverter
     private static function parseQuotedString(PhpParser\Node\StringLiteral $n) : string
     {
         $start = $n->getStart();
-        $text = \substr(self::$file_contents, $start, $n->getEndPosition() - $start);
+        $text = substr(self::$file_contents, $start, $n->getEndPosition() - $start);
         return StringUtil::parse($text);
     }
 
@@ -2820,6 +2803,97 @@ class TolerantASTConverter
         $start_line = self::getStartLine($n);
         $name_node = new ast\Node(ast\AST_NAME, flags\NAME_FQ, ['name' => '__INCOMPLETE_EXPR__'], $start_line);
         return new ast\Node(ast\AST_CONST, 0, ['name' => $name_node], $start_line);
+    }
+
+    /**
+     * @param PhpParser\Node[]|PhpParser\Token[] $children $children
+     */
+    private static function parseMultiPartString(PhpParser\Node\StringLiteral $n, array $children) : ast\Node
+    {
+        if ($n->startQuote->length >= 3) {
+            return self::parseMultiPartHeredoc($n, $children);
+        }
+        return self::parseMultiPartRegularString($n, $children);
+    }
+
+    /**
+     * @param PhpParser\Node[]|PhpParser\Token[] $children $children
+     */
+    private static function parseMultiPartRegularString(PhpParser\Node\StringLiteral $n, array $children) : ast\Node
+    {
+        $inner_node_parts = [];
+        $start_quote_text = static::tokenToString($n->startQuote);
+        $end_quote_text = $n->endQuote->getText(self::$file_contents);
+
+        foreach ($children as $part) {
+            if ($part instanceof PhpParser\Node) {
+                $inner_node_parts[] = static::phpParserNodeToAstNode($part);
+            } else {
+                $kind = $part->kind;
+                if (\array_key_exists($kind, self::_IGNORED_STRING_TOKEN_KIND_SET)) {
+                    continue;
+                }
+                // ($part->kind === TokenKind::EncapsedAndWhitespace)
+                $raw_string = static::tokenToRawString($part);
+                if (\strlen($start_quote_text) > 1) {
+                    // I guess it depends on what's before it.
+                    // TODO: Use a correct heuristic instead
+                    $raw_string = "\n$raw_string\n";
+                }
+
+                // Pass in '"\\n"' and get "\n" (somewhat inefficient)
+                $represented_string = StringUtil::parse($start_quote_text . $raw_string . $end_quote_text);
+                $inner_node_parts[] = $represented_string;
+            }
+        }
+        return new ast\Node(ast\AST_ENCAPS_LIST, 0, $inner_node_parts, self::getStartLine($children[0]));
+    }
+
+    /**
+     * @param PhpParser\Node[]|PhpParser\Token[] $children $children
+     */
+    private static function parseMultiPartHeredoc(PhpParser\Node\StringLiteral $n, array $children) : ast\Node
+    {
+        $inner_node_parts = [];
+        $end_of_start_quote = self::$file_contents[$n->startQuote->start + $n->startQuote->length - 1];
+        $end_quote_text = $n->endQuote->getText(self::$file_contents);
+
+        $spaces = \strspn($end_quote_text, " \t");
+        $raw_spaces = substr($end_quote_text, 0, $spaces);
+
+        foreach ($children as $i => $part) {
+            if ($part instanceof PhpParser\Node) {
+                $inner_node_parts[] = static::phpParserNodeToAstNode($part);
+                continue;
+            }
+            $kind = $part->kind;
+            if (\array_key_exists($kind, self::_IGNORED_STRING_TOKEN_KIND_SET)) {
+                continue;
+            }
+            // ($part->kind === TokenKind::EncapsedAndWhitespace)
+            $raw_string = static::tokenToRawString($part);
+            if ($i > 0) {
+                $raw_string = $raw_spaces . $raw_string;
+            }
+
+            $represented_string = $spaces > 0 ? \preg_replace("/^" . $raw_spaces . "/m", '', $raw_string) : $raw_string;
+            if ($end_of_start_quote !== "'") {
+                $represented_string = StringUtil::parseEscapeSequences($represented_string, null);
+            }
+            $inner_node_parts[] = $represented_string;
+        }
+        $i = \count($inner_node_parts) - 1;
+        $s = $inner_node_parts[$i];
+        if (\is_string($s)) {
+            $s = substr($s, 0, -1);
+            // On Windows, the "\r" must also be removed from the last line of the heredoc
+            if (substr($s, -1) === "\r") {
+                $s = substr($s, 0, -1);
+            }
+            $inner_node_parts[$i] = $s;
+        }
+
+        return new ast\Node(ast\AST_ENCAPS_LIST, 0, $inner_node_parts, self::getStartLine($children[0]));
     }
 }
 class_exists(TolerantASTConverterWithNodeMapping::class);

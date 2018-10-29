@@ -15,6 +15,7 @@ New features(Analysis):
 
   By default, this will only warn about use statements made from the global namespace, of elements also in the global namespace.
   To also warn about redundant **namespaced** uses of classes/namespaces (e.g. `namespace Foo; use Foo\MyClass;`), enable `warn_about_redundant_use_namespaced_class`
++ Improve the polyfill/fallback parser's heredoc and nowdoc lexing (#1537)
 
 Bug fixes:
 + Properly type check `static::someMethodName()`.
