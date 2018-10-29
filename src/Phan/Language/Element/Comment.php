@@ -13,7 +13,6 @@ use Phan\Language\Element\Comment\NullComment;
 use Phan\Language\Element\Comment\Parameter as CommentParameter;
 use Phan\Language\Element\Comment\Property as CommentProperty;
 use Phan\Language\Element\Comment\ReturnComment;
-use Phan\Language\Element\Flags;
 use Phan\Language\Type;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;

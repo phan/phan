@@ -3,7 +3,6 @@ declare(strict_types = 1);
 
 namespace Phan\LanguageServer;
 
-use Phan\LanguageServer\Logger;
 use Phan\LanguageServer\Protocol\Message;
 use Sabre\Event\Loop;
 use Sabre\Event\Promise;

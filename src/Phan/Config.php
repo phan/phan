@@ -403,6 +403,11 @@ class Config
         // into `$a = value(); if ($a) { if ($a > 0) {...}}`
         'simplify_ast' => true,
 
+        // Enable this to warn about harmless redundant use for classes and namespaces such as `use Foo\bar` in namespace Foo.
+        //
+        // Note: This does not affect warnings about redundant uses in the global namespace.
+        'warn_about_redundant_use_namespaced_class' => false,
+
         // If true, Phan will read `class_alias()` calls in the global scope, then
         //
         // 1. create aliases from the *parsed* files if no class definition was found, and

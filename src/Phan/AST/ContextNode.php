@@ -973,7 +973,7 @@ class ContextNode
         } else {
             if (($node->flags & ast\flags\NAME_NOT_FQ) !== 0) {
                 if ($context->hasNamespaceMapFor(\ast\flags\USE_FUNCTION, $function_name)) {
-                    // If we already have `use function_name;`
+                    // If we already have `use function function_name;`
                     $function_fqsen = $context->getNamespaceMapFor(\ast\flags\USE_FUNCTION, $function_name);
                     if (!($function_fqsen instanceof FullyQualifiedFunctionName)) {
                         throw new AssertionError("Expected to fetch a fully qualified function name for this namespace use");
@@ -1522,14 +1522,16 @@ class ContextNode
 
         $context = $this->context;
 
-        $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
-            $constant_name,
-            $context
-        );
+        if ($context->hasNamespaceMapFor(\ast\flags\USE_CONST, $constant_name)) {
+            // If we already have `use const CONST_NAME;`
+            $fqsen = $context->getNamespaceMapFor(\ast\flags\USE_CONST, $constant_name);
+            if (!($fqsen instanceof FullyQualifiedGlobalConstantName)) {
+                throw new AssertionError("expected to fetch a fully qualified const name for this namespace use");
+            }
 
-        if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
-            // TODO: Optimize ? (checking namespace map twice)
-            if ($context->hasNamespaceMapFor(\ast\flags\USE_CONST, $constant_name)) {
+            // make sure the method we're calling actually exists
+            if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
+                // the fqsen from 'use myns\const_name;' was the only possible fqsen for that const.
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredConstant)(
                         $context->getFile(),
@@ -1538,19 +1540,26 @@ class ContextNode
                     )
                 );
             }
-
-            $fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
-                $constant_name
+        } else {
+            $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
+                $constant_name,
+                $context
             );
 
             if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
-                throw new IssueException(
-                    Issue::fromType(Issue::UndeclaredConstant)(
-                        $context->getFile(),
-                        $node->lineno ?? 0,
-                        [ $fqsen ]
-                    )
+                $fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
+                    $constant_name
                 );
+
+                if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
+                    throw new IssueException(
+                        Issue::fromType(Issue::UndeclaredConstant)(
+                            $context->getFile(),
+                            $node->lineno ?? 0,
+                            [ $fqsen ]
+                        )
+                    );
+                }
             }
         }
 

@@ -1,0 +1,4 @@
+%s:4 PhanUseContantNoEffect The use statement for constant \PHP_VERSION_ID has no effect
+%s:5 PhanUseNormalNoEffect The use statement for class/namespace \stdClass in the global namespace has no effect
+%s:6 PhanUseFunctionNoEffect The use statement for function \count has no effect
+%s:28 PhanUseNormalNamespacedNoEffect The use statement for class/namespace \Foo553\Bar in a namespace has no effect

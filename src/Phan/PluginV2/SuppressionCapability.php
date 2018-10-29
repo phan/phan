@@ -8,7 +8,6 @@ use Phan\Language\Element\UnaddressableTypedElement;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
-use Phan\PluginV2\SuppressionCapability;
 use Phan\Suggestion;
 
 /**

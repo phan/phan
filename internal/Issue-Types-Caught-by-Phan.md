@@ -952,6 +952,48 @@ Unused definition of variable ${VARIABLE} as the value of a foreach loop that in
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.1/tests/files/expected/0480_array_access_iteration.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.1/tests/files/src/0480_array_access_iteration.php#L15).
 
+## PhanUseContantNoEffect
+
+NOTE: this deliberately warns only about use statements in the global namespace,
+and not for `namespace MyNs; use function MyNs\PHP_VERSION_ID;`,
+which does have an effect of preventing the fallback to the global constant.
+
+```
+The use statement for constant {CONST} has no effect
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0553_unreferenced_use.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0553_unreferenced_use.php#L4).
+
+## PhanUseFunctionNoEffect
+
+NOTE: this deliberately warns only about use statements in the global namespace,
+and not for `namespace MyNs; use function MyNs\is_string;`,
+which does have an effect of preventing the fallback to the global function.
+
+```
+The use statement for function {FUNCTION} has no effect
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0553_unreferenced_use.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0553_unreferenced_use.php#L6).
+
+## PhanUseNormalNamespacedNoEffect
+
+Note: `warn_about_redundant_use_namespaced_class` must be enabled for this to be detected.
+
+```
+The use statement for class/namespace {CLASS} in a namespace has no effect
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0553_unreferenced_use.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0553_unreferenced_use.php#L28).
+
+## PhanUseNormalNoEffect
+
+```
+The use statement for class/namespace {CLASS} in the global namespace has no effect
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0553_unreferenced_use.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0553_unreferenced_use.php#L5).
+
 ## PhanWriteOnlyPrivateProperty
 
 ```

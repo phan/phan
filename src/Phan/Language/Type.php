@@ -42,7 +42,6 @@ use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
-use Phan\Language\UnionType;
 use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;

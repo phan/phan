@@ -184,6 +184,11 @@ return [
     // to be tracked.
     'force_tracking_references' => false,
 
+    // Enable this to warn about harmless redundant use for classes and namespaces such as `use Foo\bar` in namespace Foo.
+    //
+    // Note: This does not affect warnings about redundant uses in the global namespace.
+    'warn_about_redundant_use_namespaced_class' => true,
+
     // If true, then run a quick version of checks that takes less time.
     // False by default.
     "quick_mode" => false,
