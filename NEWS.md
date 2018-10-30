@@ -46,7 +46,7 @@ New features(Analysis):
   1. Has no declared properties (`TypeNoPropertiesForeach`)
   2. Has properties and none are accessible. (`TypeNoAccessiblePropertiesForeach`)
   3. Has properties and some are accessible. (`TypeSuspiciousNonTraversableForeach`)
-+ Add `@phan-template` and `@phan-inherits` as aliases for `@template` and `@inherits`
++ Add `@phan-template` and `@phan-inherits` as aliases for `@template` and `@inherits` (#2063)
 + Warn about passing non-objects to `clone()` (`PhanTypeInvalidCloneNotObject`) (#1798)
 
 Maintenance:
