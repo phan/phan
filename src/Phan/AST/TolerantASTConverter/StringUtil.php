@@ -8,6 +8,9 @@ use function hexdec;
 use function is_string;
 use function octdec;
 use function str_replace;
+use function strpos;
+use function strrpos;
+use function strspn;
 use function substr;
 
 /**
@@ -67,14 +70,17 @@ final class StringUtil
      * Parses a string token.
      *
      * @param string $str String token content
-     * @param bool $parse_unicode_escape Whether to parse PHP 7 \u escapes
      *
      * @return string The parsed string
      */
-    public static function parse(string $str, bool $parse_unicode_escape = true) : string
+    public static function parse(string $str) : string
     {
+        $c = $str[0];
+        if ($c === '<') {
+            return self::parseHeredoc($str);
+        }
         $binary_length = 0;
-        if ('b' === $str[0] || 'B' === $str[0]) {
+        if ('b' === $c || 'B' === $c) {
             $binary_length = 1;
         }
 
@@ -87,10 +93,31 @@ final class StringUtil
         } else {
             return self::parseEscapeSequences(
                 substr($str, $binary_length + 1, -1),
-                '"',
-                $parse_unicode_escape
+                '"'
             );
         }
+    }
+
+    public static function parseHeredoc(string $str) : string {
+        // TODO: handle dos newlines
+        // TODO: Parse escape sequences
+        $first_line_index = (int)strpos($str, "\n");
+        $last_line_index = (int)strrpos($str, "\n");
+        // $last_line = substr($str, $last_line_index + 1);
+        $spaces = strspn($str, " \t", $last_line_index + 1);
+
+        // On Windows, the "\r" must also be removed from the last line of the heredoc
+        $inner = (string)substr($str, $first_line_index + 1, $last_line_index - ($first_line_index + 1) - ($str[$last_line_index - 1] === "\r" ? 1 : 0));
+
+        if ($spaces > 0) {
+            $inner = preg_replace("/^" . substr($str, $last_line_index + 1, $spaces) . "/m", '', $inner);
+        }
+        if (strpos(substr($str, 0, $first_line_index), "'") === false) {
+            // If the start of the here/nowdoc doesn't contain a "'", it's heredoc.
+            // The contents have to be unescaped.
+            return self::parseEscapeSequences($inner, null);
+        }
+        return $inner;
     }
 
     /**
@@ -100,11 +127,10 @@ final class StringUtil
      *
      * @param string|false $str  String without quotes
      * @param null|string $quote Quote type
-     * @param bool $parse_unicode_escape Whether to parse PHP 7 \u escapes
      *
      * @return string String with escape sequences parsed
      */
-    public static function parseEscapeSequences($str, $quote, bool $parse_unicode_escape = true) : string
+    public static function parseEscapeSequences($str, $quote) : string
     {
         if (!is_string($str)) {
             // Invalid AST input; give up
@@ -114,13 +140,8 @@ final class StringUtil
             $str = str_replace('\\' . $quote, $quote, $str);
         }
 
-        $extra = '';
-        if ($parse_unicode_escape) {
-            $extra = '|u\{([0-9a-fA-F]+)\}';
-        }
-
         return \preg_replace_callback(
-            '~\\\\([\\\\$nrtfve]|[xX][0-9a-fA-F]{1,2}|[0-7]{1,3}' . $extra . ')~',
+            '~\\\\([\\\\$nrtfve]|[xX][0-9a-fA-F]{1,2}|[0-7]{1,3}|u\{([0-9a-fA-F]+)\})~',
             /**
              * @param array<int,string> $matches
              * @return string

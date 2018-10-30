@@ -137,6 +137,8 @@ final class ConversionTest extends BaseTest
         $test_folder_name = basename(dirname($file_name));
         if (PHP_VERSION_ID < 70100 && $test_folder_name === 'php71_or_newer') {
             $this->markTestIncomplete('php-ast cannot parse php7.1 syntax when running in php7.0');
+        } elseif (PHP_VERSION_ID < 70300 && $test_folder_name === 'php73_or_newer') {
+            $this->markTestIncomplete('php-ast cannot parse php7.3 syntax when running in php7.2 or older');
         }
         $contents = file_get_contents($file_name);
         if ($contents === false) {
