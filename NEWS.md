@@ -3,6 +3,10 @@ Phan NEWS
 ?? ??? 2018, Phan 1.1.2 (dev)
 -----------------------
 
+New features(CLI)
++ Make `phan --progress-bar` fit within narrower console widths. (#2096)
+  (Make the old width into the new **maximum** width)
+
 New features(Analysis):
 + Warn when attempting to read from a write-only real/magic property (or vice-versa) (#595)
 
