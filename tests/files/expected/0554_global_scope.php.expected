@@ -1,0 +1,4 @@
+%s:8 PhanTypeMismatchArgumentInternal Argument 1 (stack) is null but \array_shift() takes array
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 (stack) is null but \array_shift() takes array
+%s:18 PhanTypeMismatchArgumentInternal Argument 1 (stack) is int but \array_shift() takes array
+%s:27 PhanTypeMismatchArgumentInternal Argument 1 (stack) is int but \array_shift() takes array

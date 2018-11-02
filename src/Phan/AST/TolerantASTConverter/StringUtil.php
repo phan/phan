@@ -98,7 +98,8 @@ final class StringUtil
         }
     }
 
-    public static function parseHeredoc(string $str) : string {
+    public static function parseHeredoc(string $str) : string
+    {
         // TODO: handle dos newlines
         // TODO: Parse escape sequences
         $first_line_index = (int)strpos($str, "\n");
