@@ -2546,7 +2546,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                             $code_base,
                             $context,
                             $argument
-                        ))->getOrCreateVariable();
+                        ))->getOrCreateVariableForReferenceParameter($parameter);
                     } catch (NodeException $_) {
                         // E.g. `function_accepting_reference(${$varName})` - Phan can't analyze outer type of ${$varName}
                         continue;
@@ -2662,7 +2662,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $code_base,
                     $context,
                     $argument
-                ))->getOrCreateVariable();
+                ))->getOrCreateVariableForReferenceParameter($parameter);
             } catch (NodeException $_) {
                 // E.g. `function_accepting_reference(${$varName})` - Phan can't analyze outer type of ${$varName}
                 return;
@@ -3061,7 +3061,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->code_base,
                     $this->context,
                     $argument
-                ))->getOrCreateVariable();
+                ))->getOrCreateVariableForReferenceParameter($parameter);
             } catch (NodeException $_) {
                 // Could not figure out the node name
                 return;

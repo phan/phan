@@ -20,6 +20,7 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
+use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\TraitAdaptations;
 use Phan\Language\Element\TraitAliasSource;
@@ -1050,6 +1051,16 @@ class ContextNode
 
         // Check to see if the variable exists in this scope
         if (!$this->context->getScope()->hasVariableWithName($variable_name)) {
+            if (Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())) {
+                // We return a clone of the global or superglobal variable
+                // that can't be used to influence the type of that superglobal in other files.
+                return new Variable(
+                    $this->context,
+                    $variable_name,
+                    Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name),
+                    0
+                );
+            }
             throw new IssueException(
                 Issue::fromType(Issue::UndeclaredVariable)(
                     $this->context->getFile(),
@@ -1096,6 +1107,16 @@ class ContextNode
             // Check to see if the variable exists in this scope
             $scope = $this->context->getScope();
             if (!$scope->hasVariableWithName($variable_name)) {
+                if (Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())) {
+                    // We return a clone of the global or superglobal variable
+                    // that can't be used to influence the type of that superglobal in other files.
+                    return new Variable(
+                        $this->context,
+                        $variable_name,
+                        Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name),
+                        0
+                    );
+                }
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredVariable)(
                         $this->context->getFile(),
@@ -1119,6 +1140,10 @@ class ContextNode
      *
      * @throws NodeException
      * An exception is thrown if we can't understand the node
+     *
+     * @unused
+     * @suppress PhanUnreferencedPublicMethod
+     * @see $this->getOrCreateVariableForReferenceParameter() - That is probably what you want instead.
      */
     public function getOrCreateVariable() : Variable
     {
@@ -1140,6 +1165,54 @@ class ContextNode
             $this->code_base,
             false
         );
+
+        $this->context->addScopeVariable($variable);
+
+        return $variable;
+    }
+
+    /**
+     * @return Variable
+     * A variable in scope or a new variable
+     *
+     * @throws NodeException
+     * An exception is thrown if we can't understand the node
+     *
+     * TODO: Fix #1334 by passing in an extra nullable $real_parameter
+     */
+    public function getOrCreateVariableForReferenceParameter(Parameter $parameter) : Variable
+    {
+        try {
+            return $this->getVariable();
+        } catch (IssueException $_) {
+            // Swallow it
+        }
+
+        $node = $this->node;
+        if (!($node instanceof Node)) {
+            throw new AssertionError('$this->node must be a node');
+        }
+
+        // Create a new variable
+        $variable = Variable::fromNodeInContext(
+            $node,
+            $this->context,
+            $this->code_base,
+            false
+        );
+        static $null_type = null;
+        if ($null_type === null) {
+            $null_type = NullType::instance(false)->asUnionType();
+        }
+        if ($parameter->getReferenceType() === Parameter::REFERENCE_READ_WRITE) {
+            // If this is a variable that is both read and written,
+            // then set the previously undefined variable type to null instead so we can type check it
+            // (e.g. arguments to array_shift())
+            // (TODO: read/writeable is currently only possible to annotate for internal functions in FunctionSignatureMap.php),
+
+            // TODO: How should this handle variadic references?
+            $variable->setUnionType($null_type);
+        }
 
         $this->context->addScopeVariable($variable);
 
