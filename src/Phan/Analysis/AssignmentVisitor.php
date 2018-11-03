@@ -953,7 +953,9 @@ class AssignmentVisitor extends AnalysisVisitor
         } else {
             $new_types = $this->right_type;
         }
-        $new_types = $new_types->withFlattenedArrayShapeOrLiteralTypeInstances();
+        $has_literals = $original_property_types->hasLiterals();
+        $new_types = $new_types->withFlattenedArrayShapeTypeInstances();
+
         $updated_property_types = $original_property_types;
         foreach ($new_types->getTypeSet() as $new_type) {
             if ($new_type instanceof MixedType) {
@@ -971,6 +973,9 @@ class AssignmentVisitor extends AnalysisVisitor
             // Check for adding a specific array to as generic array as a workaround for #1783
             if (\get_class($new_type) === ArrayType::class && $original_property_types->hasGenericArray()) {
                 continue;
+            }
+            if (!$has_literals) {
+                $new_type = $new_type->asNonLiteralType();
             }
             $updated_property_types = $updated_property_types->withType($new_type);
         }

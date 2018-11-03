@@ -337,72 +337,6 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
-     * @param UnionType $union_type
-     * A union type to compare against
-     *
-     * @param Context $context
-     * The context in which this type exists.
-     *
-     * @param CodeBase $code_base
-     * The code base in which both this and the given union
-     * types exist.
-     *
-     * @return bool
-     * True if each type within this union type can cast
-     * to the given union type.
-     */
-    // Currently unused and buggy, commenting this out.
-    /**
-    public function isExclusivelyNarrowedFormOrEquivalentTo(
-        UnionType $union_type,
-        Context $context,
-        CodeBase $code_base
-    ) : bool {
-
-        // Special rule: anything can cast to nothing
-        // and nothing can cast to anything
-        if ($union_type->isEmpty() || $this->isEmpty()) {
-            return true;
-        }
-
-        // Check to see if the types are equivalent
-        if ($this->isEqualTo($union_type)) {
-            return true;
-        }
-        // TODO: Allow casting MyClass<TemplateType> to MyClass (Without the template?
-
-        // Resolve 'static' for the given context to
-        // determine what's actually being referred
-        // to in concrete terms.
-        $other_resolved_type =
-            $union_type->withStaticResolvedInContext($context);
-        $other_resolved_type_set = $other_resolved_type->type_set;
-
-        // Convert this type to a set of resolved types to iterate over.
-        $this_resolved_type_set =
-            $this->withStaticResolvedInContext($context)->type_set;
-
-        // TODO: Need to resolve expanded union types (parents, interfaces) of classes *before* this is called.
-
-        // Test to see if every single type in this union
-        // type can cast to the given union type.
-        foreach ($this_resolved_type_set as $type) {
-            // First check if this contains the type as an optimization.
-            if ($other_resolved_type_set->contains($type)) {
-                continue;
-            }
-            $expanded_types = $type->asExpandedTypes($code_base);
-            if ($other_resolved_type->canCastToUnionType(
-                $expanded_types
-            )) {
-                continue;
-            }
-        }
-        return true;
-    }
-     */
-
-    /**
      * @param Type[] $type_list
      * A list of types
      *
@@ -996,6 +930,12 @@ final class EmptyUnionType extends UnionType
     public function hasMixedType() : bool
     {
         return false;
+    }
+
+    /** @override */
+    public function withFlattenedArrayShapeTypeInstances() : UnionType
+    {
+        return $this;
     }
 
     /** @override */
