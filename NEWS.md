@@ -19,6 +19,8 @@ New features(Analysis):
 
   By default, this will only warn about use statements made from the global namespace, of elements also in the global namespace.
   To also warn about redundant **namespaced** uses of classes/namespaces (e.g. `namespace Foo; use Foo\MyClass;`), enable `warn_about_redundant_use_namespaced_class`
++ Warn when using a trait as a real param/return type of a method-like (#2007)
+  New issue types: `PhanTypeInvalidTraitParam`, `PhanTypeInvalidTraitReturn`
 + Improve the polyfill/fallback parser's heredoc and nowdoc lexing (#1537)
 + Properly warn about an undefined variable being passed to `array_shift` (it expects an array but undefined is converted to null) (related to fix for #2100)
 + Stop adding generic int/string to the type of a class property when the doc comment mentions only literal int/string values (#2102)
@@ -30,6 +32,7 @@ Bug fixes:
 + Properly type check `static::someMethodName()`.
   Previously, Phan would fail to infer types for the results of those method calls.
 + Improve handling of `array_shift`. Don't warn when it's used on a global or superglobal (#2100)
++ Infer that `self` and `static` in a trait refer to the methods of that trait. (#2006)
 
 22 Oct 2018, Phan 1.1.1
 -----------------------

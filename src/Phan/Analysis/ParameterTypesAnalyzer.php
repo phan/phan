@@ -15,6 +15,7 @@ use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
+use Phan\Language\Type\StaticOrSelfType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
@@ -61,7 +62,7 @@ class ParameterTypesAnalyzer
             // Look at each type in the parameter's Union Type
             foreach ($union_type->getReferencedClasses() as $outer_type => $type) {
                 // If it's a reference to self, its OK
-                if ($method instanceof Method && ($type->isSelfType() || $type->isStaticType())) {
+                if ($method instanceof Method && $type instanceof StaticOrSelfType) {
                     continue;
                 }
 
@@ -72,7 +73,7 @@ class ParameterTypesAnalyzer
                                 $code_base,
                                 $method->getContext(),
                                 Issue::TemplateTypeStaticMethod,
-                                $method->getFileRef()->getLineNumberStart(),
+                                $parameter->getFileRef()->getLineNumberStart(),
                                 (string)$method->getFQSEN()
                             );
                         }
@@ -85,8 +86,8 @@ class ParameterTypesAnalyzer
                             $code_base,
                             $method->getContext(),
                             Issue::UndeclaredTypeParameter,
-                            $method->getFileRef()->getLineNumberStart(),
-                            [(string)$outer_type],
+                            $parameter->getFileRef()->getLineNumberStart(),
+                            [$parameter->getName(), (string)$outer_type],
                             IssueFixSuggester::suggestSimilarClass(
                                 $code_base,
                                 $method->getContext(),
@@ -97,6 +98,31 @@ class ParameterTypesAnalyzer
                             )
                         );
                     }
+                }
+            }
+        }
+        foreach ($method->getRealParameterList() as $parameter) {
+            $union_type = $parameter->getUnionType();
+            foreach ($union_type->getTypeSet() as $type) {
+                if (!$type->isObjectWithKnownFQSEN()) {
+                    continue;
+                }
+                $type_fqsen = FullyQualifiedClassName::fromType($type);
+                if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
+                    // We should have already warned
+                    continue;
+                }
+                $class = $code_base->getClassByFQSEN($type_fqsen);
+                if ($class->isTrait()) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::TypeInvalidTraitParam,
+                        $parameter->getFileRef()->getLineNumberStart(),
+                        $method->getName(),
+                        $parameter->getName(),
+                        $type_fqsen->__toString()
+                    );
                 }
             }
         }

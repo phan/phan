@@ -193,11 +193,43 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
+     * @return bool
+     * True if this type has a type referencing the
+     * class context 'static' or 'self'.
+     */
+    public function hasStaticOrSelfType() : bool
+    {
+        return false;
+    }
+
+    /**
      * @return UnionType
      * A new UnionType with any references to 'static' resolved
      * in the given context.
      */
     public function withStaticResolvedInContext(
+        Context $context
+    ) : UnionType {
+        return $this;
+    }
+
+    /**
+     * @return UnionType
+     * A new UnionType *plus* any references to 'self' (but not 'static') resolved
+     * in the given context.
+     */
+    public function withAddedClassForResolvedSelf(
+        Context $context
+    ) : UnionType {
+        return $this;
+    }
+
+    /**
+     * @return UnionType
+     * A new UnionType with any references to 'self' (but not 'static') resolved
+     * in the given context. (the type of 'self' is replaced)
+     */
+    public function withSelfResolvedInContext(
         Context $context
     ) : UnionType {
         return $this;

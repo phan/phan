@@ -181,6 +181,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
 
     /**
      * @return UnionType
+     * @override
      */
     public function iterableValueUnionType(CodeBase $unused_code_base)
     {

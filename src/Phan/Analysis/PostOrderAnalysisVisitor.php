@@ -918,7 +918,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $is_trait = $clazz->isTrait();
         }
 
-
         // Get the method/function/closure we're in
         $method = $context->getFunctionLikeInScope($code_base);
 
@@ -930,7 +929,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // Figure out what we intend to return
         // (For traits, lower the false positive rate by comparing against the real return type instead of the phpdoc type (#800))
-        $method_return_type = $is_trait ? $method->getRealReturnType() : $method->getUnionType();
+        $method_return_type = $is_trait ? $method->getRealReturnType()->withAddedClassForResolvedSelf($method->getContext()) : $method->getUnionType();
 
         // This leaves functions which aren't syntactically generators.
 
@@ -2895,6 +2894,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         $original_method_scope = $method->getInternalScope();
         $method->setInternalScope(clone($original_method_scope));
+        $method_context = $method->getContext();
 
         try {
             // Even though we don't modify the parameter list, we still need to know the types
@@ -2972,7 +2972,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // Now that we know something about the parameters used
             // to call the method, we can reanalyze the method with
             // the types of the parameter
-            $method->analyzeWithNewParams($method->getContext(), $this->code_base, $parameter_list);
+            $method->analyzeWithNewParams($method_context, $this->code_base, $parameter_list);
         } finally {
             $method->setInternalScope($original_method_scope);
         }

@@ -406,4 +406,9 @@ class Func extends AddressableElement implements FunctionInterface
         $namespace = ltrim($fqsen->getNamespace(), '\\');
         return [$namespace, $stub];
     }
+
+    public function getUnionTypeWithUnmodifiedStatic() : UnionType
+    {
+        return $this->getUnionType();
+    }
 }

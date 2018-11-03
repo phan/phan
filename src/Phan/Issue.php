@@ -163,6 +163,8 @@ class Issue
     const TypeInvalidRequire              = 'PhanTypeInvalidRequire';
     const TypeInvalidEval                 = 'PhanTypeInvalidEval';
     const RelativePathUsed                = 'PhanRelativePathUsed';
+    const TypeInvalidTraitReturn          = 'PhanTypeInvalidTraitReturn';
+    const TypeInvalidTraitParam           = 'PhanTypeInvalidTraitParam';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -817,7 +819,7 @@ class Issue
                 self::UndeclaredTypeParameter,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
-                "Parameter of undeclared type {TYPE}",
+                "Parameter \${PARAMETER} has undeclared type {TYPE}",
                 self::REMEDIATION_B,
                 11019
             ),
@@ -1705,6 +1707,22 @@ class Issue
                 "Expected an object to be passed to clone() but got {TYPE}",
                 self::REMEDIATION_B,
                 10088
+            ),
+            new Issue(
+                self::TypeInvalidTraitReturn,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Expected a class or interface (or built-in type) to be the real return type of method {METHOD} but got trait {TRAIT}",
+                self::REMEDIATION_B,
+                10089
+            ),
+            new Issue(
+                self::TypeInvalidTraitParam,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Method {METHOD} is declared to have a parameter \${PARAMETER} with a real type of trait {TYPE} (expected a class or interface or built-in type)",
+                self::REMEDIATION_B,
+                10090
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

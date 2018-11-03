@@ -27,7 +27,9 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\MultiType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ScalarType;
+use Phan\Language\Type\SelfType;
 use Phan\Language\Type\StaticType;
+use Phan\Language\Type\StaticOrSelfType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
@@ -730,6 +732,21 @@ class UnionType implements Serializable
     }
 
     /**
+     * @return bool
+     * True if this type has a type referencing the
+     * class context 'static' or 'self'.
+     */
+    public function hasStaticOrSelfType() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type instanceof StaticOrSelfType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @return UnionType
      * A new UnionType with any references to 'static' resolved
      * in the given context.
@@ -738,33 +755,91 @@ class UnionType implements Serializable
         Context $context
     ) : UnionType {
 
-        // If the context isn't in a class scope, there's nothing
-        // we can do
-        if (!$context->isInClassScope()) {
+        // If the context isn't in a class scope, or if it doesn't have 'static',
+        // there's nothing we can do
+        if (!$context->isInClassScope() || !$this->hasStaticOrSelfType()) {
             return $this;
         }
 
-        static $static_type;
-        static $static_nullable_type;
-        if ($static_type === null) {
-            $static_type = StaticType::instance(false);
-            $static_nullable_type = StaticType::instance(true);
+        $type_set = $this->type_set;
+        $is_nullable = false;
+        $result = $this;
+        foreach ($type_set as $type) {
+            if ($type instanceof StaticOrSelfType) {
+                if ($type->getIsNullable()) {
+                    $is_nullable = true;
+                }
+                $result = $result->withoutType($type);
+            }
         }
+        $resolved_type = $context->getClassFQSEN()->asType();
+        if ($is_nullable) {
+            return $result->withType($resolved_type->withIsNullable(true));
+        }
+        return $result->withType($resolved_type);
+    }
 
-        $has_static_type = \in_array($static_type, $this->type_set, true);
-        $has_static_nullable_type = \in_array($static_nullable_type, $this->type_set, true);
-
-        // If this doesn't reference 'static', there's nothing to do.
-        if (!($has_static_type || $has_static_nullable_type)) {
+    /**
+     * @return UnionType
+     * A new UnionType with any references to 'self' (but not 'static') resolved
+     * in the given context.
+     */
+    public function withSelfResolvedInContext(
+        Context $context
+    ) : UnionType {
+        // If the context isn't in a class scope, or if it doesn't have 'self',
+        // there's nothing we can do
+        if (!$context->isInClassScope() || !$this->hasSelfType()) {
             return $this;
         }
 
-        if ($has_static_type) {
-            // Remove the static type and add in the class in scope
-            return $this->withoutType($static_type)->withType($context->getClassFQSEN()->asType());
-        } else {
-            return $this->withoutType($static_type)->withType($context->getClassFQSEN()->asType()->withIsNullable(true));
+        $type_set = $this->type_set;
+        $is_nullable = false;
+        $result = $this;
+        foreach ($type_set as $type) {
+            if ($type instanceof SelfType) {
+                if ($type->getIsNullable()) {
+                    $is_nullable = true;
+                }
+                $result = $result->withoutType($type);
+            }
         }
+        $resolved_type = $context->getClassFQSEN()->asType();
+        if ($is_nullable) {
+            return $result->withType($resolved_type->withIsNullable(true));
+        }
+        return $result->withType($resolved_type);
+    }
+
+    /**
+     * @return UnionType
+     * A new UnionType *plus* any references to 'self' (but not 'static') resolved
+     * in the given context.
+     */
+    public function withAddedClassForResolvedSelf(
+        Context $context
+    ) : UnionType {
+        // If the context isn't in a class scope, or if it doesn't have 'self',
+        // there's nothing we can do
+        if (!$context->isInClassScope() || !$this->hasSelfType()) {
+            return $this;
+        }
+
+        $type_set = $this->type_set;
+        $is_nullable = false;
+        $result = $this;
+        foreach ($type_set as $type) {
+            if ($type instanceof SelfType) {
+                if ($type->getIsNullable()) {
+                    $is_nullable = true;
+                }
+            }
+        }
+        $resolved_type = $context->getClassFQSEN()->asType();
+        if ($is_nullable) {
+            return $result->withType($resolved_type->withIsNullable(true));
+        }
+        return $result->withType($resolved_type);
     }
 
     /**
@@ -1723,9 +1798,6 @@ class UnionType implements Serializable
             if ($class_type->isNativeType()) {
                 continue;
             }
-            // Get the class FQSEN
-            $class_fqsen = FullyQualifiedClassName::fromType($class_type);
-
             if ($class_type->isStaticType()) {
                 if (!$context->isInClassScope()) {
                     throw new IssueException(
@@ -1739,36 +1811,39 @@ class UnionType implements Serializable
                     );
                 }
                 yield $context->getClassInScope($code_base);
-            } else {
-                if ($class_type->isSelfType()) {
-                    if (!$context->isInClassScope()) {
-                        throw new IssueException(
-                            Issue::fromType(Issue::ContextNotObject)(
-                                $context->getFile(),
-                                $context->getLineNumberStart(),
-                                [
-                                    $class_type->getName()
-                                ]
-                            )
-                        );
-                    }
-                    if (strcasecmp($class_type->getName(), 'self') === 0) {
-                        yield $context->getClassInScope($code_base);
-                    } else {
-                        yield $class_type;
-                    }
-                    continue;
-                }
-                // See if the class exists
-                if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
-                    throw new CodeBaseException(
-                        $class_fqsen,
-                        "Cannot find class $class_fqsen"
+                continue;
+            }
+
+            if ($class_type->isSelfType()) {
+                if (!$context->isInClassScope()) {
+                    throw new IssueException(
+                        Issue::fromType(Issue::ContextNotObject)(
+                            $context->getFile(),
+                            $context->getLineNumberStart(),
+                            [
+                                $class_type->getName()
+                            ]
+                        )
                     );
                 }
-
-                yield $code_base->getClassByFQSEN($class_fqsen);
+                if (strcasecmp($class_type->getName(), 'self') === 0) {
+                    yield $context->getClassInScope($code_base);
+                } else {
+                    yield $class_type;
+                }
+                continue;
             }
+            // Get the class FQSEN
+            $class_fqsen = FullyQualifiedClassName::fromType($class_type);
+            // See if the class exists
+            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                throw new CodeBaseException(
+                    $class_fqsen,
+                    "Cannot find class $class_fqsen"
+                );
+            }
+
+            yield $code_base->getClassByFQSEN($class_fqsen);
         }
     }
 
@@ -2049,6 +2124,7 @@ class UnionType implements Serializable
     /**
      * @return Type|false
      * Returns the first type in this UnionType made $matcher_callback return true
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function findTypeMatchingCallback(Closure $matcher_callback)
     {

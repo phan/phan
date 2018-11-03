@@ -570,6 +570,11 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return $this->return_type;
     }
 
+    public function getUnionTypeWithUnmodifiedStatic() : UnionType
+    {
+        return $this->return_type;
+    }
+
     public function getSuppressIssueList() : array
     {
         // TODO: Inherit suppress issue list from phpdoc declaring this?

@@ -37,7 +37,6 @@ use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FloatType;
-use Phan\Language\Type\GenericArrayInterface;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
@@ -46,7 +45,9 @@ use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
+use Phan\Language\Type\SelfType;
 use Phan\Language\Type\StaticType;
+use Phan\Language\Type\StaticOrSelfType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
@@ -500,21 +501,22 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitName(Node $node) : UnionType
     {
+        $name = $node->children['name'];
         if ($node->flags & \ast\flags\NAME_NOT_FQ) {
-            if (strcasecmp('parent', $node->children['name']) === 0) {
+            if (strcasecmp('parent', $name) === 0) {
                 $parent_type = self::findParentType($this->context, $this->code_base);
                 return $parent_type ? $parent_type->asUnionType() : UnionType::empty();
             }
 
             return Type::fromStringInContext(
-                $node->children['name'],
+                $name,
                 $this->context,
                 Type::FROM_NODE
             )->asUnionType();
         }
 
         if ($node->flags & \ast\flags\NAME_RELATIVE) {  // $x = new namespace\Foo();
-            $fully_qualified_name = $this->context->getNamespace() . '\\' . $node->children['name'];
+            $fully_qualified_name = $this->context->getNamespace() . '\\' . $name;
             return Type::fromFullyQualifiedString(
                 $fully_qualified_name
             )->asUnionType();
@@ -523,13 +525,13 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         try {
             return Type::fromFullyQualifiedString(
-                '\\' . $node->children['name']
+                '\\' . $name
             )->asUnionType();
         } catch (EmptyFQSENException $_) {
             $this->emitIssue(
                 Issue::EmptyFQSENInClasslike,
                 $node->lineno ?? 0,
-                '\\' . $node->children['name']
+                '\\' . $name
             );
             return UnionType::empty();
         }
@@ -592,12 +594,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitNullableType(Node $node) : UnionType
     {
         // Get the type
-        $union_type = UnionTypeVisitor::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $node->children['type'],
-            $this->should_catch_issue_exception
-        );
+        $union_type = $this->__invoke($node->children['type']);
 
         // Make each nullable
         return $union_type->asMappedUnionType(function (Type $type) : Type {
@@ -627,6 +624,40 @@ class UnionTypeVisitor extends AnalysisVisitor
             throw new TypeError('node must be Node or scalar');
         }
         return Type::fromObject($node)->asUnionType();
+    }
+
+    /**
+     * Returns the union type from a type in a parameter/return signature of a function-like.
+     * This preserves `self` and `static`
+     * @param ?Node $node
+     */
+    public function fromTypeInSignature($node) : UnionType
+    {
+        $is_nullable = $node->kind === ast\AST_NULLABLE_TYPE;
+        if ($is_nullable) {
+            $node = $node->children['type'];
+        }
+        $kind = $node->kind;
+        if ($kind === ast\AST_TYPE) {
+            $result = $this->visitType($node);
+        } else {
+            if ($kind !== ast\AST_NAME) {
+                throw new AssertionError("Expected either a type or a name in the signature: node: " . Debug::nodeToString($node));
+            }
+            if ($this->context->getScope()->isInTraitScope()) {
+                $name = \strtolower($node->children['name']);
+                if ($name === 'self') {
+                    return SelfType::instance($is_nullable)->asUnionType();
+                } elseif ($name === 'static') {
+                    return StaticType::instance($is_nullable)->asUnionType();
+                }
+            }
+            $result = $this->visitName($node);
+        }
+        if ($is_nullable) {
+            return $result->nullableClone();
+        }
+        return $result;
     }
 
     /**
@@ -1967,20 +1998,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                     // Remove any references to \static or \static[]
                     // once we're talking about the method's return
                     // type outside of its class
-                    if ($union_type->hasStaticType()) {
-                        $union_type = $union_type->withoutType(\Phan\Language\Type\StaticType::instance(false));
-                    }
-
-                    if ($union_type->genericArrayElementTypes()->hasStaticType()) {
-                        // Find the static type on the list
-                        $static_type = $union_type->findTypeMatchingCallback(function (Type $type) : bool {
-                            return $type instanceof GenericArrayInterface
-                                && $type->genericArrayElementUnionType()->hasStaticType();
-                        });
-
-                        // Remove it from the list
-                        // TODO: Limit this to fields of ArrayShapeType that actually have static type
-                        $union_type = $union_type->withoutType($static_type);
+                    // TODO: Convert static[] to array or object[]
+                    foreach ($union_type->getTypeSet() as $type) {
+                        if ($type->hasStaticOrSelfTypesRecursive($this->code_base)) {
+                            $union_type = $union_type->withoutType($type);
+                        }
                     }
 
                     return $union_type;
@@ -2552,7 +2574,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 continue;
             }
             $class_fqsen = FullyQualifiedClassName::fromType($object_type);
-            if ($object_type->isStaticType()) {
+            if ($object_type instanceof StaticOrSelfType) {
                 if (!$context->isInClassScope()) {
                     $this->emitIssue(
                         Issue::ContextNotObjectInCallable,

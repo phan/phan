@@ -1491,7 +1491,7 @@ class Clazz extends AddressableElement
     ) : bool {
         // All classes have a constructor even if it hasn't
         // been declared yet
-        if (!$is_direct_invocation && '__construct' === \strtolower($name)) {
+        if (!$is_direct_invocation && ('__construct' === \strtolower($name) && !$this->isTrait())) {
             return true;
         }
 
@@ -2300,12 +2300,7 @@ class Clazz extends AddressableElement
             // If you import a trait's private method, it becomes private **to the class which used the trait** in PHP code.
             // (But preserving the defining FQSEN is fine for this)
             if ($is_trait) {
-                $method_flags = $method->getFlags();
-                if (Flags::bitVectorHasState($method_flags, \ast\flags\MODIFIER_PRIVATE)) {
-                    $method = $method->createUseAlias($this, $method->getName(), \ast\flags\MODIFIER_PRIVATE);
-                } elseif (Flags::bitVectorHasState($method_flags, \ast\flags\MODIFIER_PROTECTED)) {
-                    $method = $method->createUseAlias($this, $method->getName(), \ast\flags\MODIFIER_PROTECTED);
-                }
+                $method = $this->adaptInheritedMethodFromTrait($method);
             }
             $this->addMethod(
                 $code_base,
@@ -2317,6 +2312,64 @@ class Clazz extends AddressableElement
         if (!\is_null($trait_adaptations)) {
             $this->importTraitAdaptations($code_base, $class, $trait_adaptations, $type_option);
         }
+    }
+
+    private function adaptInheritedMethodFromTrait(Method $method) : Method
+    {
+        $method_flags = $method->getFlags();
+        if (Flags::bitVectorHasState($method_flags, \ast\flags\MODIFIER_PRIVATE)) {
+            $method = $method->createUseAlias($this, $method->getName(), \ast\flags\MODIFIER_PRIVATE);
+        } elseif (Flags::bitVectorHasState($method_flags, \ast\flags\MODIFIER_PROTECTED)) {
+            $method = $method->createUseAlias($this, $method->getName(), \ast\flags\MODIFIER_PROTECTED);
+        } else {
+            $method = $method->createUseAlias($this, $method->getName(), \ast\flags\MODIFIER_PUBLIC);
+        }
+        $context = $this->getContext()->withScope($this->internal_scope);
+        $method->setUnionType(
+            $method->getUnionTypeWithUnmodifiedStatic()->withSelfResolvedInContext($context)
+        );
+        $method->setRealReturnType(
+            $method->getRealReturnType()->withSelfResolvedInContext($context)
+        );
+        $parameter_list = $method->getParameterList();
+        $changed = false;
+        foreach ($parameter_list as $i => $parameter) {
+            $old_type = $parameter->getNonVariadicUnionType();
+            $type = $old_type->withSelfResolvedInContext($context);
+            if ($type->hasStaticType()) {
+                $type = $type->withType($this->getFQSEN()->asType());
+            }
+            if ($old_type !== $type) {
+                $changed = true;
+                $parameter = clone($parameter);
+                $parameter->setUnionType($type);
+                $parameter_list[$i] = $parameter;
+            }
+        }
+        if ($changed) {
+            $method->setParameterList($parameter_list);
+        }
+
+        $real_parameter_list = $method->getRealParameterList();
+        $changed = false;
+        foreach ($real_parameter_list as $i => $parameter) {
+            $old_type = $parameter->getNonVariadicUnionType();
+            $type = $old_type->withSelfResolvedInContext($context);
+            if ($type->hasStaticType()) {
+                $type = $type->withType($this->getFQSEN()->asType());
+            }
+            if ($old_type !== $type) {
+                $changed = true;
+                $parameter = clone($parameter);
+                $parameter->setUnionType($type);
+                $real_parameter_list[$i] = $parameter;
+            }
+        }
+        if ($changed) {
+            $method->setRealParameterList($parameter_list);
+        }
+
+        return $method;
     }
 
     /**

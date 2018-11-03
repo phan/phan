@@ -38,7 +38,7 @@
 %s:144 PhanTypeMismatchReturn Returning type 'string' but f() is declared to return int
 %s:147 PhanTypeMissingReturn Method \C9::f is declared to return int but has no return value
 %s:150 PhanUndeclaredClassMethod Call to method f from undeclared class \F
-%s:155 PhanUndeclaredTypeParameter Parameter of undeclared type \Undef
+%s:155 PhanUndeclaredTypeParameter Parameter $p has undeclared type \Undef
 %s:158 PhanUndeclaredTypeProperty Property \C11::p has undeclared type \Undef
 %s:161 PhanParentlessClass Reference to parent of class \C12 that does not extend anything
 %s:164 PhanTraitParentReference Reference to parent from trait \T1
@@ -46,7 +46,7 @@
 %s:176 PhanUndeclaredConstant Reference to undeclared constant \C16::C
 %s:180 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \Undef
 %s:183 PhanUndeclaredClassMethod Call to method f5 from undeclared class \Undef
-%s:183 PhanUndeclaredTypeParameter Parameter of undeclared type \Undef
+%s:183 PhanUndeclaredTypeParameter Parameter $p has undeclared type \Undef
 %s:192 PhanUndeclaredExtendedClass Class extends undeclared class \Undef
 %s:195 PhanUndeclaredFunction Call to undeclared function \f10()
 %s:198 PhanUndeclaredInterface Class implements undeclared interface \C18

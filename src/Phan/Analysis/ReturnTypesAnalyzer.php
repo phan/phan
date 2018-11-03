@@ -10,6 +10,7 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\StaticOrSelfType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
@@ -30,9 +31,10 @@ class ReturnTypesAnalyzer
         CodeBase $code_base,
         FunctionInterface $method
     ) {
-        $return_type = $method->getUnionType();
+        $return_type = $method->getUnionTypeWithUnmodifiedStatic();
         $real_return_type = $method->getRealReturnType();
         $phpdoc_return_type = $method->getPHPDocReturnType();
+        $context = $method->getContext();
         // TODO: use method->getPHPDocUnionType() to check compatibility, like analyzeParameterTypesDocblockSignaturesMatch
 
         // Look at each parameter to make sure their types
@@ -48,7 +50,7 @@ class ReturnTypesAnalyzer
 
             // If its a native type or a reference to
             // self, its OK
-            if ($type->isNativeType() || ($method instanceof Method && ($type->isSelfType() || $type->isStaticType()))) {
+            if ($type->isNativeType() || ($method instanceof Method && $type instanceof StaticOrSelfType)) {
                 continue;
             }
 
@@ -57,30 +59,29 @@ class ReturnTypesAnalyzer
                     if ($method->isStatic()) {
                         Issue::maybeEmit(
                             $code_base,
-                            $method->getContext(),
+                            $context,
                             Issue::TemplateTypeStaticMethod,
                             $method->getFileRef()->getLineNumberStart(),
                             (string)$method->getFQSEN()
                         );
                     }
                 }
-            } else {
-                // Make sure the class exists
-                $type_fqsen = FullyQualifiedClassName::fromType($type);
-                if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
-                    Issue::maybeEmitWithParameters(
-                        $code_base,
-                        $method->getContext(),
-                        Issue::UndeclaredTypeReturnType,
-                        $method->getFileRef()->getLineNumberStart(),
-                        [$method->getName(), (string)$outer_type],
-                        IssueFixSuggester::suggestSimilarClass($code_base, $method->getContext(), $type_fqsen, null, 'Did you mean', IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES_AND_VOID)
-                    );
-                }
+                continue;
+            }
+            // Make sure the class exists
+            $type_fqsen = FullyQualifiedClassName::fromType($type);
+            if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
+                Issue::maybeEmitWithParameters(
+                    $code_base,
+                    $method->getContext(),
+                    Issue::UndeclaredTypeReturnType,
+                    $method->getFileRef()->getLineNumberStart(),
+                    [$method->getName(), (string)$outer_type],
+                    IssueFixSuggester::suggestSimilarClass($code_base, $method->getContext(), $type_fqsen, null, 'Did you mean', IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES_AND_VOID)
+                );
             }
         }
         if (Config::getValue('check_docblock_signature_return_type_match') && !$real_return_type->isEmpty() && ($phpdoc_return_type instanceof UnionType) && !$phpdoc_return_type->isEmpty()) {
-            $context = $method->getContext();
             $resolved_real_return_type = $real_return_type->withStaticResolvedInContext($context);
             foreach ($phpdoc_return_type->getTypeSet() as $phpdoc_type) {
                 $is_exclusively_narrowed = $phpdoc_type->isExclusivelyNarrowedFormOrEquivalentTo(
@@ -125,6 +126,27 @@ class ReturnTypesAnalyzer
         if ($return_type->isEmpty() && !$method->getHasReturn()) {
             if ($method instanceof Func || ($method instanceof Method && ($method->isPrivate() || $method->isFinal() || $method->getIsMagicAndVoid() || $method->getClass($code_base)->isFinal()))) {
                 $method->setUnionType(VoidType::instance(false)->asUnionType());
+            }
+        }
+        foreach ($real_return_type->getTypeSet() as $type) {
+            if (!$type->isObjectWithKnownFQSEN()) {
+                continue;
+            }
+            $type_fqsen = FullyQualifiedClassName::fromType($type);
+            if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
+                // We should have already warned
+                continue;
+            }
+            $class = $code_base->getClassByFQSEN($type_fqsen);
+            if ($class->isTrait()) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypeInvalidTraitReturn,
+                    $method->getFileRef()->getLineNumberStart(),
+                    $method->getName(),
+                    $type_fqsen->__toString()
+                );
             }
         }
     }
