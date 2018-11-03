@@ -823,7 +823,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         if (count($children) > 0) {
             $value_types_builder = new UnionTypeBuilder();
 
-            $key_set = $this->getEquivalentArraySet($children, $node->lineno);
+            $key_set = $this->getEquivalentArraySet($node);
             if (\is_array($key_set) && \count($key_set) === \count($children)) {
                 return $this->createArrayShapeType($children, $key_set)->asUnionType();
             }
@@ -895,19 +895,13 @@ class UnionTypeVisitor extends AnalysisVisitor
      *
      * @see ContextNode->getEquivalentPHPArrayElements()
      */
-    private function getEquivalentArraySet(array $children, int $lineno)
+    private function getEquivalentArraySet(Node $node)
     {
         $elements = [];
         $context_node = null;
-        foreach ($children as $child_node) {
+        foreach ($node->children as $child_node) {
             if (!($child_node instanceof Node)) {
-                Issue::maybeEmit(
-                    $this->code_base,
-                    $this->context,
-                    Issue::SyntaxError,
-                    $lineno,
-                    "Cannot use empty array elements in arrays"
-                );
+                ContextNode::warnAboutEmptyArrayElements($this->code_base, $this->context, $node);
                 continue;
             }
             $key_node = $child_node->children['key'];

@@ -1,0 +1,5 @@
+%s:2 PhanSyntaxError Cannot use empty array elements in arrays
+%s:6 PhanSyntaxError Cannot use empty array elements in arrays
+%s:10 PhanSyntaxError Cannot use empty array elements in arrays
+%s:11 PhanSyntaxError Cannot use empty array elements in arrays
+%s:12 PhanSyntaxError Cannot use empty array elements in arrays
