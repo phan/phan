@@ -414,6 +414,7 @@ class Func extends AddressableElement implements FunctionInterface
      * @return string
      * The fully-qualified structural element name of this
      * structural element (or something else for closures and callables)
+     * @override
      */
     public function getRepresentationForIssue() : string
     {

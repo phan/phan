@@ -323,4 +323,14 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     {
         return $this->doc_comment;
     }
+
+    /**
+     * @return string the representation of this FQSEN for issue messages.
+     * Overridden in some subclasses
+     * @suppress PhanUnreferencedPublicMethod (inference error?)
+     */
+    public function getRepresentationForIssue() : string
+    {
+        return $this->getFQSEN()->__toString();
+    }
 }

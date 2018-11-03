@@ -1,6 +1,6 @@
-src/024_strict_property_assignment.php:5 PhanWriteOnlyPrivateProperty Possibly zero read references to private property \MyClass24::a
-src/024_strict_property_assignment.php:8 PhanWriteOnlyProtectedProperty Possibly zero read references to protected property \MyClass24::b
-src/024_strict_property_assignment.php:11 PhanWriteOnlyPublicProperty Possibly zero read references to public property \MyClass24::c
-src/024_strict_property_assignment.php:19 PhanPossiblyFalseTypeMismatchProperty Assigning false|int to property but \MyClass24::a is int (false is incompatible)
-src/024_strict_property_assignment.php:20 PhanPossiblyNullTypeMismatchProperty Assigning \stdClass|null to property but \MyClass24::b is \stdClass (null is incompatible)
-src/024_strict_property_assignment.php:21 PhanPartialTypeMismatchProperty Assigning \MyClass24|\Traversable to property but \MyClass24::c is \MyClass24 (\Traversable|iterable is incompatible)
+src/024_strict_property_assignment.php:5 PhanWriteOnlyPrivateProperty Possibly zero read references to private property \MyClass24->a
+src/024_strict_property_assignment.php:8 PhanWriteOnlyProtectedProperty Possibly zero read references to protected property \MyClass24->b
+src/024_strict_property_assignment.php:11 PhanWriteOnlyPublicProperty Possibly zero read references to public property \MyClass24->c
+src/024_strict_property_assignment.php:19 PhanPossiblyFalseTypeMismatchProperty Assigning false|int to property but \MyClass24->a is int (false is incompatible)
+src/024_strict_property_assignment.php:20 PhanPossiblyNullTypeMismatchProperty Assigning \stdClass|null to property but \MyClass24->b is \stdClass (null is incompatible)
+src/024_strict_property_assignment.php:21 PhanPartialTypeMismatchProperty Assigning \MyClass24|\Traversable to property but \MyClass24->c is \MyClass24 (\Traversable|iterable is incompatible)

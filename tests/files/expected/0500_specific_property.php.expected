@@ -1,2 +1,2 @@
-%s:15 PhanTypeMismatchProperty Assigning array<int,int> to property but \Example500::propWithArrayDefault is string[]
-%s:19 PhanTypeMismatchProperty Assigning array<int,int> to property but \Example500::propSetInConstructor is string[]
+%s:15 PhanTypeMismatchProperty Assigning array<int,int> to property but \Example500->propWithArrayDefault is string[]
+%s:19 PhanTypeMismatchProperty Assigning array<int,int> to property but \Example500->propSetInConstructor is string[]

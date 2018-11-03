@@ -1,4 +1,4 @@
-%s:24 PhanAccessPropertyPrivate Cannot access private property \Subclass391::$_prop defined at %s:4
+%s:24 PhanAccessPropertyPrivate Cannot access private property \Subclass391->_prop defined at %s:4
 %s:25 PhanUndeclaredProperty Reference to undeclared property \Subclass391->_propOther
-%s:29 PhanAccessPropertyPrivate Cannot access private property \Subclass391::$_prop2 defined at %s:5
+%s:29 PhanAccessPropertyPrivate Cannot access private property \Subclass391->_prop2 defined at %s:5
 %s:29 PhanUndeclaredProperty Reference to undeclared property \Subclass391->_prop2Other

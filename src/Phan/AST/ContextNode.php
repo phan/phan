@@ -1344,7 +1344,7 @@ class ContextNode
                         $this->context->getFile(),
                         $node->lineno ?? 0,
                         [
-                            (string)$property->getFQSEN(),
+                            $property->getRepresentationForIssue(),
                             $property->getFileRef()->getFile(),
                             $property->getFileRef()->getLineNumberStart(),
                         ]
@@ -1363,7 +1363,7 @@ class ContextNode
                         $this->context->getFile(),
                         $node->lineno ?? 0,
                         [
-                            (string)$property->getFQSEN(),
+                            $property->getRepresentationForIssue(),
                             $property->getElementNamespace(),
                             $property->getFileRef()->getFile(),
                             $property->getFileRef()->getLineNumberStart(),

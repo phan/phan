@@ -1,6 +1,6 @@
-%s:8 PhanTypeMismatchProperty Assigning int to property but \A::text is string
-%s:8 PhanTypeMismatchProperty Assigning string to property but \A::num is int
+%s:8 PhanTypeMismatchProperty Assigning int to property but \A->text is string
+%s:8 PhanTypeMismatchProperty Assigning string to property but \A->num is int
 %s:11 PhanUndeclaredProperty Reference to undeclared property \A->str
-%s:12 PhanTypeMismatchProperty Assigning array{} to property but \A::text is int|string
-%s:18 PhanAccessPropertyProtected Cannot access protected property \A::$foo defined at %s:8
+%s:12 PhanTypeMismatchProperty Assigning array{} to property but \A->text is int|string
+%s:18 PhanAccessPropertyProtected Cannot access protected property \A->foo defined at %s:8
 %s:19 PhanUndeclaredProperty Reference to undeclared property \A->bar

@@ -1,1 +1,1 @@
-src/022_trait_method.php:5 PhanUnreferencedPublicMethod Possibly zero references to public method \T22::myUnusedFunction
+src/022_trait_method.php:5 PhanUnreferencedPublicMethod Possibly zero references to public method \T22::myUnusedFunction()

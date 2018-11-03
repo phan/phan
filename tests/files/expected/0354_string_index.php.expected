@@ -1,6 +1,6 @@
 %s:9 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
 %s:10 PhanTypeMismatchDimEmpty Assigning to an empty array index of a value of type string, but expected the index to exist and be of type int
-%s:10 PhanTypeMismatchProperty Assigning array<int,string> to property but \A354::foo is string
+%s:10 PhanTypeMismatchProperty Assigning array<int,string> to property but \A354->foo is string
 %s:13 PhanTypeMismatchArgumentInternal Argument 1 (var) is 'aaa'|string but \count() takes \Countable|array
 %s:14 PhanTypeMismatchDimEmpty Assigning to an empty array index of a value of type 'aaa'|string, but expected the index to exist and be of type int
 %s:16 PhanTypeMismatchDimAssignment When appending to a value of type 'aaa', found an array access index of type 'offset', but expected the index to be of type int

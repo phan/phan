@@ -1,2 +1,2 @@
-%s:15 PhanAccessPropertyPrivate Cannot access private property \ExtendingClass393::$propPrivate defined at %s:9
+%s:15 PhanAccessPropertyPrivate Cannot access private property \ExtendingClass393->propPrivate defined at %s:9
 %s:16 PhanUndeclaredProperty Reference to undeclared property \ExtendingClass393->missingProp

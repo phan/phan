@@ -2302,7 +2302,7 @@ class Issue
                 self::UnreferencedClosure,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
-                "Possibly zero references to closure {FUNCTION}",
+                "Possibly zero references to {FUNCTION}",
                 self::REMEDIATION_B,
                 6010
             ),
