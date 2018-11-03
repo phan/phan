@@ -1,2 +1,1 @@
 %s:7 PhanTypeMismatchArgument Argument 1 (arg) is float but \test2() takes int defined at %s:6
-

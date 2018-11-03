@@ -1,2 +1,1 @@
 %s:7 PhanTypeMismatchArgumentInternal Argument 1 (obj) is resource but \spl_object_hash() takes object
-

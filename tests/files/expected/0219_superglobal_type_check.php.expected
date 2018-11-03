@@ -13,4 +13,3 @@
 %s:43 PhanUnusedVariable Unused definition of variable $http_response_headers
 %s:49 PhanUndeclaredVariable Variable $argc is undeclared
 %s:50 PhanUndeclaredVariable Variable $argv is undeclared
-

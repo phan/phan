@@ -16,4 +16,3 @@
 %s:36 PhanUndeclaredVariable Variable $c2 is undeclared
 %s:38 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
 %s:39 PhanUndeclaredVariable Variable $x3 is undeclared
-

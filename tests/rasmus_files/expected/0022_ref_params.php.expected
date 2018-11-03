@@ -1,2 +1,1 @@
 %s:15 PhanTypeMismatchArgument Argument 1 (farg2) is float but \B::test2() takes int defined at %s:8
-

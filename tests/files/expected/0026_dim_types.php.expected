@@ -1,2 +1,1 @@
 %s:47 PhanTypeMismatchArgument Argument 1 (a) is string but \B::f() takes int defined at %s:22
-

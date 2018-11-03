@@ -1,2 +1,1 @@
 %s:10 PhanTypeMismatchArgument Argument 1 (arg) is 'abc' but \test3() takes array defined at %s:7
-

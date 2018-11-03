@@ -2,4 +2,3 @@
 %s:8 PhanNoopArray Unused array
 %s:11 PhanNoopClosure Unused closure
 %s:15 PhanNoopConstant Unused constant
-
