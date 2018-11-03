@@ -24,6 +24,7 @@ New features(Analysis):
 + Stop adding generic int/string to the type of a class property when the doc comment mentions only literal int/string values (#2102)
   (e.g. `@var 1|2`)
 + Improve line number in warning about extra comma in arrays (i.e. empty array elements). (#2066)
++ Properly parse [flexible heredoc/nowdoc syntaxes](https://wiki.php.net/rfc/flexible_heredoc_nowdoc_syntaxes) that were added in PHP 7.3 (#1537)
 
 Bug fixes:
 + Properly type check `static::someMethodName()`.
