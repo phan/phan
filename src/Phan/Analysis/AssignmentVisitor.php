@@ -777,7 +777,7 @@ class AssignmentVisitor extends AnalysisVisitor
             )) {
                 $this->addTypesToProperty($property, $node);
                 if (Config::get_strict_property_checking() && $this->right_type->typeCount() > 1) {
-                    $this->analyzePropertyAssignmentStrict($clazz, $property, $this->right_type, $node);
+                    $this->analyzePropertyAssignmentStrict($property, $this->right_type, $node);
                 }
             } elseif ($property_union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
                 // Add any type if this is a subclass with array access.
@@ -799,12 +799,12 @@ class AssignmentVisitor extends AnalysisVisitor
                         Issue::TypeMismatchProperty,
                         $node->lineno ?? 0,
                         (string)$new_types,
-                        "{$clazz->getFQSEN()}::{$property->getName()}",
+                        $property->getRepresentationForIssue(),
                         (string)$property_union_type
                     );
                 } else {
                     if (Config::get_strict_property_checking() && $this->right_type->typeCount() > 1) {
-                        $this->analyzePropertyAssignmentStrict($clazz, $property, $this->right_type, $node);
+                        $this->analyzePropertyAssignmentStrict($property, $this->right_type, $node);
                     }
                     $this->right_type = $new_types;
                     $this->addTypesToProperty($property, $node);
@@ -830,14 +830,14 @@ class AssignmentVisitor extends AnalysisVisitor
                     Issue::TypeMismatchProperty,
                     $node->lineno ?? 0,
                     (string)$this->right_type,
-                    "{$clazz->getFQSEN()}::{$property->getName()}",
+                    $property->getRepresentationForIssue(),
                     (string)$property_union_type
                 );
                 return $this->context;
             }
 
             if (Config::get_strict_property_checking() && $this->right_type->typeCount() > 1) {
-                $this->analyzePropertyAssignmentStrict($clazz, $property, $this->right_type, $node);
+                $this->analyzePropertyAssignmentStrict($property, $this->right_type, $node);
             }
         }
 
@@ -871,7 +871,7 @@ class AssignmentVisitor extends AnalysisVisitor
         );
     }
 
-    private function analyzePropertyAssignmentStrict(Clazz $clazz, Property $property, UnionType $assignment_type, Node $node)
+    private function analyzePropertyAssignmentStrict(Property $property, UnionType $assignment_type, Node $node)
     {
         $type_set = $assignment_type->getTypeSet();
         if (\count($type_set) < 2) {
@@ -914,7 +914,7 @@ class AssignmentVisitor extends AnalysisVisitor
             self::getStrictIssueType($mismatch_type_set),
             $node->lineno ?? 0,
             (string)$this->right_type,
-            "{$clazz->getFQSEN()}::{$property->getName()}",
+            $property->getRepresentationForIssue(),
             (string)$property_union_type,
             (string)$mismatch_expanded_types
         );

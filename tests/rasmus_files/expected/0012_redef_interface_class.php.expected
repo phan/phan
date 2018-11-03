@@ -1,3 +1,2 @@
 %s:7 PhanRedefineClass Trait \Test defined at %s:7 was previously defined as Interface \Test at %s:2
 %s:12 PhanRedefineClass Class \Test defined at %s:12 was previously defined as Interface \Test at %s:2
-

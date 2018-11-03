@@ -121,7 +121,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
                 $property->getContext(),
                 "PhanPluginNoCommentOn${visibility_upper}Property",
                 "$visibility_upper property {PROPERTY} has no doc comment",
-                [$property->getFQSEN()]
+                [$property->getRepresentationForIssue()]
             );
             return;
         }
@@ -133,7 +133,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
                 $property->getContext(),
                 "PhanPluginDescriptionlessCommentOn${visibility_upper}Property",
                 "$visibility_upper property {PROPERTY} has no readable description: {STRING_LITERAL}",
-                [$property->getFQSEN(), self::getDocCommentRepresentation($doc_comment)]
+                [$property->getRepresentationForIssue(), self::getDocCommentRepresentation($doc_comment)]
             );
             return;
         }

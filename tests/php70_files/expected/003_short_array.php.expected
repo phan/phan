@@ -6,4 +6,3 @@
 %s:17 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{0:2} but \strlen() takes string
 %s:21 PhanCompatibleKeyedArrayAssignPHP70 Using array keys in an array destructuring assignment is not compatible with PHP 7.0
 %s:24 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{0:3} but \strlen() takes string
-

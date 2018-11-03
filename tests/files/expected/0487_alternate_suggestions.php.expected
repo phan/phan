@@ -1,4 +1,4 @@
-%s:21 PhanUndeclaredTypeProperty Property \A487::x has undeclared type \avoid (Did you mean class \Avid)
+%s:21 PhanUndeclaredTypeProperty Property \A487->x has undeclared type \avoid (Did you mean class \Avid)
 %s:28 PhanTypeMissingReturn Method \A487::test_suggestions is declared to return \avoid but has no return value
 %s:28 PhanUndeclaredTypeParameter Parameter $x has undeclared type \avoid (Did you mean class \Avid)
 %s:28 PhanUndeclaredTypeReturnType Return type of test_suggestions() is undeclared type \avoid (Did you mean class \Avid or void)

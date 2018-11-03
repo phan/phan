@@ -511,7 +511,7 @@ class ParseVisitor extends ScopeVisitor
                         Issue::TypeMismatchProperty,
                         $child_node->lineno ?? 0,
                         (string)$original_union_type,
-                        (string)$property->getFQSEN(),
+                        $property->asPropertyFQSENString(),
                         (string)$variable->getUnionType()
                     );
                 }

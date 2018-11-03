@@ -1,4 +1,3 @@
 %s:23 PhanAccessSignatureMismatch Access level to function pub() must be compatible with function pub() defined in %s:11
 %s:29 PhanAccessSignatureMismatch Access level to function pub() must be compatible with function pub() defined in %s:11
 %s:30 PhanAccessSignatureMismatch Access level to function prot() must be compatible with function prot() defined in %s:12
-

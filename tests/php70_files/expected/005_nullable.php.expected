@@ -2,4 +2,3 @@
 %s:5 PhanCompatibleNullableTypePHP70 Nullable type '?int' is not compatible with PHP 7.0
 %s:9 PhanCompatibleNullableTypePHP70 Nullable type '?int' is not compatible with PHP 7.0
 %s:17 PhanCompatibleNullableTypePHP70 Nullable type '?int' is not compatible with PHP 7.0
-

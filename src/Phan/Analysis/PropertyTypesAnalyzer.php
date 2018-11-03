@@ -59,7 +59,7 @@ class PropertyTypesAnalyzer
                             $property->getContext(),
                             Issue::TemplateTypeStaticProperty,
                             $property->getFileRef()->getLineNumberStart(),
-                            (string)$property->getFQSEN()
+                            $property->asPropertyFQSENString()
                         );
                     }
                     continue;
@@ -80,7 +80,7 @@ class PropertyTypesAnalyzer
                         $property->getContext(),
                         Issue::UndeclaredTypeProperty,
                         $property->getFileRef()->getLineNumberStart(),
-                        [(string)$property->getFQSEN(), (string)$outer_type],
+                        [$property->asPropertyFQSENString(), (string)$outer_type],
                         IssueFixSuggester::suggestSimilarClass($code_base, $property->getContext(), $type_fqsen, null, 'Did you mean', IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES)
                     );
                 }

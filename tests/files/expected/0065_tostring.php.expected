@@ -1,2 +1,1 @@
 %s:16 PhanTypeMismatchArgument Argument 2 (arg) is \Stringular|string but \test() takes int defined at %s:10
-

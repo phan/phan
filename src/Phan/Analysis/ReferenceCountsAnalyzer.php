@@ -372,7 +372,7 @@ class ReferenceCountsAnalyzer
             $element->getContext(),
             $issue_type,
             $element->getFileRef()->getLineNumberStart(),
-            (string)$element->getFQSEN()
+            $element->getRepresentationForIssue()
         );
     }
 
@@ -405,7 +405,7 @@ class ReferenceCountsAnalyzer
             $property->getContext(),
             $issue_type,
             $property->getFileRef()->getLineNumberStart(),
-            (string)$property->getFQSEN()
+            $property->getRepresentationForIssue()
         );
     }
 
@@ -434,7 +434,7 @@ class ReferenceCountsAnalyzer
             $property->getContext(),
             $issue_type,
             $property->getFileRef()->getLineNumberStart(),
-            (string)$property->getFQSEN()
+            $property->getRepresentationForIssue()
         );
     }
 

@@ -138,6 +138,15 @@ class Property extends ClassElement
     }
 
     /**
+     * @return string the representation of this FQSEN for issue messages.
+     * @override
+     */
+    public function getRepresentationForIssue() : string
+    {
+        return $this->asPropertyFQSENString();
+    }
+
+    /**
      * Override the default getter to fill in a future
      * union type if available.
      * @throws IssueException if getFutureUnionType fails.

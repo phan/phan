@@ -1,1 +1,1 @@
-src/034_loop_checks.php:5 PhanReadOnlyPublicProperty Possibly zero write references to public property \Example34::array
+src/034_loop_checks.php:5 PhanReadOnlyPublicProperty Possibly zero write references to public property \Example34->array

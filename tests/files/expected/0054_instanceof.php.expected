@@ -1,3 +1,2 @@
 %s:11 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \UndefClass
 %s:15 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \UndefClass
-

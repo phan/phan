@@ -1,6 +1,6 @@
 %s:4 PhanTypeMismatchDefault Default value for int $p can't be false
 %s:7 PhanTypeArraySuspicious Suspicious array access to false
-%s:10 PhanTypeMismatchProperty Assigning 'str' to property but \C::p is int
+%s:10 PhanTypeMismatchProperty Assigning 'str' to property but \C->p is int
 %s:13 PhanTypeInstantiateAbstract Instantiation of abstract class \D
 %s:16 PhanTypeInstantiateInterface Instantiation of interface \E
 %s:19 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 1 of \F::f()
