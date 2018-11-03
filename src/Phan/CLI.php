@@ -1151,20 +1151,44 @@ EOB;
         // strlen("  99% 999MB/999MB") == 17
         $used_length = strlen($left_side) + max(17, strlen($right_side));
         $remaining_length = $columns - $used_length;
-        // If we have 2 or fewer bytes for a progress bar, arbitrarily give up
-        $remaining_length = min(60, max(2, $remaining_length));
-
-        $current = (int)($p * $remaining_length);
-
-        $rest = max($remaining_length - $current, 0);
+        $remaining_length = min(60, max(0, $remaining_length));
+        if ($remaining_length > 0) {
+            $progress_bar = self::renderInnerProgressBar($remaining_length, $p);
+        } else {
+            $progress_bar = '';
+            $right_side = ltrim($right_side);
+        }
 
         // Build up a string, then make a single call to fwrite(). Should be slightly faster and smoother to render to the console.
         $msg = $left_side .
-               str_repeat("\u{2588}", $current) .
-               str_repeat("\u{2591}", $rest) .
+               $progress_bar .
                $right_side .
                "\r";
         fwrite(STDERR, $msg);
+    }
+
+    /**
+     * Renders a unicode progress bar that goes from light (left) to dark (right)
+     * The length in the console is the positive integer $length
+     * @see https://en.wikipedia.org/wiki/Block_Elements
+     */
+    private static function renderInnerProgressBar(int $length, float $p) : string
+    {
+        $current_float = $p * $length;
+        $current = (int)$current_float;
+        $rest = max($length - $current, 0);
+        // The left-most characters are "Light shade"
+        $progress_bar = str_repeat("\u{2588}", $current);
+        $delta = $current_float - $current;
+        if ($delta > 1.0/3) {
+            // The between character is "Full block" or "Medium shade" or "solid shade".
+            // The remaining characters on the right are "Full block" (darkest)
+            $first = $delta > 2.0/3 ? "\u{2593}" : "\u{2592}";
+            $progress_bar .= $first . str_repeat("\u{2591}", $rest - 1);
+        } else {
+            $progress_bar .= str_repeat("\u{2591}", $rest);
+        }
+        return $progress_bar;
     }
 
     /**
