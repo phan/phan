@@ -6,6 +6,7 @@ Phan NEWS
 New features(CLI)
 + Make `phan --progress-bar` fit within narrower console widths. (#2096)
   (Make the old width into the new **maximum** width)
+  Additionally, use a gradient of shades for the progress bar.
 
 New features(Analysis):
 + Warn when attempting to read from a write-only real/magic property (or vice-versa) (#595)
