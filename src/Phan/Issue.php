@@ -1055,7 +1055,7 @@ class Issue
                 self::TypeMismatchArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} defined at {FILE}:{LINE}",
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 10003
             ),
@@ -1063,7 +1063,7 @@ class Issue
                 self::TypeMismatchArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE}",
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE}",
                 self::REMEDIATION_B,
                 10004
             ),
@@ -1071,7 +1071,7 @@ class Issue
                 self::TypeMismatchGeneratorYieldValue,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Yield statement has a value with type {TYPE} but {FUNCTIONLIKE}() is declared to yield values of type {TYPE} in {TYPE}",
+                "Yield statement has a value with type {TYPE} but {FUNCTIONLIKE} is declared to yield values of type {TYPE} in {TYPE}",
                 self::REMEDIATION_B,
                 10067
             ),
@@ -1079,7 +1079,7 @@ class Issue
                 self::TypeMismatchGeneratorYieldKey,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Yield statement has a key with type {TYPE} but {FUNCTIONLIKE}() is declared to yield keys of type {TYPE} in {TYPE}",
+                "Yield statement has a key with type {TYPE} but {FUNCTIONLIKE} is declared to yield keys of type {TYPE} in {TYPE}",
                 self::REMEDIATION_B,
                 10068
             ),
@@ -1095,7 +1095,7 @@ class Issue
                 self::PartialTypeMismatchArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 10054
             ),
@@ -1103,7 +1103,7 @@ class Issue
                 self::PartialTypeMismatchArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)",
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)",
                 self::REMEDIATION_B,
                 10055
             ),
@@ -1111,7 +1111,7 @@ class Issue
                 self::PossiblyNullTypeArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 10056
             ),
@@ -1119,7 +1119,7 @@ class Issue
                 self::PossiblyNullTypeArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)",
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)",
                 self::REMEDIATION_B,
                 10057
             ),
@@ -1127,7 +1127,7 @@ class Issue
                 self::PossiblyFalseTypeArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 10058
             ),
@@ -1135,7 +1135,7 @@ class Issue
                 self::PossiblyFalseTypeArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} ({TYPE} is incompatible)",
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible)",
                 self::REMEDIATION_B,
                 10059
             ),
@@ -1143,7 +1143,7 @@ class Issue
                 self::TypeMismatchReturn,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Returning type {TYPE} but {FUNCTIONLIKE}() is declared to return {TYPE}",
+                "Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE}",
                 self::REMEDIATION_B,
                 10005
             ),
@@ -1151,7 +1151,7 @@ class Issue
                 self::PartialTypeMismatchReturn,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Returning type {TYPE} but {FUNCTIONLIKE}() is declared to return {TYPE} ({TYPE} is incompatible)",
+                "Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} ({TYPE} is incompatible)",
                 self::REMEDIATION_B,
                 10060
             ),
@@ -1159,7 +1159,7 @@ class Issue
                 self::PossiblyNullTypeReturn,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Returning type {TYPE} but {FUNCTIONLIKE}() is declared to return {TYPE} ({TYPE} is incompatible)",
+                "Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} ({TYPE} is incompatible)",
                 self::REMEDIATION_B,
                 10061
             ),
@@ -1167,7 +1167,7 @@ class Issue
                 self::PossiblyFalseTypeReturn,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Returning type {TYPE} but {FUNCTIONLIKE}() is declared to return {TYPE} ({TYPE} is incompatible)",
+                "Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} ({TYPE} is incompatible)",
                 self::REMEDIATION_B,
                 10062
             ),
@@ -1367,7 +1367,7 @@ class Issue
                 self::TypeNonVarPassByRef,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Only variables can be passed by reference at argument {INDEX} of {FUNCTIONLIKE}()",
+                "Only variables can be passed by reference at argument {INDEX} of {FUNCTIONLIKE}",
                 self::REMEDIATION_B,
                 10018
             ),
@@ -1775,7 +1775,7 @@ class Issue
                 self::DeprecatedFunction,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Call to deprecated function {FUNCTIONLIKE}() defined at {FILE}:{LINE}",
+                "Call to deprecated function {FUNCTIONLIKE} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 5000
             ),
@@ -1783,7 +1783,7 @@ class Issue
                 self::DeprecatedFunctionInternal,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Call to deprecated function {FUNCTIONLIKE}()",
+                "Call to deprecated function {FUNCTIONLIKE}",
                 self::REMEDIATION_B,
                 5005
             ),
@@ -1833,7 +1833,7 @@ class Issue
                 self::ParamTooMany,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_LOW,
-                "Call with {COUNT} arg(s) to {FUNCTIONLIKE}() which only takes {COUNT} arg(s) defined at {FILE}:{LINE}",
+                "Call with {COUNT} arg(s) to {FUNCTIONLIKE} which only takes {COUNT} arg(s) defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7001
             ),
@@ -1841,7 +1841,7 @@ class Issue
                 self::ParamTooManyInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_LOW,
-                "Call with {COUNT} arg(s) to {FUNCTIONLIKE}() which only takes {COUNT} arg(s)",
+                "Call with {COUNT} arg(s) to {FUNCTIONLIKE} which only takes {COUNT} arg(s)",
                 self::REMEDIATION_B,
                 7002
             ),
@@ -1849,7 +1849,7 @@ class Issue
                 self::ParamTooManyCallable,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_LOW,
-                "Call with {COUNT} arg(s) to {FUNCTIONLIKE}() (As a provided callable) which only takes {COUNT} arg(s) defined at {FILE}:{LINE}",
+                "Call with {COUNT} arg(s) to {FUNCTIONLIKE} (As a provided callable) which only takes {COUNT} arg(s) defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7043
             ),
@@ -1857,7 +1857,7 @@ class Issue
                 self::ParamTooFew,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_CRITICAL,
-                "Call with {COUNT} arg(s) to {FUNCTIONLIKE}() which requires {COUNT} arg(s) defined at {FILE}:{LINE}",
+                "Call with {COUNT} arg(s) to {FUNCTIONLIKE} which requires {COUNT} arg(s) defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7003
             ),
@@ -1865,7 +1865,7 @@ class Issue
                 self::ParamTooFewInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_CRITICAL,
-                "Call with {COUNT} arg(s) to {FUNCTIONLIKE}() which requires {COUNT} arg(s)",
+                "Call with {COUNT} arg(s) to {FUNCTIONLIKE} which requires {COUNT} arg(s)",
                 self::REMEDIATION_B,
                 7004
             ),
@@ -1873,7 +1873,7 @@ class Issue
                 self::ParamTooFewCallable,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_CRITICAL,
-                "Call with {COUNT} arg(s) to {FUNCTIONLIKE}() (as a provided callable) which requires {COUNT} arg(s) defined at {FILE}:{LINE}",
+                "Call with {COUNT} arg(s) to {FUNCTIONLIKE} (as a provided callable) which requires {COUNT} arg(s) defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7044
             ),
@@ -1881,7 +1881,7 @@ class Issue
                 self::ParamSpecial1,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({PARAMETER}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} when argument {INDEX} is {TYPE}",
+                "Argument {INDEX} ({PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} when argument {INDEX} is {TYPE}",
                 self::REMEDIATION_B,
                 7005
             ),
@@ -1889,7 +1889,7 @@ class Issue
                 self::ParamSpecial2,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} ({PARAMETER}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} when passed only one argument",
+                "Argument {INDEX} ({PARAMETER}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} when passed only one argument",
                 self::REMEDIATION_B,
                 7006
             ),
@@ -1913,7 +1913,7 @@ class Issue
                 self::ParamTypeMismatch,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Argument {INDEX} is {TYPE} but {FUNCTIONLIKE}() takes {TYPE}",
+                "Argument {INDEX} is {TYPE} but {FUNCTIONLIKE} takes {TYPE}",
                 self::REMEDIATION_B,
                 7009
             ),
@@ -3210,7 +3210,7 @@ class Issue
                 self::ThrowTypeAbsent,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "{METHOD}() can throw {TYPE} here, but has no '@throws' declarations for that class",
+                "{FUNCTIONLIKE} can throw {TYPE} here, but has no '@throws' declarations for that class",
                 self::REMEDIATION_A,
                 16011
             ),
@@ -3218,7 +3218,7 @@ class Issue
                 self::ThrowTypeAbsentForCall,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "{METHOD}() can throw {TYPE} because it calls {FUNCTIONLIKE}(), but has no '@throws' declarations for that class",
+                "{FUNCTIONLIKE} can throw {TYPE} because it calls {FUNCTIONLIKE}, but has no '@throws' declarations for that class",
                 self::REMEDIATION_A,
                 16012
             ),
@@ -3226,7 +3226,7 @@ class Issue
                 self::ThrowTypeMismatch,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "{METHOD}() throws {TYPE}, but it only has declarations of '@throws {TYPE}'",
+                "{FUNCTIONLIKE} throws {TYPE}, but it only has declarations of '@throws {TYPE}'",
                 self::REMEDIATION_A,
                 16013
             ),
@@ -3234,7 +3234,7 @@ class Issue
                 self::ThrowTypeMismatchForCall,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "{METHOD}() throws {TYPE} because it calls {FUNCTIONLIKE}(), but it only has declarations of '@throws {TYPE}'",
+                "{FUNCTIONLIKE} throws {TYPE} because it calls {FUNCTIONLIKE}, but it only has declarations of '@throws {TYPE}'",
                 self::REMEDIATION_A,
                 16014
             ),

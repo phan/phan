@@ -73,7 +73,18 @@ trait FunctionTrait
      */
     public function getRepresentationForIssue() : string
     {
-        return $this->getFQSEN()->__toString();
+        return $this->getFQSEN()->__toString() . '()';
+    }
+
+    /**
+     * @return string
+     * The name of this structural element (without namespace/class),
+     * or a string for FunctionLikeDeclarationType which lacks a real FQSEN
+     * @suppress PhanUnreferencedPublicMethod bad inference?
+     */
+    public function getNameForIssue() : string
+    {
+        return $this->getName() . '()';
     }
 
     /**

@@ -1,4 +1,3 @@
-%s:4 PhanTypeMismatchReturn Returning type string but {closure}() is declared to return array
+%s:4 PhanTypeMismatchReturn Returning type string but Closure(string $arg) : array is declared to return array
 %s:4 PhanUndeclaredVariable Variable $undefined is undeclared
-%s:5 PhanParamTooFew Call with 0 arg(s) to \closure_%s() which requires 1 arg(s) defined at %s:4
-
+%s:5 PhanParamTooFew Call with 0 arg(s) to Closure(string $arg) : array which requires 1 arg(s) defined at %s:4

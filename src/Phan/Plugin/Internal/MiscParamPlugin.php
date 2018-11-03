@@ -67,7 +67,7 @@ final class MiscParamPlugin extends PluginV2 implements
                         1,
                         'values',
                         (string)$node_type,
-                        $function->getName(),
+                        $function->getRepresentationForIssue(),
                         'array'
                         ]
                     );
@@ -98,7 +98,7 @@ final class MiscParamPlugin extends PluginV2 implements
                         $context->getFile(),
                         $context->getLineNumberStart(),
                         [
-                        (string)$function->getFQSEN(),
+                        $function->getRepresentationForIssue(),
                         'callable'
                         ]
                     );
@@ -119,7 +119,7 @@ final class MiscParamPlugin extends PluginV2 implements
                             [
                             ($i + 1),
                             (string)$node_type,
-                            (string)$function->getFQSEN(),
+                            $function->getRepresentationForIssue(),
                             'array'
                             ]
                         );
@@ -157,7 +157,7 @@ final class MiscParamPlugin extends PluginV2 implements
                                 1,
                                 'pieces',
                                 $node_type->asNonLiteralType(),
-                                (string)$function->getFQSEN(),
+                                $function->getRepresentationForIssue(),
                                 'string[]'
                             ]
                         );
@@ -190,7 +190,7 @@ final class MiscParamPlugin extends PluginV2 implements
                             2,
                             'glue',
                             (string)$arg2_type->asNonLiteralType(),
-                            (string)$function->getRepresentationForIssue(),
+                            $function->getRepresentationForIssue(),
                             'string',
                             1,
                             'array'
@@ -222,7 +222,7 @@ final class MiscParamPlugin extends PluginV2 implements
                             2,
                             'pieces',
                             (string)$arg2_type->asNonLiteralType(),
-                            (string)$function->getFQSEN(),
+                            $function->getRepresentationForIssue(),
                             'string[]',
                             1,
                             'string'
@@ -271,7 +271,7 @@ final class MiscParamPlugin extends PluginV2 implements
                         $context->getFile(),
                         $context->getLineNumberStart(),
                         [
-                        (string)$function->getFQSEN(),
+                        $function->getRepresentationForIssue(),
                         'callable'
                         ]
                     );
@@ -289,7 +289,7 @@ final class MiscParamPlugin extends PluginV2 implements
                         $context->getFile(),
                         $context->getLineNumberStart(),
                         [
-                        (string)$function->getFQSEN(),
+                        $function->getRepresentationForIssue(),
                         'callable'
                         ]
                     );
@@ -310,7 +310,7 @@ final class MiscParamPlugin extends PluginV2 implements
                             [
                             ($i + 1),
                             (string)$node_type,
-                            (string)$function->getFQSEN(),
+                            $function->getRepresentationForIssue(),
                             'array'
                             ]
                         );
