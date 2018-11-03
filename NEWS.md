@@ -21,6 +21,8 @@ New features(Analysis):
   To also warn about redundant **namespaced** uses of classes/namespaces (e.g. `namespace Foo; use Foo\MyClass;`), enable `warn_about_redundant_use_namespaced_class`
 + Improve the polyfill/fallback parser's heredoc and nowdoc lexing (#1537)
 + Properly warn about an undefined variable being passed to `array_shift` (it expects an array but undefined is converted to null) (related to fix for #2100)
++ Stop adding generic int/string to the type of a class property when the doc comment mentions only literal int/string values (#2102)
+  (e.g. `@var 1|2`)
 + Improve line number in warning about extra comma in arrays (i.e. empty array elements). (#2066)
 
 Bug fixes:

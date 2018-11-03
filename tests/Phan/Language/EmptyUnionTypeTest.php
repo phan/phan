@@ -54,7 +54,7 @@ final class EmptyUnionTypeTest extends BaseTest
                 $failures .= "unexpected declaring class $actual_class for $method_name\n";
             }
         }
-        $this->assertSame('', $failures);
+        $this->assertSame('', trim($failures));
     }
 
     // Returns the test errors to show as a string, or the empty string on success

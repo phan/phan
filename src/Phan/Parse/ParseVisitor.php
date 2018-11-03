@@ -405,6 +405,8 @@ class ParseVisitor extends ScopeVisitor
             ) {
                 continue;
             }
+            $variable = $comment->getVariableList()[$i] ?? null;
+            $variable_has_literals = $variable && $variable->getUnionType()->hasLiterals();
 
             // If something goes wrong will getting the type of
             // a property, we'll store it as a future union
@@ -418,7 +420,11 @@ class ParseVisitor extends ScopeVisitor
             if (!($default_node instanceof Node)) {
                 // Get the type of the default (not a literal)
                 if ($default_node !== null) {
-                    $union_type = Type::nonLiteralFromObject($default_node)->asUnionType();
+                    if ($variable_has_literals) {
+                        $union_type = Type::fromObject($default_node)->asUnionType();
+                    } else {
+                        $union_type = Type::nonLiteralFromObject($default_node)->asUnionType();
+                    }
                 } else {
                     // This is a declaration such as `public $x;` with no $default_node
                     // (we don't assume the property is always null, to reduce false positives)
@@ -469,13 +475,16 @@ class ParseVisitor extends ScopeVisitor
             );
 
             // Look for any @var declarations
-            if ($variable = $comment->getVariableList()[$i] ?? null) {
+            if ($variable) {
                 $original_union_type = $union_type;
                 // We try to avoid resolving $future_union_type except when necessary,
                 // to avoid issues such as https://github.com/phan/phan/issues/311 and many more.
                 if ($future_union_type !== null) {
                     try {
-                        $original_union_type = $future_union_type->get()->asNonLiteralType();
+                        $original_union_type = $future_union_type->get();
+                        if (!$variable_has_literals) {
+                            $original_union_type = $original_union_type->asNonLiteralType();
+                        }
                         // We successfully resolved the union type. We no longer need $future_union_type
                         $future_union_type = null;
                     } catch (IssueException $_) {

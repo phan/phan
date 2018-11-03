@@ -2682,8 +2682,31 @@ class UnionType implements Serializable
     }
 
     /**
-     * Flatten literals in keys and values into non-literal types
+     * Flatten literals in keys and values into non-literal types (but not standalone literals)
      * E.g. convert array{2:3} to array<int,string>
+     */
+    public function withFlattenedArrayShapeTypeInstances() : UnionType
+    {
+        if (!$this->hasArrayShapeTypeInstances()) {
+            return $this;
+        }
+
+        $result = new UnionTypeBuilder();
+        foreach ($this->type_set as $type) {
+            if ($type->hasArrayShapeTypeInstances()) {
+                foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
+                    $result->addType($type_part);
+                }
+            } else {
+                $result->addType($type);
+            }
+        }
+        return $result->getUnionType();
+    }
+
+    /**
+     * Flatten literals in keys and values into non-literal types (as well as standalone literals)
+     * E.g. convert array{2:3} to array<int,string>, 'somestring' to string, etc.
      */
     public function withFlattenedArrayShapeOrLiteralTypeInstances() : UnionType
     {
