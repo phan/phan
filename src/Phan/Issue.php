@@ -1712,7 +1712,7 @@ class Issue
                 self::TypeInvalidTraitReturn,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Expected a class or interface (or built-in type) to be the real return type of method {METHOD} but got trait {TRAIT}",
+                "Expected a class or interface (or built-in type) to be the real return type of {FUNCTIONLIKE} but got trait {TRAIT}",
                 self::REMEDIATION_B,
                 10089
             ),
@@ -1720,7 +1720,7 @@ class Issue
                 self::TypeInvalidTraitParam,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Method {METHOD} is declared to have a parameter \${PARAMETER} with a real type of trait {TYPE} (expected a class or interface or built-in type)",
+                "{FUNCTIONLIKE} is declared to have a parameter \${PARAMETER} with a real type of trait {TYPE} (expected a class or interface or built-in type)",
                 self::REMEDIATION_B,
                 10090
             ),

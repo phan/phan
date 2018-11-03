@@ -2008,7 +2008,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.1/tests/files/expected/0
 ## PhanTypeInvalidTraitParam
 
 ```
-Method {METHOD} is declared to have a parameter ${PARAMETER} with a real type of trait {TYPE} (expected a class or interface or built-in type)
+{FUNCTIONLIKE} is declared to have a parameter ${PARAMETER} with a real type of trait {TYPE} (expected a class or interface or built-in type)
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0560_trait_in_param_return.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0560_trait_in_param_return.php#L8).
@@ -2016,7 +2016,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/
 ## PhanTypeInvalidTraitReturn
 
 ```
-Expected a class or interface (or built-in type) to be the real return type of method {METHOD} but got trait {TRAIT}
+Expected a class or interface (or built-in type) to be the real return type of {FUNCTIONLIKE} but got trait {TRAIT}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0560_trait_in_param_return.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0560_trait_in_param_return.php#L8).

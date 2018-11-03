@@ -119,7 +119,7 @@ class ParameterTypesAnalyzer
                         $method->getContext(),
                         Issue::TypeInvalidTraitParam,
                         $parameter->getFileRef()->getLineNumberStart(),
-                        $method->getName(),
+                        $method->getNameForIssue(),
                         $parameter->getName(),
                         $type_fqsen->__toString()
                     );

@@ -76,7 +76,7 @@ class ReturnTypesAnalyzer
                     $method->getContext(),
                     Issue::UndeclaredTypeReturnType,
                     $method->getFileRef()->getLineNumberStart(),
-                    [$method->getName(), (string)$outer_type],
+                    [$method->getNameForIssue(), (string)$outer_type],
                     IssueFixSuggester::suggestSimilarClass($code_base, $method->getContext(), $type_fqsen, null, 'Did you mean', IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES_AND_VOID)
                 );
             }
@@ -144,7 +144,7 @@ class ReturnTypesAnalyzer
                     $context,
                     Issue::TypeInvalidTraitReturn,
                     $method->getFileRef()->getLineNumberStart(),
-                    $method->getName(),
+                    $method->getNameForIssue(),
                     $type_fqsen->__toString()
                 );
             }
