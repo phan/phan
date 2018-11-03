@@ -963,7 +963,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         Issue::TypeMismatchReturn,
                         $lineno,
                         (string)$expression_type,
-                        $method->getName(),
+                        $method->getNameForIssue(),
                         (string)$method_return_type
                     );
                 } elseif (Config::get_strict_return_checking() && $expression_type->typeCount() > 1) {
@@ -1017,7 +1017,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     Issue::TypeMismatchReturn,
                     $lineno,
                     (string)$expression_type,
-                    $method->getName(),
+                    $method->getNameForIssue(),
                     (string)$expected_return_type
                 );
             } elseif (Config::get_strict_return_checking() && $expression_type->typeCount() > 1) {
@@ -1075,7 +1075,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 Issue::TypeMismatchGeneratorYieldValue,
                 $node->lineno,
                 (string)$yield_value_type,
-                $method->getName(),
+                $method->getNameForIssue(),
                 (string)$expected_value_type,
                 '\Generator<' . implode(',', $template_type_list) . '>'
             );
@@ -1095,7 +1095,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     Issue::TypeMismatchGeneratorYieldKey,
                     $node->lineno,
                     (string)$yield_key_type,
-                    $method->getName(),
+                    $method->getNameForIssue(),
                     (string)$expected_key_type,
                     '\Generator<' . implode(',', $template_type_list) . '>'
                 );
@@ -1175,7 +1175,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 Issue::TypeMismatchGeneratorYieldValue,
                 $node->lineno,
                 (string)$yield_value_type,
-                $method->getName(),
+                $method->getNameForIssue(),
                 (string)$expected_value_type,
                 '\Generator<' . implode(',', $template_type_list) . '>'
             );
@@ -1190,7 +1190,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     Issue::TypeMismatchGeneratorYieldKey,
                     $node->lineno,
                     (string)$yield_key_type,
-                    $method->getName(),
+                    $method->getNameForIssue(),
                     (string)$expected_key_type,
                     '\Generator<' . implode(',', $template_type_list) . '>'
                 );
@@ -1271,7 +1271,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             self::getStrictIssueType($mismatch_type_set),
             $lineno,
             (string)$expression_type,
-            $method->getName(),
+            $method->getNameForIssue(),
             (string)$method_return_type,
             $mismatch_expanded_types
         );

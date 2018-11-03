@@ -1,6 +1,6 @@
 %s:4 PhanUndeclaredTypeProperty Property \A359::missing4 has undeclared type \Missing359E
 %s:4 PhanUndeclaredTypeProperty Property \A359::missing4 has undeclared type \Missing359F[][]
-%s:5 PhanUndeclaredTypeReturnType Return type of myInstanceMethod is undeclared type \Missing359G
+%s:5 PhanUndeclaredTypeReturnType Return type of myInstanceMethod() is undeclared type \Missing359G
 %s:7 PhanUndeclaredTypeParameter Parameter $param1 has undeclared type \Missing359H[]
 %s:9 PhanUndeclaredTypeProperty Property \A359::missing1 has undeclared type \Missing359
 %s:9 PhanUndeclaredTypeProperty Property \A359::missing1 has undeclared type \Missing359B[][]

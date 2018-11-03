@@ -3,4 +3,4 @@
 %s:13 PhanTypeMismatchArgument Argument 1 (name) is 42 but \f241_3() takes ?string defined at %s:11
 %s:26 PhanTypeMismatchReturn Returning type 42 but f241_5() is declared to return ?string
 %s:41 PhanTypeMismatchReturn Returning type null but f241_10() is declared to return \TupleOfNullableTest241<int,string>
-%s:41 PhanUndeclaredTypeReturnType Return type of f241_10 is undeclared type \TupleOfNullableTest241<int,string>
+%s:41 PhanUndeclaredTypeReturnType Return type of f241_10() is undeclared type \TupleOfNullableTest241<int,string>

@@ -345,6 +345,13 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /** @override */
+    public function getNameForIssue() : string
+    {
+        // Represent this as "Closure(int):void" in issue messages instead of \closure_phpdoc_abcd123456Df
+        return $this->__toString();
+    }
+
+    /** @override */
     public function getHasReturn() : bool
     {
         return true;

@@ -1,5 +1,5 @@
 %s:15 PhanTypeMissingReturn Method \MyNs\example1 is declared to return \MyNs\MissingType but has no return value
-%s:15 PhanUndeclaredTypeReturnType Return type of example1 is undeclared type \MyNs\MissingType
+%s:15 PhanUndeclaredTypeReturnType Return type of example1() is undeclared type \MyNs\MissingType
 %s:21 PhanUndeclaredTypeThrowsType @throws type of example3 has undeclared type \MyNs\MissingException
 %s:23 PhanMisspelledAnnotation Saw misspelled annotation @throw, should be one of @throws
 %s:30 PhanTypeInvalidThrowsNonThrowable @throws annotation of a has suspicious class type \stdClass, which does not extend Error/Exception

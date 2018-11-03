@@ -541,7 +541,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     Issue::TypeMismatchReturn,
                     $node->lineno ?? 0,
                     '\\Generator',
-                    $func->getName(),
+                    $func->getNameForIssue(),
                     (string)$func_return_type
                 );
             }

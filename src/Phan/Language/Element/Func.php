@@ -400,9 +400,7 @@ class Func extends AddressableElement implements FunctionInterface
         if ($this->real_return_type && !$this->getRealReturnType()->isEmpty()) {
             $stub .= ' : ' . (string)$this->getRealReturnType();
         }
-
-        $stub .= ' {}' . "\n";
-
+        $stub .= " {}\n";
         $namespace = ltrim($fqsen->getNamespace(), '\\');
         return [$namespace, $stub];
     }
@@ -410,5 +408,46 @@ class Func extends AddressableElement implements FunctionInterface
     public function getUnionTypeWithUnmodifiedStatic() : UnionType
     {
         return $this->getUnionType();
+    }
+
+    /**
+     * @return string
+     * The fully-qualified structural element name of this
+     * structural element (or something else for closures and callables)
+     */
+    public function getRepresentationForIssue() : string
+    {
+        if ($this->isClosure()) {
+            return $this->getStubForClosure();
+        }
+        return $this->getFQSEN()->__toString() . '()';
+    }
+
+    private function getStubForClosure() : string
+    {
+        $stub = 'Closure';
+        if ($this->returnsRef()) {
+            $stub .= '&';
+        }
+        $stub .= '(' . implode(', ', array_map(function (Parameter $parameter) : string {
+            return $parameter->toStubString();
+        }, $this->getRealParameterList())) . ')';
+        if ($this->real_return_type && !$this->getRealReturnType()->isEmpty()) {
+            $stub .= ' : ' . (string)$this->getRealReturnType();
+        }
+        return $stub;
+    }
+
+    /**
+     * @return string
+     * The name of this structural element (without namespace/class),
+     * or a string for FunctionLikeDeclarationType (or a closure) which lacks a real FQSEN
+     */
+    public function getNameForIssue() : string
+    {
+        if ($this->isClosure()) {
+            return $this->getStubForClosure();
+        }
+        return $this->getName() . '()';
     }
 }

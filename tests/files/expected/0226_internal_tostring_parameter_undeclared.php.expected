@@ -1,2 +1,2 @@
-%s:7 PhanUndeclaredTypeReturnType Return type of foo is undeclared type \urlstring
+%s:7 PhanUndeclaredTypeReturnType Return type of foo() is undeclared type \urlstring
 %s:9 PhanTypeMismatchArgumentInternal Argument 1 (message) is \urlstring but \error_log() takes string

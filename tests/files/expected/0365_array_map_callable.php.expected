@@ -1,4 +1,4 @@
-%s:7 PhanTypeMismatchArgument Argument 1 (x) is 'x' but \closure_%s() takes int defined at %s:7
+%s:7 PhanTypeMismatchArgument Argument 1 (x) is 'x' but Closure(int $x) : int takes int defined at %s:7
 %s:7 PhanTypeMismatchReturn Returning type array<int,int> but test365A() is declared to return string[]
 %s:13 PhanTypeMismatchReturn Returning type array<int,int> but test365B() is declared to return string[]
 %s:32 PhanTypeMismatchReturn Returning type array<int,\stdClass> but test365C() is declared to return string[]
