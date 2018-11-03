@@ -2033,12 +2033,7 @@ class ContextNode
         $elements = [];
         foreach ($node->children as $child_node) {
             if (!($child_node instanceof Node)) {
-                // NOTE: This won't be consistently emitted
-                $this->emitIssue(
-                    Issue::SyntaxError,
-                    $node->lineno,
-                    "Cannot use empty array elements in arrays"
-                );
+                self::warnAboutEmptyArrayElements($this->code_base, $this->context, $node);
                 continue;
             }
             $key_node = ($flags & self::RESOLVE_ARRAY_KEYS) != 0 ? $child_node->children['key'] : null;
@@ -2068,6 +2063,35 @@ class ContextNode
         return $elements;
     }
 
+    /**
+     * @param Node $node a node of kind AST_ARRAY
+     * @suppress PhanUndeclaredProperty this adds a dynamic property
+     * @return void
+     */
+    public static function warnAboutEmptyArrayElements(CodeBase $code_base, Context $context, Node $node)
+    {
+        if (isset($node->didWarnAboutEmptyArrayElements)) {
+            return;
+        }
+        $node->didWarnAboutEmptyArrayElements = true;
+
+        $lineno = $node->lineno;
+        foreach ($node->children as $child_node) {
+            if (!$child_node) {
+                // Emit the line number of the nearest Node before this empty element
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::SyntaxError,
+                    $lineno,
+                    "Cannot use empty array elements in arrays"
+                );
+                continue;
+            }
+            // Update the line number of the nearest Node
+            $lineno = $child_node->lineno;
+        }
+    }
     /**
      * This converts an AST node in context to the value it represents.
      * This is useful for plugins, etc, and will gradually improve.
