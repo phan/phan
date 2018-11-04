@@ -31,6 +31,8 @@ New features(Analysis):
 + Warn about more invalid operands of the binary operators `^`,`/`,`&` (#1825)
   Also, fix cases where `PhanTypeArrayOperator` would not be emitted.
   New issue types: `PhanTypeInvalidBitwiseBinaryOperator`, `PhanTypeMismatchBitwiseBinaryOperands`
++ Indicate when warnings about too many arguments are caused only by argument unpacking. (#1324)
+  New issue types: `PhanParamTooManyUnpack`, `PhanParamTooManyUnpackInternal`
 
 Maintenance:
 + Make issue messages more consistent in their syntax used to describe closures/functions (#1695)

@@ -203,7 +203,9 @@ class Issue
     const ParamTooFewInternal       = 'PhanParamTooFewInternal';
     const ParamTooFewCallable       = 'PhanParamTooFewCallable';
     const ParamTooMany              = 'PhanParamTooMany';
+    const ParamTooManyUnpack        = 'PhanParamTooManyUnpack';
     const ParamTooManyInternal      = 'PhanParamTooManyInternal';
+    const ParamTooManyUnpackInternal = 'PhanParamTooManyUnpackInternal';
     const ParamTooManyCallable      = 'PhanParamTooManyCallable';
     const ParamTypeMismatch         = 'PhanParamTypeMismatch';
     const ParamSignatureMismatch    = 'PhanParamSignatureMismatch';
@@ -2209,6 +2211,22 @@ class Issue
                 "Argument #{INDEX} of this call to {FUNCTIONLIKE} is typically a literal or constant but isn't, but argument #{INDEX} (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.",
                 self::REMEDIATION_B,
                 7045
+            ),
+            new Issue(
+                self::ParamTooManyUnpack,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                "Call with {COUNT} or more args to {FUNCTIONLIKE} which only takes {COUNT} arg(s) defined at {FILE}:{LINE} (argument unpacking was used)",
+                self::REMEDIATION_B,
+                7046
+            ),
+            new Issue(
+                self::ParamTooManyUnpackInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                "Call with {COUNT} or more args to {FUNCTIONLIKE} which only takes {COUNT} arg(s) (argument unpacking was used)",
+                self::REMEDIATION_B,
+                7047
             ),
 
             // Issue::CATEGORY_NOOP
