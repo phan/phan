@@ -33,6 +33,8 @@ New features(Analysis):
   New issue types: `PhanTypeInvalidBitwiseBinaryOperator`, `PhanTypeMismatchBitwiseBinaryOperands`
 + Indicate when warnings about too many arguments are caused only by argument unpacking. (#1324)
   New issue types: `PhanParamTooManyUnpack`, `PhanParamTooManyUnpackInternal`
++ Properly warn about undefined namespaced constants/functions from within a namespace (#2112)
+  Phan was failing to warn in some cases.
 
 Maintenance:
 + Make issue messages more consistent in their syntax used to describe closures/functions (#1695)

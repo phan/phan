@@ -1,4 +1,5 @@
 %s:19 PhanUndeclaredFunction Call to undeclared function \A510\inner\missingthisfn()
 %s:21 PhanUndeclaredFunction Call to undeclared function \A510\Inner\MissingGroupUseFn()
 %s:22 PhanUndeclaredFunction Call to undeclared function \mixedCaseFn()
+%s:23 PhanUndeclaredFunction Call to undeclared function \B510\A510\Inner\mixedCaseFn()
 %s:25 PhanUndeclaredFunction Call to undeclared function \A510\Inner\missingfn()

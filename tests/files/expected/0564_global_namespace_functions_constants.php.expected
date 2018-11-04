@@ -1,0 +1,3 @@
+%s:21 PhanUndeclaredClassMethod Call to method __construct from undeclared class \a\Missing
+%s:22 PhanUndeclaredConstant Reference to undeclared constant \ast\MISSING_CONST
+%s:23 PhanUndeclaredFunction Call to undeclared function \ast\missing_function()

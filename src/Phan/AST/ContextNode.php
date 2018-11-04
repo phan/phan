@@ -966,6 +966,7 @@ class ContextNode
                 return $code_base->getFunctionByFQSEN($function_fqsen);
             }
         } elseif (($node->flags & ast\flags\NAME_RELATIVE) !== 0) {
+            // For relative functions (e.g. namespace\foo())
             $function_fqsen = FullyQualifiedFunctionName::make($namespace, $function_name);
             if (!$code_base->hasFunctionWithFQSEN($function_fqsen)) {
                 $this->throwUndeclaredFunctionIssueException($function_fqsen);
@@ -994,7 +995,7 @@ class ContextNode
                 if ($code_base->hasFunctionWithFQSEN($function_fqsen)) {
                     return $code_base->getFunctionByFQSEN($function_fqsen);
                 }
-                if ($namespace === '') {
+                if ($namespace === '' || \strpos($function_name, '\\') !== false) {
                     throw new IssueException(
                         Issue::fromType(Issue::UndeclaredFunction)(
                             $context->getFile(),
@@ -1007,9 +1008,9 @@ class ContextNode
                 // in the global namespace
             }
             $function_fqsen =
-                FullyQualifiedFunctionName::fromStringInContext(
-                    $function_name,
-                    $context
+                FullyQualifiedFunctionName::make(
+                    '',
+                    $function_name
                 );
         }
 
@@ -1594,46 +1595,44 @@ class ContextNode
         }
 
         $context = $this->context;
+        $flags = $node->children['name']->flags;
+        if (($flags & ast\flags\NAME_RELATIVE) !== 0) {
+            $fqsen = FullyQualifiedGlobalConstantName::make($context->getNamespace(), $constant_name);
+        } elseif (($flags & ast\flags\NAME_NOT_FQ) !== 0) {
+            if ($context->hasNamespaceMapFor(\ast\flags\USE_CONST, $constant_name)) {
+                // If we already have `use const CONST_NAME;`
+                $fqsen = $context->getNamespaceMapFor(\ast\flags\USE_CONST, $constant_name);
+                if (!($fqsen instanceof FullyQualifiedGlobalConstantName)) {
+                    throw new AssertionError("expected to fetch a fully qualified const name for this namespace use");
+                }
 
-        if ($context->hasNamespaceMapFor(\ast\flags\USE_CONST, $constant_name)) {
-            // If we already have `use const CONST_NAME;`
-            $fqsen = $context->getNamespaceMapFor(\ast\flags\USE_CONST, $constant_name);
-            if (!($fqsen instanceof FullyQualifiedGlobalConstantName)) {
-                throw new AssertionError("expected to fetch a fully qualified const name for this namespace use");
-            }
-
-            // make sure the method we're calling actually exists
-            if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
                 // the fqsen from 'use myns\const_name;' was the only possible fqsen for that const.
-                throw new IssueException(
-                    Issue::fromType(Issue::UndeclaredConstant)(
-                        $context->getFile(),
-                        $node->lineno ?? 0,
-                        [ $fqsen ]
-                    )
-                );
-            }
-        } else {
-            $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
-                $constant_name,
-                $context
-            );
-
-            if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
-                $fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
+            } else {
+                $fqsen = FullyQualifiedGlobalConstantName::make(
+                    $context->getNamespace(),
                     $constant_name
                 );
 
                 if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
-                    throw new IssueException(
-                        Issue::fromType(Issue::UndeclaredConstant)(
-                            $context->getFile(),
-                            $node->lineno ?? 0,
-                            [ $fqsen ]
-                        )
+                    if (\strpos($constant_name, '\\') !== false) {
+                        $this->throwUndeclaredGlobalConstantIssueException($fqsen);
+                    }
+                    $fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
+                        $constant_name
                     );
                 }
             }
+        } else {
+            // This is a fully qualified constant
+            $fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
+                $constant_name
+            );
+        }
+        // This is either a fully qualified constant,
+        // or a relative constant for which nothing was found in the namespace
+
+        if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
+            $this->throwUndeclaredGlobalConstantIssueException($fqsen);
         }
 
         $constant = $code_base->getGlobalConstantByFQSEN($fqsen);
@@ -1644,6 +1643,7 @@ class ContextNode
                 $context
             )
         ) {
+            // TODO: Refactor and also check namespaced constants
             throw new IssueException(
                 Issue::fromType(Issue::AccessConstantInternal)(
                     $context->getFile(),
@@ -1660,6 +1660,20 @@ class ContextNode
         }
 
         return $constant;
+    }
+
+    /**
+     * @throws IssueException
+     */
+    private function throwUndeclaredGlobalConstantIssueException(FullyQualifiedGlobalConstantName $fqsen)
+    {
+        throw new IssueException(
+            Issue::fromType(Issue::UndeclaredConstant)(
+                $this->context->getFile(),
+                $this->node->lineno ?? 0,
+                [ $fqsen ]
+            )
+        );
     }
 
     /**
