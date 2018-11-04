@@ -1,0 +1,2 @@
+%s:7 PhanParamTooManyUnpack Call with 0 or more args to \Example::__construct() which only takes 0 arg(s) defined at %s:4 (argument unpacking was used)
+%s:10 PhanParamTooMany Call with 2 arg(s) to \Example::__construct() which only takes 0 arg(s) defined at %s:4

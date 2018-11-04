@@ -113,30 +113,7 @@ final class ArgumentType
             }
 
             if (!$alternate_found) {
-                $max = $method->getNumberOfParameters();
-                if ($method->isPHPInternal()) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::ParamTooManyInternal,
-                        $node->lineno ?? 0,
-                        $argcount,
-                        $method->getRepresentationForIssue(),
-                        $max
-                    );
-                } else {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::ParamTooMany,
-                        $node->lineno ?? 0,
-                        $argcount,
-                        $method->getRepresentationForIssue(),
-                        $max,
-                        $method->getFileRef()->getFile(),
-                        $method->getFileRef()->getLineNumberStart()
-                    );
-                }
+                self::emitParamTooMany($code_base, $context, $method, $node, $argcount);
             }
         }
 
@@ -147,6 +124,40 @@ final class ArgumentType
             $arglist,
             $context
         );
+    }
+
+    private static function emitParamTooMany(
+        CodeBase $code_base,
+        Context $context,
+        FunctionInterface $method,
+        Node $node,
+        int $argcount
+    ) {
+        $max = $method->getNumberOfParameters();
+        $caused_by_variadic = $argcount === $max + 1 && (end($node->children['args']->children)->kind ?? null) === \ast\AST_UNPACK;
+        if ($method->isPHPInternal()) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                $caused_by_variadic ? Issue::ParamTooManyUnpackInternal : Issue::ParamTooManyInternal,
+                $node->lineno ?? 0,
+                $caused_by_variadic ? $max : $argcount,
+                $method->getRepresentationForIssue(),
+                $max
+            );
+        } else {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                $caused_by_variadic ? Issue::ParamTooManyUnpack : Issue::ParamTooMany,
+                $node->lineno ?? 0,
+                $caused_by_variadic ? $max : $argcount,
+                $method->getRepresentationForIssue(),
+                $max,
+                $method->getFileRef()->getFile(),
+                $method->getFileRef()->getLineNumberStart()
+            );
+        }
     }
 
     /**

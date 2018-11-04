@@ -1386,6 +1386,20 @@ This will be emitted for the code
 strlen('str', 42);
 ```
 
+## PhanParamTooManyUnpack
+
+```
+Call with {COUNT} or more args to {FUNCTIONLIKE} which only takes {COUNT} arg(s) defined at {FILE}:{LINE} (argument unpacking was used)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0562_unpack_too_many.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0562_unpack_too_many.php#L7).
+
+## PhanParamTooManyUnpackInternal
+
+```
+Call with {COUNT} or more args to {FUNCTIONLIKE} which only takes {COUNT} arg(s) (argument unpacking was used)
+```
+
 ## PhanParamTypeMismatch
 
 ```
