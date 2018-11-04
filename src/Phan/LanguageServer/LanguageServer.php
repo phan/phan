@@ -475,6 +475,30 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     }
 
     /**
+     * Asynchronously generates the hover text for a given URL and position.
+     *
+     * @return Promise <Location[]|null>
+     */
+    public function awaitReferences(
+        string $uri,
+        Position $position
+    ) : Promise {
+        // TODO: Add a way to "find references" without emitting analysis results as a side effect
+        $path_to_analyze = Utils::uriToPath($uri);
+        Logger::logInfo("Called LanguageServer->awaitReferences, uri=$uri, position=" . json_encode($position));
+        $this->discardPreviousNodeInfoRequest();
+        $request = new ReferencesRequest($uri, $position, GoToDefinitionRequest::REQUEST_HOVER);
+        $this->most_recent_node_info_request = $request;
+
+        // We analyze this url so that Phan is aware enough of the classes and namespace maps to trigger "references"
+        // E.g. going to the definition of `Bar` in `use Foo as Bar; Bar::method();` requires parsing other statements in this file, not just the name in question.
+        //
+        // NOTE: This also ensures that we will run analysis, because of the check for analyze_request_set being non-empty
+        $this->analyze_request_set[$path_to_analyze] = $uri;
+        return $request->getPromise();
+    }
+
+    /**
      * Asynchronously generates the definition for a given URL
      * @return Promise <Location|Location[]|null>
      */
@@ -896,7 +920,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             }
 
             // TODO: (probably impractical, slow) Support "Find all references"? (We don't track this, except when checking for dead code elimination possibilities.
-            // $server_capabilities->referencesProvider = false;
+            $server_capabilities->referencesProvider = true;
             // Can't support "Hover" without phpdoc for internal functions, such as those from PHPStorm
             // Can't support global references at the moment, I think.
             //$server_capabilities->xworkspaceReferencesProvider = true;

@@ -248,6 +248,34 @@ class TextDocument
     }
 
     /**
+     * Implements textDocument/references, to find all references to some element.
+     *
+     * @param TextDocumentIdentifier $textDocument @phan-unused-param
+     * @param Position $position @phan-unused-param
+     * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
+     * @return ?Promise
+     */
+    public function references(TextDocumentIdentifier $textDocument, Position $position)
+    {
+        // Some clients (e.g. emacs-lsp, the last time I checked)
+        // don't respect the server's reported hover capability, and send this unconditionally.
+        if (!Config::getValue('language_server_enable_references')) {
+            // Placeholder to avoid a performance degradation on clients
+            // that aren't respecting the configuration.
+            //
+            // (computing hover response may or may not slow down those clients)
+            return null;
+        }
+        try {
+            $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
+        } catch (InvalidArgumentException $e) {
+            Logger::logError(sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            return null;
+        }
+        return $this->server->awaitReferences($uri, $position);
+    }
+
+    /**
      * Implements textDocument/completion, to compute completion items at a given cursor position.
      *
      * TODO: Implement support for the cancel request LSP operation?

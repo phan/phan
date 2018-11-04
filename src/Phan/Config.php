@@ -846,6 +846,10 @@ class Config
         // Affects "hover" of LSP.
         'language_server_enable_hover' => false,
 
+        // This should only be set via CLI (`--language-server-enable-references`)
+        // Affects "references" of LSP.
+        'language_server_enable_references' => false,
+
         // This should only be set via CLI (`--language-server-enable-completion`)
         // Affects "completion" of LSP.
         'language_server_enable_completion' => false,

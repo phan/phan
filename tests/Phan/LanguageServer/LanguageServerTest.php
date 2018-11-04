@@ -33,8 +33,13 @@ final class LanguageServerTest extends BaseTest
 
         $server_capabilities = new ServerCapabilities();
         $server_capabilities->textDocumentSync = $sync_options;
+        $server_capabilities->typeDefinitionProvider = false;
+        $server_capabilities->hoverProvider = false;
+        $server_capabilities->referencesProvider = true;
 
-        $this->assertEquals(new InitializeResult($server_capabilities), $result);
+        $expected_capabilities = new InitializeResult($server_capabilities);
+        $this->assertEquals($expected_capabilities, $result);
+        // TODO: do a more strict comparison distinguishing between false and null in properties
     }
 
     // TODO: Test the ability to create a Request

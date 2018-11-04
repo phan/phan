@@ -49,7 +49,7 @@ class ServerCapabilities
      *
      * @var bool|null
      */
-    // public $referencesProvider;
+    public $referencesProvider;
 
     /**
      * The server provides document highlight support.
