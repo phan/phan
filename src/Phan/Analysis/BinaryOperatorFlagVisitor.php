@@ -10,6 +10,7 @@ use Phan\AST\Visitor\FlagVisitorImplementation;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
@@ -93,8 +94,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visit(Node $node) : UnionType
     {
-        // TODO: % operator always returns int.
-
         $left = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -113,9 +112,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         if ($left->isExclusivelyArray()
             || $right->isExclusivelyArray()
         ) {
-            Issue::maybeEmit(
-                $this->code_base,
-                $this->context,
+            $this->emitIssue(
                 Issue::TypeArrayOperator,
                 $node->lineno ?? 0,
                 $left,
@@ -212,30 +209,81 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $this->should_catch_issue_exception
         );
 
-        if ($left->isType(ArrayType::instance(false))
-            || $right->isType(ArrayType::instance(false))
-        ) {
-            Issue::maybeEmit(
-                $this->code_base,
-                $this->context,
+        if ($left->hasArray() || $right->hasArray()) {
+            $this->emitIssue(
                 Issue::TypeArrayOperator,
                 $node->lineno ?? 0,
+                PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
                 $left,
                 $right
             );
 
             return UnionType::empty();
-        } elseif ($left->hasNonNullIntType()
-            && $right->hasNonNullIntType()
-        ) {
-            return IntType::instance(false)->asUnionType();
-        } elseif ($left->hasNonNullStringType()
-            && $right->hasNonNullStringType()
-        ) {
-            return StringType::instance(false)->asUnionType();
+        }
+        if ($left->hasNonNullIntType()) {
+            if ($right->hasNonNullIntType()) {
+                return IntType::instance(false)->asUnionType();
+            }
+            if ($right->hasNonNullStringType()) {
+                $this->emitIssue(
+                    Issue::TypeMismatchBitwiseBinaryOperands,
+                    $node->lineno ?? 0,
+                    PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
+                    $left,
+                    $right
+                );
+            }
+        } elseif ($left->hasNonNullStringType()) {
+            if ($right->hasNonNullStringType()) {
+                return StringType::instance(false)->asUnionType();
+            }
+            if ($right->hasNonNullIntType()) {
+                $this->emitIssue(
+                    Issue::TypeMismatchBitwiseBinaryOperands,
+                    $node->lineno ?? 0,
+                    PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
+                    $left,
+                    $right
+                );
+            }
+        }
+        if (!$left->hasValidBitwiseOperand() || !$right->hasValidBitwiseOperand()) {
+            $this->emitIssue(
+                Issue::TypeInvalidBitwiseBinaryOperator,
+                $node->lineno ?? 0,
+                PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
+                $left,
+                $right
+            );
         }
 
         return IntType::instance(false)->asUnionType();
+    }
+
+    /**
+     * @param string $issue_type
+     * The type of issue to emit such as Issue::ParentlessClass
+     *
+     * @param int $lineno
+     * The line number where the issue was found
+     *
+     * @param int|string|FQSEN|UnionType|Type ...$parameters
+     * Template parameters for the issue's error message
+     *
+     * @return void
+     */
+    protected function emitIssue(
+        string $issue_type,
+        int $lineno,
+        ...$parameters
+    ) {
+        Issue::maybeEmitWithParameters(
+            $this->code_base,
+            $this->context,
+            $issue_type,
+            $lineno,
+            $parameters
+        );
     }
 
     /**
@@ -348,9 +396,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             && !$right->containsNullable()
             && !$left->hasAnyType($right->getTypeSet())  // TODO: Strict canCastToUnionType() variant?
         ) {
-            Issue::maybeEmit(
-                $this->code_base,
-                $this->context,
+            $this->emitIssue(
                 Issue::TypeComparisonFromArray,
                 $node->lineno ?? 0,
                 (string)$right->asNonLiteralType()
@@ -363,9 +409,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             && !$right->hasAnyType($left->getTypeSet())  // TODO: Strict canCastToUnionType() variant?
 
         ) {
-            Issue::maybeEmit(
-                $this->code_base,
-                $this->context,
+            $this->emitIssue(
                 Issue::TypeComparisonToArray,
                 $node->lineno ?? 0,
                 (string)$left->asNonLiteralType()
@@ -486,9 +530,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     ) {
         if (!$left->isEmpty()) {
             if (!$left->hasTypeMatchingCallback($is_valid_type)) {
-                Issue::maybeEmit(
-                    $this->code_base,
-                    $this->context,
+                $this->emitIssue(
                     $left_issue_type,
                     $node->children['left']->lineno ?? $node->lineno,
                     $left
@@ -497,9 +539,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         }
         if (!$right->isEmpty()) {
             if (!$right->hasTypeMatchingCallback($is_valid_type)) {
-                Issue::maybeEmit(
-                    $this->code_base,
-                    $this->context,
+                $this->emitIssue(
                     $right_issue_type,
                     $node->children['right']->lineno ?? $node->lineno,
                     $right
@@ -599,9 +639,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                     ArrayType::instance(false)->asUnionType()
                 )
             ) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
+                $this->emitIssue(
                     Issue::TypeInvalidRightOperand,
                     $node->lineno ?? 0
                 );
@@ -609,9 +647,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             } elseif ($right_is_array
                 && !$left->canCastToUnionType($array_type->asUnionType())
             ) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
+                $this->emitIssue(
                     Issue::TypeInvalidLeftOperand,
                     $node->lineno ?? 0
                 );

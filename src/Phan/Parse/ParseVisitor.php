@@ -521,7 +521,7 @@ class ParseVisitor extends ScopeVisitor
                 if ($variable_type->hasGenericArray() && !$original_property_type->hasTypeMatchingCallback(function (Type $type) : bool {
                     return \get_class($type) !== ArrayType::class;
                 })) {
-                    // Don't convert `/** @var T[] */ public $x = []` to union type `string[]|array`
+                    // Don't convert `/** @var T[] */ public $x = []` to union type `T[]|array`
                     $property->setUnionType($variable_type);
                 } else {
                     // Set the declared type to the doc-comment type and add

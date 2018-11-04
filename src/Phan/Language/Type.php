@@ -1670,6 +1670,16 @@ class Type
 
     /**
      * @return bool
+     * True if this type is a valid operand for a bitwise operator ('|', '&', or '^').
+     * @internal
+     */
+    public function isValidBitwiseOperand() : bool
+    {
+        return false;  // Overridden in subclasses
+    }
+
+    /**
+     * @return bool
      * True if this type is a callable or a Closure.
      */
     public function isCallable() : bool

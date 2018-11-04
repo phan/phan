@@ -23,6 +23,11 @@ abstract class ScalarType extends NativeType
         return true;  // Overridden in subclass BoolType
     }
 
+    public function isValidBitwiseOperand() : bool
+    {
+        return true;
+    }
+
     public function isSelfType() : bool
     {
         return false;

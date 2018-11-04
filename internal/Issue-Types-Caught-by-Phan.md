@@ -749,7 +749,7 @@ YMMV.
 ## PhanUnreferencedClosure
 
 ```
-Possibly zero references to closure {FUNCTION}
+Possibly zero references to {FUNCTION}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.1/tests/plugin_test/expected/017_unreferenced_closure.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.1/tests/plugin_test/src/017_unreferenced_closure.php#L10).
@@ -1684,8 +1684,10 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.1/tests/files/expected/0
 ## PhanTypeArrayOperator
 
 ```
-Invalid array operator between types {TYPE} and {TYPE}
+Invalid array operand provided to operator '{OPERATOR}' between types {TYPE} and {TYPE}
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0561_bitwise_operands.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0561_bitwise_operands.php#L4).
 
 ## PhanTypeArraySuspicious
 
@@ -1822,6 +1824,14 @@ This issue will be emitted for the following code
 ```php
 interface E {} (new E);
 ```
+
+## PhanTypeInvalidBitwiseBinaryOperator
+
+```
+Invalid non-int/non-string operand provided to operator '{OPERATOR}' between types {TYPE} and {TYPE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0561_bitwise_operands.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0561_bitwise_operands.php#L3).
 
 ## PhanTypeInvalidCallableArrayKey
 
@@ -2090,6 +2100,14 @@ Attempting an array destructing assignment with a key of type {TYPE} but the onl
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.1/tests/files/expected/0402_array_destructuring.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.1/tests/files/src/0402_array_destructuring.php#L4).
+
+## PhanTypeMismatchBitwiseBinaryOperands
+
+```
+Unexpected mix of int and string operands provided to operator '{OPERATOR}' between types {TYPE} and {TYPE} (expected one type but not both)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0561_bitwise_operands.php.expected#L8) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0561_bitwise_operands.php#L11).
 
 ## PhanTypeMismatchDeclaredParam
 

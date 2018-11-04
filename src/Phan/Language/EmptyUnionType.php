@@ -456,9 +456,17 @@ final class EmptyUnionType extends UnionType
     /**
      * @return bool
      * True if any types in this union are a printable scalar, or this is the empty union type
-     * @internal
      */
     public function hasPrintableScalar() : bool
+    {
+        return true;
+    }
+
+    /**
+     * @return bool
+     * True if any types in this union are a printable scalar, or this is the empty union type
+     */
+    public function hasValidBitwiseOperand() : bool
     {
         return true;
     }

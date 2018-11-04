@@ -28,6 +28,9 @@ New features(Analysis):
   (e.g. `@var 1|2`)
 + Improve line number of warning about extra comma in arrays (i.e. empty array elements). (#2066)
 + Properly parse [flexible heredoc/nowdoc syntaxes](https://wiki.php.net/rfc/flexible_heredoc_nowdoc_syntaxes) that were added in PHP 7.3 (#1537)
++ Warn about more invalid operands of the binary operators `^`,`/`,`&` (#1825)
+  Also, fix cases where `PhanTypeArrayOperator` would not be emitted.
+  New issue types: `PhanTypeInvalidBitwiseBinaryOperator`, `PhanTypeMismatchBitwiseBinaryOperands`
 
 Maintenance:
 + Make issue messages more consistent in their syntax used to describe closures/functions (#1695)
