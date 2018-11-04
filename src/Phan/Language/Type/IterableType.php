@@ -20,6 +20,11 @@ class IterableType extends NativeType
         return false;
     }
 
+    public function isValidBitwiseOperand() : bool
+    {
+        return false;
+    }
+
     public function isPossiblyObject() : bool
     {
         return true;  // can be Traversable, which is an object

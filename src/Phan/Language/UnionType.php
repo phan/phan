@@ -1564,7 +1564,6 @@ class UnionType implements Serializable
     /**
      * @return bool
      * True if any types in this union are a printable scalar, or this is the empty union type
-     * @internal
      */
     public function hasPrintableScalar() : bool
     {
@@ -1574,6 +1573,21 @@ class UnionType implements Serializable
 
         return $this->hasTypeMatchingCallback(function (Type $type) : bool {
             return $type->isPrintableScalar();
+        });
+    }
+
+    /**
+     * @return bool
+     * True if any types in this union are a valid operand for a bitwise operator ('|', '&', or '^').
+     */
+    public function hasValidBitwiseOperand() : bool
+    {
+        if ($this->isEmpty()) {
+            return true;
+        }
+
+        return $this->hasTypeMatchingCallback(function (Type $type) : bool {
+            return $type->isValidBitwiseOperand();
         });
     }
 

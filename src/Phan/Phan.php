@@ -301,7 +301,7 @@ class Phan implements IgnoredFilesFilterInterface
                 $code_base->resolveClassAliases();
             }
 
-            // Take a pass over all functions verifying
+            // Take a pass over all classes verifying
             // various states now that we have the whole
             // state in memory
             Analysis::analyzeClasses($code_base, $path_filter);

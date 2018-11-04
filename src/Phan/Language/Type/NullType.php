@@ -130,6 +130,12 @@ final class NullType extends ScalarType
         return Config::get_null_casts_as_any_type();
     }
 
+    public function isValidBitwiseOperand() : bool
+    {
+        // Allow null in union types for bitwise operations if there are **other** valid types.
+        return Config::get_null_casts_as_any_type();
+    }
+
     public function isValidNumericOperand() : bool
     {
         return Config::get_null_casts_as_any_type();

@@ -13,4 +13,9 @@ final class ResourceType extends NativeType
     {
         return false;
     }
+
+    public function isValidBitwiseOperand() : bool
+    {
+        return false;
+    }
 }

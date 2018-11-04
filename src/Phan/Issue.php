@@ -74,6 +74,8 @@ class Issue
     // Issue::CATEGORY_TYPE
     const NonClassMethodCall        = 'PhanNonClassMethodCall';
     const TypeArrayOperator         = 'PhanTypeArrayOperator';
+    const TypeInvalidBitwiseBinaryOperator = 'PhanTypeInvalidBitwiseBinaryOperator';
+    const TypeMismatchBitwiseBinaryOperands = 'PhanTypeMismatchBitwiseBinaryOperands';
     const TypeArraySuspicious       = 'PhanTypeArraySuspicious';
     const TypeArrayUnsetSuspicious  = 'PhanTypeArrayUnsetSuspicious';
     const TypeArraySuspiciousNullable = 'PhanTypeArraySuspiciousNullable';
@@ -1223,7 +1225,7 @@ class Issue
                 self::TypeArrayOperator,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Invalid array operator between types {TYPE} and {TYPE}",
+                "Invalid array operand provided to operator '{OPERATOR}' between types {TYPE} and {TYPE}",
                 self::REMEDIATION_B,
                 10008
             ),
@@ -1723,6 +1725,22 @@ class Issue
                 "{FUNCTIONLIKE} is declared to have a parameter \${PARAMETER} with a real type of trait {TYPE} (expected a class or interface or built-in type)",
                 self::REMEDIATION_B,
                 10090
+            ),
+            new Issue(
+                self::TypeInvalidBitwiseBinaryOperator,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Invalid non-int/non-string operand provided to operator '{OPERATOR}' between types {TYPE} and {TYPE}",
+                self::REMEDIATION_B,
+                10091
+            ),
+            new Issue(
+                self::TypeMismatchBitwiseBinaryOperands,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Unexpected mix of int and string operands provided to operator '{OPERATOR}' between types {TYPE} and {TYPE} (expected one type but not both)",
+                self::REMEDIATION_B,
+                10092
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
