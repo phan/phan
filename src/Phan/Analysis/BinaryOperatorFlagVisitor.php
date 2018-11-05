@@ -169,6 +169,36 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     }
 
     /**
+     * Analyzes the `<<` operator.
+     *
+     * @param Node $node @phan-unused-param
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryShiftLeft(Node $node) : UnionType
+    {
+        // TODO: Any sanity checks should go here.
+        return IntType::instance(false)->asUnionType();
+    }
+
+    /**
+     * Analyzes the `>>` operator.
+     *
+     * @param Node $node @phan-unused-param
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryShiftRight(Node $node) : UnionType
+    {
+        // TODO: Any sanity checks should go here.
+        return IntType::instance(false)->asUnionType();
+    }
+
+    /**
      * Code can bitwise xor strings byte by byte in PHP
      * @override
      */
