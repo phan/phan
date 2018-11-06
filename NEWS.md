@@ -36,6 +36,7 @@ New features(Analysis):
 + Properly warn about undefined namespaced constants/functions from within a namespace (#2112)
   Phan was failing to warn in some cases.
 + Always infer `int` for `<<` and `>>`
++ Support using dynamic values as the name for a `define()` statement (#2116)
 
 Maintenance:
 + Make issue messages more consistent in their syntax used to describe closures/functions (#1695)

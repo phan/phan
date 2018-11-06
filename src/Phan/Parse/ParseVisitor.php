@@ -800,20 +800,7 @@ class ParseVisitor extends ScopeVisitor
                                   ->setNumberOfOptionalParameters(FunctionInterface::INFINITE_PARAMETERS);
                 }
             } elseif ($function_name === 'define') {
-                // TODO: infer constant type from literal, string concatenation operators, etc?
-                $args = $node->children['args'];
-                if ($args->kind === \ast\AST_ARG_LIST
-                    && isset($args->children[0])
-                    && \is_string($args->children[0])
-                ) {
-                    $this->addConstant(
-                        $node,
-                        $args->children[0],
-                        $args->children[1] ?? null,
-                        0,
-                        ''
-                    );
-                }
+                $this->analyzeDefine($node);
             } elseif ($function_name === 'class_alias') {
                 if (Config::getValue('enable_class_alias_support') && $this->context->isInGlobalScope()) {
                     $this->recordClassAlias($node);
@@ -830,6 +817,26 @@ class ParseVisitor extends ScopeVisitor
             }
         }
         return $this->context;
+    }
+
+    private function analyzeDefine(Node $node)
+    {
+        // TODO: infer constant type from literal, string concatenation operators, etc?
+        $args = $node->children['args'];
+        if (!isset($args->children[0])) {
+            return;
+        }
+        $name = (new ContextNode($this->code_base, $this->context, $args->children[0]))->getEquivalentPHPValue();
+        if (!\is_string($name)) {
+            return;
+        }
+        $this->addConstant(
+            $node,
+            $name,
+            $args->children[1] ?? null,
+            0,
+            ''
+        );
     }
 
     /**

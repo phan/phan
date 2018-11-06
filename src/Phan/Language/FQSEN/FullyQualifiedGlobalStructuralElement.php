@@ -140,7 +140,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      *
      * @return static
      *
-     * @throws AssertionError on failure. TODO: More consistently throw AssertionError
+     * @throws InvalidArgumentException on failure.
      */
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
@@ -148,36 +148,42 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
 
         $key = static::class . '|' . $fully_qualified_string;
 
-        return self::memoizeStatic($key, /** @return FullyQualifiedGlobalStructuralElement */ function () use ($fully_qualified_string) {
+        return self::memoizeStatic(
+            $key,
+            /**
+             * @return FullyQualifiedGlobalStructuralElement
+             * @throws InvalidArgumentException
+             */
+            function () use ($fully_qualified_string) {
+                // Split off the alternate_id
+                $parts = \explode(',', $fully_qualified_string);
+                $fqsen_string = $parts[0];
+                $alternate_id = (int)($parts[1] ?? 0);
 
-            // Split off the alternate_id
-            $parts = \explode(',', $fully_qualified_string);
-            $fqsen_string = $parts[0];
-            $alternate_id = (int)($parts[1] ?? 0);
+                $parts = \explode('\\', $fqsen_string);
+                $name = \array_pop($parts);
 
-            $parts = \explode('\\', $fqsen_string);
-            $name = \array_pop($parts);
+                if ($name === '') {
+                    throw new InvalidArgumentException("The name cannot be empty");
+                }
 
-            if ($name === '') {
-                throw new AssertionError("The name cannot be empty");
+                $namespace = '\\' . \implode('\\', \array_filter($parts));
+
+                if ($namespace === '') {
+                    throw new InvalidArgumentException("The namespace cannot be empty");
+                }
+
+                if ($namespace[0] !== '\\') {
+                    throw new InvalidArgumentException("The first character of the namespace must be \\");
+                }
+
+                return static::make(
+                    $namespace,
+                    $name,
+                    $alternate_id
+                );
             }
-
-            $namespace = '\\' . \implode('\\', \array_filter($parts));
-
-            if ($namespace === '') {
-                throw new AssertionError("The namespace cannot be empty");
-            }
-
-            if ($namespace[0] !== '\\') {
-                throw new AssertionError("The first character of the namespace must be \\");
-            }
-
-            return static::make(
-                $namespace,
-                $name,
-                $alternate_id
-            );
-        });
+        );
     }
 
     /**
