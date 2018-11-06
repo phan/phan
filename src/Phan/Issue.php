@@ -993,7 +993,7 @@ class Issue
                 self::InvalidConstantFQSEN,
                 self::CATEGORY_ANALYSIS,
                 self::SEVERITY_LOW,
-                "{CONST} is an invalid FQSEN for a constant",
+                "'{CONST}' is an invalid FQSEN for a constant",
                 self::REMEDIATION_B,
                 2002
             ),

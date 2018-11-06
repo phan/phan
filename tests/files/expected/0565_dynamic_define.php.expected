@@ -1,0 +1,9 @@
+%s:11 PhanUndeclaredConstant Reference to undeclared constant \MISSINGCONST565
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 (constant_name) is 2 but \define() takes string
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 (constant_name) is float but \define() takes string
+%s:15 PhanTypeMismatchArgumentInternal Argument 1 (constant_name) is null but \define() takes string
+%s:16 PhanInvalidConstantFQSEN '' is an invalid FQSEN for a constant
+%s:17 PhanInvalidConstantFQSEN '\\' is an invalid FQSEN for a constant
+%s:18 PhanUndeclaredClassConstant Reference to constant class from undeclared class \ns565\Missing565
+%s:23 PhanUndeclaredConstant Reference to undeclared constant \cons
+%s:25 PhanUndeclaredConstant Reference to undeclared constant \ns565\ns565\cons

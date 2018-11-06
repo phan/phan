@@ -353,7 +353,7 @@ Please do file an issue or otherwise get in touch if you get one of these (or an
 ## PhanInvalidConstantFQSEN
 
 ```
-{CONST} is an invalid FQSEN for a constant
+'{CONST}' is an invalid FQSEN for a constant
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.1/tests/misc/fallback_test/expected/047_invalid_define.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.1/tests/misc/fallback_test/src/047_invalid_define.php#L3).

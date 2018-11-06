@@ -1180,10 +1180,10 @@ EOB;
         // The left-most characters are "Light shade"
         $progress_bar = str_repeat("\u{2588}", $current);
         $delta = $current_float - $current;
-        if ($delta > 1.0/3) {
+        if ($delta > 1.0 / 3) {
             // The between character is "Full block" or "Medium shade" or "solid shade".
             // The remaining characters on the right are "Full block" (darkest)
-            $first = $delta > 2.0/3 ? "\u{2593}" : "\u{2592}";
+            $first = $delta > 2.0 / 3 ? "\u{2593}" : "\u{2592}";
             $progress_bar .= $first . str_repeat("\u{2591}", $rest - 1);
         } else {
             $progress_bar .= str_repeat("\u{2591}", $rest);
