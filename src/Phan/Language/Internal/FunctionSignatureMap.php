@@ -3558,7 +3558,7 @@ return [
 'getmyinode' => ['int'],
 'getmypid' => ['int'],
 'getmyuid' => ['int'],
-'getopt' => ['array<string,string>|array<string,false>|array<string,array<int,mixed>>|false', 'options'=>'string', 'longopts='=>'array', '&w_optind='=>'int'],
+'getopt' => ['array<string,string>|array<string,false>|array<string,array<int,mixed>>', 'options'=>'string', 'longopts='=>'array', '&w_optind='=>'int'],
 'getprotobyname' => ['int|false', 'name'=>'string'],
 'getprotobynumber' => ['string', 'proto'=>'int'],
 'getrandmax' => ['int'],
