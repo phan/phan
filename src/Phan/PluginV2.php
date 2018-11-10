@@ -69,6 +69,18 @@ use Phan\PluginV2\IssueEmitter;
  *     Called by UnusedSuppressionPlugin to check if the plugin's suppressions are no longer needed.
  *
  *     (implement \Phan\PluginV2\SuppressionCapability)
+ * 11. public function beforeAnalyze(CodeBase $code_base) : void
+ *
+ *     Called before analyzing a project (e.g. to run checks before analysis)
+ *     beforeAnalyze is invoked immediately before forking analysis workers and before starting the analysis phase.
+ *
+ *     (implement \Phan\PluginV2\BeforeAnalyzeCapability)
+ * 12. public function beforeAnalyzeFile(CodeBase $code_base, Context $context, string $file_contents, Node $node);
+ *
+ *     Called before analyzing a file (with the absolute path Config::projectPath($context->getFile())).
+ *     NOTE: This does not run on empty files.
+ *
+ *     (implement \Phan\PluginV2\BeforeAnalyzeFileCapability)
  *
  * TODO: Implement a way to notify plugins that a parsed file is no longer valid,
  * if the replacement for pcntl is being used.

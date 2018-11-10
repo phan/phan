@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# TODO: Add CLI options for number of results, whether to limit to internal/user-defined functions, etc.
+function usage() {
+	cat 1>&2 <<EOT
+Usage: $0 paramType1->paramType2->returnType
+
+Examples:
+
+  Look for user-defined or internal functions returning an array of reflection methods
+    $0 'ReflectionMethod[]'
+
+  Look for functions that return a string, given a string and an array
+
+    $0 'string -> array -> string'
+
+  Look for functions that can be used to get a method (\\Phan\\Language\\Element\\Method) from a CodeBase (\\Phan\\CodeBase)
+  (Assumes Phan is in the parsed file list)
+
+    $0 'CodeBase->Method'
+
+Notes:
+
+  The order of the parameters is deliberately ignored.
+
+  More CLI options will be added in the future.
+EOT
+}
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [ $# != 1 ]; then
+	usage
+	exit 1
+fi
+if [[ "$1" == "-h" || "$1" == "help" || "$1" == "--help" ]]; then
+	usage
+	exit 0
+fi
+
+"$DIR/../phan" --find-signature="$1"

@@ -1013,7 +1013,7 @@ class CodeBase
      * @return Set
      * The set of all methods and functions
      *
-     * @internal - this is slow and should be used only for debugging.
+     * This is slow and should be used only for debugging.
      */
     private function getFunctionAndMethodSet() : Set
     {
