@@ -83,4 +83,14 @@ final class MixedType extends NativeType
     {
         return true;  // It's possible.
     }
+
+    public function isDefiniteNonObjectType() : bool
+    {
+        return false;
+    }
+
+    public function isDefiniteNonCallableType() : bool
+    {
+        return false;
+    }
 }

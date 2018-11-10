@@ -142,4 +142,14 @@ final class ClosureType extends Type
         }
         return '\Closure';
     }
+
+    /**
+     * Returns true if this contains a type that is definitely non-callable
+     * e.g. returns true for false, array, int
+     *      returns false for callable, array, object, iterable, T, etc.
+     */
+    public function isDefiniteNonCallableType() : bool
+    {
+        return false;
+    }
 }

@@ -147,6 +147,8 @@ class Issue
     const TypeSuspiciousEcho        = 'PhanTypeSuspiciousEcho';
     const TypeSuspiciousStringExpression = 'PhanTypeSuspiciousStringExpression';
     const TypeVoidAssignment        = 'PhanTypeVoidAssignment';
+    const TypePossiblyInvalidCallable = 'PhanTypePossiblyInvalidCallable';
+    const TypeInvalidCallable = 'PhanTypeInvalidCallable';
     const TypeInvalidCallableArraySize = 'PhanTypeInvalidCallableArraySize';
     const TypeInvalidCallableArrayKey = 'PhanTypeInvalidCallableArrayKey';
     const TypeInvalidCallableObjectOfMethod = 'PhanTypeInvalidCallableObjectOfMethod';
@@ -1761,6 +1763,22 @@ class Issue
                 "Call to method {METHOD} on type {TYPE} that could be a non-object",
                 self::REMEDIATION_B,
                 10094
+            ),
+            new Issue(
+                self::TypeInvalidCallable,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Saw type {TYPE} which cannot be a callable',
+                self::REMEDIATION_B,
+                10095
+            ),
+            new Issue(
+                self::TypePossiblyInvalidCallable,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Saw type {TYPE} which is possibly not a callable',
+                self::REMEDIATION_B,
+                10096
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

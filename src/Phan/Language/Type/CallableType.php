@@ -27,4 +27,14 @@ final class CallableType extends NativeType
         // CallableDeclarationType is not a native type, we check separately here
         return parent::canCastToNonNullableType($type) || $type instanceof CallableDeclarationType;
     }
+
+    /**
+     * Returns true if this contains a type that is definitely non-callable
+     * e.g. returns true for false, array, int
+     *      returns false for callable, string, array, object, iterable, T, etc.
+     */
+    public function isDefiniteNonCallableType() : bool
+    {
+        return false;
+    }
 }

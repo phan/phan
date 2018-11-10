@@ -3075,6 +3075,26 @@ class UnionType implements Serializable
                 return true;
             }
         }
+        return false;
+    }
+
+    public function containsDefiniteNonCallableType() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type->getIsNullable() || $type->isDefiniteNonCallableType()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function hasPossiblyCallableType() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if (!$type->isDefiniteNonCallableType()) {
+                return true;
+            }
+        }
         return \count($this->type_set) === 0;
     }
 }

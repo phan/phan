@@ -1866,6 +1866,14 @@ Invalid non-int/non-string operand provided to operator '{OPERATOR}' between typ
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0561_bitwise_operands.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0561_bitwise_operands.php#L3).
 
+## PhanTypeInvalidCallable
+
+```
+Saw type {TYPE} which cannot be a callable
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/051_invalid_function_node.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/051_invalid_function_node.php#L2).
+
 ## PhanTypeInvalidCallableArrayKey
 
 ```
@@ -2341,6 +2349,14 @@ Must call parent::__construct() from {CLASS} which extends {CLASS}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0283_parent_constructor_called.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0283_parent_constructor_called.php#L6).
+
+## PhanTypePossiblyInvalidCallable
+
+```
+Saw type {TYPE} which is possibly not a callable
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/062_strict_function_checking.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/062_strict_function_checking.php#L33).
 
 ## PhanTypeSuspiciousEcho
 

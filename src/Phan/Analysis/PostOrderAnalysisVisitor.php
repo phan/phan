@@ -1720,10 +1720,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($method_name === '__construct' && $static_class !== 'parent') {
                 $this->emitConstructorWarning($node, $static_class, $method_name);
             }
-            // We already checked for NonClassMethodCall
-            if (Config::get_strict_method_checking()) {
-                $this->checkForPossibleNonObjectInMethod($node, $method_name);
-            }
             return $this->context;
         }
 
@@ -1907,11 +1903,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         try {
             // Get a reference to the method being called
-            return (new ContextNode(
+            $result = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node
             ))->getMethod($method_name, true, true);
+
+            // This didn't throw NonClassMethodCall
+            if (Config::get_strict_method_checking()) {
+                $this->checkForPossibleNonObjectInMethod($node, $method_name);
+            }
+
+            return $result;
+
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance(
                 $this->code_base,
@@ -1919,6 +1923,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $exception->getIssueInstance()
             );
         } catch (Exception $_) {
+            // We already checked for NonClassMethodCall
+            if (Config::get_strict_method_checking()) {
+                $this->checkForPossibleNonObjectInMethod($node, $method_name);
+            }
+
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.

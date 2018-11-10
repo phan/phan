@@ -7,6 +7,8 @@ New features (CLI)
 + Warn when calling method on union types that are definitely partially invalid. (#1885)
   New config setting: `--strict-method-checking` (enabled as part of `--strict-type-checking`)
   New issue type: `PhanPossiblyNonClassMethodCall`
++ Warn about invalid/possibly invalid callables in function calls.
+  New issue types: `PhanTypeInvalidCallable`, `PhanTypePossiblyInvalidCallable` (the latter check requires `--strict-method-checking`)
 
 New features (Analysis)
 

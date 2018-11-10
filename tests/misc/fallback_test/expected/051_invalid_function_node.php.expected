@@ -1,3 +1,4 @@
 src/051_invalid_function_node.php:2 PhanSyntaxError syntax error, unexpected '('
+src/051_invalid_function_node.php:2 PhanTypeInvalidCallable Saw type 0 which cannot be a callable
 src/051_invalid_function_node.php:2 PhanUndeclaredConstant Reference to undeclared constant \stdClass
 src/051_invalid_function_node.php:3 PhanNoopStringLiteral Unused result of a string literal "notanint" near this line

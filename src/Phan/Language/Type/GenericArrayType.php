@@ -536,4 +536,14 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
     {
         return false;
     }
+
+    /**
+     * Returns true if this contains a type that is definitely nullable or a non-object.
+     * e.g. returns true false, array, int
+     *      returns false for callable, object, iterable, T, etc.
+     */
+    public function isDefiniteNonCallableType() : bool
+    {
+        return $this->key_type === self::KEY_STRING;
+    }
 }

@@ -295,8 +295,9 @@ class Config
         // will cut down on false positives.
         'null_casts_as_any_type' => false,
 
-        // If enabled, Phan will warn if **any** type in the method's object
-        // is definitely not an object.
+        // If enabled, Phan will warn if **any** type in a method's object expression
+        // is definitely not an object,
+        // or if **any** type in an invoked expression is not a callable.
         // Setting this to true will introduce numerous false positives
         // (and reveal some bugs).
         'strict_method_checking' => false,

@@ -274,11 +274,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             $d = \substr($d, 1);
         }
         if ($d === 'callable') {
-            if (\array_keys($this->field_types) !== [0, 1]) {
-                return false;
-            }
-            // TODO: Check types of offsets 0 and 1
-            return true;
+            return !$this->isDefiniteNonCallableType();
         }
 
         return parent::canCastToNonNullableType($type);
@@ -530,6 +526,20 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 return true;
             }
         }
+        return false;
+    }
+
+    /**
+     * Returns true if this contains a type that is definitely non-callable
+     * e.g. returns true for false, array, int
+     *      returns false for callable, array, object, iterable, T, etc.
+     */
+    public function isDefiniteNonCallableType() : bool
+    {
+        if (\array_keys($this->field_types) !== [0, 1]) {
+            return true;
+        }
+        // TODO: Check types of offsets 0 and 1
         return false;
     }
 }
