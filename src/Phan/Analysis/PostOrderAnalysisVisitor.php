@@ -2,6 +2,7 @@
 namespace Phan\Analysis;
 
 use AssertionError;
+use ast;
 use ast\flags;
 use ast\Node;
 use Exception;
@@ -143,7 +144,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         $expr_node = $node->children['expr'];
         if ($expr_node instanceof Node
-            && $expr_node->kind == \ast\AST_CLOSURE
+            && $expr_node->kind == ast\AST_CLOSURE
         ) {
             $method = (new ContextNode(
                 $this->code_base,
@@ -204,16 +205,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         $kind = $var_node->kind;
-        if ($kind === \ast\AST_VAR) {
+        if ($kind === ast\AST_VAR) {
             $var_name = $var_node->children['name'];
             if (\is_string($var_name)) {
                 // TODO: Make this work in branches
                 $context->unsetScopeVariable($var_name);
             }
             // I think DollarDollarPlugin already warns, so don't warn here.
-        } elseif ($kind === \ast\AST_DIM) {
+        } elseif ($kind === ast\AST_DIM) {
             $this->analyzeUnsetDim($var_node);
-        } elseif ($kind === \ast\AST_PROP) {
+        } elseif ($kind === ast\AST_PROP) {
             $this->analyzeUnsetProp($var_node);
         }
         return $context;
@@ -234,7 +235,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         // For now, just handle a single level of dimensions for unset($x['field']);
-        if ($expr_node->kind === \ast\AST_VAR) {
+        if ($expr_node->kind === ast\AST_VAR) {
             $var_name = $expr_node->children['name'];
             if (!\is_string($var_name)) {
                 return;
@@ -500,7 +501,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * Visit a node with kind `\ast\AST_GLOBAL`
+     * Visit a node with kind `ast\AST_GLOBAL`
      *
      * @param Node $node
      * A node to parse
@@ -660,19 +661,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
              * or types which will be checked in other parts of Phan
              */
             static $skip_var_check_types = [
-                \ast\AST_ARG_LIST       => true,  // may be a reference
-                \ast\AST_ARRAY_ELEM     => true,  // [$X, $y] = expr() is an AST_ARRAY_ELEM. visitArray() checks the right hand side.
-                \ast\AST_ASSIGN_OP      => true,  // checked in visitAssignOp
-                \ast\AST_ASSIGN_REF     => true,  // Creates by reference?
-                \ast\AST_ASSIGN         => true,  // checked in visitAssign
-                \ast\AST_DIM            => true,  // should be checked elsewhere, as part of check for array access to non-array/string
-                \ast\AST_EMPTY          => true,  // TODO: Enable this in the future?
-                \ast\AST_GLOBAL         => true,  // global $var;
-                \ast\AST_ISSET          => true,  // TODO: Enable this in the future?
-                \ast\AST_PARAM_LIST     => true,  // this creates the variable
-                \ast\AST_STATIC         => true,  // static $var;
-                \ast\AST_STMT_LIST      => true,  // ;$var; (Implicitly creates the variable. Already checked to emit PhanNoopVariable)
-                \ast\AST_USE_ELEM       => true,  // may be a reference, checked elsewhere
+                ast\AST_ARG_LIST       => true,  // may be a reference
+                ast\AST_ARRAY_ELEM     => true,  // [$X, $y] = expr() is an AST_ARRAY_ELEM. visitArray() checks the right hand side.
+                ast\AST_ASSIGN_OP      => true,  // checked in visitAssignOp
+                ast\AST_ASSIGN_REF     => true,  // Creates by reference?
+                ast\AST_ASSIGN         => true,  // checked in visitAssign
+                ast\AST_DIM            => true,  // should be checked elsewhere, as part of check for array access to non-array/string
+                ast\AST_EMPTY          => true,  // TODO: Enable this in the future?
+                ast\AST_GLOBAL         => true,  // global $var;
+                ast\AST_ISSET          => true,  // TODO: Enable this in the future?
+                ast\AST_PARAM_LIST     => true,  // this creates the variable
+                ast\AST_STATIC         => true,  // static $var;
+                ast\AST_STMT_LIST      => true,  // ;$var; (Implicitly creates the variable. Already checked to emit PhanNoopVariable)
+                ast\AST_USE_ELEM       => true,  // may be a reference, checked elsewhere
             ];
 
             if (!\array_key_exists($parent_kind, $skip_var_check_types)) {
@@ -735,7 +736,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitBinaryOp(Node $node) : Context
     {
-        if ((\end($this->parent_node_list)->kind ?? null) === \ast\AST_STMT_LIST) {
+        if ((\end($this->parent_node_list)->kind ?? null) === ast\AST_STMT_LIST) {
             if (!\in_array($node->flags, [flags\BINARY_BOOL_AND, flags\BINARY_BOOL_OR, flags\BINARY_COALESCE])) {
                 $this->emitIssue(
                     Issue::NoopBinaryOperator,
@@ -766,7 +767,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitUnaryOp(Node $node) : Context
     {
         if ($node->flags !== flags\UNARY_SILENCE) {
-            if ((\end($this->parent_node_list)->kind ?? null) === \ast\AST_STMT_LIST) {
+            if ((\end($this->parent_node_list)->kind ?? null) === ast\AST_STMT_LIST) {
                 $this->emitIssue(
                     Issue::NoopUnaryOperator,
                     $node->lineno,
@@ -791,7 +792,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         try {
             $name_node = $node->children['name'];
             // Based on UnionTypeVisitor::visitConst
-            if ($name_node->kind == \ast\AST_NAME) {
+            if ($name_node->kind == ast\AST_NAME) {
                 $constant = (new ContextNode(
                     $this->code_base,
                     $context,
@@ -1312,10 +1313,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
         $kind = $node->kind;
-        if ($kind === \ast\AST_CONDITIONAL) {
+        if ($kind === ast\AST_CONDITIONAL) {
             yield from self::deduplicateUnionTypes($this->getReturnTypesOfConditional($context, $node));
             return;
-        } elseif ($kind === \ast\AST_ARRAY) {
+        } elseif ($kind === ast\AST_ARRAY) {
             $expression_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $node, true);
             if ($expression_type->hasTopLevelArrayShapeTypeInstances()) {
                 yield $return_lineno => $expression_type;
@@ -1375,7 +1376,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // TODO: false_context once there is a NegatedConditionVisitor
         // TODO: emit no-op if $cond_node is a literal, such as `if (2)`
-        // - Also note that some things such as `true` and `false` are \ast\AST_NAME nodes.
+        // - Also note that some things such as `true` and `false` are ast\AST_NAME nodes.
 
         if ($cond_node instanceof Node) {
             // TODO: Use different contexts and merge those, in case there were assignments or assignments by reference in both sides of the conditional?
@@ -1707,7 +1708,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $class_node = $node->children['class'];
         if (!($class_node instanceof Node)) {
             $static_class = (string)$class_node;
-        } elseif ($node->children['class']->kind == \ast\AST_NAME) {
+        } elseif ($node->children['class']->kind == ast\AST_NAME) {
             $static_class = (string)$node->children['class']->children['name'];
         }
 
@@ -1834,7 +1835,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         string $method_name
     ) {
         // TODO: what about unanalyzable?
-        if ($node->children['class']->kind !== \ast\AST_NAME) {
+        if ($node->children['class']->kind !== ast\AST_NAME) {
             return;
         }
         $class_context_node = (new ContextNode(
@@ -2017,7 +2018,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * Visit a node with kind `\ast\AST_FUNC_DECL`
+     * Visit a node with kind `ast\AST_FUNC_DECL`
      *
      * @param Node $node
      * A node to parse
@@ -2140,7 +2141,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * Visit a node with kind `\ast\AST_DIM`
+     * Visit a node with kind `ast\AST_DIM`
      *
      * @param Node $node
      * A node to parse
@@ -2187,7 +2188,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * We skip checks for $x['key'] being valid in expressions such as `$x['key']['key2']['key3'] = 'value';`
      * because those expressions will create $x['key'] as a side effect.
      *
-     * Precondition: $parent_node->kind === \ast\AST_DIM && $parent_node->children['expr'] is $node
+     * Precondition: $parent_node->kind === ast\AST_DIM && $parent_node->children['expr'] is $node
      */
     private static function shouldSkipNestedAssignDim(array $parent_node_list) : bool
     {
@@ -2195,18 +2196,18 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         for (;; $cur_parent_node = $prev_parent_node) {
             $prev_parent_node = \prev($parent_node_list);
             switch ($prev_parent_node->kind) {
-                case \ast\AST_DIM:
+                case ast\AST_DIM:
                     if ($prev_parent_node->children['expr'] !== $cur_parent_node) {
                         return false;
                     }
                     break;
-                case \ast\AST_ASSIGN:
-                case \ast\AST_ASSIGN_REF:
+                case ast\AST_ASSIGN:
+                case ast\AST_ASSIGN_REF:
                     return $prev_parent_node->children['var'] === $cur_parent_node;
-                case \ast\AST_ARRAY_ELEM:
+                case ast\AST_ARRAY_ELEM:
                     $prev_parent_node = \prev($parent_node_list);  // this becomes AST_ARRAY
                     break;
-                case \ast\AST_ARRAY:
+                case ast\AST_ARRAY:
                     break;
                 default:
                     return false;
@@ -2254,7 +2255,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * Analyze a node with kind `\ast\AST_PROP` or `\ast\AST_STATIC_PROP`
+     * Analyze a node with kind `ast\AST_PROP` or `ast\AST_STATIC_PROP`
      *
      * @param Node $node
      * A node of the type indicated by the method name that we'd
@@ -2381,7 +2382,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $parent_node = \end($parent_node_list);
         $parent_kind = $parent_node->kind;
         // E.g. analyzing [$x] in [$x] = expr()
-        while ($parent_kind === \ast\AST_ARRAY_ELEM) {
+        while ($parent_kind === ast\AST_ARRAY_ELEM) {
             if ($parent_node->children['value'] !== $node) {
                 // e.g. analyzing `$v = [$x => $y];` for $x
                 return false;
@@ -2391,9 +2392,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $parent_node = \array_pop($parent_node_list);
             $parent_kind = $parent_node->kind;
         }
-        if ($parent_kind === \ast\AST_DIM) {
+        if ($parent_kind === ast\AST_DIM) {
             return $parent_node->children['expr'] === $node && $this->shouldSkipNestedAssignDim($parent_node_list);
-        } elseif ($parent_kind === \ast\AST_ASSIGN || $parent_kind === \ast\AST_ASSIGN_REF || $parent_kind === \ast\AST_ASSIGN_OP) {
+        } elseif ($parent_kind === ast\AST_ASSIGN || $parent_kind === ast\AST_ASSIGN_REF || $parent_kind === ast\AST_ASSIGN_OP) {
             return $parent_node->children['var'] === $node;
         }
         return false;
@@ -2402,10 +2403,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     // An incomplete list of known parent node kinds that simultaneously read and write the given expression
     // TODO: ASSIGN_OP?
     const _READ_AND_WRITE_KINDS = [
-        \ast\AST_PRE_INC,
-        \ast\AST_PRE_DEC,
-        \ast\AST_POST_INC,
-        \ast\AST_POST_DEC,
+        ast\AST_PRE_INC,
+        ast\AST_PRE_DEC,
+        ast\AST_POST_INC,
+        ast\AST_POST_DEC,
     ];
 
     private function isAssignmentOrNestedAssignmentOrModification(Node $node) : bool
@@ -2414,7 +2415,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $parent_node = \end($parent_node_list);
         $parent_kind = $parent_node->kind;
         // E.g. analyzing [$x] in [$x] = expr()
-        while ($parent_kind === \ast\AST_ARRAY_ELEM) {
+        while ($parent_kind === ast\AST_ARRAY_ELEM) {
             if ($parent_node->children['value'] !== $node) {
                 // e.g. analyzing `$v = [$x => $y];` for $x
                 return false;
@@ -2424,9 +2425,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $parent_node = \array_pop($parent_node_list);
             $parent_kind = $parent_node->kind;
         }
-        if ($parent_kind === \ast\AST_DIM) {
+        if ($parent_kind === ast\AST_DIM) {
             return $parent_node->children['expr'] === $node && self::shouldSkipNestedAssignDim($parent_node_list);
-        } elseif ($parent_kind === \ast\AST_ASSIGN || $parent_kind === \ast\AST_ASSIGN_REF || $parent_kind === \ast\AST_ASSIGN_OP) {
+        } elseif ($parent_kind === ast\AST_ASSIGN || $parent_kind === ast\AST_ASSIGN_REF || $parent_kind === ast\AST_ASSIGN_OP) {
             return $parent_node->children['var'] === $node;
         } else {
             return \in_array($parent_kind, self::_READ_AND_WRITE_KINDS, true);
@@ -2537,7 +2538,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // If pass-by-reference, make sure the variable exists
             // or create it if it doesn't.
             if ($parameter->isPassByReference()) {
-                if ($argument->kind == \ast\AST_VAR) {
+                if ($argument->kind == ast\AST_VAR) {
                     try {
                         // We don't do anything with the new variable; just create it
                         // if it doesn't exist
@@ -2550,8 +2551,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         // E.g. `function_accepting_reference(${$varName})` - Phan can't analyze outer type of ${$varName}
                         continue;
                     }
-                } elseif ($argument->kind == \ast\AST_STATIC_PROP
-                    || $argument->kind == \ast\AST_PROP
+                } elseif ($argument->kind == ast\AST_STATIC_PROP
+                    || $argument->kind == ast\AST_PROP
                 ) {
                     $property_name = $argument->children['prop'];
 
@@ -2563,7 +2564,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                                 $code_base,
                                 $context,
                                 $argument
-                            ))->getOrCreateProperty($argument->children['prop'], $argument->kind == \ast\AST_STATIC_PROP);
+                            ))->getOrCreateProperty($argument->children['prop'], $argument->kind == ast\AST_STATIC_PROP);
                         } catch (IssueException $exception) {
                             Issue::maybeEmitInstance(
                                 $code_base,
@@ -2603,7 +2604,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
 
             $kind = $argument->kind;
-            if ($kind === \ast\AST_CLOSURE) {
+            if ($kind === ast\AST_CLOSURE) {
                 if (Config::get_track_references()) {
                     $this->trackReferenceToClosure($argument);
                 }
@@ -2627,6 +2628,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // If we're in quick mode, don't retest methods based on
         // parameter types passed in
         if (Config::get_quick_mode()) {
+            return;
+        }
+
+        // Don't re-analyze recursive methods. That doesn't go
+        // well.
+        if ($context->isInFunctionLikeScope()
+            && $method->getFQSEN() === $context->getFunctionLikeFQSEN()
+        ) {
+            $this->checkForInfiniteRecursion($node, $method);
             return;
         }
 
@@ -2655,7 +2665,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     ) {
         $variable = null;
         $kind = $argument->kind;
-        if ($kind === \ast\AST_VAR) {
+        if ($kind === ast\AST_VAR) {
             try {
                 $variable = (new ContextNode(
                     $code_base,
@@ -2666,8 +2676,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // E.g. `function_accepting_reference(${$varName})` - Phan can't analyze outer type of ${$varName}
                 return;
             }
-        } elseif ($kind === \ast\AST_STATIC_PROP
-            || $kind === \ast\AST_PROP
+        } elseif ($kind === ast\AST_STATIC_PROP
+            || $kind === ast\AST_PROP
         ) {
             $property_name = $argument->children['prop'];
 
@@ -2679,7 +2689,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $code_base,
                         $context,
                         $argument
-                    ))->getOrCreateProperty($argument->children['prop'], $argument->kind == \ast\AST_STATIC_PROP);
+                    ))->getOrCreateProperty($argument->children['prop'], $argument->kind == ast\AST_STATIC_PROP);
                     $variable->addReference($context);
                 } catch (IssueException $exception) {
                     Issue::maybeEmitInstance(
@@ -2883,15 +2893,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         Node $argument_list_node,
         FunctionInterface $method
     ) {
-        // Don't re-analyze recursive methods. That doesn't go
-        // well.
-        if ($this->context->isInFunctionLikeScope()
-            && $method->getFQSEN() === $this->context->getFunctionLikeFQSEN()
-        ) {
-            return;
-        }
-
-
         $original_method_scope = $method->getInternalScope();
         $method->setInternalScope(clone($original_method_scope));
         $method_context = $method->getContext();
@@ -2979,6 +2980,37 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Check if $argument_list_node calling itself is likely to be a case of infinite recursion.
+     * This is based on heuristics, and will not catch all cases.
+     */
+    private function checkForInfiniteRecursion(Node $node, FunctionInterface $method)
+    {
+        $argument_list_node = $node->children['args'];
+        if ($node->kind === ast\AST_METHOD_CALL) {
+            $expr = $node->children['expr'];
+            if (($expr->kind ?? null) !== ast\AST_VAR || $expr->children['name'] !== 'this') {
+                return;
+            }
+        }
+        $nearest_function_like = null;
+        foreach ($this->parent_node_list as $c) {
+            if (\in_array($c->kind, [ast\AST_FUNC_DECL, ast\AST_METHOD, ast\AST_CLOSURE], true)) {
+                $nearest_function_like = $c;
+            }
+        }
+        if (!$nearest_function_like) {
+            return;
+        }
+        if (ReachabilityChecker::willUnconditionallyBeReached($nearest_function_like->children['stmts'], $argument_list_node)) {
+            $this->emitIssue(
+                Issue::InfiniteRecursion,
+                $argument_list_node->lineno,
+                $method->getNameForIssue()
+            );
+        }
+    }
+
+    /**
      * @param FunctionInterface $method
      * The method that we're updating parameter types for
      *
@@ -3055,7 +3087,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         $variable = null;
-        if ($argument->kind == \ast\AST_VAR) {
+        if ($argument->kind == ast\AST_VAR) {
             try {
                 $variable = (new ContextNode(
                     $this->code_base,
@@ -3066,7 +3098,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // Could not figure out the node name
                 return;
             }
-        } elseif ($argument->kind == \ast\AST_STATIC_PROP) {
+        } elseif ($argument->kind == ast\AST_STATIC_PROP) {
             try {
                 $variable = (new ContextNode(
                     $this->code_base,
@@ -3111,7 +3143,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function analyzeNoOp(Node $node, string $issue_type)
     {
-        if ((\end($this->parent_node_list)->kind ?? null) === \ast\AST_STMT_LIST) {
+        if ((\end($this->parent_node_list)->kind ?? null) === ast\AST_STMT_LIST) {
             $this->emitIssue(
                 $issue_type,
                 $node->lineno

@@ -1540,6 +1540,17 @@ C19::f();
 
 This category of issue come from using incorrect types or types that cannot cast to the expected types.
 
+## PhanInfiniteRecursion
+
+NOTE: This is based on very simple heuristics. It has known false positives and false negatives.
+This checks for a functionlike directly calling itself in a way that seems to be unconditionally (e.g. doesn't detect `a()` calling `b()` calling `a()`)
+
+```
+{FUNCTIONLIKE} is calling itself in a way that may cause infinite recursion.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0566_infinite_recursion_check.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0566_infinite_recursion_check.php#L5).
+
 ## PhanMismatchVariadicComment
 
 ```

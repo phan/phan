@@ -2548,7 +2548,7 @@ class Clazz extends AddressableElement
             $string .= 'class ';
         }
 
-        $string .= (string)$this->getFQSEN()->getName();
+        $string .= $this->getFQSEN()->getName();
 
         $extend_types = [];
         $implements_types = [];

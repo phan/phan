@@ -3,6 +3,11 @@ Phan NEWS
 ?? ??? 2018, Phan 1.1.3 (dev)
 -----------------------
 
+New features (Analysis)
+
++ Add a heuristic check to detect potential infinite recursion in a functionlike calling itself (i.e. stack overflows)
+  New issue types: `PhanInfiniteRecursion`
+
 05 Nov 2018, Phan 1.1.2
 -----------------------
 

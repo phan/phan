@@ -666,6 +666,9 @@ final class ConfigPluginSet extends PluginV2 implements
     {
         $old_plugin_for_kind = $this->post_analyze_node_plugin_set[$kind] ?? null;
         if ($old_plugin_for_kind) {
+            /**
+             * @suppress PhanInfiniteRecursion the old plugin is referring to a different closure
+             */
             $this->post_analyze_node_plugin_set[$kind] = static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) use ($old_plugin_for_kind, $new_plugin) {
                 $old_plugin_for_kind($code_base, $context, $node, $parent_node_list);
                 $new_plugin($code_base, $context, $node, $parent_node_list);
