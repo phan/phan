@@ -1658,6 +1658,14 @@ Returning type {TYPE} but {FUNCTIONLIKE} is declared to return {TYPE} ({TYPE} is
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/plugin_test/expected/026_strict_return_checks.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/plugin_test/src/026_strict_return_checks.php#L31).
 
+## PhanPossiblyNonClassMethodCall
+
+```
+Call to method {METHOD} on type {TYPE} that could be a non-object
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/060_strict_method_check.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/060_strict_method_check.php#L12).
+
 ## PhanPossiblyNullTypeArgument
 
 This issue may be emitted when `strict_param_checking` is true

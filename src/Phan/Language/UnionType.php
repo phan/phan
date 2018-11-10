@@ -3062,6 +3062,21 @@ class UnionType implements Serializable
                 return null;
         }
     }
+
+    /**
+     * Returns true if this contains a type that is definitely nullable or a non-object.
+     * e.g. returns true for ?T, T|false, T|array
+     *      returns false for T|callable, object, T|iterable, etc.
+     */
+    public function containsDefiniteNonObjectType() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type->getIsNullable() || $type->isDefiniteNonObjectType()) {
+                return true;
+            }
+        }
+        return \count($this->type_set) === 0;
+    }
 }
 
 UnionType::init();

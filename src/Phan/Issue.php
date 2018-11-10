@@ -73,6 +73,7 @@ class Issue
 
     // Issue::CATEGORY_TYPE
     const NonClassMethodCall        = 'PhanNonClassMethodCall';
+    const PossiblyNonClassMethodCall = 'PhanPossiblyNonClassMethodCall';
     const TypeArrayOperator         = 'PhanTypeArrayOperator';
     const TypeInvalidBitwiseBinaryOperator = 'PhanTypeInvalidBitwiseBinaryOperator';
     const TypeMismatchBitwiseBinaryOperands = 'PhanTypeMismatchBitwiseBinaryOperands';
@@ -1752,6 +1753,14 @@ class Issue
                 "{FUNCTIONLIKE} is calling itself in a way that may cause infinite recursion.",
                 self::REMEDIATION_B,
                 10093
+            ),
+            new Issue(
+                self::PossiblyNonClassMethodCall,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Call to method {METHOD} on type {TYPE} that could be a non-object",
+                self::REMEDIATION_B,
+                10094
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

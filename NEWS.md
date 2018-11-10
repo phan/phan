@@ -3,6 +3,11 @@ Phan NEWS
 ?? ??? 2018, Phan 1.1.3 (dev)
 -----------------------
 
+New features (CLI)
++ Warn when calling method on union types that are definitely partially invalid. (#1885)
+  New config setting: `--strict-method-checking` (enabled as part of `--strict-type-checking`)
+  New issue type: `PhanPossiblyNonClassMethodCall`
+
 New features (Analysis)
 
 + Add a heuristic check to detect potential infinite recursion in a functionlike calling itself (i.e. stack overflows)

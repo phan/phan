@@ -98,6 +98,7 @@ class CLI
         'quick',
         'require-config-exists',
         'signature-compatibility',
+        'strict-method-checking',
         'strict-param-checking',
         'strict-property-checking',
         'strict-return-checking',
@@ -390,6 +391,9 @@ class CLI
                 case 'use-fallback-parser':
                     Config::setValue('use_fallback_parser', true);
                     break;
+                case 'strict-method-checking':
+                    Config::setValue('strict_method_checking', true);
+                    break;
                 case 'strict-param-checking':
                     Config::setValue('strict_param_checking', true);
                     break;
@@ -400,6 +404,7 @@ class CLI
                     Config::setValue('strict_return_checking', true);
                     break;
                 case 'strict-type-checking':
+                    Config::setValue('strict_method_checking', true);
                     Config::setValue('strict_param_checking', true);
                     Config::setValue('strict_property_checking', true);
                     Config::setValue('strict_return_checking', true);
@@ -787,6 +792,9 @@ Usage: {$argv[0]} [options] [files...]
   Add a plugin to run. This flag can be repeated.
   (Either pass the name of the plugin or a relative/absolute path to the plugin)
 
+ --strict-method-checking
+  Enables the config option `strict_method_checking`.
+
  --strict-param-checking
   Enables the config option `strict_param_checking`.
 
@@ -798,7 +806,7 @@ Usage: {$argv[0]} [options] [files...]
 
  --strict-type-checking
   Equivalent to
-  `--strict-param-checking --strict-property-checking --strict-return-checking`.
+  `--strict-method-checking --strict-param-checking --strict-property-checking --strict-return-checking`.
 
  --use-fallback-parser
   If a file to be analyzed is syntactically invalid

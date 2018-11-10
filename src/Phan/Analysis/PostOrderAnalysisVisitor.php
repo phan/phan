@@ -1720,6 +1720,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($method_name === '__construct' && $static_class !== 'parent') {
                 $this->emitConstructorWarning($node, $static_class, $method_name);
             }
+            // We already checked for NonClassMethodCall
+            if (Config::get_strict_method_checking()) {
+                $this->checkForPossibleNonObjectInMethod($node, $method_name);
+            }
             return $this->context;
         }
 
@@ -2126,6 +2130,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return $this->context;
         }
 
+        // We already checked for NonClassMethodCall
+        if (Config::get_strict_method_checking()) {
+            $this->checkForPossibleNonObjectInMethod($node, $method_name);
+        }
+
         $this->analyzeMethodVisibility(
             $method,
             $node
@@ -2138,6 +2147,21 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         );
 
         return $this->context;
+    }
+
+    private function checkForPossibleNonObjectInMethod(Node $node, string $method_name)
+    {
+        $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr'] ?? $node->children['class']);
+        if ($type->containsDefiniteNonObjectType()) {
+            Issue::maybeEmit(
+                $this->code_base,
+                $this->context,
+                Issue::PossiblyNonClassMethodCall,
+                $node->lineno,
+                $method_name,
+                $type
+            );
+        }
     }
 
     /**

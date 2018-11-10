@@ -1,0 +1,7 @@
+%s:9 PhanUnreferencedFunction Possibly zero references to function \test()
+%s:10 PhanPossiblyNonClassMethodCall Call to method someMethod on type string that could be a non-object
+%s:11 PhanNonClassMethodCall Call to method someMethod on non-class type ?string
+%s:11 PhanPossiblyNonClassMethodCall Call to method someMethod on type ?string that could be a non-object
+%s:12 PhanPossiblyNonClassMethodCall Call to method someMethod on type null|string that could be a non-object
+%s:13 PhanPossiblyNonClassMethodCall Call to method someMethod on type false|string that could be a non-object
+%s:14 PhanPossiblyNonClassMethodCall Call to method someMethod on type array|string that could be a non-object

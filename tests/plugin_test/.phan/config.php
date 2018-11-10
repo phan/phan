@@ -29,6 +29,12 @@ return [
     // are treated as if they can cast to each other.
     'scalar_implicit_cast' => false,
 
+    // If enabled, Phan will warn if **any** type in the method's object
+    // is definitely not an object.
+    // Setting this to true will introduce numerous false positives
+    // (and reveal some bugs).
+    'strict_method_checking' => true,
+
     // If enabled, Phan will warn if **any** type in the argument's type
     // cannot be cast to a type in the parameter's expected type.
     // Setting this to true will introduce a large number of false positives (and some bugs).
