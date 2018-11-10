@@ -641,6 +641,16 @@ allows casting null to a string, but not vice versa.
 
 (Default: `[]`)
 
+## strict_method_checking
+
+If enabled, Phan will warn if **any** type in a method's object expression
+is definitely not an object,
+or if **any** type in an invoked expression is not a callable.
+Setting this to true will introduce numerous false positives
+(and reveal some bugs).
+
+(Default: `false`)
+
 ## strict_param_checking
 
 If enabled, Phan will warn if **any** type in the argument's type

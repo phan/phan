@@ -198,6 +198,16 @@ class ArrayType extends IterableType
         return $result;
          */
     }
+
+    /**
+     * Returns true if this contains a type that is definitely nullable or a non-object.
+     * e.g. returns true false, array, int
+     *      returns false for callable, object, iterable, T, etc.
+     */
+    public function isDefiniteNonObjectType() : bool
+    {
+        return true;
+    }
 }
 // Trigger the autoloader for GenericArrayType so that it won't be called
 // before ArrayType.

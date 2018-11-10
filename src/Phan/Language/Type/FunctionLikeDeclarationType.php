@@ -192,6 +192,16 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         );
     }
 
+    /**
+     * Returns true if this contains a type that is definitely non-callable
+     * e.g. returns true for false, array, int
+     *      returns false for callable, array, object, iterable, T, etc.
+     */
+    public function isDefiniteNonCallableType() : bool
+    {
+        return false;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
     // Begin FunctionInterface overrides. Most of these are intentionally no-ops
     ////////////////////////////////////////////////////////////////////////////////

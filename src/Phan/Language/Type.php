@@ -2629,4 +2629,26 @@ class Type
     {
         return false;
     }
+
+    /**
+     * Returns true if this contains a type that is definitely nullable or a non-object.
+     * e.g. returns true for false, array, int
+     *      returns false for callable, object, iterable, T, etc.
+     */
+    public function isDefiniteNonObjectType() : bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns true if this contains a type that is definitely non-callable
+     * e.g. returns true for false, array, int
+     *      returns false for callable, array, object, iterable, T, etc.
+     */
+    public function isDefiniteNonCallableType() : bool
+    {
+        // Any non-final class could be extended with a callable type.
+        // TODO: Check if final
+        return false;
+    }
 }

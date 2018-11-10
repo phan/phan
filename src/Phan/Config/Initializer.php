@@ -242,6 +242,7 @@ EOT;
             return null;
         }
         $level = max(1, min(5, (int)$level));
+        $is_strongest_level = $level === 1;
         $is_strong_or_weaker_level = $level >= 2;
         $is_average_level = $level >= 3;
         $is_weak_level    = $level >= 4;
@@ -287,6 +288,10 @@ EOT;
             'scalar_array_key_cast'    => $is_average_level,
             // TODO: Migrate to a smaller subset scalar_implicit_partial as analysis gets stricter?
             'scalar_implicit_partial'  => [],
+            'strict_method_checking'   => !$is_average_level,
+            // strict param/return checking has a lot of false positives. Limit it to the strongest analysis level.
+            'strict_param_checking'    => $is_strongest_level,
+            'strict_return_checking'   => $is_strongest_level,
             'ignore_undeclared_variables_in_global_scope' => $is_average_level,
             'ignore_undeclared_functions_with_known_signatures' => $is_strong_or_weaker_level,
             'backward_compatibility_checks' => false,  // this is slow

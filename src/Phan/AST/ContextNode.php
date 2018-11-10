@@ -765,156 +765,141 @@ class ContextNode
 
     /**
      * Yields a list of FunctionInterface objects for the 'expr' of an AST_CALL.
-     * @return \Generator
-     * @phan-return \Generator<FunctionInterface>
+     * @return iterable<void, FunctionInterface, void, void>
      */
     public function getFunctionFromNode()
     {
         $expression = $this->node;
-        $code_base = $this->code_base;
-        $context = $this->context;
-
         if (!($expression instanceof Node)) {
+            if (!\is_string($expression)) {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    Issue::TypeInvalidCallable,
+                    $this->context->getLineNumberStart(),
+                    (string)$expression
+                );
+            }
             // TODO: this might need to account for 'myFunction'()
-            return;
+            return [];
         }
-        if ($expression->kind == ast\AST_VAR) {
-            $variable_name = (new ContextNode(
-                $code_base,
-                $context,
-                $expression
-            ))->getVariableName();
-
-            if (empty($variable_name)) {
-                return;
-            }
-
-            // $var() - hopefully a closure, otherwise we don't know
-            if ($context->getScope()->hasVariableWithName(
-                $variable_name
-            )) {
-                $variable = $context->getScope()
-                    ->getVariableByName($variable_name);
-
-                $union_type = $variable->getUnionType();
-                if ($union_type->isEmpty()) {
-                    return;
-                }
-
-                foreach ($union_type->getTypeSet() as $type) {
-                    // TODO: Allow CallableType to have FQSENs as well, e.g. `$x = [MyClass::class, 'myMethod']` has an FQSEN in a sense.
-                    if ($type instanceof ClosureType) {
-                        $closure_fqsen =
-                            FullyQualifiedFunctionName::fromFullyQualifiedString(
-                                $type->asFQSEN()->__toString()
-                            );
-
-                        if ($code_base->hasFunctionWithFQSEN(
-                            $closure_fqsen
-                        )) {
-                            // Get the closure
-                            $function = $code_base->getFunctionByFQSEN(
-                                $closure_fqsen
-                            );
-
-                            yield $function;
-                        }
-                    } elseif ($type instanceof FunctionLikeDeclarationType) {
-                        yield $type;
-                    } elseif ($type instanceof LiteralStringType) {
-                        // TODO: deduplicate this functionality
-                        try {
-                            $method = (new ContextNode(
-                                $code_base,
-                                $context,
-                                $expression
-                            ))->getFunction($type->getValue());
-                        } catch (IssueException $exception) {
-                            Issue::maybeEmitInstance(
-                                $code_base,
-                                $context,
-                                $exception->getIssueInstance()
-                            );
-                            continue;
-                        } catch (EmptyFQSENException $exception) {
-                            Issue::maybeEmit(
-                                $code_base,
-                                $context,
-                                Issue::EmptyFQSENInCallable,
-                                $expression->lineno ?? $context->getLineNumberStart(),
-                                $exception->getFQSEN()
-                            );
-                            continue;
-                        }
-
-                        yield $method;
-                    }
-                }
-            }
-        } elseif ($expression->kind == ast\AST_NAME
-            // nothing to do
-        ) {
+        if ($expression->kind == ast\AST_NAME) {
             try {
-                $method = (new ContextNode(
-                    $code_base,
-                    $context,
-                    $expression
-                ))->getFunction($expression->children['name']);
+                return [
+                    (new ContextNode(
+                        $this->code_base,
+                        $this->context,
+                        $expression
+                    ))->getFunction($expression->children['name']),
+                ];
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
-                    $code_base,
-                    $context,
+                    $this->code_base,
+                    $this->context,
                     $exception->getIssueInstance()
                 );
-                return $context;
             } catch (EmptyFQSENException $exception) {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    Issue::EmptyFQSENInCallable,
+                    $expression->lineno,
+                    $exception->getFQSEN()
+                );
+            }
+            return [];
+        }
+        // The least common case: A dynamic function call such as $x(), (self::$x)(), etc.
+        return $this->getFunctionLikeFromDynamicExpression();
+    }
+
+    /**
+     * Yields a list of FunctionInterface objects for the 'expr' of an AST_CALL.
+     * Precondition: expr->kind !== ast\AST_NAME
+     *
+     * @return \Generator<void, FunctionInterface, void, void>
+     */
+    private function getFunctionLikeFromDynamicExpression() {
+        $code_base = $this->code_base;
+        $context = $this->context;
+        $expression = $this->node;
+        $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expression);
+        if ($union_type->isEmpty()) {
+            return;
+        }
+
+        $has_type = false;
+        foreach ($union_type->getTypeSet() as $type) {
+            // TODO: Allow CallableType to have FQSENs as well, e.g. `$x = [MyClass::class, 'myMethod']` has an FQSEN in a sense.
+            if ($type instanceof ClosureType) {
+                $closure_fqsen =
+                    FullyQualifiedFunctionName::fromFullyQualifiedString(
+                        $type->asFQSEN()->__toString()
+                    );
+
+                if ($code_base->hasFunctionWithFQSEN(
+                    $closure_fqsen
+                )) {
+                    // Get the closure
+                    $function = $code_base->getFunctionByFQSEN(
+                        $closure_fqsen
+                    );
+
+                    $has_type = true;
+                    yield $function;
+                }
+            } elseif ($type instanceof FunctionLikeDeclarationType) {
+                $has_type = true;
+                yield $type;
+            } elseif ($type instanceof LiteralStringType) {
+                // TODO: deduplicate this functionality
+                try {
+                    yield (new ContextNode(
+                        $code_base,
+                        $context,
+                        $expression
+                    ))->getFunction($type->getValue());
+                    $has_type = true;
+                } catch (IssueException $exception) {
+                    Issue::maybeEmitInstance(
+                        $code_base,
+                        $context,
+                        $exception->getIssueInstance()
+                    );
+                    continue;
+                } catch (EmptyFQSENException $exception) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::EmptyFQSENInCallable,
+                        $expression->lineno ?? $context->getLineNumberStart(),
+                        $exception->getFQSEN()
+                    );
+                    continue;
+                }
+            }
+        }
+        if (!$has_type) {
+            if (!$union_type->hasPossiblyCallableType()) {
                 Issue::maybeEmit(
                     $code_base,
                     $context,
-                    Issue::EmptyFQSENInCallable,
-                    $expression->lineno ?? $context->getLineNumberStart(),
-                    $exception->getFQSEN()
+                    Issue::TypeInvalidCallable,
+                    $expression->lineno,
+                    $union_type
                 );
-                return $context;
+                return;
             }
-
-            yield $method;
-        } elseif ($expression->kind == ast\AST_CALL
-            || $expression->kind == ast\AST_STATIC_CALL
-            || $expression->kind == ast\AST_NEW
-            || $expression->kind == ast\AST_METHOD_CALL
-        ) {
-            $class_list = (new ContextNode(
+        }
+        if (Config::get_strict_method_checking() && $union_type->containsDefiniteNonCallableType()) {
+            Issue::maybeEmit(
                 $code_base,
                 $context,
-                $expression
-            ))->getClassList(false, self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
-
-            foreach ($class_list as $class) {
-                if (!$class->hasMethodWithName(
-                    $code_base,
-                    '__invoke'
-                )) {
-                    continue;
-                }
-
-                $method = $class->getMethodByName(
-                    $code_base,
-                    '__invoke'
-                );
-
-                // Check the call for parameter and argument types
-                yield $method;
-            }
-        } elseif ($expression->kind === ast\AST_CLOSURE) {
-            $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
-                $context->withLineNumberStart($expression->lineno ?? 0),
-                $expression
+                Issue::TypePossiblyInvalidCallable,
+                $expression->lineno,
+                $union_type
             );
-            $method = $code_base->getFunctionByFQSEN($closure_fqsen);
-            yield $method;
         }
-        // TODO: AST_CLOSURE
     }
 
     /**

@@ -58,6 +58,13 @@ return [
     // If null_casts_as_any_type is true, this has no effect.
     'array_casts_as_null' => false,
 
+    // If enabled, Phan will warn if **any** type in a method's object expression
+    // is definitely not an object,
+    // or if **any** type in an invoked expression is not a callable.
+    // Setting this to true will introduce numerous false positives
+    // (and reveal some bugs).
+    'strict_method_checking' => false,
+
     // If enabled, Phan will warn if **any** type in the argument's type
     // cannot be cast to a type in the parameter's expected type.
     // Setting this to true will introduce a large number of false positives (and some bugs).

@@ -1903,11 +1903,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         try {
             // Get a reference to the method being called
-            return (new ContextNode(
+            $result = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node
             ))->getMethod($method_name, true, true);
+
+            // This didn't throw NonClassMethodCall
+            if (Config::get_strict_method_checking()) {
+                $this->checkForPossibleNonObjectInMethod($node, $method_name);
+            }
+
+            return $result;
+
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance(
                 $this->code_base,
@@ -1915,6 +1923,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $exception->getIssueInstance()
             );
         } catch (Exception $_) {
+            // We already checked for NonClassMethodCall
+            if (Config::get_strict_method_checking()) {
+                $this->checkForPossibleNonObjectInMethod($node, $method_name);
+            }
+
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.
@@ -2126,6 +2139,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return $this->context;
         }
 
+        // We already checked for NonClassMethodCall
+        if (Config::get_strict_method_checking()) {
+            $this->checkForPossibleNonObjectInMethod($node, $method_name);
+        }
+
         $this->analyzeMethodVisibility(
             $method,
             $node
@@ -2138,6 +2156,21 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         );
 
         return $this->context;
+    }
+
+    private function checkForPossibleNonObjectInMethod(Node $node, string $method_name)
+    {
+        $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr'] ?? $node->children['class']);
+        if ($type->containsDefiniteNonObjectType()) {
+            Issue::maybeEmit(
+                $this->code_base,
+                $this->context,
+                Issue::PossiblyNonClassMethodCall,
+                $node->lineno,
+                $method_name,
+                $type
+            );
+        }
     }
 
     /**

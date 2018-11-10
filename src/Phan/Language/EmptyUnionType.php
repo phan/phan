@@ -1124,4 +1124,19 @@ final class EmptyUnionType extends UnionType
     {
         return null;
     }
+
+    public function containsDefiniteNonObjectType() : bool
+    {
+        return false;
+    }
+
+    public function containsDefiniteNonCallableType() : bool
+    {
+        return false;
+    }
+
+    public function hasPossiblyCallableType() : bool
+    {
+        return true;
+    }
 }
