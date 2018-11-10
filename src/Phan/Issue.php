@@ -167,6 +167,7 @@ class Issue
     const RelativePathUsed                = 'PhanRelativePathUsed';
     const TypeInvalidTraitReturn          = 'PhanTypeInvalidTraitReturn';
     const TypeInvalidTraitParam           = 'PhanTypeInvalidTraitParam';
+    const InfiniteRecursion               = 'PhanInfiniteRecursion';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -1743,6 +1744,14 @@ class Issue
                 "Unexpected mix of int and string operands provided to operator '{OPERATOR}' between types {TYPE} and {TYPE} (expected one type but not both)",
                 self::REMEDIATION_B,
                 10092
+            ),
+            new Issue(
+                self::InfiniteRecursion,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "{FUNCTIONLIKE} is calling itself in a way that may cause infinite recursion.",
+                self::REMEDIATION_B,
+                10093
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

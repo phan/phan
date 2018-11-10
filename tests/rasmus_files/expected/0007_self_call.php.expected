@@ -1,1 +1,2 @@
+%s:8 PhanInfiniteRecursion func2() is calling itself in a way that may cause infinite recursion.
 %s:9 PhanUndeclaredStaticMethod Static call to undeclared method \B::func3 (Did you mean expr::func1() or expr::func2())

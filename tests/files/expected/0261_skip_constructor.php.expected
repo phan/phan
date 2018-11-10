@@ -3,5 +3,8 @@
 %s:26 PhanUndeclaredStaticMethod Static call to undeclared method Missing261::__construct()
 %s:37 PhanUndeclaredStaticMethod Static call to undeclared method Other261::__construct()
 %s:49 PhanAccessOwnConstructor Accessing own constructor directly via self::__construct
+%s:49 PhanInfiniteRecursion __construct() is calling itself in a way that may cause infinite recursion.
 %s:55 PhanAccessOwnConstructor Accessing own constructor directly via static::__construct
+%s:55 PhanInfiniteRecursion __construct() is calling itself in a way that may cause infinite recursion.
 %s:61 PhanAccessOwnConstructor Accessing own constructor directly via Self261C::__construct
+%s:61 PhanInfiniteRecursion __construct() is calling itself in a way that may cause infinite recursion.

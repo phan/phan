@@ -1,0 +1,10 @@
+%s:5 PhanInfiniteRecursion exampleInfiniteLoop() is calling itself in a way that may cause infinite recursion.
+%s:10 PhanInfiniteRecursion mymethod() is calling itself in a way that may cause infinite recursion.
+%s:14 PhanInfiniteRecursion myStaticMethod() is calling itself in a way that may cause infinite recursion.
+%s:35 PhanInfiniteRecursion printNumbers() is calling itself in a way that may cause infinite recursion.
+%s:39 PhanInfiniteRecursion foreachInfiniteLoop() is calling itself in a way that may cause infinite recursion.
+%s:53 PhanInfiniteRecursion whileInfiniteLoop() is calling itself in a way that may cause infinite recursion.
+%s:68 PhanInfiniteRecursion forInfiniteLoop() is calling itself in a way that may cause infinite recursion.
+%s:75 PhanInfiniteRecursion forInfiniteLoop2() is calling itself in a way that may cause infinite recursion.
+%s:90 PhanInfiniteRecursion infiniteSwitch() is calling itself in a way that may cause infinite recursion.
+%s:122 PhanInfiniteRecursion unrelatedSwitch() is calling itself in a way that may cause infinite recursion.
