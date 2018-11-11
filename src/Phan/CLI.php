@@ -888,7 +888,7 @@ Extended help:
 
  --find-signature 'paramUnionType1->paramUnionType2->returnUnionType'
   Find a signature in the analyzed codebase that is similar to the argument.
-  See tool/phangle for examples.
+  See tool/phoogle for examples.
 
  --memory-limit <memory_limit>
   Sets the memory limit for analysis (per process).

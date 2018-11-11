@@ -118,7 +118,7 @@ final class MethodSearcherPlugin extends PluginV2 implements
         $num_results = count($results);
         // TODO: Make this configurable
         $limit = 10;
-        echo "Phangle found $num_results result(s)\n";
+        echo "Phoogle found $num_results result(s)\n";
         if ($limit < count($results)) {
             echo "(Showing $limit of $num_results results)\n";
         }

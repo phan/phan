@@ -9,9 +9,9 @@ New features (CLI)
   New issue type: `PhanPossiblyNonClassMethodCall`
 + Warn about invalid/possibly invalid callables in function calls.
   New issue types: `PhanTypeInvalidCallable`, `PhanTypePossiblyInvalidCallable` (the latter check requires `--strict-method-checking`)
-+ Add a prototype tool `tool/phangle`, which can be used to search for function/method signatures in user-declared and internal functions/methods.
++ Add a prototype tool `tool/phoogle`, which can be used to search for function/method signatures in user-declared and internal functions/methods.
   E.g. to look for functions that return a string, given a string and an array:
-  `/path/phan/tool/phangle 'string -> array -> string`
+  `/path/phan/tool/phoogle 'string -> array -> string`
 
 Plugins:
 + Add `BeforeAnalyzeCapability`, which will be executed once before starting the analysis phase. (#2086)
