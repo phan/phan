@@ -8,11 +8,11 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\UnionType;
 use Phan\PluginV2;
 use Phan\PluginV2\BeforeAnalyzeCapability;
-
 use function count;
 
 /**
@@ -65,24 +65,32 @@ final class MethodSearcherPlugin extends PluginV2 implements
         // @phan-suppress-next-line PhanPartialTypeMismatchProperty
         self::$return_type = array_pop($result);
         self::$param_types = $result;
-        fwrite(STDERR, "Searching for function/method signatures similar to: " . implode(' -> ', array_merge(self::$param_types, [self::$return_type])) . "\n");
+        echo "Searching for function/method signatures similar to: " . implode(' -> ', array_merge(self::$param_types, [self::$return_type])) . "\n";
     }
 
     public static function addMissingNamespaces(CodeBase $code_base, UnionType $union_type) : UnionType
     {
         foreach ($union_type->getTypeSet() as $type) {
             if ($type->isObjectWithKnownFQSEN()) {
-                $fqsen = FullyQualifiedClassName::fromType($type);
-                if (!$code_base->hasClassWithFQSEN($fqsen)) {
-                    $fqsens = $code_base->suggestSimilarClassInOtherNamespace($fqsen, new Context());
-                    if (!$fqsens) {
-                        fwrite(STDERR, "Could not find '$fqsen' in any namespace\n");
-                        exit(EXIT_FAILURE);
-                    }
-                    $union_type = $union_type->withoutType($type);
-                    foreach ($fqsens as $fqsen) {
-                        $union_type = $union_type->withType($fqsen->asType());
-                    }
+                $replacements = self::getReplacementTypesForFullyQualifiedClassName($code_base, $type);
+                if ($replacements === [$type]) {
+                    continue;
+                }
+                $union_type = $union_type->withoutType($type)->withUnionType(UnionType::of($replacements));
+            } elseif ($type instanceof GenericArrayType) {
+                $element_type = $type->genericArrayElementType();
+                $replacement_element_types = self::addMissingNamespaces($code_base, $element_type->asUnionType());
+                if ($replacement_element_types->isType($element_type)) {
+                    continue;
+                }
+                $union_type = $union_type->withoutType($type);
+                foreach ($replacement_element_types->getTypeSet() as $element_type) {
+                    $replacement_type = GenericArrayType::fromElementType(
+                        $element_type,
+                        $type->getIsNullable(),
+                        $type->getKeyType()
+                    );
+                    $union_type = $union_type->withType($replacement_type);
                 }
             }
             // TODO: Could also do this for generic arrays, etc.
@@ -91,14 +99,46 @@ final class MethodSearcherPlugin extends PluginV2 implements
     }
 
     /**
-     * @param CodeBase $code_base
+     * @return Type[] a list of types to replace $type with
      */
-    public function beforeAnalyze(CodeBase $code_base)
+    public static function getReplacementTypesForFullyQualifiedClassName(
+        CodeBase $code_base,
+        Type $type
+    ) {
+        $fqsen = FullyQualifiedClassName::fromType($type);
+        if ($code_base->hasClassWithFQSEN($fqsen)) {
+            return [$type];
+        }
+        $fqsens = $code_base->suggestSimilarClassInOtherNamespace($fqsen, new Context());
+        if (!$fqsens) {
+            fwrite(STDERR, "Phoogle could not find '$fqsen' in any namespace\n");
+            exit(EXIT_FAILURE);
+        }
+        return array_map(function (FullyQualifiedClassName $fqsen) use ($type) : Type {
+            return $fqsen->asType()->withIsNullable($type->getIsNullable());
+        }, $fqsens);
+    }
+
+    private static function addMissingNamespacesToTypes(CodeBase $code_base)
     {
+        $original_param_types = self::$param_types;
+        $original_return_type = self::$return_type;
         foreach (self::$param_types as $i => $type) {
             self::$param_types[$i] = self::addMissingNamespaces($code_base, $type);
         }
         self::$return_type = self::addMissingNamespaces($code_base, self::$return_type);
+
+        if ($original_return_type !== self::$return_type || $original_param_types !== self::$param_types) {
+            echo "Phoogle is searching for " . implode(' -> ', array_merge(self::$param_types, [self::$return_type])) . " instead (some classes had missing namespaces)\n";
+        }
+    }
+
+    /**
+     * @param CodeBase $code_base
+     */
+    public function beforeAnalyze(CodeBase $code_base)
+    {
+        self::addMissingNamespacesToTypes($code_base);
 
         $code_base->eagerlyLoadAllSignatures();
         foreach ($code_base->getFunctionMap() as $function) {

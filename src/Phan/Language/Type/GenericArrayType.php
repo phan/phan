@@ -175,8 +175,8 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
      * The element type for an array.
      *
      * @param bool $is_nullable
-     * Set to true if the type should be nullable, else pass
-     * false
+     * Set to true if the this is a nullable array(e.g. `?($type[])`),
+     * else pass false
      *
      * @param int $key_type
      * Corresponds to the type of the array keys. Set this to a GenericArrayType::KEY_* constant.
