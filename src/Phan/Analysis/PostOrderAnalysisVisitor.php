@@ -1915,7 +1915,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
 
             return $result;
-
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance(
                 $this->code_base,

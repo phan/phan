@@ -10,6 +10,7 @@ use Phan\Output\Filter\ChainedIssueFilter;
 use Phan\Output\Filter\FileIssueFilter;
 use Phan\Output\Filter\MinimumSeverityFilter;
 use Phan\Output\PrinterFactory;
+use Phan\Plugin\Internal\MethodSearcherPlugin;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
@@ -55,6 +56,7 @@ class CLI
         'dump-ast',
         'dump-parsed-file-list',
         'dump-signatures-file:',
+        'find-signature:',
         'exclude-directory-list:',
         'exclude-file:',
         'extended-help',
@@ -320,6 +322,23 @@ class CLI
                     break;
                 case 'dump-signatures-file':
                     Config::setValue('dump_signatures_file', $value);
+                    break;
+                case 'find-signature':
+                    try {
+                        if (!is_string($value)) {
+                            throw new InvalidArgumentException("Expected a string, got " . json_encode($value));
+                        }
+                        // @phan-suppress-next-line PhanAccessMethodInternal
+                        MethodSearcherPlugin::setSearchString($value);
+                    } catch (InvalidArgumentException $e) {
+                        fwrite(STDERR, "Invalid argument '$value' to --find-signature. Error: " . $e->getMessage() . "\n");
+                        exit(EXIT_FAILURE);
+                    }
+
+                    Config::setValue('plugins', array_merge(
+                        Config::getValue('plugins'),
+                        [__DIR__ . '/Plugin/Internal/MethodSearcherPluginLoader.php']
+                    ));
                     break;
                 case 'o':
                 case 'output':
@@ -866,6 +885,10 @@ Extended help:
  --dump-signatures-file <filename>
   Emit JSON serialized signatures to the given file.
   This uses a method signature format similar to FunctionSignatureMap.php.
+
+ --find-signature 'paramUnionType1->paramUnionType2->returnUnionType'
+  Find a signature in the analyzed codebase that is similar to the argument.
+  See tool/phangle for examples.
 
  --memory-limit <memory_limit>
   Sets the memory limit for analysis (per process).

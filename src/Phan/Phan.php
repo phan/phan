@@ -183,6 +183,7 @@ class Phan implements IgnoredFilesFilterInterface
             }
         }
         $code_base->setCurrentParsedFile(null);
+        ConfigPluginSet::instance()->beforeAnalyze($code_base);
 
         // Don't continue on to analysis if the user has
         // chosen to just dump the AST
@@ -310,6 +311,10 @@ class Phan implements IgnoredFilesFilterInterface
             // various states now that we have the whole
             // state in memory
             Analysis::analyzeFunctions($code_base, $path_filter);
+
+            if (Config::getValue('dump_matching_functions')) {
+                exit(EXIT_SUCCESS);
+            }
 
             Analysis::loadMethodPlugins($code_base);
 

@@ -36,7 +36,7 @@ class Config
      * New features increment minor versions, and bug fixes increment patch versions.
      * @suppress PhanUnreferencedPublicClassConstant
      */
-    const PHAN_PLUGIN_VERSION = '2.6.0';
+    const PHAN_PLUGIN_VERSION = '2.7.0';
 
     /**
      * @var string|null
@@ -876,6 +876,8 @@ class Config
         //
         // This setting can be overridden if users wish to store strings that are even longer than 50 bytes.
         'max_literal_string_type_length' => 200,
+
+        'dump_matching_functions' => false,
 
         // A list of plugin files to execute.
         //

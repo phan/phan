@@ -819,7 +819,8 @@ class ContextNode
      *
      * @return \Generator<void, FunctionInterface, void, void>
      */
-    private function getFunctionLikeFromDynamicExpression() {
+    private function getFunctionLikeFromDynamicExpression()
+    {
         $code_base = $this->code_base;
         $context = $this->context;
         $expression = $this->node;
