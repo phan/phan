@@ -19,6 +19,7 @@ use Phan\Language\Type\CallableType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
+use Phan\Parse\ParseVisitor;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
 use Phan\PluginV2\StopParamAnalysisException;
@@ -533,6 +534,50 @@ final class MiscParamPlugin extends PluginV2 implements
             }
         };
 
+        /**
+         * Most of the work was already done in ParseVisitor
+         * @see \Phan\Parse\ParseVisitor->analyzeDefine()
+         */
+        $define_callback = static function (
+            CodeBase $code_base,
+            Context $context,
+            FunctionInterface $unused_function,
+            array $args
+        ) {
+            if (count($args) < 2) {
+                return;
+            }
+            $name = $args[0];
+            $value = $args[1];
+            if (\is_scalar($name) && (\is_scalar($value) || $value->kind === \ast\AST_CONST)) {
+                // We already parsed this in ParseVisitor
+                return;
+            }
+            if ($name instanceof Node) {
+                try {
+                    $name_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $name, false);
+                } catch (IssueException $_) {
+                    // If this is really an issue, we'll emit it in the analysis phase when we have all of the element definitions.
+                    return;
+                }
+                $name = $name_type->asSingleScalarValueOrNull();
+            }
+
+            if (!\is_string($name)) {
+                return;
+            }
+            ParseVisitor::addConstant(
+                $code_base,
+                $context,
+                $context->getLineNumberStart(),
+                $name,
+                $args[1],
+                0,
+                '',
+                false
+            );
+        };
+
         return [
             'array_udiff' => $array_udiff_callback,
             'array_diff_uassoc' => $array_udiff_callback,
@@ -556,6 +601,7 @@ final class MiscParamPlugin extends PluginV2 implements
             'min' => $min_max_callback,
             'max' => $min_max_callback,
 
+            'define' => $define_callback,
             // TODO: sort and usort should convert array<string,T> to array<int,T> (same for array shapes)
         ];
     }

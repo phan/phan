@@ -1,4 +1,3 @@
-src/047_invalid_define.php:3 PhanInvalidConstantFQSEN ', ' is an invalid FQSEN for a constant
 src/047_invalid_define.php:3 PhanNoopConstant Unused constant
 src/047_invalid_define.php:3 PhanNoopStringLiteral Unused result of a string literal ");\nconst CON2 = " near this line
 src/047_invalid_define.php:3 PhanParamTooFewInternal Call with 1 arg(s) to \define() which requires 2 arg(s)

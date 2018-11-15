@@ -7,6 +7,7 @@ use ast\Node;
 use InvalidArgumentException;
 use Phan\Analysis\ScopeVisitor;
 use Phan\AST\ContextNode;
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Daemon;
@@ -666,12 +667,15 @@ class ParseVisitor extends ScopeVisitor
                 // Both will emit PhanInvalidConstantExpression
                 continue;
             }
-            $this->addConstant(
-                $child_node,
+            self::addConstant(
+                $this->code_base,
+                $this->context,
+                $child_node->lineno,
                 $child_node->children['name'],
                 $value_node,
                 $child_node->flags ?? 0,
-                $child_node->children['docComment'] ?? ''
+                $child_node->children['docComment'] ?? '',
+                true
             );
         }
 
@@ -821,21 +825,33 @@ class ParseVisitor extends ScopeVisitor
 
     private function analyzeDefine(Node $node)
     {
-        // TODO: infer constant type from literal, string concatenation operators, etc?
         $args = $node->children['args'];
-        if (!isset($args->children[0])) {
+        if (\count($args->children) < 2) {
             return;
         }
-        $name = (new ContextNode($this->code_base, $this->context, $args->children[0]))->getEquivalentPHPValue();
+        $name = $args->children[0];
+        if ($name instanceof Node) {
+            try {
+                $name_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $name, false);
+            } catch (IssueException $_) {
+                // If this is really an issue, we'll emit it in the analysis phase when we have all of the element definitions.
+                return;
+            }
+            $name = $name_type->asSingleScalarValueOrNull();
+        }
+
         if (!\is_string($name)) {
             return;
         }
-        $this->addConstant(
-            $node,
+        self::addConstant(
+            $this->code_base,
+            $this->context,
+            $node->lineno,
             $name,
-            $args->children[1] ?? null,
+            $args->children[1],
             0,
-            ''
+            '',
+            true
         );
     }
 
@@ -1116,8 +1132,17 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
-     * @param Node $node
-     * The node where the constant was found
+     * Add a constant to the codebase
+     *
+     * @param CodeBase $code_base
+     * The global code base in which we store all
+     * state
+     *
+     * @param Context $context
+     * The context of the parser at the node which declares the constant
+     *
+     * @param int $lineno
+     * The line number where the node declaring the constant was found
      *
      * @param string $name
      * The name of the constant
@@ -1134,32 +1159,45 @@ class ParseVisitor extends ScopeVisitor
      *
      * @return void
      */
-    private function addConstant(
-        Node $node,
+    public static function addConstant(
+        CodeBase $code_base,
+        Context $context,
+        int $lineno,
         string $name,
         $value,
         int $flags,
-        string $comment_string
+        string $comment_string,
+        bool $use_future_union_type
     ) {
         try {
             // Give it a fully-qualified name
             $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
                 $name,
-                $this->context
+                $context
             );
         } catch (InvalidArgumentException $_) {
-            $this->emitIssue(
+            Issue::maybeEmit(
+                $code_base,
+                $context,
                 Issue::InvalidConstantFQSEN,
-                $node->lineno,
+                $lineno,
                 $name
             );
             return;
         }
+        if ($code_base->hasGlobalConstantWithFQSEN($fqsen)) {
+            $other_context = $code_base->getGlobalConstantByFQSEN($fqsen)->getContext();
+            if (!$other_context->equals($context)) {
+                // Be consistent about the constant's type and only track the first declaration seen when parsing (or redeclarations)
+                // Note that global constants don't have alternates.
+                return;
+            }
+            // Otherwise, add the constant now that we know about all of the elements in the codebase
+        }
 
         // Create the constant
         $constant = new GlobalConstant(
-            $this->context
-                ->withLineNumberStart($node->lineno ?? 0),
+            $context->withLineNumberStart($lineno ?? 0),
             $name,
             UnionType::empty(),
             $flags,
@@ -1169,22 +1207,26 @@ class ParseVisitor extends ScopeVisitor
         // Get a comment on the declaration
         $comment = Comment::fromStringInContext(
             $comment_string,
-            $this->code_base,
-            $this->context,
-            $node->lineno ?? 0,
+            $code_base,
+            $context,
+            $lineno ?? 0,
             Comment::ON_CONST
         );
 
-        if ($value instanceof Node) {
-            $constant->setFutureUnionType(
-                new FutureUnionType(
-                    $this->code_base,
-                    $this->context,
-                    $value
-                )
-            );
+        if ($use_future_union_type) {
+            if ($value instanceof Node) {
+                $constant->setFutureUnionType(
+                    new FutureUnionType(
+                        $code_base,
+                        $context,
+                        $value
+                    )
+                );
+            } else {
+                $constant->setUnionType(Type::fromObject($value)->asUnionType());
+            }
         } else {
-            $constant->setUnionType(Type::fromObject($value)->asUnionType());
+            $constant->setUnionType(UnionTypeVisitor::unionTypeFromNode($code_base, $context, $value));
         }
 
         $constant->setNodeForValue($value);
@@ -1193,7 +1235,7 @@ class ParseVisitor extends ScopeVisitor
         $constant->setIsDeprecated($comment->isDeprecated());
         $constant->setIsNSInternal($comment->isNSInternal());
 
-        $this->code_base->addGlobalConstant(
+        $code_base->addGlobalConstant(
             $constant
         );
     }

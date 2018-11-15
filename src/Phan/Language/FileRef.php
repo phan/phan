@@ -96,6 +96,15 @@ class FileRef implements \Serializable
     }
 
     /**
+     * @return bool
+     * True if this object refers to the same file and line number.
+     */
+    public function equals(FileRef $other) : bool
+    {
+        return $this->getLineNumberStart() === $other->getLineNumberStart() && $this->getFile() === $other->getFile();
+    }
+
+    /**
      * @var int $line_number
      * The starting line number of the element within the file
      *

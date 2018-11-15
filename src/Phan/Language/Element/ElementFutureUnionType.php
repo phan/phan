@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\Exception\IssueException;
 use Phan\Language\FutureUnionType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
@@ -75,7 +76,11 @@ trait ElementFutureUnionType
         $future_union_type = $this->future_union_type;
         $this->future_union_type = null;
 
-        $union_type = $future_union_type->get();
+        try {
+            $union_type = $future_union_type->get();
+        } catch (IssueException $_) {
+            $union_type = UnionType::empty();
+        }
 
         // Don't set 'null' as the type if that's the default
         // given that its the default.
