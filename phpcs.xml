@@ -31,6 +31,10 @@
     <exclude name="SlevomatCodingStandard.TypeHints.DeclareStrictTypes.IncorrectStrictTypesFormat" />
   </rule>
   <rule ref="SlevomatCodingStandard.TypeHints.LongTypeHints" />
+  <rule ref="PSR1.Classes.ClassDeclaration.MissingNamespace">
+    <exclude-pattern>*/.phan/plugins/*</exclude-pattern>
+    <exclude-pattern>/internal/*</exclude-pattern>
+  </rule>
   <!-- <rule ref="SlevomatCodingStandard.Namespaces.FullyQualifiedGlobalFunctions" /> doesn't account for 'use function...' statements, don't use that -->
   <!-- TODO: Look into SlevomatCodingStandard.TypeHints.ReturnTypeHintSpacing once PSR-12 is back into review -->
 
