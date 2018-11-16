@@ -3,7 +3,7 @@ Phan NEWS
 ?? ??? 2018, Phan 1.1.3 (dev)
 -----------------------
 
-New features (CLI)
+New features(CLI)
 + Warn when calling method on union types that are definitely partially invalid. (#1885)
   New config setting: `--strict-method-checking` (enabled as part of `--strict-type-checking`)
   New issue type: `PhanPossiblyNonClassMethodCall`
@@ -16,15 +16,17 @@ New features (CLI)
 Plugins:
 + Add `BeforeAnalyzeCapability`, which will be executed once before starting the analysis phase. (#2086)
 
-New features (Analysis)
-
+New features(Analysis):
 + Add a heuristic check to detect potential infinite recursion in a functionlike calling itself (i.e. stack overflows)
   New issue types: `PhanInfiniteRecursion`
+
+Bug fixes:
++ Fix false positives analyzing `define()` (#2128)
 
 05 Nov 2018, Phan 1.1.2
 -----------------------
 
-New features(CLI)
+New features(CLI):
 + Make `phan --progress-bar` fit within narrower console widths. (#2096)
   (Make the old width into the new **maximum** width)
   Additionally, use a gradient of shades for the progress bar.
