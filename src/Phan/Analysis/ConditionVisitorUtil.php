@@ -212,7 +212,7 @@ trait ConditionVisitorUtil
      * @param Node|int|float|string $expr
      * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
      */
-    protected final function updateVariableToBeIdentical(
+    public final function updateVariableToBeIdentical(
         Node $var_node,
         $expr,
         Context $context
@@ -453,7 +453,7 @@ trait ConditionVisitorUtil
      *
      * TODO: support assertions on superglobals, within the current file scope?
      */
-    protected final function getVariableFromScope(Node $var_node, Context $context)
+    public final function getVariableFromScope(Node $var_node, Context $context)
     {
         if ($var_node->kind !== \ast\AST_VAR) {
             return null;
