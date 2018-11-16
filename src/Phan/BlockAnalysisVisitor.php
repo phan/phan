@@ -2,6 +2,7 @@
 namespace Phan;
 
 use AssertionError;
+use ast;
 use ast\Node;
 use Phan\Analysis\BlockExitStatusChecker;
 use Phan\Analysis\ConditionVisitor;
@@ -791,23 +792,59 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // TODO: Improve inferences in switch statements?
         // TODO: Behave differently if switch lists don't cover every case (e.g. if there is no default)
         $has_default = false;
+        $switch_case_node = end($this->parent_node_list)->children['cond'];
+        $switch_variable = null;
+        if (($switch_case_node->kind ?? null) === ast\AST_VAR) {
+            try {
+                $switch_variable = (new ConditionVisitor($this->code_base, $context))->getVariableFromScope($switch_case_node, $context);
+            } catch (IssueException $_) {
+            }
+        }
+        $previous_child_context = null;
         foreach ($node->children as $i => $child_node) {
+            $cond_node = $child_node->children['cond'];
             // Step into each child node and get an
             // updated context for the node
             $child_context = $context->withScope(new BranchScope($scope));
             $child_context->withLineNumberStart($child_node->lineno);
+            if ($cond_node !== null) {
+                if ($switch_variable) {
+                    // Add the variable type from the above case statements, if it was possible for it to fall through
+                    $visitor = new ConditionVisitor($this->code_base, $child_context);
+                    $child_context = $visitor->updateVariableToBeIdentical($switch_case_node, $cond_node, $child_context);
+                    if ($previous_child_context !== null) {
+                        $variable = $visitor->getVariableFromScope($switch_case_node, $child_context);
+                        if ($variable) {
+                            $old_variable = $visitor->getVariableFromScope($switch_case_node, $previous_child_context);
+
+                            if ($old_variable) {
+                                $variable->setUnionType($variable->getUnionType()->withUnionType($old_variable->getUnionType()));
+                            }
+                        }
+                    }
+                }
+            }
+
             $child_context = $this->analyzeAndGetUpdatedContext($child_context, $node, $child_node);
 
-            if ($child_node->children['cond'] === null) {
+            if ($cond_node === null) {
                 $has_default = true;
             }
             // We can improve analysis of `case` blocks by using
             // a BlockExitStatusChecker to avoid propagating invalid inferences.
             $stmts_node = $child_node->children['stmts'];
-            if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_node)) {
-                // Skip over empty case statements (incomplete heuristic), TODO: test
+            $block_exit_status = (new BlockExitStatusChecker())->__invoke($stmts_node);
+            // equivalent to !willUnconditionallyThrowOrReturn()
+            $previous_child_context = null;
+            if (($block_exit_status & ~BlockExitStatusChecker::STATUS_THROW_OR_RETURN_BITMASK)) {
+                // Skip over case statements that only ever throw or return
                 if (count($stmts_node->children ?? []) !== 0 || $i === count($node->children) - 1) {
+                    // and skip over empty statement lists, unless they're the last in a long line of empty statement lists
                     $child_context_list[] = $child_context;
+                }
+
+                if ($block_exit_status & BlockExitStatusChecker::STATUS_PROCEED) {
+                    $previous_child_context = $child_context;
                 }
             }
         }
@@ -1105,9 +1142,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     public function visitBinaryOp(Node $node) : Context
     {
         $flags = $node->flags;
-        if ($flags === \ast\flags\BINARY_BOOL_AND) {
+        if ($flags === ast\flags\BINARY_BOOL_AND) {
             return $this->analyzeBinaryBoolAnd($node);
-        } elseif ($flags === \ast\flags\BINARY_BOOL_OR) {
+        } elseif ($flags === ast\flags\BINARY_BOOL_OR) {
             return $this->analyzeBinaryBoolOr($node);
         }
         return $this->visit($node);

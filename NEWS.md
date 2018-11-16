@@ -12,6 +12,8 @@ New features(CLI)
 + Add a prototype tool `tool/phoogle`, which can be used to search for function/method signatures in user-declared and internal functions/methods.
   E.g. to look for functions that return a string, given a string and an array:
   `/path/phan/tool/phoogle 'string -> array -> string`
++ Make Phan infer union types of variables from switch statements on variables (#1291)
+  (including literal int and string types)
 
 Plugins:
 + Add `BeforeAnalyzeCapability`, which will be executed once before starting the analysis phase. (#2086)

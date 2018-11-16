@@ -1,0 +1,5 @@
+%s:11 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is 'a' but \intdiv() takes int
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is 'b' but \intdiv() takes int
+%s:24 PhanTypeMismatchArgumentInternal Argument 1 (string) is 1|2 but \strlen() takes string
+%s:27 PhanTypeMismatchArgumentInternal Argument 1 (string) is 1|2|3 but \strlen() takes string
+%s:35 PhanTypeMismatchArgumentInternal Argument 1 (string) is bool but \strlen() takes string
