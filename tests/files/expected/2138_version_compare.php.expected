@@ -1,0 +1,3 @@
+%s:3 PhanParamTooFewInternal Call with 0 arg(s) to \version_compare() which requires 2 arg(s)
+%s:6 PhanTypeMismatchArgument Argument 1 (v) is bool but \assert_int() takes int defined at %s:10
+%s:7 PhanTypeMismatchArgument Argument 1 (v) is int but \assert_bool() takes bool defined at %s:11
