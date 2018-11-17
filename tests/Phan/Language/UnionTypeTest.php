@@ -106,8 +106,16 @@ final class UnionTypeTest extends BaseTest
         $this->assertUnionTypeStringEqual('rand(0,20)', 'int');
         $this->assertUnionTypeStringEqual('rand(0,20) + 1', 'int');
         // TODO: Perform arithmetic if in bounds
-        $this->assertUnionTypeStringEqual('42 + 2', 'int');
+        $this->assertUnionTypeStringEqual('42 + 2', '44');
+        $this->assertUnionTypeStringEqual('46 - 2', '44');
+        $this->assertUnionTypeStringEqual('PHP_INT_MAX', (string)PHP_INT_MAX);
+        $this->assertUnionTypeStringEqual('PHP_INT_MAX + PHP_INT_MAX', 'float');
+        $this->assertUnionTypeStringEqual('2 ** -9999999', 'float');
+        $this->assertUnionTypeStringEqual('2 ** 9999999', 'float');
+        $this->assertUnionTypeStringEqual('0 ** 0', '1');
         $this->assertUnionTypeStringEqual('1 << 2.3', 'int');
+        $this->assertUnionTypeStringEqual('1 | 1', '1');
+        $this->assertUnionTypeStringEqual('1 | 2', '3');
         $this->assertUnionTypeStringEqual('4 >> 1', 'int');
         $this->assertUnionTypeStringEqual('4 >> 1.2', 'int');
         $this->assertUnionTypeStringEqual('1 << rand(0,20)', 'int');

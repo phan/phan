@@ -27,7 +27,6 @@ use Phan\Language\Element\PassByReferenceVariable;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
-use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
@@ -2740,26 +2739,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         if ($variable) {
-            $reference_parameter_type = $parameter->getNonVariadicUnionType();
             switch ($parameter->getReferenceType()) {
                 case Parameter::REFERENCE_WRITE_ONLY:
-                    static $preg_match_fqsen = null;
-                    if ($preg_match_fqsen === null) {
-                        $preg_match_fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString('preg_match');
-                    }
-                    // TODO: Make this configurable with a plugin
-                    if ($method->getFQSEN() === $preg_match_fqsen) {
-                        $variable->setUnionType(
-                            RegexAnalyzer::getPregMatchUnionType($code_base, $context, $argument_list)
-                        );
-                    } else {
-                        // The previous value is being ignored, and being replaced.
-                        $variable->setUnionType(
-                            $reference_parameter_type
-                        );
-                    }
+                    $this->analyzeWriteOnlyReference($code_base, $context, $method, $variable, $argument_list, $parameter);
                     break;
                 case Parameter::REFERENCE_READ_WRITE:
+                    $reference_parameter_type = $parameter->getNonVariadicUnionType();
                     $variable_type = $variable->getUnionType();
                     if ($variable_type->isEmpty()) {
                         // if Phan doesn't know the variable type,
@@ -2782,6 +2767,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     break;
                 case Parameter::REFERENCE_DEFAULT:
                 default:
+                    $reference_parameter_type = $parameter->getNonVariadicUnionType();
                     // We have no idea what type of reference this is.
                     // Probably user defined code.
                     $variable->setUnionType($variable->getUnionType()->withUnionType(
@@ -2789,6 +2775,38 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     ));
                     break;
             }
+        }
+    }
+
+    /**
+     * @param Property|Variable $variable
+     */
+    private function analyzeWriteOnlyReference(
+        CodeBase $code_base,
+        Context $context,
+        FunctionInterface $method,
+        $variable,
+        array $argument_list,
+        Parameter $parameter
+    ) {
+        switch ($method->getFQSEN()->__toString()) {
+            case '\preg_match':
+                $variable->setUnionType(
+                    RegexAnalyzer::getPregMatchUnionType($code_base, $context, $argument_list)
+                );
+                return;
+            case '\preg_match_all':
+                $variable->setUnionType(
+                    RegexAnalyzer::getPregMatchAllUnionType($code_base, $context, $argument_list)
+                );
+                return;
+            default:
+                $reference_parameter_type = $parameter->getNonVariadicUnionType();
+
+                // The previous value is being ignored, and being replaced.
+                $variable->setUnionType(
+                    $reference_parameter_type
+                );
         }
     }
 

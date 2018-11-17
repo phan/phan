@@ -199,6 +199,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
         };
 
         /**
+         * @param array<int,Node|int|string|float> $args
          * @return void
          */
         $preg_pattern_or_array_callback = function (
@@ -216,6 +217,10 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
             }
         };
 
+        /**
+         * @param array<int,Node|int|string|float> $args
+         * @return void
+         */
         $preg_pattern_and_replacement_callback = function (
             CodeBase $code_base,
             Context $context,

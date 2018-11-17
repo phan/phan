@@ -530,9 +530,9 @@ class Type
             'PHP_OS_FAMILY'         => $string,
             'PHP_SAPI'              => $string,
             'PHP_EOL'               => $string,
-            'PHP_INT_MAX'           => $int,
-            'PHP_INT_MIN'           => $int,  // since 7.0.0
-            'PHP_INT_SIZE'          => $int,  // since 7.0.0
+            'PHP_INT_MAX'           => Type::fromObject(\PHP_INT_MAX),
+            'PHP_INT_MIN'           => Type::fromObject(\PHP_INT_MIN),  // since 7.0.0
+            'PHP_INT_SIZE'          => Type::fromObject(\PHP_INT_SIZE),  // since 7.0.0
             //'PHP_FLOAT_DIG'         => $int,  // since 7.2.0
             //'PHP_FLOAT_EPSILON'     => $float,  // since 7.2.0
             //'PHP_FLOAT_MIN'         => $int, // since 7.2.0
@@ -602,11 +602,11 @@ class Type
 
     /**
      * @param mixed $object
-     * @return Type
+     * @return NativeType
      * Get a type for the given object
      * @throws AssertionError if the type was unexpected
      */
-    public static function fromObject($object) : Type
+    public static function fromObject($object) : NativeType
     {
         switch (\gettype($object)) {
             case 'integer':

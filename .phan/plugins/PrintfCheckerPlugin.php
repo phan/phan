@@ -219,6 +219,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         };
         /**
          * Analyzes a printf-like function with a format directive in the first position.
+         * @param array<int,Node|int|string|float> $args
          * @return void
          */
         $vprintf_callback = function (
@@ -289,7 +290,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      * @param Context $context
      * @param FunctionInterface $function
      * @param Node|array|string|float|int|bool|null $pattern_node
-     * @param Node[]|string[]|int[]|float[] $arg_nodes arguments following the format string. Null if the arguments could not be determined.
+     * @param ?(Node|string|int|float)[] $arg_nodes arguments following the format string. Null if the arguments could not be determined.
      * @return void
      * @suppress PhanPartialTypeMismatchArgument TODO: refactor into smaller functions
      */
@@ -661,7 +662,7 @@ class ConversionSpec
 
     /**
      * Create a conversion specifier from a match.
-     * @param array $match groups in a match.
+     * @param array{0:string,1:string,2:string,3:string,4:string,5:string,6:string} $match groups in a match.
      */
     protected function __construct(array $match)
     {

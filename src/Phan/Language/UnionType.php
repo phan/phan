@@ -985,6 +985,15 @@ class UnionType implements Serializable
     }
 
     /**
+     * Analogous to Type->withIsNullable()
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function withIsNullable(bool $is_nullable) : UnionType
+    {
+        return $is_nullable ? $this->nullableClone() : $this->nonNullableClone();
+    }
+
+    /**
      * @return bool - True if type set is not empty and at least one type is NullType or nullable or FalseType or BoolType.
      * (I.e. the type is always falsey, or both sometimes falsey with a non-falsey type it can be narrowed down to)
      * This does not include values such as `IntType`, since there is currently no `NonZeroIntType`.
@@ -2310,6 +2319,29 @@ class UnionType implements Serializable
             return \count($parts) === 1 ? \reset($parts)->asUnionType() : self::$empty_instance;
         }
         return new UnionType($parts);
+    }
+
+    /**
+     * @param Closure(UnionType):UnionType $closure
+     */
+    public function withMappedElementTypes(Closure $closure) : UnionType
+    {
+        return $this->asMappedUnionType(function (Type $type) use ($closure) : Type {
+            if ($type instanceof ArrayShapeType) {
+                $field_types = array_map($closure, $type->getFieldTypes());
+                $result = ArrayShapeType::fromFieldTypes($field_types, $type->getIsNullable());
+                return $result;
+            } elseif ($type instanceof GenericArrayType) {
+                $element_types = $closure($type->genericArrayElementType()->asUnionType());
+                if ($element_types->typeCount() !== 1) {
+                    $element_type = MixedType::instance(false);
+                } else {
+                    $element_type = $element_types->getTypeSet()[0];
+                }
+                return GenericArrayType::fromElementType($element_type, $type->getIsNullable(), $type->getKeyType());
+            }
+            return ArrayType::instance(false);
+        });
     }
 
     /**

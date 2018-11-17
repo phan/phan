@@ -7,6 +7,7 @@ use Phan\AST\ContextNode;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Type\ArrayShapeType;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\UnionType;
 use Phan\Library\RegexKeyExtractor;
 
@@ -65,6 +66,31 @@ class RegexAnalyzer
             return self::makeArrayShape($regex_group_keys, $string_type);
         }
         return $string_array_type;
+    }
+
+    public static function getPregMatchAllUnionType(
+        CodeBase $code_base,
+        Context $context,
+        array $argument_list
+    ) : UnionType {
+        if (\count($argument_list) > 3) {
+            $offset_flags_node = $argument_list[3];
+            $bit = (new ContextNode($code_base, $context, $offset_flags_node))->getEquivalentPHPScalarValue();
+        } else {
+            $bit = 0;
+        }
+
+        if (!\is_int($bit)) {
+            return UnionType::fromFullyQualifiedString('array[]');
+        }
+
+        $shape_array_type = self::getPregMatchUnionType($code_base, $context, $argument_list);
+        if ($bit & \PREG_SET_ORDER) {
+            return $shape_array_type->asGenericArrayTypes(GenericArrayType::KEY_INT);
+        }
+        return $shape_array_type->withMappedElementTypes(function (UnionType $type) : UnionType {
+            return $type->elementTypesToGenericArray(GenericArrayType::KEY_INT);
+        });
     }
 
     /**

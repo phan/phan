@@ -1,0 +1,5 @@
+%s:6 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{0:string} but \strlen() takes string
+%s:9 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{0:array<int,string>} but \strlen() takes string
+%s:12 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{0:array{0:string,1:int},1:array{0:string,1:int}} but \strlen() takes string
+%s:15 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{0:array<int,array{0:string,1:int}>,1:array<int,array{0:string,1:int}>} but \strlen() takes string
+%s:18 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,array{0:array{0:string,1:int},1:array{0:string,1:int}}> but \strlen() takes string
