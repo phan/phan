@@ -14,6 +14,10 @@ New features(CLI)
   `/path/phan/tool/phoogle 'string -> array -> string`
 + Make Phan infer union types of variables from switch statements on variables (#1291)
   (including literal int and string types)
++ Analyze simple assertions on `get_class($var)` (#1977)
+  e.g.  `assert(get_class($x) === 'someClass')`
+  or `if (get_class($x) === someClass::class)`.
+  Note that `switch(get_class($var))` is not supported yet.
 
 Plugins:
 + Add `BeforeAnalyzeCapability`, which will be executed once before starting the analysis phase. (#2086)

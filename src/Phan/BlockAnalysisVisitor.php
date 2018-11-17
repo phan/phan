@@ -810,6 +810,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             if ($cond_node !== null) {
                 if ($switch_variable) {
                     // Add the variable type from the above case statements, if it was possible for it to fall through
+                    // TODO: Also support switch(get_class($variable))
                     $visitor = new ConditionVisitor($this->code_base, $child_context);
                     $child_context = $visitor->updateVariableToBeIdentical($switch_case_node, $cond_node, $child_context);
                     if ($previous_child_context !== null) {
