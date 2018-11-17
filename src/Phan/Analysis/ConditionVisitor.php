@@ -33,7 +33,7 @@ use ReflectionMethod;
  *
  * @phan-file-suppress PhanUnusedClosureParameter
  */
-class ConditionVisitor extends KindVisitorImplementation
+class ConditionVisitor extends KindVisitorImplementation implements ConditionVisitorInterface
 {
     use ConditionVisitorUtil;
 

@@ -1780,6 +1780,22 @@ An example would be
 if (42 == [1, 2]) {}
 ```
 
+## PhanTypeComparisonToInvalidClass
+
+```
+Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN {STRING_LITERAL}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0568_get_class_assert.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0568_get_class_assert.php#L21).
+
+## PhanTypeComparisonToInvalidClassType
+
+```
+Saw code asserting that an expression has a class, but saw an invalid/impossible union type {TYPE} (expected {TYPE})
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0568_get_class_assert.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0568_get_class_assert.php#L6).
+
 ## PhanTypeConversionFromArray
 
 ```

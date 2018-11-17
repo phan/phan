@@ -1,9 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\FQSEN;
 
+use InvalidArgumentException;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Memoize;
+
+use function preg_match;
 
 /**
  * A Fully-Qualified Class Name
@@ -42,6 +45,35 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
         return self::fromFullyQualifiedString(
             $type->asFQSENString()
         );
+    }
+
+    const valid_class_regex = '/^\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*$/';
+
+    /**
+     * Asserts that something is a valid class FQSEN in PHPDoc.
+     * Use this for FQSENs passed in from the analyzed code.
+     */
+    public static function isValidClassFQSEN(string $type) : bool
+    {
+        return preg_match(self::valid_class_regex, $type) > 0;
+    }
+
+    /**
+     * Parses a FQSEN from a string
+     *
+     * @param $fully_qualified_string
+     * An fully qualified string like '\Namespace\Class'
+     *
+     * @return static
+     *
+     * @throws InvalidArgumentException on failure.
+     */
+    public static function fromFullyQualifiedUserProvidedString(string $fully_qualified_string) : FullyQualifiedClassName
+    {
+        if (!self::isValidClassFQSEN($fully_qualified_string)) {
+            throw new InvalidArgumentException("Invalid class FQSEN '$fully_qualified_string'");
+        }
+        return self::fromFullyQualifiedString($fully_qualified_string);
     }
 
     /**

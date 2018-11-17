@@ -171,6 +171,8 @@ class Issue
     const TypeInvalidTraitReturn          = 'PhanTypeInvalidTraitReturn';
     const TypeInvalidTraitParam           = 'PhanTypeInvalidTraitParam';
     const InfiniteRecursion               = 'PhanInfiniteRecursion';
+    const TypeComparisonToInvalidClass    = 'PhanTypeComparisonToInvalidClass';
+    const TypeComparisonToInvalidClassType = 'PhanTypeComparisonToInvalidClassType';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -1779,6 +1781,22 @@ class Issue
                 'Saw type {TYPE} which is possibly not a callable',
                 self::REMEDIATION_B,
                 10096
+            ),
+            new Issue(
+                self::TypeComparisonToInvalidClass,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN {STRING_LITERAL}',
+                self::REMEDIATION_B,
+                10097
+            ),
+            new Issue(
+                self::TypeComparisonToInvalidClassType,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Saw code asserting that an expression has a class, but saw an invalid/impossible union type {TYPE} (expected {TYPE})',
+                self::REMEDIATION_B,
+                10098
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
