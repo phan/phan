@@ -182,7 +182,7 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
     const SUPPRESS_ISSUE_REGEX = '/@phan-(suppress-(next|current)-line|file-suppress)\s+(' . Comment::WORD_REGEX . '(,\s*' . Comment::WORD_REGEX . ')*)/';
 
     /**
-     * @return Generator<array{0:string,1:int,2:int,3:string,4:int}>
+     * @return Generator<array{0:string,1:int,2:int,3:string,4:string}>
      * yields [$comment_text, $comment_start_line, $comment_start_offset, $comment_name, $kind_list_text];
      */
     private function yieldSuppressionComments(
@@ -219,8 +219,6 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
                 $comment_name = $matches[1][$i][0];
                 $kind_list_text = $matches[3][$i][0];  // byte offset
 
-                // TODO: Fix inferences about preg_match_all
-                '@phan-var int $comment_start_offset';
                 yield [$comment_text, $comment_start_line, $comment_start_offset, $comment_name, $kind_list_text];
             }
         }

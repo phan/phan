@@ -12,13 +12,6 @@ New features(CLI)
 + Add a prototype tool `tool/phoogle`, which can be used to search for function/method signatures in user-declared and internal functions/methods.
   E.g. to look for functions that return a string, given a string and an array:
   `/path/phan/tool/phoogle 'string -> array -> string`
-+ Make Phan infer union types of variables from switch statements on variables (#1291)
-  (including literal int and string types)
-+ Analyze simple assertions on `get_class($var)` of various forms (#1977)
-  Examples:
-  - `assert(get_class($x) === 'someClass')`
-  - `if (get_class($x) === someClass::class)`
-  - `switch (get_class($x)) {case someClass::class: ...}`
 
 Plugins:
 + Add `BeforeAnalyzeCapability`, which will be executed once before starting the analysis phase. (#2086)
@@ -26,6 +19,15 @@ Plugins:
 New features(Analysis):
 + Add a heuristic check to detect potential infinite recursion in a functionlike calling itself (i.e. stack overflows)
   New issue types: `PhanInfiniteRecursion`
++ Infer literal integer values from expressions such as `2 | 1`, `2 + 2`, etc.
++ Infer more accurate array shapes for `preg_match_all` (based on existing inferences for `preg_match`)
++ Make Phan infer union types of variables from switch statements on variables (#1291)
+  (including literal int and string types)
++ Analyze simple assertions on `get_class($var)` of various forms (#1977)
+  Examples:
+  - `assert(get_class($x) === 'someClass')`
+  - `if (get_class($x) === someClass::class)`
+  - `switch (get_class($x)) {case someClass::class: ...}`
 
 Bug fixes:
 + Fix false positives analyzing `define()` (#2128)

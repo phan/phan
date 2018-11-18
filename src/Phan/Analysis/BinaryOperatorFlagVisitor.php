@@ -2,6 +2,7 @@
 namespace Phan\Analysis;
 
 use AssertionError;
+use ast;
 use ast\Node;
 use Closure;
 use Phan\AST\UnionTypeVisitor;
@@ -16,9 +17,12 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
+
+use function is_int;
 
 /**
  * This implements Phan's analysis of the type of binary operators (Node->kind=ast\AST_BINARY_OP).
@@ -199,7 +203,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     }
 
     /**
-     * Code can bitwise xor strings byte by byte in PHP
+     * Code can bitwise xor strings byte by byte (or integers by value) in PHP
      * @override
      */
     public function visitBinaryBitwiseXor(Node $node) : UnionType
@@ -252,7 +256,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         }
         if ($left->hasNonNullIntType()) {
             if ($right->hasNonNullIntType()) {
-                return IntType::instance(false)->asUnionType();
+                return $this->computeIntegerOperationResult($node, $left, $right);
             }
             if ($right->hasNonNullStringType()) {
                 $this->emitIssue(
@@ -285,6 +289,45 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $left,
                 $right
             );
+        }
+
+        return IntType::instance(false)->asUnionType();
+    }
+
+    private function computeIntegerOperationResult(
+        Node $node,
+        UnionType $left,
+        UnionType $right
+    ) : UnionType {
+        $left_value = $left->asSingleScalarValueOrNull();
+        if (is_int($left_value)) {
+            $right_value = $right->asSingleScalarValueOrNull();
+            if (is_int($right_value)) {
+                switch ($node->flags) {
+                    case ast\flags\BINARY_BITWISE_OR:
+                        return LiteralIntType::instanceForValue($left_value | $right_value, false)->asUnionType();
+                    case ast\flags\BINARY_BITWISE_AND:
+                        return LiteralIntType::instanceForValue($left_value & $right_value, false)->asUnionType();
+                    case ast\flags\BINARY_BITWISE_XOR:
+                        return LiteralIntType::instanceForValue($left_value ^ $right_value, false)->asUnionType();
+                    case ast\flags\BINARY_MUL:
+                        $value = $left_value * $right_value;
+                        return is_int($value) ? LiteralIntType::instanceForValue($value, false)->asUnionType()
+                                              : FloatType::instance(false)->asUnionType();
+                    case ast\flags\BINARY_SUB:
+                        $value = $left_value - $right_value;
+                        return is_int($value) ? LiteralIntType::instanceForValue($value, false)->asUnionType()
+                                              : FloatType::instance(false)->asUnionType();
+                    case ast\flags\BINARY_ADD:
+                        $value = $left_value + $right_value;
+                        return is_int($value) ? LiteralIntType::instanceForValue($value, false)->asUnionType()
+                                              : FloatType::instance(false)->asUnionType();
+                    case ast\flags\BINARY_POW:
+                        $value = $left_value ** $right_value;
+                        return is_int($value) ? LiteralIntType::instanceForValue($value, false)->asUnionType()
+                                              : FloatType::instance(false)->asUnionType();
+                }
+            }
         }
 
         return IntType::instance(false)->asUnionType();
@@ -605,7 +648,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
         // fast-track common cases
         if ($left->isNonNullIntType() && $right->isNonNullIntType()) {
-            return IntType::instance(false)->asUnionType();
+            return $this->computeIntegerOperationResult($node, $left, $right);
         }
 
         // If both left and right union types are arrays, then this is array
@@ -721,7 +764,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 
         // fast-track common cases
         if ($left->isNonNullIntType() && $right->isNonNullIntType()) {
-            return IntType::instance(false)->asUnionType();
+            return $this->computeIntegerOperationResult($node, $left, $right);
         }
 
         $this->warnAboutInvalidUnionType(

@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
+use Closure;
 use Generator;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
@@ -306,6 +307,12 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
+    /** @override */
+    public function withIsNullable(bool $is_nullable) : UnionType
+    {
+        return $this;
+    }
+
     /**
      * @return bool - True if type set is not empty and at least one type is NullType or nullable or FalseType or BoolType.
      * (I.e. the type is always falsey, or both sometimes falsey with a non-falsey type it can be narrowed down to)
@@ -551,7 +558,7 @@ final class EmptyUnionType extends UnionType
      * A memory efficient way to create a UnionType from a filter operation.
      * If this the filter preserves everything, returns $this instead
      */
-    public function makeFromFilter(\Closure $cb) : UnionType
+    public function makeFromFilter(Closure $cb) : UnionType
     {
         return $this;  // filtering empty results in empty
     }
@@ -811,7 +818,7 @@ final class EmptyUnionType extends UnionType
      * @return bool
      * True if any of the types in this UnionType made $matcher_callback return true
      */
-    public function hasTypeMatchingCallback(\Closure $matcher_callback) : bool
+    public function hasTypeMatchingCallback(Closure $matcher_callback) : bool
     {
         return false;
     }
@@ -820,7 +827,7 @@ final class EmptyUnionType extends UnionType
      * @return Type|false
      * Returns the first type in this UnionType made $matcher_callback return true
      */
-    public function findTypeMatchingCallback(\Closure $matcher_callback)
+    public function findTypeMatchingCallback(Closure $matcher_callback)
     {
         return false;  // empty, no types
     }
@@ -851,16 +858,26 @@ final class EmptyUnionType extends UnionType
     }
 
     /**
-     * @param \Closure $closure
+     * @param Closure(Type):Type $closure
      * A closure mapping `Type` to `Type`
      *
      * @return UnionType
      * A new UnionType with each type mapped through the
      * given closure
+     * @override
      */
-    public function asMappedUnionType(\Closure $closure) : UnionType
+    public function asMappedUnionType(Closure $closure) : UnionType
     {
         return $this;  // empty
+    }
+
+    /**
+     * @param Closure(UnionType):UnionType $closure
+     * @override
+     */
+    public function withMappedElementTypes(Closure $closure) : UnionType
+    {
+        return $this;
     }
 
     /**
