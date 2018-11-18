@@ -1786,6 +1786,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $this->context,
                 $node
             ))->getProperty($is_static);
+            $union_type = $property->getUnionType()->withStaticResolvedInContext($property->getContext());
 
             if ($property->isWriteOnly()) {
                 $this->emitIssue(
@@ -1798,7 +1799,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
 
             // Map template types to concrete types
-            if ($property->getUnionType()->hasTemplateType()) {
+            if ($union_type->hasTemplateType()) {
                 // Get the type of the object calling the property
                 $expression_type = UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
@@ -1806,14 +1807,14 @@ class UnionTypeVisitor extends AnalysisVisitor
                     $node->children['expr']
                 );
 
-                $union_type = $property->getUnionType()->withTemplateParameterTypeMap(
+                $union_type = $union_type->withTemplateParameterTypeMap(
                     $expression_type->getTemplateParameterTypeMap($this->code_base)
                 );
 
                 return $union_type;
             }
 
-            return $property->getUnionType();
+            return $union_type;
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance(
                 $this->code_base,

@@ -7,8 +7,6 @@ New features(CLI)
 + Warn when calling method on union types that are definitely partially invalid. (#1885)
   New config setting: `--strict-method-checking` (enabled as part of `--strict-type-checking`)
   New issue type: `PhanPossiblyNonClassMethodCall`
-+ Warn about invalid/possibly invalid callables in function calls.
-  New issue types: `PhanTypeInvalidCallable`, `PhanTypePossiblyInvalidCallable` (the latter check requires `--strict-method-checking`)
 + Add a prototype tool `tool/phoogle`, which can be used to search for function/method signatures in user-declared and internal functions/methods.
   E.g. to look for functions that return a string, given a string and an array:
   `/path/phan/tool/phoogle 'string -> array -> string`
@@ -28,9 +26,13 @@ New features(Analysis):
   - `assert(get_class($x) === 'someClass')`
   - `if (get_class($x) === someClass::class)`
   - `switch (get_class($x)) {case someClass::class: ...}`
++ Warn about invalid/possibly invalid callables in function calls.
+  New issue types: `PhanTypeInvalidCallable`, `PhanTypePossiblyInvalidCallable` (the latter check requires `--strict-method-checking`)
 
 Bug fixes:
 + Fix false positives analyzing `define()` (#2128)
++ Support declaring instance properties as the union type `static` (#2145)
+  New issue types: `PhanStaticPropIsStaticType`
 
 05 Nov 2018, Phan 1.1.2
 -----------------------

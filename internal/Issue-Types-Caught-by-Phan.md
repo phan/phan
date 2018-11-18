@@ -1536,6 +1536,14 @@ class C19 { function f() {} }
 C19::f();
 ```
 
+## PhanStaticPropIsStaticType
+
+```
+Static property {PROPERTY} is declared to have type {TYPE}, but the only instance is shared among all subclasses (Did you mean {TYPE})
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0571_static_type_prop.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0571_static_type_prop.php#L14).
+
 # TypeError
 
 This category of issue come from using incorrect types or types that cannot cast to the expected types.

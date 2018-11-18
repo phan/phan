@@ -4,6 +4,7 @@ namespace Phan\Language\Element;
 use Closure;
 use Phan\Exception\IssueException;
 use Phan\Language\Context;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\PropertyScope;
 use Phan\Language\UnionType;
@@ -319,6 +320,26 @@ class Property extends ClassElement
         );
     }
 
+    /**
+     * @param bool $has_static
+     * @return void
+     */
+    public function setHasStaticInUnionType(bool $has_static)
+    {
+        $this->setPhanFlags(
+            Flags::bitVectorWithState(
+                $this->getPhanFlags(),
+                Flags::HAS_STATIC_UNION_TYPE,
+                $has_static
+            )
+        );
+    }
+
+    public function getHasStaticInUnionType() : bool
+    {
+        return $this->getPhanFlagsHasState(Flags::HAS_STATIC_UNION_TYPE);
+    }
+
     public function isDynamicProperty() : bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_DYNAMIC_PROPERTY);
@@ -346,5 +367,24 @@ class Property extends ClassElement
                 $is_dynamic
             )
         );
+    }
+
+    /**
+     * @return void
+     */
+    public function inheritStaticUnionType(FullyQualifiedClassName $old, FullyQualifiedClassName $new)
+    {
+        $union_type = $this->getUnionType();
+        foreach ($union_type->getTypeSet() as $type) {
+            if (!$type->isObjectWithKnownFQSEN()) {
+                continue;
+            }
+            if (FullyQualifiedClassName::fromType($type) === $old) {
+                $union_type = $union_type
+                    ->withoutType($type)
+                    ->withType($new->asType()->withIsNullable($type->getIsNullable()));
+            }
+        }
+        $this->setUnionType($union_type);
     }
 }
