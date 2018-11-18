@@ -14413,7 +14413,7 @@ return [
 'VarnishLog::getTagName' => ['string', 'index'=>'int'],
 'VarnishStat::__construct' => ['void', 'args='=>'array'],
 'VarnishStat::getSnapshot' => ['array'],
-'version_compare' => ['int|?bool', 'ver1'=>'string', 'ver2'=>'string', 'oper='=>'string'],
+'version_compare' => ['int|bool', 'ver1'=>'string', 'ver2'=>'string', 'oper='=>'string'],
 'vfprintf' => ['int', 'stream'=>'resource', 'format'=>'string', 'args'=>'array'],
 'virtual' => ['bool', 'uri'=>'string'],
 'vpopmail_add_alias_domain' => ['bool', 'domain'=>'string', 'aliasdomain'=>'string'],
