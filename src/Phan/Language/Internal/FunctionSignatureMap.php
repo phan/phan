@@ -69,6 +69,9 @@ namespace Phan\Language\Internal;
  * 4. PHPStorm stubs (For anything missing from the above sources)
  *    See internal/internalsignatures.php
  * @phan-file-suppress PhanPluginMixedKeyNoKey (read by Phan when analyzing this file)
+ *
+ * Note: Some of Phan's inferences about return types are written as plugins for functions/methods where the return type depends on the parameter types.
+ * E.g. src/Phan/Plugin/Internal/DependentReturnTypeOverridePlugin.php is one plugin
  */
 return [
 '_' => ['string', 'message'=>'string'],
@@ -14410,8 +14413,7 @@ return [
 'VarnishLog::getTagName' => ['string', 'index'=>'int'],
 'VarnishStat::__construct' => ['void', 'args='=>'array'],
 'VarnishStat::getSnapshot' => ['array'],
-'version_compare' => ['int', 'version1'=>'string', 'version2'=>'string'],
-'version_compare\'1' => ['bool', 'version1'=>'string', 'version2'=>'string', 'operator'=>'string'],
+'version_compare' => ['int|?bool', 'ver1'=>'string', 'ver2'=>'string', 'oper='=>'string'],
 'vfprintf' => ['int', 'stream'=>'resource', 'format'=>'string', 'args'=>'array'],
 'virtual' => ['bool', 'uri'=>'string'],
 'vpopmail_add_alias_domain' => ['bool', 'domain'=>'string', 'aliasdomain'=>'string'],
