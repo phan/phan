@@ -4,6 +4,7 @@ namespace Phan;
 use AssertionError;
 use InvalidArgumentException;
 use Phan\Config\Initializer;
+use Phan\Library\StringUtil;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\Filter\CategoryIssueFilter;
 use Phan\Output\Filter\ChainedIssueFilter;
@@ -1231,9 +1232,10 @@ EOB;
     {
 
         // If the file doesn't exist here, try a directory up
+        $config_file_name = $this->config_file;
         $config_file_name =
-            $this->config_file
-            ? realpath($this->config_file)
+            $config_file_name
+            ? realpath($config_file_name)
             : implode(DIRECTORY_SEPARATOR, [
                 Config::getProjectRootDirectory(),
                 '.phan',
@@ -1248,7 +1250,7 @@ EOB;
                 if ($config_file_name !== false) {
                     $this->usage("Could not find a config file at '$config_file_name', but --require-config-exists was set", EXIT_FAILURE, true);
                 } else {
-                    $this->usage(sprintf("Could not figure out the path for config file '%s', but --require-config-exists was set", $this->config_file), EXIT_FAILURE, true);
+                    $this->usage(sprintf("Could not figure out the path for config file %s, but --require-config-exists was set", StringUtil::encodeValue($this->config_file)), EXIT_FAILURE, true);
                 }
             }
             return;

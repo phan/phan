@@ -323,6 +323,9 @@ EOT;
         return (string)$scalar;
     }
 
+    /**
+     * @param string[] $arguments the return type and parameter signatures
+     */
     public static function encodeSingleSignature(string $function_like_name, array $arguments) : string
     {
         $result = static::encodeScalar($function_like_name) . ' => [';
@@ -424,6 +427,9 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         return $this->files_for_function_name_list;
     }
 
+    /**
+     * @return array<string,string>
+     */
     private function scandirForXML(string $dir) : array
     {
         $result = [];
@@ -987,7 +993,10 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         });
     }
 
-    // Same as scandir, but ignores hidden files
+    /**
+     * Same as scandir, but ignores hidden files
+     * @return array<int,string>
+     */
     private static function scandir(string $directory) : array
     {
         $result = [];
@@ -1062,6 +1071,9 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
     /** @var bool has this initialized and parsed all of the stubs yet? */
     private $initialized = false;
 
+    /**
+     * @return array<int,string>
+     */
     private function getFileList() : array
     {
         $iterator = new \CallbackFilterIterator(
@@ -1086,6 +1098,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
             }
         );
 
+        // @phan-suppress-next-line PhanPartialTypeMismatchReturn
         return array_keys(iterator_to_array($iterator));
     }
 

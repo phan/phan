@@ -62,7 +62,7 @@ final class MethodSearcherPlugin extends PluginV2 implements
             }
             $result[] = UnionType::fromStringInContext($part, new Context(), Type::FROM_PHPDOC);
         }
-        // @phan-suppress-next-line PhanPartialTypeMismatchProperty
+        // @phan-suppress-next-line PhanPossiblyFalseTypeMismatchProperty
         self::$return_type = array_pop($result);
         self::$param_types = $result;
         echo "Searching for function/method signatures similar to: " . implode(' -> ', array_merge(self::$param_types, [self::$return_type])) . "\n";

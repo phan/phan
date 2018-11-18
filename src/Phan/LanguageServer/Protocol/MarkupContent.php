@@ -50,6 +50,10 @@ class MarkupContent
         $this->value = $value;
     }
 
+    /**
+     * Generates a MarkupContent from an unserialized data array.
+     * @param array{kind:string,value:string} $data
+     */
     public static function fromArray(array $data) : self
     {
         return new self(

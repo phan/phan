@@ -421,6 +421,8 @@ class UnionType implements Serializable
      *
      * @param FullyQualifiedMethodName|FullyQualifiedFunctionName $function_fqsen
      *
+     * @return array<int,array{return_type:?UnionType,parameter_name_type_map:array<string,UnionType>}>
+     *
      * @see internal_varargs_check
      * Formerly `function internal_varargs_check`
      */
@@ -2816,6 +2818,11 @@ class UnionType implements Serializable
         $result = new UnionTypeBuilder();
         foreach ($this->type_set as $type) {
             if ($type->hasArrayShapeTypeInstances()) {
+                if ($type instanceof ArrayShapeType && $type->isEmptyArrayShape()) {
+                    if (\count($this->type_set) > 1) {
+                        continue;
+                    }
+                }
                 foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
                     $result->addType($type_part);
                 }
@@ -2839,6 +2846,11 @@ class UnionType implements Serializable
         $result = new UnionTypeBuilder();
         foreach ($this->type_set as $type) {
             if ($type->hasArrayShapeOrLiteralTypeInstances()) {
+                if ($type instanceof ArrayShapeType && \count($type->getFieldTypes()) === 0) {
+                    if (count($this->type_set) > 1) {
+                        continue;
+                    }
+                }
                 foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
                     $result->addType($type_part);
                 }

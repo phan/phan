@@ -19,7 +19,7 @@ use Phan\Tests\BaseTest;
 final class ContextTest extends BaseTest
 {
 
-    /** @var CodeBase|null The code base within which this unit test is running */
+    /** @var CodeBase The code base within which this unit test is running */
     protected $code_base = null;
 
     protected function setUp()
@@ -31,6 +31,7 @@ final class ContextTest extends BaseTest
     protected function tearDown()
     {
         // Deliberately not calling parent::tearDown()
+        // @phan-suppress-next-line PhanTypeMismatchProperty
         $this->code_base = null;
     }
 

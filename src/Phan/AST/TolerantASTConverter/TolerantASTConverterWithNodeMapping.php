@@ -421,7 +421,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
     protected static function phpParserTypeToAstNode($type, int $line)
     {
         $ast_node = parent::phpParserTypeToAstNode($type, $line);
-        if ($type === self::$closest_node_or_token) {
+        if ($type === self::$closest_node_or_token && $type !== null) {
             self::markNodeAsSelected($type, $ast_node);
         }
         return $ast_node;

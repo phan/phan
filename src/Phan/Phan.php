@@ -57,7 +57,7 @@ class Phan implements IgnoredFilesFilterInterface
      * Take an array of serialized issues, unserialize them and then add
      * them to the issue collector.
      *
-     * @param array[] $results
+     * @param IssueInstance[][] $results
      */
     private static function collectSerializedResults(array $results)
     {

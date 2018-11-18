@@ -42,6 +42,10 @@ class Location
         return new self($uri, $range);
     }
 
+    /**
+     * Creates a Location from the unserialized data
+     * @param array{uri:string,range:array} $data
+     */
     public static function fromArray(array $data) : Location
     {
         return new self($data['uri'], Range::fromArray($data['range']));

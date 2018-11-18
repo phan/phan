@@ -51,6 +51,10 @@ class Range
         return new Range(new Position($lineno - 1, 0), new Position($lineno, 0));
     }
 
+    /**
+     * Create a range from a serialized array
+     * @param array{start:array,end:array} $data
+     */
     public static function fromArray(array $data) : Range
     {
         return new self(

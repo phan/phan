@@ -26,6 +26,11 @@ class Hover
         $this->range = $range;
     }
 
+    /**
+     * Creates a Hover object from a serialized array
+     *
+     * @param array{contents:array,range?:array} $data
+     */
     public static function fromArray(array $data) : self
     {
         return new self(

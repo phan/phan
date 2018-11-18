@@ -1461,6 +1461,7 @@ class CodeBase
         static $constant_name_list = null;
         if ($constant_name_list === null) {
             // 'true', 'false', and 'null' aren't actually defined constants, they're keywords? Add them so that analysis won't break.
+            // @phan-suppress-next-line PhanPossiblyNullTypeArgumentInternal
             $constant_name_list = \array_keys(\array_merge(['true' => true, 'false' => false, 'null' => null], ...\array_values(
                 \array_diff_key(\get_defined_constants(true), ['user' => []])
             )));
@@ -1596,13 +1597,14 @@ class CodeBase
     /**
      * This limits the suggested class names from getClassNamesOfNamespace for $namespace_lower to
      * the names which are similar enough in length to be a potential suggestion
+     * @return array<string,string>
      */
     private function getSimilarLengthClassNamesForNamespace(string $namespace, int $strlen) : array
     {
         $namespace = \strtolower($namespace);
         $class_names = $this->getClassNamesOfNamespace($namespace);
         if (count($class_names) === 0) {
-            return $class_names;
+            return [];
         }
         return $this->class_names_near_strlen_in_namespace[$namespace][$strlen]
             ?? ($this->class_names_near_strlen_in_namespace[$namespace][$strlen] = $this->computeSimilarLengthClassNamesForNamespace($class_names, $strlen));

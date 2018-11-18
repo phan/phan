@@ -248,12 +248,14 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         pcntl_signal(
             SIGCHLD,
             /**
-             * @param mixed ...$args
+             * @param int $signo
+             * @param int|null $status
+             * @param int|null $pid
              * @return void
              */
-            function (...$args) use (&$got_signal) {
+            function ($signo, $status = null, $pid = null) use (&$got_signal) {
                 $got_signal = true;
-                Request::childSignalHandler(...$args);
+                Request::childSignalHandler($signo, $status, $pid);
             }
         );
 
@@ -700,7 +702,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
     /**
      * @param array<string,string> $uris_to_analyze
-     * @param array{issues:array,definitions?:?Location|?(Location[]),completions?:?(CompletionItem[]),hover_response?:Hover} $response_data
+     * @param array{issues:array[],definitions?:?Location|?(Location[]),completions?:?(CompletionItem[]),hover_response?:Hover} $response_data
      * @return void
      * @see Request->respondWithIssues() for where $response_data is serialized
      */
@@ -709,6 +711,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $most_recent_node_info_request = $this->most_recent_node_info_request;
         if ($most_recent_node_info_request) {
             if ($most_recent_node_info_request instanceof GoToDefinitionRequest) {
+                // @phan-suppress-next-line PhanPossiblyNullTypeArgument
                 $most_recent_node_info_request->recordDefinitionLocationList($response_data['definitions'] ?? null);
                 $most_recent_node_info_request->setHoverResponse($response_data['hover_response'] ?? null);
             } elseif ($most_recent_node_info_request instanceof CompletionRequest) {
@@ -748,7 +751,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     }
 
     /**
-     * @param array $issue
+     * @param array{type:string,description:string,suggestion?:string,severity:int,location:array{path:string,lines:array{begin:int,end:int}}} $issue
      * @return null[]|string[]|Diagnostic[] - On success, returns [string $uri, Diagnostic $diagnostic]
      */
     private static function generateDiagnostic($issue) : array

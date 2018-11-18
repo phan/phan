@@ -128,6 +128,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             return $array_type->asUnionType();
         };
 
+        /**
+         * @param array<int,Node|int|string|float> $args
+         */
         $array_filter_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) >= 1) {
                 $passed_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
@@ -166,6 +169,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             return $array_type->asUnionType();
         };
 
+        /**
+         * @param array<int,Node|int|string|float> $args
+         */
         $array_reduce_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type) : UnionType {
             if (\count($args) < 2) {
                 return $mixed_type->asUnionType();
@@ -185,6 +191,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             return $function_return_types;
         };
 
+        /**
+         * @param array<int,Node|int|string|float> $args
+         */
         $merge_array_types_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             $types = UnionType::empty();
             foreach ($args as $arg) {
@@ -197,6 +206,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             return $types;
         };
 
+        /**
+         * @param array<int,Node|int|string|float> $args
+         */
         $array_map_callback = static function (
             CodeBase $code_base,
             Context $context,
@@ -291,6 +303,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $result_types;
         };
+        /**
+         * @param array<int,Node|int|string|float> $args
+         */
         $array_keys_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type, $int_type, $string_type) : UnionType {
             if (\count($args) != 1) {
                 return $array_type->asUnionType();
@@ -301,6 +316,20 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $key_union_type->asGenericArrayTypes(GenericArrayType::KEY_INT);
         };
+        /**
+         * @param array<int,Node|int|string|float> $args
+         */
+        $array_values_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
+            if (\count($args) != 1) {
+                return $array_type->asUnionType();
+            }
+            $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+            $element_type = $union_type->genericArrayElementTypes();
+            return $element_type->asGenericArrayTypes(GenericArrayType::KEY_INT);
+        };
+        /**
+         * @param array<int,Node|int|string|float> $args
+         */
         $each_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type, $false_type, $int_or_string) : UnionType {
             if (\count($args) >= 1) {
                 $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
@@ -361,6 +390,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             'array_replace'             => $merge_array_types_callback,
             'array_replace_recursive'   => $merge_array_types_callback,
             'array_reverse'             => $get_first_array_arg,
+            'array_slice'               => $get_first_array_arg,
             // 'array_splice' probably used more often by reference
             'array_udiff'               => $get_first_array_arg,
             'array_udiff_assoc'         => $get_first_array_arg,
@@ -369,6 +399,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             'array_uintersect_assoc'    => $get_first_array_arg,
             'array_uintersect_uassoc'   => $get_first_array_arg,
             'array_unique'              => $get_first_array_arg,
+            'array_values'              => $array_values_callback,
             // TODO: iterator_to_array
         ];
     }

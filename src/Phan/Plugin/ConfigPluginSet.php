@@ -544,6 +544,7 @@ final class ConfigPluginSet extends PluginV2 implements
         if (is_null($this->plugin_set)) {
             throw new AssertionError("Expected plugins to be loaded in " . __METHOD__);
         }
+        // @phan-suppress-next-line PhanPossiblyNullTypeArgumentInternal
         return \count($this->analyze_function_plugin_set) > 0;
     }
 
@@ -555,6 +556,7 @@ final class ConfigPluginSet extends PluginV2 implements
         if (is_null($this->plugin_set)) {
             throw new AssertionError("Expected plugins to be loaded in " . __METHOD__);
         }
+        // @phan-suppress-next-line PhanPossiblyNullTypeArgumentInternal
         return \count($this->analyze_method_plugin_set) > 0;
     }
 
@@ -706,6 +708,7 @@ final class ConfigPluginSet extends PluginV2 implements
         if (is_null($this->plugin_set)) {
             throw new AssertionError("Expected plugins to be loaded in " . __METHOD__);
         }
+        // @phan-suppress-next-line PhanPossiblyNullTypeArgumentInternal
         return \count($this->analyze_property_plugin_set) > 0;
     }
 
@@ -1021,6 +1024,7 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
+     * @param PluginV2[] $plugin_set
      * @return ?UnusedSuppressionPlugin
      */
     private static function findUnusedSuppressionPlugin(array $plugin_set)

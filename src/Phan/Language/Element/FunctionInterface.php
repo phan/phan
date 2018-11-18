@@ -293,7 +293,7 @@ interface FunctionInterface extends AddressableElementInterface
      * Returns a union type based on $args_node and $context
      * @param CodeBase $code_base
      * @param Context $context
-     * @param array<int,Node|int|string> $args
+     * @param array<int,Node|int|string|float> $args
      */
     public function getDependentReturnType(CodeBase $code_base, Context $context, array $args) : UnionType;
 

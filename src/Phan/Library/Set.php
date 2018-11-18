@@ -11,7 +11,7 @@ class Set extends \SplObjectStorage
 {
 
     /**
-     * @param \Iterator|array $element_iterator
+     * @param iterable<object> $element_iterator
      * An optional set of items to add to the set
      */
     public function __construct($element_iterator = null)
@@ -115,6 +115,7 @@ class Set extends \SplObjectStorage
 
 
     /**
+     * @param array<object> $element_list
      * @return bool
      * True if this set contains any elements in the given list
      * @suppress PhanUnreferencedPublicMethod potentially useful but currently unused

@@ -30,7 +30,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
 {
 
     /**
-     * @param Node|int|string $arg_array_node
+     * @param Node|int|string|float|null $arg_array_node
      * @return ?array
      */
     private static function extractArrayArgs($arg_array_node)
@@ -54,6 +54,9 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
      */
     private static function getReturnTypeOverridesStatic() : array
     {
+        /**
+         * @param array<int,Node|int|string|float> $args
+         */
         $call_user_func_callback = static function (
             CodeBase $code_base,
             Context $context,
@@ -82,6 +85,9 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $element_types;
         };
+        /**
+         * @param array<int,Node|int|string|float> $args
+         */
         $call_user_func_array_callback = static function (
             CodeBase $code_base,
             Context $context,
@@ -117,6 +123,9 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $element_types;
         };
+        /**
+         * @param array<int,Node|int|string|float> $args
+         */
         $from_callable_callback = static function (
             CodeBase $code_base,
             Context $context,
@@ -175,6 +184,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
     private static function getAnalyzeFunctionCallClosuresStatic() : array
     {
         /**
+         * @param array<int,Node|int|string|float> $args
          * @return void
          */
         $call_user_func_callback = static function (
@@ -195,6 +205,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
         };
 
         /**
+         * @param array<int,Node|int|string|float> $args
          * @return void
          */
         $call_user_func_array_callback = static function (

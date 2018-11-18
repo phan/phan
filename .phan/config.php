@@ -271,8 +271,6 @@ return [
         'PhanUnreferencedClosure',  // False positives seen with closures in arrays, TODO: move closure checks closer to what is done by unused variable plugin
         'PhanPossiblyFalseTypeArgument',
         'PhanPossiblyFalseTypeArgumentInternal',
-        'PhanPossiblyNullTypeArgument',
-        'PhanPossiblyNullTypeArgumentInternal',
         // TODO: Fix and remove suppression for this plugin
         'PhanPluginDescriptionlessCommentOnPrivateProperty',
 

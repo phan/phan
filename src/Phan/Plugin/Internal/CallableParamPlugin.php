@@ -44,13 +44,16 @@ final class CallableParamPlugin extends PluginV2 implements
             // TODO: Implement support for variadic callable arguments.
             foreach ($params as $i) {
                 $arg = $args[$i] ?? null;
+                if (!$arg) {
+                    continue;
+                }
 
                 // Fetch possible functions. As a side effect, this warns about invalid callables.
                 // TODO: Check if the signature allows non-array callables? Not sure of desired semantics.
                 $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $arg, true);
                 if (\count($function_like_list) === 0) {
                     // Nothing to do
-                    return;
+                    continue;
                 }
 
                 if (Config::get_track_references()) {

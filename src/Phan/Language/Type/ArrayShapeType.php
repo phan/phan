@@ -82,6 +82,11 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return \count($this->field_types) !== 0;
     }
 
+    public function isEmptyArrayShape() : bool
+    {
+        return \count($this->field_types) === 0;
+    }
+
     /**
      * Returns an immutable array shape type instance without $field_key.
      *
