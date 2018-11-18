@@ -518,7 +518,23 @@ class ParseVisitor extends ScopeVisitor
                 }
 
                 $original_property_type = $property->getUnionType();
-                $variable_type = $variable->getUnionType();
+                $original_variable_type = $variable->getUnionType();
+                $variable_type = $original_variable_type->withStaticResolvedInContext($this->context);
+                if ($variable_type !== $original_variable_type) {
+                    // Instance properties with (at)var static will have the same type as the class they're in
+                    // TODO: Support `static[]` as well when inheriting
+                    if ($property->isStatic()) {
+                        $this->emitIssue(
+                            Issue::StaticPropIsStaticType,
+                            $variable->getLineno(),
+                            $property->getRepresentationForIssue(),
+                            $original_variable_type,
+                            $variable_type
+                        );
+                    } else {
+                        $property->setHasStaticInUnionType(true);
+                    }
+                }
                 if ($variable_type->hasGenericArray() && !$original_property_type->hasTypeMatchingCallback(function (Type $type) : bool {
                     return \get_class($type) !== ArrayType::class;
                 })) {

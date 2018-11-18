@@ -184,6 +184,7 @@ class Issue
 
     // Issue::CATEGORY_STATIC
     const StaticCallToNonStatic     = 'PhanStaticCallToNonStatic';
+    const StaticPropIsStaticType    = 'PhanStaticPropIsStaticType';
 
     // Issue::CATEGORY_CONTEXT
     const ContextNotObject          = 'PhanContextNotObject';
@@ -1816,6 +1817,14 @@ class Issue
                 "Static call to non-static method {METHOD} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 9000
+            ),
+            new Issue(
+                self::StaticPropIsStaticType,
+                self::CATEGORY_STATIC,
+                self::SEVERITY_LOW,
+                "Static property {PROPERTY} is declared to have type {TYPE}, but the only instance is shared among all subclasses (Did you mean {TYPE})",
+                self::REMEDIATION_A,
+                9001
             ),
 
             // Issue::CATEGORY_CONTEXT

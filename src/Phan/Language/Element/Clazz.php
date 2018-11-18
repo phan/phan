@@ -672,6 +672,9 @@ class Clazz extends AddressableElement
         if ($original_property_fqsen !== $property_fqsen) {
             $property = clone($property);
             $property->setFQSEN($property_fqsen);
+            if ($property->getHasStaticInUnionType()) {
+                $property->inheritStaticUnionType($original_property_fqsen->getFullyQualifiedClassName(), $this->getFQSEN());
+            }
 
             // Private properties of traits are accessible from the class that used that trait
             // (as well as from within the trait itself).
@@ -787,13 +790,18 @@ class Clazz extends AddressableElement
                 $class_fqsen,
                 $property_name
             );
+            $original_union_type = $comment_parameter->getUnionType();
+            $union_type = $original_union_type->withStaticResolvedInContext($context);
             $property = new Property(
                 clone($context)->withLineNumberStart($comment_parameter->getLine()),
                 $property_name,
-                $comment_parameter->getUnionType(),
+                $union_type,
                 $flags,
                 $property_fqsen
             );
+            if ($original_union_type !== $union_type) {
+                $phan_flags |= Flags::HAS_STATIC_UNION_TYPE;
+            }
             $property->setPhanFlags($phan_flags | Flags::IS_FROM_PHPDOC);
 
             $this->addProperty($code_base, $property, new None());
