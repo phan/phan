@@ -636,8 +636,9 @@ class Comment
             $string  .= " * @param $parameter\n";
         }
 
-        if ($this->return_comment) {
-            $string .= " * @return {$this->return_comment->getType()}\n";
+        $return_comment = $this->return_comment;
+        if ($return_comment) {
+            $string .= " * @return {$return_comment->getType()}\n";
         }
         foreach ($this->throw_union_type->getTypeSet() as $type) {
             $string .= " * @throws {$type}\n";

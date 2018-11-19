@@ -1,5 +1,4 @@
 src/061_strict_static_method_check.php:9 PhanUnreferencedFunction Possibly zero references to function \test()
-src/061_strict_static_method_check.php:10 PhanPossiblyNonClassMethodCall Call to method someMethod on type string that could be a non-object
 src/061_strict_static_method_check.php:11 PhanNonClassMethodCall Call to method someMethod on non-class type ?string
 src/061_strict_static_method_check.php:12 PhanPossiblyNonClassMethodCall Call to method someMethod on type null|string that could be a non-object
 src/061_strict_static_method_check.php:13 PhanPossiblyNonClassMethodCall Call to method someMethod on type false|string that could be a non-object

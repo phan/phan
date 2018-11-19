@@ -147,6 +147,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
             // $try_scope = $this->context->getScope();
         // } else {
             // If we don't have to worry about analyzing the finally statement, then assume that the entire try statement succeeded or the a catch statement succeeded.
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $try_scope = \reset($this->child_context_list)->getScope();
         // }
 

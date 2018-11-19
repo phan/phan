@@ -931,6 +931,7 @@ trait FunctionTrait
      */
     public function getDependentReturnType(CodeBase $code_base, Context $context, array $args) : UnionType
     {
+        // @phan-suppress-next-line PhanTypePossiblyInvalidCallable - Callers should check hasDependentReturnType
         return ($this->return_type_callback)($code_base, $context, $this, $args);
     }
 
@@ -962,6 +963,7 @@ trait FunctionTrait
      */
     public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args)
     {
+        // @phan-suppress-next-line PhanTypePossiblyInvalidCallable - Callers should check hasFunctionCallAnalyzer
         ($this->function_call_analyzer_callback)($code_base, $context, $this, $args);
     }
 

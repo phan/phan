@@ -32,6 +32,9 @@ final class ParameterTypesAnalyzerTest extends BaseTest
 
         $msg = "Expected normalizeNarrowedParamType($phpdoc_return_type, $real_return_type) to be $expected_type_string";
         $this->assertSame($expected_type_string, (string)$actual_normalized_type, $msg);
+        if ($actual_normalized_type === null) {
+            throw new \AssertionError("Saw null actual_normalized_type");
+        }
         $this->assertTrue($actual_normalized_type->isEqualTo($expected_type), $msg);
     }
 

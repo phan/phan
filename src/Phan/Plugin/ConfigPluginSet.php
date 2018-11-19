@@ -835,6 +835,9 @@ final class ConfigPluginSet extends PluginV2 implements
                 self::addClosuresForPreAnalyzeNodeCapability($closures_for_kind, $plugin);
             }
         }
+        /**
+         * @param array<int,Closure> $closure_list
+         */
         return $closures_for_kind->getFlattenedClosures(static function (array $closure_list) : \Closure {
             return static function (CodeBase $code_base, Context $context, Node $node) use ($closure_list) {
                 foreach ($closure_list as $closure) {
@@ -927,6 +930,9 @@ final class ConfigPluginSet extends PluginV2 implements
                 self::addClosuresForPostAnalyzeNodeCapability($closures_for_kind, $plugin);
             }
         }
+        /**
+         * @param array<int,Closure> $closure_list
+         */
         return $closures_for_kind->getFlattenedClosures(static function (array $closure_list) : \Closure {
             return static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) use ($closure_list) {
                 foreach ($closure_list as $closure) {

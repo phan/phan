@@ -375,6 +375,9 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame(1, $union_type->typeCount());
         $types = $union_type->getTypeSet();
         $type = reset($types);
+        if (!($type instanceof Type)) {
+            throw new AssertionError("Should be Type");
+        }
 
         $this->assertSame('\\', $type->getNamespace());
         $this->assertSame('TypeTestClass', $type->getName());
@@ -393,6 +396,9 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame(1, $union_type->typeCount());
         $types = $union_type->getTypeSet();
         $type = reset($types);
+        if (!($type instanceof Type)) {
+            throw new AssertionError("Should be Type");
+        }
 
         $this->assertSame('\\', $type->getNamespace());
         $this->assertSame('TypeTestClass', $type->getName());

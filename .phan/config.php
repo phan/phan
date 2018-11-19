@@ -63,7 +63,7 @@ return [
     // or if **any** type in an invoked expression is not a callable.
     // Setting this to true will introduce numerous false positives
     // (and reveal some bugs).
-    'strict_method_checking' => false,
+    'strict_method_checking' => true,
 
     // If enabled, Phan will warn if **any** type in the argument's type
     // cannot be cast to a type in the parameter's expected type.

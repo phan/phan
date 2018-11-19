@@ -979,13 +979,10 @@ class Clazz extends AddressableElement
 
         $property = null;
 
-        // Figure out if we have the property
-        $has_property =
-            $code_base->hasPropertyWithFQSEN($property_fqsen);
-
-        // Figure out if the property is accessible
+        // Figure out if we have the property and
+        // figure out if the property is accessible.
         $is_property_accessible = false;
-        if ($has_property) {
+        if ($code_base->hasPropertyWithFQSEN($property_fqsen)) {
             $property = $code_base->getPropertyByFQSEN(
                 $property_fqsen
             );
@@ -1029,7 +1026,11 @@ class Clazz extends AddressableElement
                     Issue::fromType(Issue::AccessPropertyPrivate)(
                         $context->getFile(),
                         $context->getLineNumberStart(),
-                        [$property->asPropertyFQSENString(), $method->getContext()->getFile(), $method->getContext()->getLineNumberStart() ]
+                        [
+                            $property ? $property->asPropertyFQSENString() : $property_fqsen,
+                            $method->getContext()->getFile(),
+                            $method->getContext()->getLineNumberStart()
+                        ]
                     )
                 );
             } elseif ($method->isProtected()) {
@@ -1037,7 +1038,11 @@ class Clazz extends AddressableElement
                     Issue::fromType(Issue::AccessPropertyProtected)(
                         $context->getFile(),
                         $context->getLineNumberStart(),
-                        [$property->asPropertyFQSENString(), $method->getContext()->getFile(), $method->getContext()->getLineNumberStart() ]
+                        [
+                            $property ? $property->asPropertyFQSENString() : $property_fqsen,
+                            $method->getContext()->getFile(),
+                            $method->getContext()->getLineNumberStart()
+                        ]
                     )
                 );
             }
@@ -1054,7 +1059,7 @@ class Clazz extends AddressableElement
             $this->addProperty($code_base, $property, new None());
 
             return $property;
-        } elseif ($has_property) {
+        } elseif ($property) {
             // If we have a property, but it's inaccessible, emit
             // an issue
             if ($property->isPrivate()) {
