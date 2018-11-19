@@ -33,6 +33,7 @@ class Message
     {
         $obj = new self();
         $parts = explode("\r\n", $msg);
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
         $obj->body = MessageBody::parse(array_pop($parts));
         foreach ($parts as $line) {
             if ($line) {

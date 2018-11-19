@@ -45,7 +45,7 @@ class Utils
         $filepath = \trim(\str_replace('\\', '/', $filepath), '/');
         $parts = \explode('/', $filepath);
         // Don't %-encode the colon after a Windows drive letter
-        $first = \array_shift($parts);
+        $first = (string)\array_shift($parts);
         if (substr($first, -1) !== ':') {
             $first = \rawurlencode($first);
         }
@@ -71,7 +71,7 @@ class Utils
         $filepath = \urldecode($fragments['path']);
         if (strpos($filepath, ':') !== false) {
             if ($filepath[0] === '/') {
-                $filepath = \substr($filepath, 1);
+                $filepath = (string)\substr($filepath, 1);
             }
             $filepath = \str_replace('/', '\\', $filepath);
         }

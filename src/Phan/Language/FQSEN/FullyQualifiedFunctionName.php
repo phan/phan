@@ -60,7 +60,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
         $parts = \explode('\\', $fqsen_string);
         $name = \array_pop($parts);
 
-        if ($name === '') {
+        if ($name === '' || $name === false) {
             throw new EmptyFQSENException("The name cannot be empty", $fqsen_string);
         }
 
