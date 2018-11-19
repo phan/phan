@@ -451,6 +451,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if ($function_name[0] === '\\') {
             $function_name = \substr($function_name, 1);
         }
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         if (\strcasecmp($function_name, 'trigger_error') === 0) {
             return $this->computeTriggerErrorStatusCodeForConstant($node->children['args']->children[1] ?? null);
         }

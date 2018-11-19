@@ -53,6 +53,7 @@ use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
+use Phan\Library\StringUtil;
 use TypeError;
 use function is_scalar;
 use function is_string;
@@ -1407,7 +1408,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->emitIssue(
                 Issue::TypeInvalidDimOffset,
                 $dim_node->lineno ?? $node->lineno ?? 0,
-                json_encode($dim_value),
+                StringUtil::jsonEncode($dim_value),
                 (string)$union_type
             );
             return null;

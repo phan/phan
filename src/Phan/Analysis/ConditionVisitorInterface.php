@@ -38,6 +38,19 @@ interface ConditionVisitorInterface
     /**
      * @param Node $var_node
      * @param Node|int|float|string $expr
+     * @param int $flags (e.g. \ast\flags\BINARY_IS_SMALLER)
+     * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
+     * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
+     */
+    public function updateVariableToBeCompared(
+        Node $var_node,
+        $expr,
+        int $flags
+    ) : Context;
+
+    /**
+     * @param Node $var_node
+     * @param Node|int|float|string $expr
      * @return Context - Constant after inferring type from an expression such as `if ($x != 'literal')`
      */
     public function updateVariableToBeNotEqual(

@@ -251,14 +251,16 @@ class CLI
                         }
                         $file_path = Config::projectPath($file_name);
                         if (is_file($file_path) && is_readable($file_path)) {
-                            /** @var array<int,string> */
-                            $this->file_list_in_config = array_merge(
-                                $this->file_list_in_config,
-                                file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES)
-                            );
-                        } else {
-                            error_log("Unable to read file $file_path");
+                            $lines = file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+                            if (is_array($lines)) {
+                                $this->file_list_in_config = array_merge(
+                                    $this->file_list_in_config,
+                                    $lines
+                                );
+                                continue;
+                            }
                         }
+                        error_log("Unable to read file $file_path");
                     }
                     break;
                 case 'l':
@@ -288,7 +290,7 @@ class CLI
                         $this->usage(
                             sprintf(
                                 'Unknown output mode %s. Known values are [%s]',
-                                json_encode($value),
+                                StringUtil::jsonEncode($value),
                                 implode(',', $factory->getTypes())
                             ),
                             EXIT_FAILURE
@@ -343,7 +345,16 @@ class CLI
                     break;
                 case 'o':
                 case 'output':
-                    $this->output = new StreamOutput(fopen($value, 'w'));
+                    if (!is_string($value)) {
+                        fprintf(STDERR, "Invalid arguments to --output: args=%s", StringUtil::jsonEncode($value));
+                        exit(EXIT_FAILURE);
+                    }
+                    $output_file = fopen($value, 'w');
+                    if (!is_resource($output_file)) {
+                        fwrite(STDERR, "Failed to open output file '$value'\n");
+                        exit(EXIT_FAILURE);
+                    }
+                    $this->output = new StreamOutput($output_file);
                     break;
                 case 'i':
                 case 'ignore-undeclared':
@@ -432,9 +443,17 @@ class CLI
                 case 's':
                 case 'daemonize-socket':
                     $this->checkCanDaemonize('unix', $key);
+                    if (!is_string($value)) {
+                        fprintf(STDERR, "Invalid arguments to --daemonize-socket: args=%s", StringUtil::jsonEncode($value));
+                        exit(EXIT_FAILURE);
+                    }
                     $socket_dirname = realpath(dirname($value));
-                    if (!file_exists($socket_dirname) || !is_dir($socket_dirname)) {
-                        $msg = sprintf('Requested to create Unix socket server in %s, but folder %s does not exist', json_encode($value), json_encode($socket_dirname));
+                    if (!is_string($socket_dirname) || !file_exists($socket_dirname) || !is_dir($socket_dirname)) {
+                        $msg = sprintf(
+                            'Requested to create Unix socket server in %s, but folder %s does not exist',
+                            StringUtil::jsonEncode($value),
+                            StringUtil::jsonEncode($socket_dirname)
+                        );
                         $this->usage($msg, 1);
                     } else {
                         Config::setValue('daemonize_socket', $value);  // Daemonize. Assumes the file list won't change. Accepts requests over a Unix socket, or some other IPC mechanism.

@@ -43,7 +43,12 @@ class Initializer
                 printf("phan --init assumes that there will be a composer.json file (at '$composer_json_path')\n(Can pass --init-no-composer if this is not a composer project)\n");
                 return 1;
             }
-            $composer_settings = json_decode(file_get_contents($composer_json_path), true);
+            $contents = file_get_contents($composer_json_path);
+            if (!$contents) {
+                printf("phan --init failed to read contents of $composer_json_path\n");
+                return 1;
+            }
+            $composer_settings = json_decode($contents, true);
             if (!is_array($composer_settings)) {
                 printf("Failed to load '%s'\n", $composer_json_path);
                 return 1;
@@ -82,6 +87,7 @@ class Initializer
     public static function computeCommentNameDocumentationMap() : array
     {
         // Hackish way of extracting comment lines from Config::DEFAULT_CONFIGURATION
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         $config_file_lines = explode("\n", file_get_contents(dirname(__DIR__) . '/Config.php'));
         $prev_lines = [];
         $result = [];
@@ -345,6 +351,7 @@ EOT;
                 echo "Warning: $path_to_composer_json does not exist, continuing\n";
                 continue;
             }
+            // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
             $library_composer_settings = json_decode(file_get_contents($path_to_composer_json), true);
             if (!is_array($library_composer_settings)) {
                 echo "Warning: $path_to_composer_json is invalid JSON, continuing\n";
@@ -482,6 +489,10 @@ EOT;
             return false;
         }
         $contents = file_get_contents($absolute_path);
+        if (!is_string($contents)) {
+            printf("Failed to read '%s', continuing\n", $absolute_path);
+            return false;
+        }
         try {
             // PHP binaries can have many forms, may begin with #/usr/bin/env php.
             // We assume that if it's parsable and contains at least one PHP executable line, it's valid.

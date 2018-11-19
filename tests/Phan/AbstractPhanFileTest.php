@@ -94,7 +94,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         // TODO: Make Phan know that array_filter with a single argument implies elements aren't falsey
         $files = array_filter(
             array_filter(
-                scandir($source_dir),
+                scandir($source_dir) ?: [],
                 function (string $filename) : bool {
                     // Ignore directories and hidden files.
                     return !in_array($filename, ['.', '..'], true) && substr($filename, 0, 1) !== '.' && preg_match('@\.php$@', $filename);
@@ -154,8 +154,8 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         $expected_output = '';
         if (is_file($expected_file_path)) {
             // Read the expected output
-            $expected_output =
-                trim(file_get_contents($expected_file_path));
+            // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+            $expected_output = trim(file_get_contents($expected_file_path));
         }
         if (!in_array(basename($expected_file_path), self::WHITELIST)) {
             $this->assertNotRegExp('@tests[/\\\\]files[/\\\\]@', $expected_output, 'Expected output should contain a %s placeholder instead of the relative path to the file');
@@ -222,6 +222,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
                 $start = $end = $length;
             }
             // quote a non re portion of the string
+            // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
             $temp .= preg_quote(substr($wanted_re, $start_offset, ($start - $start_offset)), '/');
             // add the re unquoted.
             if ($end > $start) {

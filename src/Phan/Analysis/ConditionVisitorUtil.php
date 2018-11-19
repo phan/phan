@@ -5,6 +5,7 @@ use ast;
 use ast\Node;
 use InvalidArgumentException;
 use Phan\Analysis\ConditionVisitor\BinaryCondition;
+use Phan\Analysis\ConditionVisitor\ComparisonCondition;
 use Phan\Analysis\ConditionVisitor\IdenticalCondition;
 use Phan\Analysis\ConditionVisitor\NotEqualsCondition;
 use Phan\Analysis\ConditionVisitor\NotIdenticalCondition;
@@ -18,6 +19,7 @@ use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Type;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
@@ -236,25 +238,89 @@ trait ConditionVisitorUtil
         if (\is_string($var_name) && $var_name) {
             try {
                 $expr_type = UnionTypeVisitor::unionTypeFromLiteralOrConstant($this->code_base, $context, $expr);
-                if ($expr_type) {
-                    // Get the variable we're operating on
-                    $variable = $this->getVariableFromScope($var_node, $context);
-                    if (\is_null($variable)) {
-                        return $context;
-                    }
-
-                    // Make a copy of the variable
-                    $variable = clone($variable);
-
-                    $variable->setUnionType($expr_type);
-
-                    // Overwrite the variable with its new type in this
-                    // scope without overwriting other scopes
-                    $context = $context->withScopeVariable(
-                        $variable
-                    );
+                if (!$expr_type) {
                     return $context;
                 }
+                // Get the variable we're operating on
+                $variable = $this->getVariableFromScope($var_node, $context);
+                if (\is_null($variable)) {
+                    return $context;
+                }
+
+                // Make a copy of the variable
+                $variable = clone($variable);
+
+                $variable->setUnionType($expr_type);
+
+                // Overwrite the variable with its new type in this
+                // scope without overwriting other scopes
+                $context = $context->withScopeVariable(
+                    $variable
+                );
+                return $context;
+            } catch (\Exception $_) {
+                // Swallow it (E.g. IssueException for undefined variable)
+            }
+        }
+        return $context;
+    }
+
+    /**
+     * @param Node $var_node
+     * @param Node|int|float|string $expr
+     * @param int $flags (e.g. \ast\flags\BINARY_IS_SMALLER)
+     * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
+     * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
+     */
+    public final function updateVariableToBeCompared(
+        Node $var_node,
+        $expr,
+        int $flags
+    ) : Context {
+        $context = $this->context;
+        $var_name = $var_node->children['name'] ?? null;
+        // Don't analyze variables such as $$a
+        if (\is_string($var_name) && $var_name) {
+            try {
+                $expr_type = UnionTypeVisitor::unionTypeFromLiteralOrConstant($this->code_base, $context, $expr);
+                if (!$expr_type) {
+                    return $context;
+                }
+                $expr_value = $expr_type->asSingleScalarValueOrNull();
+                if ($expr_value === null) {
+                    if (!$expr_type->isType(NullType::instance(false))) {
+                        return $context;
+                    }
+                }
+                // Get the variable we're operating on
+                $variable = $this->getVariableFromScope($var_node, $context);
+                if (\is_null($variable)) {
+                    return $context;
+                }
+
+                // Make a copy of the variable
+                $variable = clone($variable);
+
+                // TODO: Filter out nullable types
+                $union_type = $variable->getUnionType()->makeFromFilter(function (Type $type) use ($expr_value, $flags) : bool {
+                    // @phan-suppress-next-line PhanAccessMethodInternal
+                    return $type->canSatisfyComparison($expr_value, $flags);
+                });
+                if ($union_type->containsNullable()) {
+                    // @phan-suppress-next-line PhanAccessMethodInternal
+                    if (!Type::performComparison(null, $expr_value, $flags)) {
+                        // E.g. $x > 0 will remove the type null.
+                        $union_type = $union_type->nonNullableClone();
+                    }
+                }
+                $variable->setUnionType($union_type);
+
+                // Overwrite the variable with its new type in this
+                // scope without overwriting other scopes
+                $context = $context->withScopeVariable(
+                    $variable
+                );
+                return $context;
             } catch (\Exception $_) {
                 // Swallow it (E.g. IssueException for undefined variable)
             }
@@ -530,6 +596,21 @@ trait ConditionVisitorUtil
             new NotEqualsCondition()
         );
     }
+
+    /**
+     * @param Node|int|float|string $left
+     * @param Node|int|float|string $right
+     * @return Context - Constant after inferring type from an expression such as `if ($x > 0)`
+     */
+    protected function analyzeAndUpdateToBeCompared($left, $right, int $flags) : Context
+    {
+        return $this->analyzeBinaryConditionPattern(
+            $left,
+            $right,
+            new ComparisonCondition($flags)
+        );
+    }
+
 
     /**
      * @return ?Variable - Returns null if the variable is undeclared and ignore_undeclared_variables_in_global_scope applies.

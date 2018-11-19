@@ -20,6 +20,16 @@ class StringUtil
     }
 
     /**
+     * JSON encodes a value - Guaranteed to return a string.
+     * @param string|int|float|bool|null|array $value
+     */
+    public static function jsonEncode($value) : string
+    {
+        $result = \json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR);
+        return \is_string($result) ? $result : '(invalid data)';
+    }
+
+    /**
      * Encode a list of values in a compact, unambiguous representation for emitted issues.
      * @param array<int,string|int|float|bool> $values
      */

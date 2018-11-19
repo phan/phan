@@ -243,6 +243,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
      * A map from alias to target
      *
      * @suppress PhanPartialTypeMismatchReturn TODO: investigate
+     * @suppress PhanPossiblyFalseTypeArgument
      */
     public static function aliasTargetMapFromUseNode(
         Node $node,

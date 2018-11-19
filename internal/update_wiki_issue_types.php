@@ -51,10 +51,15 @@ EOT;
     private static function extractOldTextForSections(string $wiki_filename) : array
     {
         if (!file_exists($wiki_filename)) {
-            fwrite(STDERR, "Failed to load '$wiki_filename'\n");
+            fwrite(STDERR, "Failed to locate '$wiki_filename'\n");
             exit(1);
         }
-        $wiki_lines = explode("\n", file_get_contents($wiki_filename));
+        $contents = file_get_contents($wiki_filename);
+        if (!is_string($contents)) {
+            fwrite(STDERR, "Failed to read '$wiki_filename'\n");
+            exit(1);
+        }
+        $wiki_lines = explode("\n", $contents);
         $text_for_section = [];
         $title = 'global';
         $text_for_section[$title] = '';
@@ -232,11 +237,12 @@ EOT;
 
     private static function calculateExamples() : array
     {
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         $base = dirname(realpath(__DIR__));
         $files = array_merge(
-            glob($base . '/tests/files/expected/*.php.expected'),
-            glob($base . '/tests/misc/fallback_test/expected/*.php.expected'),
-            glob($base . '/tests/plugin_test/expected/*.php.expected')
+            glob($base . '/tests/files/expected/*.php.expected') ?: [],
+            glob($base . '/tests/misc/fallback_test/expected/*.php.expected') ?: [],
+            glob($base . '/tests/plugin_test/expected/*.php.expected') ?: []
         );
         $records = [];
         foreach ($files as $expected_filename) {

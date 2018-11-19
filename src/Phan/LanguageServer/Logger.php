@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace Phan\LanguageServer;
 
 use Phan\Config;
+use Phan\Library\StringUtil;
 
 /**
  * A logger used by Phan for developing or debugging the language server.
@@ -28,7 +29,7 @@ class Logger
         if (!self::shouldLog()) {
             return;
         }
-        self::logInfo(sprintf("Request:\n%s\nData:\n%s\n\n", json_encode($headers), $buffer));
+        self::logInfo(sprintf("Request:\n%s\nData:\n%s\n\n", StringUtil::jsonEncode($headers), $buffer));
     }
 
     /**
@@ -40,7 +41,7 @@ class Logger
         if (!self::shouldLog()) {
             return;
         }
-        self::logInfo(sprintf("Response:\n%s\nData:\n%s\n\n", json_encode($headers), $buffer));
+        self::logInfo(sprintf("Response:\n%s\nData:\n%s\n\n", StringUtil::jsonEncode($headers), $buffer));
     }
 
     /**
@@ -86,23 +87,24 @@ class Logger
 
     /**
      * Overrides the log file to a different one
-     * @param resource $newFile
+     * @param resource $new_file
      * @return void
      * @suppress PhanUnreferencedPublicMethod this is made available for debugging issues
      */
-    public static function setLogFile($newFile)
+    public static function setLogFile($new_file)
     {
-        if (!is_resource($newFile)) {
-            throw new \TypeError("Expected newFile to be a resource, got " . gettype($newFile));
+        if (!is_resource($new_file)) {
+            throw new \TypeError("Expected newFile to be a resource, got " . gettype($new_file));
         }
-        if (is_resource(self::$file)) {
-            if (self::$file === $newFile) {
+        $old_file = self::$file;
+        if (is_resource($old_file)) {
+            if ($old_file === $new_file) {
                 return;
             }
-            if (self::$file !== STDERR) {
-                fclose(self::$file);
+            if ($old_file !== STDERR) {
+                fclose($old_file);
             }
         }
-        self::$file = $newFile;
+        self::$file = $new_file;
     }
 }

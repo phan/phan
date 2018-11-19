@@ -2715,7 +2715,7 @@ class TolerantASTConverter
     private static function parseQuotedString(PhpParser\Node\StringLiteral $n) : string
     {
         $start = $n->getStart();
-        $text = substr(self::$file_contents, $start, $n->getEndPosition() - $start);
+        $text = (string)substr(self::$file_contents, $start, $n->getEndPosition() - $start);
         return StringUtil::parse($text);
     }
 
@@ -2912,7 +2912,9 @@ class TolerantASTConverter
         if (\is_string($s)) {
             $s = substr($s, 0, -1);
             // On Windows, the "\r" must also be removed from the last line of the heredoc
+            // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
             if (substr($s, -1) === "\r") {
+                // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
                 $s = substr($s, 0, -1);
             }
             $inner_node_parts[$i] = $s;

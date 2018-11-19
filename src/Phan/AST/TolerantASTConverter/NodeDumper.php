@@ -125,7 +125,7 @@ class NodeDumper
                 $ast_node->getTokenKindNameFromValue($ast_node->kind),
                 $this->include_token_kind ? '(' . $ast_node->kind . ')' : '',
                 $this->include_offset ? ' (@' . $ast_node->start . ')' : '',
-                \json_encode(\substr($this->file_contents, $ast_node->fullStart, $ast_node->length))
+                \Phan\Library\StringUtil::jsonEncode(\substr($this->file_contents, $ast_node->fullStart, $ast_node->length))
             );
         } elseif (\is_scalar($ast_node) || $ast_node === null) {
             return \var_export($ast_node, true);

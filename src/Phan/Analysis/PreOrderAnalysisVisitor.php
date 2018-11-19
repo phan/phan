@@ -24,6 +24,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
+use Phan\Library\StringUtil;
 
 /**
  * PreOrderAnalysisVisitor is where we do the pre-order part of the analysis
@@ -832,7 +833,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     $this->emitIssue(
                         Issue::TypeInvalidDimOffsetArrayDestructuring,
                         $child_node->lineno,
-                        json_encode($key_value),
+                        StringUtil::jsonEncode($key_value),
                         (string)$element_union_type
                     );
                     $second_order_non_generic_expression_union_type = $get_fallback_second_order_element_type();

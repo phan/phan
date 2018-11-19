@@ -64,10 +64,11 @@ class FunctionFactory
         $context = new Context();
 
         $return_type = UnionType::fromStringInContext(
-            array_shift($signature),
+            $signature[0],
             $context,
             Type::FROM_TYPE
         );
+        unset($signature[0]);
 
         $func = new Func(
             $context,
@@ -157,6 +158,7 @@ class FunctionFactory
         $alternate_id = 0;
         /**
          * @param array<string,mixed> $map
+         * @suppress PhanPossiblyFalseTypeArgumentInternal, PhanPossiblyFalseTypeArgument
          */
         return \array_map(function ($map) use (
             $function,

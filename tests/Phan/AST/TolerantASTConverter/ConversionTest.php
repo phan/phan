@@ -78,6 +78,7 @@ final class ConversionTest extends BaseTest
     public function astValidFileExampleProvider()
     {
         $tests = [];
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         $source_dir = dirname(dirname(dirname(realpath(__DIR__)))) . '/misc/fallback_ast_src';
         $paths = $this->scanSourceDirForPHP($source_dir);
 
@@ -143,6 +144,7 @@ final class ConversionTest extends BaseTest
         $contents = file_get_contents($file_name);
         if ($contents === false) {
             $this->fail("Failed to read $file_name");
+            return;  // unreachable
         }
         $ast = ast\parse_code($contents, $ast_version, $file_name);
         self::normalizeOriginalAST($ast);
