@@ -31,6 +31,7 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
+use Phan\Library\StringUtil;
 
 /**
  * Analyzes assignments.
@@ -301,7 +302,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     $this->emitIssue(
                         Issue::TypeInvalidDimOffsetArrayDestructuring,
                         $child_node->lineno,
-                        json_encode($key_value),
+                        StringUtil::jsonEncode($key_value),
                         (string)$this->right_type
                     );
                     $element_type = $get_fallback_element_type();

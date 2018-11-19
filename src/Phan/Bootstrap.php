@@ -116,7 +116,7 @@ function phan_error_handler($errno, $errstr, $errfile, $errline)
 
     ob_start();
     debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-    error_log(ob_get_clean());
+    error_log(ob_get_clean() ?: 'failed to dump backtrace');
 
     exit(EXIT_FAILURE);
 }

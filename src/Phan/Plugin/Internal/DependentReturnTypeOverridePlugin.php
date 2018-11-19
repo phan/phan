@@ -170,16 +170,32 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $has_array ? $str_array_type : $str_replace_types;
         };
+        $string_or_false = UnionType::fromFullyQualifiedString('string|false');
         $getenv_handler = static function (
             CodeBase $unused_code_base,
             Context $unused_context,
             Func $unused_function,
             array $args
-        ) : UnionType {
+        ) use ($string_or_false) : UnionType {
             if (\count($args) === 0 && Config::get_closest_target_php_version_id() >= 70100) {
                 return UnionType::fromFullyQualifiedString('array<string,string>');
             }
-            return UnionType::fromFullyQualifiedString('string|false');
+            return $string_or_false;
+        };
+        $substr_handler = static function (
+            CodeBase $unused_code_base,
+            Context $unused_context,
+            Func $unused_function,
+            array $args
+        ) use (
+            $string_or_false,
+            $string_union_type
+) : UnionType {
+            if (\count($args) >= 2 && \is_int($args[1]) && $args[1] <= 0) {
+                // Cut down on false positive warnings about substr($str, 0, $len) possibly being false
+                return $string_union_type;
+            }
+            return $string_or_false;
         };
 
         return [
@@ -197,6 +213,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             'version_compare'             => $make_arg_existence_dependent_type_method(2, 'bool', 'int'),
             'pathinfo'                    => $make_arg_existence_dependent_type_method(1, 'string', 'array{dirname:string,basename:string,extension?:string,filename:string}'),
             'parse_url'                   => $make_arg_existence_dependent_type_method(1, 'string|int|null|false', 'array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|false'),
+            'substr'                      => $substr_handler,
         ];
     }
 

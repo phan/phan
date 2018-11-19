@@ -132,6 +132,7 @@ class PhanPHPLinter
         if (!$real) {
             self::debugError("Could not resolve $path\n");
         }
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         $dirname = dirname($real);
         $old_dirname = null;
         unset($real);
@@ -176,16 +177,6 @@ class PhanPHPLinter
             self::debugInfo("Not in a real project");
         }
         // The file is syntactically valid. Run phan.
-
-        // TODO: Make TCP port configurable
-        // TODO: check if the folder is within a folder with subdirectory .phan/config.php
-        // TODO: Check if there is a lock before attempting to connect?
-        $client = @stream_socket_client($opts->url, $errno, $errstr, 20.0);
-        if (!\is_resource($client)) {
-            // TODO: This should attempt to start up the phan daemon for the given folder?
-            self::debugError("Phan daemon not running on " . ($opts->url));
-            exit(0);
-        }
         $request = [
             'method' => 'analyze_files',
             'files' => $real_files,
@@ -196,8 +187,22 @@ class PhanPHPLinter
             $request['temporary_file_mapping_contents'] = $temporary_file_mapping_contents;
         }
 
-        // This used to use the 'phplike' format, but it doesn't work well with filtering files.
-        fwrite($client, json_encode($request));
+        $serialized_request = json_encode($request);
+        if (!is_string($serialized_request)) {
+            self::debugError("Could not serialize this request\n");
+            exit(1);
+        }
+
+        // TODO: Make TCP port configurable
+        // TODO: check if the folder is within a folder with subdirectory .phan/config.php
+        // TODO: Check if there is a lock before attempting to connect?
+        $client = @stream_socket_client($opts->url, $errno, $errstr, 20.0);
+        if (!\is_resource($client)) {
+            // TODO: This should attempt to start up the phan daemon for the given folder?
+            self::debugError("Phan daemon not running on " . ($opts->url));
+            exit(0);
+        }
+        fwrite($client, $serialized_request);
         stream_set_timeout($client, (int)floor(self::TIMEOUT_MS / 1000), 1000 * (self::TIMEOUT_MS % 1000));
         stream_socket_shutdown($client, STREAM_SHUT_WR);
         $response_lines = [];
@@ -247,7 +252,7 @@ class PhanPHPLinter
             $pathInProject = $issue['location']['path'];  // relative path
             if (!isset($file_mapping[$pathInProject])) {
                 if (!$did_debug) {
-                    self::debugInfo(sprintf("Unexpected path for issue (expected %s): %s\n", json_encode($file_mapping), json_encode($issue)));
+                    self::debugInfo(sprintf("Unexpected path for issue (expected %s): %s\n", json_encode($file_mapping) ?: 'invalid', json_encode($issue) ?: 'invalid'));
                 }
                 $did_debug = true;
                 continue;
@@ -381,7 +386,7 @@ EOB;
             $opts = getopt($shortopts, $longopts);
         }
         if (PHP_VERSION_ID >= 70100 && $optind < count($argv)) {
-            $this->usage(sprintf("Unexpected parameter %s", json_encode($argv[$optind])));
+            $this->usage(sprintf("Unexpected parameter %s", json_encode($argv[$optind]) ?: var_export($argv[$optind], true)));
         }
 
         // Check for this first, since the option parser may also emit debug output in the future.
@@ -400,10 +405,11 @@ EOB;
                         $this->usage('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
                     }
                     // Check if the socket is valid after parsing the file list.
+                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
                     $socket_dirname = realpath(dirname($value));
-                    if (!file_exists($socket_dirname) || !is_dir($socket_dirname)) {
+                    if (!is_string($socket_dirname) || !file_exists($socket_dirname) || !is_dir($socket_dirname)) {
                         // The client doesn't require that the file exists if the daemon isn't running, but we do require that the folder exists.
-                        $msg = sprintf('Configured to connect to Unix socket server at socket %s, but folder %s does not exist', json_encode($value), json_encode($socket_dirname));
+                        $msg = sprintf('Configured to connect to Unix socket server at socket %s, but folder %s does not exist', json_encode($value) ?: 'invalid', json_encode($socket_dirname) ?: 'invalid');
                         $this->usage($msg, 1);
                     } else {
                         $this->url = sprintf('unix://%s/%s', $socket_dirname, basename($value));
@@ -459,12 +465,12 @@ EOB;
                     $path = $value;
                     if (!is_string($path)) {
                         $this->print_usage_on_error = $print_usage_on_error;
-                        $this->usage(sprintf("Error: asked to analyze path %s which is not a string", json_encode($path)), 1);
+                        $this->usage(sprintf("Error: asked to analyze path %s which is not a string", json_encode($path) ?: 'invalid'), 1);
                         exit(1);
                     }
                     if (!file_exists($path)) {
                         $this->print_usage_on_error = $print_usage_on_error;
-                        $this->usage(sprintf("Error: asked to analyze file %s which does not exist", json_encode($path)), 1);
+                        $this->usage(sprintf("Error: asked to analyze file %s which does not exist", json_encode($path) ?: 'invalid'), 1);
                         exit(1);
                     }
                     $this->file_list[] = $path;

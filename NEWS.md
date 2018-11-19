@@ -28,6 +28,8 @@ New features(Analysis):
   - `switch (get_class($x)) {case someClass::class: ...}`
 + Warn about invalid/possibly invalid callables in function calls.
   New issue types: `PhanTypeInvalidCallable`, `PhanTypePossiblyInvalidCallable` (the latter check requires `--strict-method-checking`)
++ Reduce false positives for a few functions (such as `substr`) in strict mode.
++ Make Phan infer that variables are not null/false from various comparison expressions, e.g. `assert($x > 0);`
 
 Bug fixes:
 + Fix false positives analyzing `define()` (#2128)

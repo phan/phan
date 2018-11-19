@@ -88,6 +88,7 @@ final class StringUtil
             return str_replace(
                 ['\\\\', '\\\''],
                 ['\\', '\''],
+                // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
                 substr($str, $binary_length + 1, -1)
             );
         } else {
@@ -113,6 +114,7 @@ final class StringUtil
         if ($spaces > 0) {
             $inner = preg_replace("/^" . substr($str, $last_line_index + 1, $spaces) . "/m", '', $inner);
         }
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         if (strpos(substr($str, 0, $first_line_index), "'") === false) {
             // If the start of the here/nowdoc doesn't contain a "'", it's heredoc.
             // The contents have to be unescaped.

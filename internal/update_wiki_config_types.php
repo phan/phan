@@ -272,10 +272,15 @@ EOT;
     private static function extractOldTextForSections(string $wiki_filename) : array
     {
         if (!file_exists($wiki_filename)) {
-            fwrite(STDERR, "Failed to load '$wiki_filename'\n");
+            fwrite(STDERR, "Failed to locate '$wiki_filename'\n");
             exit(1);
         }
-        $wiki_lines = explode("\n", file_get_contents($wiki_filename));
+        $contents = file_get_contents($wiki_filename);
+        if (!is_string($contents)) {
+            fwrite(STDERR, "Failed to read '$wiki_filename'\n");
+            exit(1);
+        }
+        $wiki_lines = explode("\n", $contents);
         $text_for_section = [];
         $title = 'global';
         $text_for_section[$title] = '';

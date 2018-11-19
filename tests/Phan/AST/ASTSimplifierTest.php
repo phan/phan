@@ -31,6 +31,7 @@ final class ASTSimplifierTest extends AbstractPhanFileTest
      * @param ?string $config_file_path @phan-unused-param
      * @dataProvider getTestFiles
      * @override
+     * @suppress PhanPossiblyFalseTypeArgumentInternal
      */
     public function testFiles($test_file_list, $expected_file_path, $config_file_path = null)
     {

@@ -14,6 +14,7 @@ use Phan\LanguageServer\FileMapping;
 use Phan\LanguageServer\GoToDefinitionRequest;
 use Phan\LanguageServer\NodeInfoRequest;
 use Phan\Library\FileCache;
+use Phan\Library\StringUtil;
 use Phan\Output\IssuePrinterInterface;
 use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\BufferedOutput;
@@ -473,7 +474,7 @@ class Request
                 break;
                 // TODO(optional): add APIs to resolve types of variables/properties/etc (e.g. accept byte offset or line/column offset)
             default:
-                $message = sprintf("expected method to be analyze_all or analyze_files, got %s", json_encode($method));
+                $message = sprintf("expected method to be analyze_all or analyze_files, got %s", StringUtil::jsonEncode($method));
                 Daemon::debugf($message);
                 $responder->sendResponseAndClose([
                     'status'  => self::STATUS_INVALID_METHOD,

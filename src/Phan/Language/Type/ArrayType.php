@@ -208,6 +208,18 @@ class ArrayType extends IterableType
     {
         return true;
     }
+
+    /**
+     * Check if this type can satisfy a comparison (<, <=, >, >=)
+     * @param int|string|float|bool|null $scalar
+     * @param int $flags (e.g. \ast\flags\BINARY_IS_SMALLER)
+     * @internal
+     * @suppress PhanUnusedPublicMethodParameter
+     */
+    public function canSatisfyComparison($scalar, int $flags) : bool
+    {
+        return parent::performComparison([], $scalar, $flags);
+    }
 }
 // Trigger the autoloader for GenericArrayType so that it won't be called
 // before ArrayType.

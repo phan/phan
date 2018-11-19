@@ -38,6 +38,7 @@ class PHP72Test extends AbstractPhanFileTest
     public function testFiles($test_file_list, $expected_file_path, $config_file_path = null)
     {
         $skip_reason = null;
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         $main_path = basename(reset($test_file_list));
         if (PHP_VERSION_ID < 70200) {
             switch ($main_path) {

@@ -1,6 +1,10 @@
 #!/usr/bin/env php
 <?php
 declare(strict_types = 1);
+require_once dirname(__DIR__) . '/src/Phan/Library/StringUtil.php';
+
+use Phan\Library\StringUtil;
+
 // @phan-file-suppress PhanNativePHPSyntaxCheckPlugin
 /**
  * Loads the ReflectionFunction or ReflectionMethod for the given function or method name.
@@ -217,7 +221,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
                         $original_function_name,
                         $reflection_parameter->getName(),
                         $phan_parameter->name,
-                        json_encode($fields)
+                        StringUtil::jsonEncode($fields)
                     );
                 } else {
                     printf(
@@ -225,7 +229,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
                         $original_function_name,
                         $reflection_parameter->getName(),
                         $phan_parameter->name,
-                        json_encode($fields)
+                        StringUtil::jsonEncode($fields)
                     );
                 }
             }
@@ -240,7 +244,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
                         $original_function_name,
                         $reflection_parameter->getName(),
                         $phan_parameter->name,
-                        json_encode($fields)
+                        StringUtil::jsonEncode($fields)
                     );
                 } else {
                     printf(
@@ -248,7 +252,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
                         $original_function_name,
                         $reflection_parameter->getName(),
                         $phan_parameter->name,
-                        json_encode($fields)
+                        StringUtil::jsonEncode($fields)
                     );
                 }
             }
@@ -264,7 +268,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
                         $original_function_name,
                         $reflection_parameter->getName(),
                         $phan_parameter->name,
-                        json_encode($fields)
+                        StringUtil::jsonEncode($fields)
                     );
                 } else {
                     printf(
@@ -272,7 +276,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
                         $original_function_name,
                         $reflection_parameter->getName(),
                         $phan_parameter->name,
-                        json_encode($fields)
+                        StringUtil::jsonEncode($fields)
                     );
                 }
             }
@@ -294,7 +298,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
                             $phan_parameter->name,
                             $reflection_representation,
                             $phan_representation,
-                            json_encode($fields)
+                            StringUtil::jsonEncode($fields)
                         );
                     }
                 }

@@ -77,6 +77,18 @@ final class BoolType extends ScalarType
     {
         return Config::getValue('scalar_implicit_cast');
     }
+
+    /**
+     * Check if this type can satisfy a comparison (<, <=, >, >=)
+     * @param int|string|float|bool|null $scalar
+     * @param int $flags (e.g. \ast\flags\BINARY_IS_SMALLER)
+     * @internal
+     */
+    public function canSatisfyComparison($scalar, int $flags) : bool
+    {
+        return self::performComparison(false, $scalar, $flags) ||
+            self::performComparison(true, $scalar, $flags);
+    }
 }
 
 // Temporary hack to load FalseType and TrueType before BoolType::instance() is called

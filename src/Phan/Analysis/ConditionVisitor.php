@@ -170,24 +170,32 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
     public function visitBinaryOp(Node $node) : Context
     {
         $flags = $node->flags;
-        if ($flags === flags\BINARY_BOOL_AND) {
-            return $this->analyzeShortCircuitingAnd($node->children['left'], $node->children['right']);
-        } elseif ($flags === flags\BINARY_BOOL_OR) {
-            return $this->analyzeShortCircuitingOr($node->children['left'], $node->children['right']);
-        } elseif ($flags === flags\BINARY_IS_IDENTICAL || $flags === flags\BINARY_IS_EQUAL) {
-            // TODO: Could be more precise, and preserve 0, [], etc. for `$x == null`
-            $this->checkVariablesDefined($node);
-            return $this->analyzeAndUpdateToBeIdentical($node->children['left'], $node->children['right']);
-        } elseif ($flags === flags\BINARY_IS_NOT_IDENTICAL) {
-            $this->checkVariablesDefined($node);
-            // TODO: Add a different function for IS_NOT_EQUAL, e.g. analysis of != null should be different from !== null (First would remove FalseType)
-            return $this->analyzeAndUpdateToBeNotIdentical($node->children['left'], $node->children['right']);
-        } elseif ($flags === flags\BINARY_IS_NOT_EQUAL) {
-            return $this->analyzeAndUpdateToBeNotEqual($node->children['left'], $node->children['right']);
-        } else {
-            $this->checkVariablesDefined($node);
+        switch ($flags) {
+            case flags\BINARY_BOOL_AND:
+                return $this->analyzeShortCircuitingAnd($node->children['left'], $node->children['right']);
+            case flags\BINARY_BOOL_OR:
+                return $this->analyzeShortCircuitingOr($node->children['left'], $node->children['right']);
+            case flags\BINARY_IS_IDENTICAL:
+            case flags\BINARY_IS_EQUAL:
+                // TODO: Could be more precise, and preserve 0, [], etc. for `$x == null`
+                $this->checkVariablesDefined($node);
+                return $this->analyzeAndUpdateToBeIdentical($node->children['left'], $node->children['right']);
+            case flags\BINARY_IS_NOT_IDENTICAL:
+                $this->checkVariablesDefined($node);
+                // TODO: Add a different function for IS_NOT_EQUAL, e.g. analysis of != null should be different from !== null (First would remove FalseType)
+                return $this->analyzeAndUpdateToBeNotIdentical($node->children['left'], $node->children['right']);
+            case flags\BINARY_IS_NOT_EQUAL:
+                return $this->analyzeAndUpdateToBeNotEqual($node->children['left'], $node->children['right']);
+            case flags\BINARY_IS_GREATER:
+            case flags\BINARY_IS_GREATER_OR_EQUAL:
+            case flags\BINARY_IS_SMALLER:
+            case flags\BINARY_IS_SMALLER_OR_EQUAL:
+                $this->checkVariablesDefined($node);
+                return $this->analyzeAndUpdateToBeCompared($node->children['left'], $node->children['right'], $flags);
+            default:
+                $this->checkVariablesDefined($node);
+                return $this->context;
         }
-        return $this->context;
     }
 
     /**

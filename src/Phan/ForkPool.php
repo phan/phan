@@ -200,6 +200,10 @@ class ForkPool
             // For each stream that was ready, read the content.
             foreach ($needs_read as $file) {
                 $buffer = fread($file, 1024);
+                if ($buffer === false) {
+                    error_log("unable to read from stream of worker process");
+                    exit(EXIT_FAILURE);
+                }
                 if (strlen($buffer) > 0) {
                     $content[intval($file)] .= $buffer;
                 }
