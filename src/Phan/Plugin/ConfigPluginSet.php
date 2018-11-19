@@ -544,6 +544,7 @@ final class ConfigPluginSet extends PluginV2 implements
         if (is_null($this->plugin_set)) {
             throw new AssertionError("Expected plugins to be loaded in " . __METHOD__);
         }
+        // @phan-suppress-next-line PhanPossiblyNullTypeArgumentInternal
         return \count($this->analyze_function_plugin_set) > 0;
     }
 
@@ -555,6 +556,7 @@ final class ConfigPluginSet extends PluginV2 implements
         if (is_null($this->plugin_set)) {
             throw new AssertionError("Expected plugins to be loaded in " . __METHOD__);
         }
+        // @phan-suppress-next-line PhanPossiblyNullTypeArgumentInternal
         return \count($this->analyze_method_plugin_set) > 0;
     }
 
@@ -706,6 +708,7 @@ final class ConfigPluginSet extends PluginV2 implements
         if (is_null($this->plugin_set)) {
             throw new AssertionError("Expected plugins to be loaded in " . __METHOD__);
         }
+        // @phan-suppress-next-line PhanPossiblyNullTypeArgumentInternal
         return \count($this->analyze_property_plugin_set) > 0;
     }
 
@@ -832,6 +835,9 @@ final class ConfigPluginSet extends PluginV2 implements
                 self::addClosuresForPreAnalyzeNodeCapability($closures_for_kind, $plugin);
             }
         }
+        /**
+         * @param array<int,Closure> $closure_list
+         */
         return $closures_for_kind->getFlattenedClosures(static function (array $closure_list) : \Closure {
             return static function (CodeBase $code_base, Context $context, Node $node) use ($closure_list) {
                 foreach ($closure_list as $closure) {
@@ -924,6 +930,9 @@ final class ConfigPluginSet extends PluginV2 implements
                 self::addClosuresForPostAnalyzeNodeCapability($closures_for_kind, $plugin);
             }
         }
+        /**
+         * @param array<int,Closure> $closure_list
+         */
         return $closures_for_kind->getFlattenedClosures(static function (array $closure_list) : \Closure {
             return static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) use ($closure_list) {
                 foreach ($closure_list as $closure) {
@@ -1021,6 +1030,7 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
+     * @param PluginV2[] $plugin_set
      * @return ?UnusedSuppressionPlugin
      */
     private static function findUnusedSuppressionPlugin(array $plugin_set)

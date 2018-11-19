@@ -210,7 +210,7 @@ EOT;
             $method_name = $this->aliases[$method_name];
         }
         if (stripos($method_name, '::') !== false) {
-            $parts = \explode('::', $method_name);
+            $parts = \explode('::', $method_name) ?: [];
             if (\count($parts) !== 2) {
                 throw new InvalidArgumentException("Wrong number of parts in $method_name");
             }
@@ -323,6 +323,9 @@ EOT;
         return (string)$scalar;
     }
 
+    /**
+     * @param string[] $arguments the return type and parameter signatures
+     */
     public static function encodeSingleSignature(string $function_like_name, array $arguments) : string
     {
         $result = static::encodeScalar($function_like_name) . ' => [';
@@ -383,6 +386,9 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     {
         $file_name = $this->doc_base_directory . '/en/appendices/aliases.xml';
         $xml = $this->getSimpleXMLForFile($file_name);
+        if (!$xml) {
+            return [];
+        }
         $result = [];
         foreach ($xml->children()[2]->table->tgroup->tbody->children() as $row) {
             $entry = $row->entry;
@@ -424,6 +430,9 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         return $this->files_for_function_name_list;
     }
 
+    /**
+     * @return array<string,string>
+     */
     private function scandirForXML(string $dir) : array
     {
         $result = [];
@@ -433,7 +442,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
             }
             $full_path = "$dir/$basename";
             if (is_file($full_path)) {
-                $normalized_name = strtolower(str_replace('-', '_', substr($basename, 0, -4)));
+                $normalized_name = strtolower(str_replace('-', '_', (string)substr($basename, 0, -4)));
                 $result[$full_path] = $normalized_name;
             }
         }
@@ -557,7 +566,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                     continue;
                 }
                 $results = $xml->xpath('//a:classsynopsisinfo/a:ooclass/a:classname');
-                if (count($results) === 1) {
+                if (is_array($results) && count($results) === 1) {
                     echo "Returning $results[0]\n";
                     return (string)$results[0];
                 }
@@ -650,7 +659,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     {
         $actual = $this->parseFunctionLikeSignature($function_name);
         if ($expected !== $actual) {
-            printf("Extraction failed for %s\nExpected: %s\nActual:   %s\n", $function_name, json_encode($expected), json_encode($actual));
+            printf("Extraction failed for %s\nExpected: %s\nActual:   %s\n", $function_name, json_encode($expected) ?: 'invalid', json_encode($actual) ?: 'invalid');
             exit(1);
         }
     }
@@ -672,9 +681,13 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
             return null;
         }
         $signature_file = \reset($function_signature_files);
+        if (!is_string($signature_file)) {
+            static::info("invalid signature file\n");
+            return null;
+        }
         $signature_file_contents = file_get_contents($signature_file);
         if (!is_string($signature_file_contents)) {
-            static::debug("Could not read '$signature_file'\n");
+            static::info("Could not read '$signature_file'\n");
             return null;
         }
         // Not sure if there's a good way of using an external entity file in PHP.
@@ -699,6 +712,10 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
             return null;
         }
         $class_folder = \reset($class_name_files);
+        if (!is_string($class_folder)) {
+            static::info("Invalid array for $class_name\n");
+            return null;
+        }
         $result = [];
         foreach (static::scandirForXML($class_folder) as $method_xml_path => $method_name_lc) {
             $xml = $this->getSimpleXMLForFile($method_xml_path);
@@ -787,7 +804,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /** @return ?string */
     private function getFunctionNameFromXML(SimpleXMLElement $xml)
     {
-        $name = $xml->xpath('/a:refentry/a:refnamediv/a:refname');
+        $name = $xml->xpath('/a:refentry/a:refnamediv/a:refname') ?: [];
         if (count($name) === 0) {
             return null;
         }
@@ -808,7 +825,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     /** @return ?string */
     private function getMethodNameFromXML(SimpleXMLElement $xml)
     {
-        $name = $xml->xpath('/a:refentry/a:refnamediv/a:refname');
+        $name = $xml->xpath('/a:refentry/a:refnamediv/a:refname') ?: [];
         if (count($name) === 0) {
             return null;
         }
@@ -838,7 +855,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         }
         // echo $contents->asXML();
         // $function_description = $contents->xpath('/refentity/refsect1[role=description]/methodsynopsis');
-        $function_description_list = $xml->xpath('/a:refentry/a:refsect1[@role="description"]/a:methodsynopsis');
+        $function_description_list = $xml->xpath('/a:refentry/a:refsect1[@role="description"]/a:methodsynopsis') ?: [];
         if (count($function_description_list) !== 1) {
             static::debug("Too many descriptions for '$function_name'\n");
             return null;
@@ -906,7 +923,12 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     {
         $this->known_entities = [];
         foreach (['doc-base/entities/global.ent', 'en/contributors.ent', 'en/extensions.ent', 'en/language-defs.ent', 'en/language-snippets.ent'] as $sub_path) {
-            foreach (explode("\n", file_get_contents("$this->doc_base_directory/$sub_path")) as $line) {
+            $abs_path = "$this->doc_base_directory/$sub_path";
+            $contents = file_get_contents($abs_path);
+            if (!$contents) {
+                throw new AssertionError("Failed to load $abs_path");
+            }
+            foreach (explode("\n", $contents) as $line) {
                 if (preg_match('/^<!ENTITY\s+(\S+)/', $line, $matches)) {
                     $entity_name = $matches[1];
                     $this->known_entities[strtolower($entity_name)] = true;
@@ -987,7 +1009,10 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         });
     }
 
-    // Same as scandir, but ignores hidden files
+    /**
+     * Same as scandir, but ignores hidden files
+     * @return array<int,string>
+     */
     private static function scandir(string $directory) : array
     {
         $result = [];
@@ -1053,7 +1078,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
     {
         $actual = $this->parseFunctionLikeSignature($function_name);
         if ($expected !== $actual) {
-            fprintf(STDERR, "Extraction failed for %s\nExpected: %s\nActual:   %s\n", $function_name, json_encode($expected), json_encode($actual));
+            fprintf(STDERR, "Extraction failed for %s\nExpected: %s\nActual:   %s\n", $function_name, json_encode($expected) ?: 'invalid', json_encode($actual) ?: 'invalid');
             return 1;
         }
         return 0;
@@ -1062,6 +1087,9 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
     /** @var bool has this initialized and parsed all of the stubs yet? */
     private $initialized = false;
 
+    /**
+     * @return array<int,string>
+     */
     private function getFileList() : array
     {
         $iterator = new \CallbackFilterIterator(
@@ -1086,6 +1114,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
             }
         );
 
+        // @phan-suppress-next-line PhanPartialTypeMismatchReturn
         return array_keys(iterator_to_array($iterator));
     }
 

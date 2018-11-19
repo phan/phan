@@ -96,6 +96,7 @@ class UndoTracker
         if (!$stat) {
             return null;  // It was missing or unreadable.
         }
+        // @phan-suppress-next-line PhanPossiblyNullTypeArgumentInternal
         return sprintf('%d_%d', $stat['mtime'], $stat['size']);
     }
 

@@ -108,7 +108,9 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
         $max_incomplete_processes = max(0, $max_incomplete_processes);
         while (count($this->processes) > $max_incomplete_processes) {
             $process = array_pop($this->processes);
-            unset($this->processes[$i]);
+            if (!$process) {
+                throw new AssertionError("Process list should be non-empty");
+            }
             $process->blockingRead();
             $this->handleError($code_base, $process);
         }
@@ -291,6 +293,9 @@ class InvokeExecutionPromise
         $stdout = $this->pipes[1];
         while (!feof($stdout)) {
             $bytes = fread($stdout, 4096);
+            if ($bytes === false) {
+                break;
+            }
             if (strlen($bytes) === 0) {
                 break;
             }

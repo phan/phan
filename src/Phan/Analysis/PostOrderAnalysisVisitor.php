@@ -1910,7 +1910,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             // This didn't throw NonClassMethodCall
             if (Config::get_strict_method_checking()) {
-                $this->checkForPossibleNonObjectInMethod($node, $method_name);
+                $this->checkForPossibleNonObjectAndNonClassInMethod($node, $method_name);
             }
 
             return $result;
@@ -1923,7 +1923,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } catch (Exception $_) {
             // We already checked for NonClassMethodCall
             if (Config::get_strict_method_checking()) {
-                $this->checkForPossibleNonObjectInMethod($node, $method_name);
+                $this->checkForPossibleNonObjectAndNonClassInMethod($node, $method_name);
             }
 
             // If we can't figure out the class for this method
@@ -2160,6 +2160,21 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr'] ?? $node->children['class']);
         if ($type->containsDefiniteNonObjectType()) {
+            Issue::maybeEmit(
+                $this->code_base,
+                $this->context,
+                Issue::PossiblyNonClassMethodCall,
+                $node->lineno,
+                $method_name,
+                $type
+            );
+        }
+    }
+
+    private function checkForPossibleNonObjectAndNonClassInMethod(Node $node, string $method_name)
+    {
+        $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr'] ?? $node->children['class']);
+        if ($type->containsDefiniteNonObjectAndNonClassType()) {
             Issue::maybeEmit(
                 $this->code_base,
                 $this->context,
@@ -3073,6 +3088,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * @param UnionType $argument_type
      * The type of $argument
+     *
+     * @param array<int,Parameter> &$parameter_list
+     * The parameter list - types are modified by reference
      *
      * @param int $parameter_offset
      * The offset of the parameter on the method's

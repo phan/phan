@@ -265,7 +265,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     }
 
     /**
-     * @param ?Location|?array<int,Location> $locations
+     * @param Location|array<string,mixed>|array<int,Location|array> $locations
      * @return void
      */
     public function recordDefinitionLocationList($locations)
@@ -275,6 +275,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         }
         foreach ($locations ?? [] as $location) {
             if (is_array($location)) {
+                // @phan-suppress-next-line PhanPartialTypeMismatchArgument
                 $location = Location::fromArray($location);
             }
             $this->recordDefinitionLocation($location);

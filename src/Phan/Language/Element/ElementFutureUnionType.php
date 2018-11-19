@@ -66,14 +66,14 @@ trait ElementFutureUnionType
      */
     public function getFutureUnionType()
     {
-        if ($this->future_union_type === null) {
+        $future_union_type = $this->future_union_type;
+        if ($future_union_type === null) {
             return null;
         }
 
         // null out the future_union_type before
         // we compute it to avoid unbounded
         // recursion
-        $future_union_type = $this->future_union_type;
         $this->future_union_type = null;
 
         try {

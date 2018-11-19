@@ -42,7 +42,7 @@ $internal_function_name_list = get_defined_functions()['internal'];
  */
 final class UnionTypeTest extends BaseTest
 {
-    /** @var CodeBase|null The code base within which this unit test is operating */
+    /** @var CodeBase The code base within which this unit test is operating */
     protected static $code_base = null;
 
     /**
@@ -97,6 +97,7 @@ final class UnionTypeTest extends BaseTest
 
     public static function tearDownAfterClass()
     {
+        // @phan-suppress-next-line PhanTypeMismatchProperty
         self::$code_base = null;
     }
 
@@ -374,6 +375,9 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame(1, $union_type->typeCount());
         $types = $union_type->getTypeSet();
         $type = reset($types);
+        if (!($type instanceof Type)) {
+            throw new AssertionError("Should be Type");
+        }
 
         $this->assertSame('\\', $type->getNamespace());
         $this->assertSame('TypeTestClass', $type->getName());
@@ -392,6 +396,9 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame(1, $union_type->typeCount());
         $types = $union_type->getTypeSet();
         $type = reset($types);
+        if (!($type instanceof Type)) {
+            throw new AssertionError("Should be Type");
+        }
 
         $this->assertSame('\\', $type->getNamespace());
         $this->assertSame('TypeTestClass', $type->getName());

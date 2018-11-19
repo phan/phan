@@ -121,12 +121,19 @@ class Ordering
         // Sort the set of files with a given root by their
         // depth in the hierarchy
         foreach ($root_fqsen_list as $root_fqsen => $list) {
-            // Sort first by depth, and break ties by file name lexicographically
-            // (usort is not a stable sort).
-            usort($list, function (array $a, array $b) : int {
-                return ($a['depth'] <=> $b['depth']) ?:
-                       strcmp($a['file'], $b['file']);
-            });
+            usort(
+                $list,
+                /**
+                 * Sort first by depth, and break ties by file name lexicographically
+                 * (usort is not a stable sort).
+                 * @param array{depth:int,file:string} $a
+                 * @param array{depth:int,file:string} $b
+                 */
+                function (array $a, array $b) : int {
+                    return ($a['depth'] <=> $b['depth']) ?:
+                           strcmp($a['file'], $b['file']);
+                }
+            );
 
             // Choose which process this file list will be
             // run on

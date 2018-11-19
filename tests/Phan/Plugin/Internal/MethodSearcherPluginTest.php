@@ -72,7 +72,7 @@ final class MethodSearcherPluginTest extends BaseTest
     {
         $actual_signature_type = UnionType::fromFullyQualifiedString($actual);
         $desired_signature_type = UnionType::fromFullyQualifiedString($desired);
-        // @phan-suppress-next-line PhanAccessMethodInternal
+        // @phan-suppress-next-line PhanAccessMethodInternal, PhanPossiblyNullTypeArgument
         $this->assertSame($expected_score, MethodSearcherPlugin::getTypeMatchingBonus(self::$code_base, $actual_signature_type, $desired_signature_type));
     }
 
@@ -89,13 +89,15 @@ final class MethodSearcherPluginTest extends BaseTest
     }
 
     /**
+     * @param array<int,string> $actual
+     * @param array<int,string> $desired
      * @dataProvider matchesParamTypesProvider
      */
     public function testMatchesParamTypes(float $expected_score, array $actual, array $desired)
     {
         $actual_signature_types = array_map('\Phan\Language\UnionType::fromFullyQualifiedString', $actual);
         $desired_signature_types = array_map('\Phan\Language\UnionType::fromFullyQualifiedString', $desired);
-        // @phan-suppress-next-line PhanAccessMethodInternal
+        // @phan-suppress-next-line PhanAccessMethodInternal, PhanPossiblyNullTypeArgument
         $this->assertSame($expected_score, MethodSearcherPlugin::matchesParamTypes(self::$code_base, $actual_signature_types, $desired_signature_types));
     }
 

@@ -2486,7 +2486,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * @param CodeBase $code_base
      * @param Context $context
-     * @param string|Node $node the node to fetch CallableType instances for.
+     * @param int|string|float|Node $node the node to fetch CallableType instances for.
      * @param bool $log_error whether or not to log errors while searching @phan-unused-param
      * @return array<int,FunctionInterface>
      * TODO: use log_error

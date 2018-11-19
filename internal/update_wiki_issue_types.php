@@ -144,6 +144,9 @@ EOT;
         }
     }
 
+    /**
+     * @param array<string,string> $old_text_for_section
+     */
     private static function documentIssue(WikiWriter $writer, Issue $issue, array $old_text_for_section)
     {
         // TODO: Print each severity as we see it?

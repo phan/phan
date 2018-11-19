@@ -12,10 +12,10 @@ use Phan\Output\IssueFilterInterface;
 final class BufferingCollector implements IssueCollectorInterface
 {
 
-    /** @var array<string,IssueInstance> */
+    /** @var array<string,IssueInstance> the issues that were collected */
     private $issues = [];
 
-    /** @var IssueFilterInterface|null */
+    /** @var IssueFilterInterface */
     private $filter;
 
     /**
@@ -44,7 +44,7 @@ final class BufferingCollector implements IssueCollectorInterface
      * @param IssueInstance $issue
      * @return string
      */
-    private function formatSortableKey(IssueInstance $issue)
+    private function formatSortableKey(IssueInstance $issue) : string
     {
 
         // This needs to be a sortable key so that output
@@ -58,7 +58,7 @@ final class BufferingCollector implements IssueCollectorInterface
     }
 
     /**
-     * @return array<string,IssueInstance>
+     * @return array<int,IssueInstance>
      */
     public function getCollectedIssues():array
     {

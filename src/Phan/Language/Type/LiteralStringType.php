@@ -88,7 +88,10 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
         // TODO: Finalize escaping
         $inner = \preg_replace_callback(
             '/[^- ,.\/?:;"!#$%^&*_+=a-zA-Z0-9_\x80-\xff]/',
-            /** @return string */
+            /**
+             * @param array{0:string} $match
+             * @return string
+             */
             function (array $match) {
                 $c = $match[0];
                 return self::ESCAPE_CHARACTER_LOOKUP[$c] ?? \sprintf('\\x%02x', \ord($c));

@@ -20,6 +20,7 @@ use Sabre\Event\Promise;
 /**
  * Provides method handlers for all textDocument/* methods
  * Source: Based on https://github.com/felixfbecker/php-language-server/blob/master/src/Server/TextDocument.php
+ * @phan-file-suppress PhanPossiblyNullTypeArgument, PhanPossiblyNullTypeArgumentInternal
  */
 class TextDocument
 {

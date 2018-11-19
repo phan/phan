@@ -108,6 +108,7 @@ class UnionType implements Serializable
         if ($n === 0) {
             return self::$empty_instance;
         } elseif ($n === 1) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return \reset($type_list)->asUnionType();
         } else {
             return new self($type_list);
@@ -177,6 +178,7 @@ class UnionType implements Serializable
 
             $unique_types = self::getUniqueTypes(self::normalizeMultiTypes($types));
             if (\count($unique_types) === 1) {
+                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 $union_type = \reset($unique_types)->asUnionType();
             } else {
                 // TODO: Support brackets, template types within <>, etc.
@@ -420,6 +422,8 @@ class UnionType implements Serializable
      * given builtin function with the given name
      *
      * @param FullyQualifiedMethodName|FullyQualifiedFunctionName $function_fqsen
+     *
+     * @return array<int,array{return_type:?UnionType,parameter_name_type_map:array<string,UnionType>}>
      *
      * @see internal_varargs_check
      * Formerly `function internal_varargs_check`
@@ -2299,6 +2303,7 @@ class UnionType implements Serializable
             return GenericArrayType::fromElementType($type, false, $key_type);
         }, $this->type_set);
         if (\count($parts) <= 1) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return \count($parts) === 1 ? \reset($parts)->asUnionType() : self::$empty_instance;
         }
         return new UnionType($parts);
@@ -2408,6 +2413,7 @@ class UnionType implements Serializable
         if (\count($type_set) === 0) {
             return self::$empty_instance;
         } elseif (\count($type_set) === 1) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return \reset($type_set)->asExpandedTypes(
                 $code_base,
                 $recursion_depth + 1
@@ -2816,6 +2822,11 @@ class UnionType implements Serializable
         $result = new UnionTypeBuilder();
         foreach ($this->type_set as $type) {
             if ($type->hasArrayShapeTypeInstances()) {
+                if ($type instanceof ArrayShapeType && $type->isEmptyArrayShape()) {
+                    if (\count($this->type_set) > 1) {
+                        continue;
+                    }
+                }
                 foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
                     $result->addType($type_part);
                 }
@@ -2839,6 +2850,11 @@ class UnionType implements Serializable
         $result = new UnionTypeBuilder();
         foreach ($this->type_set as $type) {
             if ($type->hasArrayShapeOrLiteralTypeInstances()) {
+                if ($type instanceof ArrayShapeType && \count($type->getFieldTypes()) === 0) {
+                    if (count($this->type_set) > 1) {
+                        continue;
+                    }
+                }
                 foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
                     $result->addType($type_part);
                 }
@@ -3104,6 +3120,21 @@ class UnionType implements Serializable
     {
         foreach ($this->type_set as $type) {
             if ($type->getIsNullable() || $type->isDefiniteNonObjectType()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if this contains a type that is definitely nullable or a non-object/non-string.
+     * e.g. returns true for ?T, T|false, T|array
+     *      returns false for T|callable, object, T|iterable, etc.
+     */
+    public function containsDefiniteNonObjectAndNonClassType() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type->getIsNullable() || ($type->isDefiniteNonObjectType() && !$type instanceof StringType)) {
                 return true;
             }
         }

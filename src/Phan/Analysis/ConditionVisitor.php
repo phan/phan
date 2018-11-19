@@ -709,6 +709,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         // `\is_string($variable)`
         if (!($first_arg instanceof Node && $first_arg->kind === \ast\AST_VAR)) {
             if (\strcasecmp($raw_function_name, 'array_key_exists') === 0 && \count($args) === 2) {
+                // @phan-suppress-next-line PhanPartialTypeMismatchArgument
                 return $this->analyzeArrayKeyExists($args);
             }
             return $this->context;
@@ -762,6 +763,9 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         return $context;
     }
 
+    /**
+     * @param array<int,Node|string|int|float> $args
+     */
     private function analyzeArrayKeyExists(array $args) : Context
     {
         $context = $this->context;
@@ -769,7 +773,10 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             return $context;
         }
         $var_node = $args[1];
-        if (($var_node->kind ?? null) !== \ast\AST_VAR) {
+        if (!($var_node instanceof Node)) {
+            return $context;
+        }
+        if ($var_node->kind !== \ast\AST_VAR) {
             return $context;
         }
         $var_name = $var_node->children['name'];

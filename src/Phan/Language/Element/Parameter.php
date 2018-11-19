@@ -152,7 +152,8 @@ class Parameter extends Variable
      */
     public function handleDefaultValueOfNull()
     {
-        if ($this->default_value_type->isType(NullType::instance(false))) {
+        $default_value_type = $this->default_value_type;
+        if ($default_value_type && $default_value_type->isType(NullType::instance(false))) {
             // If it isn't already nullable, convert the parameter type to nullable.
             $this->convertToNullable();
         }

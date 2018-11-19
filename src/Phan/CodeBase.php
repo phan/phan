@@ -267,6 +267,7 @@ class CodeBase
     public function getParsedFilePathList() : array
     {
         if ($this->undo_tracker) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return $this->undo_tracker->getParsedFilePathList();
         }
         throw new \RuntimeException("Calling getParsedFilePathList without an undo tracker");
@@ -278,6 +279,7 @@ class CodeBase
     public function getParsedFilePathCount() : int
     {
         if ($this->undo_tracker) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return $this->undo_tracker->getParsedFilePathCount();
         }
         throw new \RuntimeException("Calling getParsedFilePathCount without an undo tracker");
@@ -291,6 +293,7 @@ class CodeBase
     {
         self::$current_file = $current_parsed_file;
         if ($this->undo_tracker) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $this->undo_tracker->setCurrentParsedFile($current_parsed_file);
         }
     }
@@ -323,6 +326,7 @@ class CodeBase
     public function recordUnparsableFile(string $current_parsed_file)
     {
         if ($this->undo_tracker) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $this->undo_tracker->recordUnparsableFile($this, $current_parsed_file);
         }
     }
@@ -382,6 +386,7 @@ class CodeBase
         if ($this->undo_tracker) {
             $this->invalidateDependentCacheEntries();
 
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return $this->undo_tracker->updateFileList($this, $new_file_list, $file_mapping_contents, $reanalyze_files);
         }
         throw new \RuntimeException("Calling updateFileList without undo tracker");
@@ -396,6 +401,7 @@ class CodeBase
         if ($this->undo_tracker) {
             $this->invalidateDependentCacheEntries();
 
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return $this->undo_tracker->beforeReplaceFileContents($this, $file_name);
         }
         throw new \RuntimeException("Calling replaceFileContents without undo tracker");
@@ -617,6 +623,7 @@ class CodeBase
         $this->fqsen_class_map->offsetSet($fqsen, $class);
         $this->fqsen_class_map_user_defined->offsetSet($fqsen, $class);
         if ($this->undo_tracker) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($fqsen) {
                 Daemon::debugf("Undoing addClass %s\n", $fqsen);
                 $inner->fqsen_class_map->offsetUnset($fqsen);
@@ -642,6 +649,7 @@ class CodeBase
         // debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
         $this->parsed_namespace_maps[$file][$key] = $namespace_map;
         if ($this->undo_tracker) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($file, $key) {
                 Daemon::debugf("Undoing addParsedNamespaceMap file = %s namespace = %s\n", $file, $key);
                 unset($inner->parsed_namespace_maps[$file][$key]);
@@ -713,6 +721,7 @@ class CodeBase
         if ($this->undo_tracker) {
             // TODO: Track a count of aliases instead? This doesn't work in daemon mode if multiple files add the same alias to the same class.
             // TODO: Allow .phan/config.php to specify aliases or precedences for aliases?
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($original, $alias_record) {
                 $fqsen_alias_map = $inner->fqsen_alias_map[$original] ?? null;
                 if ($fqsen_alias_map) {
@@ -944,6 +953,7 @@ class CodeBase
         }
         if ($this->undo_tracker) {
             // The addClass's recordUndo should remove the class map. Only need to remove it from method_set
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($method) {
                 $inner->method_set->detach($method);
             });
@@ -1083,6 +1093,7 @@ class CodeBase
         $this->fqsen_func_map[$function->getFQSEN()] = $function;
 
         if ($this->undo_tracker) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($function) {
                 Daemon::debugf("Undoing addFunction on %s\n", $function->getFQSEN());
                 unset($inner->fqsen_func_map[$function->getFQSEN()]);
@@ -1195,6 +1206,7 @@ class CodeBase
             $global_constant->getFQSEN()
         ] = $global_constant;
         if ($this->undo_tracker) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($global_constant) {
                 Daemon::debugf("Undoing addGlobalConstant on %s\n", $global_constant->getFQSEN());
                 unset($inner->fqsen_global_constant_map[$global_constant->getFQSEN()]);
@@ -1461,6 +1473,7 @@ class CodeBase
         static $constant_name_list = null;
         if ($constant_name_list === null) {
             // 'true', 'false', and 'null' aren't actually defined constants, they're keywords? Add them so that analysis won't break.
+            // @phan-suppress-next-line PhanPossiblyNullTypeArgumentInternal
             $constant_name_list = \array_keys(\array_merge(['true' => true, 'false' => false, 'null' => null], ...\array_values(
                 \array_diff_key(\get_defined_constants(true), ['user' => []])
             )));
@@ -1596,13 +1609,14 @@ class CodeBase
     /**
      * This limits the suggested class names from getClassNamesOfNamespace for $namespace_lower to
      * the names which are similar enough in length to be a potential suggestion
+     * @return array<string,string>
      */
     private function getSimilarLengthClassNamesForNamespace(string $namespace, int $strlen) : array
     {
         $namespace = \strtolower($namespace);
         $class_names = $this->getClassNamesOfNamespace($namespace);
         if (count($class_names) === 0) {
-            return $class_names;
+            return [];
         }
         return $this->class_names_near_strlen_in_namespace[$namespace][$strlen]
             ?? ($this->class_names_near_strlen_in_namespace[$namespace][$strlen] = $this->computeSimilarLengthClassNamesForNamespace($class_names, $strlen));

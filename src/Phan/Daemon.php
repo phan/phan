@@ -56,12 +56,14 @@ class Daemon
             pcntl_signal(
                 SIGCHLD,
                 /**
-                 * @param mixed ...$args
+                 * @param int $signo
+                 * @param int|null $status
+                 * @param int|null $pid
                  * @return void
                  */
-                function (...$args) use (&$got_signal) {
+                function ($signo, $status = null, $pid = null) use (&$got_signal) {
                     $got_signal = true;
-                    Request::childSignalHandler(...$args);
+                    Request::childSignalHandler($signo, $status, $pid);
                 }
             );
             while (true) {

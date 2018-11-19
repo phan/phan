@@ -278,6 +278,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             return $callback($this, $args[0], $context);
         }
         if ($function_name === 'array_key_exists') {
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument
             return $this->analyzeArrayKeyExistsNegation($args);
         }
         return $context;
@@ -292,6 +293,9 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         return $this->removeTruthyFromVariable($node, $this->context, false);
     }
 
+    /**
+     * @param array<int,Node|string|int|float> $args
+     */
     private function analyzeArrayKeyExistsNegation(array $args) : Context
     {
         $context = $this->context;

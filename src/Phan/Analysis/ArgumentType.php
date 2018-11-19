@@ -585,6 +585,9 @@ final class ArgumentType
 
     private static function analyzeParameterStrict(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, Variable $alternate_parameter, int $lineno, int $i)
     {
+        if ($alternate_parameter instanceof Parameter && $alternate_parameter->isPassByReference() && $alternate_parameter->getReferenceType() === Parameter::REFERENCE_WRITE_ONLY) {
+            return;
+        }
         $type_set = $argument_type->getTypeSet();
         if (\count($type_set) < 2) {
             throw new AssertionError("Expected to have at least two parameter types when checking if parameter types match in strict mode");

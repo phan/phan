@@ -686,6 +686,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
             if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
                 // Heuristic: If one or more of the sides is a float, the result is always a float.
+                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 return $float_type->asUnionType();
             }
             return $int_or_float_union_type;
@@ -717,9 +718,8 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                     $node->lineno ?? 0
                 );
                 return UnionType::empty();
-            } elseif ($right_is_array
-                && !$left->canCastToUnionType($array_type->asUnionType())
-            ) {
+                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+            } elseif ($right_is_array && !$left->canCastToUnionType($array_type->asUnionType())) {
                 $this->emitIssue(
                     Issue::TypeInvalidLeftOperand,
                     $node->lineno ?? 0
@@ -728,6 +728,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             }
             // If it is a '+' and we know one side is an array
             // and the other is unknown, assume array
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
             return $array_type->asUnionType();
         }
 
@@ -792,6 +793,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         if ($left->isNonNullNumberType() && $right->isNonNullNumberType()) {
             if (!$left->hasNonNullIntType() || !$right->hasNonNullIntType()) {
                 // Heuristic: If one or more of the sides is a float, the result is always a float.
+                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 return $float_type->asUnionType();
             }
             return $int_or_float_union_type;

@@ -18,7 +18,7 @@ use Phan\Tests\BaseTest;
 final class FQSENTest extends BaseTest
 {
 
-    /** @var Context|null the context within which this unit test will run */
+    /** @var Context the context within which this unit test will run */
     protected $context = null;
 
     protected function setUp()
@@ -30,6 +30,7 @@ final class FQSENTest extends BaseTest
     protected function tearDown()
     {
         // Deliberately not calling parent::tearDown()
+        // @phan-suppress-next-line PhanTypeMismatchProperty
         $this->context = null;
     }
 
