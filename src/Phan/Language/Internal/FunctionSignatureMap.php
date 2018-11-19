@@ -8949,7 +8949,7 @@ return [
 'parse_ini_file' => ['array|false', 'filename'=>'string', 'process_sections='=>'bool', 'scanner_mode='=>'int'],
 'parse_ini_string' => ['array|false', 'ini_string'=>'string', 'process_sections='=>'bool', 'scanner_mode='=>'int'],
 'parse_str' => ['void', 'encoded_string'=>'string', '&w_result='=>'array'],
-'parse_url' => ['array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|string|int|null', 'url'=>'string', 'url_component='=>'int'],
+'parse_url' => ['array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|string|int|false|null', 'url'=>'string', 'url_component='=>'int'],
 'ParseError::__clone' => ['void'],
 'ParseError::__construct' => ['void', 'message='=>'string', 'code='=>'int', 'previous='=>'?Throwable|?ParseError'],
 'ParseError::__toString' => ['string'],
