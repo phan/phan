@@ -196,7 +196,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             'getenv'                      => $getenv_handler,
             'version_compare'             => $make_arg_existence_dependent_type_method(2, 'bool', 'int'),
             'pathinfo'                    => $make_arg_existence_dependent_type_method(1, 'string', 'array{dirname:string,basename:string,extension?:string,filename:string}'),
-            'parse_url'                   => $make_arg_existence_dependent_type_method(1, 'string|int|null', 'array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}'),
+            'parse_url'                   => $make_arg_existence_dependent_type_method(1, 'string|int|null|false', 'array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|false'),
         ];
     }
 
