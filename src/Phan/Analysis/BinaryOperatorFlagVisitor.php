@@ -119,6 +119,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $this->emitIssue(
                 Issue::TypeArrayOperator,
                 $node->lineno ?? 0,
+                PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
                 $left,
                 $right
             );
