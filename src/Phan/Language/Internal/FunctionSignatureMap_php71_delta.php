@@ -35,7 +35,7 @@ return [
     'sapi_windows_cp_get' => ['int'],
     'sapi_windows_cp_is_utf8' => ['bool'],
     'sapi_windows_cp_set' => ['bool', 'code_page'=>'int'],
-    'session_create_id' => ['string', 'prefix'=>'string'],
+    'session_create_id' => ['string', 'prefix='=>'string'],
     'session_gc' => ['int'],
     'unpack' => ['array', 'format'=>'string', 'data'=>'string', 'offset='=>'int'],
 ],
