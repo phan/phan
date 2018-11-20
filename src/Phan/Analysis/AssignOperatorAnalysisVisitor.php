@@ -146,7 +146,8 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         if ($kind === \ast\AST_VAR) {
             return $this->updateTargetVariableWithType($node, $get_type);
         }
-        // TODO: Could check for `@property-read`, etc.
+        // TODO: Could check types of other expressions, such as properties
+        // TODO: Could check for `@property-read` (invalid to pass to assignment operator), etc.
         return $this->context;
     }
 

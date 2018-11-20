@@ -2,6 +2,7 @@
 namespace Phan\Language\Type;
 
 use Phan\Language\Type;
+use Phan\Language\UnionType;
 
 /**
  * Represents the type `string`.
@@ -32,5 +33,13 @@ class StringType extends ScalarType
     public function isDefiniteNonCallableType() : bool
     {
         return false;
+    }
+
+    /**
+     * Returns the type after an expression such as `++$x`
+     */
+    public function getTypeAfterIncOrDec() : UnionType
+    {
+        return UnionType::fromFullyQualifiedString('int|string|float');
     }
 }

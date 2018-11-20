@@ -97,6 +97,7 @@ class Issue
     const TypeInvalidRightOperandOfNumericOp = 'PhanTypeInvalidRightOperandOfNumericOp';
     const TypeInvalidUnaryOperandNumeric = 'PhanTypeInvalidUnaryOperandNumeric';
     const TypeInvalidUnaryOperandBitwiseNot = 'PhanTypeInvalidUnaryOperandBitwiseNot';
+    const TypeInvalidUnaryOperandIncOrDec = 'PhanTypeInvalidUnaryOperandIncOrDec';
     const TypeInvalidInstanceof     = 'PhanTypeInvalidInstanceof';
     const TypeInvalidDimOffset      = 'PhanTypeInvalidDimOffset';
     const TypeInvalidDimOffsetArrayDestructuring = 'PhanTypeInvalidDimOffsetArrayDestructuring';
@@ -1798,6 +1799,14 @@ class Issue
                 'Saw code asserting that an expression has a class, but saw an invalid/impossible union type {TYPE} (expected {TYPE})',
                 self::REMEDIATION_B,
                 10098
+            ),
+            new Issue(
+                self::TypeInvalidUnaryOperandIncOrDec,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Invalid operator: unary operand of {STRING_LITERAL} is {TYPE} (expected int or string or float)",
+                self::REMEDIATION_B,
+                10099
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

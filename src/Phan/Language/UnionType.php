@@ -3162,6 +3162,15 @@ class UnionType implements Serializable
         }
         return \count($this->type_set) === 0;
     }
+
+    public function getTypeAfterIncOrDec() : UnionType
+    {
+        $result = UnionType::empty();
+        foreach ($this->type_set as $type) {
+            $result = $result->withUnionType($type->getTypeAfterIncOrDec());
+        }
+        return $result;
+    }
 }
 
 UnionType::init();

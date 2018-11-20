@@ -151,4 +151,12 @@ final class NullType extends ScalarType
     {
         return self::performComparison(null, $scalar, $flags);
     }
+
+    /**
+     * Returns the type after an expression such as `++$x`
+     */
+    public function getTypeAfterIncOrDec() : UnionType
+    {
+        return IntType::instance(false)->asUnionType();
+    }
 }

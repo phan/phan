@@ -2104,6 +2104,14 @@ Invalid operator: unary operand of {STRING_LITERAL} is {TYPE} (expected number o
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0507_unary_op_warn.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0507_unary_op_warn.php#L2).
 
+## PhanTypeInvalidUnaryOperandIncOrDec
+
+```
+Invalid operator: unary operand of {STRING_LITERAL} is {TYPE} (expected int or string or float)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0574_inc_dec.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0574_inc_dec.php#L7).
+
 ## PhanTypeInvalidUnaryOperandNumeric
 
 ```

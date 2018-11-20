@@ -77,4 +77,6 @@ final class TrueType extends ScalarType
     {
         return self::performComparison(true, $scalar, $flags);
     }
+
+    // public function getTypeAfterIncOrDec() : UnionType - doesn't need to be changed
 }
