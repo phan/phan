@@ -2,6 +2,7 @@
 
 namespace Phan\Tests\AST\TolerantASTConverter;
 
+use AssertionError;
 use ast;
 use Phan\AST\TolerantASTConverter\NodeDumper;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
@@ -63,7 +64,11 @@ final class ConversionTest extends BaseTest
     {
         $token_counts = [];
         foreach ($files as $file) {
-            $token_counts[$file] = count(token_get_all(file_get_contents($file)));
+            $contents = file_get_contents($file);
+            if (!is_string($contents)) {
+                throw new AssertionError("Failed to read $file");
+            }
+            $token_counts[$file] = count(token_get_all($contents));
         }
         usort($files, function (string $path1, string $path2) use ($token_counts) : int {
             return $token_counts[$path1] <=> $token_counts[$path2];

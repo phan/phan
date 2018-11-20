@@ -83,6 +83,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             // Common case: no namespace
             return self::make('\\', $name);
         }
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
         return self::make('\\' . \substr($name, 0, $i), \substr($name, $i + 1));
     }
 
@@ -110,7 +111,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         // Transfer any relative namespace stuff from the
         // name to the namespace.
         $name_parts = \explode('\\', $name);
-        $name = \array_pop($name_parts);
+        $name = (string)\array_pop($name_parts);
         foreach ($name_parts as $part) {
             // TODO: Emit a warning or throw instead?
             if ($part !== '') {
@@ -161,7 +162,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
                 $alternate_id = (int)($parts[1] ?? 0);
 
                 $parts = \explode('\\', $fqsen_string);
-                $name = \array_pop($parts);
+                $name = (string)\array_pop($parts);
 
                 if ($name === '') {
                     throw new InvalidArgumentException("The name cannot be empty");

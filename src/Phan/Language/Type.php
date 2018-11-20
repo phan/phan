@@ -719,6 +719,7 @@ class Type
         }
 
         if (\substr($type_name, 0, 1) === '?') {
+            // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
             return self::fromInternalTypeName(\substr($type_name, 1), true, $source);
         }
         throw new AssertionError("No internal type with name $type_name");
@@ -778,6 +779,7 @@ class Type
      *
      * @throws EmptyFQSENException if the type name was the empty string
      * @throws InvalidArgumentException if namespace is missing from something that should have a namespace
+     * @suppress PhanPossiblyFalseTypeArgument, PhanPossiblyFalseTypeArgumentInternal
      */
     protected static function fromFullyQualifiedStringInner(
         string $fully_qualified_string
@@ -879,6 +881,7 @@ class Type
             $escaped_literal = \substr($escaped_literal, 1);
         }
         if ($escaped_literal[0] === "'") {
+            // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
             return LiteralStringType::fromEscapedString($escaped_literal, $is_nullable);
         }
         $value = filter_var($escaped_literal, FILTER_VALIDATE_INT);
@@ -904,6 +907,7 @@ class Type
      * @param array<int,string> $shape_components
      * @param bool $is_nullable
      * @throws AssertionError if creating a closure/callable from the arguments failed
+     * @suppress PhanPossiblyFalseTypeArgument, PhanPossiblyFalseTypeArgumentInternal
      */
     private static function fromFullyQualifiedFunctionLike(
         bool $is_closure_type,
@@ -946,6 +950,7 @@ class Type
             $types = $template_parameter_type_list[$template_count - 1]->getTypeSet();
             if (count($types) === 1) {
                 return GenericArrayType::fromElementType(
+                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
                     \reset($types),
                     $is_nullable,
                     $key_type
@@ -998,6 +1003,8 @@ class Type
      *
      * @return Type
      * Parse a type from the given string
+     *
+     * @suppress PhanPossiblyFalseTypeArgument, PhanPossiblyFalseTypeArgumentInternal
      */
     public static function fromStringInContext(
         string $string,
@@ -1307,6 +1314,7 @@ class Type
      * @param int $source
      * @param bool $is_nullable
      * @throws AssertionError if the components were somehow invalid
+     * @suppress PhanPossiblyFalseTypeArgument
      */
     private static function fromFunctionLikeInContext(
         bool $is_closure_type,
@@ -2442,10 +2450,11 @@ class Type
 
         // Determine if the type name is fully qualified
         // (as specified by a leading backslash).
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         $is_fully_qualified = (0 === \strpos($type_string, '\\'));
 
-        $fq_class_name_elements =
-            \array_filter(\explode('\\', $type_string));
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+        $fq_class_name_elements = \array_filter(\explode('\\', $type_string));
 
         $class_name =
             (string)\array_pop($fq_class_name_elements);
@@ -2475,6 +2484,7 @@ class Type
      */
     private static function closureTypeStringComponents(string $type_string, string $inner) : Tuple5
     {
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         $parts = self::closureParams(\trim(\substr($inner, 1, -1)));
         // TODO: parse params, same as @method
 

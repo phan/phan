@@ -98,7 +98,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         $fqsen = (string)$this->getFQSEN();
         $pos = \strrpos($fqsen, '\\');
         if ($pos !== false) {
-            $name = \substr($fqsen, $pos + 1);
+            $name = (string)\substr($fqsen, $pos + 1);
         } else {
             $name = $fqsen;
         }

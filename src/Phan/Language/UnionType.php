@@ -272,6 +272,7 @@ class UnionType implements Serializable
             // Exclude namespaces without type names (e.g. `\`, `\NS\`)
             if ($type_name !== '' && \preg_match('@\\\\[\[\]]*$@', $type_name) === 0) {
                 if (($type_name[0] ?? '') === '(' && \substr($type_name, -1) === ')') {
+                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
                     foreach (self::extractTypePartsForStringInContext(\substr($type_name, 1, -1)) as $inner_type_name) {
                         $parts[] = $inner_type_name;
                     }
@@ -3094,6 +3095,7 @@ class UnionType implements Serializable
             return null;
         }
         $type = \reset($type_set);
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         switch (\get_class($type)) {
             case LiteralIntType::class:
                 '@phan-var LiteralIntType $type';  // TODO: support switches

@@ -37,7 +37,11 @@ final class CSVPrinter implements BufferedPrinterInterface
     public function flush()
     {
         fseek($this->stream, 0);
-        $this->output->write(stream_get_contents($this->stream));
+        $contents = stream_get_contents($this->stream);
+        if (!is_string($contents)) {
+            throw new AssertionError("Failed to read in-memory csv stream");
+        }
+        $this->output->write($contents);
         fclose($this->stream);
         $this->initStream();
     }

@@ -269,8 +269,6 @@ return [
     // here to inhibit them from being reported
     'suppress_issue_types' => [
         'PhanUnreferencedClosure',  // False positives seen with closures in arrays, TODO: move closure checks closer to what is done by unused variable plugin
-        'PhanPossiblyFalseTypeArgument',
-        'PhanPossiblyFalseTypeArgumentInternal',
         // TODO: Fix and remove suppression for this plugin
         'PhanPluginDescriptionlessCommentOnPrivateProperty',
 

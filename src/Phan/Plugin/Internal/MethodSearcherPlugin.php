@@ -13,6 +13,7 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\UnionType;
 use Phan\PluginV2;
 use Phan\PluginV2\BeforeAnalyzeCapability;
+use TypeError;
 use function count;
 
 /**
@@ -309,6 +310,10 @@ final class MethodSearcherPlugin extends PluginV2 implements
         }
         $best = 0;
         $desired_param_type = array_pop($search_param_types);
+        if (!($desired_param_type instanceof UnionType)) {
+            // Phan can't tell this array is non-empty
+            throw new TypeError("Expected signature_param_types to be an array of UnionType");
+        }
         foreach ($signature_param_types as $i => $actual_type) {
             if ($actual_type->asExpandedTypes($code_base)->canCastToUnionType($desired_param_type)) {
                 $signature_subset = $signature_param_types;
