@@ -80,14 +80,15 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             $node->children['expr']
         );
 
-        if ($left->isType(ArrayType::instance(false))
-            || $right->isType(ArrayType::instance(false))
+        if ($left->isExclusivelyArray()
+            || $right->isExclusivelyArray()
         ) {
             Issue::maybeEmit(
                 $this->code_base,
                 $this->context,
                 Issue::TypeArrayOperator,
                 $node->lineno ?? 0,
+                PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
                 $left,
                 $right
             );
@@ -188,14 +189,16 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         );
 
         // TODO: check for other invalid types
-        if ($left->isType(ArrayType::instance(false))
-            || $right->isType(ArrayType::instance(false))
+        if ($left->isExclusivelyArray()
+            || $right->isExclusivelyArray()
         ) {
+            // TODO: Move these checks into AssignOperatorAnalysisVisitor
             Issue::maybeEmit(
                 $this->code_base,
                 $this->context,
                 Issue::TypeArrayOperator,
                 $node->lineno ?? 0,
+                PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
                 $left,
                 $right
             );

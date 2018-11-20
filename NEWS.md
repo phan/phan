@@ -38,6 +38,7 @@ Bug fixes:
 + Fix false positives analyzing `define()` (#2128)
 + Support declaring instance properties as the union type `static` (#2145)
   New issue types: `PhanStaticPropIsStaticType`
++ Fix a crash seen when Phan attempted to emit `PhanTypeArrayOperator` for certain operations (#2153)
 
 05 Nov 2018, Phan 1.1.2
 -----------------------
