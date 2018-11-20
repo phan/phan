@@ -2,6 +2,7 @@
 namespace Phan\Daemon\Transport;
 
 use Phan\Daemon;
+use Phan\Library\StringUtil;
 
 use TypeError;
 
@@ -50,7 +51,7 @@ class StreamResponder implements Responder
             }
             $request = json_decode($request_bytes, true);
             if (!is_array($request)) {
-                Daemon::debugf("Received invalid request, expected JSON: %s", json_encode($request_bytes, JSON_UNESCAPED_SLASHES));
+                Daemon::debugf("Received invalid request, expected JSON: %s", StringUtil::jsonEncode($request_bytes));
                 $request = null;
             }
             $this->did_read_request_data = true;
@@ -70,9 +71,9 @@ class StreamResponder implements Responder
             throw new \RuntimeException("Called sendAndClose before calling getRequestData");
         }
         if ($connection === null) {
-            throw new \RuntimeException("Called sendAndClose twice: data = " . json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+            throw new \RuntimeException("Called sendAndClose twice: data = " . StringUtil::jsonEncode($data));
         }
-        fwrite($connection, json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n");
+        fwrite($connection, StringUtil::jsonEncode($data) . "\n");
         // disable further receptions and transmissions
         // Note: This is likely a giant hack,
         // and pcntl and sockets may break in the future if used together. (multiple processes owning a single resource).

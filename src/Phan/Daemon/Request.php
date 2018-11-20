@@ -277,10 +277,10 @@ class Request
             } else {
                 // TODO: Reload file list once before processing request?
                 // TODO: Change this to also support analyzing files that would normally be parsed but not analyzed?
-                Daemon::debugf("Failed to find requested file '%s' in parsed file list", $file, json_encode($analyze_file_path_list));
+                Daemon::debugf("Failed to find requested file '%s' in parsed file list", $file, StringUtil::jsonEncode($analyze_file_path_list));
             }
         }
-        Daemon::debugf("Returning file set: %s", json_encode($filtered_files));
+        Daemon::debugf("Returning file set: %s", StringUtil::jsonEncode($filtered_files));
         return $filtered_files;
     }
 
@@ -294,7 +294,7 @@ class Request
         if (!is_array($mapping)) {
             $mapping = [];
         }
-        Daemon::debugf("Have the following files in mapping: %s", json_encode(array_keys($mapping)));
+        Daemon::debugf("Have the following files in mapping: %s", StringUtil::jsonEncode(array_keys($mapping)));
         return $mapping;
     }
 
@@ -343,7 +343,7 @@ class Request
         if ($responder) {
             $responder->sendResponseAndClose([
                 'status' => self::STATUS_ERROR_UNKNOWN,
-                'message' => 'failed to send a response - Possibly encountered an exception. See daemon output.' . json_encode(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)),
+                'message' => 'failed to send a response - Possibly encountered an exception. See daemon output: ' . StringUtil::jsonEncode(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)),
             ]);
             $this->responder = null;
         }
@@ -364,7 +364,7 @@ class Request
         if (!$pid) {
             $pid = pcntl_waitpid(-1, $status, WNOHANG);
         }
-        Daemon::debugf("Got signal pid=%s", json_encode($pid));
+        Daemon::debugf("Got signal pid=%s", StringUtil::jsonEncode($pid));
 
         while ($pid > 0) {
             if (\array_key_exists($pid, self::$child_pids)) {
@@ -568,7 +568,7 @@ class Request
         }
 
         $changed_or_added_files = $code_base->updateFileList($file_list, $file_mapping_contents, $file_names);
-        // Daemon::debugf("Parsing modified files: New files = %s", json_encode($changed_or_added_files));
+        // Daemon::debugf("Parsing modified files: New files = %s", StringUtil::jsonEncode($changed_or_added_files));
         if (count($changed_or_added_files) > 0 || $code_base->getParsedFilePathCount() !== $old_count) {
             // Only clear memoizations if it is determined at least one file to parse was added/removed/modified.
             // - file path count changes if files were deleted or added
@@ -613,7 +613,7 @@ class Request
         }
 
         // too verbose
-        Daemon::debugf("Parsing temporary file mapping contents: New contents = %s", json_encode($temporary_file_mapping_contents));
+        Daemon::debugf("Parsing temporary file mapping contents: New contents = %s", StringUtil::jsonEncode($temporary_file_mapping_contents));
 
         $changes_to_add = [];
         foreach ($temporary_file_mapping_contents as $file_name => $contents) {
@@ -621,7 +621,7 @@ class Request
                 $changes_to_add[$file_name] = $contents;
             }
         }
-        Daemon::debugf("Done setting temporary file contents: Will replace contents of the following files: %s", json_encode(array_keys($changes_to_add)));
+        Daemon::debugf("Done setting temporary file contents: Will replace contents of the following files: %s", StringUtil::jsonEncode(array_keys($changes_to_add)));
         if (count($changes_to_add) === 0) {
             return;
         }

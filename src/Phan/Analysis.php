@@ -24,6 +24,7 @@ use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Library\FileCache;
+use Phan\Library\StringUtil;
 use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
 use Throwable;
@@ -84,7 +85,7 @@ class Analysis
         $file_contents = $cache_entry->getContents();
         if ($file_contents === '') {
             if ($is_php_internal_stub) {
-                throw new InvalidArgumentException("Unexpected empty php file for autoload_internal_extension_signatures: path=" . json_encode($original_file_path, JSON_UNESCAPED_SLASHES));
+                throw new InvalidArgumentException("Unexpected empty php file for autoload_internal_extension_signatures: path=" . StringUtil::jsonEncode($original_file_path));
             }
             // php-ast would return null for 0 byte files as an implementation detail.
             // Make Phan consistently emit this warning.

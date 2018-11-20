@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Daemon\Transport;
 
+use Phan\Library\StringUtil;
+
 /**
  * Instead of sending the data over a stream,
  * this just keeps the raw array
@@ -35,7 +37,7 @@ class CapturerResponder implements Responder
     public function sendResponseAndClose(array $data)
     {
         if (is_array($this->response_data)) {
-            throw new \RuntimeException("Called sendResponseAndClose twice: data = " . json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+            throw new \RuntimeException("Called sendResponseAndClose twice: data = " . StringUtil::jsonEncode($data));
         }
         $this->response_data = $data;
     }

@@ -9,7 +9,7 @@ namespace Phan\Library;
 class StringUtil
 {
     /**
-     * Encode a value in a compact, unambiguous representation for emitted issues.
+     * Encode a scalar value in a compact, unambiguous representation for emitted issues.
      * The encoder used by encodeValue may change.
      *
      * @param string|int|float|bool|null $value
@@ -21,7 +21,7 @@ class StringUtil
 
     /**
      * JSON encodes a value - Guaranteed to return a string.
-     * @param string|int|float|bool|null|array $value
+     * @param string|int|float|bool|null|array|object $value
      */
     public static function jsonEncode($value) : string
     {

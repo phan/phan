@@ -30,7 +30,6 @@ use Phan\Plugin\ConfigPluginSet;
 use function array_map;
 use function count;
 use function explode;
-use function json_encode;
 use function preg_match;
 use function rtrim;
 

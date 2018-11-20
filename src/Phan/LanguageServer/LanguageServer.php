@@ -29,6 +29,7 @@ use Phan\LanguageServer\Protocol\ServerCapabilities;
 use Phan\LanguageServer\Protocol\TextDocumentSyncKind;
 use Phan\LanguageServer\Protocol\TextDocumentSyncOptions;
 use Phan\LanguageServer\Server\TextDocument;
+use Phan\Library\StringUtil;
 use Phan\Phan;
 use Sabre\Event\Loop;
 use Sabre\Event\Promise;
@@ -438,7 +439,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         // TODO: Add a way to "go to definition" without emitting analysis results as a side effect
         $path_to_analyze = Utils::uriToPath($uri);
         $logType = $is_type_definition_request ? 'awaitTypeDefinition' : 'awaitDefinition';
-        Logger::logInfo("Called LanguageServer->$logType, uri=$uri, position=" . json_encode($position));
+        Logger::logInfo("Called LanguageServer->$logType, uri=$uri, position=" . StringUtil::jsonEncode($position));
         $type = $is_type_definition_request ? GoToDefinitionRequest::REQUEST_TYPE_DEFINITION : GoToDefinitionRequest::REQUEST_DEFINITION;
         $this->discardPreviousNodeInfoRequest();
         $request = new GoToDefinitionRequest($uri, $position, $type);
@@ -463,7 +464,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     ) : Promise {
         // TODO: Add a way to "go to definition" without emitting analysis results as a side effect
         $path_to_analyze = Utils::uriToPath($uri);
-        Logger::logInfo("Called LanguageServer->awaitHover, uri=$uri, position=" . json_encode($position));
+        Logger::logInfo("Called LanguageServer->awaitHover, uri=$uri, position=" . StringUtil::jsonEncode($position));
         $this->discardPreviousNodeInfoRequest();
         $request = new GoToDefinitionRequest($uri, $position, GoToDefinitionRequest::REQUEST_HOVER);
         $this->most_recent_node_info_request = $request;
@@ -487,7 +488,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     ) : Promise {
         // TODO: Add a way to "go to definition" without emitting analysis results as a side effect
         $path_to_analyze = Utils::uriToPath($uri);
-        Logger::logInfo("Called LanguageServer->awaitCompletion, uri=$uri, position=" . json_encode($position));
+        Logger::logInfo("Called LanguageServer->awaitCompletion, uri=$uri, position=" . StringUtil::jsonEncode($position));
         $this->discardPreviousNodeInfoRequest();
         $request = new CompletionRequest($uri, $position, $completion_context);
         $this->most_recent_node_info_request = $request;
@@ -644,7 +645,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     private function finishAnalyzingURIsWithoutPcntl(array $uris_to_analyze)
     {
         $paths_to_analyze = array_keys($uris_to_analyze);
-        Logger::logInfo('in ' . __METHOD__ . ' paths: ' . json_encode($paths_to_analyze));
+        Logger::logInfo('in ' . __METHOD__ . ' paths: ' . StringUtil::jsonEncode($paths_to_analyze));
         // When there is no pcntl:
         // Create a fake request object.
         // Instead of stopping the loop, keep going with the loop and keep accepting the requests
@@ -701,7 +702,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
         $code_base->restoreFromRestorePoint($restore_point);
 
-        Logger::logInfo("Response from non-pcntl server: " . json_encode($response_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        Logger::logInfo("Response from non-pcntl server: " . StringUtil::jsonEncode($response_data));
     }
 
     /**
@@ -726,7 +727,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
         $this->most_recent_node_info_request = null;
         if (!\array_key_exists('issues', $response_data)) {
-            Logger::logInfo("Failed to fetch 'issues' from JSON:" . json_encode($response_data));
+            Logger::logInfo("Failed to fetch 'issues' from JSON: " . StringUtil::jsonEncode($response_data));
             return;
         }
         $diagnostics = [];
@@ -739,7 +740,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
         $issues = $response_data['issues'] ?? [];
         if (!is_array($issues)) {
-            Logger::logInfo("Failed to fetch 'issues' from JSON:" . json_encode($response_data));
+            Logger::logInfo("Failed to fetch 'issues' from JSON: " . StringUtil::jsonEncode($response_data));
             return;
         }
         foreach ($issues as $issue) {
