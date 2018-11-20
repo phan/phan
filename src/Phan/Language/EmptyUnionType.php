@@ -1161,4 +1161,9 @@ final class EmptyUnionType extends UnionType
     {
         return true;
     }
+
+    public function getTypeAfterIncOrDec() : UnionType
+    {
+        return $this;
+    }
 }

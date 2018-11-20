@@ -2698,4 +2698,17 @@ class Type
         }
         throw new AssertionError("Impossible flag $flags");
     }
+
+    /**
+     * Returns the type after an expression such as `++$x`
+     */
+    public function getTypeAfterIncOrDec() : UnionType
+    {
+        if ($this->getIsNullable()) {
+            // ++null is 1
+            return UnionType::of([$this->withIsNullable(false), IntType::instance(false)]);
+        }
+        // ++$obj; doesn't change the object.
+        return $this->asUnionType();
+    }
 }

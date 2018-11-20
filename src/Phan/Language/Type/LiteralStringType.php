@@ -4,6 +4,7 @@ namespace Phan\Language\Type;
 use InvalidArgumentException;
 use Phan\Config;
 use Phan\Language\Type;
+use Phan\Language\UnionType;
 use RuntimeException;
 
 /**
@@ -237,6 +238,13 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     public function canSatisfyComparison($scalar, int $flags) : bool
     {
         return self::performComparison($this->value, $scalar, $flags);
+    }
+
+    public function getTypeAfterIncOrDec() : UnionType
+    {
+        $v = $this->value;
+        ++$v;
+        return Type::nonLiteralFromObject($v)->asUnionType();
     }
 }
 

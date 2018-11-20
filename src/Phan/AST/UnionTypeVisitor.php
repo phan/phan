@@ -256,7 +256,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->code_base,
             $this->context,
             $node->children['var']
-        )->asNonLiteralType();
+        )->asNonLiteralType()->getTypeAfterIncOrDec();
     }
 
     /**
@@ -279,7 +279,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->code_base,
             $this->context,
             $node->children['var']
-        )->asNonLiteralType();
+        )->asNonLiteralType()->getTypeAfterIncOrDec();
     }
 
     /**
@@ -2130,9 +2130,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             return;
         }
         if (!$type->hasTypeMatchingCallback($is_valid_type)) {
-            Issue::maybeEmit(
-                $this->code_base,
-                $this->context,
+            $this->emitIssue(
                 $issue_type,
                 $node->children['left']->lineno ?? $node->lineno,
                 $operator,

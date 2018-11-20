@@ -778,6 +778,76 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * @override
+     */
+    public function visitPreInc(Node $node) : Context
+    {
+        return $this->analyzeIncOrDec($node);
+    }
+
+    /**
+     * @override
+     */
+    public function visitPostInc(Node $node) : Context
+    {
+        return $this->analyzeIncOrDec($node);
+    }
+
+    /**
+     * @override
+     */
+    public function visitPreDec(Node $node) : Context
+    {
+        return $this->analyzeIncOrDec($node);
+    }
+
+    /**
+     * @override
+     */
+    public function visitPostDec(Node $node) : Context
+    {
+        return $this->analyzeIncOrDec($node);
+    }
+
+    const NAME_FOR_INC_OR_DEC_KIND = [
+        ast\AST_PRE_INC => '++(expr)',
+        ast\AST_PRE_DEC => '--(expr)',
+        ast\AST_POST_INC => '(expr)++',
+        ast\AST_POST_DEC => '(expr)--',
+    ];
+
+    private function analyzeIncOrDec(Node $node) : Context
+    {
+        $var = $node->children['var'];
+        $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $var)->withFlattenedArrayShapeOrLiteralTypeInstances();
+        if (!$old_type->canCastToUnionType(UnionType::fromFullyQualifiedString('int|string|float'))) {
+            $this->emitIssue(
+                Issue::TypeInvalidUnaryOperandIncOrDec,
+                $node->lineno,
+                self::NAME_FOR_INC_OR_DEC_KIND[$node->kind],
+                $old_type
+            );
+        }
+        // The left can be a non-Node for an invalid AST
+        $kind = $var->kind ?? null;
+        if ($kind === \ast\AST_VAR) {
+            $new_type = $old_type->getTypeAfterIncOrDec();
+            if ($old_type === $new_type) {
+                return $this->context;
+            }
+            try {
+                $variable = (new ContextNode($this->code_base, $this->context, $node->children['var']))->getVariableStrict();
+            } catch (IssueException $_) {
+                return $this->context;
+            } catch (NodeException $_) {
+                return $this->context;
+            }
+            $variable->setUnionType($new_type);
+        }
+        return $this->context;
+    }
+
+    /**
      * @param Node $node
      * A node to parse
      *

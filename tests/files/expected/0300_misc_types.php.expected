@@ -3,9 +3,6 @@
 %s:12 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_300() takes string defined at %s:3
 %s:13 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_300() takes string defined at %s:3
 %s:14 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int_300() takes int defined at %s:4
-%s:15 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int_300() takes int defined at %s:4
-%s:16 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int_300() takes int defined at %s:4
-%s:17 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int_300() takes int defined at %s:4
 %s:19 PhanTypeInvalidCloneNotObject Expected an object to be passed to clone() but got 42
 %s:20 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \expect_string_300() takes string defined at %s:3
 %s:21 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_300() takes string defined at %s:3
