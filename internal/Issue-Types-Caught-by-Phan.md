@@ -1542,7 +1542,7 @@ C19::f();
 Static property {PROPERTY} is declared to have type {TYPE}, but the only instance is shared among all subclasses (Did you mean {TYPE})
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0571_static_type_prop.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0571_static_type_prop.php#L14).
+e.g. [this issue](https://github.com/phan/phan/tree/1.1.3/tests/files/expected/0571_static_type_prop.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.3/tests/files/src/0571_static_type_prop.php#L14).
 
 # TypeError
 
@@ -1557,7 +1557,7 @@ This checks for a functionlike directly calling itself in a way that seems to be
 {FUNCTIONLIKE} is calling itself in a way that may cause infinite recursion.
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0566_infinite_recursion_check.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0566_infinite_recursion_check.php#L5).
+e.g. [this issue](https://github.com/phan/phan/tree/1.1.3/tests/files/expected/0566_infinite_recursion_check.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.3/tests/files/src/0566_infinite_recursion_check.php#L5).
 
 ## PhanMismatchVariadicComment
 
@@ -1672,7 +1672,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/plugin_test/expe
 Call to method {METHOD} on type {TYPE} that could be a non-object
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/060_strict_method_check.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/060_strict_method_check.php#L12).
+e.g. [this issue](https://github.com/phan/phan/tree/1.1.3/tests/plugin_test/expected/060_strict_method_check.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.3/tests/plugin_test/src/060_strict_method_check.php#L12).
 
 ## PhanPossiblyNullTypeArgument
 
@@ -1794,7 +1794,7 @@ if (42 == [1, 2]) {}
 Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN {STRING_LITERAL}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0568_get_class_assert.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0568_get_class_assert.php#L21).
+e.g. [this issue](https://github.com/phan/phan/tree/1.1.3/tests/files/expected/0568_get_class_assert.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.3/tests/files/src/0568_get_class_assert.php#L21).
 
 ## PhanTypeComparisonToInvalidClassType
 
@@ -1802,7 +1802,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/
 Saw code asserting that an expression has a class, but saw an invalid/impossible union type {TYPE} (expected {TYPE})
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0568_get_class_assert.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0568_get_class_assert.php#L6).
+e.g. [this issue](https://github.com/phan/phan/tree/1.1.3/tests/files/expected/0568_get_class_assert.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.3/tests/files/src/0568_get_class_assert.php#L6).
 
 ## PhanTypeConversionFromArray
 
@@ -1896,7 +1896,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 Saw type {TYPE} which cannot be a callable
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/051_invalid_function_node.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/051_invalid_function_node.php#L2).
+e.g. [this issue](https://github.com/phan/phan/tree/1.1.3/tests/misc/fallback_test/expected/051_invalid_function_node.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.3/tests/misc/fallback_test/src/051_invalid_function_node.php#L2).
 
 ## PhanTypeInvalidCallableArrayKey
 
@@ -2110,7 +2110,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 Invalid operator: unary operand of {STRING_LITERAL} is {TYPE} (expected int or string or float)
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0574_inc_dec.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0574_inc_dec.php#L7).
+e.g. [this issue](https://github.com/phan/phan/tree/1.1.3/tests/files/expected/0574_inc_dec.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.3/tests/files/src/0574_inc_dec.php#L7).
 
 ## PhanTypeInvalidUnaryOperandNumeric
 
@@ -2388,7 +2388,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 Saw type {TYPE} which is possibly not a callable
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/062_strict_function_checking.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/062_strict_function_checking.php#L33).
+e.g. [this issue](https://github.com/phan/phan/tree/1.1.3/tests/plugin_test/expected/062_strict_function_checking.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.3/tests/plugin_test/src/062_strict_function_checking.php#L33).
 
 ## PhanTypeSuspiciousEcho
 
