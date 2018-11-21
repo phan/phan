@@ -8,6 +8,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
+use Phan\Language\Type\FloatType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
@@ -38,6 +39,8 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
         $string_or_true_union_type = $string_union_type->withUnionType($true_union_type);
         $void_union_type = VoidType::instance(false)->asUnionType();
         $nullable_string_union_type = StringType::instance(true)->asUnionType();
+        $float_union_type = FloatType::instance(false)->asUnionType();
+        $string_or_float_union_type = $string_union_type->withUnionType($float_union_type);
 
         /**
          * @phan-return Closure(CodeBase,Context,Func,array):UnionType
@@ -208,6 +211,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             'preg_replace'                => $third_argument_string_or_array_handler,
             'preg_replace_callback'       => $third_argument_string_or_array_handler,
             'preg_replace_callback_array' => $third_argument_string_or_array_handler,
+            'microtime'                   => $make_dependent_type_method(0, $float_union_type, $string_union_type, $string_or_float_union_type),
             // misc
             'getenv'                      => $getenv_handler,
             'version_compare'             => $make_arg_existence_dependent_type_method(2, 'bool', 'int'),
