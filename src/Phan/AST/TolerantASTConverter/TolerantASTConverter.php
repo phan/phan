@@ -2419,6 +2419,9 @@ class TolerantASTConverter
         $ast_visibility = 0;
         foreach ($visibility as $token) {
             switch ($token->kind) {
+                case TokenKind::VarKeyword:
+                    $ast_visibility |= flags\MODIFIER_PUBLIC;
+                    break;
                 case TokenKind::PublicKeyword:
                     $ast_visibility |= flags\MODIFIER_PUBLIC;
                     break;
