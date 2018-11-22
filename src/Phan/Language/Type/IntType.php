@@ -18,7 +18,8 @@ class IntType extends ScalarType
         return true;
     }
 
-    public function getTypeAfterIncOrDec() : UnionType {
+    public function getTypeAfterIncOrDec() : UnionType
+    {
         return IntType::instance(false)->asUnionType();
     }
 }

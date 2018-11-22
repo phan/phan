@@ -1,0 +1,3 @@
+%s:16 PhanTypeMismatchProperty Assigning 2 to property but \PhanBug\Foo->parent is ?\PhanBug\Foo|\PhanBug\Foo|null
+%s:22 PhanTypeMismatchProperty Assigning array{0:\PhanBug\Foo} to property but \PhanBug\Foo->other is array<int,self>|self[]
+%s:23 PhanTypeMismatchProperty Assigning array{0:null} to property but \PhanBug\Foo->other is array<int,self>|self[]

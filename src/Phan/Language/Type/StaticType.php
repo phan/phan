@@ -71,7 +71,7 @@ final class StaticType extends StaticOrSelfType
     {
         $string = $this->name;
 
-        if ($this->getIsNullable()) {
+        if ($this->is_nullable) {
             $string = '?' . $string;
         }
 
@@ -91,10 +91,18 @@ final class StaticType extends StaticOrSelfType
             return $this;
         }
         $type = $context->getClassFQSEN()->asType();
-        if ($this->getIsNullable()) {
+        if ($this->is_nullable) {
             return $type->withIsNullable(true);
         }
         return $type;
+    }
+
+    /**
+     * @return StaticType
+     */
+    public function withIsNullable(bool $is_nullable) : Type
+    {
+        return self::instance($is_nullable);
     }
 
     public function isExclusivelyNarrowedFormOrEquivalentTo(

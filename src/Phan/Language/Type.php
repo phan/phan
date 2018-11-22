@@ -482,7 +482,7 @@ class Type
             $type->getNamespace(),
             $type->getName(),
             $template_parameter_type_list,
-            $type->getIsNullable(),
+            $type->is_nullable,
             Type::FROM_TYPE
         );
     }
@@ -2110,7 +2110,7 @@ class Type
         }
 
         // A nullable type cannot cast to a non-nullable type
-        if ($this->getIsNullable() && !$type->getIsNullable()) {
+        if ($this->is_nullable && !$type->is_nullable) {
             // If this is nullable, but that isn't, and we've
             // configured nulls to cast as anything (or as arrays), ignore
             // the nullable part.
@@ -2125,7 +2125,7 @@ class Type
 
         // Get a non-null version of the type we're comparing
         // against.
-        if ($type->getIsNullable()) {
+        if ($type->is_nullable) {
             $type = $type->withIsNullable(false);
 
             // Check one more time to see if the types are equal
@@ -2323,7 +2323,7 @@ class Type
                 $string .= $this->templateParameterTypeListAsString();
             }
 
-            if ($this->getIsNullable()) {
+            if ($this->is_nullable) {
                 $string = '?' . $string;
             }
 
@@ -2704,7 +2704,7 @@ class Type
      */
     public function getTypeAfterIncOrDec() : UnionType
     {
-        if ($this->getIsNullable()) {
+        if ($this->is_nullable) {
             // ++null is 1
             return UnionType::of([$this->withIsNullable(false), IntType::instance(false)]);
         }

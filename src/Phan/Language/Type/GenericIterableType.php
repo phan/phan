@@ -97,7 +97,7 @@ final class GenericIterableType extends IterableType
         }
         $string = "iterable<$string>";
 
-        if ($this->getIsNullable()) {
+        if ($this->is_nullable) {
             $string = '?' . $string;
         }
 

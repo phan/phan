@@ -269,7 +269,7 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
             $string = 'array<' . self::KEY_NAMES[$this->key_type] . ',' . $string . '>';
         }
 
-        if ($this->getIsNullable()) {
+        if ($this->is_nullable) {
             if ($string[0] === '?') {
                 $string = "?($string)";
             } else {
@@ -344,7 +344,7 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
                     }
                 }
             } catch (RecursionDepthException $_) {
-                return ArrayType::instance($this->getIsNullable())->asUnionType();
+                return ArrayType::instance($this->is_nullable)->asUnionType();
             }
 
             // Add in aliases
