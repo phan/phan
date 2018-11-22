@@ -1,0 +1,3 @@
+%s:5 PhanTypeMismatchArgument Argument 1 (v) is string but \assert_float() takes float defined at %s:15
+%s:11 PhanTypeMismatchArgument Argument 1 (v) is string but \assert_float() takes float defined at %s:15
+%s:12 PhanTypeMismatchArgument Argument 1 (v) is float but \assert_string() takes string defined at %s:16
