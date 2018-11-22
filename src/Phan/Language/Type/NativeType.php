@@ -176,7 +176,7 @@ abstract class NativeType extends Type
         // non-fully-qualified names
         $string = $this->name;
 
-        if ($this->getIsNullable()) {
+        if ($this->is_nullable) {
             $string = '?' . $string;
         }
 

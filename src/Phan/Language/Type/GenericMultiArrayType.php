@@ -204,7 +204,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
                 );
             }
         } catch (RecursionDepthException $_) {
-            return ArrayType::instance($this->getIsNullable())->asUnionType();
+            return ArrayType::instance($this->is_nullable)->asUnionType();
         }
         return $result->getUnionType();
     }

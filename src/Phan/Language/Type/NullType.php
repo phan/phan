@@ -63,7 +63,7 @@ final class NullType extends ScalarType
         }
 
         // Null can cast to a nullable type.
-        if ($type->getIsNullable()) {
+        if ($type->is_nullable) {
             return true;
         }
 

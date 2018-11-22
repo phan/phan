@@ -105,7 +105,7 @@ class AssignmentVisitor extends AnalysisVisitor
         parent::__construct($code_base, $context);
 
         $this->assignment_node = $assignment_node;
-        $this->right_type = $right_type;
+        $this->right_type = $right_type->withSelfResolvedInContext($context);
         $this->dim_depth = $dim_depth;
         $this->dim_type = $dim_type;  // null for `$x[] =` or when dim_depth is 0.
     }
@@ -788,7 +788,8 @@ class AssignmentVisitor extends AnalysisVisitor
 
                 // TODO: If the codebase explicitly sets a phpdoc array shape type on a property assignment,
                 // then preserve the array shape type.
-                $new_types = $this->typeCheckDimAssignment($property_union_type, $node)->withFlattenedArrayShapeOrLiteralTypeInstances();
+                $new_types = $this->typeCheckDimAssignment($property_union_type, $node)
+                                  ->withFlattenedArrayShapeOrLiteralTypeInstances();
 
                 // TODO: More precise than canCastToExpandedUnionType
                 if (!$new_types->canCastToExpandedUnionType(

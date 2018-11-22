@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 2018, Phan 1.1.4 (dev)
 -----------------------
 
+Bug fixes:
++ Fix a crash when analyzing a nullable parameter of type `self` in traits (#2163)
+
 20 Nov 2018, Phan 1.1.3
 -----------------------
 
