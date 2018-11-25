@@ -1022,11 +1022,24 @@ trait FunctionTrait
 
     /**
      * Make additional analysis logic of this function/method use $closure
-     * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures.
+     * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures or use addFunctionCallAnalyzer.
      * @return void
      */
     public function setFunctionCallAnalyzer(Closure $closure)
     {
+        $this->function_call_analyzer_callback = $closure;
+    }
+
+    /**
+     * Make additional analysis logic of this function/method use $closure in addition to any other closures.
+     * @return void
+     */
+    public function addFunctionCallAnalyzer(Closure $closure)
+    {
+        $old_closure = $this->function_call_analyzer_callback;
+        if ($old_closure) {
+            $closure = ConfigPluginSet::mergeAnalyzeFunctionCallClosures($old_closure, $closure);
+        }
         $this->function_call_analyzer_callback = $closure;
     }
 

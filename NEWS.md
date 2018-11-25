@@ -3,6 +3,12 @@ Phan NEWS
 ?? ??? 2019, Phan 1.2.5 (dev)
 -----------------------
 
+New features(Analysis):
++ Be more consistent warning about invalid callables passed to internal functions such as `register_shutdown_function` (#2046)
+
+Plugins:
++ Add `HandleLazyLoadInternalFunctionCapability` so that plugins can modify Phan's information about internal global functions when those functions are loaded after analysis starts.
+
 18 Feb 2019, Phan 1.2.4
 -----------------------
 

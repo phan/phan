@@ -30,6 +30,7 @@ use Phan\Language\NamespaceMapEntry;
 use Phan\Language\UnionType;
 use Phan\Library\Map;
 use Phan\Library\Set;
+use Phan\Plugin\ConfigPluginSet;
 use ReflectionClass;
 
 use function count;
@@ -1427,6 +1428,7 @@ class CodeBase
                     $function->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_function->getParameters()));
                 }
                 $this->addFunction($function);
+                $this->updatePluginsOnLazyLoadInternalFunction($function);
             }
 
             return true;
@@ -1437,11 +1439,17 @@ class CodeBase
                 new \ReflectionFunction($name)
             ) as $function) {
                 $this->addFunction($function);
+                $this->updatePluginsOnLazyLoadInternalFunction($function);
             }
 
             return true;
         }
         return false;
+    }
+
+    private function updatePluginsOnLazyLoadInternalFunction(Func $function)
+    {
+        ConfigPluginSet::instance()->handleLazyLoadInternalFunction($this, $function);
     }
 
     /**

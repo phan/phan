@@ -627,6 +627,11 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         throw new \AssertionError('unexpected call to ' . __METHOD__);
     }
 
+    public function addFunctionCallAnalyzer(Closure $analyzer)
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
     public function setDependentReturnTypeClosure(Closure $analyzer)
     {
         throw new \AssertionError('unexpected call to ' . __METHOD__);
