@@ -53,7 +53,7 @@ final class UnionTypeBuilder
         $i = \array_search($type, $this->type_set, true);
         if ($i !== false) {
             // equivalent to unset($new_type_set[$i]) but fills in the gap in array keys.
-            // TODO: How do other versions affect performance on large projects?
+            // TODO: How do other ways of unsetting the type affect performance on large projects?
             $replacement_type = \array_pop($this->type_set);
             if ($replacement_type !== $type) {
                 // @phan-suppress-next-line PhanPartialTypeMismatchProperty $replacement_type is guaranteed to not be false

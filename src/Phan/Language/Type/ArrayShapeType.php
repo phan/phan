@@ -365,12 +365,10 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * Returns an empty array shape (for `array{}`)
      * @param bool $is_nullable
      * @return ArrayShapeType
-     * @suppress PhanUnreferencedPublicMethod (TODO: Remove if we support empty array shapes and still don't use this)
      */
     public static function empty(
         bool $is_nullable = false
     ) : ArrayShapeType {
-        // TODO: Investigate if caching makes this any more efficient?
         static $nullable_shape = null;
         static $nonnullable_shape = null;
 
@@ -412,9 +410,6 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      * @return UnionType
      * Expands class types to all inherited classes returning
      * a superset of this type.
-     *
-     * TODO: Once Phan has full support for ArrayShapeType in the type system,
-     * make asExpandedTypes return a UnionType with a single ArrayShapeType?
      *
      * @throws RuntimeException if the maximum recursion depth is exceeded
      * @override
@@ -544,7 +539,14 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         if (\array_keys($this->field_types) !== [0, 1]) {
             return true;
         }
-        // TODO: Check types of offsets 0 and 1
+        if (!$this->field_types[0]->canCastToUnionType(UnionType::fromFullyQualifiedString('string|object'))) {
+            // First field of callable array should be a string or object. (the expression or class)
+            return true;
+        }
+        if (!$this->field_types[1]->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+            // Second field of callable array should be the method name.
+            return true;
+        }
         return false;
     }
 }

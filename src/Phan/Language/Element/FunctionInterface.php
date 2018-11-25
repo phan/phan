@@ -359,7 +359,7 @@ interface FunctionInterface extends AddressableElementInterface
 
     /**
      * Clone the parameter list, so that modifying the parameters on the first call won't modify the others.
-     * TODO: If they're immutable, they can be shared without cloning with less worry.
+     * TODO: If parameters were changed to be immutable, they can be shared without cloning with less worry.
      * @internal
      * @return void
      */

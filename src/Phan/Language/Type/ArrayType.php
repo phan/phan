@@ -162,7 +162,7 @@ class ArrayType extends IterableType
     /**
      * Overridden in subclasses
      *
-     * @param int $key_type @phan-unused-param (TODO: Use?)
+     * @param int $key_type
      * Corresponds to the type of the array keys. Set this to a GenericArrayType::KEY_* constant.
      *
      * @return Type
@@ -173,8 +173,7 @@ class ArrayType extends IterableType
      */
     public function asGenericArrayType(int $key_type) : Type
     {
-        // TODO: Allow one more level of nesting? E.g. array->array[], but array[]->array[]
-        return ArrayType::instance(false);
+        return GenericArrayType::fromElementType($this, false, $key_type);
     }
 
     protected function canCastToNonNullableType(Type $type) : bool

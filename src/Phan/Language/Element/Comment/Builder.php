@@ -695,8 +695,8 @@ final class Builder
     private static function templateTypeFromCommentLine(
         string $line
     ) {
-        // TODO: Just use WORD_REGEX? Backslashes or nested templates wouldn't make sense.
-        if (preg_match('/@(?:phan-)?template\s+(' . Type::simple_type_regex . ')/', $line, $match)) {
+        // Backslashes or nested templates wouldn't make sense, so use WORD_REGEX.
+        if (preg_match('/@(?:phan-)?template\s+(' . self::WORD_REGEX . ')/', $line, $match)) {
             $template_type_identifier = $match[1];
             return new TemplateType($template_type_identifier);
         }
@@ -905,8 +905,6 @@ final class Builder
      *
      * @return Property|null
      * magic property with the union type.
-     *
-     * TODO: guess line number for emitted issue
      */
     private function magicPropertyFromCommentLine(
         string $line,
@@ -914,7 +912,6 @@ final class Builder
     ) {
         // Note that the type of a property can be left out (@property $myVar) - This is equivalent to @property mixed $myVar
         // TODO: properly handle duplicates...
-        // TODO: support read-only/write-only checks elsewhere in the codebase?
         if (\preg_match('/@(?:phan-)?(property|property-read|property-write)(?:\s+(' . UnionType::union_type_regex . '))?(?:\s+(?:\\$' . self::WORD_REGEX . '))/', $line, $match)) {
             $category = $match[1];
             if ($category === 'property-read') {
