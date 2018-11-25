@@ -768,7 +768,6 @@ final class EmptyUnionType extends UnionType
      * A UnionType with known numeric types kept, other types filtered out.
      *
      * @see nonGenericArrayTypes
-     * @suppress PhanUnreferencedPublicMethod
      */
     public function numericTypes() : UnionType
     {

@@ -206,7 +206,6 @@ final class ReachabilityChecker extends KindVisitorImplementation
             if (!($child instanceof Node)) {
                 continue;
             }
-            // @phan-suppress-next-line PhanPartialTypeMismatchArgument
             $result = $this->__invoke($child);
             if ($result !== null) {
                 return $result;

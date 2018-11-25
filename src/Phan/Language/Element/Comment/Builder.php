@@ -76,7 +76,6 @@ final class Builder
         int $lineno,
         int $comment_type
     ) {
-        // @phan-suppress-next-line PhanPossiblyFalseTypeMismatchProperty
         $this->lines = \explode("\n", $comment);
         $this->comment_lines_count = \count($this->lines);
         $this->code_base = $code_base;
@@ -296,7 +295,7 @@ final class Builder
             $this->magic_property_list,
             $this->magic_method_list,
             $this->phan_overrides,
-            $this->closure_scope,  // @phan-suppress-current-line PhanPartialTypeMismatchArgument
+            $this->closure_scope,
             $this->throw_union_type,
             // NOTE: The code base and context are used for emitting issues, and are not saved
             $this->code_base,

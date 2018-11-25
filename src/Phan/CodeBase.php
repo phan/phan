@@ -1053,7 +1053,6 @@ class CodeBase
     public function exportFunctionAndMethodSet() : array
     {
         $result = [];
-        // @phan-suppress-next-line PhanDeprecatedFunction
         foreach ($this->getFunctionAndMethodSet() as $function_or_method) {
             if ($function_or_method->isPHPInternal()) {
                 continue;

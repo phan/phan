@@ -93,7 +93,6 @@ abstract class Scope
     /**
      * @return Scope
      * Get the parent scope of this scope
-     * @suppress PhanPossiblyNullTypeReturn callers should call hasParentScope
      */
     public function getParentScope() : Scope
     {

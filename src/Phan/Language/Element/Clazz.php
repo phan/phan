@@ -41,7 +41,6 @@ use Phan\Plugin\ConfigPluginSet;
  *
  * @see CodeBase for the data structures used for looking up classes or elements of classes (properties, methods, constants, etc)
  *
- * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class Clazz extends AddressableElement

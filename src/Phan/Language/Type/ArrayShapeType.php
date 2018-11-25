@@ -157,7 +157,6 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 ));
             }
         }
-        // @phan-suppress-next-line PhanPartialTypeMismatchReturn
         return $union_type_builder->getTypeSet();
     }
 
@@ -490,7 +489,6 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
                 $field_types[$key] = $old_union_type->withUnionType($union_type);
             }
         }
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         return self::fromFieldTypes($field_types, false);
     }
 

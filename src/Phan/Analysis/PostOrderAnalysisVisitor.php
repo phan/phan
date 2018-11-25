@@ -421,7 +421,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             true
         );
 
-        // @phan-suppress-next-line PhanAccessMethodInternal
         if (!$type->hasPrintableScalar()) {
             if ($type->isType(ArrayType::instance(false))
                 || $type->isType(ArrayType::instance(true))
@@ -594,7 +593,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
-     * @suppress PhanAccessMethodInternal
      */
     public function visitPrint(Node $node) : Context
     {
