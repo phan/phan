@@ -220,7 +220,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
         $plugin_successful_suppressions = $this->plugin_active_suppression_list[$plugin_class][$absolute_file_path] ?? null;
 
         foreach ($plugin_suppressions as $issue_type => $line_list) {
-            foreach ($line_list as $lineno) {
+            foreach ($line_list as $lineno => $lineno_of_comment) {
                 if (isset($plugin_successful_suppressions[$issue_type][$lineno])) {
                     continue;
                 }
@@ -228,19 +228,18 @@ class UnusedSuppressionPlugin extends PluginV2 implements
                 $issue_kind = 'UnusedPluginSuppression';
                 $message = 'Plugin {STRING_LITERAL} suppresses issue {ISSUETYPE} on this line but this suppression is unused or suppressed elsewhere';
                 if ($lineno === 0) {
-                    $lineno = 1;
                     $issue_kind = 'UnusedPluginFileSuppression';
                     $message = 'Plugin {STRING_LITERAL} suppresses issue {ISSUETYPE} in this file but this suppression is unused or suppressed elsewhere';
                 }
-                if (isset($plugin_suppressions['UnusedSuppression'][$lineno])) {
+                if (isset($plugin_suppressions['UnusedSuppression'][$lineno_of_comment])) {
                     continue;
                 }
-                if (isset($plugin_suppressions[$issue_kind][$lineno])) {
+                if (isset($plugin_suppressions[$issue_kind][$lineno_of_comment])) {
                     continue;
                 }
                 $this->emitIssue(
                     $code_base,
-                    (new Context())->withFile($relative_file_path)->withLineNumberStart($lineno),
+                    (new Context())->withFile($relative_file_path)->withLineNumberStart($lineno_of_comment),
                     $issue_kind,
                     $message,
                     [$plugin_name, $issue_type]

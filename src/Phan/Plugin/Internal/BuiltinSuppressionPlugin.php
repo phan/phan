@@ -152,11 +152,12 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
         )) {
             $kind_list = array_map('trim', explode(',', $kind_list_text));
             foreach ($kind_list as $issue_kind) {
+                // Build a map where the line being suppressed is mapped to the line causing the suppression.
                 if ($comment_name === 'file-suppress') {
                     if (Config::getValue('disable_file_based_suppression')) {
                         continue;
                     }
-                    $suggestion_list[$issue_kind][0] = 0;
+                    $suggestion_list[$issue_kind][0] = $comment_start_line + substr_count($comment_text, "\n", 0, $comment_start_offset);
                     continue;
                 }
                 if (Config::getValue('disable_line_based_suppression')) {
@@ -172,7 +173,7 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
                 foreach ($kind_list as $issue_kind) {
                     // Store the suggestion for the issue kind.
                     // Make this an array set for easier lookup.
-                    $suggestion_list[$issue_kind][$line] = $line;
+                    $suggestion_list[$issue_kind][$line] = $comment_start_line;
                 }
             }
         }
