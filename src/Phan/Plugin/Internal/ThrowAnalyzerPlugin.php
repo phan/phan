@@ -310,7 +310,7 @@ class ThrowRecursiveVisitor extends ThrowVisitor
                 $code_base,
                 $context,
                 $node
-            ))->getMethod($method_name, true, true);  // @phan-suppress-current-line PhanPartialTypeMismatchArgument
+            ))->getMethod($method_name, true, true);
         } catch (\Exception $_) {
             // Ignore IssueException, unexpected exceptions, etc.
             return;

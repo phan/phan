@@ -213,7 +213,6 @@ class ArrayType extends IterableType
      * @param int|string|float|bool|null $scalar
      * @param int $flags (e.g. \ast\flags\BINARY_IS_SMALLER)
      * @internal
-     * @suppress PhanUnusedPublicMethodParameter
      */
     public function canSatisfyComparison($scalar, int $flags) : bool
     {

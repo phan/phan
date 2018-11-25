@@ -5,7 +5,7 @@ declare(strict_types = 1);
  * This checks that the function signatures are complete.
  * TODO: Expand to checking classes (methods, and properties)
  * TODO: Refactor the scripts in internal/ to reuse more code.
- * @phan-file-suppress PhanNativePHPSyntaxCheckPlugin
+ * @phan-file-suppress PhanNativePHPSyntaxCheckPlugin, UnusedPluginFileSuppression caused by inline HTML before declare
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 require_once dirname(__DIR__) . '/vendor/autoload.php';

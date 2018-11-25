@@ -19,7 +19,6 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 
 /**
  * This implements closures for finding completions for valid/invalid nodes where isSelected is set
- * @phan-file-suppress PhanUnusedPublicMethodParameter
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class CompletionResolver
@@ -346,9 +345,6 @@ class CompletionResolver
         }
     }
 
-    /**
-     * @suppress PhanUnusedPrivateMethodParameter TODO: Use $node and check if fully qualified
-     */
     private static function locateVariableCompletion(
         CompletionRequest $request,
         CodeBase $code_base,

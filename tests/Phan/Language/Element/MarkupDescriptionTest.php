@@ -211,7 +211,6 @@ EOT
      */
     public function testGetDocCommentWithoutWhitespace(string $expected, string $doc_comment)
     {
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $this->assertSame($expected, MarkupDescription::getDocCommentWithoutWhitespace($doc_comment));
     }
 

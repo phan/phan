@@ -406,7 +406,7 @@ EOB;
                     }
                     // Check if the socket is valid after parsing the file list.
                     // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
-                    $socket_dirname = realpath(dirname($value));
+                    $socket_dirname = dirname(realpath($value));
                     if (!is_string($socket_dirname) || !file_exists($socket_dirname) || !is_dir($socket_dirname)) {
                         // The client doesn't require that the file exists if the daemon isn't running, but we do require that the folder exists.
                         $msg = sprintf('Configured to connect to Unix socket server at socket %s, but folder %s does not exist', json_encode($value) ?: 'invalid', json_encode($socket_dirname) ?: 'invalid');

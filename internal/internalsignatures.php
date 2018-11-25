@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
-// @phan-file-suppress PhanNativePHPSyntaxCheckPlugin
+// @phan-file-suppress PhanNativePHPSyntaxCheckPlugin, UnusedPluginFileSuppression caused by inline HTML before declare
 
 use Phan\Analysis;
 use Phan\CodeBase;

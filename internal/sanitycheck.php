@@ -5,7 +5,7 @@ require_once dirname(__DIR__) . '/src/Phan/Library/StringUtil.php';
 
 use Phan\Library\StringUtil;
 
-// @phan-file-suppress PhanNativePHPSyntaxCheckPlugin
+// @phan-file-suppress PhanNativePHPSyntaxCheckPlugin, UnusedPluginFileSuppression caused by inline HTML before declare
 /**
  * Loads the ReflectionFunction or ReflectionMethod for the given function or method name.
  * Method names must use '::' to separate the class and method names.

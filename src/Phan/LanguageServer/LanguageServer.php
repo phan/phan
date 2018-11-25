@@ -239,7 +239,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * @return Request|null - A writeable request, which has been fully read from.
      * Callers should close after they are finished writing.
      *
-     * @suppress PhanUndeclaredConstant (pcntl unavailable on Windows)
+     * @suppress PhanUndeclaredConstant, UnusedSuppression (pcntl unavailable on Windows)
      */
     public static function run(CodeBase $code_base, \Closure $file_path_lister, array $options)
     {

@@ -549,7 +549,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         }
 
         // Merge inner scope into outer scope
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         return $outer_scope->mergeBranchScopeList($inner_scope_list, $merge_parent_scope, []);
     }
 
@@ -602,7 +601,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         }
 
         // Merge inner scope into outer scope
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
         return $outer_scope->mergeBranchScopeList($inner_scope_list, $merge_parent_scope, $inner_exiting_scope_list);
     }
 

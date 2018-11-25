@@ -9,7 +9,6 @@ use Phan\Tests\BaseTest;
 
 /**
  * Unit tests of Context and scopes
- * @phan-file-suppress PhanPartialTypeMismatchArgument TODO: phpunit lib
  */
 final class MethodSearcherPluginTest extends BaseTest
 {

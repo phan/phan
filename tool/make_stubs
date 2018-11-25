@@ -1,7 +1,9 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-/** @phan-file-suppress PhanNativePHPSyntaxCheckPlugin */
+/**
+ * @phan-file-suppress PhanNativePHPSyntaxCheckPlugin, UnusedPluginFileSuppression php warns about declare() after the inline HTML /usr/bin/env php
+ */
 
 use Phan\CodeBase;
 use Phan\Language\Element\Clazz;
@@ -131,7 +133,6 @@ EOT;
     }
 
     /**
-     * @suppress PhanDeprecatedFunction
      * @return void
      */
     public static function printAllStubs(CodeBase $code_base) {

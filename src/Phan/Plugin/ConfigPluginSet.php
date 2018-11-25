@@ -166,8 +166,6 @@ final class ConfigPluginSet extends PluginV2 implements
      * Returns a brand new ConfigPluginSet where all plugins are initialized.
      *
      * If one of the plugins could not be instantiated, this prints an error message and terminates the program.
-     *
-     * @suppress PhanDeprecatedInterface
      */
     private static function newInstance() : ConfigPluginSet
     {
@@ -195,7 +193,6 @@ final class ConfigPluginSet extends PluginV2 implements
      * Resets this set of plugins to the state it had before any user-defined or internal plugins were added,
      * then re-initialize plugins based on the current configuration.
      *
-     * @suppress PhanDeprecatedInterface
      * @internal - Used only for testing
      */
     public static function reset()
@@ -714,7 +711,6 @@ final class ConfigPluginSet extends PluginV2 implements
 
     /**
      * @return void
-     * @suppress PhanPartialTypeMismatchProperty
      */
     private function ensurePluginsExist()
     {

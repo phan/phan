@@ -18,7 +18,7 @@ declare(strict_types=1);
  * TODO: Make it so that constant values will be identical to php-ast
  * for PHP 7.0-7.3
  *
- * @phan-file-suppress PhanUnreferencedConstant - Plugins may reference some of these constants
+ * @phan-file-suppress PhanUnreferencedConstant, UnusedPluginFileSuppression - Plugins may reference some of these constants
  *
  * @author Tyson Andre
  */
