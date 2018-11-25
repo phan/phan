@@ -6,6 +6,7 @@ Phan NEWS
 Bug fixes:
 + Fix a crash when analyzing a nullable parameter of type `self` in traits (#2163)
 + Properly parse closures/generic arrays/array shapes when inner types also contain commas (#2141)
++ Support matching parentheses inside closure params, recursively. (e.g. `Closure(int[],Closure(int):bool):int[]`)
 
 20 Nov 2018, Phan 1.1.3
 -----------------------

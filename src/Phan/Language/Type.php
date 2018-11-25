@@ -117,7 +117,7 @@ class Type
         '('
         . '(?:\??\((?-1)(?:\|(?-1))*\)|'  // Recursion: "?(T)" or "(T)" with brackets. Also allow parsing (a|b) within brackets.
         . '(?:'
-          . '\??(?:\\\\?Closure|callable)(\([^()]*\))'
+          . '\??(?:\\\\?Closure|callable)(\((?:[^()]|(?-1))*\))'  // `Closure(...)` can have matching pairs of () inside `...`, recursively
           . '(?:\s*:\s*'  // optional return type, can be ":T" or ":(T1|T2)" or ": ?(T1|T2)"
             . '(?:'
               . self::simple_noncapturing_type_regex . '|'  // Forbid ambiguity in `Closure():int[]` by disallowing complex return types without '()'. Always parse that as `(Closure():int)[]`.
@@ -126,7 +126,7 @@ class Type
           . ')?'
         . ')|'
         . self::noncapturing_literal_regex . '|'
-        . '(' . self::simple_type_regex . ')'  // ?T or T. TODO: Get rid of pattern for '?'?
+        . '(' . self::simple_type_regex . ')'  // ?T or T.
         . '(?:'
           . '<'
             . '('
@@ -159,7 +159,7 @@ class Type
           . '(?:'
             . '\??\((?-1)(?:\|(?-1))*\)|'  // Recursion: "?(T)" or "(T)" with brackets. Also allow parsing (a|b) within brackets.
             . '(?:'
-              . '\??(?:\\\\?Closure|callable)(\([^()]*\))'
+              . '\??(?:\\\\?Closure|callable)(\((?:[^()]|(?-1))*\))'  // `Closure(...)` can have matching pairs of () inside `...`, recursively
               . '(?:\s*:\s*'  // optional return type, can be ":T" or ":(T1|T2)"
                 . '(?:'
                   . self::simple_noncapturing_type_regex . '|'  // Forbid ambiguity in `Closure():int[]` by disallowing complex return types without '()'. Always parse that as `(Closure():int)[]`.
@@ -623,8 +623,6 @@ class Type
             case 'object':
                 return ObjectType::instance(false);
             case 'boolean':
-                // TODO: Does this have many side effects?
-                // Probably not, 'false' is an AST_CONST Node.
                 return $object ? TrueType::instance(false) : FalseType::instance(false);
             case 'array':
                 return ArrayType::instance(false);
@@ -708,8 +706,7 @@ class Type
             case 'true':
                 return TrueType::instance($is_nullable);
             case 'void':
-                // TODO: This can't be nullable, right?
-                return VoidType::instance($is_nullable);
+                return VoidType::instance(false);
             case 'iterable':
                 return IterableType::instance($is_nullable);
             case 'static':
@@ -1134,8 +1131,7 @@ class Type
                 GenericArrayType::KEY_MIXED
             );
         }
-        // TODO: Will \MyClass[] accidentally check the namespace map for use OtherNS\MyClass?
-        if ($context->hasNamespaceMapFor(
+        if (\substr($non_generic_partially_qualified_array_type_name, 0, 1) !== '\\' && $context->hasNamespaceMapFor(
             \ast\flags\USE_NORMAL,
             $non_generic_partially_qualified_array_type_name
         )) {
@@ -1376,7 +1372,6 @@ class Type
      */
     private static function closureParamComponentStringsToParams(array $param_components, Context $context, int $source) : array
     {
-        // TODO: Allow () within param types...
         $result = [];
         foreach ($param_components as $param_string) {
             if ($param_string === '') {
@@ -1916,7 +1911,7 @@ class Type
      * @return bool
      * True if this type has any template parameter types
      * @suppress PhanUnreferencedPublicMethod potentially used in the future
-     *           TODO: Would need to override this in ArrayShapeType, GenericArrayType?
+     *           TODO: Would need to override this in ArrayShapeType, GenericArrayType
      */
     public function hasTemplateParameterTypes() : bool
     {
