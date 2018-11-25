@@ -96,7 +96,7 @@ final class ConfigPluginSet extends PluginV2 implements
 
     /**
      * @var array<int,Closure> - plugins to analyze files
-     * @phan-var array<int,Closure(string,Node):void>|null
+     * @phan-var array<int,Closure(CodeBase,Context,Node|int|string|float,array<int,Node>):void>|null
      */
     private $post_analyze_node_plugin_set;
 
