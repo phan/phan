@@ -3,6 +3,10 @@ Phan NEWS
 ?? ??? 2018, Phan 1.1.4 (dev)
 -----------------------
 
+Maintenance:
++ Emit `UnusedPluginSuppression` on `@phan-suppress-next-line` and `@phan-file-suppress`
+  on the same line as the comment declaring the suppression. (#2167, #1731)
+
 Bug fixes:
 + Fix a crash when analyzing a nullable parameter of type `self` in traits (#2163)
 + Properly parse closures/generic arrays/array shapes when inner types also contain commas (#2141)
