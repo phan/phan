@@ -310,7 +310,7 @@ final class Builder
     {
         // https://secure.php.net/manual/en/regexp.reference.internal-options.php
         // (?i) makes this case sensitive, (?-1) makes it case insensitive
-        if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|suppress|phan-[a-z0-9_-]*(?-i)|method|property|template|PhanClosureScope)\b/', $line, $matches)) {
+        if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope)(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/', $line, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
 
@@ -342,7 +342,7 @@ final class Builder
                 );
             } elseif ($type === 'suppress') {
                 $this->maybeParseSuppress($i, $line);
-            } elseif ($type === 'property') {
+            } elseif ($type === 'property' || $type === 'property-read' || $type === 'property-write') {
                 $this->maybeParseProperty($i, $line);
             } elseif ($type === 'method') {
                 $this->maybeParseMethod($i, $line);

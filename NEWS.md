@@ -6,6 +6,8 @@ Phan NEWS
 Maintenance:
 + Emit `UnusedPluginSuppression` on `@phan-suppress-next-line` and `@phan-file-suppress`
   on the same line as the comment declaring the suppression. (#2167, #1731)
++ Don't emit `PhanInvalidCommentForDeclarationType` (or attempt to parse) unknown tags that have known tags as prefixes  (#2156)
+  (e.g. `@param-some-unknown-tag`)
 
 Bug fixes:
 + Fix a crash when analyzing a nullable parameter of type `self` in traits (#2163)
