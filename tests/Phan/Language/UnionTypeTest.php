@@ -526,6 +526,30 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame(3, $union_type->typeCount());
     }
 
+    public function testClosureInsideArrayShape()
+    {
+        // array keys are integers, values are strings
+        $union_type = self::makePHPDocUnionType('array{key:Closure(int,string|int):void}');
+        $this->assertSame('array{key:Closure(int,int|string):void}', (string)$union_type);
+        $this->assertSame(1, $union_type->typeCount());
+    }
+
+    public function testClosureInsideGenericArray()
+    {
+        // array keys are integers, values are strings
+        $union_type = self::makePHPDocUnionType('array<int,Closure(int,string|int):void>');
+        $this->assertSame('array<int,Closure(int,int|string):void>', (string)$union_type);
+        $this->assertSame(1, $union_type->typeCount());
+    }
+
+    public function testArrayShapeInsideClosure()
+    {
+        // array keys are integers, values are strings
+        $union_type = self::makePHPDocUnionType('Closure(array{key:int,other:string|int}):void');
+        $this->assertSame('Closure(array{key:int,other:int|string}):void', (string)$union_type);
+        $this->assertSame(1, $union_type->typeCount());
+    }
+
     public function testNullableBasicArrayType()
     {
         // array keys are integers, values are strings

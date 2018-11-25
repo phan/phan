@@ -291,7 +291,11 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             if ($callback === null) {
                 return $context;
             }
-            return $callback($this, $args[0], $context);
+            return $callback(
+                $this,
+                $args[0],  // @phan-suppress-current-line PhanPartialTypeMismatchArgument
+                $context
+            );
         }
         if ($function_name === 'array_key_exists') {
             // @phan-suppress-next-line PhanPartialTypeMismatchArgument
@@ -412,7 +416,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
 
     /**
      * @return array<string,Closure> (NegatedConditionVisitor $cv, Node $var_node, Context $context) -> Context
-     * @phan-return array<string,Closure(NegatedConditionVisitor,Node,Context):Context>
+     * @phan-return array<string,Closure(NegatedConditionVisitor,Node|int|string|float,Context):Context>
      */
     private static function createNegationCallbackMap() : array
     {

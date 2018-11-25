@@ -2520,7 +2520,7 @@ class Type
         }
         // TODO: Would need to use a different approach if templates were ever supported
         //       e.g. The magic method parsing doesn't support commas?
-        return \array_map('trim', \explode(',', $arg_list));
+        return \array_map('trim', self::extractNameList($arg_list));
     }
 
     /**
@@ -2556,8 +2556,8 @@ class Type
         $delta = 0;
         foreach (\explode(',', $list_string) as $result) {
             $result = \trim($result);
-            $open_bracket_count = \substr_count($result, '<') + \substr_count($result, '{');
-            $close_bracket_count = \substr_count($result, '>') + \substr_count($result, '}');
+            $open_bracket_count = \substr_count($result, '<') + \substr_count($result, '{') + \substr_count($result, '(');
+            $close_bracket_count = \substr_count($result, '>') + \substr_count($result, '}') + \substr_count($result, ')');
             if (count($prev_parts) > 0) {
                 $prev_parts[] = $result;
                 $delta += $open_bracket_count - $close_bracket_count;
