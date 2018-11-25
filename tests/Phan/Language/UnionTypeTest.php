@@ -299,7 +299,6 @@ final class UnionTypeTest extends BaseTest
      * A string representation of the union type begotten from
      * the first statement in the statement list in the given
      * code.
-     * @suppress PhanPartialTypeMismatchArgument
      */
     private function typeStringFromCode(string $code) : string
     {

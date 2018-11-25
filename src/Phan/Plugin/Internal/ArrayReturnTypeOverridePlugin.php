@@ -26,7 +26,7 @@ use Phan\PluginV2\ReturnTypeOverrideCapability;
  *
  * TODO: Refactor this.
  *
- * @phan-file-suppress PhanPluginUnusedClosureArgument, PhanUnusedClosureParameter
+ * @phan-file-suppress PhanUnusedClosureParameter
  */
 final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
     ReturnTypeOverrideCapability

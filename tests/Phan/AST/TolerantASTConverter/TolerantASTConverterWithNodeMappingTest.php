@@ -57,7 +57,6 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
      * @param Node|int|string|float|null $node
      * @param array<int,Node> &$candidates
      * @return void
-     * @suppress PhanUndeclaredProperty isSelected is dynamically added by Phan
      */
     private function findSelectedNodeInner($node, array &$candidates)
     {

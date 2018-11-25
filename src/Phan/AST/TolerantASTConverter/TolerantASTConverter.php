@@ -1788,6 +1788,7 @@ class TolerantASTConverter
 
     /**
      * @param PhpParser\Node|PhpParser\Token $parser_node
+     * @suppress UnusedSuppression, TypeMismatchProperty
      */
     protected static function astStub($parser_node) : ast\Node
     {
@@ -1798,7 +1799,6 @@ class TolerantASTConverter
         }
 
         $node = new ast\Node();
-        // @phan-suppress-next-line PhanTypeMismatchProperty, UnusedPluginSuppression - Deliberately setting $node->kind to a string instead of an integer.
         $node->kind = "TODO:" . get_class($parser_node);
         $node->flags = 0;
         $node->lineno = self::getStartLine($parser_node);
