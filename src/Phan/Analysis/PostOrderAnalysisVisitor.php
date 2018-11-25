@@ -1571,7 +1571,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             foreach ($function_list_generator as $function) {
                 // Check the call for parameter and argument types
-                $this->analyzeCallToMethod(
+                $this->analyzeCallToFunctionLike(
                     $function,
                     $node
                 );
@@ -1652,7 +1652,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $node
             );
 
-            $this->analyzeCallToMethod(
+            $this->analyzeCallToFunctionLike(
                 $method,
                 $node
             );
@@ -1861,7 +1861,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             );
 
             // Make sure the parameters look good
-            $this->analyzeCallToMethod(
+            $this->analyzeCallToFunctionLike(
                 $method,
                 $node
             );
@@ -2216,7 +2216,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         );
 
         // Check the call for parameter and argument types
-        $this->analyzeCallToMethod(
+        $this->analyzeCallToFunctionLike(
             $method,
             $node
         );
@@ -2627,7 +2627,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * @return void
      */
-    private function analyzeCallToMethod(
+    private function analyzeCallToFunctionLike(
         FunctionInterface $method,
         Node $node
     ) {
@@ -2652,48 +2652,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // If pass-by-reference, make sure the variable exists
             // or create it if it doesn't.
             if ($parameter->isPassByReference()) {
-                if ($argument->kind == ast\AST_VAR) {
-                    try {
-                        // We don't do anything with the new variable; just create it
-                        // if it doesn't exist
-                        (new ContextNode(
-                            $code_base,
-                            $context,
-                            $argument
-                        ))->getOrCreateVariableForReferenceParameter($parameter);
-                    } catch (NodeException $_) {
-                        // E.g. `function_accepting_reference(${$varName})` - Phan can't analyze outer type of ${$varName}
-                        continue;
-                    }
-                } elseif ($argument->kind == ast\AST_STATIC_PROP
-                    || $argument->kind == ast\AST_PROP
-                ) {
-                    $property_name = $argument->children['prop'];
-
-                    if (\is_string($property_name)) {
-                        // We don't do anything with it; just create it
-                        // if it doesn't exist
-                        try {
-                            (new ContextNode(
-                                $code_base,
-                                $context,
-                                $argument
-                            ))->getOrCreateProperty($argument->children['prop'], $argument->kind == ast\AST_STATIC_PROP);
-                        } catch (IssueException $exception) {
-                            Issue::maybeEmitInstance(
-                                $code_base,
-                                $context,
-                                $exception->getIssueInstance()
-                            );
-                        } catch (Exception $exception) {
-                            // If we can't figure out what kind of a call
-                            // this is, don't worry about it
-                        }
-                    } else {
-                        // This is stuff like `Class->$foo`. I'm ignoring
-                        // it.
-                    }
-                }
+                $this->createPassByReferenceArgumentInCall($argument, $parameter);
             }
         }
 
@@ -2764,6 +2723,52 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $node->children['args'],
             $method
         );
+    }
+
+    private function createPassByReferenceArgumentInCall(Node $argument, Parameter $parameter)
+    {
+        if ($argument->kind == ast\AST_VAR) {
+            // We don't do anything with the new variable; just create it
+            // if it doesn't exist
+            try {
+                (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $argument
+                ))->getOrCreateVariableForReferenceParameter($parameter);
+            } catch (NodeException $_) {
+                return;
+            }
+        } elseif ($argument->kind == ast\AST_STATIC_PROP
+            || $argument->kind == ast\AST_PROP
+        ) {
+            $property_name = $argument->children['prop'];
+
+            if (\is_string($property_name)) {
+                // We don't do anything with it; just create it
+                // if it doesn't exist
+                try {
+                    $property = (new ContextNode(
+                        $this->code_base,
+                        $this->context,
+                        $argument
+                    ))->getOrCreateProperty($argument->children['prop'], $argument->kind == ast\AST_STATIC_PROP);
+                    $property->setHasWriteReference();
+                } catch (IssueException $exception) {
+                    Issue::maybeEmitInstance(
+                        $this->code_base,
+                        $this->context,
+                        $exception->getIssueInstance()
+                    );
+                } catch (Exception $_) {
+                    // If we can't figure out what kind of a call
+                    // this is, don't worry about it
+                }
+            } else {
+                // This is stuff like `Class->$foo`. I'm ignoring
+                // it.
+            }
+        }
     }
 
     /**

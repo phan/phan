@@ -21,5 +21,3 @@ vfprintf(STDERR, "Hello %10s", ["world"]);
 
 $tmp = ['arg %s', ['name']];
 vprintf(...$tmp);  // not analyzed, but should not crash.
-
-// TODO test printf("%d", $strVal) and warn
