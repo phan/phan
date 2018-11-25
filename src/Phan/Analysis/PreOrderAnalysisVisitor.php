@@ -32,8 +32,6 @@ use Phan\Library\StringUtil;
  *
  * This is called in pre-order by BlockAnalysisVisitor
  * (i.e. this is called before visiting all children of the current node)
- *
- * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
 class PreOrderAnalysisVisitor extends ScopeVisitor
 {

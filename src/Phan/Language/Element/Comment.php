@@ -23,10 +23,6 @@ use Phan\Library\Option;
  * Handles extracting information(param types, return types, magic methods/properties, etc.) from phpdoc comments.
  * Instances of Comment contain the extracted information.
  *
- * TODO: Pass the doc comment line's index to the Element that will use the client,
- * so that it can be used for more precise line numbers (E.g. for where magic methods were declared,
- * where functions with no signature types but phpdoc types declared types that are invalid class names, etc.
- *
  * @see Builder for the logic to create an instance of this class.
  */
 class Comment
@@ -35,7 +31,7 @@ class Comment
     const ON_VAR        = 2;
     const ON_PROPERTY   = 3;
     const ON_CONST      = 4;
-    // TODO: Handle closure.
+    // TODO: Add another type for closure. (e.g. (at)phan-closure-scope)
     const ON_METHOD     = 5;
     const ON_FUNCTION   = 6;
 
@@ -234,6 +230,7 @@ class Comment
             $name = $property->getName();
             if ($name) {
                 if (isset($this->magic_property_map[$name])) {
+                    // Emit warning for duplicates.
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -243,7 +240,6 @@ class Comment
                     );
                 }
                 // Add it to the named map
-                // TODO: Detect duplicates, emit warning for duplicates.
                 $this->magic_property_map[$name] = $property;
             }
         }
@@ -251,6 +247,7 @@ class Comment
             $name = $method->getName();
             if ($name) {
                 if (isset($this->magic_method_map[$name])) {
+                    // Emit warning for duplicates.
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -260,7 +257,6 @@ class Comment
                     );
                 }
                 // Add it to the named map
-                // TODO: Detect duplicates, emit warning for duplicates.
                 $this->magic_method_map[$name] = $method;
             }
         }
@@ -498,7 +494,6 @@ class Comment
      * @return array<string,CommentParameter> (maps the names of parameters to their values. Does not include parameters which didn't provide names)
      *
      * @suppress PhanUnreferencedPublicMethod
-     * @suppress PhanPartialTypeMismatchReturn (Null)
      */
     public function getParameterMap() : array
     {

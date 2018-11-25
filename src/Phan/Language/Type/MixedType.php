@@ -51,11 +51,13 @@ final class MixedType extends NativeType
     }
 
     /**
-     * @param int $key_type @phan-unused-param
-     * (TODO: maybe use $key_type in the future?)
+     * @param int $key_type
      */
     public function asGenericArrayType(int $key_type) : Type
     {
+        if ($key_type === GenericArrayType::KEY_INT || $key_type === GenericArrayType::KEY_STRING) {
+            return GenericArrayType::fromElementType($this, false, $key_type);
+        }
         return ArrayType::instance(false);
     }
 

@@ -109,8 +109,6 @@ class Debug
      *
      * @return string
      * A string representation of an AST node
-     *
-     * @phan-suppress PhanPartialTypeMismatchArgument handle impossible arrays?
      */
     public static function nodeToString(
         $node,

@@ -63,7 +63,6 @@ class MarkupDescription
 
         $lines = explode("\n", $doc_comment);
         $lines = array_map('trim', $lines);
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $lines = MarkupDescription::trimLeadingWhitespace($lines);
         while (\in_array(\end($lines), ['*', ''], true)) {
             \array_pop($lines);

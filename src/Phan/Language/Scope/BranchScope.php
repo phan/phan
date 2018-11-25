@@ -23,7 +23,7 @@ class BranchScope extends Scope
      * True if a variable with the given name is defined
      * within this scope
      *
-     * TODO: Allow unsetting a variable within a scope, and properly merge that
+     * TODO: Allow unsetting a variable within a scope, and properly account for that in this check.
      */
     public function hasVariableWithName(string $name) : bool
     {

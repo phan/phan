@@ -41,7 +41,6 @@ use Phan\Plugin\ConfigPluginSet;
  *
  * @see CodeBase for the data structures used for looking up classes or elements of classes (properties, methods, constants, etc)
  *
- * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class Clazz extends AddressableElement
@@ -752,7 +751,6 @@ class Clazz extends AddressableElement
         }
         // original_property is the one that the class is using.
         // We added $property after that (so it likely in a base class, or a trait's property added after this property was added)
-        // TODO: implement https://github.com/phan/phan/issues/615 in another PR, see below comment
         if ($overriding_property->isStatic() != $inherited_property->isStatic()) {
             Issue::maybeEmit(
                 $code_base,
@@ -891,67 +889,6 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * Checks if a given property can be accessed by the class in the current Context
-     * (if any)
-     *
-     * @param CodeBase $code_base
-     * A reference to the entire code base in which the
-     * property exists.
-     *
-     * @param Property $property
-     * A property with the given name
-     *
-     * @param Context $context
-     * The context of the caller requesting the property
-     *
-     * @return bool - is $property accessible from $context
-     *
-     * TODO: this can probably be replaced with ClassElement->isAccessibleFromClass()
-     */
-    private function isPropertyAccessible(
-        CodeBase $code_base,
-        Property $property,
-        Context $context
-    ) : bool {
-        if ($property->isPublic()) {
-            return true;
-        }
-        if (!$context->isInClassScope()) {
-            return false;
-        }
-        // NOTE: This gets the **unexpanded** union type (Should be 1 class and no parent classes).
-        $type_of_class_of_property = $property->getDefiningClassFQSEN()->asType();
-        $accessing_class_type = $context->getClassFQSEN()->asType();
-
-        if ($type_of_class_of_property === $accessing_class_type) {
-            // Check for common case: Same class
-            return true;
-        }
-
-        // We are in a class scope, and the property is either private or protected.
-        if ($property->isPrivate()) {
-            return $accessing_class_type->canCastToType(
-                $type_of_class_of_property
-            );
-        } else {
-            // If the definition of the property is protected,
-            // then the subclasses of the defining class can access it.
-            foreach ($accessing_class_type->asExpandedTypes($code_base)->getTypeSet() as $type) {
-                if ($type->canCastToType($type_of_class_of_property)) {
-                    return true;
-                }
-            }
-            // and base classes of the defining class can access it
-            foreach ($type_of_class_of_property->asExpandedTypes($code_base)->getTypeSet() as $type) {
-                if ($type->canCastToType($accessing_class_type)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-
-    /**
      * @param CodeBase $code_base
      * A reference to the entire code base in which the
      * property exists.
@@ -1014,7 +951,10 @@ class Clazz extends AddressableElement
                 }
             }
 
-            $is_property_accessible = $this->isPropertyAccessible($code_base, $property, $context);
+            $is_property_accessible = $property->isAccessibleFromClass(
+                $code_base,
+                $context->getClassFQSENOrNull()
+            );
         }
 
         // If the property exists and is accessible, return it
@@ -1110,7 +1050,6 @@ class Clazz extends AddressableElement
             return $property;
         }
 
-        // TODO: should be ->, to be consistent with other uses for instance properties?
         throw new IssueException(
             Issue::fromType(Issue::UndeclaredProperty)(
                 $context->getFile(),

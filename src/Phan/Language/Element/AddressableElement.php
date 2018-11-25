@@ -243,7 +243,6 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     /**
      * @return array<string,FileRef>
      * A list of references to this typed structural element.
-     * @suppress PhanPartialTypeMismatchReturn TODO: investigate
      */
     public function getReferenceList() : array
     {

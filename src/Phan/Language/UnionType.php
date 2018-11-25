@@ -181,7 +181,7 @@ class UnionType implements Serializable
                 // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
                 $union_type = \reset($unique_types)->asUnionType();
             } else {
-                // TODO: Support brackets, template types within <>, etc.
+                // TODO: Support template types within <> and test?
                 $union_type = new UnionType(
                     $unique_types,
                     true
@@ -309,7 +309,6 @@ class UnionType implements Serializable
      *
      * @param array<int,Type> $types
      * @return array<int,Type>
-     * @suppress PhanPartialTypeMismatchReturn TODO: why?
      */
     public static function normalizeMultiTypes(array $types) : array
     {
@@ -1974,9 +1973,8 @@ class UnionType implements Serializable
      */
     public function scalarTypes() : UnionType
     {
-        // TODO: is_scalar(null) is false, account for that in analysis.
-        return $this->makeFromFilter(function (Type $type) : bool {
-            return $type->isScalar() && !($type instanceof NullType);
+        return $this->nonNullableClone()->makeFromFilter(function (Type $type) : bool {
+            return $type->isScalar();
         });
     }
 

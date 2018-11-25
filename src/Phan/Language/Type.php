@@ -58,7 +58,6 @@ use function strtolower;
  *
  * Types are immutable.
  *
- * @phan-file-suppress PhanPartialTypeMismatchArgument
  * @phan-file-suppress PhanPartialTypeMismatchArgumentInternal
  * phpcs:disable Generic.NamingConventions.UpperCaseConstantName
  */

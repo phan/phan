@@ -2459,7 +2459,7 @@ class TolerantASTConverter
             if ($prop instanceof Token) {
                 continue;
             }
-            // @phan-suppress-next-line PhanTypeMismatchArgument, PhanPartialTypeMismatchArgument casting to a more specific node
+            // @phan-suppress-next-line PhanTypeMismatchArgument casting to a more specific node
             $prop_elems[] = static::phpParserPropelemToAstPropelem($prop, $i === 0 ? $doc_comment : null);
         }
         $flags = static::phpParserVisibilityToAstVisibility($n->modifiers, false);
@@ -2475,7 +2475,7 @@ class TolerantASTConverter
             if ($const_elem instanceof Token) {
                 continue;
             }
-            // @phan-suppress-next-line PhanTypeMismatchArgument, PhanPartialTypeMismatchArgument casting to a more specific node
+            // @phan-suppress-next-line PhanTypeMismatchArgument casting to a more specific node
             $const_elems[] = static::phpParserConstelemToAstConstelem($const_elem, $i === 0 ? $doc_comment : null);
         }
         $flags = static::phpParserVisibilityToAstVisibility($n->modifiers);
@@ -2915,9 +2915,7 @@ class TolerantASTConverter
         if (\is_string($s)) {
             $s = substr($s, 0, -1);
             // On Windows, the "\r" must also be removed from the last line of the heredoc
-            // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
             if (substr($s, -1) === "\r") {
-                // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
                 $s = substr($s, 0, -1);
             }
             $inner_node_parts[$i] = $s;

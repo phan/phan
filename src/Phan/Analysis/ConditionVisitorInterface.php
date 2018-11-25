@@ -40,7 +40,6 @@ interface ConditionVisitorInterface
      * @param Node|int|float|string $expr
      * @param int $flags (e.g. \ast\flags\BINARY_IS_SMALLER)
      * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
-     * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
     public function updateVariableToBeCompared(
         Node $var_node,

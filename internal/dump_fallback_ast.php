@@ -23,11 +23,10 @@
  * SOFTWARE.
  */
 
+// @phan-file-suppress PhanMissingRequireFile this depends on where Phan is installed
 if (file_exists(__DIR__ . "/../../../../vendor/autoload.php")) {
-    // @phan-suppress-next-line PhanMissingRequireFile this depends on where Phan is installed
     require __DIR__ . "/../../../../vendor/autoload.php";
 } else {
-    // @phan-suppress-next-line PhanMissingRequireFile this depends on where Phan is installed
     require __DIR__ . "/../vendor/autoload.php";
 }
 use Microsoft\PhpParser\Parser;
