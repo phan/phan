@@ -92,7 +92,7 @@ final class LanguageServerIntegrationTest extends BaseTest
     public function testInitialize(bool $pcntlEnabled)
     {
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list ($proc, $proc_in, $proc_out) = $this->createPhanDaemon($pcntlEnabled);
+        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon($pcntlEnabled);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);

@@ -2819,19 +2819,29 @@ class UnionType implements Serializable
         }
 
         $result = new UnionTypeBuilder();
+        $has_other_array_type = false;
+        $empty_array_shape_type = null;
         foreach ($this->type_set as $type) {
             if ($type->hasArrayShapeTypeInstances()) {
-                if ($type instanceof ArrayShapeType && $type->isEmptyArrayShape()) {
-                    if (\count($this->type_set) > 1) {
+                if ($type instanceof ArrayShapeType) {
+                    if (\count($type->getFieldTypes()) === 0) {
+                        $empty_array_shape_type = $type;
                         continue;
                     }
                 }
+                $has_other_array_type = true;
                 foreach ($type->withFlattenedArrayShapeOrLiteralTypeInstances() as $type_part) {
                     $result->addType($type_part);
                 }
             } else {
                 $result->addType($type);
+                if ($type instanceof ArrayType) {
+                    $has_other_array_type = true;
+                }
             }
+        }
+        if ($empty_array_shape_type && !$has_other_array_type) {
+            $result->addType(ArrayType::instance($empty_array_shape_type->getIsNullable()));
         }
         return $result->getUnionType();
     }
@@ -2847,10 +2857,13 @@ class UnionType implements Serializable
         }
 
         $result = new UnionTypeBuilder();
+        $has_other_array_type = false;
+        $empty_array_shape_type = null;
         foreach ($this->type_set as $type) {
             if ($type->hasArrayShapeOrLiteralTypeInstances()) {
-                if ($type instanceof ArrayShapeType && \count($type->getFieldTypes()) === 0) {
-                    if (count($this->type_set) > 1) {
+                if ($type instanceof ArrayShapeType) {
+                    if (\count($type->getFieldTypes()) === 0) {
+                        $empty_array_shape_type = $type;
                         continue;
                     }
                 }
@@ -2860,6 +2873,12 @@ class UnionType implements Serializable
             } else {
                 $result->addType($type);
             }
+            if ($type instanceof ArrayType) {
+                $has_other_array_type = true;
+            }
+        }
+        if ($empty_array_shape_type && !$has_other_array_type) {
+            $result->addType(ArrayType::instance($empty_array_shape_type->getIsNullable()));
         }
         return $result->getUnionType();
     }

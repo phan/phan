@@ -6,22 +6,22 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\Exception\IssueException;
 use Phan\Language\Context;
 use Phan\PluginV2;
-use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
-use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\PluginV2\PluginAwarePreAnalysisVisitor;
+use Phan\PluginV2\PreAnalyzeNodeCapability;
 
 /**
  * This plugin warns if an expression which has types other than `bool` is used in an if/else if.
  *
  * Note that the 'simplify_ast' setting's default of true will interfere with this plugin.
  */
-class NonBoolBranchPlugin extends PluginV2 implements PostAnalyzeNodeCapability
+class NonBoolBranchPlugin extends PluginV2 implements PreAnalyzeNodeCapability
 {
     /**
-     * @return string - name of PluginAwarePostAnalysisVisitor subclass
+     * @return string - name of PluginAwarePreAnalysisVisitor subclass
      *
      * @override
      */
-    public static function getPostAnalyzeNodeVisitorClassName() : string
+    public static function getPreAnalyzeNodeVisitorClassName() : string
     {
         return NonBoolBranchVisitor::class;
     }
@@ -30,7 +30,7 @@ class NonBoolBranchPlugin extends PluginV2 implements PostAnalyzeNodeCapability
 /**
  * This visitor checks if statements for conditions ('cond') that are non-booleans.
  */
-class NonBoolBranchVisitor extends PluginAwarePostAnalysisVisitor
+class NonBoolBranchVisitor extends PluginAwarePreAnalysisVisitor
 {
     // A plugin's visitors should not override visit() unless they need to.
 
@@ -67,7 +67,7 @@ class NonBoolBranchVisitor extends PluginAwarePostAnalysisVisitor
             } catch (IssueException $_) {
                 return $this->context;
             }
-            if (!$union_type->isExclusivelyBoolTypes()) {
+            if (!$union_type->isEmpty() && !$union_type->isExclusivelyBoolTypes()) {
                 $this->emit(
                     'PhanPluginNonBoolBranch',
                     'Non bool value of type {TYPE} evaluated in if clause',

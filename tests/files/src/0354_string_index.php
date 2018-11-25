@@ -9,7 +9,7 @@ class A354 {
         intdiv($this->foo, 2);
         $this->foo[] = 'x';  // should warn
         $x = 'aaa';
-        $x[2] = '1';  // TODO: Fix the inference made here.
+        $x[2] = '1';  // TODO: Fix the inference made here. `'aaa'|string` is wrong, should be `string` or `aa1`
         echo count($x);  // should warn.
         $x[] = 'c';  // should warn
         $y = 'aaa';

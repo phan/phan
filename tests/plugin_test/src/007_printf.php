@@ -37,4 +37,3 @@ printf(true);
 printf(false);
 printf(null);
 printf(E_ERROR);
-// TODO test printf("%d", $strVal) and warn

@@ -1,0 +1,1 @@
+%s:8 PhanTypeMismatchReturn Returning type array<string,true> but test() is declared to return array<string,false>

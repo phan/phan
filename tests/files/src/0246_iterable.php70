@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-/** @param iterable $p - TODO https://github.com/phan/phan/issues/559 */
+/** @param iterable $p - see https://github.com/phan/phan/issues/559 */
 function f246_0($p) {
     foreach ($p as $v) {}
 }
@@ -12,7 +12,7 @@ function f246_2(\ArrayAccess $p) {
 function f246_3(\Traversable $p) {
     foreach ($p as $v) {}
 }
-/** @param iterable $p - TODO https://github.com/phan/phan/issues/559 */
+/** @param iterable $p - see https://github.com/phan/phan/issues/559 */
 function f246_4($p) {
     f246_0($p);
     f246_1($p); // iterable -/-> array

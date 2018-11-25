@@ -82,6 +82,10 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return \count($this->field_types) !== 0;
     }
 
+    /**
+     * Is this the union type `array{}` or `?array{}`?
+     * @suppress PhanUnreferencedPublicMethod
+     */
     public function isEmptyArrayShape() : bool
     {
         return \count($this->field_types) === 0;

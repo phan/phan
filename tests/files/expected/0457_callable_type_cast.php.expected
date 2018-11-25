@@ -20,6 +20,6 @@
 %s:65 PhanTypeMismatchArgument Argument 1 (fn) is Closure(mixed):void but \expects_cb_void() takes callable():void defined at %s:54
 %s:66 PhanTypeMismatchArgument Argument 1 (fn) is Closure():int but \expects_cb_void() takes callable():void defined at %s:54
 %s:67 PhanTypeMismatchArgument Argument 1 (fn) is Closure(int):void but \expects_cb_void() takes callable():void defined at %s:54
-%s:75 PhanTypeMismatchArgument Argument 1 (p0) is array{0:'arg'} but callable(string...):void takes string defined at %s:72
-%s:78 PhanTypeMismatchArgument Argument 1 (fn) is Closure(int...):void but \expects_cb_void_variadic() takes callable(string...):void defined at %s:72
-%s:80 PhanTypeMismatchArgument Argument 1 (fn) is Closure(string):void but \expects_cb_void_variadic() takes callable(string...):void defined at %s:72
+%s:75 PhanTypeMismatchArgument Argument 1 (p0) is array{0:'arg'} but callable(string...):void takes string defined at %s:71
+%s:78 PhanTypeMismatchArgument Argument 1 (fn) is Closure(int...):void but \expects_cb_void_variadic() takes callable(string...):void defined at %s:71
+%s:80 PhanTypeMismatchArgument Argument 1 (fn) is Closure(string):void but \expects_cb_void_variadic() takes callable(string...):void defined at %s:71
