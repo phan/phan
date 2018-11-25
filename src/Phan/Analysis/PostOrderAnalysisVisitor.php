@@ -2987,7 +2987,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $method,
                     $parameter_clone,
                     null,  // TODO: Can array_map/array_filter accept closures with references? Consider warning?
-                    $argument_types[$i],
+                    $argument_types,
                     $parameter_list,
                     $i
                 );
@@ -3092,7 +3092,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $method,
                     $parameter_clone,
                     $argument,
-                    $argument_types[$i],
+                    $argument_types,
                     $parameter_list,
                     $i
                 );
@@ -3159,8 +3159,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * The argument whose type we'd like to replace the
      * parameter type with.
      *
-     * @param UnionType $argument_type
-     * The type of $argument
+     * @param array<int,UnionType> $argument_types
+     * The type of arguments
      *
      * @param array<int,Parameter> &$parameter_list
      * The parameter list - types are modified by reference
@@ -3175,10 +3175,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         FunctionInterface $method,
         Parameter $parameter,
         $argument,
-        UnionType $argument_type,
+        array $argument_types,
         array &$parameter_list,
         int $parameter_offset
     ) {
+        $argument_type = $argument_types[$parameter_offset];
+        if ($parameter->isVariadic()) {
+            for ($i = $parameter_offset + 1; $i < \count($argument_types); $i++) {
+                $argument_type = $argument_type->withUnionType($argument_types[$i]);
+            }
+        }
         // Then set the new type on that parameter based
         // on the argument's type. We'll use this to
         // retest the method with the passed in types

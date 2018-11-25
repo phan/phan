@@ -91,15 +91,12 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      */
     protected function scanSourceFilesDir(string $source_dir, string $expected_dir)
     {
-        // TODO: Make Phan know that array_filter with a single argument implies elements aren't falsey
         $files = array_filter(
-            array_filter(
-                scandir($source_dir) ?: [],
-                function (string $filename) : bool {
-                    // Ignore directories and hidden files.
-                    return !in_array($filename, ['.', '..'], true) && substr($filename, 0, 1) !== '.' && preg_match('@\.php$@', $filename);
-                }
-            )
+            scandir($source_dir) ?: [],
+            function (string $filename) : bool {
+                // Ignore directories and hidden files.
+                return !in_array($filename, ['.', '..'], true) && substr($filename, 0, 1) !== '.' && preg_match('@\.php$@', $filename);
+            }
         );
 
         // NOTE: To avoid ParseError in php-ast

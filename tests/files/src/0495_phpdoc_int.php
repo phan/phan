@@ -32,7 +32,7 @@ testDoubleInt(-1);
 testDoubleInt(rand(0,9));
 
 /**
- * @param ?-1 $x (TODO: refactor phpdoc method logic for params to allow ?-1 to override ?int
+ * @param ?-1 $x (either -1 or null)
  * @return ?4
  */
 function testNullableInt($x) {
@@ -45,5 +45,5 @@ function testNullableInt($x) {
     return null;
 }
 testNullableInt(-1);
-testNullableInt(1);
+testNullableInt(1);  // this warns
 testNullableInt(null);

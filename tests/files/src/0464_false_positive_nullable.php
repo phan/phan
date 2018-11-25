@@ -9,7 +9,7 @@ function test464(string $key, array $arr = null, array $arr2 = null) {
     }
 }
 
-// TODO: Avoid false positives via https://github.com/phan/phan/issues/642#issuecomment-376386284
+// Phan avoids positives via the method mentioned in https://github.com/phan/phan/issues/642#issuecomment-376386284
 function testCoalesce464(string $key, string $key2, array $arr = null, array $arr2 = null) {
     echo $arr[$key] ?? null;
     echo $arr2[$key][$key2] ?? null;

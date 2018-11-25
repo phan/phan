@@ -160,6 +160,12 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
                         //
                         // ARRAY_FILTER_USE_KEY - pass key as the only argument to callback instead of the value
                         // ARRAY_FILTER_USE_BOTH - pass both value and key as arguments to callback instead of the value
+                    } elseif (\count($args) === 1) {
+                        // array_filter with count($args) === 1 implies elements of the resulting array aren't falsey
+                        return $generic_passed_array_type->withFlattenedArrayShapeOrLiteralTypeInstances()
+                                                         ->withMappedElementTypes(function (UnionType $union_type) : UnionType {
+                                                            return $union_type->nonFalseyClone();
+                                                         });
                     }
                     // TODO: Analyze if it and the flags are compatible with the arguments to the closure provided.
                     // TODO: withFlattenedArrayShapeOrLiteralTypeInstances() for other values
@@ -198,8 +204,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             $types = UnionType::empty();
             foreach ($args as $arg) {
                 $passed_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg);
-                $types = $types->withUnionType($passed_array_type->genericArrayTypes()->withFlattenedArrayShapeOrLiteralTypeInstances());
+                $types = $types->withUnionType($passed_array_type->genericArrayTypes());
             }
+            $types = $types->withFlattenedArrayShapeOrLiteralTypeInstances();
             if ($types->isEmpty()) {
                 $types = $types->withType($array_type);
             }

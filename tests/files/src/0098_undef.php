@@ -27,10 +27,10 @@ class F98 { function f() { $v = parent::f(); } }
 // Issue::UndeclaredProperty
 $v = (new C98)->undef;
 
-// TODO: Issue::?
+// Issue::UndeclaredProperty
 (new C98)->undef = 'str';
 
-// TODO: Issue::UndeclaredClassMethod
+// Issue::UndeclaredClassMethod
 function g(Undef $v) { $v->f(); }
 
 // Issue::TraitParentReference

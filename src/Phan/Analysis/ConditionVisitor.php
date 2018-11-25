@@ -13,6 +13,7 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
@@ -24,6 +25,7 @@ use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
+use Phan\Library\StringUtil;
 use ReflectionMethod;
 
 /**
@@ -538,7 +540,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * This contains Phan's logic for inferring the resulting union types of variables, e.g. in \is_array($x).
      *
      * @return array<string,Closure> - The closures to call for a given global function
-     * @phan-return array<string,Closure(Variable,array):void>
+     * @phan-return array<string,Closure(CodeBase, Context, Variable, array):void>
      */
     private static function initTypeModifyingClosuresForVisitCall() : array
     {
@@ -550,7 +552,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             $empty_type = UnionType::empty();
 
             /** @return void */
-            return static function (Variable $variable, array $args) use ($asserted_union_type, $asserted_union_type_set, $empty_type) {
+            return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($asserted_union_type, $asserted_union_type_set, $empty_type) {
                 $new_types = $empty_type;
                 foreach ($variable->getUnionType()->getTypeSet() as $type) {
                     $type = $type->withIsNullable(false);
@@ -569,7 +571,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 $union_type_string
             );
             /** @return void */
-            return static function (Variable $variable, array $args) use ($asserted_union_type) {
+            return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($asserted_union_type) {
                 // Otherwise, overwrite the type for any simple
                 // primitive types.
                 $variable->setUnionType($asserted_union_type);
@@ -578,10 +580,10 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
 
         /** @return void */
         $array_type = ArrayType::instance(false);
-        $array_callback = static function (Variable $variable, array $args) use ($array_type) {
+        $array_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($array_type) {
             // Change the type to match the is_a relationship
             // If we already have generic array types, then keep those
-            // (E.g. T[]|false becomes T[], ?array|null becomes array
+            // (E.g. T[]|false becomes T[], ?array|null becomes array)
             $new_type_builder = new UnionTypeBuilder();
             foreach ($variable->getUnionType()->getTypeSet() as $type) {
                 if ($type instanceof ArrayType) {
@@ -597,29 +599,36 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         };
 
         /** @return void */
-        $object_callback = static function (Variable $variable, array $args) {
+        $object_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) {
             self::analyzeIsObjectAssertion($variable);
         };
         /** @return void */
-        $is_a_callback = function (Variable $variable, array $args) use ($object_callback) {
+        $is_a_callback = function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($object_callback) {
             $class_name = $args[1] ?? null;
+            if ($class_name instanceof Node) {
+                $class_name = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $class_name)->asSingleScalarValueOrNull();
+            }
             if (!\is_string($class_name)) {
                 // Limit the types of $variable to an object if we can't infer the class name.
-                $object_callback($variable, $args);
+                $object_callback($code_base, $context, $variable, $args);
                 return;
             }
-            $class_name = ltrim($class_name, '\\');
-            if (empty($class_name)) {
-                return;
+            try {
+                $fqsen = FullyQualifiedClassName::fromFullyQualifiedUserProvidedString($class_name);
+            } catch (\InvalidArgumentException $_) {
+                throw new IssueException(Issue::fromType(Issue::TypeComparisonToInvalidClass)(
+                    $context->getFile(),
+                    $context->getLineNumberStart(),
+                    [StringUtil::encodeValue($class_name)]
+                ));
             }
             // TODO: validate argument
-            $class_name = '\\' . $class_name;
-            $class_type = Type::fromStringInContext($class_name, new Context(), Type::FROM_NODE);
-            $variable->setUnionType($class_type->asUnionType());
+            $class_type = $fqsen->asType()->asUnionType();
+            $variable->setUnionType($class_type);
         };
 
         /** @return void */
-        $scalar_callback = static function (Variable $variable, array $args) {
+        $scalar_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) {
             // Change the type to match the is_a relationship
             // If we already have possible scalar types, then keep those
             // (E.g. T|false becomes bool, T becomes int|float|bool|string|null)
@@ -638,12 +647,12 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         /**
          * @param string $extract_types
          * @param UnionType $default_if_empty
-         * @return Closure(Variable,array):void
+         * @return Closure(CodeBase,Context,Variable,array):void
          */
         $make_callback = static function (string $extract_types, UnionType $default_if_empty) : Closure {
             $method = new ReflectionMethod(UnionType::class, $extract_types);
             /** @return void */
-            return function (Variable $variable, array $args) use ($method, $default_if_empty) {
+            return function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($method, $default_if_empty) {
                 // Change the type to match the is_a relationship
                 // If we already have possible callable types, then keep those
                 // (E.g. Closure|false becomes Closure)
@@ -732,7 +741,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         static $map = null;
 
         if ($map === null) {
-             $map = self::initTypeModifyingClosuresForVisitCall();
+            $map = self::initTypeModifyingClosuresForVisitCall();
         }
 
         $function_name = \strtolower($raw_function_name);
@@ -755,7 +764,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             $variable = clone($variable);
 
             // Modify the types of that variable.
-            $type_modification_callback($variable, $args);
+            $type_modification_callback($this->code_base, $context, $variable, $args);
 
             // Overwrite the variable with its new type in this
             // scope without overwriting other scopes

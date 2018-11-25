@@ -106,7 +106,6 @@ final class UnionTypeTest extends BaseTest
         Phan::setIssueCollector(new BufferingCollector());
         $this->assertUnionTypeStringEqual('rand(0,20)', 'int');
         $this->assertUnionTypeStringEqual('rand(0,20) + 1', 'int');
-        // TODO: Perform arithmetic if in bounds
         $this->assertUnionTypeStringEqual('42 + 2', '44');
         $this->assertUnionTypeStringEqual('46 - 2', '44');
         $this->assertUnionTypeStringEqual('PHP_INT_MAX', (string)PHP_INT_MAX);
@@ -646,6 +645,23 @@ final class UnionTypeTest extends BaseTest
         }
         $field_union_type = $type->getFieldTypes()['key'];
         $this->assertFalse($field_union_type->getIsPossiblyUndefined());
+    }
+
+    public function testFlattenEmptyArrayShape()
+    {
+        $union_type = self::makePHPDocUnionType('array{}|array<int,\stdClass>');
+
+        $this->assertSame('array<int,\stdClass>|array{}', (string)$union_type);
+        $this->assertSame('array<int,\stdClass>', (string)$union_type->withFlattenedArrayShapeOrLiteralTypeInstances());
+        $this->assertSame('array<int,\stdClass>', (string)$union_type->withFlattenedArrayShapeTypeInstances());
+
+        $empty_union_type = self::makePHPDocUnionType('array{}');
+        $this->assertSame('array', (string)$empty_union_type->withFlattenedArrayShapeOrLiteralTypeInstances());
+        $this->assertSame('array', (string)$empty_union_type->withFlattenedArrayShapeTypeInstances());
+
+        $empty_union_type_and_literals = self::makePHPDocUnionType("array{}|2|'str'");
+        $this->assertSame('array|int|string', (string)$empty_union_type_and_literals->withFlattenedArrayShapeOrLiteralTypeInstances());
+        $this->assertSame("'str'|2|array", (string)$empty_union_type_and_literals->withFlattenedArrayShapeTypeInstances());
     }
 
     public function testOptionalInArrayShape()
