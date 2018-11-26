@@ -3,6 +3,10 @@ Phan NEWS
 ?? ??? 2018, Phan 1.1.4 (dev)
 -----------------------
 
+New features(Analysis):
++ Preserve original descendent object types after type assertions, when original object types are all subtypes
+  (e.g. infer `SubClass` for `$x = rand(0,1) ? new SubClass() : false; if ($x instanceof BaseClass) { ... }`)
+
 Maintenance:
 + Emit `UnusedPluginSuppression` on `@phan-suppress-next-line` and `@phan-file-suppress`
   on the same line as the comment declaring the suppression. (#2167, #1731)
