@@ -30,7 +30,6 @@ use ReflectionMethod;
 
 /**
  * TODO: Make $x != null remove FalseType and NullType from $x
- * TODO: Make $x > 0, $x < 0, $x >= 50, etc.  remove FalseType and NullType from $x
  * TODO: if (a || b || c || d) might get really slow, due to creating both ConditionVisitor and NegatedConditionVisitor
  *
  * @phan-file-suppress PhanUnusedClosureParameter
@@ -483,8 +482,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 // See https://secure.php.net/instanceof -
 
                 // Add the type to the variable
-                // $variable->getUnionType()->addUnionType($type);
-                $variable->setUnionType($object_types);
+                $variable->setUnionType(self::calculateNarrowedUnionType($this->code_base, $variable->getUnionType(), $object_types));
             } else {
                 if ($class_node->kind !== \ast\AST_NAME &&
                         !$type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
@@ -509,6 +507,36 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         }
 
         return $context;
+    }
+
+    /**
+     * E.g. Given subclass1|subclass2|false and base_class/base_interface, returns subclass1|subclass2
+     * E.g. Given subclass1|mixed|false and base_class/base_interface, returns base_class/base_interface
+     */
+    private static function calculateNarrowedUnionType(CodeBase $code_base, UnionType $old_type, UnionType $asserted_object_type) : UnionType {
+        $result = UnionType::empty();
+        foreach ($old_type->getTypeSet() as $type) {
+            if ($type instanceof MixedType) {
+                return $asserted_object_type;
+            }
+            if (!$type->isObject()) {
+                // ignore non-object types
+                continue;
+            }
+            if (!$type->isObjectWithKnownFQSEN()) {
+                return $asserted_object_type;
+            }
+            $type = $type->withIsNullable(false);
+            if (!$type->asExpandedTypes($code_base)->canCastToUnionType($asserted_object_type))
+            {
+                return $asserted_object_type;
+            }
+            $result = $result->withType($type);
+        }
+        if ($result->isEmpty()) {
+            return $asserted_object_type;
+        }
+        return $result;
     }
 
     /**
@@ -624,7 +652,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             }
             // TODO: validate argument
             $class_type = $fqsen->asType()->asUnionType();
-            $variable->setUnionType($class_type);
+            $variable->setUnionType(self::calculateNarrowedUnionType($code_base, $variable->getUnionType(), $class_type));
         };
 
         /** @return void */

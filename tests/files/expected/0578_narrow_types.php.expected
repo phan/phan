@@ -1,0 +1,6 @@
+%s:22 PhanTypeSuspiciousEcho Suspicious argument \BaseInterface578 for an echo/print statement
+%s:25 PhanTypeSuspiciousEcho Suspicious argument \Subclass578A for an echo/print statement
+%s:28 PhanTypeSuspiciousEcho Suspicious argument \Subclass578A for an echo/print statement
+%s:31 PhanTypeSuspiciousEcho Suspicious argument \Subclass578A for an echo/print statement
+%s:34 PhanTypeSuspiciousEcho Suspicious argument \SubInterface578|\Subclass578A for an echo/print statement
+%s:37 PhanTypeSuspiciousEcho Suspicious argument \BaseInterface578 for an echo/print statement
