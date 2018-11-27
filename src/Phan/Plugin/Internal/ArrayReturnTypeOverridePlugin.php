@@ -99,23 +99,18 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $array_type->asUnionType();
         };
-        $get_second_array_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
-            if (\count($args) >= 2) {
-                $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1])->genericArrayTypes();
-                if (!$element_types->isEmpty()) {
-                    return $element_types->withFlattenedArrayShapeOrLiteralTypeInstances();
-                }
-            }
-            return $array_type->asUnionType();
-        };
-        $array_fill_keys_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
+        $array_fill_keys_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type, $array_type) : UnionType {
             if (\count($args) == 2) {
+                $key_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+                $key_type_enum = GenericArrayType::keyTypeFromUnionTypeValues($key_types);
                 $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
-                if (!$element_types->isEmpty()) {
-                    $key_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
-                    $key_type_enum = GenericArrayType::keyTypeFromUnionTypeValues($key_types);
-                    return $element_types->asNonEmptyGenericArrayTypes($key_type_enum);
+                if ($element_types->isEmpty()) {
+                    if ($key_type_enum === GenericArrayType::KEY_MIXED) {
+                        return $array_type->asUnionType();
+                    }
+                    $element_types = $mixed_type->asUnionType();
                 }
+                return $element_types->asNonEmptyGenericArrayTypes($key_type_enum);
             }
             return $array_type->asUnionType();
         };
@@ -353,6 +348,17 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $mixed_type->asUnionType();
         };
+        $array_combine_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
+            if (\count($args) < 2) {
+                return $array_type->asUnionType();
+            }
+            $keys_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+            $values_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
+            $keys_element_type = $keys_type->genericArrayElementTypes();
+            $values_element_type = $values_type->genericArrayElementTypes();
+            $key_enum_type = GenericArrayType::keyTypeFromUnionTypeValues($keys_element_type);
+            return $values_element_type->asGenericArrayTypes($key_enum_type);
+        };
         return [
             // Gets the element types of the first
             'array_pop'   => $get_element_type_of_first_arg,
@@ -378,7 +384,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
 
             // misc
             'array_change_key_case'     => $get_first_array_arg,
-            'array_combine'             => $get_second_array_arg,  // combines keys with values
+            'array_combine'             => $array_combine_callback,  // combines keys with values
             'array_diff'                => $get_first_array_arg,
             'array_diff_assoc'          => $get_first_array_arg,
             'array_diff_uassoc'         => $get_first_array_arg,

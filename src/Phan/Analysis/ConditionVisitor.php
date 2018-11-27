@@ -513,7 +513,8 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * E.g. Given subclass1|subclass2|false and base_class/base_interface, returns subclass1|subclass2
      * E.g. Given subclass1|mixed|false and base_class/base_interface, returns base_class/base_interface
      */
-    private static function calculateNarrowedUnionType(CodeBase $code_base, UnionType $old_type, UnionType $asserted_object_type) : UnionType {
+    private static function calculateNarrowedUnionType(CodeBase $code_base, UnionType $old_type, UnionType $asserted_object_type) : UnionType
+    {
         $result = UnionType::empty();
         foreach ($old_type->getTypeSet() as $type) {
             if ($type instanceof MixedType) {
@@ -527,8 +528,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 return $asserted_object_type;
             }
             $type = $type->withIsNullable(false);
-            if (!$type->asExpandedTypes($code_base)->canCastToUnionType($asserted_object_type))
-            {
+            if (!$type->asExpandedTypes($code_base)->canCastToUnionType($asserted_object_type)) {
                 return $asserted_object_type;
             }
             $result = $result->withType($type);
