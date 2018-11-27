@@ -1,0 +1,1 @@
+%s:17 PhanTypeMismatchProperty Assigning array<int,'x'>|array<int,'y'> to property but \TestCombine->array is array<string,'x'>|array<string,'y'>|array<string,string>

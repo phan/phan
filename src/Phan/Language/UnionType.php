@@ -2268,14 +2268,13 @@ class UnionType implements Serializable
             $null_type = NullType::instance(false);
         }
 
-        // If array is in there, then it can be any type
-        if (\in_array($array_type_nonnull, $type_set, true)) {
+        if (\in_array($array_type_nullable, $type_set, true)) {
+            // TODO: More consistency in what causes this check to infer null
             $builder->addType($mixed_type);
             $builder->addType($null_type);
-        } elseif (\in_array($mixed_type, $type_set, true)
-            || \in_array($array_type_nullable, $type_set, true)
-        ) {
-            // Same for mixed
+        } elseif (\in_array($array_type_nonnull, $type_set, true) ||
+            // If array is in there, then it can be any type
+            \in_array($mixed_type, $type_set, true)) {
             $builder->addType($mixed_type);
         }
 

@@ -111,6 +111,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         return array_combine(
             $files,
             array_map(
+                /** @return array{0:array{0:string},1:string} */
                 function (string $filename) use ($source_dir, $expected_dir, $suffix) : array {
                     return [
                         [self::getFileForPHPVersion($source_dir . DIRECTORY_SEPARATOR . $filename, $suffix)],
