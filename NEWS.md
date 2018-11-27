@@ -1,6 +1,6 @@
 Phan NEWS
 
-?? ??? 2018, Phan 1.1.4 (dev)
+27 Nov 2018, Phan 1.1.4
 -----------------------
 
 Maintenance:
