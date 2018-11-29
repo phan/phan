@@ -53,19 +53,21 @@ class Daemon
         try {
             $got_signal = false;
 
-            pcntl_signal(
-                SIGCHLD,
-                /**
-                 * @param int $signo
-                 * @param int|null $status
-                 * @param int|null $pid
-                 * @return void
-                 */
-                function ($signo, $status = null, $pid = null) use (&$got_signal) {
-                    $got_signal = true;
-                    Request::childSignalHandler($signo, $status, $pid);
-                }
-            );
+            if (function_exists('pcntl_signal')) {
+                pcntl_signal(
+                    SIGCHLD,
+                    /**
+                     * @param int $signo
+                     * @param int|null $status
+                     * @param int|null $pid
+                     * @return void
+                     */
+                    function ($signo, $status = null, $pid = null) use (&$got_signal) {
+                        $got_signal = true;
+                        Request::childSignalHandler($signo, $status, $pid);
+                    }
+                );
+            }
             while (true) {
                 $got_signal = false;  // reset this.
                 // We get an error from stream_socket_accept. After the RuntimeException is thrown, pcntl_signal is called.
