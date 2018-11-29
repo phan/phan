@@ -1,6 +1,6 @@
 Phan NEWS
 
-?? ??? 2018, Phan 1.1.5 (dev)
+29 Nov 2018, Phan 1.1.5
 -----------------------
 
 Language Server
