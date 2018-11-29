@@ -1141,6 +1141,21 @@ final class EmptyUnionType extends UnionType
         return null;
     }
 
+    public function asStringScalarValues() : array
+    {
+        return [];
+    }
+
+    public function asIntScalarValues() : array
+    {
+        return [];
+    }
+
+    public function asScalarValues() : array
+    {
+        return [];
+    }
+
     public function containsDefiniteNonObjectType() : bool
     {
         return false;
