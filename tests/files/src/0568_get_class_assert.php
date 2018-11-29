@@ -1,7 +1,7 @@
 <?php
 namespace Foo;
 
-// TODO: Add support for assertions on switch(get_class($x)) { case 'stdClass': }
+// Phan also supports switch(get_class($var)) - see tests/files/src/0570_switch_on_class.php
 function test_class_assert($a, $b, $c, $d, $e) {
     if (get_class($a) === 2) {  // Phan should warn
         echo $a->method();
