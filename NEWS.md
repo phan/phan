@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 2018, Phan 1.1.5 (dev)
 -----------------------
 
+Language Server
++ Fix a crash in the Language Server when pcntl is not installed or enabled (e.g. on Windows) (#2186)
+
 27 Nov 2018, Phan 1.1.4
 -----------------------
 

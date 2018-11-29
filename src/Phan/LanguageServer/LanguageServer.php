@@ -246,19 +246,21 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         if (!$code_base->isUndoTrackingEnabled()) {
             throw new AssertionError("Expected undo tracking to be enabled");
         }
-        pcntl_signal(
-            SIGCHLD,
-            /**
-             * @param int $signo
-             * @param int|null $status
-             * @param int|null $pid
-             * @return void
-             */
-            function ($signo, $status = null, $pid = null) use (&$got_signal) {
-                $got_signal = true;
-                Request::childSignalHandler($signo, $status, $pid);
-            }
-        );
+        if (function_exists('pcntl_signal')) {
+            pcntl_signal(
+                SIGCHLD,
+                /**
+                 * @param int $signo
+                 * @param int|null $status
+                 * @param int|null $pid
+                 * @return void
+                 */
+                function ($signo, $status = null, $pid = null) use (&$got_signal) {
+                    $got_signal = true;
+                    Request::childSignalHandler($signo, $status, $pid);
+                }
+            );
+        }
 
         $make_language_server = function (ProtocolStreamReader $in, ProtocolStreamWriter $out) use ($code_base, $file_path_lister) : LanguageServer {
             return new LanguageServer(
@@ -280,10 +282,12 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         // TODO: accept SIGCHLD when child terminates, somehow?
         try {
             $gotSignal = false;
-            pcntl_signal(SIGCHLD, function(...$args) use(&$gotSignal) {
-                $gotSignal = true;
-                Request::childSignalHandler(...$args);
-            });
+            if (function_exists('pcntl_signal')) {
+                pcntl_signal(SIGCHLD, function(...$args) use(&$gotSignal) {
+                    $gotSignal = true;
+                    Request::childSignalHandler(...$args);
+                });
+            }
             while (true) {
                 $gotSignal = false;  // reset this.
                 // We get an error from stream_socket_accept. After the RuntimeException is thrown, pcntl_signal is called.
