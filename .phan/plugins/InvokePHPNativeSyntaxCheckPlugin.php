@@ -35,7 +35,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
     /**
      * @var array<int,InvokeExecutionPromise>
      * A list of invoked processes that this plugin created.
-     * This plugin creates a processes(up to a maximum number can run at a time)
+     * This plugin creates 0 or more processes(up to a maximum number can run at a time)
      * and then waits for the execution of those processes to finish.
      */
     private $processes = [];

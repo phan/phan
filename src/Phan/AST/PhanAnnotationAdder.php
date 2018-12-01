@@ -14,7 +14,7 @@ use Closure;
  * and returns the new Node.
  * The original \ast\Node objects are not modified.
  *
- * This adds to $node->children - Many different AST node kinds can be used in places Phan needs to know about
+ * This adds to $node->children - Many AST node kinds can be used in places Phan needs to know about.
  * (for being potentially null/undefined)
  *
  * Current annotations:

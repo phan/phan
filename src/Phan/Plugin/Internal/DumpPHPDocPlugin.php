@@ -95,7 +95,7 @@ final class DumpPHPDocPlugin extends PluginV2 implements
         Property $property
     ) {
         if ($property->isDynamicProperty()) {
-            // And dynamic properties don't have phpdoc.
+            // Dynamic properties don't have declarations or phpdoc.
             return;
         }
         if ($property->isFromPHPDoc()) {
@@ -104,8 +104,7 @@ final class DumpPHPDocPlugin extends PluginV2 implements
             return;
         }
         if ($property->getFQSEN() !== $property->getRealDefiningFQSEN()) {
-            // Only warn once for the original definition of this property.
-            // Don't warn about subclasses inheriting this property.
+            // Only emit stubs for the original definition of this property.
             return;
         }
         $description = MarkupDescription::extractDescriptionFromDocComment($property);
@@ -136,21 +135,18 @@ final class DumpPHPDocPlugin extends PluginV2 implements
             // Phan does not track descriptions of (at)method.
             return;
         }
-        if ($method->getIsMagic()) {
-            // Don't require a description for `__construct()`, `__sleep()`, etc.
-            return;
-        }
         if ($method->getFQSEN() !== $method->getRealDefiningFQSEN()) {
             // Only warn once for the original definition of this method.
             // Don't warn about subclasses inheriting this method.
             return;
         }
-        if (!$method->getDocComment() && $method->getIsOverride()) {
-            // Note: This deliberately avoids requiring a summary for methods that are just overrides of other methods
-            // This reduces the number of false positives
+        $description = MarkupDescription::extractDescriptionFromDocComment($method);
+        if (!($method->getDocComment() || !$description) && $method->getIsOverride()) {
+            // Note: This deliberately avoids showing a summary for methods that are just overrides of other methods,
+            // unless they have their own phpdoc.
+            // Eventually, extractDescriptionFromDocComment will search ancestor classes for $description
             return;
         }
-        $description = MarkupDescription::extractDescriptionFromDocComment($method);
 
         $this->recordStub(
             $method,

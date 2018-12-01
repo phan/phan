@@ -205,7 +205,7 @@ trait FunctionTrait
     /**
      * @return int
      * The number of optional real parameters on this function/method.
-     * May differ from getNumberOfOptionalParameters()
+     * This may differ from getNumberOfOptionalParameters()
      * for internal modules lacking proper reflection info,
      * or if the installed module version's API changed from what Phan's stubs used,
      * or if a function/method uses variadics/func_get_arg*()
@@ -263,7 +263,7 @@ trait FunctionTrait
     /**
      * @return int
      * The number of required real parameters on this function/method.
-     * May differ for internal modules lacking proper reflection info,
+     * This may differ for internal modules lacking proper reflection info,
      * or if the installed module version's API changed from what Phan's stubs used.
      */
     public function getNumberOfRequiredRealParameters() : int
@@ -787,7 +787,7 @@ trait FunctionTrait
     }
 
     /**
-     * @param array<string,UnionType> $parameter_map maps a subset of param names to the unmodified phpdoc parameter types. May differ from real parameter types
+     * @param array<string,UnionType> $parameter_map maps a subset of param names to the unmodified phpdoc parameter types. This may differ from real parameter types.
      * @return void
      * @suppress PhanUnreferencedPublicMethod Phan knows FunctionInterface's method is referenced, but can't associate that yet.
      */

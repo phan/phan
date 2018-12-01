@@ -386,7 +386,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     }
 
     /**
-     * A exit statement unconditionally exits (Assume expression passed in doesn't throw)
+     * An exit statement unconditionally exits (Assume expression passed in doesn't throw)
      * @return int the corresponding status code
      */
     public function visitExit(Node $node)

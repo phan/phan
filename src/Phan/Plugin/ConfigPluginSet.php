@@ -864,7 +864,7 @@ final class ConfigPluginSet extends PluginV2 implements
         if (\count($handled_node_kinds) === 0) {
             fprintf(
                 STDERR,
-                "Plugin %s has an preAnalyzeNode visitor %s (subclass of %s) which doesn't override any known visit<Suffix>() methods, but expected at least one method to be overridden\n",
+                "Plugin %s has a preAnalyzeNode visitor %s (subclass of %s) which doesn't override any known visit<Suffix>() methods, but expected at least one method to be overridden\n",
                 \get_class($plugin),
                 $plugin_analysis_class,
                 PluginAwarePreAnalysisVisitor::class
