@@ -120,6 +120,12 @@ final class UnionTypeTest extends BaseTest
         $this->assertUnionTypeStringEqual('4 >> 1.2', 'int');
         $this->assertUnionTypeStringEqual('1 << rand(0,20)', 'int');
         $this->assertUnionTypeStringEqual('-42', '-42');
+        $this->assertUnionTypeStringEqual('+42', '42');
+        $this->assertUnionTypeStringEqual('+"42"', '42');
+        $this->assertUnionTypeStringEqual('-"42"', '-42');
+        $this->assertUnionTypeStringEqual('-"a string"', '0');  // also emits a warning
+        $this->assertUnionTypeStringEqual('-"0x12"', '0');  // also emits a warning
+        $this->assertUnionTypeStringEqual('+-42', '-42');
         $this->assertUnionTypeStringEqual('~42', '-43');
         $this->assertUnionTypeStringEqual('12.3 % 5.2', 'int');
         $this->assertUnionTypeStringEqual('~-43', '42');
