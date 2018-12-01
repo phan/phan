@@ -2,6 +2,7 @@
 namespace Phan\Library;
 
 use Closure;
+use TypeError;
 
 /**
  * A set of objects supporting union and
@@ -60,11 +61,15 @@ class Set extends \SplObjectStorage
      */
     public static function intersectAll(array $set_list) : Set
     {
-        if (empty($set_list)) {
+        if (\count($set_list) === 0) {
             return new Set();
         }
 
         $intersected_set = \array_shift($set_list);
+        if (!$intersected_set instanceof Set) {
+            // impossible
+            throw new TypeError('Saw non-Set in $set_list');
+        }
         foreach ($set_list as $set) {
             $intersected_set = $intersected_set->intersect($set);
         }
@@ -101,11 +106,15 @@ class Set extends \SplObjectStorage
      */
     public static function unionAll(array $set_list) : Set
     {
-        if (empty($set_list)) {
+        if (\count($set_list) === 0) {
             return new Set();
         }
 
         $union_set = \array_shift($set_list);
+        if (!$union_set instanceof Set) {
+            // impossible
+            throw new TypeError('Saw non-Set in $set_list');
+        }
         foreach ($set_list as $set) {
             $union_set = $union_set->union($set);
         }

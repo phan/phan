@@ -8,9 +8,7 @@
   <config name="installed_paths" value="../../slevomat/coding-standard"/>
   <rule ref="SlevomatCodingStandard.Classes.ModernClassNameReference" />
   <rule ref="SlevomatCodingStandard.Commenting.EmptyComment" />
-  <!-- TODO: Enable
   <rule ref="SlevomatCodingStandard.ControlStructures.DisallowEmpty" />
-  -->
   <rule ref="SlevomatCodingStandard.Namespaces.UseDoesNotStartWithBackslash" />
   <rule ref="SlevomatCodingStandard.Namespaces.UselessAlias" />
   <rule ref="SlevomatCodingStandard.Namespaces.AlphabeticallySortedUses">

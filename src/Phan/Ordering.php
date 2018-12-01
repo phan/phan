@@ -104,7 +104,7 @@ class Ordering
             $hierarchy_root = $class->getHierarchyRootFQSEN($this->code_base);
 
             // Create a bucket for this root if it doesn't exist
-            if (empty($root_fqsen_list[(string)$hierarchy_root])) {
+            if (!isset($root_fqsen_list[(string)$hierarchy_root])) {
                 $root_fqsen_list[(string)$hierarchy_root] = [];
             }
 

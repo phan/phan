@@ -420,7 +420,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             foreach ($spec_group as $spec) {
                 $canonical = $spec->toCanonicalString();
                 $types[$canonical] = true;
-                if ($spec->padding_char === ' ' && ($spec->width === '' || empty($spec->position))) {
+                if ($spec->padding_char === ' ' && ($spec->width === '' || !$spec->position)) {
                     // Warn about "100% dollars" but not about "100%1$ 2dollars" (If both position and width were parsed, assume the padding was intentional)
                     $emit_issue(
                         'PhanPluginPrintfNotPercent',
@@ -431,7 +431,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                         self::ERR_UNTRANSLATED_NOT_PERCENT
                     );
                 }
-                if ($is_translated && !empty($spec->width) &&
+                if ($is_translated && $spec->width &&
                         ($spec->padding_char === '' || $spec->padding_char === ' ')) {
                     $intended_string = $spec->toCanonicalStringWithWidthAsPosition();
                     $emit_issue(
@@ -506,6 +506,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                     // This can be resolved by casting the arg to (string) manually in printf.
                     $emit_issue(
                         'PhanPluginPrintfIncompatibleArgumentTypeWeak',
+                        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                         'Format string {STRING_LITERAL} refers to argument #{INDEX} as {DETAILS}, so type {TYPE} is expected. However, {FUNCTION} was passed the type {TYPE} (which is weaker than {TYPE})',
                         [
                             $this->encodeString($fmt_str),
@@ -605,8 +606,8 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 foreach ($spec_group as $spec) {
                     $canonical = $spec->toCanonicalString();
                     if (!isset($expected[$canonical])) {
-                        $expected_types = empty($expected) ? 'unused'
-                                                           : implode(',', array_keys($expected));
+                        $expected_types = $expected ? implode(',', array_keys($expected))
+                                                    : 'unused';
 
                         if ($expected_types !== 'unused') {
                             $severity = Issue::SEVERITY_NORMAL;
@@ -621,6 +622,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                             $code_base,
                             $context,
                             $issue_type,
+                            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                             'Translated string {STRING_LITERAL} has local {DETAILS} which refers to argument #{INDEX} as {STRING_LITERAL}, but the original format string treats it as {DETAILS} (ORIGINAL: {STRING_LITERAL}, TRANSLATION: {STRING_LITERAL})',
                             [
                                 $this->encodeString($fmt_str),

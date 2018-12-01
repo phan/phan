@@ -1842,7 +1842,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $node->children['class']
                 ))->getClassList();
 
-                if (!empty($class_list)) {
+                if (\count($class_list) > 0) {
                     $class = \array_values($class_list)[0];
 
                     $this->emitIssue(

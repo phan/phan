@@ -278,6 +278,7 @@ if (!class_exists('ast\Metadata')) {
          *           using ===, while combinable flags should be checked using &.
          * @suppress PhanUnreferencedPublicProperty
          */
+        // phpcs:ignore Phan.NamingConventions.ValidUnderscoreVariableName.MemberVarNotUnderscore
         public $flagsCombinable;
     }
 }

@@ -132,6 +132,7 @@ if (!class_exists(CompileError::class)) {
      *
      * @suppress PhanRedefineClassInternal
      */
+    // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
     class CompileError extends Error
     {
     }

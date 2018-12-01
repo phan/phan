@@ -684,7 +684,7 @@ class ContextNode
         // If there were no classes on the left-type, figure
         // out what we were trying to call the method on
         // and send out an error.
-        if (empty($class_list)) {
+        if (\count($class_list) === 0) {
             $union_type = UnionTypeVisitor::unionTypeFromClassNode(
                 $this->code_base,
                 $this->context,
@@ -1834,7 +1834,7 @@ class ContextNode
             return;
         }
 
-        if (!($this->node instanceof Node) || empty($this->node->children['expr'])) {
+        if (!($this->node instanceof Node) || !($this->node->children['expr'] ?? false)) {
             return;
         }
 
@@ -1918,8 +1918,7 @@ class ContextNode
                 )
                 ||
                 (
-                    !empty($lnode->children['class'])
-                    && $lnode->children['class'] instanceof Node
+                    ($lnode->children['class'] ?? null) instanceof Node
                     && (
                         $lnode->children['class']->kind == ast\AST_VAR
                         || $lnode->children['class']->kind == ast\AST_NAME
@@ -1927,8 +1926,7 @@ class ContextNode
                 )
                 ||
                 (
-                    !empty($lnode->children['expr'])
-                    && $lnode->children['expr'] instanceof Node
+                    ($lnode->children['expr'] ?? null) instanceof Node
                     && (
                         $lnode->children['expr']->kind == ast\AST_VAR
                         || $lnode->children['expr']->kind == ast\AST_NAME

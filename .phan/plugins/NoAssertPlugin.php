@@ -73,6 +73,7 @@ class NoAssertVisitor extends PluginAwarePostAnalysisVisitor
             $this->code_base,
             $this->context,
             'PhanPluginNoAssert',
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             'assert() is discouraged. Although phan supports using assert() for type annotations, PHP\'s documentation recommends assertions only for debugging, and assert() has surprising behaviors.',
             []
         );

@@ -60,7 +60,7 @@ trait Analyzable
      */
     public function hasNode() : bool
     {
-        return !empty($this->node);
+        return $this->node !== null;
     }
 
     /**
@@ -103,7 +103,7 @@ trait Analyzable
         if ($definition_node->kind === \ast\AST_CLOSURE) {
             // TODO: Pick up 'uses' when this is a closure invoked inline (e.g. array_map(function($x) use($localVar) {...}, args
             // TODO: Investigate replacing the types of these with 'mixed' for quick mode re-analysis, or checking if the type will never vary.
-            if (!empty($definition_node->children['uses'])) {
+            if (isset($definition_node->children['uses'])) {
                 return $context;
             }
         }

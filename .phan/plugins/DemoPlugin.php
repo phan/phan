@@ -216,7 +216,7 @@ class DemoNodeVisitor extends PluginAwarePostAnalysisVisitor
 
         // If we can't figure out the name of the class,  don't
         // bother continuing.
-        if (empty($class_name)) {
+        if (!$class_name) {
             return;
         }
 

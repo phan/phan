@@ -108,6 +108,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
         try {
             $parser_node = static::phpParserParse($file_contents, $errors);
             self::findNodeAtOffset($parser_node, $byte_offset);
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             // fwrite(STDERR, "Seeking node: " . json_encode(self::$closest_node_or_token, JSON_PRETTY_PRINT) . "nearby: " . json_encode(self::$closest_node_or_token_symbol, JSON_PRETTY_PRINT) . "\n");
             return $this->phpParserToPhpast($parser_node, $version, $file_contents);
         } catch (Throwable $e) {

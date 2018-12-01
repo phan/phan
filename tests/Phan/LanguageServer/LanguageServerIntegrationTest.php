@@ -956,7 +956,13 @@ EOT
 
             $cur_line = explode("\n", $new_file_contents)[$position->line] ?? '';
 
-            $message = "Unexpected type definition for {$position->line}:{$position->character} (0-based) on line " . json_encode($cur_line) . ' at "' . substr($cur_line, $position->character, 10) . '"';
+            $message = sprintf(
+                "Unexpected type definition for %d:%d (0-based) on line %s at \"%s\"",
+                $position->line,
+                $position->character,
+                (string)json_encode($cur_line),
+                (string)substr($cur_line, $position->character, 10)
+            );
             $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_definition_response, $definition_response, $message);
 
@@ -1034,7 +1040,13 @@ EOT
 
             $cur_line = explode("\n", $new_file_contents)[$position->line] ?? '';
 
-            $message = "Unexpected hover response for {$position->line}:{$position->character} (0-based) on line " . json_encode($cur_line) . ' at "' . substr($cur_line, $position->character, 10) . '"';
+            $message = sprintf(
+                "Unexpected hover response for %d:%d (0-based) on line %s at \"%s\"",
+                $position->line,
+                $position->character,
+                (string)json_encode($cur_line),
+                (string)substr($cur_line, $position->character, 10)
+            );
             $this->assertEquals($expected_hover_response, $hover_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_hover_response, $hover_response, $message);
 

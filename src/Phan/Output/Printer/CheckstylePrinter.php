@@ -20,7 +20,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
     /** @param IssueInstance $instance */
     public function print(IssueInstance $instance)
     {
-        if (empty($this->files[$instance->getFile()])) {
+        if (!isset($this->files[$instance->getFile()])) {
             $this->files[$instance->getFile()] = [];
         }
 

@@ -44,7 +44,7 @@ class ClassMap
      */
     public function hasClassConstantWithName(string $name) : bool
     {
-        return !empty($this->class_constant_map[$name]);
+        return isset($this->class_constant_map[$name]);
     }
 
     public function getClassConstantByName(string $name) : ClassConstant
@@ -75,7 +75,7 @@ class ClassMap
      */
     public function hasPropertyWithName(string $name) : bool
     {
-        return !empty($this->property_map[$name]);
+        return isset($this->property_map[$name]);
     }
 
     /**
