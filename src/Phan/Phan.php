@@ -18,7 +18,7 @@ use Phan\Output\IssuePrinterInterface;
 use Phan\Plugin\ConfigPluginSet;
 
 /**
- * This executes the the parse, method/function, then the analysis phases.
+ * This executes the parse, method/function, then the analysis phases.
  *
  * This is the entry point of Phan's implementation.
  * Implementations such as `./phan` or the code climate integration call into this.
