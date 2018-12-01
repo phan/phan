@@ -1,0 +1,12 @@
+%s:6 PhanTypeInvalidUnaryOperandNumeric Invalid operator: unary operand of + is '1GB' (expected number)
+%s:6 PhanTypeMismatchArgumentInternal Argument 1 (string) is 0 but \strlen() takes string
+%s:7 PhanTypeInvalidUnaryOperandNumeric Invalid operator: unary operand of - is '22MB' (expected number)
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 (string) is 0 but \strlen() takes string
+%s:9 PhanTypeInvalidUnaryOperandNumeric Invalid operator: unary operand of + is '0x12' (expected number)
+%s:9 PhanTypeMismatchArgumentInternal Argument 1 (string) is 0 but \strlen() takes string
+%s:10 PhanTypeInvalidUnaryOperandNumeric Invalid operator: unary operand of - is '0x12' (expected number)
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 (string) is 0 but \strlen() takes string
+%s:12 PhanTypeMismatchArgumentInternal Argument 1 (string) is 123 but \strlen() takes string
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 (string) is -123 but \strlen() takes string
+%s:21 PhanTypeMismatchArgumentInternal Argument 1 (string) is float but \strlen() takes string
+%s:22 PhanTypeMismatchArgumentInternal Argument 1 (string) is float but \strlen() takes string

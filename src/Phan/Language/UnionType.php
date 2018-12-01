@@ -3128,7 +3128,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * @param Closure(int): ScalarType $operation
+     * @param Closure(int|float): ScalarType $operation
      */
     private function applyNumericOperation(Closure $operation, bool $can_be_float) : UnionType
     {
@@ -3141,6 +3141,18 @@ class UnionType implements Serializable
                     $type_set = $type_set->withType(LiteralIntType::instanceForValue(0, false));
                 }
             } else {
+                if ($type instanceof LiteralStringType) {
+                    if (\is_numeric($type->getValue())) {
+                        $type_set = $type_set->withType($operation(+$type->getValue()));
+                        if ($type->getIsNullable()) {
+                            $type_set = $type_set->withType(LiteralIntType::instanceForValue(0, false));
+                        }
+                        continue;
+                    } else {
+                        // TODO: Could warn about non-numeric operand instead
+                        return $type_set->withType(LiteralIntType::instanceForValue(0, false));
+                    }
+                }
                 if ($added_fallbacks) {
                     continue;
                 }

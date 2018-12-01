@@ -6,6 +6,7 @@ Phan NEWS
 Bug fixes:
 + Infer more accurate types after asserting `!empty($x)`
 + Infer the correct type for the result of the unary `+` operator.
+  Improve inferences when `+`/`-` operators are used on string literals.
 
 29 Nov 2018, Phan 1.1.5
 -----------------------
