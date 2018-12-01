@@ -29,10 +29,11 @@ use Phan\Library\StringUtil;
 use ReflectionMethod;
 
 /**
- * TODO: Make $x != null remove FalseType and NullType from $x
- * TODO: if (a || b || c || d) might get really slow, due to creating both ConditionVisitor and NegatedConditionVisitor
+ * A visitor that takes a Context and a Node for a condition and returns a Context that has been updated with that condition.
  *
  * @phan-file-suppress PhanUnusedClosureParameter
+ * TODO: Make $x != null remove FalseType and NullType from $x
+ * TODO: if (a || b || c || d) might get really slow, due to creating both ConditionVisitor and NegatedConditionVisitor
  */
 class ConditionVisitor extends KindVisitorImplementation implements ConditionVisitorInterface
 {

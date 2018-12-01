@@ -1131,7 +1131,7 @@ class ContextNode
      *
      * @unused
      * @suppress PhanUnreferencedPublicMethod
-     * @see $this->getOrCreateVariableForReferenceParameter() - That is probably what you want instead.
+     * @see self::getOrCreateVariableForReferenceParameter() - That is probably what you want instead.
      */
     public function getOrCreateVariable() : Variable
     {
@@ -2095,7 +2095,7 @@ class ContextNode
      * This converts an AST node in context to the value it represents.
      * This is useful for plugins, etc, and will gradually improve.
      *
-     * @see $this->getEquivalentPHPValue
+     * @see self::getEquivalentPHPValue()
      *
      * @param Node|float|int|string $node
      * @return Node|string[]|int[]|float[]|string|float|int|bool|null -

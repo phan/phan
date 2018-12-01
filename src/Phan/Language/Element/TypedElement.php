@@ -301,7 +301,7 @@ abstract class TypedElement implements TypedElementInterface
      * @return bool
      * True if this element would like to suppress the given
      * issue name
-     * @see $this->checkHasSuppressIssueAndIncrementCount() for the most common usage
+     * @see self::checkHasSuppressIssueAndIncrementCount() for the most common usage
      */
     public function hasSuppressIssue(string $issue_name) : bool
     {

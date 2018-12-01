@@ -66,7 +66,7 @@ class Analysis
         $original_file_path = $file_path;
         $code_base->setCurrentParsedFile($file_path);
         if ($is_php_internal_stub) {
-            /** @see \Phan\Language\FileRef->isPHPInternal() */
+            /** @see \Phan\Language\FileRef::isPHPInternal() */
             $file_path = 'internal';
         }
         $context = (new Context())->withFile($file_path);

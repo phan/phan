@@ -613,7 +613,7 @@ trait ConditionVisitorUtil
      * @return ?Variable - Returns null if the variable is undeclared and ignore_undeclared_variables_in_global_scope applies.
      *                     or if assertions won't be applied?
      * @throws IssueException if variable is undeclared and not ignored.
-     * @see UnionTypeVisitor->visitVar
+     * @see UnionTypeVisitor::visitVar()
      *
      * TODO: support assertions on superglobals, within the current file scope?
      */

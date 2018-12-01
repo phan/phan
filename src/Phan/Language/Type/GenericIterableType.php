@@ -49,7 +49,7 @@ final class GenericIterableType extends IterableType
      * @return UnionType returns the iterable key's union type
      * @phan-override
      *
-     * @see $this->getKeyUnionType()
+     * @see self::getKeyUnionType()
      */
     public function iterableKeyUnionType(CodeBase $unused_code_base)
     {
@@ -60,7 +60,7 @@ final class GenericIterableType extends IterableType
      * @return UnionType returns the iterable value's union type
      * @phan-override
      *
-     * @see $this->getElementUnionType()
+     * @see self::getElementUnionType()
      */
     public function iterableValueUnionType(CodeBase $unused_code_base)
     {

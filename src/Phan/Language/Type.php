@@ -2238,10 +2238,10 @@ class Type
      * True if each type within this union type can cast
      * to the given union type.
      *
-     * @see StaticType->isExclusivelyNarrowedFormOrEquivalentTo for how it resolves static.
+     * @see StaticType::isExclusivelyNarrowedFormOrEquivalentTo() for how it resolves static.
      * TODO: Refactor.
      *
-     * @see UnionType->isExclusivelyNarrowedFormOrEquivalentTo for a check on union types as a whole.
+     * @see UnionType::isExclusivelyNarrowedFormOrEquivalentTo() for a check on union types as a whole.
      */
     public function isExclusivelyNarrowedFormOrEquivalentTo(
         UnionType $union_type,

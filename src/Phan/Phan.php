@@ -23,7 +23,7 @@ use Phan\Plugin\ConfigPluginSet;
  * This is the entry point of Phan's implementation.
  * Implementations such as `./phan` or the code climate integration call into this.
  *
- * @see self::analyzeFileList
+ * @see self::analyzeFileList()
  */
 class Phan implements IgnoredFilesFilterInterface
 {

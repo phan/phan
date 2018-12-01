@@ -41,7 +41,7 @@ use function rtrim;
  * - Uses `\Phan\Analysis\PostOrderAnalysisVisitor` for post-order analysis of a node (E.g. analyzing a statement with the updated Context and emitting issues)
  * - If there is more than one possible child context, merges state from them (variable types)
  *
- * @see $this->visit
+ * @see self::visit()
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
  */
@@ -306,7 +306,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @return void
-     * @see ConditionVarUtil::getVariableFromScope
+     * @see ConditionVarUtil::getVariableFromScope()
      */
     private function createVarForInlineComment(CodeBase $code_base, Context $context, string $var_name, UnionType $type, bool $create_variable)
     {
@@ -1417,7 +1417,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * The updated context after visiting the node
      *
-     * @see $this->visitClosedContext()
+     * @see self::visitClosedContext()
      */
     public function visitClass(Node $node) : Context
     {
@@ -1431,7 +1431,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * The updated context after visiting the node
      *
-     * @see $this->visitClosedContext()
+     * @see self::visitClosedContext()
      */
     public function visitMethod(Node $node) : Context
     {
@@ -1445,7 +1445,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * The updated context after visiting the node
      *
-     * @see $this->visitClosedContext()
+     * @see self::visitClosedContext()
      */
     public function visitFuncDecl(Node $node) : Context
     {
@@ -1459,7 +1459,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * The updated context after visiting the node
      *
-     * @see $this->visitClosedContext()
+     * @see self::visitClosedContext()
      */
     public function visitClosure(Node $node) : Context
     {
@@ -1579,7 +1579,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     /**
      * @param Node $node
      * An AST node we'd like to analyze the statements for
-     * @see $this->visit() - This is similar to visit() except that the check if $is_static requires parent_node,
+     * @see self::visit() - This is similar to visit() except that the check if $is_static requires parent_node,
      * so PreOrderAnalysisVisitor can't be used to modify the Context.
      *
      * @return Context

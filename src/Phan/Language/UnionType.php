@@ -326,7 +326,7 @@ class UnionType implements Serializable
     /**
      * @param string[] $parts (already trimmed)
      * @return string[]
-     * @see Type::extractTemplateParameterTypeNameList (Similar method)
+     * @see Type::extractTemplateParameterTypeNameList() (Similar method)
      */
     private static function mergeTypeParts(array $parts) : array
     {
@@ -1002,8 +1002,8 @@ class UnionType implements Serializable
     /**
      * Analogous to Type->withIsNullable()
      * @suppress PhanUnreferencedPublicMethod
-     * @see $this->nullableClone()
-     * @see $this->nonNullableClone()
+     * @see self::nullableClone()
+     * @see self::nonNullableClone()
      */
     public function withIsNullable(bool $is_nullable) : UnionType
     {
@@ -2092,7 +2092,7 @@ class UnionType implements Serializable
      * @return bool
      * A UnionType with known callable types kept, other types filtered out.
      *
-     * @see $this->callableTypes()
+     * @see self::callableTypes()
      *
      * @suppress PhanUnreferencedPublicMethod
      */
