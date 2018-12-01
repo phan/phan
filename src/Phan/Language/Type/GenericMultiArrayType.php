@@ -141,7 +141,9 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         return true;
     }
 
-    /** @var ?UnionType */
+    /**
+     * @var ?UnionType the normalized element union type. Computed from `$this->element_types`.
+     */
     private $element_types_union_type;
 
     /**

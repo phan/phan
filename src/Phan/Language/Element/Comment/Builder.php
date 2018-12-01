@@ -66,7 +66,12 @@ final class Builder
     /** @var UnionType the union type of the set of (at)throws annotations */
     public $throw_union_type;
 
-    /** @var array<int,array{0:string,1:int,2:array<int,mixed>}> */
+    /**
+     * A list of issues detected in the comment being built.
+     * This is stored instead of immediately emitting the issue because later lines might suppress these issues.
+     *
+     * @var array<int,array{0:string,1:int,2:array<int,mixed>}>
+     */
     private $issues = [];
 
     public function __construct(

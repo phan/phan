@@ -18,6 +18,9 @@ class WikiIssueTypeUpdater
      */
     private static $verbose = false;
 
+    /** @var array<string,array>|null an example for a subset of the issue types */
+    private static $examples;
+
     private static function printUsageAndExit(int $exit_code = 1)
     {
         global $argv;
@@ -227,14 +230,14 @@ e.g. [this issue]($expected_url#L$expected_file_lineno) is emitted when analyzin
 EOT;
     }
 
-    /** @var array|null */
-    private static $examples;
-
     private static function findExamples() : array
     {
         return self::$examples ?? self::$examples = self::calculateExamples();
     }
 
+    /**
+     * @return array<string,array>
+     */
     private static function calculateExamples() : array
     {
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal

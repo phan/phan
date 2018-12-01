@@ -7,6 +7,8 @@ use AdvancedJsonRpc;
 use Sabre\Event\Promise;
 
 /**
+ * Used to send notifications and requests to the language server client of the Phan Language Server.
+ *
  * Source: https://github.com/felixfbecker/php-language-server/tree/master/src/ClientHandler.php
  * See ../../../LICENSE.LANGUAGE_SERVER
  */

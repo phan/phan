@@ -14,7 +14,7 @@ use Phan\AST\Visitor\KindVisitorImplementation;
  */
 final class ReachabilityChecker extends KindVisitorImplementation
 {
-    /** @var Node */
+    /** @var Node the node we're checking for reachability. */
     private $inner;
 
     public function __construct(Node $inner)

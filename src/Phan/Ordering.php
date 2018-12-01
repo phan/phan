@@ -12,13 +12,15 @@ use Phan\Library\Hasher\Sequential;
  */
 class Ordering
 {
-    /** @var CodeBase */
+    /**
+     * @var CodeBase
+     * The entire code base. Used to choose a file analysis ordering.
+     */
     private $code_base;
 
     /**
      * @param CodeBase $code_base
-     * The entire code base used to choose a file
-     * analysis ordering.
+     * The entire code base. Used to choose a file analysis ordering.
      */
     public function __construct(CodeBase $code_base)
     {

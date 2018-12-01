@@ -55,9 +55,9 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
         return (string)$this->value;
     }
 
-    /** @var IntType */
+    /** @var IntType the non-nullable int type instance. */
     private static $non_nullable_int_type;
-    /** @var IntType */
+    /** @var IntType the nullable int type instance. */
     private static $nullable_int_type;
 
     public static function init()

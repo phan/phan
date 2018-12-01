@@ -32,23 +32,21 @@ use Phan\LanguageServer\Protocol\Position;
 final class CompletionRequest extends NodeInfoRequest
 {
     /**
-     * @var CompletionContext|null
-     * @suppress PhanWriteOnlyPrivateProperty may use this later when the implementation of code completion is finished
-     */
-    private $completion_context;
-
-    /**
      * @var array<string,CompletionItem> the list of completion items.
      */
     private $completions = [];
 
+    /**
+     * Construct a CompletionRequest from the parameters provided by the language server client.
+     *
+     * @suppress PhanUnusedPublicFinalMethodParameter
+     */
     public function __construct(
         string $uri,
         Position $position,
         CompletionContext $completion_context = null
     ) {
         parent::__construct($uri, $position);
-        $this->completion_context = $completion_context;
     }
 
     /**

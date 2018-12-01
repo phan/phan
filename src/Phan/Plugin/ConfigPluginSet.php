@@ -600,7 +600,7 @@ final class ConfigPluginSet extends PluginV2 implements
         return $result;
     }
 
-    /** @var ?NodeSelectionPlugin */
+    /** @var ?NodeSelectionPlugin - If the language server requests more information about a node, this may be set (e.g. for "Go To Definition") */
     private $node_selection_plugin;
 
     /**

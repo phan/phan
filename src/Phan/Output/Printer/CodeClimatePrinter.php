@@ -17,10 +17,10 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
     const CODECLIMATE_SEVERITY_CRITICAL = 'critical';
     const CODECLIMATE_SEVERITY_NORMAL = 'normal';
 
-    /** @var OutputInterface */
+    /** @var OutputInterface an output that zero byte separated JSON can be written to.  */
     private $output;
 
-    /** @var array<int,array> */
+    /** @var array<int,array> a list of associative arrays with codeclimate issue fields. */
     private $messages = [];
 
     /** @param IssueInstance $instance */

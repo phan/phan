@@ -15,7 +15,7 @@ final class BufferingCollector implements IssueCollectorInterface
     /** @var array<string,IssueInstance> the issues that were collected */
     private $issues = [];
 
-    /** @var IssueFilterInterface */
+    /** @var IssueFilterInterface used to prevent some issues from being output (based on config and CLI options) */
     private $filter;
 
     /**

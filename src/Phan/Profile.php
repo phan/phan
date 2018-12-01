@@ -8,6 +8,7 @@ trait Profile
 {
     /**
      * @var array<string,array<int,float>>
+     * Maps each phase of Phan analysis to a list of 1 or more durations (in seconds) spent in that phase.
      */
     private static $label_delta_map = [];
 

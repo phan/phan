@@ -166,7 +166,7 @@ StubsGenerator::main();
  * A representation of the collection of stubs for elements of a PHP module(a.k.a. extension).
  */
 class StubCollection {
-    /** @var CodeBase */
+    /** @var CodeBase represents the known state of the code base we're extracting the stubs from. */
     private $code_base;
 
     public function __construct(CodeBase $code_base) {

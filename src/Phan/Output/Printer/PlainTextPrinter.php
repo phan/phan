@@ -16,7 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class PlainTextPrinter implements IssuePrinterInterface
 {
 
-    /** @var OutputInterface */
+    /** @var OutputInterface an output that plaintext formatted issues can be written to. */
     private $output;
 
     /**

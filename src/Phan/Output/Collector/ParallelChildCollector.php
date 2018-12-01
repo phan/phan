@@ -14,7 +14,7 @@ use Phan\Output\IssueCollectorInterface;
 class ParallelChildCollector implements IssueCollectorInterface
 {
     /**
-     * @var resource
+     * @var resource a message queue used to receive messages from the child processes in the worker group.
      */
     private $message_queue_resource;
 

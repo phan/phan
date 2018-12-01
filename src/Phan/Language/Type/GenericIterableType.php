@@ -16,12 +16,12 @@ final class GenericIterableType extends IterableType
     const NAME = 'iterable';
 
     /**
-     * @var UnionType
+     * @var UnionType the union type of the keys of this iterable.
      */
     private $key_union_type;
 
     /**
-     * @var UnionType
+     * @var UnionType the union type of the elements of this iterable.
      */
     private $element_union_type;
 

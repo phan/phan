@@ -14,10 +14,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class JSONPrinter implements BufferedPrinterInterface
 {
 
-    /** @var OutputInterface */
+    /** @var OutputInterface an output that JSON encoded can be written to. */
     private $output;
 
-    /** @var array<int,array<string,mixed>> */
+    /** @var array<int,array<string,mixed>> the issue data to be JSON encoded. */
     private $messages = [];
 
     /** @param IssueInstance $instance */

@@ -15,7 +15,7 @@ use Closure;
  */
 class RAII
 {
-    /** @var null|Closure():void */
+    /** @var null|Closure():void this is called exactly once, either during __destruct (when the variable goes out of scope) or manually */
     private $finalizer;
 
     /**

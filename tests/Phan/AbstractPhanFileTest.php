@@ -20,7 +20,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
 {
     const EXPECTED_SUFFIX = '.expected';
 
-    /** @var CodeBase */
+    /** @var CodeBase represents the known state of the test code base we're analyzing. */
     private $code_base;
 
     /**
