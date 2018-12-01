@@ -42,7 +42,7 @@ abstract class UnaddressableTypedElement
 
     /**
      * @var int
-     * The Phan flags property contains node specific flags that
+     * This property contains node specific flags that
      * are internal to Phan.
      */
     private $phan_flags = 0;
