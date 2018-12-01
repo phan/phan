@@ -1,3 +1,3 @@
-%s:5 PhanTypeSuspiciousStringExpression Suspicious type bool of a variable or expression encapsulated within a string. (Expected this to be able to cast to a string)
+%s:5 PhanTypeSuspiciousStringExpression Suspicious type bool of a variable or expression used to build a string. (Expected type to be able to cast to a string)
 %s:7 PhanTypeMismatchArgument Argument 1 (p) is 'call' but \g() takes bool defined at %s:4
 %s:8 PhanTypeMismatchArgument Argument 1 (p) is 'method' but \g() takes bool defined at %s:4

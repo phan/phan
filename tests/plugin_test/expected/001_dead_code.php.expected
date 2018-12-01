@@ -15,3 +15,4 @@ src/001_dead_code.php:44 PhanUnreferencedPublicProperty Possibly zero references
 src/001_dead_code.php:47 PhanUnreferencedPublicProperty Possibly zero references to public property \DuplicateClass001,1->instance_prop2
 src/001_dead_code.php:50 PhanUnreferencedPublicMethod Possibly zero references to public method \DuplicateClass001,1::f2()
 src/001_dead_code.php:51 PhanUnreferencedPublicMethod Possibly zero references to public method \DuplicateClass001,1::f4()
+src/001_dead_code.php:59 PhanTypeSuspiciousStringExpression Suspicious type true of a variable or expression used to build a string. (Expected type to be able to cast to a string)

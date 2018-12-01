@@ -6,7 +6,7 @@ namespace Phan\Library;
  * @see Option
  *
  * @template T
- * The type of the element
+ * The type of the element. Should implement __toString()
  *
  * @inherits Option<T>
  * phpcs:disable PSR2.Classes.PropertyDeclaration.Underscore
@@ -51,9 +51,10 @@ class Some extends Option
 
     /**
      * @return string
+     * @suppress PhanTypeSuspiciousStringExpression this should be used with T where __toString() is defined.
      * A string representation of this object
      */
-    public function __tostring() : string
+    public function __toString() : string
     {
         return 'Some(' . $this->_ . ')';
     }

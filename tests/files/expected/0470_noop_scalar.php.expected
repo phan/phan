@@ -9,4 +9,4 @@
 %s:15 PhanNoopStringLiteral Unused result of a string literal "\n    x is $x\n" near this line
 %s:21 PhanNoopEncapsulatedStringLiteral Unused result of an encapsulated string literal
 %s:21 PhanNoopNumericLiteral Unused result of a numeric literal 0.75 near this line
-%s:21 PhanTypeSuspiciousStringExpression Suspicious type \stdClass of a variable or expression encapsulated within a string. (Expected this to be able to cast to a string)
+%s:21 PhanTypeSuspiciousStringExpression Suspicious type \stdClass of a variable or expression used to build a string. (Expected type to be able to cast to a string)

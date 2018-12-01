@@ -2417,7 +2417,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 ## PhanTypeSuspiciousStringExpression
 
 ```
-Suspicious type {TYPE} of a variable or expression encapsulated within a string. (Expected this to be able to cast to a string)
+Suspicious type {TYPE} of a variable or expression used to build a string. (Expected type to be able to cast to a string)
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0232_assignment_to_call.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0232_assignment_to_call.php#L5).
