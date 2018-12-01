@@ -287,7 +287,7 @@ abstract class Scope
     /**
      * Add $variable to the current scope.
      *
-     * @see $this->withVariable() for creating a clone of a scope with $variable instead
+     * @see self::withVariable() for creating a clone of a scope with $variable instead
      * @return void
      */
     public function addVariable(Variable $variable)

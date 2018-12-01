@@ -27,11 +27,11 @@ use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
 
 /**
- * TODO: Make $x > 0, $x < 0, $x >= 50, etc.  remove FalseType and NullType from $x
- * TODO: if (a || b || c || d) might get really slow, due to creating both ConditionVisitor and NegatedConditionVisitor
+ * A visitor that takes a Context and a Node for a condition and returns a Context that has been updated with the negation of that condition.
  */
 class NegatedConditionVisitor extends KindVisitorImplementation implements ConditionVisitorInterface
 {
+    // TODO: if (a || b || c || d) might get really slow, due to creating both ConditionVisitor and NegatedConditionVisitor
     use ConditionVisitorUtil;
 
     /**

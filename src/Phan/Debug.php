@@ -168,7 +168,7 @@ class Debug
      *
      * @return string
      *
-     * @see self::formatFlags for a similar function also printing the integer flag value.
+     * @see self::formatFlags() for a similar function also printing the integer flag value.
      */
     public static function astFlagDescription(int $flags, int $kind) : string
     {

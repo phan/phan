@@ -5,7 +5,7 @@ namespace Phan\Tests;
  * Integration tests that require more than 1 files in a codebase to reproduce
  * (e.g. regression tests for bugs, tests of expected functionality for multiple files, etc)
  *
- * @see $this->getTestFiles() for how file groups are represented to test.
+ * @see self::getTestFiles() for how file groups are represented to test.
  */
 class MultiFileTest extends AbstractPhanFileTest
 {

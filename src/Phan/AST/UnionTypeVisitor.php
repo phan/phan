@@ -416,7 +416,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /**
      * Visit a node with kind `\ast\AST_ASSIGN_REF`
-     * @see $this->visitAssign
+     * @see self::visitAssign()
      *
      * @param Node $node
      * A node of the type indicated by the method name that we'd
@@ -925,7 +925,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * Caller should check if the result size is too small and handle it (for duplicate keys)
      * Returns null if one or more keys could not be resolved
      *
-     * @see ContextNode->getEquivalentPHPArrayElements()
+     * @see ContextNode::getEquivalentPHPArrayElements()
      */
     private function getEquivalentArraySet(Node $node)
     {
@@ -2785,7 +2785,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @see ContextNode->getFunction() for a similar function
+     * @see ContextNode::getFunction() for a similar function
      */
     private function functionFQSENListFromFunctionName(string $function_name) : array
     {

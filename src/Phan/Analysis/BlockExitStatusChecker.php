@@ -6,7 +6,7 @@ use ast\Node;
 use Phan\AST\Visitor\KindVisitorImplementation;
 
 /**
- * This checks if what is possible for AST nodes: `break;`, `continue;`, `throw`, `return`, proceeding, etc.
+ * This checks what exit statuses are possible for AST nodes: `break;`, `continue;`, `throw`, `return`, proceeding, etc.
  *
  * This caches the status for AST nodes, so references to this object
  * should be removed once the source transformation of a file/function is complete.

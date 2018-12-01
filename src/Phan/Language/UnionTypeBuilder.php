@@ -6,8 +6,8 @@ namespace Phan\Language;
  * Utilities to build a union type.
  * Mostly used internally when the number of types in the resulting union type may be large.
  *
- * @see UnionType->withType()
- * @see UnionType->withoutType()
+ * @see UnionType::withType()
+ * @see UnionType::withoutType()
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 final class UnionTypeBuilder

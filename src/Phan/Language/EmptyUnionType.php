@@ -726,7 +726,7 @@ final class EmptyUnionType extends UnionType
      * @return bool
      * A UnionType with known callable types kept, other types filtered out.
      *
-     * @see $this->callableTypes()
+     * @see self::callableTypes()
      *
      * @override
      */

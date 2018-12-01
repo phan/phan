@@ -52,7 +52,7 @@ class Context extends FileRef
      * Maps [int flags => [string name/namespace => NamespaceMapEntry(fqsen, is_used)]]
      *
      * (This is used in the analysis phase after the parse phase)
-     * @see $this->namespace_map
+     * @see self::$namespace_map
      */
     private $parse_namespace_map = [];
 

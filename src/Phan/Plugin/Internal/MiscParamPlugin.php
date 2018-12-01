@@ -536,7 +536,7 @@ final class MiscParamPlugin extends PluginV2 implements
 
         /**
          * Most of the work was already done in ParseVisitor
-         * @see \Phan\Parse\ParseVisitor->analyzeDefine()
+         * @see \Phan\Parse\ParseVisitor::analyzeDefine()
          */
         $define_callback = static function (
             CodeBase $code_base,

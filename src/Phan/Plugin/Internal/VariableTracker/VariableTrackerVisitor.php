@@ -505,7 +505,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node $node a node of kind AST_IF
      * @return VariableTrackingScope
      *
-     * @see BlockAnalysisVisitor->visitIf (TODO: Use BlockExitStatusChecker)
+     * @see BlockAnalysisVisitor::visitIf()
      * @override
      */
     public function visitIf(Node $node)
@@ -558,7 +558,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node $node a node of kind AST_SWITCH
      * @return VariableTrackingScope
      *
-     * @see BlockAnalysisVisitor->visitSwitchList (TODO: Use BlockExitStatusChecker)
      * @override
      */
     public function visitSwitchList(Node $node)
@@ -610,7 +609,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node $node a node of kind AST_TRY
      * @return VariableTrackingScope
      *
-     * @see BlockAnalysisVisitor->visitTry (TODO: Use BlockExitStatusChecker)
      * @override
      */
     public function visitTry(Node $node)
@@ -644,7 +642,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node $node a node of kind AST_CATCH_LIST
      * @return VariableTrackingScope
      *
-     * @see BlockAnalysisVisitor->visitTry (TODO: Use BlockExitStatusChecker)
      * @override
      */
     public function visitCatchList(Node $node)
@@ -674,7 +671,6 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      * @param Node $node a node of kind AST_CATCH
      * @return VariableTrackingScope
      *
-     * @see BlockAnalysisVisitor->visitTry (TODO: Use BlockExitStatusChecker)
      * @override
      */
     public function visitCatch(Node $node)

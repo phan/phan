@@ -233,7 +233,7 @@ class AssignmentVisitor extends AnalysisVisitor
     /**
      * Analyzes code such as list($a) = [1, 2, 3];
      * @return void
-     * @see $this->visitArray
+     * @see self::visitArray()
      */
     private function analyzeShapedArrayAssignment(Node $node)
     {
@@ -389,7 +389,7 @@ class AssignmentVisitor extends AnalysisVisitor
     /**
      * Analyzes code such as list($a) = function_returning_array();
      * @return void
-     * @see $this->visitArray
+     * @see self::visitArray()
      */
     private function analyzeGenericArrayAssignment(Node $node)
     {
@@ -995,7 +995,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      *
-     * @see $this->visitProp
+     * @see self::visitProp()
      */
     public function visitStaticProp(Node $node) : Context
     {

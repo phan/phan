@@ -53,7 +53,7 @@ class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
      * A node to check
      *
      * @return void
-     * @see ConfigPluginSet->prepareNodeSelectionPlugin() for how this is called
+     * @see ConfigPluginSet::prepareNodeSelectionPlugin() for how this is called
      */
     public function visitCommonImplementation(Node $node)
     {

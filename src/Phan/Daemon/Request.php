@@ -216,7 +216,7 @@ class Request
     /**
      * Respond with issues in the requested format
      * @return void
-     * @see LanguageServer->handleJSONResponseFromWorker() for one possible usage of this
+     * @see LanguageServer::handleJSONResponseFromWorker() for one possible usage of this
      */
     public function respondWithIssues(int $issue_count)
     {
