@@ -602,7 +602,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             while (!feof($read_stream)) {
                 $buffer = fread($read_stream, 1024);
                 if ($buffer === false) {
-                    Logger::logError("fread from language client failed: " . $buffer);
+                    Logger::logError("fread from language client failed");
                     break;
                 }
                 if (strlen($buffer) > 0) {

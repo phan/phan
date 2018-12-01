@@ -1,0 +1,5 @@
+%s:4 PhanTypeSuspiciousEcho Suspicious argument \stdClass for an echo/print statement
+%s:5 PhanTypeSuspiciousStringExpression Suspicious type \stdClass of a variable or expression used to build a string. (Expected type to be able to cast to a string)
+%s:6 PhanTypeSuspiciousStringExpression Suspicious type \stdClass of a variable or expression used to build a string. (Expected type to be able to cast to a string)
+%s:7 PhanTypeConversionFromArray array to string conversion
+%s:8 PhanTypeSuspiciousStringExpression Suspicious type \stdClass of a variable or expression used to build a string. (Expected type to be able to cast to a string)

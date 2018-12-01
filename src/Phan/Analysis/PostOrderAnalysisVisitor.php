@@ -401,7 +401,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if (!($child_node instanceof Node)) {
                 continue;
             }
-            $this->checkEncapsulatedStringArgument($child_node);
+            $this->checkExpressionInDynamicString($child_node);
         }
 
         return $this->context;
@@ -410,7 +410,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * @return void
      */
-    private function checkEncapsulatedStringArgument(Node $expr_node)
+    private function checkExpressionInDynamicString(Node $expr_node)
     {
         $code_base = $this->code_base;
         $context = $this->context;
@@ -742,7 +742,22 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 );
             }
         }
+        if ($node->flags === flags\BINARY_CONCAT) {
+            $this->analyzeBinaryConcat($node);
+        }
         return $this->context;
+    }
+
+    private function analyzeBinaryConcat(Node $node)
+    {
+        $left = $node->children['left'];
+        if ($left instanceof Node) {
+            $this->checkExpressionInDynamicString($left);
+        }
+        $right = $node->children['right'];
+        if ($right instanceof Node) {
+            $this->checkExpressionInDynamicString($right);
+        }
     }
 
     const NAME_FOR_UNARY_OP = [
