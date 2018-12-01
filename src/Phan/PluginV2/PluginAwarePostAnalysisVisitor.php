@@ -13,7 +13,7 @@ namespace Phan\PluginV2;
  * - Public methods from Phan\AST\AnalysisVisitor
  *
  * NOTE: Subclasses should not implement the visit() method unless they absolutely need to.
- * (E.g. if the body would be empty, or if it could be replaced with a small number of more specific methods such as visitFuncDecl, visitVar, etc.)
+ * (E.g. if the body would be empty, or if it could be replaced with a few methods such as visitFuncDecl, visitVar, etc. that are more specific)
  *
  * - Phan is able to figure out which methods a subclass implements, and only call the plugin's visitor for those types,
  *   but only when the plugin's visitor does not override the fallback visit() method.

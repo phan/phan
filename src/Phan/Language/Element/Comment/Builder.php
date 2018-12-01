@@ -314,7 +314,7 @@ final class Builder
     private function parseCommentLine(int $i, string $line)
     {
         // https://secure.php.net/manual/en/regexp.reference.internal-options.php
-        // (?i) makes this case sensitive, (?-1) makes it case insensitive
+        // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
         if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope)(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/', $line, $matches)) {
             $case_sensitive_type = $matches[1];

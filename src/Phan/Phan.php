@@ -254,7 +254,7 @@ class Phan implements IgnoredFilesFilterInterface
     }
 
     /**
-     * Finish analyzing any files that need to be analyzed
+     * Finish analyzing any files that need to be analyzed.
      * (for full analysis, or a limited number of files for daemon mode, etc.)
      *
      * @param CodeBase $code_base
@@ -578,7 +578,7 @@ class Phan implements IgnoredFilesFilterInterface
     }
 
     /**
-     * Set the printer to use to emit issues to.
+     * Set the printer to use for emitting issues.
      * @return void
      */
     public static function setPrinter(

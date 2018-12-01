@@ -42,8 +42,8 @@ class Context extends FileRef
     /**
      * @var array<int,array<string,NamespaceMapEntry>>
      * Maps [int flags => [string name/namespace => NamespaceMapEntry(fqsen, is_used)]]
-     * Note that for \ast\USE_CONST (global constants), this is case sensitive,
-     * but the remaining types are case insensitive (stored with lowercase name).
+     * Note that for \ast\USE_CONST (global constants), this is case-sensitive,
+     * but the remaining types are case-insensitive (stored with lowercase name).
      */
     private $namespace_map = [];
 
@@ -128,14 +128,14 @@ class Context extends FileRef
         $name_parts = \explode('\\', $name, 2);
         if (\count($name_parts) > 1) {
             // We're looking for a namespace if there's more than one part
-            // Namespaces are case insensitive.
+            // Namespaces are case-insensitive.
             $namespace_map_key = \strtolower($name_parts[0]);
             $flags = \ast\flags\USE_NORMAL;
         } else {
             if ($flags !== \ast\flags\USE_CONST) {
                 $namespace_map_key = \strtolower($name);
             } else {
-                // Constants are case sensitive, and stored in a case sensitive manner.
+                // Constants are case-sensitive, and stored in a case-sensitive manner.
                 $namespace_map_key = $name;
             }
         }
@@ -157,8 +157,8 @@ class Context extends FileRef
         if (\count($name_parts) > 1) {
             $name = \strtolower($name_parts[0]);
             $suffix = $name_parts[1];
-            // In php, namespaces, functions, and classes are case insensitive.
-            // However, constants are almost always case insensitive.
+            // In php, namespaces, functions, and classes are case-insensitive.
+            // However, constants are almost always case-insensitive.
             if ($flags !== \ast\flags\USE_CONST) {
                 $suffix = \strtolower($suffix);
             }

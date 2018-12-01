@@ -1417,7 +1417,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param UnionType $union_type a union type with at least one top level array shape type
+     * @param UnionType $union_type a union type with at least one top-level array shape type
      * @param int|string|float|bool $dim_value a scalar dimension. TODO: Warn about null?
      * @return ?UnionType|?false
      *  returns false if there the offset was invalid and there are no ways to get that offset

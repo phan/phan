@@ -187,7 +187,7 @@ class Type
        . ')';
 
     /**
-     * @var array<string,bool> - For checking if a string is an internal type. This is used for case insensitive lookup.
+     * @var array<string,bool> - For checking if a string is an internal type. This is used for case-insensitive lookup.
      */
     const _internal_type_set = [
         'array'     => true,
@@ -1574,7 +1574,7 @@ class Type
             $type_name = self::canonicalNameFromName($type_name);  // Have to convert boolean[] to bool
         }
         if (!\array_key_exists($type_name, self::_internal_type_set)) {
-            return $original_type_name === '$this';  // This is the only case sensitive check.
+            return $original_type_name === '$this';  // This is the only case-sensitive check.
         }
         // All values of $type_name exist as a valid phpdoc type, but some don't exist as real types.
         if ($source === Type::FROM_NODE && \array_key_exists($type_name, self::_soft_internal_type_set)) {
@@ -1631,7 +1631,7 @@ class Type
     public static function isSelfTypeString(
         string $type_string
     ) : bool {
-        // Note: While 'self' and 'parent' are case insensitive, '$this' is case sensitive
+        // Note: While 'self' and 'parent' are case-insensitive, '$this' is case-sensitive
         // Not sure if that should extend to phpdoc.
         return \preg_match('/^\\\\?([sS][eE][lL][fF]|[pP][aA][rR][eE][nN][tT]|\$this)$/', $type_string) > 0;
     }
@@ -1647,7 +1647,7 @@ class Type
     public static function isStaticTypeString(
         string $type_string
     ) : bool {
-        // Note: While 'self' and 'parent' are case insensitive, '$this' is case sensitive
+        // Note: While 'self' and 'parent' are case-insensitive, '$this' is case-sensitive
         // Not sure if that should extend to phpdoc.
         return \preg_match('/^\\\\?([sS][tT][aA][tT][iI][cC]|\\$this)$/', $type_string) > 0;
     }
@@ -2370,7 +2370,7 @@ class Type
      * 3: Whether or not the type is nullable
      * 4: The shape components, if any. Null unless this is an array shape type string such as 'array{field:int}'
      *
-     * NOTE: callers must check for the generic array symbol in the type name or for type names beginning with 'array{' (case insensitive)
+     * NOTE: callers must check for the generic array symbol in the type name or for type names beginning with 'array{' (case-insensitive)
      *
      * NOTE: callers must not mutate the result.
      */

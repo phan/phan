@@ -163,7 +163,7 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
-     * Returns a brand new ConfigPluginSet where all plugins are initialized.
+     * Returns a brand-new ConfigPluginSet where all plugins are initialized.
      *
      * If one of the plugins could not be instantiated, this prints an error message and terminates the program.
      */
@@ -568,7 +568,7 @@ final class ConfigPluginSet extends PluginV2 implements
         }
         $result = [];
         foreach ($this->analyze_function_call_plugin_set as $plugin) {
-            // TODO: Make this case insensitive.
+            // TODO: Make this case-insensitive.
             foreach ($plugin->getAnalyzeFunctionCallClosures($code_base) as $fqsen_name => $closure) {
                 $other_closure = $result[$fqsen_name] ?? null;
                 if ($other_closure !== null) {

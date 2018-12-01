@@ -23,7 +23,7 @@ use function var_export;
  * This plugin checks for invalid format strings and invalid uses of format strings in printf and sprintf, etc.
  * e.g. for printf("literal format %s", $arg)
  *
- * This uses ConversionSpec as a best effort at determining the the positions used by PHP format strings.
+ * This uses ConversionSpec as a heuristic to determine the positions used by PHP format strings.
  * Some edge cases may have been overlooked.
  *
  * This validates strings of the form

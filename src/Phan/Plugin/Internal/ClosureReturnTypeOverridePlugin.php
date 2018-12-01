@@ -270,7 +270,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
 
     /**
      * This caches the arguments inferred as the union types of arguments passed to function calls.
-     * This is used in case there are multiple function-likes that need to be analyzed
+     * This is used in case there are multiple function-likes that need to be analyzed.
      *
      * TODO: Is this still needed?
      * @return Closure(mixed,int):UnionType

@@ -58,7 +58,7 @@ final class PropertyMapTest extends BaseTest
                 continue;
             }
             if (strcasecmp($prop_name, $prev_prop_name) < 0) {
-                $failures[] = "Expected property name '$prop_name' to be before '$prev_prop_name' in '$class_name' (sorted case insensitively)";
+                $failures[] = "Expected property name '$prop_name' to be before '$prev_prop_name' in '$class_name' (sorted case-insensitively)";
             }
             $prev_prop_name = $prop_name;
             if (!is_string($value)) {

@@ -133,7 +133,7 @@ class ArrayType extends IterableType
     /**
      * E.g. string|array{0:T1|T2,1:float} + [0 => int] becomes string|array{0:int, 1:float}
      *
-     * TODO: Remove any top level native types that can't have offsets, e.g. IntType, null, etc.
+     * TODO: Remove any top-level native types that can't have offsets, e.g. IntType, null, etc.
      *
      * @param UnionType $left the left hand side (e.g. of a isset check).
      * @param int|string|float|bool $field_dim_value (Ideally int|string)
