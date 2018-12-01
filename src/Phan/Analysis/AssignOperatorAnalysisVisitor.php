@@ -360,7 +360,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     private function analyzeBitwiseOperation(Node $node) : Context
     {
         return $this->updateTargetWithType($node, function (UnionType $left_type) use ($node) : UnionType {
-            // TODO: Warn about invalid left and right hand sides here and in BinaryOperatorFlagVisitor.
+            // TODO: Warn about invalid left and right-hand sides here and in BinaryOperatorFlagVisitor.
             // Expect int|string
 
             $right_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);

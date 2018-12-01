@@ -1232,9 +1232,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         // With (left) && (right)
         // 1. Update context with any side effects of left
-        // 2. Create a context to analyze the right hand side with any inferences possible from left (e.g. ($x instanceof MyClass) && $x->foo()
-        // 3. Analyze the right hand side
-        // 4. Merge the possibly evaluated $right_context for the right hand side into the original context. (The left_node is guaranteed to have been evaluated, so it becomes $context)
+        // 2. Create a context to analyze the right-hand side with any inferences possible from left (e.g. ($x instanceof MyClass) && $x->foo()
+        // 3. Analyze the right-hand side
+        // 4. Merge the possibly evaluated $right_context for the right-hand side into the original context. (The left_node is guaranteed to have been evaluated, so it becomes $context)
 
         // TODO: Warn about non-node, they're guaranteed to be always false or true
         if ($left_node instanceof Node) {
@@ -1291,9 +1291,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         // With (left) || (right)
         // 1. Update context with any side effects of left
-        // 2. Create a context to analyze the right hand side with any inferences possible from left (e.g. (!($x instanceof MyClass)) || $x->foo()
-        // 3. Analyze the right hand side
-        // 4. Merge the possibly evaluated $right_context for the right hand side into the original context. (The left_node is guaranteed to have been evaluated, so it becomes $context)
+        // 2. Create a context to analyze the right-hand side with any inferences possible from left (e.g. (!($x instanceof MyClass)) || $x->foo()
+        // 3. Analyze the right-hand side
+        // 4. Merge the possibly evaluated $right_context for the right-hand side into the original context. (The left_node is guaranteed to have been evaluated, so it becomes $context)
 
         // TODO: Warn about non-node, they're guaranteed to be always false or true
         if ($left_node instanceof Node) {

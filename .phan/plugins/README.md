@@ -150,7 +150,7 @@ but may cause false positives in large projects with different code styles.
 
 ##### NonBoolInLogicalArithPlugin.php
 
-- **PhanPluginNonBoolInLogicalArith** Warns if an expression where the left/right hand side has types other than `bool` is used in a binary operation.
+- **PhanPluginNonBoolInLogicalArith** Warns if an expression where the left/right-hand side has types other than `bool` is used in a binary operation.
 
   (E.g. warns about `if ($x && $x->fn())`, where $x is an object. Fix by checking `if (($x instanceof MyClass) && $x->fn())`)
 

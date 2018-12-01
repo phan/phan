@@ -258,7 +258,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         $context = $this->context;
         $left_false_context = (new NegatedConditionVisitor($code_base, $context))->__invoke($left);
         $left_true_context = (new ConditionVisitor($code_base, $context))->__invoke($left);
-        // We analyze the right hand side of `cond($x) || cond2($x)` as if `cond($x)` was false.
+        // We analyze the right-hand side of `cond($x) || cond2($x)` as if `cond($x)` was false.
         $right_true_context = (new ConditionVisitor($code_base, $left_false_context))->__invoke($right);
         // When the ConditionVisitor is true, at least one of the left or right contexts must be true.
         return (new ContextMergeVisitor($context, [$left_true_context, $right_true_context]))->combineChildContextList();

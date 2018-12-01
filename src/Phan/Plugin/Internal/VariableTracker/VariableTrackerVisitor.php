@@ -122,7 +122,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
                 if (!is_string($name)) {
                     break;
                 }
-                // The left hand node ($var_node) is the usage of this variable
+                // The left-hand node ($var_node) is the usage of this variable
                 self::$variable_graph->recordVariableUsage($name, $var_node, $this->scope);
                 // And the whole assignment operation is the redefinition of this variable
                 self::$variable_graph->recordVariableDefinition($name, $node, $this->scope);

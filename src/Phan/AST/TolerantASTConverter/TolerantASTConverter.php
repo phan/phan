@@ -508,7 +508,7 @@ class TolerantASTConverter
                 );
             },
             /**
-             * @return ast\Node|string|float|int (can return a non-Node if the left or right hand side could not be parsed
+             * @return ast\Node|string|float|int (can return a non-Node if the left or right-hand side could not be parsed
              */
             'Microsoft\PhpParser\Node\Expression\BinaryExpression' => function (PhpParser\Node\Expression\BinaryExpression $n, int $start_line) {
                 static $lookup = [
@@ -2331,7 +2331,7 @@ class TolerantASTConverter
      * Binary assignment operation such as `+=`
      *
      * @return ast\Node|string|int|float
-     * (Can return non-Node for an invalid AST if the right hand is a scalar)
+     * (Can return non-Node for an invalid AST if the right-hand is a scalar)
      */
     private static function astNodeAssignop(int $flags, PhpParser\Node\Expression\BinaryExpression $n, int $start_line)
     {

@@ -183,7 +183,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         $context = $this->context;
         $left_false_context = (new NegatedConditionVisitor($code_base, $context))($left);
         $left_true_context = (new ConditionVisitor($code_base, $context))($left);
-        // We analyze the right hand side of `cond($x) && cond2($x)` as if `cond($x)` was true.
+        // We analyze the right-hand side of `cond($x) && cond2($x)` as if `cond($x)` was true.
         $right_false_context = (new NegatedConditionVisitor($code_base, $left_true_context))($right);
         // When the NegatedConditionVisitor is false, at least one of the left or right contexts must be false.
         // (NegatedConditionVisitor returns a context for when the input Node's value was falsey)
@@ -385,7 +385,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             }
             $right_hand_type = $right_hand_union_type->getTypeSet()[0];
 
-            // TODO: Assert that instanceof right hand type is valid in NegatedConditionVisitor as well
+            // TODO: Assert that instanceof right-hand type is valid in NegatedConditionVisitor as well
 
             // Make a copy of the variable
             $variable = clone($variable);

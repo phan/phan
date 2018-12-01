@@ -659,7 +659,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
              */
             static $skip_var_check_types = [
                 ast\AST_ARG_LIST       => true,  // may be a reference
-                ast\AST_ARRAY_ELEM     => true,  // [$X, $y] = expr() is an AST_ARRAY_ELEM. visitArray() checks the right hand side.
+                ast\AST_ARRAY_ELEM     => true,  // [$X, $y] = expr() is an AST_ARRAY_ELEM. visitArray() checks the right-hand side.
                 ast\AST_ASSIGN_OP      => true,  // checked in visitAssignOp
                 ast\AST_ASSIGN_REF     => true,  // Creates by reference?
                 ast\AST_ASSIGN         => true,  // checked in visitAssign
@@ -1483,7 +1483,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (($node->children['true'] ?? null) !== null) {
             yield from $this->getReturnTypes($true_context, $true_node, $true_node->lineno ?? $node->lineno);
         } else {
-            // E.g. From the left hand side of yield (int|false) ?: default,
+            // E.g. From the left-hand side of yield (int|false) ?: default,
             // yielding false is impossible.
             foreach ($this->getReturnTypes($true_context, $true_node, $true_node->lineno ?? $node->lineno) as $lineno => $raw_union_type) {
                 if ($raw_union_type->isEmpty() || !$raw_union_type->containsFalsey()) {
@@ -2313,7 +2313,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @return bool true if the union type should skip analysis due to being the left hand side expression of an assignment
+     * @return bool true if the union type should skip analysis due to being the left-hand side expression of an assignment
      * We skip checks for $x['key'] being valid in expressions such as `$x['key']['key2']['key3'] = 'value';`
      * because those expressions will create $x['key'] as a side effect.
      *

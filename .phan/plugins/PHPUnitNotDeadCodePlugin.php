@@ -11,7 +11,7 @@ use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV2\PostAnalyzeNodeCapability;
 
 /**
- * Mark all phpunit test cases as used for dead code detection during Phan's self analysis.
+ * Mark all phpunit test cases as used for dead code detection during Phan's self-analysis.
  *
  * Implements the following capabilities
  * (This choice of capability makes this plugin efficiently analyze only classes that are in the analyzed file list)

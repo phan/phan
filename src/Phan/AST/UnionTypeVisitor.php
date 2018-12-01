@@ -429,7 +429,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitAssignRef(Node $node) : UnionType
     {
         // TODO: Is there any way this should differ from analysis
-        // (e.g. should subsequent assignments affect the right hand Node?)
+        // (e.g. should subsequent assignments affect the right-hand Node?)
         return $this->visitAssign($node);
     }
 
