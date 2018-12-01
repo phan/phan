@@ -57,7 +57,7 @@ trait ConditionVisitorUtil
      * Note that Phan can't know some scalars are not an int/string/float, since 0/""/"0"/0.0/[] are empty.
      * (Remove arrays anyway)
      */
-    protected final function removeTruthyFromVariable(Node $var_node, Context $context, bool $suppress_issues) : Context
+    final protected function removeTruthyFromVariable(Node $var_node, Context $context, bool $suppress_issues) : Context
     {
         return $this->updateVariableWithConditionalFilter(
             $var_node,
@@ -73,7 +73,7 @@ trait ConditionVisitorUtil
     }
 
     // Remove any types which are definitely falsey from that variable (NullType, FalseType)
-    protected final function removeFalseyFromVariable(Node $var_node, Context $context, bool $suppress_issues) : Context
+    final protected function removeFalseyFromVariable(Node $var_node, Context $context, bool $suppress_issues) : Context
     {
         return $this->updateVariableWithConditionalFilter(
             $var_node,
@@ -89,7 +89,7 @@ trait ConditionVisitorUtil
     }
 
 
-    protected final function removeNullFromVariable(Node $var_node, Context $context, bool $suppress_issues) : Context
+    final protected function removeNullFromVariable(Node $var_node, Context $context, bool $suppress_issues) : Context
     {
         return $this->updateVariableWithConditionalFilter(
             $var_node,
@@ -104,7 +104,7 @@ trait ConditionVisitorUtil
         );
     }
 
-    protected final function removeFalseFromVariable(Node $var_node, Context $context) : Context
+    final protected function removeFalseFromVariable(Node $var_node, Context $context) : Context
     {
         return $this->updateVariableWithConditionalFilter(
             $var_node,
@@ -119,7 +119,7 @@ trait ConditionVisitorUtil
         );
     }
 
-    protected final function removeTrueFromVariable(Node $var_node, Context $context) : Context
+    final protected function removeTrueFromVariable(Node $var_node, Context $context) : Context
     {
         return $this->updateVariableWithConditionalFilter(
             $var_node,
@@ -142,7 +142,7 @@ trait ConditionVisitorUtil
      *
      * Note: It's expected that $should_filter_cb returns false on the new UnionType of that variable.
      */
-    protected final function updateVariableWithConditionalFilter(
+    final protected function updateVariableWithConditionalFilter(
         Node $var_node,
         Context $context,
         \Closure $should_filter_cb,
@@ -183,7 +183,7 @@ trait ConditionVisitorUtil
         return $context;
     }
 
-    protected final function updateVariableWithNewType(
+    final protected function updateVariableWithNewType(
         Node $var_node,
         Context $context,
         UnionType $new_union_type,
@@ -224,7 +224,7 @@ trait ConditionVisitorUtil
      * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
      * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
-    public final function updateVariableToBeIdentical(
+    final public function updateVariableToBeIdentical(
         Node $var_node,
         $expr,
         Context $context = null
@@ -269,7 +269,7 @@ trait ConditionVisitorUtil
      * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
      * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
-    public final function updateVariableToBeCompared(
+    final public function updateVariableToBeCompared(
         Node $var_node,
         $expr,
         int $flags
@@ -331,7 +331,7 @@ trait ConditionVisitorUtil
      * @return Context - Constant after inferring type from an expression such as `if ($x !== 'literal')`
      * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
-    public final function updateVariableToBeNotIdentical(
+    final public function updateVariableToBeNotIdentical(
         Node $var_node,
         $expr,
         Context $context = null
@@ -368,7 +368,7 @@ trait ConditionVisitorUtil
      * @return Context - Constant after inferring type from an expression such as `if ($x !== 'literal')`
      * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
-    public final function updateVariableToBeNotEqual(
+    final public function updateVariableToBeNotEqual(
         Node $var_node,
         $expr,
         Context $context = null
@@ -617,7 +617,7 @@ trait ConditionVisitorUtil
      *
      * TODO: support assertions on superglobals, within the current file scope?
      */
-    public final function getVariableFromScope(Node $var_node, Context $context)
+    final public function getVariableFromScope(Node $var_node, Context $context)
     {
         if ($var_node->kind !== ast\AST_VAR) {
             return null;
@@ -673,7 +673,7 @@ trait ConditionVisitorUtil
         );
     }
 
-    protected static final function isArgumentListWithVarAsFirstArgument(array $args) : bool
+    final protected static function isArgumentListWithVarAsFirstArgument(array $args) : bool
     {
         if (\count($args) >= 1) {
             $arg = $args[0];
@@ -686,7 +686,7 @@ trait ConditionVisitorUtil
      * Fetches the function name. Does not check for function uses or namespaces.
      * @return ?string (null if function name could not be found)
      */
-    protected static final function getFunctionName(Node $node)
+    final protected static function getFunctionName(Node $node)
     {
         $expr = $node->children['expr'];
         if (!($expr instanceof Node)) {
