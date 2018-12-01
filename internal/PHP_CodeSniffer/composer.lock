@@ -12,17 +12,17 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/slevomat/coding-standard.git",
-                "reference": "af1aeb948cc7abb67bbd318947966539e353bb86"
+                "reference": "f6fd0f1f92c5433c52190e05ef6d339693f3115b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/af1aeb948cc7abb67bbd318947966539e353bb86",
-                "reference": "af1aeb948cc7abb67bbd318947966539e353bb86",
+                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/f6fd0f1f92c5433c52190e05ef6d339693f3115b",
+                "reference": "f6fd0f1f92c5433c52190e05ef6d339693f3115b",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.1",
-                "squizlabs/php_codesniffer": "^3.3.0"
+                "squizlabs/php_codesniffer": "^3.3.1"
             },
             "require-dev": {
                 "jakub-onderka/php-parallel-lint": "1.0.0",
@@ -43,7 +43,7 @@
                 "MIT"
             ],
             "description": "Slevomat Coding Standard for PHP_CodeSniffer complements Consistence Coding Standard by providing sniffs with additional checks.",
-            "time": "2018-09-21T18:58:45+00:00"
+            "time": "2018-11-27T18:57:46+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
@@ -51,12 +51,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "632c8f395b16bf8ceeaab8b16a500a70fac7473b"
+                "reference": "b53f64e10e41aa754ffa7c11999af1881e6c1780"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/632c8f395b16bf8ceeaab8b16a500a70fac7473b",
-                "reference": "632c8f395b16bf8ceeaab8b16a500a70fac7473b",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/b53f64e10e41aa754ffa7c11999af1881e6c1780",
+                "reference": "b53f64e10e41aa754ffa7c11999af1881e6c1780",
                 "shasum": ""
             },
             "require": {
@@ -94,7 +94,7 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2018-09-07T15:14:24+00:00"
+            "time": "2018-11-27T02:04:54+00:00"
         }
     ],
     "packages-dev": [],

@@ -20,7 +20,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 final class AnalyzerTest extends BaseTest
 {
     /**
-     * @var CodeBase
+     * @var CodeBase represents the known state of the test code base we're analyzing.
      */
     private $code_base;
 

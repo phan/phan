@@ -13,7 +13,7 @@ namespace Phan\Library;
  */
 class Some extends Option
 {
-    /** @var T */
+    /** @var T the value wrapped by this Some<T>*/
     private $_;
 
     /**

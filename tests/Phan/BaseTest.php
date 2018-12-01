@@ -40,8 +40,8 @@ abstract class BaseTest extends TestCase
             'non_nullable_int_type',
         ],
         'Phan\Language\Type\LiteralStringType' => [
-            'nullable_int_type',
-            'non_nullable_int_type',
+            'nullable_string_type',
+            'non_nullable_string_type',
         ],
         'Phan\Language\UnionType' => [
             'empty_instance',

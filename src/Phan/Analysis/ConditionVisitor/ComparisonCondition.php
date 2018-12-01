@@ -10,7 +10,7 @@ use Phan\Language\Context;
  */
 class ComparisonCondition implements BinaryCondition
 {
-    /** @var int */
+    /** @var int the value of ast\Node->flags */
     private $flags;
 
     public function __construct(int $flags)

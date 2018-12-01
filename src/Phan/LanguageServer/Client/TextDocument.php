@@ -16,6 +16,8 @@ use Sabre\Event\Promise;
 class TextDocument
 {
     /**
+     * Used to send `textDocument/*` notifications and requests to the language server client of the Phan Language Server.
+     *
      * @var ClientHandler
      */
     private $handler;

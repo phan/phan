@@ -25,16 +25,31 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     // Subclasses will override this
     const NAME = '';
 
-    /** @var FileRef */
+    /**
+     * The file and location where this function-like Type was declared.
+     * (e.g. in a doc comment, as a closure, etc).
+     * @var FileRef
+     */
     private $file_ref;
 
-    /** @var array<int,ClosureDeclarationParameter> */
+    /**
+     * Describes information that was parsed about the parameters of this function-like Type.
+     * (Name and UnionType)
+     * @var array<int,ClosureDeclarationParameter>
+     */
     private $params;
 
-    /** @var UnionType */
+    /**
+     * The return type of this function-like Type.
+     * @var UnionType
+     */
     private $return_type;
 
-    /** @var bool */
+    /**
+     * Does this function-like type return a reference?
+     * Currently only possible for real closures, not for callable declarations declared in phpdoc.
+     * @var bool
+     */
     private $returns_reference;
 
     // computed properties
@@ -45,7 +60,10 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     /** @var int see FunctionTrait */
     private $optional_param_count;
 
-    /** @var bool */
+    /**
+     * Is this a function declaration variadic?
+     * @var bool
+     */
     private $is_variadic;
     // end computed properties
 

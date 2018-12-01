@@ -64,7 +64,7 @@ trait FunctionTrait
      * The fully-qualified structural element name of this
      * structural element
      */
-    public abstract function getFQSEN();
+    abstract public function getFQSEN();
 
     /**
      * @return string
@@ -902,17 +902,17 @@ trait FunctionTrait
         return $this->analyze($context, $code_base);
     }
 
-    public abstract function analyze(Context $context, CodeBase $code_base) : Context;
+    abstract public function analyze(Context $context, CodeBase $code_base) : Context;
 
-    public abstract function getRecursionDepth() : int;
+    abstract public function getRecursionDepth() : int;
 
     /** @return Node|null */
-    public abstract function getNode();
+    abstract public function getNode();
 
     /** @return Context */
-    public abstract function getContext() : Context;
+    abstract public function getContext() : Context;
 
-    public abstract function getFileRef() : FileRef;
+    abstract public function getFileRef() : FileRef;
 
     /**
      * Returns true if the return type depends on the argument, and a plugin makes Phan aware of that.
@@ -1027,12 +1027,12 @@ trait FunctionTrait
     }
 
     /** @return void */
-    public abstract function memoizeFlushAll();
+    abstract public function memoizeFlushAll();
 
-    public abstract function getUnionType() : UnionType;
+    abstract public function getUnionType() : UnionType;
 
     /** @return void */
-    public abstract function setUnionType(UnionType $type);
+    abstract public function setUnionType(UnionType $type);
 
     /**
      * Creates a callback that can restore this element to the state it had before parsing.
@@ -1088,7 +1088,7 @@ trait FunctionTrait
         return $this->as_closure_declaration_type ?? ($this->as_closure_declaration_type = $this->createFunctionLikeDeclarationType());
     }
 
-    public abstract function returnsRef() : bool;
+    abstract public function returnsRef() : bool;
 
     private function createFunctionLikeDeclarationType() : FunctionLikeDeclarationType
     {

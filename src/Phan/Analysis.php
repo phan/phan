@@ -117,7 +117,7 @@ class Analysis
             return $context;
         }
 
-        if (empty($node)) {
+        if (!$node) {
             // php-ast would return an empty node for 0 byte files in older releases.
             Issue::maybeEmit(
                 $code_base,
@@ -510,7 +510,7 @@ class Analysis
         }
 
         // Ensure we have some content
-        if (empty($node)) {
+        if (!$node) {
             Issue::maybeEmit(
                 $code_base,
                 $context,

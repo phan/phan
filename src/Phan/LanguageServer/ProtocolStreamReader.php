@@ -17,23 +17,24 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
     const PARSE_HEADERS = 1;
     const PARSE_BODY = 2;
 
-    /** @var resource */
+    /** @var resource the input stream resource for data from the client. */
     private $input;
+
     /**
      * This is checked by ProtocolStreamReader so that it will stop reading from streams in the forked process.
      * There could be buffered bytes in stdin/over TCP, those would be processed by TCP if it were not for this check.
      * @var bool
      */
     private $is_accepting_new_requests = true;
-    /** @var int */
+    /** @var int (self::PARSE_*) the state of the parsing state machine */
     private $parsing_mode = self::PARSE_HEADERS;
-    /** @var string */
+    /** @var string the intermediate state of the buffer */
     private $buffer = '';
-    /** @var string[] */
+    /** @var string[] the headers that were parsed during the PARSE_HEADERS phase */
     private $headers = [];
-    /** @var int */
+    /** @var int the content-length that we are expecting */
     private $content_length;
-    /** @var bool */
+    /** @var bool was a close notification sent to the listeners already? */
     private $did_emit_close = false;
 
     /**

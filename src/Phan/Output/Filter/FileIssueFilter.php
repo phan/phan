@@ -11,7 +11,7 @@ use Phan\Output\IssueFilterInterface;
 final class FileIssueFilter implements IssueFilterInterface
 {
 
-    /** @var IgnoredFilesFilterInterface */
+    /** @var IgnoredFilesFilterInterface used to check if issues in a file name should be ignored. */
     private $ignored_files_filter;
 
     /**

@@ -588,7 +588,7 @@ class Issue
     {
         static $error_map;
 
-        if (!empty($error_map)) {
+        if (\is_array($error_map)) {
             return $error_map;
         }
 
@@ -3552,7 +3552,7 @@ class Issue
     {
         $error_map = self::issueMap();
 
-        if (empty($error_map[$type])) {
+        if (!isset($error_map[$type])) {
             throw new InvalidArgumentException("Undefined error type $type");
         }
 

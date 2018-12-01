@@ -32,7 +32,7 @@ function testNegate341C(?int $x) {
     if (empty($x)) {
         intdiv($x, 2);  // wrong if it's null, can be null or 0 (?int)
     } else {
-        echo strlen($x);  // should infer $x is int and warn
+        echo strlen($x);  // infers that $x is int and warns
     }
 }
 

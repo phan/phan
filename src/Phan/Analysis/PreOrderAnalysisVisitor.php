@@ -87,9 +87,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $class_name = (string)$node->children['name'];
         }
 
-        if (empty($class_name)) {
+        if (!$class_name) {
             // Should only occur with --use-fallback-parser
-            // Class name
             throw new UnanalyzableException($node, "Class name cannot be empty");
         }
 
@@ -402,9 +401,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // Make the closure reachable by FQSEN from anywhere
         $code_base->addFunction($func);
 
-        if (!empty($node->children['uses'])
-            && $node->children['uses']->kind == \ast\AST_CLOSURE_USES
-        ) {
+        if (($node->children['uses']->kind ?? null) == \ast\AST_CLOSURE_USES) {
             $uses = $node->children['uses'];
             foreach ($uses->children as $use) {
                 if (!($use instanceof Node) || $use->kind != \ast\AST_CLOSURE_VAR) {
@@ -421,7 +418,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     $use->children['name']
                 ))->getVariableName();
 
-                if (empty($variable_name)) {
+                if (!$variable_name) {
                     continue;
                 }
 
@@ -1007,7 +1004,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $node->children['var']
         ))->getVariableName();
 
-        if (!empty($variable_name)) {
+        if ($variable_name) {
             $variable = Variable::fromNodeInContext(
                 $node->children['var'],
                 $this->context,

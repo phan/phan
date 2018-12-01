@@ -11,7 +11,11 @@ use Phan\Output\IssueFilterInterface;
 final class ChainedIssueFilter implements IssueFilterInterface
 {
 
-    /** @var IssueFilterInterface[] */
+    /**
+     * 0 or more filters. If any of these reject an IssueInstance,
+     * then this ChainedIssueFilter will reject the instance.
+     * @var IssueFilterInterface[]
+     */
     private $filters = [];
 
     /**

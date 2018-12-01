@@ -12,7 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 final class PylintPrinter implements IssuePrinterInterface
 {
-    /** @var OutputInterface */
+    /** @var OutputInterface an output that pylint formatted issues can be written to. */
     private $output;
 
     /** @param IssueInstance $instance */

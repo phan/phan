@@ -66,7 +66,12 @@ final class Builder
     /** @var UnionType the union type of the set of (at)throws annotations */
     public $throw_union_type;
 
-    /** @var array<int,array{0:string,1:int,2:array<int,mixed>}> */
+    /**
+     * A list of issues detected in the comment being built.
+     * This is stored instead of immediately emitting the issue because later lines might suppress these issues.
+     *
+     * @var array<int,array{0:string,1:int,2:array<int,mixed>}>
+     */
     private $issues = [];
 
     public function __construct(
@@ -310,6 +315,7 @@ final class Builder
     {
         // https://secure.php.net/manual/en/regexp.reference.internal-options.php
         // (?i) makes this case sensitive, (?-1) makes it case insensitive
+        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
         if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope)(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/', $line, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);

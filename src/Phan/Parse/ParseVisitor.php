@@ -98,7 +98,7 @@ class ParseVisitor extends ScopeVisitor
 
         // This happens now and then and I have no idea
         // why.
-        if (empty($class_name)) {
+        if (!$class_name) {
             return $this->context;
         }
 
@@ -240,7 +240,7 @@ class ParseVisitor extends ScopeVisitor
             }
 
             // Add any implemented interfaces
-            if (!empty($node->children['implements'])) {
+            if (isset($node->children['implements'])) {
                 $interface_list = (new ContextNode(
                     $this->code_base,
                     $this->context,

@@ -316,13 +316,13 @@ class Type
     public function __wakeup()
     {
         debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-        throw new Error("Cannot unserialize Type");
+        throw new Error("Cannot unserialize Type '$this'");
     }
 
     /** @throws Error this should not be called accidentally */
     public function __clone()
     {
-        throw new Error("Cannot clone Type");
+        throw new Error("Cannot clone Type '$this'");
     }
 
     /**

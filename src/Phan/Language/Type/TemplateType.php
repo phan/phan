@@ -9,7 +9,7 @@ use Phan\Language\Type;
  */
 final class TemplateType extends Type
 {
-    /** @var string */
+    /** @var string an identifier for the template type. */
     private $template_type_identifier;
 
     /**

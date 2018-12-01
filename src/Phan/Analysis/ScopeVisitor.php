@@ -258,14 +258,14 @@ abstract class ScopeVisitor extends AnalysisVisitor
         foreach ($node->children as $child_node) {
             $target = $child_node->children['name'];
 
-            if (empty($child_node->children['alias'])) {
+            if (isset($child_node->children['alias'])) {
+                $alias = $child_node->children['alias'];
+            } else {
                 if (($pos = \strrpos($target, '\\')) !== false) {
                     $alias = \substr($target, $pos + 1);
                 } else {
                     $alias = $target;
                 }
-            } else {
-                $alias = $child_node->children['alias'];
             }
             if (!\is_string($alias)) {
                 // Should be impossible

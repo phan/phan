@@ -3,6 +3,9 @@ Phan NEWS
 ?? Dec 2018, Phan 1.1.6 (dev)
 -----------------------
 
+Bug fixes:
++ Infer more accurate types after asserting `!empty($x)`
+
 29 Nov 2018, Phan 1.1.5
 -----------------------
 

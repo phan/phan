@@ -11,16 +11,16 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class CheckstylePrinter implements BufferedPrinterInterface
 {
 
-    /** @var OutputInterface */
+    /** @var OutputInterface an output that XML can be written to. */
     private $output;
 
-    /** @var array<string,array<int,array>> */
+    /** @var array<string,array<int,array>> maps files with issues to the list of those issues */
     private $files = [];
 
     /** @param IssueInstance $instance */
     public function print(IssueInstance $instance)
     {
-        if (empty($this->files[$instance->getFile()])) {
+        if (!isset($this->files[$instance->getFile()])) {
             $this->files[$instance->getFile()] = [];
         }
 

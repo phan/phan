@@ -128,7 +128,7 @@ class UnionType implements Serializable
         }
     }
 
-    /** @var EmptyUnionType */
+    /** @var EmptyUnionType an empty union type - Cached here for quick access. */
     private static $empty_instance;
 
     /**

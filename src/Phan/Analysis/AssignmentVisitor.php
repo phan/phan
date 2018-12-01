@@ -734,7 +734,7 @@ class AssignmentVisitor extends AnalysisVisitor
             } catch (\Exception $_) {
                 // swallow it
             }
-        } elseif (!empty($class_list)) {
+        } elseif (\count($class_list) > 0) {
             $first_class = $class_list[0];
             $this->emitIssueWithSuggestion(
                 Issue::UndeclaredProperty,
@@ -1049,7 +1049,7 @@ class AssignmentVisitor extends AnalysisVisitor
             return $this->analyzePropAssignment($clazz, $property, $node);
         }
 
-        if (!empty($class_list)) {
+        if (\count($class_list) > 0) {
             $this->emitIssue(
                 Issue::UndeclaredStaticProperty,
                 $node->lineno ?? 0,

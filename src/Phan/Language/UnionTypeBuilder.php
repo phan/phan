@@ -12,7 +12,7 @@ namespace Phan\Language;
  */
 final class UnionTypeBuilder
 {
-    /** @var array<int,Type> */
+    /** @var array<int,Type> the list of unique types in this builder instance. */
     private $type_set;
 
     /** @param array<int,Type> $type_set (must be unique) */
