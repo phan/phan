@@ -148,6 +148,13 @@ final class DumpPHPDocPlugin extends PluginV2 implements
             return;
         }
 
+        foreach (MarkupDescription::extractParamTagsFromDocComment($method) as $param_name => $param_markup) {
+            if ($description === null) {
+                $description = "";
+            }
+            $description .= "\n\n### \$$param_name\n\n$param_markup\n\n";
+        }
+
         $this->recordStub(
             $method,
             self::generatePHPMarkdownBlock($method->getMarkupDescription()),
@@ -183,6 +190,14 @@ final class DumpPHPDocPlugin extends PluginV2 implements
             return;
         }
         $description = MarkupDescription::extractDescriptionFromDocComment($function);
+
+        foreach (MarkupDescription::extractParamTagsFromDocComment($function) as $param_name => $param_markup) {
+            if ($description === null) {
+                $description = "";
+            }
+            $description .= "\n\n### \$$param_name\n\n$param_markup\n\n";
+        }
+
 
         $this->recordStub(
             $function,
