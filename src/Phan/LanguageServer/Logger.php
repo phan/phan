@@ -15,6 +15,9 @@ class Logger
     /** @var resource|false the log file handle */
     public static $file = false;
 
+    /**
+     * Should this verbosely log debug output?
+     */
     public static function shouldLog() : bool
     {
         return Config::getValue('language_server_debug_level') === 'info';

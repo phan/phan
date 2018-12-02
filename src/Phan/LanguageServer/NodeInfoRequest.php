@@ -37,6 +37,8 @@ abstract class NodeInfoRequest
     abstract public function finalize();
 
     /**
+     * Returns the file URL for which info is being requested
+     *
      * @suppress PhanUnreferencedPublicMethod TODO: Compare against the context->getPath() to be sure we're looking up the right node
      */
     final public function getUrl() : string
@@ -44,11 +46,17 @@ abstract class NodeInfoRequest
         return $this->uri;
     }
 
+    /**
+     * Returns the path for which info is being requested
+     */
     final public function getPath() : string
     {
         return $this->path;
     }
 
+    /**
+     * Returns the position (line+column) for which info is being requested
+     */
     final public function getPosition() : Position
     {
         return $this->position;

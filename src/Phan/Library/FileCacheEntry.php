@@ -26,6 +26,7 @@ class FileCacheEntry
         $this->contents = $contents;
     }
 
+    /** @return string contents of the file */
     public function getContents() : string
     {
         return $this->contents;

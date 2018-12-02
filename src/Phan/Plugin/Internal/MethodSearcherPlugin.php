@@ -71,6 +71,10 @@ final class MethodSearcherPlugin extends PluginV2 implements
         echo "Searching for function/method signatures similar to: " . implode(' -> ', array_merge(self::$param_types, [self::$return_type])) . "\n";
     }
 
+    /**
+     * Given a UnionType that may have references to regular class-like types that don't exist (e.g. `\Type`, `\Type[]`),
+     * replace classes that don't exist (e.g. `\Type`) with ones that do exist in other namespaces (e.g. `\Phan\Language\Type`)
+     */
     public static function addMissingNamespaces(CodeBase $code_base, UnionType $union_type) : UnionType
     {
         foreach ($union_type->getTypeSet() as $type) {

@@ -75,6 +75,11 @@ class FileMapping
         $this->removeOverride($path);
     }
 
+    /**
+     * Returns the file URI for the path $path.
+     *
+     * This will prefer to return the URI that the client first sent (that got converted to $path)
+     */
     public function getURIForPath(string $path) : string
     {
         return $this->uri_for_path[$path] ?? Utils::pathToUri($path);

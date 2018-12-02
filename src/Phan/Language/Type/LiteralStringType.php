@@ -57,6 +57,9 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
         return $cache[$value] ?? ($cache[$value] = new self($value, false));
     }
 
+    /**
+     * Returns the literal string this type represents (whether or not this is the nullable type)
+     */
     public function getValue() : string
     {
         return $this->value;
@@ -142,6 +145,9 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     /** @var StringType the nullable string type instance. */
     private static $nullable_string_type;
 
+    /**
+     * Called at the bottom of the file to ensure static properties are set for quick access.
+     */
     public static function init()
     {
         self::$non_nullable_string_type = StringType::instance(false);

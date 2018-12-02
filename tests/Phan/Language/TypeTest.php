@@ -50,6 +50,9 @@ final class TypeTest extends BaseTest
 
     const DELIMITED_TYPE_REGEX_OR_THIS = '@^' . Type::type_regex_or_this . '$@';
 
+    /**
+     * Assert that all of $type_string is parseable as a single Type, and that that type is $expected_type.
+     */
     public function assertParsesAsType(Type $expected_type, string $type_string)
     {
         $this->assertRegExp(self::DELIMITED_TYPE_REGEX_OR_THIS, $type_string, "Failed to parse '$type_string'");

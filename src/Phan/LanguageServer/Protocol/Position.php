@@ -72,6 +72,9 @@ class Position
         return ((int)array_sum(array_map('strlen', $slice))) + count($slice) + $this->character;
     }
 
+    /**
+     * Creates a Position from a serialized array $data
+     */
     public static function fromArray(array $data) : Position
     {
         return new self(

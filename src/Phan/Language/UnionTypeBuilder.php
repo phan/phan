@@ -62,6 +62,9 @@ final class UnionTypeBuilder
         }
     }
 
+    /**
+     * Checks if this currently contains an empty list of types
+     */
     public function isEmpty() : bool
     {
         return \count($this->type_set) === 0;
@@ -75,6 +78,9 @@ final class UnionTypeBuilder
         return $this->type_set;
     }
 
+    /**
+     * Build and return the UnionType for the unique type set that this was building.
+     */
     public function getUnionType() : UnionType
     {
         return UnionType::of($this->type_set);

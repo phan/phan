@@ -95,6 +95,9 @@ class CompletionItem
         $this->insertText = $insertText;
     }
 
+    /**
+     * Create a CompletionItem from a serialized array $data
+     */
     public static function fromArray(array $data) : CompletionItem
     {
         return new self(

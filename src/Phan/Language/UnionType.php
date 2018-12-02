@@ -2992,7 +2992,12 @@ class UnionType implements Serializable
         return false;
     }
 
-    // Assumes this was already expanded
+    /**
+     * Returns true if at least one of the types in this union type is a class-like defining the method __toString()
+     *
+     * Callers should convert union types to the expanded union types first.
+     * TODO: is that necessary?
+     */
     public function hasClassWithToStringMethod(CodeBase $code_base, Context $context) : bool
     {
         try {
@@ -3318,6 +3323,9 @@ class UnionType implements Serializable
         return false;
     }
 
+    /**
+     * Returns true if at least one type in this union type definitely can't be cast to `callable`
+     */
     public function containsDefiniteNonCallableType() : bool
     {
         foreach ($this->type_set as $type) {
@@ -3328,6 +3336,9 @@ class UnionType implements Serializable
         return false;
     }
 
+    /**
+     * Returns true if either (1) this is the empty type, or (2) at least one type in this union type can't be ruled out as being callable.
+     */
     public function hasPossiblyCallableType() : bool
     {
         foreach ($this->type_set as $type) {
@@ -3338,6 +3349,9 @@ class UnionType implements Serializable
         return \count($this->type_set) === 0;
     }
 
+    /**
+     * Returns the union type resulting from applying the `++`/`--` operator to an expression with union type.
+     */
     public function getTypeAfterIncOrDec() : UnionType
     {
         $result = UnionType::empty();

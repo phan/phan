@@ -123,6 +123,10 @@ final class ConversionTest extends BaseTest
 
     // TODO: TolerantPHPParser gets more information than PHP-Parser for statement lists,
     // so this step may be unnecessary
+    /**
+     * Set all of the line numbers to constants,
+     * so that minor differences in line numbers won't cause tests to fail.
+     */
     public static function normalizeLineNumbers(ast\Node $node) : ast\Node
     {
         $node = clone($node);

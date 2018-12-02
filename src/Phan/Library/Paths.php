@@ -49,6 +49,9 @@ class Paths
         return $absolute_directory . DIRECTORY_SEPARATOR .  $path;
     }
 
+    /**
+     * Returns JSON encoded $path, without escaping unicode or "/"
+     */
     public static function escapePathForIssue(string $path) : string
     {
         // If possible, use json_encode.
