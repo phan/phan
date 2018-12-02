@@ -42,8 +42,10 @@ trait FunctionTrait
      */
     protected $is_inner_scope_initialized  = false;
 
+    /** @return int flags from \Phan\Language\Element\Flags */
     abstract public function getPhanFlags() : int;
 
+    /** @return bool true if all of the bits in $bits is true in $this->getPhanFlags() */
     abstract public function getPhanFlagsHasState(int $bits) : bool;
 
     /**
@@ -902,16 +904,21 @@ trait FunctionTrait
         return $this->analyze($context, $code_base);
     }
 
+    /**
+     * Analyze this with original parameter types or types from arguments.
+     */
     abstract public function analyze(Context $context, CodeBase $code_base) : Context;
 
+    /** @return int the current depth of recursive non-quick analysis. */
     abstract public function getRecursionDepth() : int;
 
-    /** @return Node|null */
+    /** @return Node|null the node of this function-like's declaration, if any exist and were kept for recursive non-quick analysis. */
     abstract public function getNode();
 
-    /** @return Context */
+    /** @return Context location and scope where this was declared. */
     abstract public function getContext() : Context;
 
+    /** @return FileRef location where this was declared. */
     abstract public function getFileRef() : FileRef;
 
     /**
@@ -1029,6 +1036,7 @@ trait FunctionTrait
     /** @return void */
     abstract public function memoizeFlushAll();
 
+    /** @return UnionType union type this function-like's declared return type (from PHPDoc, signatures, etc.)  */
     abstract public function getUnionType() : UnionType;
 
     /** @return void */
@@ -1088,6 +1096,9 @@ trait FunctionTrait
         return $this->as_closure_declaration_type ?? ($this->as_closure_declaration_type = $this->createFunctionLikeDeclarationType());
     }
 
+    /**
+     * Does this function-like return a reference?
+     */
     abstract public function returnsRef() : bool;
 
     private function createFunctionLikeDeclarationType() : FunctionLikeDeclarationType

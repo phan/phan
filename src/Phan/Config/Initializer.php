@@ -109,6 +109,10 @@ class Initializer
         return $result;
     }
 
+    /**
+     * Returns indented PHP comment lines to use for the comment on $setting_name.
+     * Returns the empty string if nothing could be generated.
+     */
     public static function generateCommentForSetting(string $setting_name) : string
     {
         static $comment_source = null;
@@ -171,6 +175,9 @@ class Initializer
         return $source;
     }
 
+    /**
+     * Returns a string containing the full source to use for the generated `.phan/config.php`
+     */
     public static function generatePhanConfigFileContents(InitializedSettings $settings_object) : string
     {
         $phan_settings = $settings_object->settings;
@@ -480,6 +487,11 @@ EOT;
         return is_array($values) ? $values : [];
     }
 
+    /**
+     * Returns true if there is at least one statement that is parseable and not an inline HTML echo statement.
+     *
+     * This indicates that $relative_path points to a PHP binary file that should be analyzed.
+     */
     public static function isPHPBinary(string $relative_path) : bool
     {
         $cwd = getcwd();

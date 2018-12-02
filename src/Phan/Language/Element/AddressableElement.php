@@ -288,6 +288,9 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         // Do nothing unless overridden
     }
 
+    /**
+     * Returns the namespace in which this element was declared
+     */
     public function getElementNamespace() : string
     {
         $element_fqsen = $this->getFQSEN();

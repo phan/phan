@@ -82,7 +82,7 @@ class Context extends FileRef
         $this->scope = new GlobalScope();
     }
 
-    /*
+    /**
      * @param string $namespace
      * The namespace of the file
      *
