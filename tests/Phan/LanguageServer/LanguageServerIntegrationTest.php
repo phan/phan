@@ -59,7 +59,7 @@ final class LanguageServerIntegrationTest extends BaseTest
     /**
      * @return array{0:resource,1:resource,2:resource} [$proc, $proc_in, $proc_out]
      */
-    private function createPhanDaemon(bool $pcntlEnabled)
+    private function createPhanLanguageServer(bool $pcntlEnabled)
     {
         if (getenv('PHAN_RUN_INTEGRATION_TEST') != '1') {
             $this->markTestSkipped('skipping integration tests - set PHAN_RUN_INTEGRATION_TEST=1 to allow');
@@ -71,9 +71,18 @@ final class LanguageServerIntegrationTest extends BaseTest
         if ($pcntlEnabled && !function_exists('pcntl_fork')) {
             $this->markTestSkipped('requires pcntl extension');
         }
+        if (DIRECTORY_SEPARATOR === "\\") {
+            // Work around 'The filename, directory name, or volume label syntax is incorrect.', include the path to the PHP binary used to run this test.
+            // Might not work with file names including spaces?
+            // @see InvokePHPNativeSyntaxCheckPlugin
+
+            $escaped_command = PHP_BINARY . " " . escapeshellarg(__DIR__ . '/../../../src/phan.php');
+        } else {
+            $escaped_command = escapeshellarg(__DIR__ . '/../../../phan');
+        }
         $command = sprintf(
             '%s -d %s --quick --use-fallback-parser --language-server-on-stdin --language-server-enable-hover --language-server-enable-completion --language-server-enable-go-to-definition %s',
-            escapeshellarg(__DIR__ . '/../../../phan'),
+            $escaped_command,
             escapeshellarg(self::getLSPFolder()),
             ($pcntlEnabled ? '' : '--language-server-force-missing-pcntl')
         );
@@ -101,7 +110,7 @@ final class LanguageServerIntegrationTest extends BaseTest
     public function testInitialize(bool $pcntlEnabled)
     {
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon($pcntlEnabled);
+        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntlEnabled);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
@@ -123,7 +132,7 @@ final class LanguageServerIntegrationTest extends BaseTest
     public function testGenerateDiagnostics(bool $pcntlEnabled)
     {
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon($pcntlEnabled);
+        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntlEnabled);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
@@ -168,7 +177,7 @@ EOT;
     public function testDefinitionInSameFile()
     {
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon(true);
+        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer(true);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
@@ -222,7 +231,7 @@ EOT;
         bool $pcntl_enabled
     ) {
         $this->messageId = 0;
-        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon($pcntl_enabled);
+        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntl_enabled);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
@@ -847,7 +856,7 @@ EOT
 
         $this->messageId = 0;
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon($pcntl_enabled);
+        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntl_enabled);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
@@ -930,7 +939,7 @@ EOT
 
         $this->messageId = 0;
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon($pcntl_enabled);
+        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntl_enabled);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
@@ -1017,7 +1026,7 @@ EOT
 
         $this->messageId = 0;
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanDaemon($pcntl_enabled);
+        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntl_enabled);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);

@@ -202,9 +202,7 @@ class InvokeExecutionPromise
 
             // Possibly https://bugs.php.net/bug.php?id=51800
             // NOTE: Work around this by writing from the original file. This may not work as expected in LSP mode
-            if (DIRECTORY_SEPARATOR === "\\") {
-                $abs_path = str_replace("/", "\\", $abs_path);
-            }
+            $abs_path = str_replace("/", "\\", $abs_path);
 
             $cmd .= ' < ' . escapeshellarg($abs_path);
 
