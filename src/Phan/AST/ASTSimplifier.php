@@ -804,6 +804,11 @@ class ASTSimplifier
         return $new_node;
     }
 
+    /**
+     * Returns a Node that represents $node after all of the AST simplification steps.
+     *
+     * $node is not modified. This will reuse descendant nodes that didn't change.
+     */
     public static function applyStatic(Node $node) : Node
     {
         $rewriter = new self();

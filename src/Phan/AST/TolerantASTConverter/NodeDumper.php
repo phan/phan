@@ -74,6 +74,10 @@ class NodeDumper
         $this->indent = $indent;
     }
 
+    /**
+     * Converts the class name of $ast_node to a short string describing that class name.
+     * Removes the common `Microsoft\\PhpParser\\` prefix
+     */
     public function dumpClassName(Node $ast_node) : string
     {
         $name = get_class($ast_node);
@@ -84,6 +88,10 @@ class NodeDumper
         return $name;
     }
 
+    /**
+     * Converts the class name of $ast_node to a short string describing that class name.
+     * Removes the common `Microsoft\\PhpParser\\` prefix
+     */
     public function dumpTokenClassName(Token $ast_node) : string
     {
         $name = get_class($ast_node);

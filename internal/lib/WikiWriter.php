@@ -6,7 +6,9 @@ declare(strict_types = 1);
  */
 class WikiWriter
 {
-    /** @var string the built up contents to save as markdown */
+    /**
+     * @var string the built up contents to save to the markdown file
+     */
     private $contents = '';
 
     /**
@@ -32,6 +34,9 @@ class WikiWriter
         }
     }
 
+    /**
+     * @return string the built up contents to save to the markdown file
+     */
     public function getContents() : string
     {
         return $this->contents;

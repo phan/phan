@@ -11,6 +11,10 @@ use ast\Node;
 abstract class FlagVisitorImplementation implements FlagVisitor
 {
 
+    /**
+     * This is called to analyze nodes in FlagVisitorImplementation subclasses
+     * that don't define more specific `visit*()` methods for the Node's kind.
+     */
     abstract public function visit(Node $node);
 
     public function visitBinaryAdd(Node $node)

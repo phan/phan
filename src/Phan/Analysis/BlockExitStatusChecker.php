@@ -64,6 +64,11 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     {
     }
 
+    /**
+     * Computes the bitmask representing the possible ways this block of code might exit.
+     *
+     * This currently does not handle goto or `break N` comprehensively.
+     */
     public function check(Node $node = null) : int
     {
         if (!$node) {
@@ -617,11 +622,17 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return self::STATUS_PROCEED | $maybe_status;
     }
 
+    /**
+     * Will the node $node unconditionally never fall through to the following statement?
+     */
     public static function willUnconditionallySkipRemainingStatements(Node $node) : bool
     {
         return ((new self())->__invoke($node) & self::STATUS_MAYBE_PROCEED) === 0;
     }
 
+    /**
+     * Will the node $node unconditionally throw or return (or exit),
+     */
     public static function willUnconditionallyThrowOrReturn(Node $node) : bool
     {
         return ((new self())->__invoke($node) & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0;

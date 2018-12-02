@@ -135,7 +135,7 @@ class ConfigEntry
         'plugin_config' => self::CATEGORY_ANALYSIS,
     ];
 
-    /** @var string the configuration name (e.g. 'null_casts_as_any_type') */
+    /** @var string the configuration setting name (e.g. 'null_casts_as_any_type') */
     private $config_name;
     /** @var array<int,string> the raw comment lines */
     private $lines;
@@ -153,11 +153,17 @@ class ConfigEntry
         $this->category = self::CATEGORIES[$config_name] ?? 'misc';
     }
 
+    /**
+     * @return string the configuration setting name (e.g. `null_casts_as_any_type`)
+     */
     public function getConfigName() : string
     {
         return $this->config_name;
     }
 
+    /**
+     * Returns markdown the description for this issue type
+     */
     public function getMarkdown() : string
     {
         $result = '';
@@ -189,11 +195,18 @@ class ConfigEntry
         return $this->lines;
     }
 
+    /**
+     * @return string the name of the category
+     */
     public function getCategory() : string
     {
         return $this->category;
     }
 
+    /**
+     * @return int a value used to group config settings into categories of the documentation that will be generated.
+     * Categories are output in the order of the index value.
+     */
     public function getCategoryIndex() : int
     {
         $category_index = array_search($this->category, ConfigEntry::ORDER_OF_CATEGORIES);
@@ -208,6 +221,9 @@ class ConfigEntry
         return $this->category === self::CATEGORY_HIDDEN_CLI_ONLY;
     }
 
+    /**
+     * @return string a markdown representation of the default value of this config setting.
+     */
     public function getRepresentationOfDefault() : string
     {
         if ($this->config_name === 'minimum_severity') {

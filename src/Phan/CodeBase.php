@@ -241,6 +241,9 @@ class CodeBase
         $this->undo_tracker = null;
     }
 
+    /**
+     * @return bool is undo tracking enabled (i.e. are there closures that will revert the side effect of adding a file?)
+     */
     public function isUndoTrackingEnabled() : bool
     {
         return $this->undo_tracker !== null;

@@ -77,7 +77,7 @@ return [
     // (For self-analysis, Phan has a large number of suppressions and file-level suppressions, due to \ast\Node being difficult to type check)
     'strict_property_checking' => true,
 
-    // If enabled, Phan will warn if **any** type in the return statement's type
+    // If enabled, Phan will warn if **any** type in the return statement's union type
     // cannot be cast to a type in the method's declared return type.
     // Setting this to true will introduce a large number of false positives (and some bugs).
     // (For self-analysis, Phan has a large number of suppressions and file-level suppressions, due to \ast\Node being difficult to type check)
@@ -273,7 +273,6 @@ return [
         'PhanPluginDescriptionlessCommentOnProtectedMethod',
         'PhanPluginNoCommentOnPrivateMethod',
         'PhanPluginDescriptionlessCommentOnPrivateMethod',
-        'PhanPluginNoCommentOnPublicMethod', // TODO: Maybe fix this issue type
     ],
 
     // If empty, no filter against issues types will be applied.

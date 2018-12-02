@@ -118,6 +118,10 @@ class ContextMergeVisitor extends KindVisitorImplementation
         return false;
     }
 
+    /**
+     * Returns a context resulting from merging the possible variable types from the catch statements
+     * that will fall through.
+     */
     public function mergeCatchContext(Node $node) : Context
     {
         if (\count($this->child_context_list) < 2) {

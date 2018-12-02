@@ -40,13 +40,16 @@ class ClassMap
     }
 
     /**
-     * @return bool
+     * @return bool does this class have a constant with name $name
      */
     public function hasClassConstantWithName(string $name) : bool
     {
         return isset($this->class_constant_map[$name]);
     }
 
+    /**
+     * Gets the class constant $name of this class
+     */
     public function getClassConstantByName(string $name) : ClassConstant
     {
         return $this->class_constant_map[$name];

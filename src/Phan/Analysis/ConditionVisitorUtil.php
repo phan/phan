@@ -699,6 +699,10 @@ trait ConditionVisitorUtil
         return $raw_function_name;
     }
 
+    /**
+     * Returns this ConditionVisitorUtil's Context.
+     * This is needed by subclasses of BinaryCondition.
+     */
     public function getContext() : Context
     {
         return $this->context;

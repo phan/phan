@@ -14,6 +14,10 @@ use Phan\Debug;
 abstract class KindVisitorImplementation implements KindVisitor
 {
 
+    /**
+     * The fallback implementation for node kinds where the subclass visitor
+     * didn't override the more specific `visit*()` method.
+     */
     abstract public function visit(Node $node);
 
     /**

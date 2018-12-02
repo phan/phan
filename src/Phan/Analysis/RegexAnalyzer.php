@@ -19,6 +19,12 @@ use Phan\Library\RegexKeyExtractor;
  */
 class RegexAnalyzer
 {
+    /**
+     * Returns the union type of the matches output parameter in a call to `preg_match()`
+     * with the nodes in $argument_list.
+     *
+     * @param array<int,Node|string|float|int> $argument_list
+     */
     public static function getPregMatchUnionType(
         CodeBase $code_base,
         Context $context,
@@ -68,6 +74,12 @@ class RegexAnalyzer
         return $string_array_type;
     }
 
+    /**
+     * Returns the union type of the matches output parameter in a call to `preg_match_all()`
+     * with the nodes in $argument_list.
+     *
+     * @param array<int,Node|string|float|int> $argument_list
+     */
     public static function getPregMatchAllUnionType(
         CodeBase $code_base,
         Context $context,

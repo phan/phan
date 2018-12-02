@@ -370,6 +370,9 @@ class Element
         }
     }
 
+    /**
+     * Helper method to get a tag describing the flags for a given Node kind.
+     */
     public static function flagDescription(Node $node) : string
     {
         return Debug::astFlagDescription($node->flags ?? 0, $node->kind);
