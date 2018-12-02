@@ -56,7 +56,9 @@ final class EmptyUnionTypeTest extends BaseTest
         $this->assertSame('', trim($failures));
     }
 
-    // Returns the test errors to show as a string, or the empty string on success
+    /**
+     * Returns the test errors to show as a string, or the empty string on success
+     */
     public function checkHasSameImplementationForEmpty(ReflectionMethod $method) : string
     {
         $method_name = $method->getName();
@@ -117,6 +119,10 @@ final class EmptyUnionTypeTest extends BaseTest
         return $list_of_arg_list;
     }
 
+    /**
+     * Helper method to determine what arguments to use
+     * to brute force test this parameter of EmptyUnionType
+     */
     public function getPossibleArgValues(ReflectionParameter $param) : array
     {
         $type = $param->getType();

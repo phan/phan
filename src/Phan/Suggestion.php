@@ -15,11 +15,17 @@ final class Suggestion
         $this->message = $message;
     }
 
+    /**
+     * Create a Suggestion suggesting $message
+     */
     public static function fromString(string $message) : Suggestion
     {
         return new self($message);
     }
 
+    /**
+     * Contains the text of the suggestion to fix the issue
+     */
     public function getMessage() : string
     {
         return $this->message;

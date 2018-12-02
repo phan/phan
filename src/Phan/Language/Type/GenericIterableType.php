@@ -33,13 +33,17 @@ final class GenericIterableType extends IterableType
     }
 
     /**
-     * @return ?UnionType returns the iterable key's union type, if this is a subtype of iterable. null otherwise.
+     * @return UnionType returns the iterable key's union type, because this is a subtype of iterable.
+     * Other classes in the `Type` type hierarchy may return null.
      */
     public function getKeyUnionType() : UnionType
     {
         return $this->key_union_type;
     }
 
+    /**
+     * @return UnionType returns the union type of possible element types.
+     */
     public function getElementUnionType() : UnionType
     {
         return $this->element_union_type;
@@ -67,6 +71,10 @@ final class GenericIterableType extends IterableType
         return $this->element_union_type;
     }
 
+    /**
+     * Returns a nullable/non-nullable GenericIterableType
+     * representing `iterable<$key_union_type, $element_union_type>`
+     */
     public static function fromKeyAndValueTypes(UnionType $key_union_type, UnionType $element_union_type, bool $is_nullable) : GenericIterableType
     {
         static $cache = [];

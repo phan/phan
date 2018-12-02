@@ -217,6 +217,9 @@ class StubCollection {
         return $result;
     }
 
+    /**
+     * Returns the accumulated stubs converted to inline PHP code.
+     */
     public function toString() : string
     {
         $parts = [];

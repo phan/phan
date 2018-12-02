@@ -46,6 +46,9 @@ class Range
         return $this->start->compare($position) <= 0 && $this->end->compare($position) >= 0;
     }
 
+    /**
+     * Creates a placeholder Range which spans the entire line of source code of $context.
+     */
     public static function fromContextOnSingleLine(FileRef $context) : Range
     {
         $lineno = $context->getLineNumberStart();

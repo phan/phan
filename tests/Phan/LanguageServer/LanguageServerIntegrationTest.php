@@ -30,11 +30,20 @@ final class LanguageServerIntegrationTest extends BaseTest
     // There are separate config settings to make the language server emit debug messages.
     const DEBUG_ENABLED = false;
 
+    /**
+     * Returns the path of the folder used for these integration tests
+     */
     public static function getLSPFolder() : string
     {
         return dirname(dirname(__DIR__)) . '/misc/lsp';
     }
 
+    /**
+     * Returns the path of the file being analyzed.
+     * This has elements that the language server will return Positions of in some of the tests.
+     *
+     * The contents of this file will be "edited" (without changing the file on disk) by the mocked client.
+     */
     public static function getLSPPath() : string
     {
         return self::getLSPFolder() . '/src/example.php';
@@ -203,6 +212,9 @@ EOT;
         }
     }
 
+    /**
+     * Tests the completion provider for the given $position with pcntl enabled or disabled
+     */
     public function runTestCompletionWithPcntlSetting(
         Position $position,
         array $expected_completions,

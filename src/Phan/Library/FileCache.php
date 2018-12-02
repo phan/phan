@@ -19,6 +19,10 @@ final class FileCache
      */
     private static $cache_entries = [];
 
+    /**
+     * Sets the cache size to $max_size (or self::MINIMUM_CACHE_SIZE if that's larger).
+     * Entries will be removed until there are $max_size or fewer entries.
+     */
     public static function setMaxCacheSize(int $max_size)
     {
         self::$max_size = max($max_size, self::MINIMUM_CACHE_SIZE);

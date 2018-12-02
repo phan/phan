@@ -246,6 +246,10 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         }
     }
 
+    /**
+     * Record the location in which the Node or Token (that the client is requesting information about)
+     * had the requested information defined (e.g. Definition, Type Definition, element that has information used to generate hover response, etc.)
+     */
     public function recordDefinitionContext(FileRef $context)
     {
         if ($context->isPHPInternal()) {
@@ -299,6 +303,8 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     }
 
     /**
+     * Sets the only response for this hover request (with markdown to render)
+     *
      * @param ?Hover|?array $hover
      */
     public function setHoverResponse($hover)
@@ -309,6 +315,11 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         $this->hover_response = $hover;
     }
 
+    /**
+     * Clean up resources associated with this request.
+     *
+     * If a response for this request hasn't been sent yet, then send it (or null) back to the language server client
+     */
     public function finalize()
     {
         $promise = $this->promise;
@@ -323,11 +334,17 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         }
     }
 
+    /**
+     * Is this a "go to type definition" request?
+     */
     public function getIsTypeDefinitionRequest() : bool
     {
         return $this->request_type === self::REQUEST_TYPE_DEFINITION;
     }
 
+    /**
+     * Is this a hover request?
+     */
     public function getIsHoverRequest() : bool
     {
         return $this->request_type === self::REQUEST_HOVER;

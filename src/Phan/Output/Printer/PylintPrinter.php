@@ -38,6 +38,10 @@ final class PylintPrinter implements IssuePrinterInterface
         $this->output->writeln($line);
     }
 
+    /**
+     * Returns a severity code that can be parsed by programs parsing pylint output
+     * (e.g. `"E17000"` for PhanSyntaxError)
+     */
     public static function getSeverityCode(IssueInstance $instance) : string
     {
         $issue = $instance->getIssue();
