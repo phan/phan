@@ -117,7 +117,7 @@ class FileRef implements \Serializable
         return $this;
     }
 
-    /*
+    /**
      * @return int
      * The starting line number of the element within the file
      */

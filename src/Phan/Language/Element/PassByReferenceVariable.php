@@ -91,6 +91,10 @@ class PassByReferenceVariable extends Variable
         $this->element->setPhanFlags($phan_flags);
     }
 
+    /**
+     * Returns the context in which the element this is a reference to
+     * was declared.
+     */
     public function getContext() : Context
     {
         return $this->element->getContext();
@@ -101,6 +105,10 @@ class PassByReferenceVariable extends Variable
         return $this->element->getFileRef();
     }
 
+    /**
+     * Is the variable/property this is referring to part of a PHP module?
+     * (only possible for properties)
+     */
     public function isPHPInternal() : bool
     {
         return $this->element->isPHPInternal();

@@ -214,6 +214,9 @@ class Parameter extends Variable
         return \array_map([self::class, 'fromReflectionParameter'], $reflection_parameters);
     }
 
+    /**
+     * Creates a parameter signature for a function-like from the name, type, etc. of the passed in reflection parameter
+     */
     public static function fromReflectionParameter(
         \ReflectionParameter $reflection_parameter
     ) : Parameter {
@@ -458,6 +461,12 @@ class Parameter extends Variable
         return $this->getFlagsHasState(\ast\flags\PARAM_REF);
     }
 
+    /**
+     * Returns an enum value indicating how this reference parameter is changed by the caller.
+     *
+     * E.g. for REFERENCE_WRITE_ONLY, the reference parameter ignores the passed in value and always replaces it with another type.
+     * (added with (at)phan-output-parameter in PHPDoc or with special prefixes in FunctionSignatureMap.php)
+     */
     public function getReferenceType() : int
     {
         $flags = $this->getPhanFlags();
@@ -486,6 +495,13 @@ class Parameter extends Variable
         $this->enablePhanFlagBits(Flags::IS_PARAM_USING_NULLABLE_SYNTAX);
     }
 
+    /**
+     * Is this a parameter that uses the nullable `?` syntax in the actual declaration?
+     *
+     * E.g. this will be true for `?int $myParam = null`, but false for `int $myParam = null`
+     *
+     * This is needed to deal with edge cases of analysis.
+     */
     public function getIsUsingNullableSyntax() : bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_PARAM_USING_NULLABLE_SYNTAX);
@@ -571,6 +587,12 @@ class Parameter extends Variable
         return $string;
     }
 
+    /**
+     * Converts this to a ClosureDeclarationParameter that can be used in FunctionLikeDeclarationType instances.
+     *
+     * E.g. when analyzing code such as `$x = Closure::fromCallable('some_function')`,
+     * this is used on parameters of `some_function()` to infer the create the parameter types of the inferred type.
+     */
     public function asClosureDeclarationParameter() : ClosureDeclarationParameter
     {
         $param_type = $this->getNonVariadicUnionType();

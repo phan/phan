@@ -682,6 +682,9 @@ class Method extends ClassElement implements FunctionInterface
         return $string;
     }
 
+    /**
+     * Returns this method's visibility ('private', 'protected', or 'public')
+     */
     public function getVisibilityName() : string
     {
         if ($this->isPrivate()) {
@@ -693,6 +696,9 @@ class Method extends ClassElement implements FunctionInterface
         }
     }
 
+    /**
+     * Returns a PHP stub that can be used in the output of `tool/make_stubs`
+     */
     public function toStub(bool $class_is_interface = false) : string
     {
         $string = '    ';

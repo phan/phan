@@ -83,6 +83,10 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
         );
     }
 
+    /**
+     * Generates a deterministic FQSEN for the closure of the passed in node.
+     * @param Node $node a Node type AST_CLOSURE.
+     */
     public static function fromClosureInContext(
         Context $context,
         Node $node
