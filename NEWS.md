@@ -10,6 +10,8 @@ Plugins
 
 Bug fixes:
 + Infer more accurate types after asserting `!empty($x)`
++ Fix a bug causing Phan to fail to warn about nullable phpdoc types
+  replacing non-nullable param/return types in the real signature.
 + Infer the correct type for the result of the unary `+` operator.
   Improve inferences when `+`/`-` operators are used on string literals.
 

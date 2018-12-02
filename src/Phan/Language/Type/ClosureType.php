@@ -147,9 +147,12 @@ final class ClosureType extends Type
     {
         $func = $this->func;
         if ($func) {
-            return $func->asFunctionLikeDeclarationType()->__toString();
+            $result = $func->asFunctionLikeDeclarationType()->__toString();
+        } else {
+            $result = '\Closure';
         }
-        return '\Closure';
+
+        return $this->is_nullable ? "?$result" : $result;
     }
 
     /**

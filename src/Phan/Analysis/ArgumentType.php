@@ -255,7 +255,7 @@ final class ArgumentType
      * @param CodeBase $code_base
      * The global code base
      *
-     * @param ?\Closure $get_argument_type (Node|string|int $node, int $i) -> UnionType
+     * @param \Closure $get_argument_type (Node|string|int $node, int $i) -> UnionType
      * Fetches the types of individual arguments.
      */
     public static function analyzeForCallback(
