@@ -1120,12 +1120,16 @@ EOB;
         return $normalized_file_list;
     }
 
+    /**
+     * Returns true if the progress bar was requested and it makes sense to display.
+     */
     public static function shouldShowProgress() : bool
     {
         return Config::getValue('progress_bar') &&
             !Config::getValue('dump_ast') &&
             !Config::getValue('daemonize_tcp') &&
-            !Config::getValue('daemonize_socket');
+            !Config::getValue('daemonize_socket') &&
+            !Config::getValue('language_server_config');
     }
 
     /**

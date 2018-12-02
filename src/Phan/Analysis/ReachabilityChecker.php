@@ -260,6 +260,13 @@ final class ReachabilityChecker extends KindVisitorImplementation
         return null;
     }
 
+    /**
+     * Returns true if there are no break/return/throw/etc statements
+     * within the method that would prevent $inner (a descendant node of $node)
+     * to be reached from the start of evaluating the statements in $node.
+     *
+     * This does not attempt to check if any statements in $node might indirectly throw.
+     */
     public static function willUnconditionallyBeReached(Node $node, Node $inner) : bool
     {
         return (new self($inner))->__invoke($node) ?? false;

@@ -202,9 +202,9 @@ class Config
         // a call to `parent::__construct()` is required.
         'parent_constructor_required' => [],
 
-        // If true, this run a quick version of checks that takes less
+        // If true, this runs a quick version of checks that takes less
         // time at the cost of not running as thorough
-        // an analysis. You should consider setting this
+        // of an analysis. You should consider setting this
         // to true only when you wish you had more **undiagnosed** issues
         // to fix in your code base.
         //
@@ -960,56 +960,87 @@ class Config
     // method naming is deliberate to make these getters easier to search.
     // phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
 
+    /**
+     * Allow null to be cast as any type and for any
+     * type to be cast to null.
+     */
     public static function get_null_casts_as_any_type() : bool
     {
         return self::$null_casts_as_any_type;
     }
 
+    /**
+     * If enabled, Phan will warn if **any** type in a method's object expression
+     * is definitely not an object,
+     * or if **any** type in an invoked expression is not a callable.
+     */
     public static function get_strict_method_checking() : bool
     {
         return self::$strict_method_checking;
     }
 
+    /**
+     * If enabled, Phan will warn if **any** type in the argument's type
+     * cannot be cast to a type in the parameter's expected type.
+     */
     public static function get_strict_param_checking() : bool
     {
         return self::$strict_param_checking;
     }
 
+    /**
+     * If enabled, Phan will warn if **any** type in a property assignment's type
+     * cannot be cast to a type in the property's expected type.
+     */
     public static function get_strict_property_checking() : bool
     {
         return self::$strict_property_checking;
     }
 
+    /**
+     * If enabled, Phan will warn if **any** type in the return statement's union type
+     * cannot be cast to a type in the method's declared return type.
+     */
     public static function get_strict_return_checking() : bool
     {
         return self::$strict_return_checking;
     }
 
+    /** If enabled, allow null to cast to any array-like type. */
     public static function get_null_casts_as_array() : bool
     {
         return self::$null_casts_as_array;
     }
 
+    /** If enabled, allow any array-like type to be cast to null. */
     public static function get_array_casts_as_null() : bool
     {
         return self::$array_casts_as_null;
     }
 
+    /** If true, then Phan tracks references to elements */
     public static function get_track_references() : bool
     {
         return self::$track_references;
     }
 
+    /** If true, then Phan enables backwards compatibility checking. */
     public static function get_backward_compatibility_checks() : bool
     {
         return self::$backward_compatibility_checks;
     }
 
+    /**
+     * If true, then Phan runs a quick version of checks that takes less
+     * time at the cost of not running as thorough
+     * of an analysis.
+     */
     public static function get_quick_mode() : bool
     {
         return self::$quick_mode;
     }
 
+    /** @return int the 5-digit PHP version id which is closest to matching the PHP_VERSION_ID for the 'target_php_version' string */
     public static function get_closest_target_php_version_id() : int
     {
         return self::$closest_target_php_version_id;

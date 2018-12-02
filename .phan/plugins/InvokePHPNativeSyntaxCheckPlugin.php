@@ -285,6 +285,9 @@ class InvokeExecutionPromise
         }
     }
 
+    /**
+     * @return bool false if an error was encountered when trying to read more output from the syntax check process.
+     */
     public function read() : bool
     {
         if ($this->done) {
@@ -348,11 +351,17 @@ class InvokeExecutionPromise
         return $this->error;
     }
 
+    /**
+     * Returns the context containing the name of the file being syntax checked
+     */
     public function getContext() : Context
     {
         return $this->context;
     }
 
+    /**
+     * @return string the path to the PHP interpreter binary. (e.g. `/usr/bin/php`)
+     */
     public function getBinary() : string
     {
         return $this->binary;

@@ -2957,6 +2957,8 @@ class UnionType implements Serializable
     }
 
     /**
+     * Removes $field_key from the fields of top-level array shapes of this union type.
+     *
      * @param int|string|float|bool $field_key
      */
     public function withoutArrayShapeField($field_key) : UnionType
@@ -2974,6 +2976,9 @@ class UnionType implements Serializable
     }
 
     /**
+     * Mark this union type as being possibly undefined.
+     * This is used for union types of variables and for values of array shapes.
+     *
      * Base implementation. Overridden by AnnotatedUnionType.
      */
     public function withIsPossiblyUndefined(bool $is_possibly_undefined) : UnionType

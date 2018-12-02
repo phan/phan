@@ -11,6 +11,10 @@ use Phan\Language\Context;
  */
 interface ConditionVisitorInterface
 {
+    /**
+     * Returns this ConditionVisitorInterface's Context.
+     * This is needed by subclasses of BinaryCondition.
+     */
     public function getContext() : Context;
 
     /**

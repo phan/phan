@@ -99,6 +99,10 @@ final class StringUtil
         }
     }
 
+    /**
+     * Converts a fragment of raw (possibly indented)
+     * heredoc to the string that the PHP interpreter would treat it as.
+     */
     public static function parseHeredoc(string $str) : string
     {
         // TODO: handle dos newlines

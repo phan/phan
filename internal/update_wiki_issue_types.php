@@ -299,6 +299,10 @@ class UnitTestRecord
         $this->expected_contents = self::getContents($expected_filename);
     }
 
+    /**
+     * @return array<int,array{0:string,1:string,2:string}> the issues parsed from this file.
+     * Contains the file name, issue type, and issue description.
+     */
     public function getIssues() : array
     {
         $issues = [];
