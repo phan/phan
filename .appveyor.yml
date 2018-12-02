@@ -17,6 +17,7 @@ environment:
       PHP_VERSION: '7.0.32'
       VC_VERSION: 14
       PHP_AST_VERSION: 0.1.5
+      PHAN_RUN_INTEGRATION_TEST: 1
     - PHP_EXT_VERSION: '7.1'
       PHP_VERSION: '7.1.24'
       VC_VERSION: 14
