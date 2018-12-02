@@ -6,13 +6,18 @@ use Phan\Language\Element\Comment\Builder;
 /**
  * APIs for generating markup (markdown) description of elements
  *
- * This is used by the language server (e.g. for hover text of an element).
+ * This is used by the language server to send markup to the language client (e.g. for hover text of an element).
  */
 class MarkupDescription
 {
+    /**
+     * Generates a markup snippet with a description of the declaration of $element,
+     * and its doc comment summary and description.
+     */
     public static function buildForElement(
         AddressableElementInterface $element
     ) : string {
+        // TODO: Use the doc comments of the ancestors if unavailable or if (at)inheritDoc is used.
         $markup = $element->getMarkupDescription();
         $result = "```php\n$markup\n```";
         $extracted_doc_comment = self::extractDescriptionFromDocComment($element);

@@ -80,6 +80,10 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
         $this->key_type = $key_type;
     }
 
+    /**
+     * Returns the key type of this generic array.
+     * e.g. for `int[]`, returns self::KEY_MIXED, for `array<string,mixed>`, returns self::KEY_STRING.
+     */
     public function getKeyType() : int
     {
         return $this->key_type;
@@ -371,6 +375,10 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
         }
     }
 
+    /**
+     * Returns the key type for the keys of this union type.
+     * E.g. for `array<string,\stdClass>`, returns self::KEY_STRING
+     */
     public static function keyTypeFromUnionTypeKeys(UnionType $union_type) : int
     {
         $key_types = self::KEY_EMPTY;
@@ -419,6 +427,10 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
         }
     }
 
+    /**
+     * Returns `self::KEY_*` corresponding to the provided union type.
+     * E.g. for `string`, returns `self::KEY_STRING`.
+     */
     public static function keyTypeFromUnionTypeValues(UnionType $union_type) : int
     {
         $key_types = self::KEY_EMPTY;

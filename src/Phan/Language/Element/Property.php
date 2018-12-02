@@ -85,6 +85,9 @@ class Property extends ClassElement
         return $this->real_defining_fqsen ?? $this->getDefiningFQSEN();
     }
 
+    /**
+     * Returns the visibility for this property (for issue messages and stubs)
+     */
     public function getVisibilityName() : string
     {
         if ($this->isPrivate()) {
@@ -185,6 +188,10 @@ class Property extends ClassElement
     }
 
 
+    /**
+     * Returns a stub declaration for this property that can be used to build a class stub
+     * in `tool/make_stubs`.
+     */
     public function toStub() : string
     {
         $string = '    ' . $this->getVisibilityName() . ' ';
@@ -321,6 +328,8 @@ class Property extends ClassElement
     }
 
     /**
+     * Record whether this property contains `static` anywhere in the original union type.
+     *
      * @param bool $has_static
      * @return void
      */
@@ -335,21 +344,35 @@ class Property extends ClassElement
         );
     }
 
+    /**
+     * Does this property contain `static` anywhere in the original union type?
+     */
     public function getHasStaticInUnionType() : bool
     {
         return $this->getPhanFlagsHasState(Flags::HAS_STATIC_UNION_TYPE);
     }
 
+    /**
+     * Was this property undeclared (and created at runtime)?
+     */
     public function isDynamicProperty() : bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_DYNAMIC_PROPERTY);
     }
 
+    /**
+     * Is this parameter declared in a way hinting that it should only be written to?
+     * (E.g. magic properties declared as (at)property-read, regular properties with (at)phan-read-only)
+     */
     public function isReadOnly() : bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_READ_ONLY);
     }
 
+    /**
+     * Is this parameter declared in a way hinting that it should only be written to?
+     * (E.g. magic properties declared as (at)property-write, regular properties with (at)phan-write-only)
+     */
     public function isWriteOnly() : bool
     {
         return $this->getPhanFlagsHasState(Flags::IS_WRITE_ONLY);

@@ -41,16 +41,26 @@ final class ClosureDeclarationParameter
         return $this->type;
     }
 
+    /**
+     * Is this variadic?
+     */
     public function isVariadic() : bool
     {
         return $this->is_variadic;
     }
 
+    /**
+     * Is this passed by reference?
+     */
     public function isPassByReference() : bool
     {
         return $this->is_reference;
     }
 
+    /**
+     * Is this an optional parameter
+     * (i.e. do callers have to pass an argument for this parameter)
+     */
     public function isOptional() : bool
     {
         return $this->is_optional;
@@ -92,6 +102,10 @@ final class ClosureDeclarationParameter
     }
 
     // TODO: Memoize?
+    /**
+     * Creates a parameter with the non-variadic version of the type
+     * (i.e. with the type seen by callers for individual arguments)
+     */
     public function asNonVariadicRegularParameter(int $i) : Parameter
     {
         $flags = 0;
@@ -111,6 +125,10 @@ final class ClosureDeclarationParameter
         return $result;
     }
 
+    /**
+     * Converts this to a regular parameter (e.g. as a placeholder for the ith parameter in a FunctionInterface)
+     * (e.g. $p0, $p1, etc.)
+     */
     public function asRegularParameter(int $i) : Parameter
     {
         $flags = 0;

@@ -146,6 +146,13 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     // TODO: Figure out why ?Closure():bool can't cast to ?Closure(): bool
+    /**
+     * Checks if this callable can cast to the other $type, ignoring whether these are nullable.
+     *
+     * It can be cast if this can be passed to any usage of $type and satisfy expectation about parameters and returned union types.
+     *
+     * -e.g. `Closure(mixed):SubClass` can be used when a `Closure(int):BaseClass` is expected.
+     */
     public function canCastToNonNullableFunctionLikeDeclarationType(FunctionLikeDeclarationType $type) : bool
     {
         if ($this->required_param_count > $type->required_param_count) {

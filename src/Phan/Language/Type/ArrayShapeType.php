@@ -77,6 +77,10 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return $this->field_types;
     }
 
+    /**
+     * Returns true if this has one or more optional or required fields
+     * (i.e. this is not the type `array{}` or `?array{}`)
+     */
     public function isNotEmptyArrayShape() : bool
     {
         return \count($this->field_types) !== 0;
@@ -164,6 +168,13 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return $union_type_builder->getTypeSet();
     }
 
+    /**
+     * Returns the key type enum value (`GenericArrayType::KEY_*`) for the keys of this array shape.
+     *
+     * This is lazily computed.
+     *
+     * E.g. returns `GenericArrayType::KEY_STRING` for `array{key:\stdClass}`
+     */
     public function getKeyType() : int
     {
         return $this->key_type ?? ($this->key_type = GenericArrayType::getKeyTypeForArrayLiteral($this->field_types));
@@ -179,6 +190,11 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     // TODO: Refactor other code calling unionTypeForKeyType to use this?
+    /**
+     * Gets the representation of the key type as a union type (without literals)
+     *
+     * E.g. returns `int` for `array{0:\stdClass}`
+     */
     public function getKeyUnionType() : UnionType
     {
         if (\count($this->field_types) === 0) {

@@ -744,6 +744,9 @@ class Type
         return self::make($namespace, $type_name, [], $is_nullable, Type::FROM_NODE);
     }
 
+    /**
+     * Creates a type for the ReflectionType of a parameter, return value, etc.
+     */
     public static function fromReflectionType(
         \ReflectionType $reflection_type
     ) : Type {
@@ -1450,56 +1453,97 @@ class Type
         return $this->namespace;
     }
 
+    /**
+     * Is this nullable?
+     *
+     * E.g. returns true for `?array`, `null`, etc.
+     */
     public function getIsNullable() : bool
     {
         return $this->is_nullable;
     }
 
+    /**
+     * Returns true if this has some possibly falsey values
+     */
     public function getIsPossiblyFalsey() : bool
     {
         return $this->is_nullable;
     }
 
+    /**
+     * Returns true if this is guaranteed to be falsey
+     */
     public function getIsAlwaysFalsey() : bool
     {
-        return false;  // overridden in FalseType and NullType
+        return false;  // overridden in FalseType and NullType, as well as literal scalar types
     }
 
+    /**
+     * Returns true if this is possibly truthy.
+     */
     public function getIsPossiblyTruthy() : bool
     {
         return true;  // overridden in various types. This base class (Type) is implicitly the type of an object, which is always truthy.
     }
 
+    /**
+     * Returns true if this is guaranteed to be truthy.
+     *
+     * Overridden in various types.
+     *
+     * This base class (Type) is type of an object with a known FQSEN,
+     * which is always truthy.
+     */
     public function getIsAlwaysTruthy() : bool
     {
-        return true;  // overridden in various types. This base class (Type) is implicitly the type of an object, which is always truthy.
+        return true;
     }
 
+    /**
+     * Returns true for types such as `mixed`, `bool`, `false`
+     */
     public function getIsPossiblyFalse() : bool
     {
         return false;
     }
 
+    /**
+     * Returns true for non-nullable `FalseType`
+     */
     public function getIsAlwaysFalse() : bool
     {
         return false;  // overridden in FalseType
     }
 
+    /**
+     * Returns true if this could include the type `true`
+     * (e.g. for `mixed`, `bool`, etc.)
+     */
     public function getIsPossiblyTrue() : bool
     {
         return false;
     }
 
+    /**
+     * Returns true for non-nullable `TrueType`
+     */
     public function getIsAlwaysTrue() : bool
     {
-        return false;  // overridden in TrueType
+        return false;
     }
 
+    /**
+     * Returns true for FalseType, TrueType, and BoolType
+     */
     public function getIsInBoolFamily() : bool
     {
-        return false;  // overridden in FalseType, TrueType, BoolType
+        return false;
     }
 
+    /**
+     * Returns true if this type may satisfy `is_numeric()`
+     */
     public function getIsPossiblyNumeric() : bool
     {
         return false;
@@ -1528,27 +1572,49 @@ class Type
         );
     }
 
+    /**
+     * Returns this type with any falsey types (e.g. false, null, 0, '') removed.
+     *
+     * Overridden by BoolType, etc.
+     * @see self::getIsAlwaysFalsey()
+     */
     public function asNonFalseyType() : Type
     {
         // Overridden by BoolType subclass to return TrueType
         return $this->withIsNullable(false);
     }
 
+    /**
+     * Returns this type with any truthy types removed.
+     *
+     * Overridden by BoolType, etc.
+     * @see self::getIsAlwaysTruthy()
+     */
     public function asNonTruthyType() : Type
     {
         // Overridden by ScalarType, BoolType, etc.
         return NullType::instance(false);
     }
 
+    /**
+     * Returns this type with the type `false` removed.
+     *
+     * Overridden by BoolType, etc.
+     * @see self::getIsAlwaysFalse()
+     */
     public function asNonFalseType() : Type
     {
-        // Overridden by BoolType, etc.
         return $this;
     }
 
+    /**
+     * Returns this type with the type `true` removed.
+     *
+     * Overridden by BoolType, etc.
+     * @see self::getIsAlwaysTrue()
+     */
     public function asNonTrueType() : Type
     {
-        // Overridden by BoolType, etc.
         return $this;
     }
 
@@ -1606,6 +1672,10 @@ class Type
         return false;
     }
 
+    /**
+     * Returns true if this has any instance of `static` or `self`.
+     * This is overridden in subclasses such as `SelfType`.
+     */
     public function hasStaticOrSelfTypesRecursive(CodeBase $code_base) : bool
     {
         $union_type = $this->iterableValueUnionType($code_base);
@@ -1751,7 +1821,7 @@ class Type
     }
 
     /**
-     * @return bool - Returns true if this is \ArrayAccess (nullable or not)
+     * @return bool - Returns true if this is `\ArrayAccess` (nullable or not)
      */
     public function isArrayAccess() : bool
     {
@@ -1759,6 +1829,10 @@ class Type
             && $this->getNamespace() === '\\');
     }
 
+    /**
+     * Is this an array or ArrayAccess, or a subtype of those?
+     * E.g. returns true for `\ArrayObject`, `array<int,string>`, etc.
+     */
     public function isArrayOrArrayAccessSubType(CodeBase $code_base) : bool
     {
         return $this->asExpandedTypes($code_base)->hasArrayAccess();
@@ -2589,11 +2663,20 @@ class Type
         return $this->is_nullable ? self::_bit_nullable : 0;
     }
 
+    /**
+     * Returns true if this contains any array shape type instances
+     * or literal type instances that could be normalized to
+     * regular generic array types or scalar types.
+     */
     public function hasArrayShapeOrLiteralTypeInstances() : bool
     {
         return false;
     }
 
+    /**
+     * Returns true if this contains any array shape type instances
+     * that could be normalized to regular generic array types.
+     */
     public function hasArrayShapeTypeInstances() : bool
     {
         return false;
@@ -2632,6 +2715,10 @@ class Type
         return $this;
     }
 
+    /**
+     * Returns true if this is a potentially valid operand for a numeric operator.
+     * Callers should also check if this is nullable.
+     */
     public function isValidNumericOperand() : bool
     {
         return false;

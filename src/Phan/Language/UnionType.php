@@ -2941,9 +2941,14 @@ class UnionType implements Serializable
         return $result->getUnionType();
     }
 
+    /**
+     * Used to check if any type in this param type should be replaced
+     * by more specific types of arguments, in non-quick mode
+     */
     public function shouldBeReplacedBySpecificTypes() : bool
     {
         if ($this->isEmpty()) {
+            // We don't know anything about this type, this should be replaced by more specific argument types.
             return true;
         }
         return $this->hasTypeMatchingCallback(function (Type $type) : bool {
@@ -3012,6 +3017,11 @@ class UnionType implements Serializable
         return false;
     }
 
+    /**
+     * Gets the type of this converted to a generator.
+     * E.g. converts the type of an iterable/array/Generator `$x`
+     * to the type of a generator with the implementation `yield from $x`
+     */
     public function asGeneratorTemplateType() : Type
     {
         $fallback_values = UnionType::empty();

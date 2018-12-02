@@ -36,6 +36,9 @@ final class ClosureType extends Type
         return $instance;
     }
 
+    /**
+     * Create an instance of Closure for the FQSEN of the passed in function/closure/method $func with FQSEN $fqsen
+     */
     public static function instanceWithClosureFQSEN(FQSEN $fqsen, FunctionInterface $func = null) : ClosureType
     {
         static $original_instance = null;
