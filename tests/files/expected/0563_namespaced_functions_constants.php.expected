@@ -1,8 +1,8 @@
-%s:7 PhanUndeclaredFunction Call to undeclared function \MyNs\ast\parse_code()
+%s:7 PhanUndeclaredFunction Call to undeclared function \MyNs\ast\parse_code() (Did you mean \ast\parse_code())
 %s:8 PhanUndeclaredConstant Reference to undeclared constant \MyNs\ast\AST_UNPACK
 %s:9 PhanUndeclaredClassMethod Call to method __construct from undeclared class \MyNs\ast\Node (Did you mean class \ast\Node)
-%s:10 PhanUndeclaredFunction Call to undeclared function \MyNs\ast\parse_code()
+%s:10 PhanUndeclaredFunction Call to undeclared function \MyNs\ast\parse_code() (Did you mean \ast\parse_code())
 %s:11 PhanUndeclaredConstant Reference to undeclared constant \MyNs\ast\AST_UNPACK
 %s:12 PhanUndeclaredClassMethod Call to method __construct from undeclared class \MyNs\ast\Node (Did you mean class \ast\Node)
-%s:13 PhanUndeclaredFunction Call to undeclared function \MyNs\is_string()
+%s:13 PhanUndeclaredFunction Call to undeclared function \MyNs\is_string() (Did you mean \is_string())
 %s:14 PhanUndeclaredConstant Reference to undeclared constant \MyNs\PHP_VERSION

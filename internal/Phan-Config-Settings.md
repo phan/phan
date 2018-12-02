@@ -437,9 +437,9 @@ phase.
 
 ## quick_mode
 
-If true, this run a quick version of checks that takes less
+If true, this runs a quick version of checks that takes less
 time at the cost of not running as thorough
-an analysis. You should consider setting this
+of an analysis. You should consider setting this
 to true only when you wish you had more **undiagnosed** issues
 to fix in your code base.
 
@@ -767,8 +767,11 @@ By default, Phan will log error messages to stdout if PHP is using options that 
 Phan will give up on suggesting a different name in issue messages
 if the number of candidates (for a given suggestion category) is greater than `suggestion_check_limit`.
 
-Set this to `0` to disable most suggestions for similar names, to other namespaces.
-Set this to `PHP_INT_MAX` (or other large value) to always suggesting similar names to other namespaces.
-(Phan will be a bit slower when this config setting is a larger value)
+Set this to `0` to disable most suggestions for similar names, and only suggest identical names in other namespaces.
+Set this to `PHP_INT_MAX` (or other large value) to always suggest similar names and identical names in other namespaces.
 
-(Default: `50`)
+Phan will be a bit slower when this config setting is large.
+A lower value such as 50 works for suggesting misspelled classes/constants in namespaces,
+but won't give you suggestions for globally namespaced functions.
+
+(Default: `1000`)

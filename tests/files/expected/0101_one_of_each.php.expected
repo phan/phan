@@ -48,7 +48,7 @@
 %s:183 PhanUndeclaredClassMethod Call to method f5 from undeclared class \Undef
 %s:183 PhanUndeclaredTypeParameter Parameter $p has undeclared type \Undef
 %s:192 PhanUndeclaredExtendedClass Class extends undeclared class \Undef
-%s:195 PhanUndeclaredFunction Call to undeclared function \f10()
+%s:195 PhanUndeclaredFunction Call to undeclared function \f10() (Did you mean \f1())
 %s:198 PhanUndeclaredInterface Class implements undeclared interface \C18
 %s:206 PhanUndeclaredProperty Reference to undeclared property \C14->undef
 %s:210 PhanUndeclaredStaticMethod Static call to undeclared method \C21::f
