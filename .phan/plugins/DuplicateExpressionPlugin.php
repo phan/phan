@@ -55,7 +55,7 @@ class RedundantNodeVisitor extends PluginAwarePostAnalysisVisitor
 {
     /**
      * These are types of binary operations for which it is
-     * likely to be a typo if both the left and right hand sides
+     * likely to be a typo if both the left and right-hand sides
      * of the operation are the same.
      */
     const REDUNDANT_BINARY_OP_SET = [

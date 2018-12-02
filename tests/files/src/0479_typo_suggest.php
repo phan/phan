@@ -2,7 +2,7 @@
 
 function suggest_undeclared_variable($param1, $param2) {
     $myValue = 2;
-    $x = $Param2;  // should make case insensitive suggestions
+    $x = $Param2;  // should make case-insensitive suggestions
 
     $y = $my_value;  // should suggest changes with low levenstein distances
 

@@ -1017,7 +1017,7 @@ class ContextNode
      * An exception is thrown if we can't understand the node
      *
      * @throws IssueException
-     * A IssueException is thrown if the variable doesn't
+     * An IssueException is thrown if the variable doesn't
      * exist
      */
     public function getVariable() : Variable
@@ -1072,7 +1072,7 @@ class ContextNode
      * An exception is thrown if we can't understand the node
      *
      * @throws IssueException
-     * A IssueException is thrown if the variable doesn't
+     * An IssueException is thrown if the variable doesn't
      * exist
      */
     public function getVariableStrict() : Variable

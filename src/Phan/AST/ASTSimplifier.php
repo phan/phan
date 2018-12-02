@@ -249,7 +249,7 @@ class ASTSimplifier
                     self::replaceLastNodeWithNodeList($nodes, ...$this->applyAssignInRightSideOfBinaryOpReduction($node));
                     continue;
                 }
-                // TODO: If the left hand side is a constant or class constant or literal, that's safe to rearrange as well
+                // TODO: If the left-hand side is a constant or class constant or literal, that's safe to rearrange as well
                 // (But `foo($y = something()) && $x = $y` is not safe to rearrange)
             }
             if (count($node->children) === 1) {

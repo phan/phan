@@ -151,7 +151,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
 
     /**
      * @param int|string|float|array|Node $key (not actually an array)
-     * @return int|string|float|Node|array|bool|null - If possible, converted to a scalar.
+     * @return int|string|float|Node|array|bool|null - If possible, the value of $key converted to a scalar.
      */
     private function tryToResolveKey($key)
     {

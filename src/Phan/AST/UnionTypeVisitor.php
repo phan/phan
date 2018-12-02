@@ -429,7 +429,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitAssignRef(Node $node) : UnionType
     {
         // TODO: Is there any way this should differ from analysis
-        // (e.g. should subsequent assignments affect the right hand Node?)
+        // (e.g. should subsequent assignments affect the right-hand Node?)
         return $this->visitAssign($node);
     }
 
@@ -1417,7 +1417,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param UnionType $union_type a union type with at least one top level array shape type
+     * @param UnionType $union_type a union type with at least one top-level array shape type
      * @param int|string|float|bool $dim_value a scalar dimension. TODO: Warn about null?
      * @return ?UnionType|?false
      *  returns false if there the offset was invalid and there are no ways to get that offset

@@ -126,7 +126,7 @@ EOT;
     }
 
     /**
-     * Start documenting a brand new category of issues where the first issue in that category is $issue
+     * Start documenting a brand-new category of issues where the first issue in that category is $issue
      * @param WikiWriter $writer
      * @param Issue $issue
      * @param array<string,string> $old_text_for_section

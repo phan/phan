@@ -1,6 +1,6 @@
 <?php
 
-// Test that the code is case insensitive
+// Test that the code is case-insensitive
 trait ATrait294 {
     public function Foo(int $x) {
     }
@@ -9,7 +9,7 @@ trait ATrait294 {
     }
 }
 
-// Test that the code is case insensitive
+// Test that the code is case-insensitive
 trait BTrait294 {
     public function foO(string $x) {
     }
@@ -18,7 +18,7 @@ trait BTrait294 {
     }
 }
 
-// Test that the code is case insensitive
+// Test that the code is case-insensitive
 class ClassUsingTrait294 {
     use ATrait294, BTRAIT294 {
         ATrait294::foo as foo2;

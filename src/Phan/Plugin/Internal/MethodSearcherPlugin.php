@@ -17,6 +17,8 @@ use TypeError;
 use function count;
 
 /**
+ * This internal plugin implements tool/phoogle, to search for functions/methods with a similar signature to what you search for.
+ *
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  *
  * @internal

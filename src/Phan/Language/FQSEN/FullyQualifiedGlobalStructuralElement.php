@@ -120,7 +120,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         }
         $namespace = self::cleanNamespace($namespace);
 
-        // use the canonicalName for $name instead of strtolower - Some subclasses(constants) are case sensitive.
+        // use the canonicalName for $name instead of strtolower - Some subclasses(constants) are case-sensitive.
         $key = static::class . '|' .
             static::toString(\strtolower($namespace), static::canonicalLookupKey($name), $alternate_id);
 

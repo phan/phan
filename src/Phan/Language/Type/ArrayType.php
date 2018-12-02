@@ -76,8 +76,8 @@ class ArrayType extends IterableType
     /**
      * E.g. array{0:int} + array{0:string,1:float} becomes array{0:int,1:float}
      *
-     * @param UnionType $left the left hand side (e.g. of a `+` operator). Keys from these array shapes take precedence.
-     * @param UnionType $right the right hand side (e.g. of a `+` operator).
+     * @param UnionType $left the left-hand side (e.g. of a `+` operator). Keys from these array shapes take precedence.
+     * @param UnionType $right the right-hand side (e.g. of a `+` operator).
      * @return UnionType with ArrayType subclass(es)
      */
     public static function combineArrayTypesOverriding(UnionType $left, UnionType $right) : UnionType
@@ -133,9 +133,9 @@ class ArrayType extends IterableType
     /**
      * E.g. string|array{0:T1|T2,1:float} + [0 => int] becomes string|array{0:int, 1:float}
      *
-     * TODO: Remove any top level native types that can't have offsets, e.g. IntType, null, etc.
+     * TODO: Remove any top-level native types that can't have offsets, e.g. IntType, null, etc.
      *
-     * @param UnionType $left the left hand side (e.g. of a isset check).
+     * @param UnionType $left the left-hand side (e.g. of an isset check).
      * @param int|string|float|bool $field_dim_value (Ideally int|string)
      * @param UnionType $field_type
      * @return UnionType with ArrayType subclass(es)

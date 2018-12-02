@@ -15,7 +15,7 @@ class NamespaceMapEntry implements \Serializable
     public $fqsen;
 
     /**
-     * @var string the original case sensitive name of the use statement
+     * @var string the original case-sensitive name of the use statement
      */
     public $original_name;
 

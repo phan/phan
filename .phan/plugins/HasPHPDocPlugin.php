@@ -103,6 +103,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
     ) {
         if ($property->isDynamicProperty()) {
             // And dynamic properties don't have phpdoc.
+            return;
         }
         if ($property->isFromPHPDoc()) {
             // Phan does not track descriptions of (at)property.

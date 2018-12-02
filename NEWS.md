@@ -3,6 +3,11 @@ Phan NEWS
 ?? Dec 2018, Phan 1.1.6 (dev)
 -----------------------
 
+Plugins
++ Add a prototype tool `tool/dump_markdown_preview`,
+  which can be used to preview what description text Phan parses from a doc comment
+  (similar to the language server's hover text)
+
 Bug fixes:
 + Infer more accurate types after asserting `!empty($x)`
 + Infer the correct type for the result of the unary `+` operator.

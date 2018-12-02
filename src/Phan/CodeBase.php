@@ -73,7 +73,7 @@ class CodeBase
      * @var Map
      * A map from FQSEN to an internal or user defined class
      *
-     * TODO: Improve Phan's self analysis, allow the shorthand array access set syntax to be used without making bad inferences
+     * TODO: Improve Phan's self-analysis, allow the shorthand array access set syntax to be used without making bad inferences
      * (e.g. $this->fqsen_class_map[$fqsen] = $clazz;
      */
     private $fqsen_class_map;

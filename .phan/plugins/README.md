@@ -144,13 +144,13 @@ but may cause false positives in large projects with different code styles.
 
 ##### NonBoolBranchPlugin.php
 
-- **PhanPluginNonBoolBranch** Warns if a expression which has types other than `bool` is used in an if/else if.
+- **PhanPluginNonBoolBranch** Warns if an expression which has types other than `bool` is used in an if/else if.
 
   (E.g. warns about `if ($x)`, where $x is an integer. Fix by checking `if ($x != 0)`, etc.)
 
 ##### NonBoolInLogicalArithPlugin.php
 
-- **PhanPluginNonBoolInLogicalArith** Warns if a expression where the left/right hand side has types other than `bool` is used in a binary operation.
+- **PhanPluginNonBoolInLogicalArith** Warns if an expression where the left/right-hand side has types other than `bool` is used in a binary operation.
 
   (E.g. warns about `if ($x && $x->fn())`, where $x is an object. Fix by checking `if (($x instanceof MyClass) && $x->fn())`)
 

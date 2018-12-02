@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\Language\Element\Comment\Builder;
+
 /**
  * APIs for generating markup (markdown) description of elements
  *
@@ -42,6 +44,53 @@ class MarkupDescription
         }
         $extracted_doc_comment = self::extractDocComment($doc_comment, $comment_category);
         return $extracted_doc_comment ?: null;
+    }
+
+    /**
+     * @return array<string,string> information about the param tags
+     */
+    public static function extractParamTagsFromDocComment(AddressableElementInterface $element) : array
+    {
+        $doc_comment = $element->getDocComment();
+        if (!$doc_comment) {
+            return [];
+        }
+        if (strpos($doc_comment, '@param') === false) {
+            return [];
+        }
+        // Trim the start and the end of the doc comment.
+        //
+        // We leave in the second `*` of `/**` so that every single non-empty line
+        // of a typical doc comment will begin with a `*`
+        $doc_comment = preg_replace('@(^/\*)|(\*/$)@', '', $doc_comment);
+
+        $results = [];
+        $lines = explode("\n", $doc_comment);
+        foreach ($lines as $i => $line) {
+            $line = self::trimLine($line);
+            if (!is_string($line) || preg_match('/^\s*@param(\s|$)@/', $line) > 0) {
+                // Extract all of the (at)param annotations.
+                $param_tag_summary = self::extractTagSummary($lines, $i);
+                if (end($param_tag_summary) === '') {
+                    array_pop($param_tag_summary);
+                }
+                $full_comment = implode("\n", self::trimLeadingWhitespace($param_tag_summary));
+                // @phan-suppress-next-line PhanAccessClassConstantInternal
+                $matched = \preg_match(Builder::PARAM_COMMENT_REGEX, $full_comment, $match);
+                if (!$matched) {
+                    continue;
+                }
+                if (!isset($match[21])) {
+                    continue;
+                }
+
+                $name = $match[21];
+                // @phan-suppress-next-line PhanAccessClassConstantInternal
+                $full_comment = \preg_replace(Builder::PARAM_COMMENT_REGEX, '`\0`', $full_comment);
+                $results[$name] = $full_comment;
+            }
+        }
+        return $results;
     }
 
     /**

@@ -122,7 +122,7 @@ class CompletionResolver
             return;
         }
 
-        // Find all of the classes on the left hand side
+        // Find all of the classes on the left-hand side
         // TODO: Filter by properties that match $node->children['prop']
         $expected_type_categories = $is_static ? ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME : ContextNode::CLASS_LIST_ACCEPT_OBJECT;
         $expected_issue = $is_static ? Issue::TypeExpectedObjectStaticPropAccess : Issue::TypeExpectedObjectPropAccess;
@@ -170,7 +170,7 @@ class CompletionResolver
         $class_node = $node->children['class'] ?? $node->children['expr'];
         $is_static = $class_node->kind === ast\AST_NAME;
 
-        // Find all of the classes on the left hand side
+        // Find all of the classes on the left-hand side
         // TODO: Filter by properties that match $node->children['prop']
         $class_list_generator = (new ContextNode(
             $code_base,
@@ -216,7 +216,7 @@ class CompletionResolver
             return;
         }
 
-        // Find all of the classes on the left hand side
+        // Find all of the classes on the left-hand side
         // TODO: Filter by properties that match $node->children['prop']
         $class_list_generator = (new ContextNode(
             $code_base,

@@ -221,7 +221,7 @@ EOT;
     {
         $comment_text = <<<'EOT'
 /**
- * The check for template is case sensitive.
+ * The check for template is case-sensitive.
  * @template T1
  * @Template TestIgnored
  * @template u

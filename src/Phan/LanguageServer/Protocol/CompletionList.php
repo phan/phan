@@ -11,7 +11,7 @@ namespace Phan\LanguageServer\Protocol;
 class CompletionList
 {
     /**
-     * This list is not complete. Further typing should result in recomputing this
+     * This list is not complete. Continuing to type should result in recomputing this
      * list.
      *
      * @var bool
@@ -27,7 +27,7 @@ class CompletionList
 
     /**
      * @param CompletionItem[] $items        The completion items.
-     * @param bool             $isIncomplete This list is not complete. Further typing should result in recomputing this list.
+     * @param bool             $isIncomplete This list is not complete. Continuing to type should result in recomputing this list.
      */
     public function __construct(array $items = [], bool $isIncomplete = false)
     {

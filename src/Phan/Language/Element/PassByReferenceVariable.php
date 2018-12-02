@@ -6,9 +6,9 @@ use Phan\Language\FileRef;
 use Phan\Language\UnionType;
 
 /**
- * This class wraps a parameter and a element and proxies
+ * This class wraps a parameter and an element and proxies
  * calls to the element but keeps the name of the parameter
- * allowing us to pass a element into a method as a
+ * allowing us to pass an element into a method as a
  * pass-by-reference parameter so that its value can be
  * updated when re-analyzing the method.
  */

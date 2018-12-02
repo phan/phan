@@ -344,7 +344,7 @@ EOT;
     }
 
     /**
-     * Start documenting a brand new category of configs where the first ConfigEntry in that category is $config_entry
+     * Start documenting a brand-new category of configs where the first ConfigEntry in that category is $config_entry
      * @param WikiWriter $writer
      * @param array<string,string> $old_text_for_section
      * @throws InvalidArgumentException
