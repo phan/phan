@@ -390,9 +390,9 @@ class ParameterTypesAnalyzer
      * @see https://en.wikipedia.org/wiki/Liskov_substitution_principle
      *
      * @param CodeBase $code_base
-     * @param Method $method the overriding method
-     * @param Clazz  $class the subclass where the overrides take place
-     * @param Method $o_method the overridden method method
+     * @param Method $method the overriding method.
+     * @param Clazz  $class the subclass where the overrides take place.
+     * @param Method $o_method the overridden method.
      */
     private static function analyzeOverrideSignatureForOverriddenMethod(
         CodeBase $code_base,

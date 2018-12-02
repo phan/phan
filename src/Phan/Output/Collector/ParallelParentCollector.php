@@ -151,7 +151,7 @@ class ParallelParentCollector implements IssueCollectorInterface
     }
 
     /**
-     * This method has not effect on a ParallelParentCollector.
+     * This method has no effect on a ParallelParentCollector.
      */
     public function reset()
     {
