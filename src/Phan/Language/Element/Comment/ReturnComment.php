@@ -21,6 +21,9 @@ class ReturnComment
         $this->lineno = $lineno;
     }
 
+    /**
+     * Gets the type of this (at)return comment
+     */
     public function getType() : UnionType
     {
         return $this->type;
@@ -35,6 +38,9 @@ class ReturnComment
         $this->type = $type;
     }
 
+    /**
+     * Gets the line number of this (at)return comment's declaration in PHPDoc
+     */
     public function getLineno() : int
     {
         return $this->lineno;

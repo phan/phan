@@ -538,6 +538,9 @@ class Parameter extends Variable
         return $string;
     }
 
+    /**
+     * Convert this parameter to a stub that can be used by `tool/make_stubs`
+     */
     public function toStubString() : string
     {
         $string = '';

@@ -199,9 +199,12 @@ class Request
         return $result;
     }
 
+    /**
+     * Returns a printer that will be used to send JSON serialized data to the daemon client (i.e. `phan_client`).
+     */
     public function getPrinter() : IssuePrinterInterface
     {
-        // TODO: check $this->request_config['format']
+        // TODO: check $this->request_config['format'] and support other formats
         $factory = new PrinterFactory();
         $format = $this->request_config['format'] ?? 'json';
         if (!in_array($format, $factory->getTypes())) {

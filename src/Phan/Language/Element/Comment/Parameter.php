@@ -72,6 +72,9 @@ class Parameter
         $this->is_output_reference = $is_output_reference;
     }
 
+    /**
+     * Returns this comment parameter as a real variable.
+     */
     public function asVariable(
         Context $context,
         int $flags = 0
@@ -84,6 +87,12 @@ class Parameter
         );
     }
 
+    /**
+     * Converts this parameter to a real parameter,
+     * using only the information from the comment.
+     *
+     * Useful for comments extracted from (at)method, etc.
+     */
     public function asRealParameter(
         Context $context
     ) : \Phan\Language\Element\Parameter {

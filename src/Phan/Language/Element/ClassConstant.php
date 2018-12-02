@@ -138,6 +138,10 @@ class ClassConstant extends ClassElement implements ConstantInterface
         return $string;
     }
 
+    /**
+     * Returns the visibility of this class constant
+     * (either 'public', 'protected', or 'private')
+     */
     public function getVisibilityName() : string
     {
         if ($this->isPrivate()) {
@@ -149,6 +153,9 @@ class ClassConstant extends ClassElement implements ConstantInterface
         }
     }
 
+    /**
+     * Converts this class constant to a stub php snippet that can be used by `tool/make_stubs`
+     */
     public function toStub() : string
     {
         $string = '    ';
@@ -165,7 +172,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
         $fqsen = $this->getFQSEN()->__toString();
         if (defined($fqsen)) {
             // TODO: Could start using $this->getNodeForValue()?
-            // NOTE: This is used by tool/make_stub, which is why it uses reflection instead of getting a node.
+            // NOTE: This is used by tool/make_stubs, which is why it uses reflection instead of getting a node.
             $string .= var_export(constant($fqsen), true) . ';';
         } else {
             $string .= "null;  // could not find";

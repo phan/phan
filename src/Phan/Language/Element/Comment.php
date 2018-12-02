@@ -407,6 +407,9 @@ class Comment
      */
     const FLAGS_FOR_PROPERTY = Flags::IS_NS_INTERNAL | Flags::IS_DEPRECATED | Flags::IS_READ_ONLY | Flags::IS_WRITE_ONLY;
 
+    /**
+     * Gets the subset of the bitmask that applies to properties.
+     */
     public function getPhanFlagsForProperty() : int
     {
         return $this->comment_flags & self::FLAGS_FOR_PROPERTY;

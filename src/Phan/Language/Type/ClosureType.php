@@ -63,6 +63,10 @@ final class ClosureType extends Type
         // same as new static($this->namespace, $this->name, $this->template_parameter_type_list, $this->is_nullable);
     }
 
+    /**
+     * Is this a closure which points to a known FQSEN
+     * (in internal or parsed function-likes, classes, methods, closures, etc.
+     */
     public function hasKnownFQSEN() : bool
     {
         return $this->fqsen !== null;

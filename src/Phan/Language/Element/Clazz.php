@@ -506,6 +506,14 @@ class Clazz extends AddressableElement
         );
     }
 
+    /**
+     * Is this a subclass of $other?
+     *
+     * This only checks parent classes.
+     * It should not be used for traits or interfaces.
+     *
+     * This returns false if $this === $other
+     */
     public function isSubclassOf(CodeBase $code_base, Clazz $other) : bool
     {
         if (!$this->hasParentType()) {
@@ -876,6 +884,10 @@ class Clazz extends AddressableElement
         );
     }
 
+    /**
+     * Returns the property $name of this class.
+     * @see self::hasPropertyWithName()
+     */
     public function getPropertyByName(
         CodeBase $code_base,
         string $name
@@ -2952,6 +2964,11 @@ class Clazz extends AddressableElement
     const CAN_ITERATE_STATUS_NO_ACCESSIBLE_PROPERTIES = 1;
     const CAN_ITERATE_STATUS_HAS_ACCESSIBLE_PROPERTIES = 2;
 
+    /**
+     * Returns an enum value (self::CAN_ITERATE_STATUS_*) indicating whether
+     * analyzed code iterating over an instance of this class has potential bugs.
+     * (and what type of bug it would be)
+     */
     public function checkCanIterateFromContext(
         CodeBase $code_base,
         Context $context

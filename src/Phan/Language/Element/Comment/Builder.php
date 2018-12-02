@@ -275,6 +275,10 @@ final class Builder
         );
     }
 
+    /**
+     * Extracts information from the doc comment instance,
+     * parses it, and creates a Comment representing the extracted information.
+     */
     public function build() : Comment
     {
         foreach ($this->lines as $i => $line) {

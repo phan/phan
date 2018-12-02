@@ -25,6 +25,9 @@ class EmptyFQSENException extends Exception
         $this->fqsen = $fqsen;
     }
 
+    /**
+     * @return string the empty, unparseable FQSEN input that caused this exception
+     */
     public function getFQSEN() : string
     {
         return $this->fqsen;
