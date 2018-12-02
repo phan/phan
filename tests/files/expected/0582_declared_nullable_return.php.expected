@@ -1,0 +1,2 @@
+%s:6 PhanTypeMismatchDeclaredReturn Doc-block of getNullable contains declared return type ?\stdClass which is incompatible with the return type \stdClass declared in the signature
+%s:13 PhanTypeMismatchDeclaredReturn Doc-block of getFalseable contains declared return type false which is incompatible with the return type \stdClass declared in the signature

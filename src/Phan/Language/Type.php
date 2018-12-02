@@ -2333,6 +2333,9 @@ class Type
         if ($union_type->hasType($this)) {
             return true;
         }
+        if ($this->getIsNullable() && !$union_type->containsNullable()) {
+            return false;
+        }
         $this_resolved = $this->withStaticResolvedInContext($context);
         // TODO: Allow casting MyClass<TemplateType> to MyClass (Without the template?
 

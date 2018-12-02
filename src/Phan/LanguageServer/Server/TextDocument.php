@@ -184,7 +184,7 @@ class TextDocument
      * @return ?Promise <Location|Location[]|null>
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function definition(TextDocumentIdentifier $textDocument, Position $position) : Promise
+    public function definition(TextDocumentIdentifier $textDocument, Position $position)
     {
         Logger::logInfo("Called textDocument/definition, uri={$textDocument->uri} position={$position->line}:{$position->character}");
         try {
@@ -205,7 +205,7 @@ class TextDocument
      * @return ?Promise <Location|Location[]|null>
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      */
-    public function typeDefinition(TextDocumentIdentifier $textDocument, Position $position) : Promise
+    public function typeDefinition(TextDocumentIdentifier $textDocument, Position $position)
     {
         Logger::logInfo("Called textDocument/typeDefinition, uri={$textDocument->uri} position={$position->line}:{$position->character}");
         try {
