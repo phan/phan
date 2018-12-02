@@ -59,7 +59,7 @@ final class LanguageServerIntegrationTest extends BaseTest
     /**
      * @return array{0:resource,1:resource,2:resource} [$proc, $proc_in, $proc_out]
      */
-    private function createPhanLanguageServer(bool $pcntlEnabled)
+    private function createPhanLanguageServer(bool $pcntlEnabled, bool $prefer_stdio = true)
     {
         if (getenv('PHAN_RUN_INTEGRATION_TEST') != '1') {
             $this->markTestSkipped('skipping integration tests - set PHAN_RUN_INTEGRATION_TEST=1 to allow');
@@ -71,31 +71,73 @@ final class LanguageServerIntegrationTest extends BaseTest
         if ($pcntlEnabled && !function_exists('pcntl_fork')) {
             $this->markTestSkipped('requires pcntl extension');
         }
-        if (DIRECTORY_SEPARATOR === "\\") {
+        $is_windows = DIRECTORY_SEPARATOR === "\\";
+        if ($is_windows) {
             // Work around 'The filename, directory name, or volume label syntax is incorrect.', include the path to the PHP binary used to run this test.
             // Might not work with file names including spaces?
             // @see InvokePHPNativeSyntaxCheckPlugin
 
             $escaped_command = PHP_BINARY . " " . escapeshellarg(__DIR__ . '/../../../src/phan.php');
+            // XXX create an OOP language client abstraction for this test, with shutdown() methods
+            $use_stdio = false;
         } else {
             $escaped_command = escapeshellarg(__DIR__ . '/../../../phan');
+            // Most of the tests for unix/linux will use stdio - A tiny number will use TCP
+            // to properly test that TCP is working.
+            $use_stdio = $prefer_stdio;
+        }
+        if ($use_stdio) {
+            $options = '--language-server-on-stdin';
+        } else {
+            $address = '127.0.0.1:14846';
+            $options = '--language-server-tcp-connect ' . $address;
+
+            $tcpServer = stream_socket_server('tcp://' . $address, $errno, $errstr);
+            if ($tcpServer === false) {
+                $this->fail("Could not listen on $address. Error $errno\n$errstr");
+            }
         }
         $command = sprintf(
-            '%s -d %s --quick --use-fallback-parser --language-server-on-stdin --language-server-enable-hover --language-server-enable-completion --language-server-enable-go-to-definition %s',
+            '%s -d %s --quick --use-fallback-parser %s --language-server-enable-hover --language-server-enable-completion --language-server-enable-go-to-definition %s',
             $escaped_command,
             escapeshellarg(self::getLSPFolder()),
+            $options,
             ($pcntlEnabled ? '' : '--language-server-force-missing-pcntl')
         );
-        $proc = proc_open(
-            $command,
-            [
-                0 => ['pipe', 'r'],
-                1 => ['pipe', 'w'],
-                2 => STDERR,  // Pass stderr from this process directly to output stderr so it doesn't get buffered up or ignored
-            ],
-            $pipes
-        );
-        list($proc_in, $proc_out) = $pipes;
+        if ($use_stdio) {
+            $proc = proc_open(
+                $command,
+                [
+                    0 => ['pipe', 'r'],
+                    1 => ['pipe', 'w'],
+                    2 => STDERR,  // Pass stderr from this process directly to output stderr so it doesn't get buffered up or ignored
+                ],
+                $pipes
+            );
+            list($proc_in, $proc_out) = $pipes;
+        } else {
+            $proc = proc_open(
+                $command,
+                [
+                    1 => STDERR,
+                    2 => STDERR,  // Pass stderr from this process directly to output stderr so it doesn't get buffered up or ignored
+                ],
+                $pipes
+            );
+            if (!$proc) {
+                throw new \RuntimeException("Failed to create a proc");
+            }
+            '@phan-var-force resource $tcpServer';
+            $socket = stream_socket_accept($tcpServer, 5);
+            if (!$socket) {
+                proc_close($proc);
+                throw new \RuntimeException("Failed to receive a connection from language server in 5 seconds");
+            }
+            // Don't set this to async - the rest of this test assumes synchronous streams.
+            // stream_set_blocking($socket, false);
+            $proc_in = $socket;
+            $proc_out = $socket;
+        }
         $this->debugLog("Created a process\n");
         return [
             $proc,
@@ -104,24 +146,56 @@ final class LanguageServerIntegrationTest extends BaseTest
         ];
     }
 
+    public function initializeProvider() : array {
+        $results = [
+            [false, true],
+            [true, true],
+        ];
+        if (DIRECTORY_SEPARATOR !== "\\") {
+            $results[] = [true, false];
+        }
+
+        return $results;
+    }
+
     /**
-     * @dataProvider pcntlEnabledProvider
+     * @dataProvider initializeProvider
      */
-    public function testInitialize(bool $pcntlEnabled)
+    public function testInitialize(bool $pcntlEnabled, bool $prefer_stdio)
     {
         // TODO: Move this into an OOP abstraction, add time limits, etc.
-        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntlEnabled);
+        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntlEnabled, $prefer_stdio);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
         } finally {
-            fclose($proc_in);
+            $this->performCleanLanguageServerShutdown($proc, $proc_in, $proc_out);
+        }
+    }
+
+    /**
+     * @param resource $proc result of proc_open
+     * @param resource $proc_in input stream
+     * @param resource $proc_out output stream
+     */
+    private function performCleanLanguageServerShutdown($proc, $proc_in, $proc_out) {
+        try {
             // TODO: Make these pipes async if they aren't already
-            $unread_contents = fread($proc_out, 10000);
-            $this->assertSame('', $unread_contents);
-            fclose($proc_out);
+            if ($proc_in === $proc_out) {
+                // This is synchronous TCP
+                $unread_contents = fread($proc_out, 10000);
+                $this->assertSame('', $unread_contents);
+                fclose($proc_in);
+            } else {
+                // this is stdio
+                fclose($proc_in);
+                $unread_contents = fread($proc_out, 10000);
+                $this->assertSame('', $unread_contents);
+                fclose($proc_out);
+            }
+        } finally {
             proc_close($proc);
         }
     }
@@ -165,12 +239,7 @@ EOT;
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
         } finally {
-            fclose($proc_in);
-            // TODO: Make these pipes async if they aren't already
-            $unread_contents = fread($proc_out, 10000);
-            $this->assertSame('', $unread_contents);
-            fclose($proc_out);
-            proc_close($proc);
+            $this->performCleanLanguageServerShutdown($proc, $proc_in, $proc_out);
         }
     }
 
@@ -212,12 +281,7 @@ EOT;
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
         } finally {
-            fclose($proc_in);
-            // TODO: Make these pipes async if they aren't already
-            $unread_contents = fread($proc_out, 10000);
-            $this->assertSame('', $unread_contents);
-            fclose($proc_out);
-            proc_close($proc);
+            $this->performCleanLanguageServerShutdown($proc, $proc_in, $proc_out);
         }
     }
 
@@ -257,12 +321,7 @@ EOT;
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
         } finally {
-            fclose($proc_in);
-            // TODO: Make these pipes async if they aren't already
-            $unread_contents = fread($proc_out, 10000);
-            $this->assertSame('', $unread_contents);
-            fclose($proc_out);
-            proc_close($proc);
+            $this->performCleanLanguageServerShutdown($proc, $proc_in, $proc_out);
         }
     }
 
@@ -913,13 +972,7 @@ EOT
             fwrite(STDERR, "Unexpected exception in " . __METHOD__ . ": " . $e->getMessage());
             throw $e;
         } finally {
-            // TODO: Reusable abstraction of opening and closing the language server
-            fclose($proc_in);
-            // TODO: Make these pipes async if they aren't already
-            $unread_contents = fread($proc_out, 10000);
-            $this->assertSame('', $unread_contents);
-            fclose($proc_out);
-            proc_close($proc);
+            $this->performCleanLanguageServerShutdown($proc, $proc_in, $proc_out);
         }
     }
 
@@ -1002,12 +1055,7 @@ EOT
             fwrite(STDERR, "Unexpected exception in " . __METHOD__ . ": " . $e->getMessage());
             throw $e;
         } finally {
-            fclose($proc_in);
-            // TODO: Make these pipes async if they aren't already
-            $unread_contents = fread($proc_out, 10000);
-            $this->assertSame('', $unread_contents);
-            fclose($proc_out);
-            proc_close($proc);
+            $this->performCleanLanguageServerShutdown($proc, $proc_in, $proc_out);
         }
     }
 
@@ -1086,12 +1134,7 @@ EOT
             fwrite(STDERR, "Unexpected exception in " . __METHOD__ . ": " . $e->getMessage());
             throw $e;
         } finally {
-            fclose($proc_in);
-            // TODO: Make these pipes async if they aren't already
-            $unread_contents = fread($proc_out, 10000);
-            $this->assertSame('', $unread_contents);
-            fclose($proc_out);
-            proc_close($proc);
+            $this->performCleanLanguageServerShutdown($proc, $proc_in, $proc_out);
         }
     }
 
