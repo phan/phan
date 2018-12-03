@@ -574,7 +574,8 @@ final class MiscParamPlugin extends PluginV2 implements
                 $args[1],
                 0,
                 '',
-                false
+                false,
+                true
             );
         };
 

@@ -9,6 +9,8 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\EmptyFQSENException;
+use Phan\Exception\FQSENException;
+use Phan\Exception\InvalidFQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
@@ -762,8 +764,11 @@ class Type
      * @param string $fully_qualified_string
      * A fully qualified type name
      *
+     *
      * @return Type
      * The type with that fully qualified type name (cached for efficiency)
+     *
+     * @throws FQSENException if the type name was the empty or invalid string
      */
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
@@ -776,7 +781,7 @@ class Type
      * Extracts the parts of this Type from the passed in fully qualified type name.
      * Callers should ensure that the type regex accepts $fully_qualified_string
      *
-     * @throws EmptyFQSENException if the type name was the empty string
+     * @throws FQSENException if the type name was the empty or invalid string
      * @throws InvalidArgumentException if namespace is missing from something that should have a namespace
      * @suppress PhanPossiblyFalseTypeArgument, PhanPossiblyFalseTypeArgumentInternal
      */
@@ -861,7 +866,7 @@ class Type
             throw new EmptyFQSENException("Type was not fully qualified", $fully_qualified_string);
         }
         if ($namespace === '') {
-            throw new InvalidArgumentException("Type was not fully qualified");
+            throw new InvalidFQSENException("Type was not fully qualified", $fully_qualified_string);
         }
 
         return self::make(
@@ -1236,7 +1241,7 @@ class Type
         $context_namespace = $context->getNamespace();
         if ($context_namespace) {
             if ($namespace) {
-                $namespace = $context_namespace . '\\' . $namespace;
+                $namespace = \rtrim($context_namespace, '\\') . '\\' . $namespace;
             } else {
                 $namespace = $context_namespace;
             }

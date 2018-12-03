@@ -69,7 +69,9 @@ class Issue
     const UndeclaredFunctionInCallable = 'PhanUndeclaredFunctionInCallable';
     const UndeclaredMethodInCallable = 'PhanUndeclaredMethodInCallable';
     const EmptyFQSENInCallable      = 'PhanEmptyFQSENInCallable';
+    const InvalidFQSENInCallable    = 'PhanInvalidFQSENInCallable';
     const EmptyFQSENInClasslike     = 'PhanEmptyFQSENInClasslike';
+    const InvalidFQSENInClasslike     = 'PhanInvalidFQSENInClasslike';
 
     // Issue::CATEGORY_TYPE
     const NonClassMethodCall        = 'PhanNonClassMethodCall';
@@ -978,6 +980,22 @@ class Issue
                 "Possible use of a classlike '{CLASSLIKE}' with an empty FQSEN.",
                 self::REMEDIATION_B,
                 11036
+            ),
+            new Issue(
+                self::InvalidFQSENInCallable,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Possible call to a function '{FUNCTIONLIKE}' with an invalid FQSEN.",
+                self::REMEDIATION_B,
+                11042
+            ),
+            new Issue(
+                self::InvalidFQSENInClasslike,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Possible use of a classlike '{CLASSLIKE}' with an invalid FQSEN.",
+                self::REMEDIATION_B,
+                11043
             ),
 
             // Issue::CATEGORY_ANALYSIS

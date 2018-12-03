@@ -1,35 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Exception;
 
-use Exception;
-
 /**
  * Thrown to indicate that an empty FQSEN was used where a valid FQSEN was expected.
  */
-class EmptyFQSENException extends Exception
+class EmptyFQSENException extends FQSENException
 {
-    /** @var string the empty, unparseable FQSEN */
-    private $fqsen;
-
-    /**
-     * @param string $message
-     * The error message
-     * @param string $fqsen
-     * the empty, unparseable FQSEN
-     */
-    public function __construct(
-        string $message,
-        string $fqsen
-    ) {
-        parent::__construct($message);
-        $this->fqsen = $fqsen;
-    }
-
-    /**
-     * @return string the empty, unparseable FQSEN input that caused this exception
-     */
-    public function getFQSEN() : string
-    {
-        return $this->fqsen;
-    }
 }

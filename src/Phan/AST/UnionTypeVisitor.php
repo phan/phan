@@ -15,6 +15,8 @@ use Phan\Config;
 use Phan\Debug;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\EmptyFQSENException;
+use Phan\Exception\FQSENException;
+use Phan\Exception\InvalidFQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
 use Phan\Exception\UnanalyzableException;
@@ -27,6 +29,7 @@ use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionLikeName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
@@ -528,9 +531,9 @@ class UnionTypeVisitor extends AnalysisVisitor
             return Type::fromFullyQualifiedString(
                 '\\' . $name
             )->asUnionType();
-        } catch (EmptyFQSENException $_) {
+        } catch (FQSENException $e) {
             $this->emitIssue(
-                Issue::EmptyFQSENInClasslike,
+                $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike,
                 $node->lineno ?? 0,
                 '\\' . $name
             );
@@ -2319,6 +2322,10 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @throws IssueException
      * An exception is thrown if we can't find a class for
      * the given type
+     *
+     * @throws FQSENException
+     * An exception is thrown if we can find a class name,
+     * but it is empty/invalid
      */
     public static function unionTypeFromClassNode(
         CodeBase $code_base,
@@ -2415,6 +2422,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // Check to see if the name is fully qualified
         if ($node->flags & \ast\flags\NAME_NOT_FQ) {
+            self::checkValidClassFQSEN($class_name);
             $type = Type::fromStringInContext(
                 $class_name,
                 $context,
@@ -2435,12 +2443,29 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $class_name = '\\' . $class_name;
             }
 
+            self::checkValidClassFQSEN($class_name);
             $type = Type::fromFullyQualifiedString(
                 $class_name
             );
         }
 
         return $type->asUnionType();
+    }
+
+    /**
+     * @throws FQSENException if invalid
+     */
+    private static function checkValidClassFQSEN(string $class_name)
+    {
+        // @phan-suppress-next-line PhanAccessClassConstantInternal
+        if (\preg_match(FullyQualifiedGlobalStructuralElement::VALID_STRUCTURAL_ELEMENT_REGEX, $class_name)) {
+            return;
+        }
+        if ($class_name === '\\') {
+            throw new EmptyFQSENException("empty fqsen", $class_name);
+        } else {
+            throw new InvalidFQSENException("invalid fqsen", $class_name);
+        }
     }
 
     /**
@@ -2502,13 +2527,22 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         try {
             $function_fqsens = (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node);
-        } catch (EmptyFQSENException $e) {
+        } catch (FQSENException $e) {
             Issue::maybeEmit(
                 $code_base,
                 $context,
-                Issue::EmptyFQSENInCallable,
+                $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInCallable : Issue::InvalidFQSENInCallable,
                 $context->getLineNumberStart(),
                 $e->getFQSEN()
+            );
+            return [];
+        } catch (\InvalidArgumentException $_) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::InvalidFQSENInCallable,
+                $context->getLineNumberStart(),
+                '(unknown)'
             );
             return [];
         }

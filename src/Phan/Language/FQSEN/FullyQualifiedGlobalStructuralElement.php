@@ -2,8 +2,9 @@
 namespace Phan\Language\FQSEN;
 
 use AssertionError;
-use InvalidArgumentException;
 use Phan\Exception\EmptyFQSENException;
+use Phan\Exception\FQSENException;
+use Phan\Exception\InvalidFQSENException;
 use Phan\Language\Context;
 use Phan\Language\Type;
 
@@ -38,7 +39,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      * @throws EmptyFQSENException
      * if the namespace of this FullyQualifiedGlobalStructuralElement is empty
      *
-     * @throws InvalidArgumentException
+     * @throws InvalidFQSENException
      * if the namespace begins with an invalid character
      */
     protected function __construct(
@@ -55,7 +56,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         }
 
         if ($namespace[0] !== '\\') {
-            throw new InvalidArgumentException("The first character of a namespace must be \\");
+            throw new InvalidFQSENException("The first character of a namespace must be \\", $namespace . "\\" . $name);
         }
 
         parent::__construct($name);
@@ -87,6 +88,11 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         return self::make('\\' . \substr($name, 0, $i), \substr($name, $i + 1));
     }
 
+    /** @internal */
+    const VALID_STRUCTURAL_ELEMENT_REGEX = '/^\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*$/';
+    /** @internal */
+    const VALID_STRUCTURAL_ELEMENT_REGEX_PART = '/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/';
+
     /**
      * Construct a fully-qualified global structural element from a namespace and name.
      *
@@ -101,6 +107,8 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      * there are multiple definitions of the element
      *
      * @return static
+     *
+     * @throws FQSENException on invalid/empty FQSEN
      */
     public static function make(
         string $namespace,
@@ -111,10 +119,27 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         // name to the namespace.
         $name_parts = \explode('\\', $name);
         $name = (string)\array_pop($name_parts);
-        foreach ($name_parts as $part) {
-            // TODO: Emit a warning or throw instead?
+        if ($name === '') {
+            throw new EmptyFQSENException(
+                "Empty name of fqsen",
+                rtrim($namespace, "\\") . "\\" . implode("\\", array_merge($name_parts, [$name]))
+            );
+        }
+        foreach ($name_parts as $i => $part) {
             if ($part === '') {
+                if ($i > 0) {
+                    throw new InvalidFQSENException(
+                        "Invalid part '' of fqsen",
+                        rtrim($namespace, "\\") . "\\" . implode('\\', array_merge(array_slice($name_parts, $i), [$name]))
+                    );
+                }
                 continue;
+            }
+            if (!\preg_match(self::VALID_STRUCTURAL_ELEMENT_REGEX_PART, $part)) {
+                throw new InvalidFQSENException(
+                    "Invalid part '$part' of fqsen",
+                    rtrim($namespace, "\\") . "\\$part\\" . implode('\\', array_merge(array_slice($name_parts, $i), [$name]))
+                );
             }
             if ($namespace === '\\') {
                 $namespace = '\\' . $part;
@@ -123,6 +148,9 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             }
         }
         $namespace = self::cleanNamespace($namespace);
+        if (!\preg_match(self::VALID_STRUCTURAL_ELEMENT_REGEX, \rtrim($namespace, '\\') . '\\' . $name)) {
+            throw new InvalidFQSENException("Invalid namespaced name", \rtrim($namespace, '\\') . '\\' . $name);
+        }
 
         // use the canonicalName for $name instead of strtolower - Some subclasses(constants) are case-sensitive.
         $key = static::class . '|' .
@@ -145,7 +173,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      *
      * @return static
      *
-     * @throws InvalidArgumentException on failure.
+     * @throws FQSENException on failure.
      */
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
@@ -157,7 +185,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             $key,
             /**
              * @return FullyQualifiedGlobalStructuralElement
-             * @throws InvalidArgumentException
+             * @throws FQSENException
              */
             function () use ($fully_qualified_string) {
                 // Split off the alternate_id
@@ -166,20 +194,21 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
                 $alternate_id = (int)($parts[1] ?? 0);
 
                 $parts = \explode('\\', $fqsen_string);
+                if ($parts[0] === '') {
+                    \array_shift($parts);
+                    if (\count($parts) === 0) {
+                        throw new EmptyFQSENException("The name cannot be empty", $fqsen_string);
+                    }
+                }
                 $name = (string)\array_pop($parts);
 
                 if ($name === '') {
-                    throw new InvalidArgumentException("The name cannot be empty");
+                    throw new EmptyFQSENException("The name cannot be empty", $fqsen_string);
                 }
 
-                $namespace = '\\' . \implode('\\', \array_filter($parts));
-
-                if ($namespace === '') {
-                    throw new InvalidArgumentException("The namespace cannot be empty");
-                }
-
-                if ($namespace[0] !== '\\') {
-                    throw new InvalidArgumentException("The first character of the namespace must be \\");
+                $namespace = '\\' . \implode('\\', $parts);
+                if ($namespace !== '\\' && !preg_match(self::VALID_STRUCTURAL_ELEMENT_REGEX, $namespace)) {
+                    throw new InvalidFQSENException("The namespace $namespace is invalid", $fqsen_string);
                 }
 
                 return static::make(
@@ -200,7 +229,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      *
      * @return static
      *
-     * @throws InvalidArgumentException if the $fqsen_string is invalid
+     * @throws InvalidFQSENException if the $fqsen_string is invalid
      */
     public static function fromStringInContext(
         string $fqsen_string,
@@ -225,7 +254,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         $name = \array_pop($parts);
 
         if (!$name) {
-            throw new InvalidArgumentException("The name cannot be empty");
+            throw new InvalidFQSENException("The name cannot be empty", $fqsen_string);
         }
 
         // Check for a name map

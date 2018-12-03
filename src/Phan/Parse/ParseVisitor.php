@@ -11,6 +11,7 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Daemon;
+use Phan\Exception\FQSENException;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -867,6 +868,7 @@ class ParseVisitor extends ScopeVisitor
             $args->children[1],
             0,
             '',
+            true,
             true
         );
     }
@@ -1173,6 +1175,12 @@ class ParseVisitor extends ScopeVisitor
      * @param string $comment_string
      * A possibly empty comment string on the declaration
      *
+     * @param bool $use_future_union_type
+     * Should this lazily resolve the value of the constant declaration?
+     *
+     * @param bool $is_fully_qualified
+     * Is the provided $name already fully qualified?
+     *
      * @return void
      */
     public static function addConstant(
@@ -1183,15 +1191,31 @@ class ParseVisitor extends ScopeVisitor
         $value,
         int $flags,
         string $comment_string,
-        bool $use_future_union_type
+        bool $use_future_union_type,
+        bool $is_fully_qualified = false
     ) {
         try {
             // Give it a fully-qualified name
-            $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
-                $name,
-                $context
-            );
+            if ($is_fully_qualified) {
+                $fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
+                    $name
+                );
+            } else {
+                $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
+                    $name,
+                    $context
+                );
+            }
         } catch (InvalidArgumentException $_) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::InvalidConstantFQSEN,
+                $lineno,
+                $name
+            );
+            return;
+        } catch (FQSENException $_) {
             Issue::maybeEmit(
                 $code_base,
                 $context,

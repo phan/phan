@@ -8,6 +8,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\EmptyFQSENException;
+use Phan\Exception\FQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
 use Phan\Exception\UnanalyzableException;
@@ -469,11 +470,11 @@ class ContextNode
                 $context,
                 $node
             );
-        } catch (EmptyFQSENException $e) {
+        } catch (FQSENException $e) {
             Issue::maybeEmit(
                 $code_base,
                 $context,
-                Issue::EmptyFQSENInClasslike,
+                $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike,
                 $this->node->lineno ?? $context->getLineNumberStart(),
                 $e->getFQSEN()
             );
@@ -785,13 +786,14 @@ class ContextNode
             return [];
         }
         if ($expression->kind == ast\AST_NAME) {
+            $name = $expression->children['name'];
             try {
                 return [
                     (new ContextNode(
                         $this->code_base,
                         $this->context,
                         $expression
-                    ))->getFunction($expression->children['name']),
+                    ))->getFunction($name),
                 ];
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
@@ -799,11 +801,11 @@ class ContextNode
                     $this->context,
                     $exception->getIssueInstance()
                 );
-            } catch (EmptyFQSENException $exception) {
+            } catch (FQSENException $exception) {
                 Issue::maybeEmit(
                     $this->code_base,
                     $this->context,
-                    Issue::EmptyFQSENInCallable,
+                    $exception instanceof EmptyFQSENException ? Issue::EmptyFQSENInCallable : Issue::InvalidFQSENInCallable,
                     $expression->lineno,
                     $exception->getFQSEN()
                 );
@@ -869,11 +871,11 @@ class ContextNode
                         $exception->getIssueInstance()
                     );
                     continue;
-                } catch (EmptyFQSENException $exception) {
+                } catch (FQSENException $exception) {
                     Issue::maybeEmit(
                         $code_base,
                         $context,
-                        Issue::EmptyFQSENInCallable,
+                        $exception instanceof EmptyFQSENException ? Issue::EmptyFQSENInCallable : Issue::InvalidFQSENInCallable,
                         $expression->lineno ?? $context->getLineNumberStart(),
                         $exception->getFQSEN()
                     );
@@ -934,6 +936,10 @@ class ContextNode
      * @throws IssueException
      * An exception is thrown if we can't find the given
      * function
+     *
+     * @throws FQSENException
+     * An exception is thrown if the FQSEN being requested
+     * was determined but was invalid/empty
      */
     public function getFunction(
         string $function_name,
