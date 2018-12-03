@@ -530,10 +530,13 @@ class Config
         // Phan will give up on suggesting a different name in issue messages
         // if the number of candidates (for a given suggestion category) is greater than `suggestion_check_limit`.
         //
-        // Set this to `0` to disable most suggestions for similar names, to other namespaces.
-        // Set this to `PHP_INT_MAX` (or other large value) to always suggesting similar names to other namespaces.
-        // (Phan will be a bit slower when this config setting is a larger value)
-        'suggestion_check_limit' => 50,
+        // Set this to `0` to disable most suggestions for similar names, and only suggest identical names in other namespaces.
+        // Set this to `PHP_INT_MAX` (or other large value) to always suggest similar names and identical names in other namespaces.
+        //
+        // Phan will be a bit slower when this config setting is large.
+        // A lower value such as 50 works for suggesting misspelled classes/constants in namespaces,
+        // but won't give you suggestions for globally namespaced functions.
+        'suggestion_check_limit' => 1000,
 
         // Set this to true to disable suggestions for what to use instead of undeclared variables/classes/etc.
         'disable_suggestions' => false,

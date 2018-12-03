@@ -146,7 +146,8 @@ final class LanguageServerIntegrationTest extends BaseTest
         ];
     }
 
-    public function initializeProvider() : array {
+    public function initializeProvider() : array
+    {
         $results = [
             [false, true],
             [true, true],
@@ -180,7 +181,8 @@ final class LanguageServerIntegrationTest extends BaseTest
      * @param resource $proc_in input stream
      * @param resource $proc_out output stream
      */
-    private function performCleanLanguageServerShutdown($proc, $proc_in, $proc_out) {
+    private function performCleanLanguageServerShutdown($proc, $proc_in, $proc_out)
+    {
         try {
             // TODO: Make these pipes async if they aren't already
             if ($proc_in === $proc_out) {

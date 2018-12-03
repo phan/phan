@@ -11,6 +11,7 @@ use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use function strlen;
 use function strtolower;
 
@@ -20,6 +21,13 @@ use function strtolower;
  * Commonly used methods:
  *
  * self::suggestSimilarClass(CodeBase, Context, FullyQualifiedClassName, Closure $filter = null, string $prefix = 'Did you mean')
+ * self::suggestSimilarGlobalFunction(
+ *     CodeBase $code_base,
+ *     Context $context,
+ *     FullyQualifiedFunctionName $function_fqsen,
+ *     bool $suggest_in_global_namespace = true,
+ *     string $prefix = 'Did you mean'
+ * )
  * self::suggestVariableTypoFix(CodeBase, Context, string $variable_name, string $prefix = 'Did you mean')
  * self::suggestSimilarMethod(CodeBase, Context, Clazz, string $wanted_method_name, bool $is_static)
  * self::suggestSimilarProperty(CodeBase, Context, Clazz, string $wanted_property_name, bool $is_static)
@@ -80,7 +88,35 @@ class IssueFixSuggester
         return self::suggestSimilarClass($code_base, $context, $class_fqsen, $filter);
     }
 
+    /**
+     * @return ?Suggestion
+     */
+    public static function suggestSimilarGlobalFunction(CodeBase $code_base, Context $context, FullyQualifiedFunctionName $function_fqsen, bool $suggest_in_global_namespace = true, string $prefix = "")
+    {
+        if (!$prefix) {
+            $prefix = self::DEFAULT_FUNCTION_SUGGESTION_PREFIX;
+        }
+        $suggested_fqsens = array_merge(
+            $code_base->suggestSimilarGlobalFunctionInOtherNamespace($function_fqsen, $context),
+            $code_base->suggestSimilarGlobalFunctionInSameNamespace($function_fqsen, $context, $suggest_in_global_namespace)
+        );
+        if (count($suggested_fqsens) === 0) {
+            return null;
+        }
+
+        /**
+         * @param string|FullyQualifiedFunctionName $fqsen
+         */
+        $generate_type_representation = function ($fqsen) : string {
+            return $fqsen . '()';
+        };
+        $suggestion_text = $prefix . ' ' . implode(' or ', array_map($generate_type_representation, $suggested_fqsens));
+
+        return Suggestion::fromString($suggestion_text);
+    }
+
     const DEFAULT_CLASS_SUGGESTION_PREFIX = 'Did you mean';
+    const DEFAULT_FUNCTION_SUGGESTION_PREFIX = 'Did you mean';
 
     const CLASS_SUGGEST_ONLY_CLASSES = 0;
     const CLASS_SUGGEST_CLASSES_AND_TYPES = 1;

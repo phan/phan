@@ -3,7 +3,14 @@ Phan NEWS
 ?? Dec 2018, Phan 1.1.6 (dev)
 -----------------------
 
-Plugins
+New features(Analysis):
++ Add suggestions to `PhanUndeclaredFunction` for functions in other namespaces
+  and similarly named functions in the same namespace.
+
+Maintenance:
++ Increase the default of the config setting `suggestion_check_limit` from 50 to 1000.
+
+Plugins:
 + Add a prototype tool `tool/dump_markdown_preview`,
   which can be used to preview what description text Phan parses from a doc comment
   (similar to the language server's hover text)

@@ -907,13 +907,14 @@ class ContextNode
     /**
      * @throws IssueException for PhanUndeclaredFunction to be caught and reported by the caller
      */
-    private function throwUndeclaredFunctionIssueException(FullyQualifiedFunctionName $function_fqsen)
+    private function throwUndeclaredFunctionIssueException(FullyQualifiedFunctionName $function_fqsen, bool $suggest_in_global_namespace, FullyQualifiedFunctionName $namespaced_function_fqsen = null)
     {
         throw new IssueException(
             Issue::fromType(Issue::UndeclaredFunction)(
                 $this->context->getFile(),
                 $this->node->lineno ?? 0,
-                [ "$function_fqsen()" ]
+                [ "$function_fqsen()" ],
+                IssueFixSuggester::suggestSimilarGlobalFunction($this->code_base, $this->context, $namespaced_function_fqsen ?? $function_fqsen, $suggest_in_global_namespace)
             )
         );
     }
@@ -946,21 +947,22 @@ class ContextNode
         $code_base = $this->code_base;
         $context = $this->context;
         $namespace = $context->getNamespace();
+        $flags = $node->flags;
         // TODO: support namespace aliases for functions
         if ($is_function_declaration) {
             $function_fqsen = FullyQualifiedFunctionName::make($namespace, $function_name);
             if ($code_base->hasFunctionWithFQSEN($function_fqsen)) {
                 return $code_base->getFunctionByFQSEN($function_fqsen);
             }
-        } elseif (($node->flags & ast\flags\NAME_RELATIVE) !== 0) {
+        } elseif (($flags & ast\flags\NAME_RELATIVE) !== 0) {
             // For relative functions (e.g. namespace\foo())
             $function_fqsen = FullyQualifiedFunctionName::make($namespace, $function_name);
             if (!$code_base->hasFunctionWithFQSEN($function_fqsen)) {
-                $this->throwUndeclaredFunctionIssueException($function_fqsen);
+                $this->throwUndeclaredFunctionIssueException($function_fqsen, false);
             }
             return $code_base->getFunctionByFQSEN($function_fqsen);
         } else {
-            if (($node->flags & ast\flags\NAME_NOT_FQ) !== 0) {
+            if (($flags & ast\flags\NAME_NOT_FQ) !== 0) {
                 if ($context->hasNamespaceMapFor(\ast\flags\USE_FUNCTION, $function_name)) {
                     // If we already have `use function function_name;`
                     $function_fqsen = $context->getNamespaceMapFor(\ast\flags\USE_FUNCTION, $function_name);
@@ -971,7 +973,7 @@ class ContextNode
                     // Make sure the method we're calling actually exists
                     if (!$code_base->hasFunctionWithFQSEN($function_fqsen)) {
                         // The FQSEN from 'use MyNS\function_name;' was the only possible fqsen for that function.
-                        $this->throwUndeclaredFunctionIssueException($function_fqsen);
+                        $this->throwUndeclaredFunctionIssueException($function_fqsen, false);
                     }
 
                     return $code_base->getFunctionByFQSEN($function_fqsen);
@@ -987,7 +989,8 @@ class ContextNode
                         Issue::fromType(Issue::UndeclaredFunction)(
                             $context->getFile(),
                             $node->lineno ?? 0,
-                            [ "$function_fqsen()" ]
+                            [ "$function_fqsen()" ],
+                            IssueFixSuggester::suggestSimilarGlobalFunction($this->code_base, $context, $function_fqsen)
                         )
                     );
                 }
@@ -1003,7 +1006,12 @@ class ContextNode
 
         // Make sure the method we're calling actually exists
         if (!$code_base->hasFunctionWithFQSEN($function_fqsen)) {
-            $this->throwUndeclaredFunctionIssueException($function_fqsen);
+            $not_fully_qualified = (bool)($flags & ast\flags\NAME_NOT_FQ);
+            $this->throwUndeclaredFunctionIssueException(
+                $function_fqsen,
+                !$not_fully_qualified,
+                $not_fully_qualified ? FullyQualifiedFunctionName::make($namespace, $function_name) : $function_fqsen
+            );
         }
 
         return $code_base->getFunctionByFQSEN($function_fqsen);

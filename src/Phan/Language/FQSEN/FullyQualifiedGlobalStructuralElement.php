@@ -107,14 +107,18 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         string $name,
         int $alternate_id = 0
     ) {
-
         // Transfer any relative namespace stuff from the
         // name to the namespace.
         $name_parts = \explode('\\', $name);
         $name = (string)\array_pop($name_parts);
         foreach ($name_parts as $part) {
             // TODO: Emit a warning or throw instead?
-            if ($part !== '') {
+            if ($part === '') {
+                continue;
+            }
+            if ($namespace === '\\') {
+                $namespace = '\\' . $part;
+            } else {
                 $namespace .= '\\' . $part;
             }
         }

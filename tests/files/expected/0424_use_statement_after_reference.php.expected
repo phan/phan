@@ -1,2 +1,2 @@
-%s:3 PhanUndeclaredFunction Call to undeclared function \parse_file()
-%s:10 PhanUndeclaredFunction Call to undeclared function \parse_file()
+%s:3 PhanUndeclaredFunction Call to undeclared function \parse_file() (Did you mean \ast\parse_file())
+%s:10 PhanUndeclaredFunction Call to undeclared function \parse_file() (Did you mean \ast\parse_file())
