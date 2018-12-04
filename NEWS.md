@@ -6,6 +6,7 @@ Phan NEWS
 New features(Analysis):
 + Add suggestions to `PhanUndeclaredFunction` for functions in other namespaces
   and similarly named functions in the same namespace.
++ Add issue types `PhanInvalidFQSENInCallable` and `PhanInvalidFQSENInClasslike`
 
 Maintenance:
 + Increase the default of the config setting `suggestion_check_limit` from 50 to 1000.
@@ -21,6 +22,8 @@ Bug fixes:
   replacing non-nullable param/return types in the real signature.
 + Infer the correct type for the result of the unary `+` operator.
   Improve inferences when `+`/`-` operators are used on string literals.
++ Fix name inferred for global constants `define()`d within a namespace (#2207).
+  This now properly treats the constant name as being fully qualified.
 
 29 Nov 2018, Phan 1.1.5
 -----------------------

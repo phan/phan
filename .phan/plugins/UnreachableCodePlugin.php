@@ -68,7 +68,6 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
     public function visitStmtList(Node $node)
     {
         $child_nodes = $node->children;
-        // Debug::printNode($node);
 
         $last_node_index = count($child_nodes) - 1;
         foreach ($child_nodes as $i => $node) {

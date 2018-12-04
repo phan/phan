@@ -446,7 +446,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             }
         } else {
             if (!\is_string($expression)) {
-                return self::STATUS_PROCEED;  // Probably impossible.
+                return self::STATUS_THROW;  // Probably impossible.
             }
             $function_name = $expression;
         }

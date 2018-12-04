@@ -2496,6 +2496,20 @@ This would be emitted if you have a file with the contents
 ```php
 ```
 
+## PhanInvalidFQSENInCallable
+
+```
+Possible call to a function '{FUNCTIONLIKE}' with an invalid FQSEN.
+```
+
+## PhanInvalidFQSENInClasslike
+
+```
+Possible use of a classlike '{CLASSLIKE}' with an invalid FQSEN.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/063_invalid_fqsen.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/063_invalid_fqsen.php#L7).
+
 ## PhanInvalidRequireFile
 
 ```

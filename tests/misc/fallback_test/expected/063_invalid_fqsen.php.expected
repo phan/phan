@@ -1,0 +1,15 @@
+src/063_invalid_fqsen.php:2 PhanEmptyFQSENInCallable Possible call to a function '\' with an empty FQSEN.
+src/063_invalid_fqsen.php:3 PhanEmptyFQSENInCallable Possible call to a function '\' with an empty FQSEN.
+src/063_invalid_fqsen.php:4 PhanEmptyFQSENInCallable Possible call to a function '\' with an empty FQSEN.
+src/063_invalid_fqsen.php:5 PhanEmptyFQSENInCallable Possible call to a function '\' with an empty FQSEN.
+src/063_invalid_fqsen.php:6 PhanEmptyFQSENInClasslike Possible use of a classlike '\' with an empty FQSEN.
+src/063_invalid_fqsen.php:7 PhanInvalidFQSENInClasslike Possible use of a classlike '\??' with an invalid FQSEN.
+src/063_invalid_fqsen.php:8 PhanInvalidFQSENInClasslike Possible use of a classlike '\,,' with an invalid FQSEN.
+src/063_invalid_fqsen.php:9 PhanEmptyFQSENInClasslike Possible use of a classlike '\' with an empty FQSEN.
+src/063_invalid_fqsen.php:10 PhanEmptyFQSENInClasslike Possible use of a classlike '\' with an empty FQSEN.
+src/063_invalid_fqsen.php:11 PhanInvalidFQSENInClasslike Possible use of a classlike '\a\\b' with an invalid FQSEN.
+src/063_invalid_fqsen.php:12 PhanInvalidFQSENInClasslike Possible use of a classlike '\a\\' with an invalid FQSEN.
+src/063_invalid_fqsen.php:13 PhanNonClassMethodCall Call to method foo on non-class type 1
+src/063_invalid_fqsen.php:14 PhanNonClassMethodCall Call to method foo on non-class type 0
+src/063_invalid_fqsen.php:15 PhanInvalidFQSENInCallable Possible call to a function '\aaa\\b' with an invalid FQSEN.
+src/063_invalid_fqsen.php:16 PhanEmptyFQSENInCallable Possible call to a function '\aaa\' with an empty FQSEN.

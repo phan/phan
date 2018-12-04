@@ -3,6 +3,11 @@
 %s:4 PhanEmptyFQSENInCallable Possible call to a function '\' with an empty FQSEN.
 %s:5 PhanEmptyFQSENInCallable Possible call to a function '\' with an empty FQSEN.
 %s:6 PhanEmptyFQSENInClasslike Possible use of a classlike '\' with an empty FQSEN.
-%s:7 PhanEmptyFQSENInClasslike Possible use of a classlike '\' with an empty FQSEN.
-%s:8 PhanNonClassMethodCall Call to method foo on non-class type 1
-%s:9 PhanNonClassMethodCall Call to method foo on non-class type 0
+%s:7 PhanInvalidFQSENInClasslike Possible use of a classlike '\??' with an invalid FQSEN.
+%s:8 PhanInvalidFQSENInClasslike Possible use of a classlike '\,,' with an invalid FQSEN.
+%s:9 PhanEmptyFQSENInClasslike Possible use of a classlike '\' with an empty FQSEN.
+%s:10 PhanEmptyFQSENInClasslike Possible use of a classlike '\' with an empty FQSEN.
+%s:11 PhanInvalidFQSENInClasslike Possible use of a classlike '\a\\b' with an invalid FQSEN.
+%s:12 PhanInvalidFQSENInClasslike Possible use of a classlike '\a\\' with an invalid FQSEN.
+%s:13 PhanNonClassMethodCall Call to method foo on non-class type 1
+%s:14 PhanNonClassMethodCall Call to method foo on non-class type 0

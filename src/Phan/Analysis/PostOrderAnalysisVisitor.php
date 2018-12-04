@@ -13,6 +13,8 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
+use Phan\Exception\EmptyFQSENException;
+use Phan\Exception\FQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
 use Phan\Exception\UnanalyzableException;
@@ -2003,7 +2005,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $exception->getIssueInstance()
             );
-        } catch (Exception $_) {
+        } catch (Exception $e) {
+            if ($e instanceof FQSENException) {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike,
+                    $node->lineno,
+                    $e->getFQSEN()
+                );
+            }
             // We already checked for NonClassMethodCall
             if (Config::get_strict_method_checking()) {
                 $this->checkForPossibleNonObjectAndNonClassInMethod($node, $method_name);
