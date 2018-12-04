@@ -18,6 +18,8 @@ Plugins:
 
 Bug fixes:
 + Infer more accurate types after asserting `!empty($x)`
++ Fix a crash seen when analyzing anonymous class with 0 args
+  when checking if PhanInfiniteRecursion should be emitted (#2206)
 + Fix a bug causing Phan to fail to warn about nullable phpdoc types
   replacing non-nullable param/return types in the real signature.
 + Infer the correct type for the result of the unary `+` operator.
