@@ -166,7 +166,7 @@ final class ReachabilityChecker extends KindVisitorImplementation
      */
     public function visitClass(Node $node)
     {
-        $args = $node->children['args'];
+        $args = $node->children['args'] ?? null;
         if (!$args instanceof Node) {
             return null;
         }
