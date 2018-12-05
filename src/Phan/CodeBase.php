@@ -3,8 +3,11 @@ namespace Phan;
 
 use AssertionError;
 use Closure;
+use Exception;
+use InvalidArgumentException;
 use Phan\CodeBase\ClassMap;
 use Phan\CodeBase\UndoTracker;
+use Phan\Exception\FQSENException;
 use Phan\Language\Context;
 use Phan\Language\Element\ClassAliasRecord;
 use Phan\Language\Element\ClassConstant;
@@ -368,14 +371,24 @@ class CodeBase
             try {
                 $const_obj = GlobalConstant::fromGlobalConstantName($const_name);
                 $this->addGlobalConstant($const_obj);
-            } catch (\InvalidArgumentException $e) {
-                // Workaround for windows bug in #1011
-                if (\strncmp($const_name, "\0__COMPILER_HALT_OFFSET__\0", 26) === 0) {
-                    continue;
-                }
-                fprintf(STDERR, "Failed to load global constant value for %s, continuing: %s\n", var_export($const_name, true), $e->getMessage());
+            } catch (FQSENException $e) {
+                $this->handleGlobalConstantException($const_name, $e);
+            } catch (InvalidArgumentException $e) {
+                $this->handleGlobalConstantException($const_name, $e);
             }
         }
+    }
+
+    private function handleGlobalConstantException(string $const_name, Exception $e) {
+        // Workaround for windows bug in #1011
+        if (\strncmp($const_name, "\0__COMPILER_HALT_OFFSET__\0", 26) === 0) {
+            return;
+        }
+        // e.g. "\000apc_register_serializer-" APC_SERIALIZER_ABI
+        if (\strncmp($const_name, "\x00apc_", 5) === 0) {
+            return;
+        }
+        fprintf(STDERR, "Failed to load global constant value for %s, continuing: %s\n", var_export($const_name, true), $e->getMessage());
     }
 
     /**
