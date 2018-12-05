@@ -836,21 +836,28 @@ class ContextNode
         foreach ($union_type->getTypeSet() as $type) {
             // TODO: Allow CallableType to have FQSENs as well, e.g. `$x = [MyClass::class, 'myMethod']` has an FQSEN in a sense.
             if ($type instanceof ClosureType) {
-                $closure_fqsen =
-                    FullyQualifiedFunctionName::fromFullyQualifiedString(
-                        $type->asFQSEN()->__toString()
-                    );
+                $closure_fqsen = $type->asFQSEN();
 
-                if ($code_base->hasFunctionWithFQSEN(
-                    $closure_fqsen
-                )) {
-                    // Get the closure
-                    $function = $code_base->getFunctionByFQSEN(
-                        $closure_fqsen
-                    );
+                if ($closure_fqsen instanceof FullyQualifiedFunctionName) {
+                    if ($code_base->hasFunctionWithFQSEN($closure_fqsen)) {
+                        // Get the closure
+                        $function = $code_base->getFunctionByFQSEN(
+                            $closure_fqsen
+                        );
 
-                    $has_type = true;
-                    yield $function;
+                        $has_type = true;
+                        yield $function;
+                    }
+                } elseif ($closure_fqsen instanceof FullyQualifiedMethodName) {
+                    if ($code_base->hasMethodWithFQSEN($closure_fqsen)) {
+                        // Get the closure
+                        $function = $code_base->getMethodByFQSEN(
+                            $closure_fqsen
+                        );
+
+                        $has_type = true;
+                        yield $function;
+                    }
                 }
             } elseif ($type instanceof FunctionLikeDeclarationType) {
                 $has_type = true;
