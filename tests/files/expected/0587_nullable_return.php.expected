@@ -1,0 +1,2 @@
+%s:15 PhanParamSignatureMismatch Declaration of function methodReturningFloatOrNull() : string should be compatible with function methodReturningFloatOrNull() : ?float defined in %s:5
+%s:15 PhanParamSignatureRealMismatchReturnType Declaration of function methodReturningFloatOrNull() : string should be compatible with function methodReturningFloatOrNull() : ?float (method returning 'string' cannot override method returning '?float') defined in %s:5

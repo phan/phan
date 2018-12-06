@@ -1,0 +1,2 @@
+%s:15 PhanParamSignatureMismatch Declaration of function methodReturningArrayOrNull() : string should be compatible with function methodReturningArrayOrNull() : ?iterable defined in %s:5
+%s:15 PhanParamSignatureRealMismatchReturnType Declaration of function methodReturningArrayOrNull() : string should be compatible with function methodReturningArrayOrNull() : ?iterable (method returning 'string' cannot override method returning '?iterable') defined in %s:5

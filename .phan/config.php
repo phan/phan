@@ -116,10 +116,9 @@ return [
     // slow.
     'check_docblock_signature_return_type_match' => true,
 
-    // If true, check to make sure the return type declared
-    // in the doc-block (if any) matches the return type
-    // declared in the method signature. This process is
-    // slow.
+    // If true, check to make sure the param types declared
+    // in the doc-block (if any) matches the param types
+    // declared in the method signature.
     'check_docblock_signature_param_type_match' => true,
 
     // (*Requires check_docblock_signature_param_type_match to be true*)
