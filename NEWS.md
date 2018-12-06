@@ -27,6 +27,8 @@ Bug fixes:
   Improve inferences when `+`/`-` operators are used on string literals.
 + Fix name inferred for global constants `define()`d within a namespace (#2207).
   This now properly treats the constant name as being fully qualified.
++ Don't emit PhanParamSignatureRealMismatchReturnType for a return type of `T` replacing `?T`,
+  or for `array` replacing `iterable` (#2211)
 
 29 Nov 2018, Phan 1.1.5
 -----------------------

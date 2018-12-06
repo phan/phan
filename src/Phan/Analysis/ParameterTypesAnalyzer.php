@@ -838,21 +838,29 @@ class ParameterTypesAnalyzer
         // A non-nullable return type can override a nullable return type of the same type.
         if (!$o_return_union_type->isEmpty()) {
             if (!($o_return_union_type->isEqualTo($return_union_type) || (
-                $o_return_union_type->containsNullable() && !($o_return_union_type->nonNullableClone()->isEqualTo($return_union_type)))
+                $o_return_union_type->containsNullable() && ($o_return_union_type->nonNullableClone()->isEqualTo($return_union_type)))
                 )) {
-                $is_possibly_compatible = false;
+                // There is one exception to this in php 7.1 - the pseudo-type "iterable" can replace ArrayAccess/array in a subclass
+                // TODO: Traversable and array work, but Iterator doesn't. Check for those specific cases?
+                $is_exception_to_rule = $return_union_type->hasIterable() &&
+                    $o_return_union_type->hasIterable() &&
+                    ($o_return_union_type->hasType(IterableType::instance(true)) ||
+                     $o_return_union_type->hasType(IterableType::instance(false)) && !$return_union_type->containsNullable());
+                if (!$is_exception_to_rule) {
+                    $is_possibly_compatible = false;
 
-                self::emitSignatureRealMismatchIssue(
-                    $code_base,
-                    $method,
-                    $o_method,
-                    Issue::ParamSignatureRealMismatchReturnType,
-                    Issue::ParamSignatureRealMismatchReturnTypeInternal,
-                    Issue::ParamSignaturePHPDocMismatchReturnType,
-                    null,
-                    (string)$return_union_type,
-                    (string)$o_return_union_type
-                );
+                    self::emitSignatureRealMismatchIssue(
+                        $code_base,
+                        $method,
+                        $o_method,
+                        Issue::ParamSignatureRealMismatchReturnType,
+                        Issue::ParamSignatureRealMismatchReturnTypeInternal,
+                        Issue::ParamSignaturePHPDocMismatchReturnType,
+                        null,
+                        (string)$return_union_type,
+                        (string)$o_return_union_type
+                    );
+                }
             }
         }
         if ($is_possibly_compatible) {
