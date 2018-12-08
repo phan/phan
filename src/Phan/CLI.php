@@ -187,7 +187,7 @@ class CLI
         }
         $cwd = \getcwd();
         if (!is_string($cwd)) {
-            echo "Failed to find current working directory\n";
+            fwrite(STDERR, "Failed to find current working directory\n");
             exit(1);
         }
         Config::setProjectRootDirectory($cwd);
@@ -197,9 +197,8 @@ class CLI
             if ($exit_code === 0) {
                 exit($exit_code);
             }
-            echo "\n";
-            // --init is currently in --extended-help
-            $this->usage('', $exit_code, true);
+            fprintf(STDERR, "\nUsage:\n\n%s", self::INIT_HELP);
+            exit($exit_code);
         }
 
         // Before reading the config, check for an override on
@@ -683,6 +682,36 @@ class CLI
         return $this->file_list;
     }
 
+    const INIT_HELP = <<<'EOT'
+ --init
+   [--init-level=3]
+   [--init-analyze-dir=path/to/src]
+   [--init-analyze-file=path/to/file.php]
+   [--init-no-composer]
+
+  Generates a `.phan/config.php` in the current directory
+  based on the project's composer.json.
+  The logic used to generate the config file is currently very simple.
+  Some third party classes (e.g. in vendor/)
+  will need to be manually added to 'directory_list' or excluded,
+  and you may end up with a large number of issues to be manually suppressed.
+  See https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base
+
+  [--init-level] affects the generated settings in `.phan/config.php`
+    (e.g. null_casts_as_array).
+    `--init-level` can be set to 1 (strictest) to 5 (least strict)
+  [--init-analyze-dir] can be used as a relative path alongside directories
+    that Phan infers from composer.json's "autoload" settings
+  [--init-analyze-file] can be used as a relative path alongside files
+    that Phan infers from composer.json's "bin" settings
+  [--init-no-composer] can be used to tell Phan that the project
+    is not a composer project.
+    Phan will not check for composer.json or vendor/,
+    and will not include those paths in the generated config.
+  [--init-overwrite] will allow 'phan --init' to overwrite .phan/config.php.
+
+EOT;
+
     // FIXME: If I stop using defined() in UnionTypeVisitor,
     // this will warn about the undefined constant EXIT_SUCCESS when a
     // user-defined constant is used in parse phase in a function declaration
@@ -694,6 +723,7 @@ class CLI
             echo "$msg\n";
         }
 
+        $initHelp = self::INIT_HELP;
         echo <<<EOB
 Usage: {$argv[0]} [options] [files...]
  -f, --file-list <filename>
@@ -731,8 +761,8 @@ Usage: {$argv[0]} [options] [files...]
   incremental analysis.
 
  -d, --project-root-directory </path/to/project>
-  Hunt for a directory named .phan in the provided directory
-  and read configuration file .phan/config.php from that path.
+  Hunt for a directory named `.phan` in the provided directory
+  and read configuration file `.phan/config.php` from that path.
 
  -r, --file-list-only
   A file containing a list of PHP files to be analyzed to the
@@ -741,7 +771,7 @@ Usage: {$argv[0]} [options] [files...]
 
  -k, --config-file
   A path to a config file to load (instead of the default of
-  .phan/config.php).
+  `.phan/config.php`).
 
  -m <mode>, --output-mode
   Output mode from 'text', 'json', 'csv', 'codeclimate', 'checkstyle', or 'pylint'
@@ -749,33 +779,7 @@ Usage: {$argv[0]} [options] [files...]
  -o, --output <filename>
   Output filename
 
- --init
-   [--init-level=3]
-   [--init-analyze-dir=path/to/src]
-   [--init-analyze-file=path/to/file.php]
-   [--init-no-composer]
-
-  Generates a `.phan/config.php` in the current directory
-  based on the project's composer.json.
-  The logic used to generate the config file is currently very simple.
-  Some third party classes (e.g. in vendor/)
-  will need to be manually added to 'directory_list' or excluded,
-  and you may end up with a large number of issues to be manually suppressed.
-  See https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base
-
-  [--init-level] affects the generated settings in `.phan/config.php`
-    (e.g. null_casts_as_array).
-    `--init-level` can be set to 1 (strictest) to 5 (least strict)
-  [--init-analyze-dir] can be used as a relative path alongside directories
-    that Phan infers from composer.json's "autoload" settings
-  [--init-analyze-file] can be used as a relative path alongside files
-    that Phan infers from composer.json's "bin" settings
-  [--init-no-composer] can be used to tell Phan that the project
-    is not a composer project.
-    Phan will not check for composer.json or vendor/,
-    and will not include those paths in the generated config.
-  [--init-overwrite] will allow 'phan --init' to overwrite .phan/config.php.
-
+$initHelp
  --color
   Add colors to the outputted issues. Tested in Unix.
   This is recommended for only the default --output-mode ('text')
@@ -972,7 +976,7 @@ Extended help:
   Don't start the language server if PCNTL isn't installed (don't use the fallback). Useful for debugging.
 
  --require-config-exists
-  Exit immediately with an error code if .phan/config.php does not exist.
+  Exit immediately with an error code if `.phan/config.php` does not exist.
 
 EOB;
         }

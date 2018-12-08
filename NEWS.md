@@ -12,6 +12,7 @@ New features(Analysis):
 
 Maintenance:
 + Increase the default of the config setting `suggestion_check_limit` from 50 to 1000.
++ Shorten help messages for `phan --init` (#2162)
 
 Plugins:
 + Add a prototype tool `tool/dump_markdown_preview`,
