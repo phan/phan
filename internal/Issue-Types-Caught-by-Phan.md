@@ -515,7 +515,7 @@ This category of issue comes up when you're accessing deprecated elements (as ma
 Creating case-insensitive constants with define() has been deprecated in PHP 7.3
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0589_case_insensitive_define.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0589_case_insensitive_define.php#L2).
+e.g. [this issue](https://github.com/phan/phan/tree/1.1.6/tests/files/expected/0589_case_insensitive_define.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.6/tests/files/src/0589_case_insensitive_define.php#L2).
 
 ## PhanDeprecatedClass
 
@@ -2510,7 +2510,7 @@ This would be emitted if you have a file with the contents
 Possible call to a function '{FUNCTIONLIKE}' with an invalid FQSEN.
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/063_invalid_fqsen.php.expected#L14) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/063_invalid_fqsen.php#L15).
+e.g. [this issue](https://github.com/phan/phan/tree/1.1.6/tests/misc/fallback_test/expected/063_invalid_fqsen.php.expected#L14) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.6/tests/misc/fallback_test/src/063_invalid_fqsen.php#L15).
 
 ## PhanInvalidFQSENInClasslike
 
@@ -2518,7 +2518,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_t
 Possible use of a classlike '{CLASSLIKE}' with an invalid FQSEN.
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/063_invalid_fqsen.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/063_invalid_fqsen.php#L7).
+e.g. [this issue](https://github.com/phan/phan/tree/1.1.6/tests/misc/fallback_test/expected/063_invalid_fqsen.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.6/tests/misc/fallback_test/src/063_invalid_fqsen.php#L7).
 
 ## PhanInvalidRequireFile
 
