@@ -228,17 +228,25 @@ return [
     // If enabled (and warn_about_undocumented_throw_statements is enabled),
     // warn about function/closure/method calls that have (at)throws
     // without the invoking method documenting that exception.
-    // TODO: Enable for self-analysis
-    'warn_about_undocumented_exceptions_thrown_by_invoked_functions' => false,
+    'warn_about_undocumented_exceptions_thrown_by_invoked_functions' => true,
 
     // If this is a list, Phan will not warn about lack of documentation of (at)throws
     // for any of the listed classes or their subclasses.
     // This setting only matters when warn_about_undocumented_throw_statements is true.
     // The default is the empty array (Warn about every kind of Throwable)
     'exception_classes_with_optional_throws_phpdoc' => [
+        'LogicException',
         'RuntimeException',
+        'InvalidArgumentException',
         'AssertionError',
         'TypeError',
+        'Phan\Exception\IssueException',  // TODO: Make Phan aware that some arguments suppress certain issues
+        'Phan\AST\TolerantASTConverter\InvalidNodeException',  // This is used internally in TolerantASTConverter
+
+        // TODO: Undo the suppressions for the below categories of issues:
+        'Phan\Exception\CodeBaseException',
+        'Phan\Exception\FQSENException',  // Especially for this
+
     ],
 
     // Increase this to properly analyze require_once statements

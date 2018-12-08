@@ -9,6 +9,7 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
+use Phan\Exception\FQSENException;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -643,8 +644,8 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 return;
             }
             try {
-                $fqsen = FullyQualifiedClassName::fromFullyQualifiedUserProvidedString($class_name);
-            } catch (\InvalidArgumentException $_) {
+                $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_name);
+            } catch (FQSENException $_) {
                 throw new IssueException(Issue::fromType(Issue::TypeComparisonToInvalidClass)(
                     $context->getFile(),
                     $context->getLineNumberStart(),

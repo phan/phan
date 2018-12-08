@@ -4,6 +4,7 @@ namespace Phan\LanguageServer;
 use AdvancedJsonRpc;
 use AssertionError;
 use Closure;
+use Exception;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Daemon\ExitException;
@@ -569,6 +570,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         }
 
         if (Config::getValue('language_server_use_pcntl_fallback')) {
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
             $this->finishAnalyzingURIsWithoutPcntl($uris_to_analyze);
             return;
         }
@@ -643,6 +645,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     /**
      * @param array<string,string> $uris_to_analyze
      * @return void
+     *
+     * @throws Exception if analysis throws an exception
      *
      * @suppress PhanAccessMethodInternal
      */

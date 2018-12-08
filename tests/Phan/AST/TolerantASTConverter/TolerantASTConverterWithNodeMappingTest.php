@@ -83,6 +83,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
     {
         $converter = new TolerantASTConverterWithNodeMapping($byte_offset);
         $errors = [];
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall don't care in unit test
         $ast = $converter->parseCodeAsPHPAST($file_contents, TolerantASTConverter::AST_VERSION, $errors);
         if (count($errors) > 0) {
             throw new InvalidArgumentException("Unexpected errors: " . json_encode($errors));

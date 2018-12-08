@@ -156,6 +156,7 @@ class ContextNode
                 return null;
             }
         }
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall hopefully impossible to parse an invalid FQSEN
         return FullyQualifiedClassName::fromStringInContext(
             $trait_fqsen_string,
             $this->context
@@ -427,7 +428,8 @@ class ContextNode
     }
 
     /**
-     * @return UnionType the union type of the class for this class node. (Should have just one Type)
+     * @return UnionType the union type of the class for this class node. (Typically has just one Type)
+     * @throws FQSENException if class union type is invalid
      */
     public function getClassUnionType() : UnionType
     {
@@ -445,6 +447,7 @@ class ContextNode
 
     /**
      * @return array{0:UnionType,1:Clazz[]}
+     * @throws CodeBaseException if $ignore_missing_classes == false
      */
     public function getClassListInner(bool $ignore_missing_classes)
     {
@@ -1562,13 +1565,6 @@ class ContextNode
      * Get the (non-class) constant associated with this node
      * in this context
      *
-     * @throws NodeException
-     * An exception is thrown if we can't understand the node
-     *
-     * @throws CodeBaseException
-     * An exception is thrown if we can't find the given
-     * global constant
-     *
      * @throws IssueException
      * should be emitted by the caller if caught.
      */
@@ -1585,10 +1581,7 @@ class ContextNode
 
         $constant_name = $node->children['name']->children['name'] ?? null;
         if (!\is_string($constant_name)) {
-            throw new NodeException(
-                $node,
-                "Can't determine constant name"
-            );
+            throw new AssertionError("Can't determine constant name");
         }
 
         $code_base = $this->code_base;

@@ -10,6 +10,7 @@ declare(strict_types = 1);
  */
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
+use Exception;
 use Phan\Config;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -49,7 +50,12 @@ class ReflectionCompletenessCheck
                 if (array_key_exists($function_name, self::EXCLUDED_FUNCTIONS)) {
                     continue;
                 }
-                $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($function_name);
+                try {
+                    $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($function_name);
+                } catch (Exception $e) {
+                    echo "Obtained invalid reflection function '$function_name' from reflection, ignoring: " . $e->getMessage() . "\n";
+                    continue;
+                }
                 $map_list = UnionType::internalFunctionSignatureMapForFQSEN($fqsen);
                 if (!$map_list) {
                     $stub_signature = self::stubSignatureToString(self::createStubSignature($reflection_function));

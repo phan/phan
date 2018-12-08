@@ -3,6 +3,7 @@ namespace Phan;
 
 use AssertionError;
 use Closure;
+use Exception;
 use InvalidArgumentException;
 use Phan\Daemon\ExitException;
 use Phan\Daemon\Request;
@@ -31,6 +32,8 @@ class Daemon
      *
      * @return Request|null - A writable request, which has been fully read from.
      * Callers should close after they are finished writing.
+     *
+     * @throws Exception if analysis fails unexpectedly
      */
     public static function run(CodeBase $code_base, Closure $file_path_lister)
     {
@@ -124,6 +127,8 @@ class Daemon
     /**
      * @return void - A writable request, which has been fully read from.
      * Callers should close after they are finished writing.
+     *
+     * @throws Exception if analysis failed in an unexpected way
      */
     private static function runWithoutPcntl(CodeBase $code_base, Closure $file_path_lister)
     {
@@ -193,6 +198,7 @@ class Daemon
 
     /**
      * @return void
+     * @throws Exception if analysis throws
      */
     private static function analyzeDaemonRequestOnMainThread(CodeBase $code_base, Request $request)
     {

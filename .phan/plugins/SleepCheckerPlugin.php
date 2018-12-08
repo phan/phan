@@ -73,6 +73,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
             // Give up, failed to extract property names
             return;
         }
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall we're in class scope
         $class = $this->context->getClassInScope($this->code_base);
         $class_fqsen = $class->getFQSEN();
         foreach ($class->getPropertyMap($this->code_base) as $property_name => $property) {
@@ -187,6 +188,7 @@ class SleepCheckerVisitor extends PluginAwarePostAnalysisVisitor
         if (!is_array($value)) {
             return;
         }
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall we're in class scope
         $class = $context->getClassInScope($code_base);
 
         foreach ($value as $prop_name) {

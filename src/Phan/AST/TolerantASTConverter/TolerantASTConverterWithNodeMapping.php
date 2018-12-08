@@ -187,6 +187,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
                 }
             }
             if ($node_or_token instanceof PhpParser\Node) {
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall shouldn't happen for generated ASTs
                 $end_position = $node_or_token->getEndPosition();
                 // fprintf(STDERR, "Scanning over Node %s %d-%d\n", get_class($node_or_token), $node_or_token->getStart(), $end_position);
                 if ($end_position < $offset) {
@@ -340,6 +341,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
             /**
              * @param PhpParser\Node|Token $n
              * @throws InvalidArgumentException for invalid token classes
+             * @suppress PhanThrowTypeMismatchForCall can throw if debugDumpNodeOrToken fails
              */
             $fallback_closure = function ($n, int $unused_start_line) : ast\Node {
                 if (!($n instanceof PhpParser\Node) && !($n instanceof Token)) {
@@ -382,6 +384,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
              */
             $fallback_closure = function ($n, int $unused_start_line) : ast\Node {
                 if (!($n instanceof PhpParser\Node) && !($n instanceof Token)) {
+                    // @phan-suppress-next-line PhanThrowTypeMismatchForCall debugDumpNodeOrToken can throw
                     throw new InvalidArgumentException("Invalid type for node: " . (\is_object($n) ? \get_class($n) : \gettype($n)) . ": " . static::debugDumpNodeOrToken($n));
                 }
                 return static::astStub($n);

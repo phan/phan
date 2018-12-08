@@ -90,6 +90,8 @@ class Phan implements IgnoredFilesFilterInterface
      * true if issues were found.
      *
      * @see \Phan\CodeBase
+     *
+     * @throws Exception if analysis fails unrecoverably or in an unexpected way
      */
     public static function analyzeFileList(
         CodeBase $code_base,

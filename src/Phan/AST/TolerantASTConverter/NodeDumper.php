@@ -2,6 +2,7 @@
 
 namespace Phan\AST\TolerantASTConverter;
 
+use Exception;
 use Microsoft\PhpParser\Node;
 use Microsoft\PhpParser\Token;
 
@@ -106,7 +107,7 @@ class NodeDumper
      * @param Node|Token|null $ast_node
      * @param string $padding (to be echoed before the current node
      * @return string
-     * @throws \InvalidArgumentException for invalid $ast_node values
+     * @throws Exception for invalid $ast_node values
      */
     public function dumpTreeAsString($ast_node, string $key = '', string $padding = '') : string
     {
@@ -147,6 +148,7 @@ class NodeDumper
      * @param Node|Token $ast_node
      * @param string $padding (to be echoed before the current node
      * @return void
+     * @throws Exception for invalid $ast_node values
      * @suppress PhanUnreferencedPublicMethod
      */
     public function dumpTree($ast_node, string $key = '', string $padding = '')

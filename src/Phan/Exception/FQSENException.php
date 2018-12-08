@@ -23,7 +23,7 @@ class FQSENException extends Exception
         string $message,
         string $fqsen
     ) {
-        parent::__construct($message);
+        parent::__construct($message . " for FQSEN '$fqsen'");
         $this->fqsen = $fqsen;
     }
 

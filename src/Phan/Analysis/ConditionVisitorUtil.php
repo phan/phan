@@ -3,7 +3,6 @@ namespace Phan\Analysis;
 
 use ast;
 use ast\Node;
-use InvalidArgumentException;
 use Phan\Analysis\ConditionVisitor\BinaryCondition;
 use Phan\Analysis\ConditionVisitor\ComparisonCondition;
 use Phan\Analysis\ConditionVisitor\IdenticalCondition;
@@ -14,6 +13,7 @@ use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\IssueException;
+use Phan\Exception\FQSENException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
@@ -540,8 +540,8 @@ trait ConditionVisitorUtil
         }
         $fqsen_string = '\\' . $expr_value;
         try {
-            $fqsen = FullyQualifiedClassName::fromFullyQualifiedUserProvidedString($fqsen_string);
-        } catch (InvalidArgumentException $_) {
+            $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($fqsen_string);
+        } catch (FQSENException $_) {
             Issue::maybeEmit(
                 $this->code_base,
                 $this->context,
