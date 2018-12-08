@@ -30,7 +30,7 @@ class Initializer
         $config_path = "$cwd/.phan/config.php";
         if (!isset($opts['init-overwrite'])) {
             if (file_exists($config_path)) {
-                printf("phan --init refuses to run: The Phan config already exists at '$config_path'\n(Can pass --init-overwrite to force Phan to overwrite that file)\n");
+                fwrite(STDERR, "phan --init refuses to run: The Phan config already exists at '$config_path'\n(Can pass --init-overwrite to force Phan to overwrite that file)\n");
                 return 1;
             }
         }
@@ -40,30 +40,30 @@ class Initializer
         } else {
             $composer_json_path = "$cwd/composer.json";
             if (!file_exists($composer_json_path)) {
-                printf("phan --init assumes that there will be a composer.json file (at '$composer_json_path')\n(Can pass --init-no-composer if this is not a composer project)\n");
+                fwrite(STDERR, "phan --init assumes that there will be a composer.json file (at '$composer_json_path')\n(Can pass --init-no-composer if this is not a composer project)\n");
                 return 1;
             }
             $contents = file_get_contents($composer_json_path);
             if (!$contents) {
-                printf("phan --init failed to read contents of $composer_json_path\n");
+                fwrite(STDERR, "phan --init failed to read contents of $composer_json_path\n");
                 return 1;
             }
             $composer_settings = json_decode($contents, true);
             if (!is_array($composer_settings)) {
-                printf("Failed to load '%s'\n", $composer_json_path);
+                fwrite(STDERR, "Failed to load '$composer_json_path'\n");
                 return 1;
             }
 
             $vendor_path = $composer_settings['config']['vendor-dir'] ?? "$cwd/vendor";
 
             if (!is_dir($vendor_path)) {
-                printf("phan --init assumes that 'composer.phar install' was run already (expected to find '$vendor_path')\n");
+                fwrite(STDERR, "phan --init assumes that 'composer.phar install' was run already (expected to find '$vendor_path')\n");
                 return 1;
             }
         }
         $phan_settings = self::createPhanSettingsForComposerSettings($composer_settings, $vendor_path, $opts);
         if (!($phan_settings instanceof InitializedSettings)) {
-            echo "phan --init failed to generate settings\n";
+            fwrite(STDERR, "phan --init failed to generate settings\n");
             return 1;
         }
 
