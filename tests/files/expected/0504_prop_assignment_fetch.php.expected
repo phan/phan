@@ -4,4 +4,4 @@
 %s:14 PhanUndeclaredStaticProperty Static property 'otherMissingProp' on \Test504 is undeclared
 %s:16 PhanUndeclaredClass Reference to undeclared class \Missing504
 %s:17 PhanUndeclaredClass Reference to undeclared class \Missing504
-%s:19 PhanTypeExpectedObjectOrClassNameInvalidName Expected an object instance or the name of a class but saw an invalid class name 'Invalid@504'
+%s:19 PhanInvalidFQSENInClasslike Possible use of a classlike 'Invalid namespaced name for FQSEN '\Invalid@504'' with an invalid FQSEN.

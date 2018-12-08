@@ -2,6 +2,7 @@
 namespace Phan\Language\Element;
 
 use Phan\Language\Context;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type;
@@ -91,16 +92,13 @@ class FunctionFactory
         \ReflectionClass $class,
         \ReflectionMethod $reflection_method
     ) : array {
-        $method_fqsen = FullyQualifiedMethodName::fromStringInContext(
-            $reflection_method->getName(),
-            $context
+        $class_name = $class->getName();
+        $method_fqsen = FullyQualifiedMethodName::make(
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+            FullyQualifiedClassName::fromFullyQualifiedString($class_name),
+            $reflection_method->getName()
         );
 
-        $class_name = $class->getName();
-        $reflection_method = new \ReflectionMethod(
-            $class_name,
-            $reflection_method->name
-        );
 
         $method = new Method(
             $context,

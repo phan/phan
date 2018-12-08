@@ -298,6 +298,7 @@ class CompletionResolver
             if (stripos($class_name, $incomplete_class_name) === false) {
                 continue;
             }
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall should be impossible if found in codebase
             $constant_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_name);
             $request->recordCompletionElement(
                 $code_base,

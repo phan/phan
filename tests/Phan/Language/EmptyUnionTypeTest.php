@@ -24,6 +24,7 @@ use TypeError;
 
 /**
  * Checks that EmptyUnionType behaves the same way as an empty UnionType instance
+ * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
 final class EmptyUnionTypeTest extends BaseTest
 {

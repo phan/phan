@@ -6,6 +6,7 @@ use Generator;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
+use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\IntType;
@@ -568,8 +569,7 @@ final class EmptyUnionType extends UnionType
      * The context in which we're resolving this union
      * type.
      *
-     * @return \Generator
-     * @phan-return \Generator<FullyQualifiedClassName>
+     * @return Generator<FullyQualifiedClassName>
      * @suppress PhanTypeMismatchGeneratorYieldValue (deliberate empty stub code)
      *
      * A list of class FQSENs representing the non-native types
@@ -601,7 +601,7 @@ final class EmptyUnionType extends UnionType
      * The context in which we're resolving this union
      * type.
      *
-     * @return \Generator
+     * @return Generator<Clazz>
      *
      * A list of classes representing the non-native types
      * associated with this UnionType
@@ -618,9 +618,7 @@ final class EmptyUnionType extends UnionType
         CodeBase $code_base,
         Context $context
     ) {
-        if (false) {
-            yield;
-        }
+        yield from [];
     }
 
     /**
@@ -1053,6 +1051,7 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
+    /** @suppress PhanThrowTypeAbsentForCall */
     public function asGeneratorTemplateType() : Type
     {
         return Type::fromFullyQualifiedString('\Generator');

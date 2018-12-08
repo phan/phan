@@ -3,6 +3,10 @@ Phan NEWS
 ?? ??? 201?, Phan 1.1.7 (dev)
 -----------------------
 
+Maintenance:
++ Improve checks for empty/invalid FQSENs.
+  Also, replace `PhanTypeExpectedObjectOrClassNameInvalidName` with `PhanEmptyFQSENInClasslike` or `PhanInvalidFQSENInClasslike`.
+
 08 Dec 2018, Phan 1.1.6
 -----------------------
 

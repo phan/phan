@@ -12,8 +12,8 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Config;
-use Phan\Exception\IssueException;
 use Phan\Exception\FQSENException;
+use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
@@ -25,7 +25,6 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
-
 use function is_string;
 
 /**

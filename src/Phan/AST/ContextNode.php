@@ -500,9 +500,7 @@ class ContextNode
                 $node
             );
         } catch (FQSENException $e) {
-            Issue::maybeEmit(
-                $code_base,
-                $context,
+            $this->emitIssue(
                 $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike,
                 $this->node->lineno ?? $context->getLineNumberStart(),
                 $e->getFQSEN()
@@ -609,11 +607,11 @@ class ContextNode
                                     (string)$fqsen
                                 );
                             }
-                        } catch (FQSENException $_) {
+                        } catch (FQSENException $e) {
                             $this->emitIssue(
-                                Issue::TypeExpectedObjectOrClassNameInvalidName,
+                                $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike,
                                 $this->node->lineno ?? 0,
-                                (string)$type_value
+                                $e->getMessage()
                             );
                         }
                     }
@@ -650,8 +648,6 @@ class ContextNode
      * method
      *
      * @throws IssueException
-     *
-     * @throws FQSENException
      */
     public function getMethod(
         $method_name,
@@ -717,12 +713,22 @@ class ContextNode
         // out what we were trying to call the method on
         // and send out an error.
         if (\count($class_list) === 0) {
-            $union_type = UnionTypeVisitor::unionTypeFromClassNode(
-                $this->code_base,
-                $this->context,
-                $node->children['expr']
-                    ?? $node->children['class']
-            );
+            try {
+                $union_type = UnionTypeVisitor::unionTypeFromClassNode(
+                    $this->code_base,
+                    $this->context,
+                    $node->children['expr']
+                        ?? $node->children['class']
+                );
+            } catch (FQSENException $e) {
+                throw new IssueException(
+                    Issue::fromType($e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike)(
+                        $this->context->getFile(),
+                        $node->lineno ?? 0,
+                        [$e->getFQSEN()]
+                    )
+                );
+            }
 
             if (!$union_type->isEmpty()
                 && $union_type->isNativeType()
@@ -799,7 +805,6 @@ class ContextNode
     /**
      * Yields a list of FunctionInterface objects for the 'expr' of an AST_CALL.
      * @return iterable<void, FunctionInterface, void, void>
-     * @throws FQSENException
      */
     public function getFunctionFromNode()
     {
@@ -2007,40 +2012,47 @@ class ContextNode
     /**
      * @return ?FullyQualifiedClassName
      * @throws IssueException if the list of possible classes couldn't be determined.
-     * @throws FQSENException if the class name was empty/invalid
      */
     public function resolveClassNameInContext()
     {
         // A function argument to resolve into an FQSEN
         $arg = $this->node;
 
-        if (\is_string($arg)) {
-            // Class_alias treats arguments as fully qualified strings.
-            return FullyQualifiedClassName::fromFullyQualifiedString($arg);
-        }
-        if ($arg instanceof Node
-            && $arg->kind === ast\AST_CLASS_CONST
-            && \strcasecmp($arg->children['const'], 'class') === 0
-        ) {
-            $class_type = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $arg->children['class']
-            ))->getClassUnionType();
-
-            // If we find a class definition, then return it. There should be 0 or 1.
-            // (Expressions such as 'int::class' are syntactically valid, but would have 0 results).
-            foreach ($class_type->asClassFQSENList($this->context) as $class_fqsen) {
-                return $class_fqsen;
+        try {
+            if (\is_string($arg)) {
+                // Class_alias treats arguments as fully qualified strings.
+                return FullyQualifiedClassName::fromFullyQualifiedString($arg);
             }
-        }
+            if ($arg instanceof Node
+                && $arg->kind === ast\AST_CLASS_CONST
+                && \strcasecmp($arg->children['const'], 'class') === 0
+            ) {
+                $class_type = (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $arg->children['class']
+                ))->getClassUnionType();
 
-        $class_name = $this->getEquivalentPHPScalarValue();
-        // TODO: Emit
-        if (\is_string($class_name)) {
-            if (\preg_match('/^\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\]*$/', $class_name)) {
+                // If we find a class definition, then return it. There should be 0 or 1.
+                // (Expressions such as 'int::class' are syntactically valid, but would have 0 results).
+                foreach ($class_type->asClassFQSENList($this->context) as $class_fqsen) {
+                    return $class_fqsen;
+                }
+            }
+
+            $class_name = $this->getEquivalentPHPScalarValue();
+            // TODO: Emit
+            if (\is_string($class_name)) {
                 return FullyQualifiedClassName::fromFullyQualifiedString($class_name);
             }
+        } catch (FQSENException $e) {
+            throw new IssueException(
+                Issue::fromType($e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike)(
+                    $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike,
+                    $this->node->lineno ?? $this->context->getLineNumberStart(),
+                    $e->getFQSEN()
+                )
+            );
         }
 
         return null;

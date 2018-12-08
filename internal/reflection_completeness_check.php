@@ -96,6 +96,7 @@ class ReflectionCompletenessCheck
                     continue;
                 }
                 $method_name = $reflection_method->getName();
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall should not happen for FQSENs of internal modules
                 $method_fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($class_name . '::' . $method_name);
                 $map_list = UnionType::internalFunctionSignatureMapForFQSEN($method_fqsen);
                 if (!$map_list) {

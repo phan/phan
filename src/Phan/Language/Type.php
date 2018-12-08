@@ -51,6 +51,7 @@ use Phan\Library\Option;
 use Phan\Library\Some;
 use Phan\Library\Tuple5;
 use function count;
+use function stripos;
 use function strtolower;
 
 /**
@@ -72,10 +73,10 @@ class Type
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     const simple_type_regex =
-        '(\??)[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*';
+        '(\??)\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*';
 
     const simple_noncapturing_type_regex =
-        '\??[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*';
+        '\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*';
 
     /**
      * @var string
@@ -768,7 +769,9 @@ class Type
      * @return Type
      * The type with that fully qualified type name (cached for efficiency)
      *
-     * @throws FQSENException if the type name was the empty or invalid string
+     * @throws InvalidArgumentException if type name was invalid
+     *
+     * @throws FQSENException
      */
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
@@ -781,9 +784,10 @@ class Type
      * Extracts the parts of this Type from the passed in fully qualified type name.
      * Callers should ensure that the type regex accepts $fully_qualified_string
      *
-     * @throws FQSENException if the type name was the empty or invalid string
      * @throws InvalidArgumentException if namespace is missing from something that should have a namespace
      * @suppress PhanPossiblyFalseTypeArgument, PhanPossiblyFalseTypeArgumentInternal
+     *
+     * @throws FQSENException
      */
     protected static function fromFullyQualifiedStringInner(
         string $fully_qualified_string
@@ -807,6 +811,7 @@ class Type
                 $fully_qualified_substring = \substr($fully_qualified_string, 0, -2);
             }
             return GenericArrayType::fromElementType(
+                // @phan-suppress-next-line PhanThrowTypeMismatchForCall
                 Type::fromFullyQualifiedString($fully_qualified_substring),
                 $is_nullable,
                 GenericArrayType::KEY_MIXED
@@ -1207,7 +1212,9 @@ class Type
                 // Will throw if $code_base is null or there is no parent type
                 $element_type = self::maybeFindParentType($non_generic_array_type_name[0] === '?', $context, $code_base);
             } else {
-                $element_type = static::fromFullyQualifiedString(
+                // Equivalent to getClassFQSEN()->asType() but slightly faster (this is frequently used)
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+                $element_type = self::fromFullyQualifiedString(
                     $context->getClassFQSEN()->__toString()
                 );
             }
@@ -1231,7 +1238,9 @@ class Type
             if ($source === self::FROM_PHPDOC && $context->getScope()->isInTraitScope()) {
                 return SelfType::instance($is_nullable);
             }
-            return static::fromFullyQualifiedString(
+            // Equivalent to getClassFQSEN()->asType()->withIsNullable but slightly faster (this is frequently used)
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+            return self::fromFullyQualifiedString(
                 $context->getClassFQSEN()->__toString()
             )->withIsNullable($is_nullable);
         }
@@ -2799,5 +2808,27 @@ class Type
         }
         // ++$obj; doesn't change the object.
         return $this->asUnionType();
+    }
+
+    /**
+     * Returns the Type for \Traversable
+     *
+     * @suppress PhanThrowTypeAbsentForCall
+     */
+    public static function traversableInstance() : Type
+    {
+        static $instance = null;
+        return $instance ?? ($instance = Type::fromFullyQualifiedString('\Traversable'));
+    }
+
+    /**
+     * Returns the Type for \Throwable
+     *
+     * @suppress PhanThrowTypeAbsentForCall
+     */
+    public static function throwableInstance() : Type
+    {
+        static $instance = null;
+        return $instance ?? ($instance = Type::fromFullyQualifiedString('\Throwable'));
     }
 }

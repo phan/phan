@@ -78,6 +78,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
                 continue;
             }
             foreach ($parent->children['catches']->children as $catch_node) {
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall hopefully impossible to see for this AST
                 $caught_union_type = UnionTypeVisitor::unionTypeFromClassNode($code_base, $context, $catch_node->children['class']);
                 foreach ($union_type->getTypeSet() as $type) {
                     if (!$type->asExpandedTypes($code_base)->canCastToUnionType($caught_union_type)) {
@@ -104,6 +105,7 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
                 continue;
             }
             foreach ($parent->children['catches']->children as $catch_node) {
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall hopefully impossible to see for this AST
                 $caught_union_type = UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $this->context, $catch_node->children['class']);
                 foreach ($union_type->getTypeSet() as $type) {
                     if ($type->asExpandedTypes($this->code_base)->canCastToUnionType($caught_union_type)) {

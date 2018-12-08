@@ -369,6 +369,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function getFQSEN()
     {
         $hash = \substr(\md5($this->__toString()), 0, 12);
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall this is valid
         return FullyQualifiedFunctionName::fromFullyQualifiedString('\\closure_phpdoc' . $hash);
     }
 
@@ -704,6 +705,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function getReturnTypeAsGeneratorTemplateType() : Type
     {
         // Probably unused
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
         return Type::fromFullyQualifiedString('\Generator');
     }
 

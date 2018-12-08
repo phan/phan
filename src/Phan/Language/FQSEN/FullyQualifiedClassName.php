@@ -42,6 +42,7 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
      */
     public static function fromType(Type $type) : FullyQualifiedClassName
     {
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
         return self::fromFullyQualifiedString(
             $type->asFQSENString()
         );

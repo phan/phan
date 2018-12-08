@@ -3,12 +3,14 @@ namespace Phan\Language;
 
 use Closure;
 use Generator;
+use InvalidArgumentException;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
+use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -159,6 +161,8 @@ class UnionType implements Serializable
      * 'int|string|null|ClassName'.
      *
      * @return UnionType
+     *
+     * @throws InvalidArgumentException if any type name in the union type was invalid
      */
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
@@ -173,6 +177,7 @@ class UnionType implements Serializable
 
         if (is_null($union_type)) {
             $types = \array_map(function (string $type_name) : Type {
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall FIXME: Standardize on InvalidArgumentException
                 return Type::fromFullyQualifiedString($type_name);
             }, self::extractTypeParts($fully_qualified_string));
 
@@ -1837,7 +1842,7 @@ class UnionType implements Serializable
      * The context in which we're resolving this union
      * type.
      *
-     * @return Generator
+     * @return Generator<Clazz>
      *
      * A list of classes representing the non-native types
      * associated with this UnionType
@@ -1888,11 +1893,7 @@ class UnionType implements Serializable
                         )
                     );
                 }
-                if (strcasecmp($class_type->getName(), 'self') === 0) {
-                    yield $context->getClassInScope($code_base);
-                } else {
-                    yield $class_type;
-                }
+                yield $context->getClassInScope($code_base);
                 continue;
             }
             // Get the class FQSEN
@@ -3053,6 +3054,7 @@ class UnionType implements Serializable
             }
         }
 
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
         $result = Type::fromFullyQualifiedString('\Generator');
         if ($fallback_keys->typeCount() > 0 || $fallback_values->typeCount() > 0) {
             $template_types = $fallback_keys->typeCount() > 0 ? [$fallback_keys, $fallback_values] : [$fallback_values];

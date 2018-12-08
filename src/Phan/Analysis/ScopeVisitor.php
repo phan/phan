@@ -13,6 +13,8 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
+use function implode;
+use function rtrim;
 
 /**
  * An abstract visitor with methods to track elements in the current scope.
@@ -244,6 +246,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
      *
      * @suppress PhanPartialTypeMismatchReturn TODO: investigate
      * @suppress PhanPossiblyFalseTypeArgument
+     * @suppress PhanThrowTypeAbsentForCall
      */
     public static function aliasTargetMapFromUseNode(
         Node $node,
@@ -283,19 +286,19 @@ abstract class ScopeVisitor extends AnalysisVisitor
                 $parts = \explode('\\', $target);
                 $function_name = \array_pop($parts);
                 $target = FullyQualifiedFunctionName::make(
-                    $prefix . '\\' . implode('\\', $parts),
+                    rtrim($prefix, '\\') . '\\' . implode('\\', $parts),
                     $function_name
                 );
             } elseif ($use_flag === \ast\flags\USE_CONST) {
                 $parts = \explode('\\', $target);
                 $name = \array_pop($parts);
                 $target = FullyQualifiedGlobalConstantName::make(
-                    $prefix . '\\' . implode('\\', $parts),
+                    rtrim($prefix, '\\') . '\\' . implode('\\', $parts),
                     $name
                 );
             } elseif ($use_flag === \ast\flags\USE_NORMAL) {
                 $target = FullyQualifiedClassName::fromFullyQualifiedString(
-                    $prefix . '\\' . $target
+                    rtrim($prefix, '\\') . '\\' . $target
                 );
             } else {
                 // If we get to this spot and don't know what

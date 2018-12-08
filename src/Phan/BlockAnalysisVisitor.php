@@ -1154,6 +1154,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $code_base = $this->code_base;
 
         foreach ($catch_nodes as $catch_node) {
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall should be impossible to throw
             $union_type = UnionTypeVisitor::unionTypeFromClassNode(
                 $code_base,
                 $context,
