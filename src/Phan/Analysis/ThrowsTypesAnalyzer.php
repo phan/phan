@@ -82,7 +82,7 @@ class ThrowsTypesAnalyzer
         }
         static $throwable;
         if ($throwable === null) {
-            $throwable = Type::fromFullyQualifiedString('\\Throwable');
+            $throwable = Type::throwableInstance();
         }
         if ($type === $throwable) {
             // allow (at)throws Throwable.
@@ -134,7 +134,8 @@ class ThrowsTypesAnalyzer
                 if ($class->isTrait()) {
                     return false;
                 }
-                return $class->getFQSEN()->asType()->asExpandedTypes($code_base)->hasType(Type::fromFullyQualifiedString('\Throwable'));
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+                return $class->getFQSEN()->asType()->asExpandedTypes($code_base)->hasType(Type::throwableInstance());
             })
         );
     }

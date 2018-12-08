@@ -11,6 +11,7 @@ use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
+use Phan\Exception\FQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
 use Phan\Language\Context;
@@ -112,7 +113,12 @@ class DefinitionResolver
         Context $context,
         Node $node
     ) {
-        $union_type = UnionTypeVisitor::unionTypeFromClassNode($code_base, $context, $node);
+        try {
+            $union_type = UnionTypeVisitor::unionTypeFromClassNode($code_base, $context, $node);
+        } catch (FQSENException $_) {
+            // Hopefully warn elsewhere
+            return;
+        }
         self::locateClassDefinitionForUnionType($request, $code_base, $union_type);
     }
 
@@ -300,6 +306,8 @@ class DefinitionResolver
                 try {
                     $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\' . ltrim($name, '\\'));
                 } catch (AssertionError $_) {
+                    return;  // ignore, probably still typing the requested definition
+                } catch (FQSENException $_) {
                     return;  // ignore, probably still typing the requested definition
                 }
                 if ($code_base->hasClassWithFQSEN($class_fqsen)) {

@@ -17,6 +17,7 @@ use Phan\AST\PhanAnnotationAdder;
 use Phan\AST\TolerantASTConverter\ParseException;
 use Phan\AST\Visitor\Element;
 use Phan\Daemon\Request;
+use Phan\Exception\FQSENException;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
@@ -354,43 +355,53 @@ class Analysis
     {
         $plugin_set = ConfigPluginSet::instance();
         foreach ($plugin_set->getReturnTypeOverrides($code_base) as $fqsen_string => $closure) {
-            if (\stripos($fqsen_string, '::') !== false) {
-                $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
-                $class_fqsen = $fqsen->getFullyQualifiedClassName();
-                // We have to call hasClassWithFQSEN before calling hasMethodWithFQSEN in order to autoload the internal function signatures.
-                // TODO: Move class autoloading into hasMethodWithFQSEN()?
-                if ($code_base->hasClassWithFQSEN($class_fqsen)) {
-                    // This is an override of a method.
-                    if ($code_base->hasMethodWithFQSEN($fqsen)) {
-                        $method = $code_base->getMethodByFQSEN($fqsen);
-                        $method->setDependentReturnTypeClosure($closure);
+            try {
+                if (\stripos($fqsen_string, '::') !== false) {
+                    $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
+                    $class_fqsen = $fqsen->getFullyQualifiedClassName();
+                    // We have to call hasClassWithFQSEN before calling hasMethodWithFQSEN in order to autoload the internal function signatures.
+                    // TODO: Move class autoloading into hasMethodWithFQSEN()?
+                    if ($code_base->hasClassWithFQSEN($class_fqsen)) {
+                        // This is an override of a method.
+                        if ($code_base->hasMethodWithFQSEN($fqsen)) {
+                            $method = $code_base->getMethodByFQSEN($fqsen);
+                            $method->setDependentReturnTypeClosure($closure);
+                        }
+                    }
+                } else {
+                    // This is an override of a function.
+                    $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($fqsen_string);
+                    if ($code_base->hasFunctionWithFQSEN($fqsen)) {
+                        $function = $code_base->getFunctionByFQSEN($fqsen);
+                        $function->setDependentReturnTypeClosure($closure);
                     }
                 }
-            } else {
-                // This is an override of a function.
-                $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($fqsen_string);
-                if ($code_base->hasFunctionWithFQSEN($fqsen)) {
-                    $function = $code_base->getFunctionByFQSEN($fqsen);
-                    $function->setDependentReturnTypeClosure($closure);
-                }
+            } catch (FQSENException $e) {
+                fprintf(STDERR, "getReturnTypeOverrides returned an invalid FQSEN %s: %s\n", $fqsen_string, $e->getMessage());
+            } catch (InvalidArgumentException $e) {
+                fprintf(STDERR, "getReturnTypeOverrides returned an invalid FQSEN %s: %s\n", $fqsen_string, $e->getMessage());
             }
         }
 
         foreach ($plugin_set->getAnalyzeFunctionCallClosures($code_base) as $fqsen_string => $closure) {
-            if (stripos($fqsen_string, '::') !== false) {
-                // This is an override of a method.
-                $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
-                if ($code_base->hasMethodWithFQSEN($fqsen)) {
-                    $method = $code_base->getMethodByFQSEN($fqsen);
-                    $method->setFunctionCallAnalyzer($closure);
+            try {
+                if (stripos($fqsen_string, '::') !== false) {
+                    // This is an override of a method.
+                    $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
+                    if ($code_base->hasMethodWithFQSEN($fqsen)) {
+                        $method = $code_base->getMethodByFQSEN($fqsen);
+                        $method->setFunctionCallAnalyzer($closure);
+                    }
+                } else {
+                    // This is an override of a function.
+                    $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($fqsen_string);
+                    if ($code_base->hasFunctionWithFQSEN($fqsen)) {
+                        $function = $code_base->getFunctionByFQSEN($fqsen);
+                        $function->setFunctionCallAnalyzer($closure);
+                    }
                 }
-            } else {
-                // This is an override of a function.
-                $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($fqsen_string);
-                if ($code_base->hasFunctionWithFQSEN($fqsen)) {
-                    $function = $code_base->getFunctionByFQSEN($fqsen);
-                    $function->setFunctionCallAnalyzer($closure);
-                }
+            } catch (FQSENException $e) {
+                fprintf(STDERR, "getAnalyzeFunctionCallClosures returned an invalid FQSEN %s\n", $e->getFQSEN());
             }
         }
     }

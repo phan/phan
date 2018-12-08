@@ -245,8 +245,6 @@ return [
 
         // TODO: Undo the suppressions for the below categories of issues:
         'Phan\Exception\CodeBaseException',
-        'Phan\Exception\FQSENException',  // Especially for this
-
     ],
 
     // Increase this to properly analyze require_once statements

@@ -181,22 +181,24 @@ class Context extends FileRef
         $fqsen = $namespace_map_entry->fqsen;
         $namespace_map_entry->is_used = true;
 
-
+        // Create something of the corresponding type (which may or may not be within a suffix)
         if (!$suffix) {
             return $fqsen;
         }
 
-        // Create something of the corresponding type (which may or may not be within a suffix)
         switch ($flags) {
             case \ast\flags\USE_NORMAL:
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall This and the suffix should have already been validated
                 return FullyQualifiedClassName::fromFullyQualifiedString(
                     $fqsen->__toString() . '\\' . $suffix
                 );
             case \ast\flags\USE_FUNCTION:
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall
                 return FullyQualifiedFunctionName::fromFullyQualifiedString(
                     $fqsen->__toString() . '\\' . $suffix
                 );
             case \ast\flags\USE_CONST:
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall
                 return FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
                     $fqsen->__toString() . '\\' . $suffix
                 );

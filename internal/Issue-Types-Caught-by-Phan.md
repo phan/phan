@@ -1834,14 +1834,6 @@ Expected an object instance or the name of a class but saw expression with type 
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0521_misuse_closure_type.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0521_misuse_closure_type.php#L11).
 
-## PhanTypeExpectedObjectOrClassNameInvalidName
-
-```
-Expected an object instance or the name of a class but saw an invalid class name '{STRING_LITERAL}'
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0504_prop_assignment_fetch.php.expected#L7) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0504_prop_assignment_fetch.php#L19).
-
 ## PhanTypeExpectedObjectPropAccess
 
 ```

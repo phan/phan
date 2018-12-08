@@ -39,6 +39,7 @@ $internal_function_name_list = get_defined_functions()['internal'];
 
 /**
  * Unit tests of the many methods of UnionType
+ * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
 final class UnionTypeTest extends BaseTest
 {

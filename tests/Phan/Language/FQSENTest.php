@@ -14,6 +14,7 @@ use Phan\Tests\BaseTest;
 
 /**
  * Unit tests of various FQSEN subclasses.
+ * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
 final class FQSENTest extends BaseTest
 {

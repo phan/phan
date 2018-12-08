@@ -459,6 +459,7 @@ class CodeBase
     /**
      * @param string[] $internal_function_name_list
      * @return void
+     * @suppress PhanThrowTypeAbsentForCall
      */
     private function addInternalFunctionsByNames(array $internal_function_name_list)
     {
@@ -705,6 +706,7 @@ class CodeBase
     public function addReflectionClass(ReflectionClass $class)
     {
         // Map the FQSEN to the class
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
         $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class->getName());
         $this->fqsen_class_map_reflection->offsetSet($class_fqsen, $class);
     }
@@ -1818,6 +1820,7 @@ class CodeBase
 
         usort($namespaces_for_class, 'strcmp');
 
+        /** @suppress PhanThrowTypeAbsentForCall */
         return array_map(function (string $namespace_name) use ($class_name) : FullyQualifiedClassName {
             return FullyQualifiedClassName::make($namespace_name, $class_name);
         }, $namespaces_for_class);
@@ -1844,6 +1847,7 @@ class CodeBase
 
         usort($namespaces_for_function, 'strcmp');
 
+        /** @suppress PhanThrowTypeAbsentForCall */
         return array_map(function (string $namespace_name) use ($function_name) : FullyQualifiedFunctionName {
             return FullyQualifiedFunctionName::make($namespace_name, $function_name);
         }, $namespaces_for_function);
@@ -1892,7 +1896,7 @@ class CodeBase
     }
 
     /**
-     * @return array<int,FullyQualifiedFunctionName|string> 0 or more namespaced function names found in this code base
+     * @return array<int,FullyQualifiedFunctionName> 0 or more namespaced function names found in this code base
      */
     public function suggestSimilarGlobalFunctionForNamespaceAndName(
         string $namespace,
@@ -1924,9 +1928,9 @@ class CodeBase
         usort($suggested_function_names, 'strcmp');
 
         /**
-         * @return FullyQualifiedFunctionName
+         * @suppress PhanThrowTypeAbsentForCall
          */
-        return array_map(function (string $function_name_lower) use ($namespace, $function_names_in_namespace) {
+        return array_map(function (string $function_name_lower) use ($namespace, $function_names_in_namespace) : FullyQualifiedFunctionName {
             $function_name = $function_names_in_namespace[$function_name_lower];
             return FullyQualifiedFunctionName::make($namespace, $function_name);
         }, $suggested_function_names);
@@ -1979,6 +1983,7 @@ class CodeBase
 
         /**
          * @return string|FullyQualifiedClassName
+         * @suppress PhanThrowTypeAbsentForCall
          */
         return array_map(function (string $class_name_lower) use ($namespace, $class_names_in_namespace) {
             if (!\array_key_exists($class_name_lower, $class_names_in_namespace)) {

@@ -104,6 +104,7 @@ class ParseVisitor extends ScopeVisitor
             return $this->context;
         }
 
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall hopefully impossible
         $class_fqsen = FullyQualifiedClassName::fromStringInContext(
             $class_name,
             $this->context
@@ -219,15 +220,10 @@ class ParseVisitor extends ScopeVisitor
                 }
                 // $extends_node->flags is 0 when it is fully qualified?
 
-                // The name is fully qualified. Make sure it looks
-                // like it is
-                if (0 !== \strpos($parent_class_name, '\\')) {
-                    $parent_class_name = '\\' . $parent_class_name;
-                }
-
-                $parent_fqsen = FullyQualifiedClassName::fromStringInContext(
-                    $parent_class_name,
-                    $this->context
+                // The name is fully qualified.
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall should be impossible
+                $parent_fqsen = FullyQualifiedClassName::fromFullyQualifiedString(
+                    $parent_class_name
                 );
 
                 // Set the parent for the class
@@ -243,6 +239,7 @@ class ParseVisitor extends ScopeVisitor
 
             // Add any implemented interfaces
             if (isset($node->children['implements'])) {
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall should be impossible
                 $interface_list = (new ContextNode(
                     $this->code_base,
                     $this->context,
@@ -251,6 +248,7 @@ class ParseVisitor extends ScopeVisitor
 
                 foreach ($interface_list as $name) {
                     $class->addInterfaceClassFQSEN(
+                        // @phan-suppress-next-line PhanThrowTypeAbsentForCall should be impossible
                         FullyQualifiedClassName::fromFullyQualifiedString(
                             $name
                         )
@@ -281,6 +279,7 @@ class ParseVisitor extends ScopeVisitor
         // Bomb out if we're not in a class context
         $class = $this->getContextClass();
 
+        // @phan-suppress-next-line PhanThrowTypeMismatchForCall should be impossible
         $trait_fqsen_list = (new ContextNode(
             $this->code_base,
             $this->context,
@@ -326,9 +325,9 @@ class ParseVisitor extends ScopeVisitor
 
         $method_name = (string)$node->children['name'];
 
-        $method_fqsen = FullyQualifiedMethodName::fromStringInContext(
-            $method_name,
-            $context
+        $method_fqsen = FullyQualifiedMethodName::make(
+            $class->getFQSEN(),
+            $method_name
         );
 
         // Hunt for an available alternate ID if necessary
@@ -593,9 +592,9 @@ class ParseVisitor extends ScopeVisitor
                 throw new AssertionError('expected class const name to be a string');
             }
 
-            $fqsen = FullyQualifiedClassConstantName::fromStringInContext(
-                $name,
-                $this->context
+            $fqsen = FullyQualifiedClassConstantName::make(
+                $class->getFQSEN(),
+                $name
             );
 
             // Get a comment on the declaration
@@ -721,16 +720,11 @@ class ParseVisitor extends ScopeVisitor
         // Hunt for an un-taken alternate ID
         $alternate_id = 0;
         do {
-            $function_fqsen =
-                FullyQualifiedFunctionName::fromStringInContext(
-                    $function_name,
-                    $context
-                )
-                ->withNamespace($context->getNamespace())
-                ->withAlternateId($alternate_id++);
-        } while ($code_base->hasFunctionWithFQSEN(
-            $function_fqsen
-        ));
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall this is valid
+            $function_fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString(
+                rtrim($context->getNamespace(), '\\') . '\\' . $function_name
+            )->withAlternateId($alternate_id++);
+        } while ($code_base->hasFunctionWithFQSEN($function_fqsen));
 
         $func = Func::fromNode(
             $context

@@ -539,7 +539,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         };
         // The implementation of Traversable may change in the future (e.g. to support generics).
         // So use fromFullyQualifiedString()
-        $traversable_type = Type::fromFullyQualifiedString('\Traversable');
+        $traversable_type = Type::traversableInstance();
         $remove_array_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) use ($traversable_type) : Context {
             return $cv->updateVariableWithConditionalFilter(
                 $var_node,

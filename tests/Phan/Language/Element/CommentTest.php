@@ -12,6 +12,7 @@ use Phan\Tests\BaseTest;
 
 /**
  * Unit tests of Comment
+ * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
 final class CommentTest extends BaseTest
 {

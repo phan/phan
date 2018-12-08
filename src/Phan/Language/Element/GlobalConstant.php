@@ -1,7 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use InvalidArgumentException;
 use Phan\AST\ASTReverter;
+use Phan\Exception\FQSENException;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\Type;
@@ -48,14 +50,17 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
      * A GlobalConstant structural element representing the given named
      * builtin constant.
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      * If reflection could not locate the builtin constant.
+     *
+     * @throws FQSENException
+     * If a module declares an invalid constant FQSEN
      */
     public static function fromGlobalConstantName(
         string $name
     ) : GlobalConstant {
         if (!\defined($name)) {
-            throw new \InvalidArgumentException(sprintf("This should not happen, defined(%s) is false, but the constant was returned by get_defined_constants()", var_export($name, true)));
+            throw new InvalidArgumentException(sprintf("This should not happen, defined(%s) is false, but the constant was returned by get_defined_constants()", var_export($name, true)));
         }
         $value = \constant($name);
         $constant_fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(

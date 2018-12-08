@@ -97,6 +97,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // Hunt for the alternate of this class defined
         // in this file
         do {
+            // @phan-suppress-next-line PhanThrowTypeMismatchForCall
             $class_fqsen = FullyQualifiedClassName::fromStringInContext(
                 $class_name,
                 $this->context
@@ -233,7 +234,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         // This really ought not to throw given that
         // we already successfully parsed the code
-        // base
+        // base (the AST names should be valid)
+        // @phan-suppress-next-line PhanThrowTypeMismatchForCall
         $canonical_function = (new ContextNode(
             $code_base,
             $original_context,
@@ -959,6 +961,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitCatch(Node $node) : Context
     {
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
         $union_type = UnionTypeVisitor::unionTypeFromClassNode(
             $this->code_base,
             $this->context,
@@ -966,11 +969,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         );
 
         try {
-            $class_list = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node->children['class']
-            ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
+            $class_list = iterator_to_array($union_type->asClassList($this->code_base, $this->context));
 
             if (Config::get_closest_target_php_version_id() < 70100 && \count($class_list) > 1) {
                 $this->emitIssue(
@@ -993,7 +992,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             );
         }
 
-        $throwable_type = Type::fromFullyQualifiedString('\Throwable');
+        $throwable_type = Type::throwableInstance();
         if ($union_type->isEmpty() || !$union_type->asExpandedTypes($this->code_base)->hasType($throwable_type)) {
             $union_type = $union_type->withType($throwable_type);
         }

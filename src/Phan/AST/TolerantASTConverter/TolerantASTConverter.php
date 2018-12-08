@@ -5,8 +5,8 @@ namespace Phan\AST\TolerantASTConverter;
 use AssertionError;
 use ast;
 use ast\flags;
-use Exception;
 use Error;
+use Exception;
 use InvalidArgumentException;
 use Microsoft\PhpParser;
 use Microsoft\PhpParser\Diagnostic;
@@ -17,7 +17,6 @@ use Microsoft\PhpParser\Parser;
 use Microsoft\PhpParser\Token;
 use Microsoft\PhpParser\TokenKind;
 use RuntimeException;
-
 use function substr;
 
 // If php-ast isn't loaded already, then load this file to generate equivalent

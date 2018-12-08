@@ -64,30 +64,6 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         $this->alternate_id = $alternate_id;
     }
 
-    /**
-     * Construct a fully-qualified global structural element from a namespace and name
-     * (such as 'is_string', '\is_int', 'stdClass', 'PHP_VERSION_ID', 'ast\parse_code', etc.)
-     *
-     * @param string $name
-     * The name of this structural element, may contain a namespace.
-     *
-     * @return static
-     *
-     * @deprecated - use fromFullyQualifiedString
-     * @suppress PhanUnreferencedPublicMethod
-     */
-    public static function makeFromExtractedNamespaceAndName(string $name)
-    {
-        $name = \ltrim($name, '\\');
-        $i = \stripos($name, '\\');
-        if ($i === false) {
-            // Common case: no namespace
-            return self::make('\\', $name);
-        }
-        // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
-        return self::make('\\' . \substr($name, 0, $i), \substr($name, $i + 1));
-    }
-
     /** @internal */
     const VALID_STRUCTURAL_ELEMENT_REGEX = '/^\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*$/';
     /** @internal */
@@ -234,7 +210,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      *
      * @return static
      *
-     * @throws InvalidFQSENException if the $fqsen_string is invalid
+     * @throws FQSENException if the $fqsen_string is invalid or empty
      */
     public static function fromStringInContext(
         string $fqsen_string,
@@ -316,10 +292,12 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
 
     /**
      * @return static a copy of this global structural element with a different namespace
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function withNamespace(
         string $namespace
     ) {
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall the class name was already validated
         return static::make(
             self::cleanNamespace($namespace),
             $this->getName(),
@@ -342,6 +320,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             throw new AssertionError("Your alternate IDs have run away");
         }
 
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall the class name was already validated
         return static::make(
             $this->getNamespace(),
             $this->getName(),

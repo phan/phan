@@ -1930,7 +1930,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // TODO: Only allow calls to __construct from other constructors?
         $found_ancestor_constructor = false;
         if ($this->context->isInMethodScope()) {
-            $possible_ancestor_type = $class_context_node->getClassUnionType();
+            try {
+                $possible_ancestor_type = $class_context_node->getClassUnionType();
+            } catch (FQSENException $e) {
+                $this->emitIssue(
+                    $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInCallable : Issue::InvalidFQSENInCallable,
+                    $node->lineno,
+                    $e->getFQSEN()
+                );
+                return;
+            }
             // If we can determine the ancestor type, and it's an parent/ancestor class, allow the call without warning.
             // (other code should check visibility and existence and args of __construct)
 
