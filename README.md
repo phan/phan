@@ -218,8 +218,8 @@ Usage: ./phan [options] [files...]
   incremental analysis.
 
  -d, --project-root-directory </path/to/project>
-  Hunt for a directory named .phan in the provided directory
-  and read configuration file .phan/config.php from that path.
+  Hunt for a directory named `.phan` in the provided directory
+  and read configuration file `.phan/config.php` from that path.
 
  -r, --file-list-only
   A file containing a list of PHP files to be analyzed to the
@@ -228,7 +228,7 @@ Usage: ./phan [options] [files...]
 
  -k, --config-file
   A path to a config file to load (instead of the default of
-  .phan/config.php).
+  `.phan/config.php`).
 
  -m <mode>, --output-mode
   Output mode from 'text', 'json', 'csv', 'codeclimate', 'checkstyle', or 'pylint'
@@ -247,7 +247,7 @@ Usage: ./phan [options] [files...]
   The logic used to generate the config file is currently very simple.
   Some third party classes (e.g. in vendor/)
   will need to be manually added to 'directory_list' or excluded,
-  and you may end up with numerous issues to be manually suppressed.
+  and you may end up with a large number of issues to be manually suppressed.
   See https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base
 
   [--init-level] affects the generated settings in `.phan/config.php`
@@ -318,6 +318,9 @@ Usage: ./phan [options] [files...]
   Add a plugin to run. This flag can be repeated.
   (Either pass the name of the plugin or a relative/absolute path to the plugin)
 
+ --strict-method-checking
+  Enables the config option `strict_method_checking`.
+
  --strict-param-checking
   Enables the config option `strict_param_checking`.
 
@@ -329,7 +332,7 @@ Usage: ./phan [options] [files...]
 
  --strict-type-checking
   Equivalent to
-  `--strict-param-checking --strict-property-checking --strict-return-checking`.
+  `--strict-method-checking --strict-param-checking --strict-property-checking --strict-return-checking`.
 
  --use-fallback-parser
   If a file to be analyzed is syntactically invalid
