@@ -2,7 +2,6 @@
 
 namespace Phan\AST\TolerantASTConverter;
 
-use Error;
 use function chr;
 use function hexdec;
 use function is_string;
@@ -135,6 +134,7 @@ final class StringUtil
      * @param null|string $quote Quote type
      *
      * @return string String with escape sequences parsed
+     * @throws InvalidNodeException for invalid code points
      */
     public static function parseEscapeSequences($str, $quote) : string
     {
@@ -176,7 +176,7 @@ final class StringUtil
      *
      * @return string UTF-8 representation of code point
      *
-     * @throws \Error for invalid code points
+     * @throws InvalidNodeException for invalid code points
      */
     private static function codePointToUtf8(int $num) : string
     {
@@ -193,6 +193,6 @@ final class StringUtil
             return chr(($num >> 18) + 0xF0) . chr((($num >> 12) & 0x3F) + 0x80)
                  . chr((($num >> 6) & 0x3F) + 0x80) . chr(($num & 0x3F) + 0x80);
         }
-        throw new Error('Invalid UTF-8 codepoint escape sequence: Codepoint too large');
+        throw new InvalidNodeException('Invalid UTF-8 codepoint escape sequence: Codepoint too large');
     }
 }

@@ -4,4 +4,5 @@
 %s:12 PhanUndeclaredConstant Reference to undeclared constant \test2207\TEST2
 %s:14 PhanInvalidConstantFQSEN '\' is an invalid FQSEN for a constant
 %s:15 PhanInvalidConstantFQSEN 'foo\\TEST3' is an invalid FQSEN for a constant
+%s:16 PhanInvalidConstantFQSEN '\\TEST4' is an invalid FQSEN for a constant
 %s:19 PhanUndeclaredConstant Reference to undeclared constant \test2207\TEST5

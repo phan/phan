@@ -207,8 +207,13 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
                 }
 
                 $namespace = '\\' . \implode('\\', $parts);
-                if ($namespace !== '\\' && !preg_match(self::VALID_STRUCTURAL_ELEMENT_REGEX, $namespace)) {
-                    throw new InvalidFQSENException("The namespace $namespace is invalid", $fqsen_string);
+                if ($namespace !== '\\') {
+                    if (!preg_match(self::VALID_STRUCTURAL_ELEMENT_REGEX, $namespace)) {
+                        throw new InvalidFQSENException("The namespace $namespace is invalid", $fqsen_string);
+                    }
+                } elseif (\count($parts) > 0) {
+                    // E.g. from `\\stdClass` with two backslashes
+                    throw new InvalidFQSENException("The namespace cannot have empty parts", $fqsen_string);
                 }
 
                 return static::make(

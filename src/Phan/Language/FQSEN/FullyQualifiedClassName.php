@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\FQSEN;
 
-use InvalidArgumentException;
+use Phan\Exception\FQSENException;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Memoize;
@@ -53,6 +53,7 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
     /**
      * Asserts that something is a valid class FQSEN in PHPDoc.
      * Use this for FQSENs passed in from the analyzed code.
+     * @suppress PhanUnreferencedPublicMethod
      */
     public static function isValidClassFQSEN(string $type) : bool
     {
@@ -67,13 +68,12 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
      *
      * @return static
      *
-     * @throws InvalidArgumentException on failure.
+     * @throws FQSENException on failure.
+     * @deprecated use self::fromFullyQualifiedString()
+     * @suppress PhanUnreferencedPublicMethod
      */
     public static function fromFullyQualifiedUserProvidedString(string $fully_qualified_string) : FullyQualifiedClassName
     {
-        if (!self::isValidClassFQSEN($fully_qualified_string)) {
-            throw new InvalidArgumentException("Invalid class FQSEN '$fully_qualified_string'");
-        }
         return self::fromFullyQualifiedString($fully_qualified_string);
     }
 
@@ -83,6 +83,7 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
      */
     public function asType() : Type
     {
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall the creation of FullyQualifiedClassName checks for FQSENException.
         return Type::fromFullyQualifiedString(
             $this->__toString()
         );
@@ -104,6 +105,7 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
     public static function getStdClassFQSEN() : FullyQualifiedClassName
     {
         return self::memoizeStatic(__METHOD__, function () : FullyQualifiedClassName {
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
             return self::fromFullyQualifiedString("\stdClass");
         });
     }

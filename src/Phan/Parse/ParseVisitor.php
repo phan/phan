@@ -13,6 +13,7 @@ use Phan\Config;
 use Phan\Daemon;
 use Phan\Exception\FQSENException;
 use Phan\Exception\IssueException;
+use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\ClassConstant;
@@ -210,11 +211,11 @@ class ParseVisitor extends ScopeVisitor
                             ));
                     } else {
                         $parent_class_name =
-                            $this->context->getNamespace() . '\\' . $parent_class_name;
+                            \rtrim($this->context->getNamespace(), '\\') . '\\' . $parent_class_name;
                     }
                 } elseif ($extends_node->flags & \ast\flags\NAME_RELATIVE) {
                     $parent_class_name =
-                        $this->context->getNamespace() . '\\' . $parent_class_name;
+                        \rtrim($this->context->getNamespace(), '\\') . '\\' . $parent_class_name;
                 }
                 // $extends_node->flags is 0 when it is fully qualified?
 
@@ -272,6 +273,8 @@ class ParseVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * @throws UnanalyzableException if saw an invalid AST node (e.g. from polyfill)
      */
     public function visitUseTrait(Node $node) : Context
     {

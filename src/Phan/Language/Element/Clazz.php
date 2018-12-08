@@ -2,6 +2,7 @@
 namespace Phan\Language\Element;
 
 use Closure;
+use LogicException;
 use Phan\Analysis\AbstractMethodAnalyzer;
 use Phan\Analysis\ClassInheritanceAnalyzer;
 use Phan\Analysis\CompositionAnalyzer;
@@ -33,6 +34,7 @@ use Phan\Library\Option;
 use Phan\Library\Some;
 use Phan\Memoize;
 use Phan\Plugin\ConfigPluginSet;
+use RuntimeException;
 
 /**
  * Clazz represents the information Phan knows about a class, trait, or interface,
@@ -438,7 +440,7 @@ class Clazz extends AddressableElement
      * @return FullyQualifiedClassName
      * The parent class of this class if one exists
      *
-     * @throws \Exception
+     * @throws LogicException
      * An exception is thrown if this class has no parent
      */
     public function getParentClassFQSEN() : FullyQualifiedClassName
@@ -446,7 +448,7 @@ class Clazz extends AddressableElement
         $parent_type_option = $this->getParentTypeOption();
 
         if (!$parent_type_option->isDefined()) {
-            throw new \Exception("Class $this has no parent");
+            throw new LogicException("Class $this has no parent");
         }
 
         return FullyQualifiedClassName::fromType($parent_type_option->get());
@@ -456,7 +458,7 @@ class Clazz extends AddressableElement
      * @return Clazz
      * The parent class of this class if defined
      *
-     * @throws \Exception
+     * @throws LogicException|RuntimeException
      * An exception is thrown if this class has no parent
      */
     public function getParentClass(CodeBase $code_base) : Clazz
@@ -464,14 +466,14 @@ class Clazz extends AddressableElement
         $parent_type_option = $this->getParentTypeOption();
 
         if (!$parent_type_option->isDefined()) {
-            throw new \Exception("Class $this has no parent");
+            throw new LogicException("Class $this has no parent");
         }
 
         $parent_fqsen = FullyQualifiedClassName::fromType($parent_type_option->get());
 
         // invoking hasClassWithFQSEN also has the side effect of lazily loading the parent class definition.
         if (!$code_base->hasClassWithFQSEN($parent_fqsen)) {
-            throw new \Exception("Failed to load parent Class $parent_fqsen of Class $this");
+            throw new RuntimeException("Failed to load parent Class $parent_fqsen of Class $this");
         }
 
         return $code_base->getClassByFQSEN(
@@ -483,7 +485,7 @@ class Clazz extends AddressableElement
      * @return Clazz
      * The parent class of this class if defined
      *
-     * @throws \Exception
+     * @throws LogicException|RuntimeException
      * An exception is thrown if this class has no parent
      */
     private function getParentClassWithoutHydrating(CodeBase $code_base) : Clazz
@@ -491,14 +493,14 @@ class Clazz extends AddressableElement
         $parent_type_option = $this->getParentTypeOption();
 
         if (!$parent_type_option->isDefined()) {
-            throw new \Exception("Class $this has no parent");
+            throw new LogicException("Class $this has no parent");
         }
 
         $parent_fqsen = FullyQualifiedClassName::fromType($parent_type_option->get());
 
         // invoking hasClassWithFQSEN also has the side effect of lazily loading the parent class definition.
         if (!$code_base->hasClassWithFQSEN($parent_fqsen)) {
-            throw new \Exception("Failed to load parent Class $parent_fqsen of Class $this");
+            throw new RuntimeException("Failed to load parent Class $parent_fqsen of Class $this");
         }
 
         return $code_base->getClassByFQSENWithoutHydrating(

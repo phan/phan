@@ -17,7 +17,6 @@ use Phan\Exception\EmptyFQSENException;
 use Phan\Exception\FQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
-use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
@@ -3280,8 +3279,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 ))->getProperty(
                     true
                 );
-            } catch (UnanalyzableException $_) {
-                // Ignore it. There's nothing we can do. (E.g. the class name for the static property fetch couldn't be determined.
+            } catch (IssueException $_) {
+                // Hopefully caught elsewhere
+            } catch (NodeException $_) {
+                // Hopefully caught elsewhere
             }
         }
 

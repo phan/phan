@@ -359,6 +359,7 @@ EOT;
             $dumper = new NodeDumper($incomplete_contents);
             $dumper->setIncludeTokenKind(true);
             $dumper->setIncludeOffset(true);
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall should not happen and unit test would fail
             $dump = $dumper->dumpTreeAsString($php_parser_node);
             $original_ast_dump = Debug::nodeToString($ast);
             $modified_ast_dump = Debug::nodeToString($fallback_ast);

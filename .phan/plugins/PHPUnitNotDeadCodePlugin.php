@@ -69,6 +69,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
         }
         // This assumes PreOrderAnalysisVisitor->visitClass is called first.
         $context = $this->context;
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall definitely in class scope in visitClass
         $class = $context->getClassInScope($code_base);
         if (!$class->getFQSEN()->asType()->asExpandedTypes($code_base)->hasType(self::$phpunit_test_case_type)) {
             // This isn't a phpunit test case.
@@ -113,6 +114,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
         if (preg_match('/@dataProvider\s+' . self::WORD_REGEX . '/', $method->getNode()->children['docComment'] ?? '', $match)) {
             $data_provider_name = $match[1];
             if ($class->hasMethodWithName($this->code_base, $data_provider_name)) {
+                // @phan-suppress-next-line PhanThrowTypeAbsentForCall checked for existence
                 $class->getMethodByName($this->code_base, $data_provider_name)->addReference($this->context);
             }
         }
@@ -138,6 +140,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * Static initializer for this plugin - Gets called below before any methods can be used
      * @return void
+     * @suppress PhanThrowTypeAbsentForCall this FQSEN is valid
      */
     public static function init()
     {

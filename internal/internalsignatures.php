@@ -5,6 +5,7 @@
 use Phan\Analysis;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Exception\FQSENException;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -1151,6 +1152,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
 
     /**
      * @return ?array
+     * @throws FQSENException if signature map is invalid
      */
     public function parseMethodSignature(string $class_name, string $method_name)
     {
@@ -1179,6 +1181,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
 
     /**
      * @return ?array
+     * @throws FQSENException if $function_name is invalid
      */
     public function parseFunctionSignature(string $function_name)
     {

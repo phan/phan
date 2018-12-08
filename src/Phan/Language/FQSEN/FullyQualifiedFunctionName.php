@@ -3,6 +3,7 @@ namespace Phan\Language\FQSEN;
 
 use ast\Node;
 use Phan\Exception\EmptyFQSENException;
+use Phan\Exception\FQSENException;
 use Phan\Language\Context;
 
 /**
@@ -39,8 +40,8 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
      * @param Context $context
      * The context in which the FQSEN string was found
      *
-     * @throws EmptyFQSENException
-     * if $fqsen_string has an empty name component.
+     * @throws FQSENException
+     * if $fqsen_string has an empty/invalid name component.
      */
     public static function fromStringInContext(
         string $fqsen_string,
@@ -98,6 +99,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
 
         $name = 'closure_' . substr(md5($hash_material), 0, 12);
 
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall this is valid
         return static::fromStringInContext(
             $name,
             $context
