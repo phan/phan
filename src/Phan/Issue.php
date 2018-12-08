@@ -201,6 +201,7 @@ class Issue
     const DeprecatedFunction        = 'PhanDeprecatedFunction';
     const DeprecatedFunctionInternal = 'PhanDeprecatedFunctionInternal';
     const DeprecatedProperty        = 'PhanDeprecatedProperty';
+    const DeprecatedCaseInsensitiveDefine = 'PhanDeprecatedCaseInsensitiveDefine';
 
     // Issue::CATEGORY_PARAMETER
     const ParamReqAfterOpt          = 'PhanParamReqAfterOpt';
@@ -1929,6 +1930,14 @@ class Issue
                 self::REMEDIATION_B,
                 5004
             ),
+            new Issue(
+                self::DeprecatedCaseInsensitiveDefine,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                "Creating case-insensitive constants with define() has been deprecated in PHP 7.3",
+                self::REMEDIATION_B,
+                5006
+            ),
 
             // Issue::CATEGORY_PARAMETER
             new Issue(
@@ -3410,6 +3419,18 @@ class Issue
         return $error_map;
     }
 
+    private static function getNextTypeId(array $error_list, int $invalid_type_id) : int
+    {
+        for ($id = $invalid_type_id + 1; true; $id++) {
+            foreach ($error_list as $error) {
+                if ($error->getTypeId() === $id) {
+                    continue 2;
+                }
+            }
+            return $id;
+        }
+    }
+
     /**
      * @param array<int,Issue> $error_list
      * @return void
@@ -3430,7 +3451,8 @@ class Issue
 
             $error_type_id = $error->getTypeId();
             if (\array_key_exists($error_type_id, $unique_type_id_set)) {
-                throw new AssertionError("Multiple issues exist with pylint error id $error_type_id");
+                throw new AssertionError("Multiple issues exist with pylint error id $error_type_id - The next available id is " .
+                    self::getNextTypeId($error_list, $error_type_id));
             }
             $unique_type_id_set[$error_type_id] = $error;
             $category = $error->getCategory();

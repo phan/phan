@@ -16,6 +16,7 @@ use Phan\Language\Element\Variable;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\CallableType;
+use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
@@ -549,6 +550,17 @@ final class MiscParamPlugin extends PluginV2 implements
             }
             $name = $args[0];
             $value = $args[1];
+            if (isset($args[2])) {
+                $case_sensitive_arg_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2]);
+                if (!$case_sensitive_arg_type->isType(FalseType::instance(false))) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::DeprecatedCaseInsensitiveDefine,
+                        $args[2]->lineno ?? $context->getLineNumberStart()
+                    );
+                }
+            }
             if (\is_scalar($name) && (\is_scalar($value) || $value->kind === \ast\AST_CONST)) {
                 // We already parsed this in ParseVisitor
                 return;

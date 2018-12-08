@@ -379,7 +379,8 @@ class CodeBase
         }
     }
 
-    private function handleGlobalConstantException(string $const_name, Exception $e) {
+    private function handleGlobalConstantException(string $const_name, Exception $e)
+    {
         // Workaround for windows bug in #1011
         if (\strncmp($const_name, "\0__COMPILER_HALT_OFFSET__\0", 26) === 0) {
             return;
