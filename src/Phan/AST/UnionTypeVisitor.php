@@ -2278,8 +2278,16 @@ class UnionTypeVisitor extends AnalysisVisitor
                     $is_valid = false;
                     continue;
                 }
-                // TODO: warn about invalid types and unparsable types
-                $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($value);
+                try {
+                    $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($value);
+                } catch (FQSENException $e) {
+                    $this->emitIssue(
+                        $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike,
+                        $node->lineno ?? 0,
+                        $value
+                    );
+                    continue;
+                }
                 if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
                     $is_valid = false;
                     continue;
