@@ -97,6 +97,38 @@ final class GenericIterableType extends IterableType
         return parent::canCastToNonNullableType($type);
     }
 
+    /**
+     * Returns true for `T` and `T[]` and `\MyClass<T>`, but not `\MyClass<\OtherClass>` or `false`
+     */
+    public function hasTemplateTypeRecursive() : bool
+    {
+        return $this->key_union_type->hasTemplateTypeRecursive() || $this->element_union_type->hasTemplateTypeRecursive();
+    }
+
+    /**
+     * @param array<string,UnionType> $template_parameter_type_map
+     * A map from template type identifiers to concrete types
+     *
+     * @return UnionType
+     * This UnionType with any template types contained herein
+     * mapped to concrete types defined in the given map.
+     *
+     * Overridden in subclasses
+     *
+     * @see self::withConvertTypesToTemplateTypes() for the opposite
+     */
+    public function withTemplateParameterTypeMap(
+        array $template_parameter_type_map
+    ) : UnionType {
+        $new_key_type = $this->key_union_type->withTemplateParameterTypeMap($template_parameter_type_map);
+        $new_element_type = $this->element_union_type->withTemplateParameterTypeMap($template_parameter_type_map);
+        if ($new_element_type === $this->element_union_type &&
+            $new_key_type === $this->key_union_type) {
+            return $this->asUnionType();
+        }
+        return self::fromKeyAndValueTypes($new_key_type, $new_element_type, $this->is_nullable)->asUnionType();
+    }
+
     public function __toString() : string
     {
         $string = $this->element_union_type->__toString();

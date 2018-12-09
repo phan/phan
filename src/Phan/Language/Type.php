@@ -3053,6 +3053,50 @@ class Type
         }
         return \count($this->template_parameter_type_list) > 0;
     }
+
+    /**
+     * Returns true for `T` and `T[]` and `\MyClass<T>`, but not `\MyClass<\OtherClass>`
+     *
+     * Overridden in subclasses.
+     */
+    public function hasTemplateTypeRecursive() : bool
+    {
+        foreach ($this->template_parameter_type_list as $type) {
+            if ($type->hasTemplateTypeRecursive()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param array<string,UnionType> $template_parameter_type_map
+     * A map from template type identifiers to concrete types
+     *
+     * @return UnionType
+     * This UnionType with any template types contained herein
+     * mapped to concrete types defined in the given map.
+     *
+     * Overridden in subclasses
+     *
+     * @see self::withConvertTypesToTemplateTypes() for the opposite
+     */
+    public function withTemplateParameterTypeMap(
+        array $template_parameter_type_map
+    ) : UnionType {
+        if (!$this->template_parameter_type_list) {
+            return $this->asUnionType();
+        }
+        $new_type_list = [];
+        foreach ($this->template_parameter_type_list as $i => $type) {
+            $new_type_list[$i] = $type->withTemplateParameterTypeMap($template_parameter_type_map);
+        }
+        if ($new_type_list === $this->template_parameter_type_list) {
+            return $this->asUnionType();
+        }
+        return self::fromType($this, $new_type_list)->asUnionType();
+    }
+
     /**
      * Precondition: Callers should check isObjectWithKnownFQSEN
      */

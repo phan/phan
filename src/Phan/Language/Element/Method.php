@@ -7,6 +7,7 @@ use ast\Node;
 use Phan\Analysis\Analyzable;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -70,6 +71,9 @@ class Method extends ClassElement implements FunctionInterface
             $fqsen
         );
         $context = $context->withScope($internal_scope);
+        if ($type->hasTemplateType()) {
+            $this->recordHasTemplateType();
+        }
         parent::__construct(
             $context,
             FullyQualifiedMethodName::canonicalName($name),
@@ -100,12 +104,12 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function checkForTemplateTypes()
     {
-        if ($this->getUnionType()->hasTemplateType()) {
+        if ($this->getUnionType()->hasTemplateTypeRecursive()) {
             $this->recordHasTemplateType();
             return;
         }
         foreach ($this->parameter_list as $parameter) {
-            if ($parameter->getUnionType()->hasTemplateType()) {
+            if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
                 $this->recordHasTemplateType();
                 return;
             }
@@ -824,6 +828,12 @@ class Method extends ClassElement implements FunctionInterface
         }
         $result->setUnionType($result->getUnionType()->withTemplateParameterTypeMap($template_type_map));
         $result->setPhanFlags($result->getPhanFlags() & ~Flags::HAS_TEMPLATE_TYPE);
+        if (Config::get_track_references()) {
+            // Quick and dirty fix to make dead code detection work on this clone.
+            // Consider making this an object instead.
+            // @see AddressableElement::addReference()
+            $result->reference_list = &$this->reference_list;
+        }
         return $result;
     }
 }

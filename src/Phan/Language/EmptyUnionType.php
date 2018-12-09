@@ -172,6 +172,12 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
+    /** @override */
+    public function hasTemplateTypeRecursive() : bool
+    {
+        return false;
+    }
+
     /**
      * @return bool
      * True if this union type has any types that have generic

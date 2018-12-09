@@ -1,0 +1,1 @@
+%s:47 PhanUndeclaredMethod Call to undeclared method \Bar::missing

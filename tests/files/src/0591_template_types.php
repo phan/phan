@@ -64,12 +64,12 @@ call_user_func(function () {
     echo $l->details->property;  // Phan should infer $l->details is a string and warn
     echo $l->value;  // should warn about stdClass
     echo $l2->value;  // Should warn about this being ArrayObject
-    // TODO: Make Phan warn (It needs to resolve the types for hasValue and hasValueMagic when fetching the info)
+    // Phan will warn if the type doesn't match the resolved template type.
     var_export($l->hasValue($o));  // does not warn
     var_export($l->hasValue(new ArrayObject()));  // does warn
     var_export($l->hasValueMagic($o));  // does not warn
     var_export($l->hasValueMagic(new ArrayObject()));  // should warn
-    // TODO: Make Phan recursively the return types in a future PR
+    // Phan recursively changes the template types to real types, as seen in the error message
     echo strlen($l->toArray());
     echo strlen($l2->toArray());
 
