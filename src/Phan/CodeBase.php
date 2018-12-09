@@ -73,7 +73,7 @@ use function strtolower;
 class CodeBase
 {
     /**
-     * @var Map
+     * @var Map<FullyQualifiedClassName,Clazz>
      * A map from FQSEN to an internal or user defined class
      *
      * TODO: Improve Phan's self-analysis, allow the shorthand array access set syntax to be used without making bad inferences
@@ -82,56 +82,56 @@ class CodeBase
     private $fqsen_class_map;
 
     /**
-     * @var Map
+     * @var Map<FullyQualifiedClassName,Clazz>
      * A map from FQSEN to a user defined class
      */
     private $fqsen_class_map_user_defined;
 
     /**
-     * @var Map
+     * @var Map<FullyQualifiedClassName,Clazz>
      * A map from FQSEN to an internal class
      */
     private $fqsen_class_map_internal;
 
     /**
-     * @var Map
+     * @var Map<FullyQualifiedClassName,ReflectionClass>
      * A map from FQSEN to a ReflectionClass
      */
     private $fqsen_class_map_reflection;
 
     /**
-     * @var Map
+     * @var Map<FullyQualifiedClassName,ClassAliasRecord>
      * A map from FQSEN to set of ClassAliasRecord objects
      */
     private $fqsen_alias_map;
 
     /**
-     * @var Map
+     * @var Map<FullyQualifiedGlobalConstantName,GlobalConstant>
      * A map from FQSEN to a global constant
      */
     private $fqsen_global_constant_map;
 
     /**
-     * @var Map
+     * @var Map<FullyQualifiedFunctionName,Func>
      * A map from FQSEN to function
      */
     private $fqsen_func_map;
 
     /**
-     * @var Set
+     * @var Set<FullyQualifiedFunctionName>
      * A set of internal function FQSENs to lazily initialize.
      * Entries are removed as new entries get added to fqsen_func_map.
      */
     private $internal_function_fqsen_set;
 
     /**
-     * @var Set
+     * @var Set<Method>
      * The set of all methods
      */
     private $method_set;
 
     /**
-     * @var Map
+     * @var Map<FullyQualifiedClassName,ClassMap>
      * A map from FullyQualifiedClassName to a ClassMap,
      * an object that holds properties, methods and class
      * constants.
@@ -139,7 +139,7 @@ class CodeBase
     private $class_fqsen_class_map_map;
 
     /**
-     * @var array<string,Set>
+     * @var array<string,Set<Method>>
      * A map from a string method name to a Set of
      * Methods
      */
@@ -924,7 +924,7 @@ class CodeBase
 
 
     /**
-     * @return Map
+     * @return Map<FullyQualifiedClassName,Clazz>
      * A map from FQSENs to classes which are internal.
      */
     public function getUserDefinedClassMap() : Map
@@ -933,7 +933,7 @@ class CodeBase
     }
 
     /**
-     * @return Map
+     * @return Map<FullyQualifiedClassName,Clazz>
      * A list of all classes which are internal.
      */
     public function getInternalClassMap() : Map
@@ -1015,7 +1015,7 @@ class CodeBase
     }
 
     /**
-     * @return Method[]
+     * @return array<string,Method>
      * The set of methods associated with the given class
      */
     public function getMethodMapByFullyQualifiedClassName(
@@ -1027,7 +1027,7 @@ class CodeBase
     }
 
     /**
-     * @return Set
+     * @return Set<Method>
      * A set of all known methods with the given name
      */
     public function getMethodSetByName(string $name) : Set
@@ -1043,7 +1043,7 @@ class CodeBase
     }
 
     /**
-     * @return Set
+     * @return Set<Func|Method>
      * The set of all methods and functions
      *
      * This is slow and should be used only for debugging.
@@ -1058,7 +1058,7 @@ class CodeBase
     }
 
     /**
-     * @return Set
+     * @return Set<Method>
      * The set of all methods that Phan is tracking.
      */
     public function getMethodSet() : Set
@@ -1157,7 +1157,7 @@ class CodeBase
     }
 
     /**
-     * @return Map
+     * @return Map<FullyQualifiedFunctionName,Func>
      */
     public function getFunctionMap() : Map
     {
@@ -1260,7 +1260,7 @@ class CodeBase
     }
 
     /**
-     * @return Map
+     * @return Map<FullyQualifiedGlobalConstantName,GlobalConstant>
      */
     public function getGlobalConstantMap() : Map
     {
@@ -1355,7 +1355,7 @@ class CodeBase
     }
 
     /**
-     * @return Map
+     * @return Map<FullyQualifiedClassName,ClassMap>
      */
     public function getClassMapMap() : Map
     {

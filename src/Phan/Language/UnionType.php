@@ -242,13 +242,6 @@ class UnionType implements Serializable
             return self::$empty_instance;
         }
 
-        // If our scope has a generic type identifier defined on it
-        // that matches the type string, return that UnionType.
-        if ($context->getScope()->hasTemplateType($type_string)) {
-            return $context->getScope()->getTemplateType(
-                $type_string
-            )->asUnionType();
-        }
         $types = [];
         foreach (self::extractTypePartsForStringInContext($type_string) as $type_name) {
             $types[] = Type::fromStringInContext(
@@ -675,6 +668,8 @@ class UnionType implements Serializable
      * @return UnionType
      * This UnionType with any template types contained herein
      * mapped to concrete types defined in the given map.
+     *
+     * @see UnionType::withConvertTypesToTemplateTypes() for the opposite
      */
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
@@ -703,8 +698,8 @@ class UnionType implements Serializable
 
     /**
      * @return bool
-     * True if this union type has any types that are generic
-     * types
+     * True if this union type has any types that are template types
+     * (e.g. true for the template type T, false for MyClass<T>)
      */
     public function hasTemplateType() : bool
     {
@@ -1433,6 +1428,98 @@ class UnionType implements Serializable
             $this_expanded->canCastToUnionType(
                 $target_expanded
             );
+    }
+
+    /**
+     * Check if a class with templates can be cast to another class with templates
+     * At least one of the source or target is expected to have templates when this is called.
+     *
+     * This allows casting Some<\MyClass> to cast to Option<\MyClass>, but not Option<\UnrelatedClass>
+     */
+    public function canCastToUnionTypeHandlingTemplates(
+        UnionType $target,
+        CodeBase $code_base
+    ) : bool {
+        // Fast-track most common cases first
+        $type_set = $this->type_set;
+        // If either type is unknown, we can't call it
+        // a success
+        if (\count($type_set) === 0) {
+            return true;
+        }
+        $target_type_set = $target->type_set;
+        if (\count($target_type_set) === 0) {
+            return true;
+        }
+
+        // T overlaps with T, a future call to Type->canCastToType will pass.
+        if ($this->hasCommonType($target)) {
+            return true;
+        }
+        static $float_type;
+        static $int_type;
+        static $mixed_type;
+        static $null_type;
+        if ($null_type === null) {
+            $int_type   = IntType::instance(false);
+            $float_type = FloatType::instance(false);
+            $mixed_type = MixedType::instance(false);
+            $null_type  = NullType::instance(false);
+        }
+
+        if (Config::get_null_casts_as_any_type()) {
+            // null <-> null
+            if ($this->isType($null_type)
+                || $target->isType($null_type)
+            ) {
+                return true;
+            }
+        } else {
+            // If null_casts_as_any_type isn't set, then try the other two fallbacks.
+            if (Config::get_null_casts_as_array() && $this->isType($null_type) && $target->hasArrayLike()) {
+                return true;
+            } elseif (Config::get_array_casts_as_null() && $target->isType($null_type) && $this->hasArrayLike()) {
+                return true;
+            }
+        }
+
+        // mixed <-> mixed
+        if (\in_array($mixed_type, $type_set, true)
+            || \in_array($mixed_type, $target_type_set, true)
+        ) {
+            return true;
+        }
+
+        // int -> float
+        if (\in_array($int_type, $type_set, true)
+            && \in_array($float_type, $target_type_set, true)
+        ) {
+            return true;
+        }
+
+        // Check conversion on the cross product of all
+        // type combinations and see if any can cast to
+        // any.
+        foreach ($type_set as $source_type) {
+            if ($source_type->canCastToAnyTypeInSetHandlingTemplates($target_type_set, $code_base)) {
+                return true;
+            }
+        }
+
+        // Allow casting ?T to T|null for any type T. Check if null is part of this type first.
+        if (\in_array($null_type, $target_type_set, true)) {
+            foreach ($type_set as $source_type) {
+                // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
+                if ($source_type->getIsNullable()) {
+                    // TODO: Add unit tests of nullable templates
+                    return $source_type->withIsNullable(false)->canCastToAnyTypeInSetHandlingTemplates($target_type_set, $code_base);
+                }
+            }
+        }
+
+        // Only if no source types can be cast to any target
+        // types do we say that we cannot perform the cast
+        return false;
     }
 
     /**
@@ -2472,6 +2559,88 @@ class UnionType implements Serializable
     }
 
     /**
+     * @param CodeBase $code_base
+     * The code base to use in order to find super classes, etc.
+     *
+     * @param $recursion_depth
+     * This thing has a tendency to run-away on me. This tracks
+     * how bad I messed up by seeing how far the expanded types
+     * go
+     *
+     * @return UnionType
+     * Expands all class types to all inherited classes returning
+     * a superset of this type, not removing template types
+     */
+    public function asExpandedTypesPreservingTemplate(
+        CodeBase $code_base,
+        int $recursion_depth = 0
+    ) : UnionType {
+        if ($recursion_depth >= 12) {
+            throw new RecursionDepthException("Recursion has gotten out of hand");
+        }
+
+        $type_set = $this->type_set;
+        if (\count($type_set) === 0) {
+            return self::$empty_instance;
+        } elseif (\count($type_set) === 1) {
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+            return \reset($type_set)->asExpandedTypesPreservingTemplate(
+                $code_base,
+                $recursion_depth + 1
+            );
+        }
+        // 2 or more union types to merge
+
+        $builder = new UnionTypeBuilder();
+        foreach ($type_set as $type) {
+            $builder->addUnionType(
+                $type->asExpandedTypesPreservingTemplate(
+                    $code_base,
+                    $recursion_depth + 1
+                )
+            );
+        }
+        return $builder->getUnionType();
+    }
+
+    /**
+     * Remove all types with the same FQSENs as $template_union_type with the types.
+     * Then, return this with $template_union_type added.
+     */
+    public function replaceWithTemplateTypes(UnionType $template_union_type) : UnionType
+    {
+        // TODO: Preserve nullable
+        if ($template_union_type->isEmpty()) {
+            return $this;
+        }
+        $result = $this;
+        foreach ($this->getTypeSet() as $type) {
+            // TODO: Handle recursion
+            if ($template_union_type->hasTypeWithFQSEN($type)) {
+                $result = $result->withoutType($type);
+            }
+        }
+        return $result->withUnionType($template_union_type);
+    }
+
+    /**
+     * Check if at least one type in this union type has the same FQSEN as $other
+     * Returns false if $other is not an object type.
+     */
+    public function hasTypeWithFQSEN(Type $other) : bool
+    {
+        if (!$other->isObjectWithKnownFQSEN()) {
+            return false;
+        }
+        foreach ($this->type_set as $type) {
+            if ($type->hasSameNamespaceAndName($other) && $type->isObjectWithKnownFQSEN()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * As per the Serializable interface
      *
      * @return string
@@ -3374,6 +3543,27 @@ class UnionType implements Serializable
         $result = UnionType::empty();
         foreach ($this->type_set as $type) {
             $result = $result->withUnionType($type->getTypeAfterIncOrDec());
+        }
+        return $result;
+    }
+
+    /**
+     * Replace the resolved reference to class T (possibly namespaced) with a regular template type.
+     *
+     * @param array<string,TemplateType> $template_fix_map maps the incorrectly resolved name to the template type
+     * @return UnionType
+     *
+     * @see UnionType::withTemplateParameterTypeMap() for the opposite
+     */
+    public function withConvertTypesToTemplateTypes(array $template_fix_map) : UnionType
+    {
+        $result = $this;
+        foreach ($this->getTypeSet() as $type) {
+            $new_type = $type->withConvertTypesToTemplateTypes($template_fix_map);
+            if ($new_type === $type) {
+                continue;
+            }
+            $result = $result->withoutType($type)->withType($new_type);
         }
         return $result;
     }

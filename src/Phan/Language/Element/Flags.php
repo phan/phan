@@ -47,6 +47,7 @@ class Flags
     const IS_READ_ONLY = (1 << 21);
     const IS_WRITE_ONLY = (1 << 22);
     const HAS_STATIC_UNION_TYPE = (1 << 23);
+    const HAS_TEMPLATE_TYPE = (1 << 24);
 
     /**
      * Either enable or disable the given flag on

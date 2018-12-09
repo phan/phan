@@ -288,6 +288,12 @@ final class Builder
             $this->parseCommentLine($i, \trim($line));
         }
 
+        if (\count($this->template_type_list)) {
+            if ($this->comment_type === Comment::ON_CLASS) {
+                // Resolve template types in magic methods, properties, etc.
+                $this->fixClassTemplateTypes();
+            }
+        }
         if ($this->issues) {
             $this->emitDeferredIssues();
         }
@@ -310,6 +316,27 @@ final class Builder
             $this->code_base,
             $this->context
         );
+    }
+
+    /**
+     * Fix any uses of (at)template annotations within this class comment.
+     * Affects (at)method annotations, (at)property annotations, etc.
+     *
+     * Precondition: $this->template_type_list has 1 or more elements
+     */
+    private function fixClassTemplateTypes()
+    {
+        $template_fix_map = [];
+        foreach ($this->template_type_list as $t) {
+            $regular_type = Type::fromStringInContext($t->getName(), $this->context, Type::FROM_PHPDOC);
+            $template_fix_map[$regular_type->__toString()] = $t;
+        }
+        foreach ($this->magic_method_list as $method) {
+            $method->convertTypesToTemplateTypes($template_fix_map);
+        }
+        foreach ($this->magic_property_list as $property) {
+            $property->convertTypesToTemplateTypes($template_fix_map);
+        }
     }
 
     /**

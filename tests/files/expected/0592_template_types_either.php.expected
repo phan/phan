@@ -1,0 +1,10 @@
+%s:80 PhanTypeMismatchArgument Argument 1 (e) is \MyNS\Either|\MyNS\Either<\stdClass,\stdClass> but \MyNS\expects_left_object() takes \MyNS\Left<\stdClass> defined at %s:90
+%s:92 PhanTypeSuspiciousEcho Suspicious argument \stdClass for an echo/print statement
+%s:100 PhanTypeMismatchArgument Argument 1 (e) is \MyNS\Either|\MyNS\Either<T,mixed>|\MyNS\Either<\ArrayObject,mixed>|\MyNS\Left|\MyNS\Left<\ArrayObject> but \MyNS\expects_left_object() takes \MyNS\Left<\stdClass> defined at %s:90
+%s:102 PhanTypeMismatchArgument Argument 1 (e) is \MyNS\Either|\MyNS\Either<mixed,T>|\MyNS\Either<mixed,\ArrayObject>|\MyNS\Right|\MyNS\Right<\ArrayObject> but \MyNS\expects_left_object() takes \MyNS\Left<\stdClass> defined at %s:90
+%s:103 PhanTypeMismatchArgument Argument 1 (e) is \MyNS\Either|\MyNS\Either<mixed,T>|\MyNS\Either<mixed,\stdClass>|\MyNS\Right|\MyNS\Right<\stdClass> but \MyNS\expects_left_object() takes \MyNS\Left<\stdClass> defined at %s:90
+%s:105 PhanTypeMismatchArgument Argument 1 (e) is \MyNS\Either|\MyNS\Either<T,mixed>|\MyNS\Either<\ArrayObject,mixed>|\MyNS\Left|\MyNS\Left<\ArrayObject> but \MyNS\expects_either_object() takes \MyNS\Either<\stdClass,\stdClass> defined at %s:78
+%s:107 PhanTypeMismatchArgument Argument 1 (e) is \MyNS\Either|\MyNS\Either<mixed,T>|\MyNS\Either<mixed,\ArrayObject>|\MyNS\Right|\MyNS\Right<\ArrayObject> but \MyNS\expects_either_object() takes \MyNS\Either<\stdClass,\stdClass> defined at %s:78
+%s:119 PhanTypeMismatchReturn Returning type \MyNS\Left<\stdClass> but returns_either_object() is declared to return \MyNS\Either<\ArrayObject,\ArrayObject>
+%s:121 PhanTypeMismatchReturn Returning type \MyNS\Right<\stdClass> but returns_either_object() is declared to return \MyNS\Either<\ArrayObject,\ArrayObject>
+%s:123 PhanTypeMismatchReturn Returning type \MyNS\Right<array> but returns_either_object() is declared to return \MyNS\Either<\ArrayObject,\ArrayObject>

@@ -657,6 +657,9 @@ trait FunctionTrait
             }
         }
         $function->setPHPDocParameterTypeMap($valid_comment_parameter_type_map);
+        if ($function instanceof Method) {
+            $function->checkForTemplateTypes();
+        }
         // Special, for libraries which use this for to document variadic param lists.
     }
 

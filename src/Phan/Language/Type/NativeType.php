@@ -208,6 +208,26 @@ abstract class NativeType extends Type
         return $this->asUnionType();
     }
 
+    /**
+     * @param CodeBase $code_base @phan-unused-param
+     * The code base to use in order to find super classes, etc.
+     *
+     * @param int $recursion_depth @phan-unused-param
+     * This thing has a tendency to run-away on me. This tracks
+     * how bad I messed up by seeing how far the expanded types
+     * go
+     *
+     * @return UnionType
+     * Does nothing for Native Types, but GenericArrayType is an exception to that.
+     * @override
+     */
+    public function asExpandedTypesPreservingTemplate(
+        CodeBase $code_base,
+        int $recursion_depth = 0
+    ) : UnionType {
+        return $this->asUnionType();
+    }
+
     public function hasTemplateParameterTypes() : bool
     {
         return false;
@@ -227,6 +247,23 @@ abstract class NativeType extends Type
     public function iterableValueUnionType(CodeBase $unused_code_base)
     {
         return null;
+    }
+
+    /**
+     * Replace the resolved reference to class T (possibly namespaced) with a regular template type.
+     *
+     * @param array<string,TemplateType> $template_fix_map maps the incorrectly resolved name to the template type @phan-unused-param
+     * @return Type
+     */
+    public function withConvertTypesToTemplateTypes(array $template_fix_map) : Type
+    {
+        // TODO: Override in subclasses
+        return $this;
+    }
+
+    public function isTemplateSubtypeOf(Type $unused_type) : bool
+    {
+        return false;
     }
 }
 \class_exists(ArrayType::class);

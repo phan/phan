@@ -44,6 +44,7 @@ use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\SelfType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
+use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Library\None;
@@ -1071,6 +1072,11 @@ class Type
                     GenericArrayType::KEY_MIXED
                 );
             }
+        }
+        // If our scope has a generic type identifier defined on it
+        // that matches the type string, return that type.
+        if ($source === Type::FROM_PHPDOC && $context->getScope()->hasTemplateType($string)) {
+            return $context->getScope()->getTemplateType($string);
         }
 
         // Extract the namespace, type and parameter type name list
@@ -2135,6 +2141,101 @@ class Type
 
     /**
      * @param CodeBase $code_base
+     * The code base to use in order to find super classes, etc.
+     *
+     * @param $recursion_depth
+     * This thing has a tendency to run-away on me. This tracks
+     * how bad I messed up by seeing how far the expanded types
+     * go
+     *
+     * @return UnionType
+     * Expands class types to all inherited classes returning
+     * a superset of this type.
+     */
+    public function asExpandedTypesPreservingTemplate(
+        CodeBase $code_base,
+        int $recursion_depth = 0
+    ) : UnionType {
+        // We're going to assume that if the type hierarchy
+        // is taller than some value we probably messed up
+        // and should bail out.
+        if ($recursion_depth >= 20) {
+            throw new RecursionDepthException("Recursion has gotten out of hand");
+        }
+        $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) {
+            $union_type = $this->asUnionType();
+
+            $class_fqsen = $this->asFQSEN();
+
+            if (!($class_fqsen instanceof FullyQualifiedClassName)) {
+                return $union_type;
+            }
+
+            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                return $union_type;
+            }
+
+            $clazz = $code_base->getClassByFQSEN($class_fqsen);
+
+            $union_type = $union_type->withUnionType(
+                $clazz->getUnionType()
+            );
+
+            if (count($this->template_parameter_type_list) > 0) {
+                $template_union_type = $clazz->resolveParentTemplateType($this->getTemplateParameterTypeMap($code_base))->asExpandedTypesPreservingTemplate($code_base, $recursion_depth + 1);
+                $template_union_type = $template_union_type->withType($this);
+            } else {
+                $template_union_type = UnionType::empty();
+            }
+
+            $additional_union_type = $clazz->getAdditionalTypes();
+            if ($additional_union_type !== null) {
+                $union_type = $union_type->withUnionType($additional_union_type);
+            }
+
+            $representation = $this->__toString();
+            $recursive_union_type_builder = new UnionTypeBuilder();
+            // Recurse up the tree to include all types
+            if (count($this->template_parameter_type_list) > 0) {
+                $recursive_union_type_builder->addUnionType(
+                    $template_union_type
+                );
+            }
+
+            foreach ($union_type->getTypeSet() as $clazz_type) {
+                if ($clazz_type->__toString() !== $representation) {
+                    $recursive_union_type_builder->addUnionType(
+                        $clazz_type->asExpandedTypesPreservingTemplate(
+                            $code_base,
+                            $recursion_depth + 1
+                        )
+                    );
+                } else {
+                    $recursive_union_type_builder->addType($clazz_type);
+                }
+            }
+
+            // Add in aliases
+            // (If enable_class_alias_support is false, this will do nothing)
+            $fqsen_aliases = $code_base->getClassAliasesByFQSEN($class_fqsen);
+            foreach ($fqsen_aliases as $alias_fqsen_record) {
+                $alias_fqsen = $alias_fqsen_record->alias_fqsen;
+                $recursive_union_type_builder->addType(
+                    $alias_fqsen->asType()
+                );
+            }
+
+            $result = $recursive_union_type_builder->getUnionType();
+            if (!$template_union_type->isEmpty()) {
+                return $result->replaceWithTemplateTypes($template_union_type);
+            }
+            return $result;
+        });
+        return $union_type;
+    }
+
+    /**
+     * @param CodeBase $code_base
      *
      * @param Type $parent
      *
@@ -2169,6 +2270,22 @@ class Type
     {
         foreach ($target_type_set as $target_type) {
             if ($this->canCastToType($target_type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param Type[] $target_type_set 1 or more types
+     * @return bool
+     * True if this Type can be cast to the given Type cleanly.
+     * This is overridden by ArrayShapeType to allow array{a:string,b:stdClass} to cast to string[]|stdClass[]
+     */
+    public function canCastToAnyTypeInSetHandlingTemplates(array $target_type_set, CodeBase $code_base) : bool
+    {
+        foreach ($target_type_set as $target_type) {
+            if ($this->canCastToTypeHandlingTemplates($target_type, $code_base)) {
                 return true;
             }
         }
@@ -2222,6 +2339,52 @@ class Type
     }
 
     /**
+     * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly (accounting for templates)
+     */
+    public function canCastToTypeHandlingTemplates(Type $type, CodeBase $code_base) : bool
+    {
+        // Check to see if we have an exact object match
+        if ($this === $type) {
+            return true;
+        }
+
+        if ($type instanceof MixedType) {
+            return true;
+        }
+
+        // A nullable type cannot cast to a non-nullable type
+        if ($this->is_nullable && !$type->is_nullable) {
+            // If this is nullable, but that isn't, and we've
+            // configured nulls to cast as anything (or as arrays), ignore
+            // the nullable part.
+            if (Config::get_null_casts_as_any_type()) {
+                return $this->withIsNullable(false)->canCastToType($type);
+            } elseif (Config::get_null_casts_as_array() && $type->isArrayLike()) {
+                return $this->withIsNullable(false)->canCastToType($type);
+            }
+
+            return false;
+        }
+
+        // Get a non-null version of the type we're comparing
+        // against.
+        if ($type->is_nullable) {
+            $type = $type->withIsNullable(false);
+
+            // Check one more time to see if the types are equal
+            if ($this === $type) {
+                return true;
+            }
+        }
+
+        // Test to see if we can cast to the non-nullable version
+        // of the target type.
+        return $this->canCastToNonNullableTypeHandlingTemplates($type, $code_base);
+    }
+
+    /**
      * @param Type $type
      * A Type which is not nullable. This constraint is not
      * enforced, so be careful.
@@ -2259,6 +2422,41 @@ class Type
             return $this->namespace === '\\' && $this->name === 'Closure';
         }
         return false;
+    }
+
+    /**
+     * @param Type $type
+     * A Type which is not nullable. This constraint is not
+     * enforced, so be careful.
+     *
+     * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly
+     */
+    protected function canCastToNonNullableTypeHandlingTemplates(Type $type, CodeBase $code_base) : bool
+    {
+        if ($this->canCastToNonNullableType($type)) {
+            return true;
+        }
+        if ($this->isObjectWithKnownFQSEN() && $type->isObjectWithKnownFQSEN()) {
+            if ($this->name === $type->name && $this->namespace === $type->namespace) {
+                return $this->canTemplateTypesCast($type->template_parameter_type_list, $code_base);
+            }
+        }
+        return false;
+    }
+
+    private function canTemplateTypesCast(array $other_template_parameter_type_list, CodeBase $code_base) : bool
+    {
+        foreach ($this->template_parameter_type_list as $i => $param) {
+            $other_param = $other_template_parameter_type_list[$i] ?? null;
+            if ($other_param !== null) {
+                if (!$param->asExpandedTypes($code_base)->canCastToUnionType($other_param)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -2830,5 +3028,36 @@ class Type
     {
         static $instance = null;
         return $instance ?? ($instance = Type::fromFullyQualifiedString('\Throwable'));
+    }
+
+    /**
+     * Replace the resolved reference to class T (possibly namespaced) with a regular template type.
+     *
+     * @param array<string,TemplateType> $template_fix_map maps the incorrectly resolved name to the template type
+     * @return Type
+     *
+     * @see UnionType::withTemplateParameterTypeMap() for the opposite
+     */
+    public function withConvertTypesToTemplateTypes(array $template_fix_map) : Type
+    {
+        return $template_fix_map[$this->__toString()] ?? $this;
+    }
+
+    /**
+     * Returns true if this is `MyNs\MyClass<T..>` when $type is `MyNs\MyClass`
+     */
+    public function isTemplateSubtypeOf(Type $type) : bool
+    {
+        if ($this->name !== $type->name || $this->namespace !== $type->namespace) {
+            return false;
+        }
+        return \count($this->template_parameter_type_list) > 0;
+    }
+    /**
+     * Precondition: Callers should check isObjectWithKnownFQSEN
+     */
+    public function hasSameNamespaceAndName(Type $type) : bool
+    {
+        return $this->name === $type->name && $this->namespace === $type->namespace;
     }
 }

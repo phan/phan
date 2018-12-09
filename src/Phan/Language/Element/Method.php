@@ -91,6 +91,25 @@ class Method extends ClassElement implements FunctionInterface
         if ($parameter_list !== null) {
             $this->setParameterList($parameter_list);
         }
+        $this->checkForTemplateTypes();
+    }
+
+    /**
+     * Sets hasTemplateType to true if it finds any template types in the parameters or methods
+     * @return void
+     */
+    public function checkForTemplateTypes()
+    {
+        if ($this->getUnionType()->hasTemplateType()) {
+            $this->recordHasTemplateType();
+            return;
+        }
+        foreach ($this->parameter_list as $parameter) {
+            if ($parameter->getUnionType()->hasTemplateType()) {
+                $this->recordHasTemplateType();
+                return;
+            }
+        }
     }
 
     /**
@@ -511,8 +530,12 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function alternateGenerator(CodeBase $code_base) : \Generator
     {
-        $alternate_id = 0;
+        // Workaround so that methods of generic classes will have the resolved template types
+        yield $this;
         $fqsen = $this->getFQSEN();
+        $alternate_id = $fqsen->getAlternateId() + 1;
+
+        $fqsen = $fqsen->withAlternateId($alternate_id);
 
         while ($code_base->hasMethodWithFQSEN($fqsen)) {
             yield $code_base->getMethodByFQSEN($fqsen);
@@ -735,5 +758,72 @@ class Method extends ClassElement implements FunctionInterface
         }
 
         return $string;
+    }
+
+    /**
+     * Does this method have template types anywhere in its parameters or return type?
+     *
+     * TODO: Make the check recursive
+     */
+    public function hasTemplateType() : bool
+    {
+        return $this->getPhanFlagsHasState(Flags::HAS_TEMPLATE_TYPE);
+    }
+
+    private function recordHasTemplateType()
+    {
+        $this->setPhanFlags($this->getPhanFlags() | Flags::HAS_TEMPLATE_TYPE);
+    }
+
+    /**
+     * Attempt to convert this template method into a method with concrete types
+     * Either returns the original method or a clone of the method with more type information.
+     */
+    public function resolveTemplateType(
+        CodeBase $code_base,
+        UnionType $object_union_type
+    ) : Method {
+        $defining_fqsen = $this->getDefiningClassFQSEN();
+        $defining_class = $code_base->getClassByFQSEN($defining_fqsen);
+        if (!$defining_class->isGeneric()) {
+            // ???
+            return $this;
+        }
+        $expected_type = $defining_fqsen->asType();
+
+        foreach ($object_union_type->getTypeSet() as $type) {
+            if (!$type->hasTemplateParameterTypes()) {
+                continue;
+            }
+            if (!$type->isObjectWithKnownFQSEN()) {
+                continue;
+            }
+            $expanded_type = $type->withIsNullable(false)->asExpandedTypes($code_base);
+            foreach ($expanded_type->getTypeSet() as $candidate) {
+                if (!$candidate->isTemplateSubtypeOf($expected_type)) {
+                    continue;
+                }
+                // $candidate is $expected_type<T...>
+                $result = $this->cloneWithTemplateParameterTypeMap($candidate->getTemplateParameterTypeMap($code_base));
+                return $result;
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @param array<string,UnionType> $template_type_map
+     * A map from template type identifier to a concrete type
+     */
+    private function cloneWithTemplateParameterTypeMap(array $template_type_map) : Method
+    {
+        $result = clone($this);
+        $result->cloneParameterList();
+        foreach ($result->parameter_list as $parameter) {
+            $parameter->setUnionType($parameter->getUnionType()->withTemplateParameterTypeMap($template_type_map));
+        }
+        $result->setUnionType($result->getUnionType()->withTemplateParameterTypeMap($template_type_map));
+        $result->setPhanFlags($result->getPhanFlags() & ~Flags::HAS_TEMPLATE_TYPE);
+        return $result;
     }
 }
