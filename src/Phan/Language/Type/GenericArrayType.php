@@ -634,4 +634,44 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
     {
         return $this->key_type === self::KEY_STRING;
     }
+
+    /**
+     * Returns true for `T` and `T[]` and `\MyClass<T>`, but not `\MyClass<\OtherClass>` or `false`
+     */
+    public function hasTemplateTypeRecursive() : bool
+    {
+        return $this->genericArrayElementUnionType()->hasTemplateTypeRecursive();
+    }
+
+    /**
+     * @param array<string,UnionType> $template_parameter_type_map
+     * A map from template type identifiers to concrete types
+     *
+     * @return UnionType
+     * This UnionType with any template types contained herein
+     * mapped to concrete types defined in the given map.
+     *
+     * Overridden in subclasses
+     *
+     * @see self::withConvertTypesToTemplateTypes() for the opposite
+     */
+    public function withTemplateParameterTypeMap(
+        array $template_parameter_type_map
+    ) : UnionType {
+        $element_type = $this->genericArrayElementUnionType();
+        $new_element_type = $element_type->withTemplateParameterTypeMap($template_parameter_type_map);
+        if ($element_type === $new_element_type) {
+            return $this->asUnionType();
+        }
+        // TODO: Override in array shape subclass
+        return $new_element_type->asGenericArrayTypes($this->getKeyType());
+    }
+
+    /**
+     * Precondition: Callers should check isObjectWithKnownFQSEN
+     */
+    public function hasSameNamespaceAndName(Type $type) : bool
+    {
+        return $this->name === $type->name && $this->namespace === $type->namespace;
+    }
 }

@@ -1978,6 +1978,12 @@ class UnionTypeVisitor extends AnalysisVisitor
                         $this->code_base,
                         $method_name
                     );
+                    if ($method->hasTemplateType()) {
+                        $method = $method->resolveTemplateType(
+                            $this->code_base,
+                            UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $class_node)
+                        );
+                    }
 
                     if ($method->hasDependentReturnType()) {
                         $union_type = $method->getDependentReturnType($this->code_base, $this->context, $node->children['args']->children);

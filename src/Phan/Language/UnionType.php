@@ -677,19 +677,14 @@ class UnionType implements Serializable
         $has_template = false;
         $concrete_type_list = [];
         foreach ($this->type_set as $type) {
-            // TODO: This should check GenericArray and ArrayShape as well!
-            if ($type instanceof TemplateType
-                && isset($template_parameter_type_map[$type->getName()])
-            ) {
-                $has_template = true;
-                $union_type =
-                    $template_parameter_type_map[$type->getName()];
-
-                foreach ($union_type->type_set as $concrete_type) {
-                    $concrete_type_list[] = $concrete_type;
-                }
-            } else {
+            $new_union_type = $type->withTemplateParameterTypeMap($template_parameter_type_map);
+            if ($new_union_type->isType($type)) {
                 $concrete_type_list[] = $type;
+            } else {
+                $has_template = true;
+                foreach ($new_union_type->getTypeSet() as $new_type) {
+                    $concrete_type_list[] = $new_type;
+                }
             }
         }
 
@@ -705,6 +700,18 @@ class UnionType implements Serializable
     {
         return $this->hasTypeMatchingCallback(function (Type $type) : bool {
             return ($type instanceof TemplateType);
+        });
+    }
+
+    /**
+     * @return bool
+     * True if this union type has any types that are template types
+     * (e.g. true for the template type T, true for MyClass<T>, true for T[], false for \MyClass<\stdClass>)
+     */
+    public function hasTemplateTypeRecursive() : bool
+    {
+        return $this->hasTypeMatchingCallback(function (Type $type) : bool {
+            return $type->hasTemplateTypeRecursive();
         });
     }
 

@@ -2,6 +2,7 @@
 namespace Phan\Language\Type;
 
 use Phan\Language\Type;
+use Phan\Language\UnionType;
 
 /**
  * Represents a template type that has not yet been resolved.
@@ -77,5 +78,31 @@ final class TemplateType extends Type
     public function withConvertTypesToTemplateTypes(array $template_fix_map) : Type
     {
         return $this;
+    }
+
+    /**
+     * Returns true for `T` and `T[]` and `\MyClass<T>`, but not `\MyClass<\OtherClass>`
+     *
+     * Overridden in subclasses.
+     */
+    public function hasTemplateTypeRecursive() : bool
+    {
+        return true;
+    }
+
+    /**
+     * @param array<string,UnionType> $template_parameter_type_map
+     * A map from template type identifiers to concrete types
+     *
+     * @return UnionType
+     * This UnionType with any template types contained herein
+     * mapped to concrete types defined in the given map.
+     *
+     * @see UnionType::withConvertTypesToTemplateTypes() for the opposite
+     */
+    public function withTemplateParameterTypeMap(
+        array $template_parameter_type_map
+    ) : UnionType {
+        return $template_parameter_type_map[$this->template_type_identifier] ?? $this->asUnionType();
     }
 }

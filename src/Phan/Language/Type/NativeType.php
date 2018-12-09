@@ -261,7 +261,26 @@ abstract class NativeType extends Type
         return $this;
     }
 
+    /**
+     * @override
+     */
+    public function withTemplateParameterTypeMap(
+        array $unused_template_parameter_type_map
+    ) : UnionType {
+        return $this->asUnionType();
+    }
+
     public function isTemplateSubtypeOf(Type $unused_type) : bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns true for `T` and `T[]` and `\MyClass<T>`, but not `\MyClass<\OtherClass>` or `false`
+     *
+     * Overridden in subclasses.
+     */
+    public function hasTemplateTypeRecursive() : bool
     {
         return false;
     }
