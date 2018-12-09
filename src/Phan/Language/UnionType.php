@@ -242,13 +242,6 @@ class UnionType implements Serializable
             return self::$empty_instance;
         }
 
-        // If our scope has a generic type identifier defined on it
-        // that matches the type string, return that UnionType.
-        if ($context->getScope()->hasTemplateType($type_string)) {
-            return $context->getScope()->getTemplateType(
-                $type_string
-            )->asUnionType();
-        }
         $types = [];
         foreach (self::extractTypePartsForStringInContext($type_string) as $type_name) {
             $types[] = Type::fromStringInContext(
@@ -675,6 +668,8 @@ class UnionType implements Serializable
      * @return UnionType
      * This UnionType with any template types contained herein
      * mapped to concrete types defined in the given map.
+     *
+     * @see UnionType::withConvertTypesToTemplateTypes() for the opposite
      */
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
@@ -703,8 +698,8 @@ class UnionType implements Serializable
 
     /**
      * @return bool
-     * True if this union type has any types that are generic
-     * types
+     * True if this union type has any types that are template types
+     * (e.g. true for the template type T, false for MyClass<T>)
      */
     public function hasTemplateType() : bool
     {
@@ -3374,6 +3369,27 @@ class UnionType implements Serializable
         $result = UnionType::empty();
         foreach ($this->type_set as $type) {
             $result = $result->withUnionType($type->getTypeAfterIncOrDec());
+        }
+        return $result;
+    }
+
+    /**
+     * Replace the resolved reference to class T (possibly namespaced) with a regular template type.
+     *
+     * @param array<string,TemplateType> $template_fix_map maps the incorrectly resolved name to the template type
+     * @return UnionType
+     *
+     * @see UnionType::withTemplateParameterTypeMap() for the opposite
+     */
+    public function withConvertTypesToTemplateTypes(array $template_fix_map) : UnionType
+    {
+        $result = $this;
+        foreach ($this->getTypeSet() as $type) {
+            $new_type = $type->withConvertTypesToTemplateTypes($template_fix_map);
+            if ($new_type === $type) {
+                continue;
+            }
+            $result = $result->withoutType($type)->withType($new_type);
         }
         return $result;
     }

@@ -762,10 +762,17 @@ class ContextNode
         // looking for
         foreach ($class_list as $class) {
             if ($class->hasMethodWithName($this->code_base, $method_name, $is_direct)) {
-                return $class->getMethodByName(
+                $method = $class->getMethodByName(
                     $this->code_base,
                     $method_name
                 );
+                if ($method->hasTemplateType()) {
+                    return $method->resolveTemplateType(
+                        $this->code_base,
+                        UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr'] ?? $node->children['class'])
+                    );
+                }
+                return $method;
             } elseif (!$is_static && $class->allowsCallingUndeclaredInstanceMethod($this->code_base)) {
                 return $class->getCallMethod($this->code_base);
             } elseif ($is_static && $class->allowsCallingUndeclaredStaticMethod($this->code_base)) {

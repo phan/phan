@@ -44,6 +44,7 @@ use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\SelfType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
+use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Library\None;
@@ -1071,6 +1072,11 @@ class Type
                     GenericArrayType::KEY_MIXED
                 );
             }
+        }
+        // If our scope has a generic type identifier defined on it
+        // that matches the type string, return that type.
+        if ($source === Type::FROM_PHPDOC && $context->getScope()->hasTemplateType($string)) {
+            return $context->getScope()->getTemplateType($string);
         }
 
         // Extract the namespace, type and parameter type name list
@@ -2830,5 +2836,29 @@ class Type
     {
         static $instance = null;
         return $instance ?? ($instance = Type::fromFullyQualifiedString('\Throwable'));
+    }
+
+    /**
+     * Replace the resolved reference to class T (possibly namespaced) with a regular template type.
+     *
+     * @param array<string,TemplateType> $template_fix_map maps the incorrectly resolved name to the template type
+     * @return Type
+     *
+     * @see UnionType::withTemplateParameterTypeMap() for the opposite
+     */
+    public function withConvertTypesToTemplateTypes(array $template_fix_map) : Type
+    {
+        return $template_fix_map[$this->__toString()] ?? $this;
+    }
+
+    /**
+     * Returns true if this is `MyNs\MyClass<T..>` when $type is `MyNs\MyClass`
+     */
+    public function isTemplateSubtypeOf(Type $type) : bool
+    {
+        if ($this->name !== $type->name || $this->namespace !== $type->namespace) {
+            return false;
+        }
+        return \count($this->template_parameter_type_list) > 0;
     }
 }

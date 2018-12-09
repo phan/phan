@@ -3,6 +3,7 @@ namespace Phan\Analysis;
 
 use AssertionError;
 use ast\Node;
+use Closure;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -255,7 +256,7 @@ final class ArgumentType
      * @param CodeBase $code_base
      * The global code base
      *
-     * @param \Closure $get_argument_type (Node|string|int $node, int $i) -> UnionType
+     * @param Closure $get_argument_type (Node|string|int $node, int $i) -> UnionType
      * Fetches the types of individual arguments.
      */
     public static function analyzeForCallback(
@@ -263,7 +264,7 @@ final class ArgumentType
         array $arg_nodes,
         Context $context,
         CodeBase $code_base,
-        \Closure $get_argument_type
+        Closure $get_argument_type
     ) {
         // Special common cases where we want slightly
         // better multi-signature error messages
@@ -346,7 +347,7 @@ final class ArgumentType
      * @param Context $context
      * The context in which we see the call
      *
-     * @param \Closure $get_argument_type (Node|string|int $node, int $i) -> UnionType
+     * @param Closure $get_argument_type (Node|string|int $node, int $i) -> UnionType
      *
      * @return void
      */
@@ -355,7 +356,7 @@ final class ArgumentType
         FunctionInterface $method,
         array $arg_nodes,
         Context $context,
-        \Closure $get_argument_type
+        Closure $get_argument_type
     ) {
         // There's nothing reasonable we can do here
         if ($method instanceof Method) {
@@ -537,7 +538,8 @@ final class ArgumentType
         $parameter_type = $alternate_parameter->getNonVariadicUnionType();
 
         if ($parameter_type->hasTemplateType()) {
-            // Don't worry about template types
+            // Don't worry about **unresolved** template types.
+            // We resolve them if possible in ContextNode->getMethod()
             return;
         }
 

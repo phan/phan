@@ -1179,4 +1179,9 @@ final class EmptyUnionType extends UnionType
     {
         return $this;
     }
+
+    public function withConvertTypesToTemplateTypes(array $template_fix_map) : UnionType
+    {
+        return $this;
+    }
 }

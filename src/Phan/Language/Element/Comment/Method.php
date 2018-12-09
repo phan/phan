@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Phan\Language\Element\Comment;
 
+use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 
 /**
@@ -162,5 +163,19 @@ class Method
         }
 
         return $string;
+    }
+
+    /**
+     * Replace the resolved reference to class T (possibly namespaced) with a regular template type, in this (at)method annotation.
+     *
+     * @param array<string,TemplateType> $template_types maps the incorrectly resolved name to the template type
+     * @return void
+     */
+    public function convertTypesToTemplateTypes(array $template_types)
+    {
+        $this->type = $this->type->withConvertTypesToTemplateTypes($template_types);
+        foreach ($this->parameters as $parameter) {
+            $parameter->convertTypesToTemplateTypes($template_types);
+        }
     }
 }
