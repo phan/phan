@@ -3,6 +3,10 @@ Phan NEWS
 ?? ??? 201?, Phan 1.1.8 (dev)
 -----------------------
 
+New features(Analysis):
++ Infer more accurate types for return values/expected arguments of methods of template classes.
++ Support template types in magic methods and properties. (related to #497)
+
 08 Dec 2018, Phan 1.1.7
 -----------------------
 

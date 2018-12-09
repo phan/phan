@@ -542,6 +542,17 @@ final class ArgumentType
             // We resolve them if possible in ContextNode->getMethod()
             return;
         }
+        if ($parameter_type->hasTemplateParameterTypes()) {
+            // TODO: Make the check for templates recursive
+            $argument_type_expanded_templates = $argument_type->asExpandedTypesPreservingTemplate($code_base);
+            if ($argument_type_expanded_templates->canCastToUnionTypeHandlingTemplates($parameter_type, $code_base)) {
+                // - can cast MyClass<\stdClass> to MyClass<mixed>
+                // - can cast Some<\stdClass> to Option<\stdClass>
+                // - cannot cast Some<\SomeOtherClass> to Option<\stdClass>
+                return;
+            }
+            // echo "Debug: $argument_type $argument_type_expanded_templates cannot cast to $parameter_type\n";
+        }
 
         if ($method->isPHPInternal()) {
             // If we are not in strict mode and we accept a string parameter

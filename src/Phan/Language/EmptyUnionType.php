@@ -452,6 +452,13 @@ final class EmptyUnionType extends UnionType
         return true;  // Empty can cast to anything. See parent implementation.
     }
 
+    public function canCastToUnionTypeHandlingTemplates(
+        UnionType $target,
+        CodeBase $code_base
+    ) : bool {
+        return true;
+    }
+
     /**
      * @return bool
      * True if all types in this union are scalars
@@ -924,6 +931,36 @@ final class EmptyUnionType extends UnionType
         int $recursion_depth = 0
     ) : UnionType {
         return $this;
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base to use in order to find super classes, etc.
+     *
+     * @param int $recursion_depth
+     * This thing has a tendency to run-away on me. This tracks
+     * how bad I messed up by seeing how far the expanded types
+     * go
+     *
+     * @return UnionType
+     * Expands all class types to all inherited classes returning
+     * a superset of this type.
+     */
+    public function asExpandedTypesPreservingTemplate(
+        CodeBase $code_base,
+        int $recursion_depth = 0
+    ) : UnionType {
+        return $this;
+    }
+
+    public function replaceWithTemplateTypes(UnionType $template_union_type) : UnionType
+    {
+        return $template_union_type;
+    }
+
+    public function hasTypeWithFQSEN(Type $other) : bool
+    {
+        return false;
     }
 
     /**

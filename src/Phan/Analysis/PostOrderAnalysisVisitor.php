@@ -1286,8 +1286,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function checkCanCastToReturnType(CodeBase $code_base, UnionType $expression_type, UnionType $method_return_type) : bool
     {
         if ($method_return_type->hasTemplateParameterTypes()) {
-            // TODO: Better casting logic for template types (E.g. should be able to cast None to Option<MyClass>, but not Some<int> to Option<MyClass>
-            return $expression_type->canCastToExpandedUnionType($method_return_type, $code_base);
+            // Perform a check that does a better job understanding rules of templates.
+            // (E.g. should be able to cast None to Option<MyClass>, but not Some<int> to Option<MyClass>
+            return $expression_type->asExpandedTypesPreservingTemplate($code_base)->canCastToUnionTypeHandlingTemplates($method_return_type, $code_base) ||
+                $expression_type->canCastToUnionTypeHandlingTemplates($method_return_type->asExpandedTypesPreservingTemplate($code_base), $code_base);
         }
         // We allow base classes to cast to subclasses, and subclasses to cast to base classes,
         // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree

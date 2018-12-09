@@ -192,6 +192,16 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /**
+     * @override (Don't include \Closure in the expanded types. It interferes with type casting checking)
+     */
+    public function asExpandedTypesPreservingTemplate(
+        CodeBase $unused_code_base,
+        int $unused_recursion_depth = 0
+    ) : UnionType {
+        return $this->asUnionType();
+    }
+
+    /**
      * @param bool $is_nullable
      * Set to true if the type should be nullable, else pass
      * false

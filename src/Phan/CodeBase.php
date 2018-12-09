@@ -125,7 +125,7 @@ class CodeBase
     private $internal_function_fqsen_set;
 
     /**
-     * @var Set<FullyQualifiedMethodName>
+     * @var Set<Method>
      * The set of all methods
      */
     private $method_set;
@@ -209,9 +209,6 @@ class CodeBase
         $this->class_fqsen_class_map_map = new Map();
         $this->method_set = new Set();
         $this->internal_function_fqsen_set = new Set();
-        if (false) {
-            $this->internal_function_fqsen_set->attach(new \stdClass());
-        }
 
         // Add any pre-defined internal classes, interfaces,
         // constants, traits and functions
