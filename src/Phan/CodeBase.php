@@ -706,9 +706,13 @@ class CodeBase
     public function addReflectionClass(ReflectionClass $class)
     {
         // Map the FQSEN to the class
-        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
-        $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class->getName());
-        $this->fqsen_class_map_reflection->offsetSet($class_fqsen, $class);
+        try {
+            $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class->getName());
+            $this->fqsen_class_map_reflection->offsetSet($class_fqsen, $class);
+        } catch (FQSENException $_) {
+            // Fixes uncaught Phan\Exception\InvalidFQSENException for #2222
+            // Just give up on analyzing uses of the class "OCI-Lob" and anything similar - It's invalid because of the hyphen.
+        }
     }
 
     /**
