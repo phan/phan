@@ -2752,6 +2752,14 @@ The following code will express this issue.
 class C17 implements UndeclaredInterface {}
 ```
 
+## PhanUndeclaredMagicConstant
+
+```
+Reference to magic constant {CONST} that is undeclared in the current scope
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0594_magic_constant.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0594_magic_constant.php#L2).
+
 ## PhanUndeclaredMethod
 
 ```

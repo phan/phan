@@ -1,0 +1,14 @@
+%s:2 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is '' but \intdiv() takes int
+%s:2 PhanUndeclaredMagicConstant Reference to magic constant MAGIC_FUNCTION that is undeclared in the current scope
+%s:3 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is '' but \intdiv() takes int
+%s:3 PhanUndeclaredMagicConstant Reference to magic constant MAGIC_METHOD that is undeclared in the current scope
+%s:4 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is '' but \intdiv() takes int
+%s:4 PhanUndeclaredMagicConstant Reference to magic constant MAGIC_TRAIT that is undeclared in the current scope
+%s:5 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is '' but \intdiv() takes int
+%s:5 PhanUndeclaredMagicConstant Reference to magic constant MAGIC_CLASS that is undeclared in the current scope
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is '\x7bclosure\x7d' but \intdiv() takes int
+%s:8 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is '\x7bclosure\x7d' but \intdiv() takes int
+%s:9 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is '' but \intdiv() takes int
+%s:9 PhanUndeclaredMagicConstant Reference to magic constant MAGIC_TRAIT that is undeclared in the current scope
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is '' but \intdiv() takes int
+%s:10 PhanUndeclaredMagicConstant Reference to magic constant MAGIC_CLASS that is undeclared in the current scope

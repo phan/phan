@@ -366,6 +366,17 @@ class UnionTypeVisitor extends AnalysisVisitor
         return LiteralStringType::instanceForValue($value, false)->asUnionType();
     }
 
+    const MAGIC_CONST_NAME_MAP = [
+        ast\flags\MAGIC_LINE => 'MAGIC_LINE',
+        ast\flags\MAGIC_FILE => 'MAGIC_FILE',
+        ast\flags\MAGIC_DIR => 'MAGIC_DIR',
+        ast\flags\MAGIC_NAMESPACE => 'MAGIC_NAMESPACE',
+        ast\flags\MAGIC_FUNCTION => 'MAGIC_FUNCTION',
+        ast\flags\MAGIC_METHOD => 'MAGIC_METHOD',
+        ast\flags\MAGIC_CLASS => 'MAGIC_CLASS',
+        ast\flags\MAGIC_TRAIT => 'MAGIC_TRAIT',
+    ];
+
     /**
      * Visit a node with kind `\ast\AST_MAGIC_CONST`
      *
@@ -379,25 +390,27 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitMagicConst(Node $node) : UnionType
     {
-        switch ($node->flags) {
+        $flags = $node->flags;
+        switch ($flags) {
             case ast\flags\MAGIC_CLASS:
                 if ($this->context->isInClassScope()) {
-                    return self::literalStringUnionType($this->context->getClassFQSEN()->__toString());
+                    // Works in classes, traits, and interfaces
+                    return self::literalStringUnionType(\ltrim($this->context->getClassFQSEN()->__toString(), '\\'));
                 }
-                return StringType::instance(false)->asUnionType();
+                break;
             case ast\flags\MAGIC_FUNCTION:
                 if ($this->context->isInFunctionLikeScope()) {
                     $fqsen = $this->context->getFunctionLikeFQSEN();
                     return self::literalStringUnionType($fqsen->isClosure() ? '{closure}' : $fqsen->getName());
                 }
-                // TODO: Warn?
-                return StringType::instance(false)->asUnionType();
+                break;
             case ast\flags\MAGIC_METHOD:
-                // TODO: Is this right?
-                if ($this->context->isInMethodScope()) {
-                    return self::literalStringUnionType(\ltrim($this->context->getFunctionLikeFQSEN()->__toString(), '\\'));
+                if ($this->context->isInFunctionLikeScope()) {
+                    // Emits method or function FQSEN.
+                    $fqsen = $this->context->getFunctionLikeFQSEN();
+                    return self::literalStringUnionType($fqsen->isClosure() ? '{closure}' : \ltrim($fqsen->__toString(), '\\'));
                 }
-                return StringType::instance(false)->asUnionType();
+                break;
             case ast\flags\MAGIC_DIR:
                 return self::literalStringUnionType(\dirname(Config::projectPath($this->context->getFile())));
             case ast\flags\MAGIC_FILE:
@@ -408,13 +421,26 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return self::literalStringUnionType(\ltrim($this->context->getNamespace(), '\\'));
             case ast\flags\MAGIC_TRAIT:
                 // TODO: Could check if in trait, low importance.
-                if ($this->context->isInClassScope()) {
-                    return self::literalStringUnionType((string)$this->context->getClassFQSEN());
+                if (!$this->context->isInClassScope()) {
+                    break;
                 }
+                $fqsen = $this->context->getClassFQSEN();
+                if ($this->code_base->hasClassWithFQSEN($fqsen)) {
+                    if (!$this->code_base->getClassByFQSEN($fqsen)->isTrait()) {
+                        break;
+                    }
+                }
+                return self::literalStringUnionType((string)\ltrim($this->context->getClassFQSEN()->__toString(), '\\'));
+            default:
                 return StringType::instance(false)->asUnionType();
         }
-        // This is for things like __METHOD__
-        return StringType::instance(false)->asUnionType();
+        $this->emitIssue(
+            Issue::UndeclaredMagicConstant,
+            $node->lineno,
+            self::MAGIC_CONST_NAME_MAP[$flags]
+        );
+
+        return self::literalStringUnionType('');
     }
 
     /**

@@ -2262,24 +2262,25 @@ class ContextNode
     {
         // TODO: clean up or refactor?
         $context = $this->context;
-        switch ($node->flags) {
+        $flags = $node->flags;
+        switch ($flags) {
             case ast\flags\MAGIC_CLASS:
                 if ($context->isInClassScope()) {
                     return \ltrim($context->getClassFQSEN()->__toString(), '\\');
                 }
-                return $node;
+                break;
             case ast\flags\MAGIC_FUNCTION:
                 if ($context->isInFunctionLikeScope()) {
                     $fqsen = $context->getFunctionLikeFQSEN();
                     return $fqsen->isClosure() ? '{closure}' : $fqsen->getName();
                 }
-                return $node;
+                break;
             case ast\flags\MAGIC_METHOD:
                 // TODO: Is this right?
-                if ($context->isInMethodScope()) {
+                if ($context->isInFunctionLikeScope()) {
                     return \ltrim($context->getFunctionLikeFQSEN()->__toString(), '\\');
                 }
-                return $node;
+                break;
             case ast\flags\MAGIC_DIR:
                 return \dirname(Config::projectPath($context->getFile()));
             case ast\flags\MAGIC_FILE:
@@ -2290,12 +2291,25 @@ class ContextNode
                 return \ltrim($context->getNamespace(), '\\');
             case ast\flags\MAGIC_TRAIT:
                 // TODO: Could check if in trait, low importance.
-                if ($context->isInClassScope()) {
-                    return (string)$context->getClassFQSEN();
+                if (!$context->isInClassScope()) {
+                    break;
                 }
+                $fqsen = $this->context->getClassFQSEN();
+                if ($this->code_base->hasClassWithFQSEN($fqsen)) {
+                    if (!$this->code_base->getClassByFQSEN($fqsen)->isTrait()) {
+                        break;
+                    }
+                }
+                return \ltrim($context->getClassFQSEN()->__toString(), '\\');
+            default:
                 return $node;
         }
-        return $node;
+        $this->emitIssue(
+            Issue::UndeclaredMagicConstant,
+            $node->lineno,
+            UnionTypeVisitor::MAGIC_CONST_NAME_MAP[$flags]
+        );
+        return '';
     }
 
     /**

@@ -49,6 +49,7 @@ class Issue
     const UndeclaredClassStaticProperty = 'PhanUndeclaredClassStaticProperty';
     const UndeclaredClosureScope    = 'PhanUndeclaredClosureScope';
     const UndeclaredConstant        = 'PhanUndeclaredConstant';
+    const UndeclaredMagicConstant   = 'PhanUndeclaredMagicConstant';
     const UndeclaredExtendedClass   = 'PhanUndeclaredExtendedClass';
     const UndeclaredFunction        = 'PhanUndeclaredFunction';
     const UndeclaredInterface       = 'PhanUndeclaredInterface';
@@ -996,6 +997,14 @@ class Issue
                 "Possible use of a classlike '{CLASSLIKE}' with an invalid FQSEN.",
                 self::REMEDIATION_B,
                 11043
+            ),
+            new Issue(
+                self::UndeclaredMagicConstant,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_LOW,
+                "Reference to magic constant {CONST} that is undeclared in the current scope",
+                self::REMEDIATION_B,
+                11044
             ),
 
             // Issue::CATEGORY_ANALYSIS

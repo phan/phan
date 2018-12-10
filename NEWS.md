@@ -6,6 +6,8 @@ Phan NEWS
 New features(Analysis):
 + Infer more accurate types for return values/expected arguments of methods of template classes.
 + Support template types in magic methods and properties. (#776, related to #497)
++ Emit `PhanUndeclaredMagicConstant` when using a magic constant in a scope that doesn't make sense.
+  Infer more accurate literal strings for some magic constants.
 
 08 Dec 2018, Phan 1.1.7
 -----------------------
