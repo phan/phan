@@ -591,6 +591,8 @@ final class Builder
             $this->setPhanAccessFlag($i, false);
         } elseif ($type === 'phan-write-only') {
             $this->setPhanAccessFlag($i, true);
+        } elseif ($type === 'phan-transient') {
+            // Do nothing, see SleepCheckerPlugin
         } else {
             $this->emitIssue(
                 Issue::MisspelledAnnotation,
