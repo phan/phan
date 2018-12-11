@@ -1461,7 +1461,7 @@ class Issue
             new Issue(
                 self::TypeMismatchDimEmpty,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 'Assigning to an empty array index of a value of type {TYPE}, but expected the index to exist and be of type {TYPE}',
                 self::REMEDIATION_B,
                 10031
