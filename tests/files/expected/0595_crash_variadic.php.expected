@@ -1,0 +1,3 @@
+%s:6 PhanTypeMismatchArgument Argument 2 (args) is 0 but \b595() takes string defined at %s:5
+%s:8 PhanTypeMismatchArgument Argument 3 (args) is '0' but \c595() takes int defined at %s:7
+%s:8 PhanTypeMismatchArgument Argument 4 (args) is '' but \c595() takes int defined at %s:7

@@ -3082,9 +3082,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // Fixes https://github.com/phan/phan/issues/583
             $argument_types = [];
             foreach ($argument_list_node->children as $i => $argument) {
-                if (!$argument) {
-                    continue;
-                }
                 // Determine the type of the argument at position $i
                 $argument_types[$i] = UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,

@@ -9,6 +9,9 @@ New features(Analysis):
 + Emit `PhanUndeclaredMagicConstant` when using a magic constant in a scope that doesn't make sense.
   Infer more accurate literal strings for some magic constants.
 
+Bug fixes:
++ Fix a crash when an empty scalar value was passed to a function with variadic arguments (#2232)
+
 08 Dec 2018, Phan 1.1.7
 -----------------------
 
