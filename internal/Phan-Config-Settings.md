@@ -576,10 +576,13 @@ NOTE: Currently, this only affects `Closure::fromCallable()`
 
 ## target_php_version
 
-Supported values: `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `null`.
+Supported values: `'5.6'`, `'7.0'`, `'7.1'`, `'7.2'`, `'7.3'`, `null`.
 If this is set to `null`,
 then Phan assumes the PHP version which is closest to the minor version
 of the php executable used to execute Phan.
+
+Note that the **only** effect of choosing `'5.6'` is to infer that functions removed in php 7.0 exist.
+(See [`backward_compatibility_checks`](#backward_compatibility_checks) for additional options)
 
 (Default: `null`)
 
