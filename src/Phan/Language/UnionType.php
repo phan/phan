@@ -2734,7 +2734,15 @@ class UnionType implements Serializable
         if (!$php70_map) {
             $php70_map = self::computePHP70FunctionSignatureMap($php71_map);
         }
-        return $php70_map;
+        if ($target_php_version >= 70000) {
+            return $php70_map;
+        }
+
+        static $php56_map = [];
+        if (!$php56_map) {
+            $php56_map = self::computePHP56FunctionSignatureMap($php70_map);
+        }
+        return $php56_map;
     }
 
     private static function computeLatestFunctionSignatureMap() : array
@@ -2775,6 +2783,16 @@ class UnionType implements Serializable
     {
         $delta_raw = require(__DIR__ . '/Internal/FunctionSignatureMap_php71_delta.php');
         return self::applyDeltaToGetOlderSignatures($php71_map, $delta_raw);
+    }
+
+    /**
+     * @param array<string,array<int|string,string>> $php70_map
+     * @return array<string,array<int|string,string>>
+     */
+    private static function computePHP56FunctionSignatureMap(array $php70_map) : array
+    {
+        $delta_raw = require(__DIR__ . '/Internal/FunctionSignatureMap_php70_delta.php');
+        return self::applyDeltaToGetOlderSignatures($php70_map, $delta_raw);
     }
 
     /**

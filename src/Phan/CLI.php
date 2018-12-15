@@ -106,7 +106,7 @@ class CLI
         'strict-property-checking',
         'strict-return-checking',
         'strict-type-checking',
-        'target-php-version',
+        'target-php-version:',
         'unused-variable-detection',
         'use-fallback-parser',
         'version',

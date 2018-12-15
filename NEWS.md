@@ -3,6 +3,13 @@ Phan NEWS
 ?? ??? 201?, Phan 1.1.9 (dev)
 -----------------------
 
+New features(Analysis):
++ Warn about `split` and other functions that were removed in PHP 7.0 by default. (#2235, #2236)
+  (`target_php_version` can now be set to `'5.6'` if you have a PHP 5.6 project that uses those)
+
+Bug fixes:
++ Fix a bug parsing the CLI option `--target-php-version major.minor` (Phan will now correctly set the `target_php_version` config setting)
+
 15 Dec 2018, Phan 1.1.8
 -----------------------
 
