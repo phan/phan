@@ -9,6 +9,7 @@ New features(Analysis):
 
 Bug fixes:
 + Fix a bug parsing the CLI option `--target-php-version major.minor` (Phan will now correctly set the `target_php_version` config setting)
++ Fix type inferences of `$x['offset'] = expr` in a branch, when outside of that branch. (#2241)
 
 15 Dec 2018, Phan 1.1.8
 -----------------------

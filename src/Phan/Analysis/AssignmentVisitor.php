@@ -1102,6 +1102,18 @@ class AssignmentVisitor extends AnalysisVisitor
                     $variable_name
                 );
 
+            // If the variable isn't a pass-by-reference parameter
+            // we clone it so as to not disturb its previous types
+            // as we replace it.
+            // TODO: Do a better job of analyzing references
+            if ($variable instanceof Parameter) {
+                if (!$variable->isPassByReference()) {
+                    $variable = clone($variable);
+                }
+            } elseif (!($variable instanceof PassByReferenceVariable)) {
+                $variable = clone($variable);
+            }
+
             // If we're assigning to an array element then we don't
             // know what the array structure of the parameter is
             // outside of the scope of this assignment, so we add to
@@ -1124,17 +1136,6 @@ class AssignmentVisitor extends AnalysisVisitor
                     ));
                 }
             } else {
-                // If the variable isn't a pass-by-reference parameter
-                // we clone it so as to not disturb its previous types
-                // as we replace it.
-                if ($variable instanceof Parameter) {
-                    if (!$variable->isPassByReference()) {
-                        $variable = clone($variable);
-                    }
-                } elseif (!($variable instanceof PassByReferenceVariable)) {
-                    $variable = clone($variable);
-                }
-
                 $variable->setUnionType($this->right_type);
             }
 
