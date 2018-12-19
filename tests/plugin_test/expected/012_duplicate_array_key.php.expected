@@ -1,4 +1,8 @@
 src/012_duplicate_array_key.php:16 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value(1) detected in array - the earlier entry will be ignored.
 src/012_duplicate_array_key.php:17 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value(1) detected in array - the earlier entry will be ignored.
+src/012_duplicate_array_key.php:18 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value(1) detected in array - the earlier entry will be ignored.
+src/012_duplicate_array_key.php:20 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value(1) detected in array - the earlier entry will be ignored.
+src/012_duplicate_array_key.php:21 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value(0) detected in array - the earlier entry will be ignored.
+src/012_duplicate_array_key.php:22 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value(0) detected in array - the earlier entry will be ignored.
 src/012_duplicate_array_key.php:23 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value(1) detected in array - the earlier entry will be ignored.
 src/012_duplicate_array_key.php:25 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value('') detected in array - the earlier entry will be ignored.

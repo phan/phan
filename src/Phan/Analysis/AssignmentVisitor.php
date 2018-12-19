@@ -572,7 +572,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->context,
                 $dim_node
             );
-            $dim_value = $dim_type->asSingleScalarValueOrNull();
+            $dim_value = $dim_type->asSingleScalarValueOrNullOrSelf();
         } elseif (\is_scalar($dim_node) && $dim_node !== null) {
             $dim_value = $dim_node;
             $dim_type = Type::fromObject($dim_node)->asUnionType();
@@ -582,7 +582,7 @@ class AssignmentVisitor extends AnalysisVisitor
             $dim_value = null;
         }
 
-        if ($dim_value !== null) {
+        if ($dim_type !== null && !\is_object($dim_value)) {
             $right_type = ArrayShapeType::fromFieldTypes([
                 $dim_value => $this->right_type,
             ], false)->asUnionType();

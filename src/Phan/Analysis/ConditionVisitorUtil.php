@@ -282,11 +282,9 @@ trait ConditionVisitorUtil
                 if (!$expr_type) {
                     return $context;
                 }
-                $expr_value = $expr_type->asSingleScalarValueOrNull();
-                if ($expr_value === null) {
-                    if (!$expr_type->isType(NullType::instance(false))) {
-                        return $context;
-                    }
+                $expr_value = $expr_type->asSingleScalarValueOrNullOrSelf();
+                if (\is_object($expr_value)) {
+                    return $context;
                 }
                 // Get the variable we're operating on
                 $variable = $this->getVariableFromScope($var_node, $context);

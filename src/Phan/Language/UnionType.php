@@ -3423,6 +3423,37 @@ class UnionType implements Serializable
     }
 
     /**
+     * @return ?string|?float|?int|bool|null|?UnionType
+     * If this union type can be represented by a single scalar value or null,
+     * then this returns that scalar value.
+     *
+     * Otherwise, this returns $this.
+     */
+    public function asSingleScalarValueOrNullOrSelf()
+    {
+        $type_set = $this->type_set;
+        if (\count($type_set) !== 1) {
+            return $this;
+        }
+        $type = \reset($type_set);
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+        switch (\get_class($type)) {
+            case LiteralIntType::class:
+                return $type->getIsNullable() ? null : $type->getValue();
+            case LiteralStringType::class:
+                return $type->getIsNullable() ? null : $type->getValue();
+            case FalseType::class:
+                return false;
+            case TrueType::class:
+                return true;
+            case NullType::class:
+                return null;
+            default:
+                return $this;
+        }
+    }
+
+    /**
      * @return array<int,string>
      * Returns a list of known strings for LiteralStringType instances in this union type.
      * E.g. for `?'foo'|?'bar'|?false|?T`, returns `['foo', 'bar']`
