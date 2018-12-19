@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Internal;
 
 $ordinary_ast_node = 'ast\Node|float|int|string';

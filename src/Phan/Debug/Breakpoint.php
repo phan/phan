@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Debug;
 
 readline_completion_function(function (string $input) : array {

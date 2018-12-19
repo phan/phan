@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 /**
  * This class will update and save config setting documentation (for .phan/config.php) in a markdown format that can be uploaded to Phan's wiki

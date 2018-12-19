@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 // .phan/plugins/NonBoolBranchPlugin.php
 
 use ast\Node;

@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\CodeBase;
 
 use Phan\Language\Element\ClassConstant;
