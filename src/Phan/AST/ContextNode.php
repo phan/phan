@@ -2239,12 +2239,17 @@ class ContextNode
             $this->context,
             $node
         );
-        return $node_type->asSingleScalarValueOrNull() ?? $node;
+        $value = $node_type->asSingleScalarValueOrNullOrSelf();
+        if (\is_object($value)) {
+            return $node;
+        }
+        return $value;
     }
 
     /**
      * @return array|string|int|float|bool|null|Node the value of the corresponding PHP constant,
      * or the original node if that could not be determined
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function getValueForMagicConst()
     {

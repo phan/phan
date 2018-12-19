@@ -2652,11 +2652,12 @@ class Clazz extends AddressableElement
         }
 
         // Create the 'class' constant
+        $class_constant_value = \ltrim($this->getFQSEN()->__toString(), '\\');
         $class_constant = new ClassConstant(
             $this->getContext(),
             'class',
             LiteralStringType::instanceForValue(
-                \ltrim($this->getFQSEN()->__toString(), '\\'),
+                $class_constant_value,
                 false
             )->asUnionType(),
             0,
@@ -2665,7 +2666,7 @@ class Clazz extends AddressableElement
                 'class'
             )
         );
-        $class_constant->setNodeForValue((string)$this->getFQSEN());
+        $class_constant->setNodeForValue($class_constant_value);
         $this->addConstant($code_base, $class_constant);
 
         // Add variable '$this' to the scope

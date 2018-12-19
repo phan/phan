@@ -1676,8 +1676,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $part
-            )->asSingleScalarValueOrNull() : $part;
-            if ($part_string === null) {
+            )->asSingleScalarValueOrNullOrSelf() : $part;
+            if (\is_object($part_string)) {
                 return StringType::instance(false)->asUnionType();
             }
             $result .= $part_string;
