@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+
 namespace Phan\Language\Element\Comment;
 
 use Phan\Language\Context;

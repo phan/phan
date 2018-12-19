@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
+
 require_once dirname(__DIR__) . '/src/Phan/Library/StringUtil.php';
 
 use Phan\Library\StringUtil;

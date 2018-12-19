@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 // Grab these before we define our own classes
 $internal_class_name_list = get_declared_classes();

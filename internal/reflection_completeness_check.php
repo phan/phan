@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
+
 /**
  * This checks that the function signatures are complete.
  * TODO: Expand to checking classes (methods, and properties)

@@ -22,11 +22,11 @@
 
   <rule ref="SlevomatCodingStandard.TypeHints.DeclareStrictTypes" >
     <properties>
-      <property name="spacesCountAroundEqualsSign" type="bool" value="false" />
+      <property name="spacesCountAroundEqualsSign" type="int" value="0" />
+      <!-- PSR-12 recommends this, waiting for finalization -->
+      <property name="newlinesCountBetweenOpenTagAndDeclare" type="int" value="2" />
     </properties>
-    <exclude name="SlevomatCodingStandard.TypeHints.DeclareStrictTypes.IncorrectWhitespaceAfterDeclare" />
     <exclude name="SlevomatCodingStandard.TypeHints.DeclareStrictTypes.IncorrectWhitespaceBetweenOpenTagAndDeclare" />
-    <exclude name="SlevomatCodingStandard.TypeHints.DeclareStrictTypes.IncorrectStrictTypesFormat" />
   </rule>
   <rule ref="SlevomatCodingStandard.TypeHints.LongTypeHints" />
   <rule ref="PSR1.Classes.ClassDeclaration.MissingNamespace">

@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan\Language\Element;
 
 // Note: This file uses both class Phan\Language\Element\Flags and namespace ast\flags

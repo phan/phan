@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Phan;
 
 use AssertionError;
@@ -723,7 +724,7 @@ EOT;
             echo "$msg\n";
         }
 
-        $initHelp = self::INIT_HELP;
+        $init_help = self::INIT_HELP;
         echo <<<EOB
 Usage: {$argv[0]} [options] [files...]
  -f, --file-list <filename>
@@ -779,7 +780,7 @@ Usage: {$argv[0]} [options] [files...]
  -o, --output <filename>
   Output filename
 
-$initHelp
+$init_help
  --color
   Add colors to the outputted issues. Tested in Unix.
   This is recommended for only the default --output-mode ('text')
