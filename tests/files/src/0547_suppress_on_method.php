@@ -5,7 +5,7 @@
  */
 class C{
     /**
-     * @suppress PhanGenericConstructorTypes
+     * @suppress PhanGenericConstructorTypes, PhanTemplateTypeNotDeclaredInFunctionParams
      */
     public function __construct(int $x) {
     }

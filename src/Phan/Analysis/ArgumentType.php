@@ -538,7 +538,7 @@ final class ArgumentType
 
         $parameter_type = $alternate_parameter->getNonVariadicUnionType();
 
-        if ($parameter_type->hasTemplateType()) {
+        if ($parameter_type->hasTemplateTypeRecursive()) {
             // Don't worry about **unresolved** template types.
             // We resolve them if possible in ContextNode->getMethod()
             return;

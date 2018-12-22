@@ -1,0 +1,16 @@
+%s:7 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method badTemplateReturn()
+%s:21 PhanTypeMismatchArgumentInternal Argument 1 (string) is \stdClass[] but \strlen() takes string
+%s:38 PhanTypeMismatchArgumentInternal Argument 1 (string) is \stdClass but \strlen() takes string
+%s:39 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:47 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method badTemplateReturn()
+%s:66 PhanTemplateTypeNotDeclaredInFunctionParams Template type T not declared in parameters of function/method missingTemplateParams() (or Phan can't extract template types for this use case)
+%s:68 PhanTypeMismatchReturn Returning type array{0:array<string,int>} but missingTemplateParams() is declared to return T[]
+%s:92 PhanTemplateTypeNotDeclaredInFunctionParams Template type TKey not declared in parameters of function/method combinationIterable() (or Phan can't extract template types for this use case)
+%s:105 PhanTypeMismatchArgumentInternal Argument 1 (string) is \stdClass[] but \strlen() takes string
+%s:109 PhanTypeMismatchArgumentInternal Argument 1 (string) is \stdClass but \strlen() takes string
+%s:110 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:111 PhanTypeMismatchArgumentInternal Argument 1 (string) is T[] but \strlen() takes string
+%s:112 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,TKey>|array<int,TValue> but \strlen() takes string
+%s:112 PhanTypeMismatchArgument Argument 1 (i) is iterable<string,\stdClass> but \TemplateOnMethods::combinationIterable() takes iterable<\TKey,\TValue> defined at %s:92
+%s:137 PhanTypeMismatchArgumentInternal Argument 1 (string) is \stdClass but \strlen() takes string
+%s:138 PhanTypeMismatchArgumentInternal Argument 1 (string) is \ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable but \strlen() takes string

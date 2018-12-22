@@ -382,6 +382,8 @@ class Issue
     const TemplateTypeStaticProperty = 'PhanTemplateTypeStaticProperty';
     const GenericGlobalVariable      = 'PhanGenericGlobalVariable';
     const GenericConstructorTypes    = 'PhanGenericConstructorTypes';
+    const TemplateTypeNotUsedInFunctionReturn = 'PhanTemplateTypeNotUsedInFunctionReturn';
+    const TemplateTypeNotDeclaredInFunctionParams = 'PhanTemplateTypeNotDeclaredInFunctionParams';
 
     // Issue::CATEGORY_COMMENT
     const InvalidCommentForDeclarationType = 'PhanInvalidCommentForDeclarationType';
@@ -3206,9 +3208,25 @@ class Issue
                 self::GenericConstructorTypes,
                 self::CATEGORY_GENERIC,
                 self::SEVERITY_NORMAL,
-                "Missing template parameters {PARAMETER} on constructor for generic class {CLASS}",
+                "Missing template parameter for type {TYPE} on constructor for generic class {CLASS}",
                 self::REMEDIATION_B,
                 14004
+            ),
+            new Issue(
+                self::TemplateTypeNotUsedInFunctionReturn,
+                self::CATEGORY_GENERIC,
+                self::SEVERITY_NORMAL,
+                "Template type {TYPE} not used in return value of function/method {FUNCTIONLIKE}",
+                self::REMEDIATION_B,
+                14005
+            ),
+            new Issue(
+                self::TemplateTypeNotDeclaredInFunctionParams,
+                self::CATEGORY_GENERIC,
+                self::SEVERITY_NORMAL,
+                "Template type {TYPE} not declared in parameters of function/method {FUNCTIONLIKE} (or Phan can't extract template types for this use case)",
+                self::REMEDIATION_B,
+                14006
             ),
 
             // Issue::CATEGORY_INTERNAL

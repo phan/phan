@@ -3,6 +3,7 @@
 namespace Phan\Language\Type;
 
 use ast\Node;
+use Closure;
 use InvalidArgumentException;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -669,10 +670,54 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
     }
 
     /**
+     * Replace the resolved reference to class T (possibly namespaced) with a regular template type.
+     *
+     * @param array<string,TemplateType> $template_fix_map maps the incorrectly resolved name to the template type
+     * @return Type
+     *
+     * Overridden in subclasses
+     *
+     * @see self::withTemplateParameterTypeMap() for the opposite
+     */
+    public function withConvertTypesToTemplateTypes(
+        array $template_fix_map
+    ) : Type {
+        $element_type = $this->genericArrayElementType();
+        $new_element_type = $element_type->withConvertTypesToTemplateTypes($template_fix_map);
+        if ($element_type === $new_element_type) {
+            return $this;
+        }
+        // TODO: Override in array shape subclass
+        return GenericArrayType::fromElementType(
+            $new_element_type,
+            $this->is_nullable,
+            $this->key_type
+        );
+    }
+
+    /**
      * Precondition: Callers should check isObjectWithKnownFQSEN
      */
     public function hasSameNamespaceAndName(Type $type) : bool
     {
         return $this->name === $type->name && $this->namespace === $type->namespace;
+    }
+
+    /**
+     * If this generic array type in a parameter declaration has template types, get the closure to extract the real types for that template type from argument union types
+     *
+     * @param CodeBase $code_base
+     * @return ?Closure(UnionType):UnionType
+     */
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    {
+        $closure = $this->element_type->getTemplateTypeExtractorClosure($code_base, $template_type);
+        if (!$closure) {
+            return null;
+        }
+        // If a function expects T[], then T is the generic array element type of the passed in union type
+        return function (UnionType $array_type) use ($closure) : UnionType {
+            return $closure($array_type->genericArrayElementTypes());
+        };
     }
 }

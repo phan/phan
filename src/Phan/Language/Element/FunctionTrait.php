@@ -6,6 +6,7 @@ use AssertionError;
 use ast\Node;
 use Closure;
 use Phan\Analysis\ParameterTypesAnalyzer;
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
@@ -192,12 +193,12 @@ trait FunctionTrait
     private $real_return_type;
 
     /**
-     * @var \Closure|null (CodeBase, Context, Func|Method $func, Node[]|string[]|int[] $arg_list) => UnionType
+     * @var Closure|null (CodeBase, Context, Func|Method $func, Node[]|string[]|int[] $arg_list) => UnionType
      */
     private $return_type_callback = null;
 
     /**
-     * @var \Closure|null (CodeBase, Context, Func|Method $func, Node[]|string[]|int[] $arg_list) => void
+     * @var Closure|null (CodeBase, Context, Func|Method $func, Node[]|string[]|int[] $arg_list) => void
      */
     private $function_call_analyzer_callback = null;
 
@@ -955,7 +956,7 @@ trait FunctionTrait
     /**
      * @return void
      */
-    public function setDependentReturnTypeClosure(\Closure $closure)
+    public function setDependentReturnTypeClosure(Closure $closure)
     {
         $this->return_type_callback = $closure;
     }
@@ -989,7 +990,7 @@ trait FunctionTrait
      * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures.
      * @return void
      */
-    public function setFunctionCallAnalyzer(\Closure $closure)
+    public function setFunctionCallAnalyzer(Closure $closure)
     {
         $this->function_call_analyzer_callback = $closure;
     }
@@ -1230,7 +1231,7 @@ trait FunctionTrait
 
             if ($type instanceof TemplateType) {
                 if ($this instanceof Method) {
-                    if ($this->isStatic()) {
+                    if ($this->isStatic() && !$this->declaresTemplateTypeInComment($type)) {
                         Issue::maybeEmit(
                             $code_base,
                             $context,
@@ -1326,5 +1327,116 @@ trait FunctionTrait
                 );
             }
         }
+        $comment = $this->comment;
+        if ($comment) {
+            $template_type_list = $comment->getTemplateTypeList();
+            if ($template_type_list) {
+                $this->addClosureForDependentTemplateType($code_base, $context, $template_type_list);
+            }
+        }
+    }
+
+    /**
+     * Does this function/method declare an (at)template type for this type?
+     */
+    public function declaresTemplateTypeInComment(TemplateType $template_type) : bool
+    {
+        $comment = $this->comment;
+        if ($comment) {
+            // Template types are identical if they have the same name. See TemplateType::instanceForId.
+            return \in_array($template_type, $comment->getTemplateTypeList(), true);
+        }
+        return false;
+    }
+
+    /**
+     * @param TemplateType[] $template_type_list
+     */
+    private function addClosureForDependentTemplateType(CodeBase $code_base, Context $context, array $template_type_list)
+    {
+        if ($this->hasDependentReturnType()) {
+            // We already added this or this conflicts with a plugin.
+            return;
+        }
+        if (!$template_type_list) {
+            // Shouldn't happen
+            return;
+        }
+        $return_type = $this->getUnionType();
+        $parameter_extracter_map = [];
+        foreach ($template_type_list as $template_type) {
+            $template_type_map = [$template_type->getName() => MixedType::instance(false)->asUnionType()];
+            $return_type_with_template = $return_type->withTemplateParameterTypeMap($template_type_map);
+            if ($return_type_with_template->isEqualTo($return_type)) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TemplateTypeNotUsedInFunctionReturn,
+                    $context->getLineNumberStart(),
+                    $template_type,
+                    $this->getNameForIssue()
+                );
+                return;
+            }
+            $parameter_extracter = $this->getTemplateTypeExtractorClosure($code_base, $template_type);
+            if (!$parameter_extracter) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TemplateTypeNotDeclaredInFunctionParams,
+                    $context->getLineNumberStart(),
+                    $template_type,
+                    $this->getNameForIssue()
+                );
+                return;
+            }
+            $parameter_extracter_map[$template_type->getName()] = $parameter_extracter;
+        }
+        // Resolve the template types based on the parameters passed to the function
+        $analyzer = function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args) use ($parameter_extracter_map) : UnionType {
+            $args_types = array_map(
+                /**
+                 * @param mixed $node
+                 */
+                function ($node) use ($code_base, $context) : UnionType {
+                    return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node);
+                },
+                $args
+            );
+            $template_type_map = [];
+            foreach ($parameter_extracter_map as $name => $closure) {
+                // TODO: Do a better job of
+                $template_type_map[$name] = $closure ? $closure($args_types) : UnionType::empty();
+            }
+            return $function->getUnionType()->withTemplateParameterTypeMap($template_type_map);
+        };
+        $this->setDependentReturnTypeClosure($analyzer);
+    }
+
+    /**
+     * @param TemplateType $template_type the template type that this function is looking for references to in parameters
+     *
+     * @return ?Closure(array<int,UnionType>):UnionType
+     */
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    {
+        $closure = null;
+        foreach ($this->parameter_list as $i => $parameter) {
+            $closure_for_type = $parameter->getUnionType()->getTemplateTypeExtractorClosure($code_base, $template_type);
+            if (!$closure_for_type) {
+                continue;
+            }
+            $closure = TemplateType::combineParameterClosures(
+                $closure,
+                function (array $parameters) use ($i, $closure_for_type) : UnionType {
+                    $param_type = $parameters[$i] ?? null;
+                    if ($param_type) {
+                        return $closure_for_type($param_type);
+                    }
+                    return UnionType::empty();
+                }
+            );
+        }
+        return $closure;
     }
 }

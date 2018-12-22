@@ -67,8 +67,9 @@ class ThrowsTypesAnalyzer
             return false;
         }
         if ($type instanceof TemplateType) {
-            // TODO: Add unit tests of templates for return types and checks
-            if ($method instanceof Method && $method->isStatic()) {
+            // TODO: Add unit tests of templates for return types and checks.
+            // E.g. should warn if passing in something that can't cast to throwable
+            if ($method instanceof Method && $method->isStatic() && !$method->declaresTemplateTypeInComment($type)) {
                 $maybe_emit_for_method(
                     Issue::TemplateTypeStaticMethod,
                     [(string)$method->getFQSEN()]

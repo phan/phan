@@ -4,6 +4,7 @@ namespace Phan\Language;
 
 use AssertionError;
 use ast\flags;
+use Closure;
 use Error;
 use InvalidArgumentException;
 use Phan\AST\UnionTypeVisitor;
@@ -3104,5 +3105,17 @@ class Type
     public function hasSameNamespaceAndName(Type $type) : bool
     {
         return $this->name === $type->name && $this->namespace === $type->namespace;
+    }
+
+    /**
+     * @param CodeBase $code_base may be used for resolving inheritance @phan-unused-param
+     * @param TemplateType $template_type the template type that this union type is being searched for @phan-unused-param
+     *
+     * @return ?Closure(UnionType):UnionType a closure to map types to the template type wherever it was in the original union type
+     */
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    {
+        // Overridden in subclasses
+        return null;
     }
 }

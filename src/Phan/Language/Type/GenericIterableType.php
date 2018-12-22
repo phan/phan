@@ -2,6 +2,7 @@
 
 namespace Phan\Language\Type;
 
+use Closure;
 use Phan\CodeBase;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
@@ -143,6 +144,34 @@ final class GenericIterableType extends IterableType
         }
 
         return $string;
+    }
+
+    /**
+     * If this generic array type in a parameter declaration has template types, get the closure to extract the real types for that template type from argument union types
+     *
+     * @param CodeBase $code_base
+     * @return ?Closure(UnionType):UnionType
+     */
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    {
+        $closure = $this->element_union_type->getTemplateTypeExtractorClosure($code_base, $template_type);
+        if ($closure) {
+            // If a function expects T[], then T is the generic array element type of the passed in union type
+            $element_closure = function (UnionType $type) use ($code_base, $closure) : UnionType {
+                return $closure($type->iterableValueUnionType($code_base));
+            };
+        } else {
+            $element_closure = null;
+        }
+        $closure = $this->key_union_type->getTemplateTypeExtractorClosure($code_base, $template_type);
+        if ($closure) {
+            $key_closure = function (UnionType $type) use ($code_base, $closure) : UnionType {
+                return $closure($type->iterableKeyUnionType($code_base));
+            };
+        } else {
+            $key_closure = null;
+        }
+        return TemplateType::combineParameterClosures($key_closure, $element_closure);
     }
 }
 // Trigger autoloader for subclass before make() can get called.

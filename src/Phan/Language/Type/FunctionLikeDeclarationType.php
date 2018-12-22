@@ -751,6 +751,12 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         // do nothing
     }
 
+    public function declaresTemplateTypeInComment(TemplateType $template_type) : bool
+    {
+        // not supported yet
+        return false;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
     // End FunctionInterface overrides
     ////////////////////////////////////////////////////////////////////////////////

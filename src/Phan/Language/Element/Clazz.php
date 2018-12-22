@@ -27,6 +27,7 @@ use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\LiteralStringType;
+use Phan\Language\Type\MixedType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 use Phan\Library\None;
@@ -2990,6 +2991,51 @@ class Clazz extends AddressableElement
                     return self::CAN_ITERATE_STATUS_NO_ACCESSIBLE_PROPERTIES;
                 }
                 return self::CAN_ITERATE_STATUS_NO_PROPERTIES;
+            }
+        );
+    }
+
+    /**
+     * @return array<int,Closure(array<int,mixed>):UnionType>
+     */
+    public function getGenericConstructorBuilder(CodeBase $code_base)
+    {
+        return $this->memoize(
+            'template_type_resolvers',
+            /**
+             * @return array<int,Closure(array<int,mixed>):UnionType>
+             */
+            function () use ($code_base) : array {
+                // Get the constructor so that we can figure out what
+                // template types we're going to be mapping
+                $constructor_method =
+                    $this->getMethodByName($code_base, '__construct');
+
+                $template_type_resolvers = [];
+                foreach ($this->getTemplateTypeMap() as $template_type) {
+                    $template_type_resolver = $constructor_method->getTemplateTypeExtractorClosure(
+                        $code_base,
+                        $template_type
+                    );
+                    if (!$template_type_resolver) {
+                        // PhanTemplateTypeNotDeclaredInFunctionParams can be suppressed both on the class and on __construct()
+                        if (!$this->checkHasSuppressIssueAndIncrementCount(Issue::TemplateTypeNotDeclaredInFunctionParams)) {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $constructor_method->getContext(),
+                                Issue::GenericConstructorTypes,
+                                $constructor_method->getContext()->getLineNumberStart(),
+                                $template_type,
+                                $this->getFQSEN()
+                            );
+                        }
+                        $template_type_resolver = function (array $unused_arg_list) : UnionType {
+                            return MixedType::instance(false)->asUnionType();
+                        };
+                    }
+                    $template_type_resolvers[] = $template_type_resolver;
+                }
+                return $template_type_resolvers;
             }
         );
     }
