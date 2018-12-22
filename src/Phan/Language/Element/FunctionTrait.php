@@ -5,12 +5,15 @@ namespace Phan\Language\Element;
 use AssertionError;
 use ast\Node;
 use Closure;
+use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
@@ -21,7 +24,10 @@ use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
+use Phan\Language\Type\StaticOrSelfType;
+use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
+use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 
 /**
@@ -1161,5 +1167,164 @@ trait FunctionTrait
     public function getReturnTypeAsGeneratorTemplateType() : Type
     {
         return $this->as_generator_template_type ?? ($this->as_generator_template_type = $this->getUnionType()->asGeneratorTemplateType());
+    }
+
+    /**
+     * @var bool have the return types (both real and PHPDoc) of this method been analyzed and combined yet?
+     */
+    protected $did_analyze_return_types = false;
+
+    /**
+     * Check this method's return types (phpdoc and real) to make sure they're valid,
+     * and infer a return type from the combination of the signature and phpdoc return types.
+     *
+     * @return void
+     */
+    public function analyzeReturnTypes(CodeBase $code_base)
+    {
+        if ($this->did_analyze_return_types) {
+            return;
+        }
+        $this->did_analyze_return_types = true;
+        $this->analyzeReturnTypesInner($code_base);
+    }
+
+    /**
+     * Is this internal?
+     */
+    abstract public function isPHPInternal() : bool;
+
+    /**
+     * Returns this function's union type without resolving `static` in the function declaration's context.
+     */
+    abstract public function getUnionTypeWithUnmodifiedStatic() : UnionType;
+
+    private function analyzeReturnTypesInner(CodeBase $code_base)
+    {
+        if ($this->isPHPInternal()) {
+            // nothing to do, no known Node
+            return;
+        }
+        $return_type = $this->getUnionTypeWithUnmodifiedStatic();
+        $real_return_type = $this->getRealReturnType();
+        $phpdoc_return_type = $this->getPHPDocReturnType();
+        $context = $this->getContext();
+        // TODO: use method->getPHPDocUnionType() to check compatibility, like analyzeParameterTypesDocblockSignaturesMatch
+
+        // Look at each parameter to make sure their types
+        // are valid
+
+        // Look at each type in the function's return union type
+        foreach ($return_type->withFlattenedArrayShapeOrLiteralTypeInstances()->getTypeSet() as $outer_type) {
+            $type = $outer_type;
+            // TODO: Expand this to ArrayShapeType, add unit test of `@return array{key:MissingClazz}`
+            while ($type instanceof GenericArrayType) {
+                $type = $type->genericArrayElementType();
+            }
+
+            // If its a native type or a reference to
+            // self, its OK
+            if ($type->isNativeType() || ($this instanceof Method && $type instanceof StaticOrSelfType)) {
+                continue;
+            }
+
+            if ($type instanceof TemplateType) {
+                if ($this instanceof Method) {
+                    if ($this->isStatic()) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TemplateTypeStaticMethod,
+                            $this->getFileRef()->getLineNumberStart(),
+                            (string)$this->getFQSEN()
+                        );
+                    }
+                }
+                continue;
+            }
+            // Make sure the class exists
+            $type_fqsen = FullyQualifiedClassName::fromType($type);
+            if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
+                Issue::maybeEmitWithParameters(
+                    $code_base,
+                    $this->getContext(),
+                    Issue::UndeclaredTypeReturnType,
+                    $this->getFileRef()->getLineNumberStart(),
+                    [$this->getNameForIssue(), (string)$outer_type],
+                    IssueFixSuggester::suggestSimilarClass($code_base, $this->getContext(), $type_fqsen, null, 'Did you mean', IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES_AND_VOID)
+                );
+            }
+        }
+        if (Config::getValue('check_docblock_signature_return_type_match') && !$real_return_type->isEmpty() && ($phpdoc_return_type instanceof UnionType) && !$phpdoc_return_type->isEmpty()) {
+            $resolved_real_return_type = $real_return_type->withStaticResolvedInContext($context);
+            foreach ($phpdoc_return_type->getTypeSet() as $phpdoc_type) {
+                $is_exclusively_narrowed = $phpdoc_type->isExclusivelyNarrowedFormOrEquivalentTo(
+                    $resolved_real_return_type,
+                    $context,
+                    $code_base
+                );
+                // Make sure that the commented type is a narrowed
+                // or equivalent form of the syntax-level declared
+                // return type.
+                if (!$is_exclusively_narrowed) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::TypeMismatchDeclaredReturn,
+                        // @phan-suppress-next-line PhanAccessMethodInternal, PhanPartialTypeMismatchArgument TODO: Support inferring this is FunctionInterface
+                        ParameterTypesAnalyzer::guessCommentReturnLineNumber($this) ?? $context->getLineNumberStart(),
+                        $this->getName(),
+                        $phpdoc_type->__toString(),
+                        $real_return_type->__toString()
+                    );
+                }
+                if ($is_exclusively_narrowed && Config::getValue('prefer_narrowed_phpdoc_return_type')) {
+                    $normalized_phpdoc_return_type = ParameterTypesAnalyzer::normalizeNarrowedParamType($phpdoc_return_type, $real_return_type);
+                    if ($normalized_phpdoc_return_type) {
+                        // TODO: How does this currently work when there are multiple types in the union type that are compatible?
+                        $this->setUnionType($normalized_phpdoc_return_type);
+                    } else {
+                        // This check isn't urgent to fix, and is specific to nullable casting rules,
+                        // so use a different issue type.
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TypeMismatchDeclaredReturnNullable,
+                            // @phan-suppress-next-line PhanAccessMethodInternal, PhanPartialTypeMismatchArgument TODO: Support inferring this is FunctionInterface
+                            ParameterTypesAnalyzer::guessCommentReturnLineNumber($this) ?? $context->getLineNumberStart(),
+                            $this->getName(),
+                            $phpdoc_type->__toString(),
+                            $real_return_type->__toString()
+                        );
+                    }
+                }
+            }
+        }
+        if ($return_type->isEmpty() && !$this->getHasReturn()) {
+            if ($this instanceof Func || ($this instanceof Method && ($this->isPrivate() || $this->isFinal() || $this->getIsMagicAndVoid() || $this->getClass($code_base)->isFinal()))) {
+                $this->setUnionType(VoidType::instance(false)->asUnionType());
+            }
+        }
+        foreach ($real_return_type->getTypeSet() as $type) {
+            if (!$type->isObjectWithKnownFQSEN()) {
+                continue;
+            }
+            $type_fqsen = FullyQualifiedClassName::fromType($type);
+            if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
+                // We should have already warned
+                continue;
+            }
+            $class = $code_base->getClassByFQSEN($type_fqsen);
+            if ($class->isTrait()) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypeInvalidTraitReturn,
+                    $this->getFileRef()->getLineNumberStart(),
+                    $this->getNameForIssue(),
+                    $type_fqsen->__toString()
+                );
+            }
+        }
     }
 }

@@ -1922,6 +1922,8 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         $possible_types = UnionType::empty();
         foreach ($function_list_generator as $function) {
+            $function->analyzeReturnTypes($this->code_base);  // For daemon/server mode, call this to consistently ensure accurate return types.
+
             if ($function->hasDependentReturnType()) {
                 $function_types = $function->getDependentReturnType($this->code_base, $this->context, $node->children['args']->children);
             } else {
@@ -2005,6 +2007,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                         $this->code_base,
                         $method_name
                     );
+                    $method->analyzeReturnTypes($this->code_base);  // For daemon/server mode, call this to consistently ensure accurate return types.
+
                     if ($method->hasTemplateType()) {
                         $method = $method->resolveTemplateType(
                             $this->code_base,

@@ -746,6 +746,11 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return $signature;
     }
 
+    public function analyzeReturnTypes(CodeBase $unused_code_base)
+    {
+        // do nothing
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
     // End FunctionInterface overrides
     ////////////////////////////////////////////////////////////////////////////////

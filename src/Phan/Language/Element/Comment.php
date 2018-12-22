@@ -496,8 +496,6 @@ class Comment
 
     /**
      * @return array<string,CommentParameter> (maps the names of parameters to their values. Does not include parameters which didn't provide names)
-     *
-     * @suppress PhanUnreferencedPublicMethod
      */
     public function getParameterMap() : array
     {
