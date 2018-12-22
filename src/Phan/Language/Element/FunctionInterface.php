@@ -403,4 +403,12 @@ interface FunctionInterface extends AddressableElementInterface
      * Returns this function's union type without resolving `static` in the function declaration's context.
      */
     public function getUnionTypeWithUnmodifiedStatic() : UnionType;
+
+    /**
+     * Check this method's return types (phpdoc and real) to make sure they're valid,
+     * and infer a return type from the combination of the signature and phpdoc return types.
+     *
+     * @return void
+     */
+    public function analyzeReturnTypes(CodeBase $code_base);
 }

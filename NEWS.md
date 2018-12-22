@@ -12,6 +12,9 @@ New features(Analysis):
 Plugins:
 + Detect more possible duplicates in `DuplicateArrayKeyPlugin`
 
+Language Server/Daemon mode:
++ Be more consistent about how return types in methods (of files that aren't open) are inferred.
+
 Bug fixes:
 + Fix a bug parsing the CLI option `--target-php-version major.minor` (Phan will now correctly set the `target_php_version` config setting)
 + Fix type inferences of `$x['offset'] = expr` in a branch, when outside of that branch. (#2241)

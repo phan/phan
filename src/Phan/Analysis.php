@@ -10,7 +10,6 @@ use ParseError;
 use Phan\Analysis\DuplicateFunctionAnalyzer;
 use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\Analysis\ReferenceCountsAnalyzer;
-use Phan\Analysis\ReturnTypesAnalyzer;
 use Phan\Analysis\ThrowsTypesAnalyzer;
 use Phan\AST\ASTSimplifier;
 use Phan\AST\Parser;
@@ -269,7 +268,7 @@ class Analysis
             // Phan always has to call this, to add default values to types of parameters.
             $function_or_method->ensureScopeInitialized($code_base);
 
-            // If there is an array limiting the set of files, skip this file if it's not in the list,
+            // If there is an array limiting the set of files, skip this file if it's not in the list.
             if (\is_array($file_filter) && !isset($file_filter[$function_or_method->getContext()->getFile()])) {
                 return;
             }
@@ -286,10 +285,9 @@ class Analysis
                 $function_or_method
             );
 
-            ReturnTypesAnalyzer::analyzeReturnTypes(
-                $code_base,
-                $function_or_method
-            );
+            // Infer more accurate return types
+            // For daemon mode/the language server, we also call this whenever we use the return type of a function/method.
+            $function_or_method->analyzeReturnTypes($code_base);
 
             ThrowsTypesAnalyzer::analyzeThrowsTypes(
                 $code_base,
