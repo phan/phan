@@ -1223,15 +1223,6 @@ class ParseVisitor extends ScopeVisitor
             );
             return;
         }
-        if ($code_base->hasGlobalConstantWithFQSEN($fqsen)) {
-            $other_context = $code_base->getGlobalConstantByFQSEN($fqsen)->getContext();
-            if (!$other_context->equals($context)) {
-                // Be consistent about the constant's type and only track the first declaration seen when parsing (or redeclarations)
-                // Note that global constants don't have alternates.
-                return;
-            }
-            // Otherwise, add the constant now that we know about all of the elements in the codebase
-        }
 
         // Create the constant
         $constant = new GlobalConstant(
@@ -1241,6 +1232,20 @@ class ParseVisitor extends ScopeVisitor
             $flags,
             $fqsen
         );
+
+        if ($code_base->hasGlobalConstantWithFQSEN($fqsen)) {
+            $other_constant = $code_base->getGlobalConstantByFQSEN($fqsen);
+            $other_context = $other_constant->getContext();
+            if (!$other_context->equals($context)) {
+                // Be consistent about the constant's type and only track the first declaration seen when parsing (or redeclarations)
+                // Note that global constants don't have alternates.
+                return;
+            }
+            // Keep track of old references to the new constant
+            $constant->copyReferencesFrom($other_constant);
+
+            // Otherwise, add the constant now that we know about all of the elements in the codebase
+        }
 
         // Get a comment on the declaration
         $comment = Comment::fromStringInContext(

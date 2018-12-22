@@ -7,6 +7,7 @@ New features(Analysis):
 + Warn about `split` and other functions that were removed in PHP 7.0 by default. (#2235, #2236)
   (`target_php_version` can now be set to `'5.6'` if you have a PHP 5.6 project that uses those)
 + Infer more accurate literal string for `::class` constant.
++ Fix a false positive `PhanUnreferencedConstant` seen when calling `define()` with a dynamic name. (#2245)
 
 Plugins:
 + Detect more possible duplicates in `DuplicateArrayKeyPlugin`
