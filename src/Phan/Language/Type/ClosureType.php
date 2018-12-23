@@ -82,6 +82,17 @@ final class ClosureType extends Type
     }
 
     /**
+     * Gets the function-like this type was created from.
+     *
+     * TODO: Uses of this may keep outdated data in language server mode.
+     * @return ?FunctionInterface
+     */
+    public function getFunctionLikeOrNull()
+    {
+        return $this->func;
+    }
+
+    /**
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly

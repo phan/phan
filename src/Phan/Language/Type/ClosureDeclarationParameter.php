@@ -2,6 +2,7 @@
 
 namespace Phan\Language\Type;
 
+use Phan\CodeBase;
 use Phan\Language\Element\Parameter;
 use Phan\Language\FileRef;
 use Phan\Language\UnionType;
@@ -102,6 +103,27 @@ final class ClosureDeclarationParameter
         return $this->type->canCastToUnionType($other->type);
     }
 
+    /**
+     * Checks if this parameter can be used as an equivalent or more permissive form of the parameter $other.
+     * This is used to check if closure/callable types can be cast to other closure/callable types.
+     *
+     * This also allows templates to be used instead
+     *
+     * @see \Phan\Analysis\ParameterTypesAnalyzer::analyzeOverrideSignatureForOverriddenMethod() - Similar logic using LSP
+     */
+    public function canCastToParameterHandlingTemplatesIgnoringVariadic(ClosureDeclarationParameter $other, CodeBase $code_base) : bool
+    {
+        if ($this->is_reference !== $other->is_reference) {
+            return false;
+        }
+        if (!$this->is_optional && $other->is_optional) {
+            // We should have already checked this
+            return false;
+        }
+        // TODO: stricter? (E.g. shouldn't allow int|string to cast to int)
+        return $this->type->canCastToUnionTypeHandlingTemplates($other->type, $code_base);
+    }
+
     // TODO: Memoize?
     /**
      * Creates a parameter with the non-variadic version of the type
@@ -149,5 +171,18 @@ final class ClosureDeclarationParameter
             $result->setDefaultValueType(MixedType::instance(false)->asUnionType());
         }
         return $result;
+    }
+
+    /**
+     * Replace the resolved reference to class T (possibly namespaced) with a regular template type.
+     */
+    public function withConvertTypesToTemplateTypes(
+        array $template_fix_map
+    ) : ClosureDeclarationParameter {
+        $new_type = $this->type->withConvertTypesToTemplateTypes($template_fix_map);
+        if ($this->type === $new_type) {
+            return $this;
+        }
+        return new self($this->type, $this->is_variadic, $this->is_reference, $this->is_optional);
     }
 }

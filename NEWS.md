@@ -14,9 +14,12 @@ New features(Analysis):
   New issue types: `PhanTemplateTypeNotUsedInFunctionReturn`, `PhanTemplateTypeNotDeclaredInFunctionParams`
 + Make `@template` on classes behave more consistently. (#522)
   Phan will now check the union types of parameters instead of assuming that arguments will always occur in the same order and positions as `@template`.
-+ Phan can now infer types such as `@param T[]` in constructors and regular functions/methods. (#522)
++ Phan can now infer template types from more categories of parameter types in constructors and regular functions/methods. (#522)
+  - `@param T[]`
+  - `@param Closure():T`
+  - `@param OtherClass<\stdClass,T>`
 
-  - Note that this implementation is currently incomplete - Phan is not yet able to extract `T` from many types (e.g. `array{0:T}`, `Closure():T`, `MyClass<T>`, etc.)
+  - Note that this implementation is currently incomplete - Phan is not yet able to extract `T` from types not mentioned here (e.g. `array{0:T}`, `Generator<T>`, etc.)
 
 Plugins:
 + Detect more possible duplicates in `DuplicateArrayKeyPlugin`

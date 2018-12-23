@@ -285,6 +285,11 @@ abstract class NativeType extends Type
     {
         return false;
     }
+
+    public function getTemplateTypeExtractorClosure(CodeBase $unused_code_base, TemplateType $unused_template_type)
+    {
+        return null;
+    }
 }
 \class_exists(ArrayType::class);
 \class_exists(ScalarType::class);
