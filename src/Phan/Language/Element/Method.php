@@ -767,8 +767,7 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * Does this method have template types anywhere in its parameters or return type?
-     *
-     * TODO: Make the check recursive
+     * (This check is recursive)
      */
     public function hasTemplateType() : bool
     {

@@ -658,13 +658,17 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Returns the union type from a type in a parameter/return signature of a function-like.
      * This preserves `self` and `static`
-     * @param ?Node $node
+     * @param Node $node
      */
     public function fromTypeInSignature($node) : UnionType
     {
         $is_nullable = $node->kind === ast\AST_NULLABLE_TYPE;
         if ($is_nullable) {
             $node = $node->children['type'];
+            if (!$node instanceof Node) {
+                // Work around bug (in polyfill parser?)
+                return UnionType::empty();
+            }
         }
         $kind = $node->kind;
         if ($kind === ast\AST_TYPE) {
@@ -1150,11 +1154,6 @@ class UnionTypeVisitor extends AnalysisVisitor
             // arguments to the generic types and return a special
             // kind of type.
 
-            // Get the constructor so that we can figure out what
-            // template types we're going to be mapping
-            $constructor_method =
-                $class->getMethodByName($this->code_base, '__construct');
-
             // Map each argument to its type
             /** @param Node|string|int|float $arg_node */
             $arg_type_list = \array_map(function ($arg_node) : UnionType {
@@ -1165,12 +1164,14 @@ class UnionTypeVisitor extends AnalysisVisitor
                 );
             }, $node->children['args']->children);
 
-            // Map each template type o the argument's concrete type
+            // Get closures to extract template types based on the types of the constructor
+            // so that we can figure out what template types we're going to be mapping
+            $template_type_resolvers = $class->getGenericConstructorBuilder($this->code_base);
+
+            // And use those closures to infer the (possibly transformed) types
             $template_type_list = [];
-            foreach ($constructor_method->getParameterList() as $i => $unused_parameter) {
-                if (isset($arg_type_list[$i])) {
-                    $template_type_list[] = $arg_type_list[$i];
-                }
+            foreach ($template_type_resolvers as $template_type_resolver) {
+                $template_type_list[] = $template_type_resolver($arg_type_list);
             }
 
             // Create a new type that assigns concrete
@@ -1828,7 +1829,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
 
             // Map template types to concrete types
-            if ($union_type->hasTemplateType()) {
+            if ($union_type->hasTemplateTypeRecursive()) {
                 // Get the type of the object calling the property
                 $expression_type = UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
@@ -2023,8 +2024,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                     }
 
                     // Map template types to concrete types
-                    if ($union_type->hasTemplateType()) {
-                        // Get the type of the object calling the property
+                    // TODO: When the template types are part of the method doc comment, don't look it up in the class union type
+                    if (isset($node->children['expr']) && $union_type->hasTemplateTypeRecursive()) {
+                        // Get the type of the object calling the method
                         $expression_type = UnionTypeVisitor::unionTypeFromNode(
                             $this->code_base,
                             $this->context,

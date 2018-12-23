@@ -882,7 +882,7 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         $property_union_type = $property->getUnionType();
-        if ($property_union_type->hasTemplateType()) {
+        if ($property_union_type->hasTemplateTypeRecursive()) {
             $property_union_type = $property_union_type->asExpandedTypes($this->code_base);
         }
 

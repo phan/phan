@@ -4,7 +4,7 @@
 %s:21 PhanTypeMissingReturn Method \C::g is declared to return T but has no return value
 %s:24 PhanUnextractableAnnotationElementName Saw possibly unextractable annotation for a fragment of comment '* @param int': after int, did not see an element name (will guess based on comment order)
 %s:25 PhanUnextractableAnnotationElementName Saw possibly unextractable annotation for a fragment of comment '* @param X': after X, did not see an element name (will guess based on comment order)
-%s:27 PhanGenericConstructorTypes Missing template parameters T on constructor for generic class \C
+%s:27 PhanGenericConstructorTypes Missing template parameter for type T on constructor for generic class \C
 %s:27 PhanUndeclaredTypeParameter Parameter $p2 has undeclared type \X (Did you mean class \C)
 %s:30 PhanParamTooFew Call with 0 arg(s) to \C::__construct() which requires 2 arg(s) defined at %s:27
 %s:36 PhanUnextractableAnnotationElementName Saw possibly unextractable annotation for a fragment of comment '* @param int': after int, did not see an element name (will guess based on comment order)

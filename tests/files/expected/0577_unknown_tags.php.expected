@@ -1,2 +1,2 @@
-%s:16 PhanInvalidCommentForDeclarationType The phpdoc comment for @template cannot occur on a method
+%s:20 PhanTemplateTypeNotUsedInFunctionReturn Template type X not used in return value of function/method test()
 %s:21 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string

@@ -2919,10 +2919,10 @@ This category contains issues related to [Phan's generic type support](https://g
 ## PhanGenericConstructorTypes
 
 ```
-Missing template parameters {PARAMETER} on constructor for generic class {CLASS}
+Missing template parameter for type {TYPE} on constructor for generic class {CLASS}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0203_generic_errors.php.expected#L7) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0203_generic_errors.php#L27).
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0203_generic_errors.php.expected#L7) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0203_generic_errors.php#L27).
 
 ## PhanGenericGlobalVariable
 
@@ -2937,6 +2937,22 @@ This is emitted when a class constant's PHPDoc contains a type declared in a cla
 ```
 constant {CONST} may not have a template type
 ```
+
+## PhanTemplateTypeNotDeclaredInFunctionParams
+
+```
+Template type {TYPE} not declared in parameters of function/method {FUNCTIONLIKE} (or Phan can't extract template types for this use case)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0597_template_support.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0597_template_support.php#L66).
+
+## PhanTemplateTypeNotUsedInFunctionReturn
+
+```
+Template type {TYPE} not used in return value of function/method {FUNCTIONLIKE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0577_unknown_tags.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0577_unknown_tags.php#L20).
 
 ## PhanTemplateTypeStaticMethod
 

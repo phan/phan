@@ -13,7 +13,7 @@ class TemplateClass577 {
 
     /**
      * @template-another-thing VV should not warn - this is an unsupported tag that might be used by other tools
-     * @template X should warn
+     * @template X Phan should warn that it couldn't figure out how X is used
      * @param int $x
      * @param-other-tag VV $x should not warn
      */

@@ -14,6 +14,7 @@ use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\ObjectType;
+use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 use Phan\Tests\BaseTest;
 use ReflectionClass;
@@ -172,6 +173,11 @@ final class EmptyUnionTypeTest extends BaseTest
                     function (...$unused_args) : bool {
                         return true;
                     },
+                ];
+            case TemplateType::class:
+                return [
+                    TemplateType::instanceForId('T', false),
+                    TemplateType::instanceForId('TKey', true),
                 ];
             case '':
                 if ($param->getName() === 'field_key') {

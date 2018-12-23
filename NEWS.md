@@ -8,6 +8,15 @@ New features(Analysis):
   (`target_php_version` can now be set to `'5.6'` if you have a PHP 5.6 project that uses those)
 + Infer more accurate literal string for `::class` constant.
 + Fix a false positive `PhanUnreferencedConstant` seen when calling `define()` with a dynamic name. (#2245)
++ Support analyzing `@template` in PHPDoc of closures, functions and methods. (#522)
+  Phan currently requires the template type to be part of the parameter type(s) as well as the return type.
+
+  New issue types: `PhanTemplateTypeNotUsedInFunctionReturn`, `PhanTemplateTypeNotDeclaredInFunctionParams`
++ Make `@template` on classes behave more consistently. (#522)
+  Phan will now check the union types of parameters instead of assuming that arguments will always occur in the same order and positions as `@template`.
++ Phan can now infer types such as `@param T[]` in constructors and regular functions/methods. (#522)
+
+  - Note that this implementation is currently incomplete - Phan is not yet able to extract `T` from many types (e.g. `array{0:T}`, `Closure():T`, `MyClass<T>`, etc.)
 
 Plugins:
 + Detect more possible duplicates in `DuplicateArrayKeyPlugin`

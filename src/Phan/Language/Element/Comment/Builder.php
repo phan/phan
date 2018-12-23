@@ -290,9 +290,15 @@ final class Builder
         }
 
         if (\count($this->template_type_list)) {
-            if ($this->comment_type === Comment::ON_CLASS) {
-                // Resolve template types in magic methods, properties, etc.
-                $this->fixClassTemplateTypes();
+            switch ($this->comment_type) {
+                case Comment::ON_CLASS:
+                    // Resolve template types in magic methods, properties, etc.
+                    $this->fixClassTemplateTypes();
+                    break;
+                case Comment::ON_FUNCTION:
+                case Comment::ON_METHOD:
+                    $this->fixMethodTemplateTypes();
+                    break;
             }
         }
         if ($this->issues) {
@@ -320,6 +326,19 @@ final class Builder
     }
 
     /**
+     * @return array<string,TemplateType>
+     */
+    private function buildTemplateFixMap(Context $context)
+    {
+        $template_fix_map = [];
+        foreach ($this->template_type_list as $t) {
+            $regular_type = Type::fromStringInContext($t->getName(), $context, Type::FROM_PHPDOC);
+            $template_fix_map[$regular_type->__toString()] = $t;
+        }
+        return $template_fix_map;
+    }
+
+    /**
      * Fix any uses of (at)template annotations within this class comment.
      * Affects (at)method annotations, (at)property annotations, etc.
      *
@@ -327,13 +346,30 @@ final class Builder
      */
     private function fixClassTemplateTypes()
     {
-        $template_fix_map = [];
-        foreach ($this->template_type_list as $t) {
-            $regular_type = Type::fromStringInContext($t->getName(), $this->context, Type::FROM_PHPDOC);
-            $template_fix_map[$regular_type->__toString()] = $t;
-        }
+        $template_fix_map = $this->buildTemplateFixMap($this->context);
         foreach ($this->magic_method_list as $method) {
             $method->convertTypesToTemplateTypes($template_fix_map);
+        }
+        foreach ($this->magic_property_list as $property) {
+            $property->convertTypesToTemplateTypes($template_fix_map);
+        }
+    }
+
+    /**
+     * Fix any uses of (at)template annotations within this function/method comment.
+     * Affects (at)param annotations, (at)return annotations, etc.
+     *
+     * Precondition: $this->template_type_list has 1 or more elements
+     */
+    private function fixMethodTemplateTypes()
+    {
+        $template_fix_map = $this->buildTemplateFixMap($this->context);
+        foreach ($this->parameter_list as $parameter) {
+            $parameter->convertTypesToTemplateTypes($template_fix_map);
+        }
+        $return_comment = $this->return_comment;
+        if ($return_comment) {
+            $return_comment->convertTypesToTemplateTypes($template_fix_map);
         }
         foreach ($this->magic_property_list as $property) {
             $property->convertTypesToTemplateTypes($template_fix_map);
@@ -432,7 +468,7 @@ final class Builder
     {
         // Make sure support for generic types is enabled
         if (Config::getValue('generic_types_enabled')) {
-            $this->checkCompatible('@template', [Comment::ON_CLASS], $i);
+            $this->checkCompatible('@template', Comment::HAS_TEMPLATE_ANNOTATION, $i);
             $template_type = $this->templateTypeFromCommentLine($line);
             if ($template_type) {
                 $this->template_type_list[] = $template_type;
@@ -444,7 +480,7 @@ final class Builder
     {
         // Make sure support for generic types is enabled
         if (Config::getValue('generic_types_enabled')) {
-            $this->checkCompatible('@template', [Comment::ON_CLASS], $i);
+            $this->checkCompatible('@template', Comment::HAS_TEMPLATE_ANNOTATION, $i);
             $template_type = $this->templateTypeFromCommentLine($line);
             if ($template_type) {
                 $this->phan_overrides['template'][] = $template_type;
@@ -737,7 +773,7 @@ final class Builder
         // Backslashes or nested templates wouldn't make sense, so use WORD_REGEX.
         if (preg_match('/@(?:phan-)?template\s+(' . self::WORD_REGEX . ')/', $line, $match)) {
             $template_type_identifier = $match[1];
-            return new TemplateType($template_type_identifier);
+            return TemplateType::instanceForId($template_type_identifier, false);
         }
 
         return null;

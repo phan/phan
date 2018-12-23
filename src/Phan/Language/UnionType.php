@@ -3624,6 +3624,23 @@ class UnionType implements Serializable
         }
         return $result;
     }
+
+    /**
+     * @param TemplateType $template_type the template type that this union type is being searched for
+     *
+     * @return ?Closure(UnionType):UnionType a closure to map types to the template type wherever it was in the original union type
+     */
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    {
+        $closure = null;
+        foreach ($this->type_set as $type) {
+            $closure = TemplateType::combineParameterClosures(
+                $closure,
+                $type->getTemplateTypeExtractorClosure($code_base, $template_type)
+            );
+        }
+        return $closure;
+    }
 }
 
 UnionType::init();

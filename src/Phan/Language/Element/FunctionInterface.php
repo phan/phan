@@ -10,6 +10,7 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\ClosedScope;
 use Phan\Language\Type;
 use Phan\Language\Type\FunctionLikeDeclarationType;
+use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 
 /**
@@ -411,4 +412,9 @@ interface FunctionInterface extends AddressableElementInterface
      * @return void
      */
     public function analyzeReturnTypes(CodeBase $code_base);
+
+    /**
+     * Does this function/method declare an (at)template type for this type?
+     */
+    public function declaresTemplateTypeInComment(TemplateType $template_type) : bool;
 }

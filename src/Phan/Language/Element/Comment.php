@@ -51,6 +51,12 @@ class Comment
         self::ON_CONST,
     ];
 
+    const HAS_TEMPLATE_ANNOTATION = [
+        self::ON_CLASS,
+        self::ON_FUNCTION,
+        self::ON_METHOD,
+    ];
+
     const NAME_FOR_TYPE = [
         self::ON_CLASS      => 'class',
         self::ON_VAR        => 'variable',

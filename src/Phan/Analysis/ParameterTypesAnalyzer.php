@@ -69,7 +69,7 @@ class ParameterTypesAnalyzer
 
                 if ($type instanceof TemplateType) {
                     if ($method instanceof Method) {
-                        if ($method->isStatic()) {
+                        if ($method->isStatic() && !$method->declaresTemplateTypeInComment($type)) {
                             Issue::maybeEmit(
                                 $code_base,
                                 $method->getContext(),
@@ -133,7 +133,8 @@ class ParameterTypesAnalyzer
                 $class = $method->getClass($code_base);
                 if ($class->isGeneric()) {
                     $class->hydrate($code_base);
-                    self::analyzeGenericClassConstructor($code_base, $class, $method);
+                    // Call this to emit any warnings about missing template params
+                    $class->getGenericConstructorBuilder($code_base);
                 }
             }
             self::analyzeOverrideSignature($code_base, $method);
@@ -348,43 +349,6 @@ class ParameterTypesAnalyzer
         );
     }
 
-    private static function analyzeGenericClassConstructor(CodeBase $code_base, Clazz $class, Method $method)
-    {
-        // Get the set of template type identifiers defined on
-        // the class
-        $template_type_identifiers = \array_keys(
-            $class->getTemplateTypeMap()
-        );
-
-        // Get the set of template type identifiers defined
-        // across all parameter types
-        $parameter_template_type_identifiers = [];
-        foreach ($method->getParameterList() as $parameter) {
-            foreach ($parameter->getUnionType()->getTypeSet() as $type) {
-                if ($type instanceof TemplateType) {
-                    $parameter_template_type_identifiers[] =
-                        $type->getName();
-                }
-            }
-        }
-
-        $missing_template_type_identifiers = \array_diff(
-            $template_type_identifiers,
-            $parameter_template_type_identifiers
-        );
-
-        if ($missing_template_type_identifiers) {
-            Issue::maybeEmit(
-                $code_base,
-                $method->getContext(),
-                Issue::GenericConstructorTypes,
-                $method->getFileRef()->getLineNumberStart(),
-                implode(',', $missing_template_type_identifiers),
-                (string)$class->getFQSEN()
-            );
-        }
-    }
-
     /**
      * Make sure signatures line up between methods and a method it overrides.
      *
@@ -454,7 +418,7 @@ class ParameterTypesAnalyzer
             $o_parameter_list =
                 \array_map(function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
 
-                    if (!$parameter->getUnionType()->hasTemplateType()) {
+                    if (!$parameter->getUnionType()->hasTemplateTypeRecursive()) {
                         return $parameter;
                     }
 
@@ -476,7 +440,7 @@ class ParameterTypesAnalyzer
         // type parameters we may have
         $o_return_union_type = $o_method->getUnionType();
         if ($type_option->isDefined()
-            && $o_return_union_type->hasTemplateType()
+            && $o_return_union_type->hasTemplateTypeRecursive()
         ) {
             $o_return_union_type =
                 $o_return_union_type->withTemplateParameterTypeMap(

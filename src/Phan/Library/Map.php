@@ -11,6 +11,7 @@ use SplObjectStorage;
  *
  * @template K
  * @template V
+ * @suppress PhanTemplateTypeNotDeclaredInFunctionParams
  */
 class Map extends SplObjectStorage
 {
