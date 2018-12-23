@@ -2649,6 +2649,24 @@ class UnionType implements Serializable
     }
 
     /**
+     * Filters the types with the same FQSEN as $other
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function getTypesWithFQSEN(Type $other) : UnionType
+    {
+        if (!$other->isObjectWithKnownFQSEN()) {
+            return UnionType::empty();
+        }
+        $result = $this;
+        foreach ($this->type_set as $type) {
+            if ($type->hasSameNamespaceAndName($other) && $type->isObjectWithKnownFQSEN()) {
+                $result = $result->withoutType($type);
+            }
+        }
+        return $result;
+    }
+
+    /**
      * As per the Serializable interface
      *
      * @return string

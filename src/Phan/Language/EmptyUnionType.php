@@ -971,6 +971,11 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
+    public function getTypesWithFQSEN(Type $other) : UnionType
+    {
+        return $this;
+    }
+
     /**
      * As per the Serializable interface
      *

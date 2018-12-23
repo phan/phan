@@ -1,0 +1,5 @@
+%s:35 PhanTypeMismatchArgumentInternal Argument 1 (string) is \Base|\Base<\stdClass> but \strlen() takes string
+%s:38 PhanTypeMismatchArgumentInternal Argument 1 (string) is \DerivedBase|\DerivedBase<\stdClass> but \strlen() takes string
+%s:39 PhanTypeMismatchArgumentInternal Argument 1 (string) is \stdClass but \strlen() takes string
+%s:40 PhanTypeMismatchArgumentInternal Argument 1 (string) is \DerivedBase|\DerivedBase<int> but \strlen() takes string
+%s:41 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string

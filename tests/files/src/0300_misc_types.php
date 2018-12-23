@@ -35,3 +35,4 @@ function test300() {
     expect_string_300($definedStrVar |= $strVar);
 }
 self::missingAndNotInClassScope();
+expect_string_300((object)(new ArrayObject()));

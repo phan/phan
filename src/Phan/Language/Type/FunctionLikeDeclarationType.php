@@ -146,7 +146,6 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return $result;
     }
 
-    // TODO: Figure out why ?Closure():bool can't cast to ?Closure(): bool
     /**
      * Checks if this callable can cast to the other $type, ignoring whether these are nullable.
      *
@@ -175,6 +174,49 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
                 break;
             }
             if (!$param->canCastToParameterIgnoringVariadic($other_param)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Checks if this callable can cast to the other $type, ignoring whether these are nullable.
+     *
+     * It can be cast if this can be passed to any usage of $type and satisfy expectation about parameters and returned union types.
+     *
+     * -e.g. `Closure(mixed):T` can be used when a `Closure(int):\BaseClass` is expected.
+     *
+     * @see self::canCastToNonNullableType() - This is based on that.
+     */
+    protected function canCastToNonNullableTypeHandlingTemplates(Type $type, CodeBase $code_base) : bool
+    {
+        if (parent::canCastToNonNullableTypeHandlingTemplates($type, $code_base)) {
+            return true;
+        }
+        if (!($type instanceof FunctionLikeDeclarationType)) {
+            return false;
+        }
+        if ($this->required_param_count > $type->required_param_count) {
+            return false;
+        }
+        if ($this->getNumberOfParameters() < $type->getNumberOfParameters()) {
+            return false;
+        }
+        if ($this->returns_reference !== $type->returns_reference) {
+            return false;
+        }
+        // TODO: Allow nullable/null to cast to void?
+        if (!$this->return_type->canCastToUnionTypeHandlingTemplates($type->return_type, $code_base)) {
+            return false;
+        }
+        foreach ($this->params as $i => $param) {
+            $other_param = $type->getClosureParameterForArgument($i) ?? null;
+            if (!$other_param) {
+                break;
+            }
+            if (!$param->canCastToParameterHandlingTemplatesIgnoringVariadic($other_param, $code_base)) {
                 return false;
             }
         }
@@ -757,6 +799,66 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return false;
     }
 
+    /**
+     * Replace the resolved reference to class T (possibly namespaced) with a regular template type.
+     *
+     * @param array<string,TemplateType> $template_fix_map maps the incorrectly resolved name to the template type
+     * @return Type
+     *
+     * Overridden in subclasses
+     *
+     * @see self::withTemplateParameterTypeMap() for the opposite
+     */
+    public function withConvertTypesToTemplateTypes(
+        array $template_fix_map
+    ) : Type {
+        $return_type = $this->return_type->withConvertTypesToTemplateTypes($template_fix_map);
+        $params = array_map(function (ClosureDeclarationParameter $param) use ($template_fix_map) : ClosureDeclarationParameter {
+            return $param->withConvertTypesToTemplateTypes($template_fix_map);
+        }, $this->params);
+        if ($params === $this->params && $return_type === $this->return_type) {
+            return $this;
+        }
+        return new static($this->file_ref, $params, $return_type, $this->returns_reference, $this->is_nullable);
+    }
+
+    /**
+     * Returns true for `T` and `T[]` and `\MyClass<T>`, but not `\MyClass<\OtherClass>` or `false`
+     */
+    public function hasTemplateTypeRecursive() : bool
+    {
+        if ($this->return_type->hasTemplateTypeRecursive()) {
+            return true;
+        }
+        foreach ($this->params as $param) {
+            if ($param->getNonVariadicUnionType()->hasTemplateTypeRecursive()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    {
+        $return_closure = $this->getUnionType()->getTemplateTypeExtractorClosure($code_base, $template_type);
+        if (!$return_closure) {
+            return null;
+        }
+        return function (UnionType $union_type) use ($return_closure) : UnionType {
+            $result = UnionType::empty();
+            foreach ($union_type->getTypeSet() as $type) {
+                if ($type instanceof FunctionLikeDeclarationType) {
+                    $result = $result->withUnionType($return_closure($type->getUnionType()));
+                } elseif ($type instanceof ClosureType) {
+                    $func = $type->getFunctionLikeOrNull();
+                    if ($func) {
+                        $result = $result->withUnionType($return_closure($func->getUnionType()));
+                    }
+                }
+            }
+            return $result;
+        };
+    }
     ////////////////////////////////////////////////////////////////////////////////
     // End FunctionInterface overrides
     ////////////////////////////////////////////////////////////////////////////////

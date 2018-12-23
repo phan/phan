@@ -3111,11 +3111,38 @@ class Type
      * @param CodeBase $code_base may be used for resolving inheritance @phan-unused-param
      * @param TemplateType $template_type the template type that this union type is being searched for @phan-unused-param
      *
-     * @return ?Closure(UnionType):UnionType a closure to map types to the template type wherever it was in the original union type
+     * @return ?Closure(UnionType):UnionType a closure to determine the union type(s) that are in the same position(s) as the template type.
+     * This is overridden in subclasses.
      */
     public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
     {
-        // Overridden in subclasses
-        return null;
+        if (!$this->template_parameter_type_list) {
+            return null;
+        }
+        if (!$this->isObjectWithKnownFQSEN()) {
+            return null;
+        }
+        $closure = null;
+        foreach ($this->template_parameter_type_list as $i => $actual_template_union_type) {
+            $inner_extracter_closure = $actual_template_union_type->getTemplateTypeExtractorClosure($code_base, $template_type);
+            if (!$inner_extracter_closure) {
+                continue;
+            }
+            $closure = TemplateType::combineParameterClosures(
+                $closure,
+                function (UnionType $type) use ($inner_extracter_closure, $i) : UnionType {
+                    $result = UnionType::empty();
+                    foreach ($type->getTypeSet() as $inner_type) {
+                        $replacement_type = $inner_type->template_parameter_type_list[$i] ?? null;
+                        if ($replacement_type) {
+                            $result = $result->withUnionType($inner_extracter_closure($replacement_type));
+                        }
+                    }
+                    return $result;
+                }
+            );
+        }
+
+        return $closure;
     }
 }

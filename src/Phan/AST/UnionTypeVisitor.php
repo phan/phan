@@ -1073,7 +1073,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitCast(Node $node) : UnionType
     {
         // TODO: Check if the cast is allowed based on the right side type
-        UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
+        $expr_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
         switch ($node->flags) {
             case \ast\flags\TYPE_NULL:
                 return NullType::instance(false)->asUnionType();
@@ -1088,6 +1088,9 @@ class UnionTypeVisitor extends AnalysisVisitor
             case \ast\flags\TYPE_ARRAY:
                 return ArrayType::instance(false)->asUnionType();
             case \ast\flags\TYPE_OBJECT:
+                if ($expr_type->isExclusivelyArray()) {
+                    return UnionType::fromFullyQualifiedString('\stdClass');
+                }
                 return ObjectType::instance(false)->asUnionType();
             default:
                 throw new NodeException(
