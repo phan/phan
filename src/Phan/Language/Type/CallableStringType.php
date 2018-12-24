@@ -3,16 +3,17 @@
 namespace Phan\Language\Type;
 
 use Phan\Language\Type;
+use Phan\Language\UnionType;
 
 /**
- * Phan's representation for `callable`
+ * Phan's representation for `callable-string`
  *
  * @see CallableDeclarationType for Phan's representation of `callable(MyClass):MyOtherClass`
  */
-final class CallableType extends NativeType implements CallableInterface
+final class CallableStringType extends StringType implements CallableInterface
 {
     /** @phan-override */
-    const NAME = 'callable';
+    const NAME = 'callable-string';
 
     /**
      * @return bool
@@ -37,5 +38,19 @@ final class CallableType extends NativeType implements CallableInterface
     public function isDefiniteNonCallableType() : bool
     {
         return false;
+    }
+
+    /** @override */
+    public function getIsPossiblyNumeric() : bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns the type after an expression such as `++$x`
+     */
+    public function getTypeAfterIncOrDec() : UnionType
+    {
+        return UnionType::fromFullyQualifiedString('string');
     }
 }

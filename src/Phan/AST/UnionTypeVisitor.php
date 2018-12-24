@@ -2617,6 +2617,53 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
+     * Fetch known classes for a place where a class name was provided as a string or string expression.
+     * Warn if this is an invalid class name.
+     * @param \ast\Node|string|int|float $node
+     */
+    public static function classListFromClassNameNode(CodeBase $code_base, Context $context, $node) : array
+    {
+        $results = [];
+        $strings = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node)->asStringScalarValues();
+        foreach ($strings as $string) {
+            try {
+                $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($string);
+            } catch (FQSENException $e) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike,
+                    $context->getLineNumberStart(),
+                    $e->getFQSEN()
+                );
+                continue;
+            } catch (\InvalidArgumentException $_) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::InvalidFQSENInClasslike,
+                    $context->getLineNumberStart(),
+                    '(unknown)'
+                );
+                continue;
+            }
+            if (!$code_base->hasClassWithFQSEN($fqsen)) {
+                // TODO: Different issue type?
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::UndeclaredClassReference,
+                    $context->getLineNumberStart(),
+                    (string)$fqsen
+                );
+                continue;
+            }
+            $results[] = $code_base->getClassByFQSEN($fqsen);
+        }
+        return $results;
+    }
+
+    /**
      * @param CodeBase $code_base
      * @param Context $context
      * @param string|Node $node the node to fetch CallableType instances for.

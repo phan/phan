@@ -158,3 +158,4 @@ abstract class ScalarType extends NativeType
     }
 }
 \class_exists(IntType::class);
+\class_exists(StringType::class);

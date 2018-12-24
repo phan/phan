@@ -8,7 +8,9 @@ use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableDeclarationType;
+use Phan\Language\Type\CallableStringType;
 use Phan\Language\Type\CallableType;
+use Phan\Language\Type\ClassStringType;
 use Phan\Language\Type\ClosureDeclarationParameter;
 use Phan\Language\Type\ClosureDeclarationType;
 use Phan\Language\Type\ClosureType;
@@ -33,6 +35,7 @@ use Phan\Tests\BaseTest;
 
 /**
  * Unit tests of Type
+ * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
 final class TypeTest extends BaseTest
 {
@@ -617,5 +620,21 @@ final class TypeTest extends BaseTest
     private static function createGenericArrayTypeWithMixedKey(Type $type, bool $is_nullable) : GenericArrayType
     {
         return GenericArrayType::fromElementType($type, $is_nullable, GenericArrayType::KEY_MIXED);
+    }
+
+    public function testClassString()
+    {
+        $class_string_type = Type::fromFullyQualifiedString('class-string');
+        $expected_class_string_type = ClassStringType::instance(false);
+        $this->assertSameType($expected_class_string_type, $class_string_type);
+        $this->assertSame('class-string', (string)$class_string_type);
+    }
+
+    public function testCallableString()
+    {
+        $callable_string_type = Type::fromFullyQualifiedString('?callable-string');
+        $expected_callable_string_type = CallableStringType::instance(true);
+        $this->assertSameType($expected_callable_string_type, $callable_string_type);
+        $this->assertSame('?callable-string', (string)$callable_string_type);
     }
 }

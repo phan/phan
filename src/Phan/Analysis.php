@@ -22,6 +22,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Library\FileCache;
@@ -386,9 +387,15 @@ class Analysis
             try {
                 if (stripos($fqsen_string, '::') !== false) {
                     // This is an override of a method.
-                    $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
-                    if ($code_base->hasMethodWithFQSEN($fqsen)) {
-                        $method = $code_base->getMethodByFQSEN($fqsen);
+                    list($class, $method_name) = explode('::', $fqsen_string, 2);
+                    $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class);
+                    if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                        continue;
+                    }
+                    $class = $code_base->getClassByFQSEN($class_fqsen);
+                    // Note: This is used because it will create methods such as __construct if they do not exist.
+                    if ($class->hasMethodWithName($code_base, $method_name, false)) {
+                        $method = $class->getMethodByName($code_base, $method_name);
                         $method->setFunctionCallAnalyzer($closure);
                     }
                 } else {

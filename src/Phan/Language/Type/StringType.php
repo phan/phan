@@ -44,3 +44,5 @@ class StringType extends ScalarType
         return UnionType::fromFullyQualifiedString('int|string|float');
     }
 }
+\class_exists(ClassStringType::class);
+\class_exists(CallableStringType::class);

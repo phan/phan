@@ -314,8 +314,11 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
         return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
             $union_type = $this->asUnionType();
 
-            $class_fqsen = FullyQualifiedClassName::fromType($this->genericArrayElementType());
-
+            $element_type = $this->genericArrayElementType();
+            if (!$element_type->isObjectWithKnownFQSEN()) {
+                return $union_type;
+            }
+            $class_fqsen = FullyQualifiedClassName::fromType($element_type);
 
             if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
                 return $union_type;
