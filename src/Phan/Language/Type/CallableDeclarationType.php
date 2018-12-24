@@ -7,7 +7,7 @@ use Phan\Language\Type;
 /**
  * Phan's representation for types such as `callable(MyClass):MyOtherClass`
  */
-final class CallableDeclarationType extends FunctionLikeDeclarationType
+final class CallableDeclarationType extends FunctionLikeDeclarationType implements CallableInterface
 {
     /** @override */
     const NAME = 'callable';

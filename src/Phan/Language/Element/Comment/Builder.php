@@ -183,7 +183,7 @@ final class Builder
     }
 
     /** @internal */
-    const RETURN_COMMENT_REGEX = '/@(?:phan-)?(?:return|throws)\s+(&\s*)?(' . UnionType::union_type_regex_or_this . '+)/';
+    const RETURN_COMMENT_REGEX = '/@(?:phan-)?(?:return|throws)\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
 
     /**
      * @param string $line

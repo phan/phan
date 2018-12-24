@@ -20,6 +20,8 @@ New features(Analysis):
   - `@param OtherClass<\stdClass,T>`
 
   - Note that this implementation is currently incomplete - Phan is not yet able to extract `T` from types not mentioned here (e.g. `array{0:T}`, `Generator<T>`, etc.)
++ Add `callable-string` and `class-string` types. (#1346)
+  Warn if an invalid/undefined callable/class name is passed to parameters declared with those exact types.
 
 Plugins:
 + Detect more possible duplicates in `DuplicateArrayKeyPlugin`

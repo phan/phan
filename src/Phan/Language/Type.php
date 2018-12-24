@@ -22,7 +22,9 @@ use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableDeclarationType;
+use Phan\Language\Type\CallableStringType;
 use Phan\Language\Type\CallableType;
+use Phan\Language\Type\ClassStringType;
 use Phan\Language\Type\ClosureDeclarationParameter;
 use Phan\Language\Type\ClosureDeclarationType;
 use Phan\Language\Type\ClosureType;
@@ -76,17 +78,17 @@ class Type
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     const simple_type_regex =
-        '(\??)\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*';
+        '(\??)(?:callable-string|class-string|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     const simple_noncapturing_type_regex =
-        '\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*';
+        '\\\\?(?:callable-string|class-string|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     /**
      * @var string
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     const simple_type_regex_or_this =
-        '(\??)([a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*|\$this)';
+        '(\??)(callable-string|class-string|[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*|\$this)';
 
     const shape_key_regex =
         '[-._a-zA-Z0-9\x7f-\xff]+\??';
@@ -199,6 +201,8 @@ class Type
         'array'     => true,
         'bool'      => true,
         'callable'  => true,
+        'callable-string' => true,
+        'class-string' => true,
         'false'     => true,
         'float'     => true,
         'int'       => true,
@@ -418,21 +422,43 @@ class Type
 
         $value = self::$canonical_object_map[$key] ?? null;
         if (!$value) {
-            if ($namespace === '\\' && $type_name === 'Closure') {
-                $value = new ClosureType(
-                    $namespace,
-                    $type_name,
-                    $template_parameter_type_list,
-                    $is_nullable
-                );
-            } elseif ($namespace === '\\' && $type_name === 'callable') {
-                $value = new CallableType(
-                    $namespace,
-                    $type_name,
-                    $template_parameter_type_list,
-                    $is_nullable
-                );
-            } else {
+            if ($namespace === '\\') {
+                switch ($type_name) {
+                    case 'Closure':
+                        $value = new ClosureType(
+                            $namespace,
+                            $type_name,
+                            $template_parameter_type_list,
+                            $is_nullable
+                        );
+                        break;
+                    case 'callable':
+                        $value = new CallableType(
+                            $namespace,
+                            $type_name,
+                            $template_parameter_type_list,
+                            $is_nullable
+                        );
+                        break;
+                    case 'callable-string':
+                        $value = new CallableStringType(
+                            $namespace,
+                            $type_name,
+                            $template_parameter_type_list,
+                            $is_nullable
+                        );
+                        break;
+                    case 'class-string':
+                        $value = new ClassStringType(
+                            $namespace,
+                            $type_name,
+                            $template_parameter_type_list,
+                            $is_nullable
+                        );
+                        break;
+                }
+            }
+            if (!$value) {
                 $value = new static(
                     $namespace,
                     $type_name,
@@ -688,6 +714,10 @@ class Type
                 return BoolType::instance($is_nullable);
             case 'callable':
                 return CallableType::instance($is_nullable);
+            case 'callable-string':
+                return CallableStringType::instance($is_nullable);
+            case 'class-string':
+                return ClassStringType::instance($is_nullable);
             case 'closure':
                 return ClosureType::instance($is_nullable);
             case 'false':

@@ -325,4 +325,11 @@ EOT;
         $this->assertEquals($expected_type, $scope_type);
         $this->assertSame($expected_type, $scope_type);
     }
+
+    public function testParseReturnCommentCallableString()
+    {
+        // @phan-suppress-next-line PhanAccessClassConstantInternal
+        preg_match(\Phan\Language\Element\Comment\Builder::RETURN_COMMENT_REGEX, '/** @return callable-string description */', $matches);
+        $this->assertSame('@return callable-string', $matches[0]);
+    }
 }
