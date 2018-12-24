@@ -23,6 +23,16 @@ New features(Analysis):
 + Add `callable-string` and `class-string` types. (#1346)
   Warn if an invalid/undefined callable/class name is passed to parameters declared with those exact types.
 
+  Additionally, support inferring that a function/method will return instances of the passed in class name, when code has PHPDoc such as the following:
+
+  ```
+  /**
+   * @template T
+   * @param class-string<T> $className
+   * @return T
+   */
+  ```
+
 Plugins:
 + Detect more possible duplicates in `DuplicateArrayKeyPlugin`
 
