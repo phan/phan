@@ -47,7 +47,7 @@ class Some extends Option
      */
     public function getOrElse($else)
     {
-        return $this->get();
+        return $this->_;
     }
 
     /**

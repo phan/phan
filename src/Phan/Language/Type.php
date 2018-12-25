@@ -1616,9 +1616,9 @@ class Type
             return $this;
         }
         return static::make(
-            $this->getNamespace(),
-            $this->getName(),
-            $this->getTemplateParameterTypeList(),
+            $this->namespace,
+            $this->name,
+            $this->template_parameter_type_list,
             $is_nullable,
             Type::FROM_TYPE
         );
@@ -3072,7 +3072,24 @@ class Type
      */
     public function withConvertTypesToTemplateTypes(array $template_fix_map) : Type
     {
-        return $template_fix_map[$this->__toString()] ?? $this;
+        $result = $template_fix_map[$this->__toString()] ?? null;
+        if ($result) {
+            return $result;
+        }
+        $template_parameter_type_list = $this->template_parameter_type_list;
+        foreach ($template_parameter_type_list as $i => $type) {
+            $template_parameter_type_list[$i] = $type->withConvertTypesToTemplateTypes($template_fix_map);
+        }
+        if ($template_parameter_type_list === $this->template_parameter_type_list) {
+            return $this;
+        }
+        return static::make(
+            $this->namespace,
+            $this->name,
+            $template_parameter_type_list,
+            $this->is_nullable,
+            Type::FROM_TYPE
+        );
     }
 
     /**

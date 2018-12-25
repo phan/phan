@@ -182,11 +182,12 @@ class Set extends \SplObjectStorage
     }
 
     /**
-     * @param Closure(T):object $closure
+     * @template TNew
+     * @param Closure(T):TNew $closure
      * A closure that maps each element of this set
      * to a new element
      *
-     * @return Set
+     * @return Set<TNew>
      * A new set containing the mapped values
      */
     public function map(Closure $closure) : Set

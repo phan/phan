@@ -38,12 +38,13 @@ class Tuple3 extends Tuple2
      */
     public function __construct($_0, $_1, $_2)
     {
-        parent::__construct($_0, $_1);
+        $this->_0 = $_0;
+        $this->_1 = $_1;
         $this->_2 = $_2;
     }
 
     /**
-     * @return array
+     * @return array{0:T0,1:T1,2:T2}
      * An array of all elements in this tuple.
      */
     public function toArray() : array

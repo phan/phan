@@ -36,7 +36,7 @@ class Tuple1 extends Tuple
     }
 
     /**
-     * @return array
+     * @return array{0:T0}
      * An array of all elements in this tuple.
      */
     public function toArray() : array
