@@ -171,7 +171,7 @@ class InvokeExecutionPromise
     /** @var bool is the process finished executing */
     private $done = false;
 
-    /** @var resource result of proc_open() */
+    /** @var resource the result of `proc_open()` */
     private $process;
 
     /** @var array{0:resource,1:resource,2:resource} stdin, stdout, stderr */

@@ -156,13 +156,23 @@ class MarkupDescription
                         // Treat `@var T description of T` as a valid single-line comment of constants and properties.
                         // Variables don't currently have associated comments
                         if (preg_match('/^\s*@var\s/', $line) > 0) {
-                            $results = array_merge($results, self::extractTagSummary($lines, $i));
+                            $new_lines = self::extractTagSummary($lines, $i);
+                            if (isset($new_lines[0])) {
+                                // @phan-suppress-next-line PhanAccessClassConstantInternal
+                                $new_lines[0] = \preg_replace(Builder::PARAM_COMMENT_REGEX, '`\0`', $new_lines[0]);
+                            }
+                            $results = array_merge($results, $new_lines);
                         }
                     } elseif (\in_array($comment_category, Comment::FUNCTION_LIKE)) {
                         // Treat `@return T description of return value` as a valid single-line comment of closures, functions, and methods.
                         // Variables don't currently have associated comments
                         if (preg_match('/^\s*@return(\s|$)/', $line) > 0) {
-                            $results = array_merge($results, self::extractTagSummary($lines, $i));
+                            $new_lines = self::extractTagSummary($lines, $i);
+                            if (isset($new_lines[0])) {
+                                // @phan-suppress-next-line PhanAccessClassConstantInternal
+                                $new_lines[0] = \preg_replace(Builder::RETURN_COMMENT_REGEX, '`\0`', $new_lines[0]);
+                            }
+                            $results = array_merge($results, $new_lines);
                         }
                     }
                 }

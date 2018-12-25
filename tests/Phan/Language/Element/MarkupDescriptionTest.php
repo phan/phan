@@ -41,14 +41,14 @@ final class MarkupDescriptionTest extends BaseTest
                 Comment::ON_METHOD,
             ],
             [
-                '@var MyClass An annotation of a property goes here',
-                '/** @var MyClass An annotation of a property goes here */',
+                '`@var array<string,array<int,mixed>>` An annotation of a property goes here',
+                '/** @var array<string,array<int,mixed>> An annotation of a property goes here */',
                 Comment::ON_PROPERTY,
             ],
             // Allow the description of (at)var to be a summary for the property if there is no earlier summary
             [
                 <<<'EOT'
-@var MyClass A annotation of a constant goes here
+`@var MyClass` A annotation of a constant goes here
 
 Rest of this comment
 EOT
@@ -88,7 +88,7 @@ EOT
             // Preserve leading whitespace when parsing markup after (at)return
             [
                 <<<'EOT'
-@return int
+`@return int`
 
 Rest of this description
 
@@ -128,7 +128,7 @@ EOT
             // Parse summaries on adjacent lines
             [
                 <<<'EOT'
-@return int
+`@return int`
 Rest of this description
 EOT
                 ,
@@ -145,7 +145,7 @@ EOT
             ],
             // Treat informative (at)return as function-like summaries.
             [
-                '@return int positive',
+                '`@return int` positive',
             <<<'EOT'
 /**
  * @return int positive
@@ -156,12 +156,12 @@ EOT
             ],
             // Treat informative single-line (at)return as function-like summaries.
             [
-                '@return int positive',
+                '`@return int` positive',
                 '/**   @return int positive */',
                 Comment::ON_METHOD
             ],
             [
-                "@return float\npositive value",
+                "`@return float`\npositive value",
                 <<<'EOT'
 /**
  * @param int $x
@@ -174,7 +174,7 @@ EOT
             ],
             // Check that it does not fail completely for invalid phpdoc with multiple `(at)return` statements
             [
-                "@return float\npositive value.",
+                "`@return float`\npositive value.",
                 <<<'EOT'
 /**
  * @param int $x
@@ -189,7 +189,7 @@ EOT
                 Comment::ON_METHOD
             ],
             [
-                '@return int self::MY_ENUM_* description',
+                '`@return int` self::MY_ENUM_* description',
                 '/**   @return int self::MY_ENUM_* description */',
                 Comment::ON_METHOD
             ],

@@ -92,9 +92,9 @@ class UnionType implements Serializable
 
     /**
      * @param array<int,Type> $type_list
-     * @param bool $is_unique - Whether or not this is already unique. Only set to true within UnionType code.
-     *
      * An optional list of types represented by this union
+     * @param bool $is_unique - Whether or not this is already unique. Only set to true within UnionType code.
+     * @see UnionType::of() for a more memory efficient equivalent.
      */
     public function __construct(array $type_list = [], bool $is_unique = false)
     {
@@ -1379,7 +1379,7 @@ class UnionType implements Serializable
 
     /**
      * @return bool
-     * True if this type has any subtype of `iterable` type (e.g. Traversable, Array).
+     * True if this type has any subtype of the `iterable` type (e.g. `Traversable`, `Array`).
      */
     public function hasIterable() : bool
     {
@@ -1878,15 +1878,15 @@ class UnionType implements Serializable
     }
 
     /**
+     * Returns a list of class FQSENs representing the non-native types
+     * associated with this UnionType.
+     *
      * @param Context $context
      * The context in which we're resolving this union
      * type.
      *
      * @return Generator
      * @phan-return Generator<FullyQualifiedClassName>
-     *
-     * A list of class FQSENs representing the non-native types
-     * associated with this UnionType
      *
      * @throws CodeBaseException
      * An exception is thrown if a non-native type does not have
@@ -2006,7 +2006,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * Takes "a|b[]|c|d[]|e" and returns "a|c|e"
+     * Takes `a|b[]|c|d[]|e` and returns `a|c|e`
      *
      * @return UnionType
      * A UnionType with generic array types filtered out
@@ -2021,7 +2021,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * Takes "a|b[]|c|d[]|e" and returns "b[]|d[]"
+     * Takes `a|b[]|c|d[]|e` and returns `b[]|d[]`
      *
      * @return UnionType
      * A UnionType with generic array types kept, other types filtered out.
@@ -2036,7 +2036,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * Takes "MyClass|int|array|?object" and returns "MyClass|?object"
+     * Takes `MyClass|int|array|?object` and returns `MyClass|?object`
      *
      * @return UnionType
      * A UnionType with known object types kept, other types filtered out.
@@ -2051,7 +2051,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * Takes "MyClass|int|array|?object" and returns "MyClass"
+     * Takes `MyClass|int|array|?object` and returns `MyClass`
      *
      * @return UnionType
      * A UnionType with known object types with known FQSENs kept, other types filtered out.
@@ -2094,8 +2094,8 @@ class UnionType implements Serializable
     /**
      * Returns the types for which is_scalar($x) would be true.
      * This means null/nullable is removed.
-     * Takes "MyClass|int|?bool|array|?object" and returns "int|bool"
-     * Takes "?MyClass" and returns an empty union type.
+     * Takes `MyClass|int|?bool|array|?object` and returns `int|bool`
+     * Takes `?MyClass` and returns an empty union type.
      *
      * @return UnionType
      * A UnionType with known scalar types kept, other types filtered out.
@@ -2112,8 +2112,8 @@ class UnionType implements Serializable
     /**
      * Returns the types for which is_callable($x) would be true.
      * TODO: Check for __invoke()?
-     * Takes "Closure|false" and returns "Closure"
-     * Takes "?MyClass" and returns an empty union type.
+     * Takes `Closure|false` and returns `Closure`
+     * Takes `?MyClass` and returns an empty union type.
      *
      * @return UnionType
      * A UnionType with known callable types kept, other types filtered out.
@@ -2182,8 +2182,8 @@ class UnionType implements Serializable
     /**
      * Returns true if this has one or more callable types
      * TODO: Check for __invoke()?
-     * Takes "Closure|false" and returns true
-     * Takes "?MyClass" and returns false
+     * Takes `Closure|false` and returns true
+     * Takes `?MyClass` and returns false
      *
      * @return bool
      * A UnionType with known callable types kept, other types filtered out.
@@ -2202,8 +2202,9 @@ class UnionType implements Serializable
     /**
      * Returns true if every type in this type is callable.
      * TODO: Check for __invoke()?
-     * Takes "callable" and returns true
-     * Takes "callable|false" and returns false
+     *
+     * Takes `callable` and returns true
+     * Takes `callable|false` and returns false
      *
      * @return bool
      * A UnionType with known callable types kept, other types filtered out.
@@ -2236,10 +2237,10 @@ class UnionType implements Serializable
     }
 
     /**
-     * Takes "a|b[]|c|d[]|e|array|ArrayAccess" and returns "a|c|e|ArrayAccess"
+     * Takes `a|b[]|c|d[]|e|array|ArrayAccess` and returns `a|c|e|ArrayAccess`
      *
      * @return UnionType
-     * A UnionType with generic types(as well as the non-generic type "array")
+     * A UnionType with generic types(as well as the non-generic type `array`)
      * filtered out.
      *
      * @see nonGenericArrayTypes
@@ -2298,9 +2299,9 @@ class UnionType implements Serializable
     }
 
     /**
-     * Takes "a|b[]|c|d[]|e|Traversable<f,g>" and returns "int|string|f"
+     * Takes `a|b[]|c|d[]|e|Traversable<f,g>` and returns `int|string|f`
      *
-     * Takes "array{field:int,other:stdClass}" and returns "string"
+     * Takes `array{field:int,other:stdClass}` and returns `string`
      *
      * @param CodeBase $code_base (for detecting the iterable value types of `class MyIterator extends Iterator`)
      *
@@ -2324,9 +2325,9 @@ class UnionType implements Serializable
     }
 
     /**
-     * Takes "a|b[]|c|d[]|e|Traversable<f,g>" and returns "b|d|g"
+     * Takes `a|b[]|c|d[]|e|Traversable<f,g>` and returns `b|d|g`
      *
-     * Takes "array{field:int,other:string}" and returns "int|string"
+     * Takes `array{field:int,other:string}` and returns `int|string`
      *
      * @param CodeBase $code_base (for detecting the iterable value types of `class MyIterator extends Iterator`)
      *
@@ -2372,8 +2373,8 @@ class UnionType implements Serializable
     }
 
     /**
-     * Takes "a|b[]|c|d[]|e" and returns "b|d"
-     * Takes "array{field:int,other:string}" and returns "int|string"
+     * Takes `a|b[]|c|d[]|e` and returns `b|d`
+     * Takes `array{field:int,other:string}` and returns `int|string`
      *
      * @return UnionType
      */
@@ -2417,7 +2418,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * Takes "b|d[]" and returns "b[]|d[][]"
+     * Takes `b|d[]` and returns `b[]|d[][]`
      *
      * @param int $key_type
      * Corresponds to the type of the array keys. Set this to a GenericArrayType::KEY_* constant.
@@ -2993,7 +2994,7 @@ class UnionType implements Serializable
 
     /**
      * Generates a variable length string identifier that uniquely identifies the Type instances in this UnionType.
-     * int|string will generate the same id as string|int.
+     * `int|string` will generate the same id as `string|int`.
      */
     public function generateUniqueId() : string
     {
@@ -3318,7 +3319,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * @return UnionType the union type of applying the unary bitwise not operator on an expression with this union type
+     * @return UnionType the union type of applying the unary bitwise not operator to an expression with this union type
      */
     public function applyUnaryBitwiseNotOperator() : UnionType
     {
@@ -3348,7 +3349,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * @return UnionType the union type of applying the unary plus operator on an expression with this union type
+     * @return UnionType the union type of applying the unary plus operator to an expression with this union type
      */
     public function applyUnaryPlusOperator() : UnionType
     {

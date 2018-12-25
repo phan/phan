@@ -40,7 +40,6 @@ final class DumpPHPDocPlugin extends PluginV2 implements
         return "```php\n$php_snippet\n```";
     }
 
-
     /**
      * @param CodeBase $unused_code_base
      * The code base in which the class exists
@@ -56,6 +55,9 @@ final class DumpPHPDocPlugin extends PluginV2 implements
         CodeBase $unused_code_base,
         Clazz $class
     ) {
+        if ($class->getFQSEN()->isAlternate()) {
+            return;
+        }
         $description = MarkupDescription::extractDescriptionFromDocComment($class);
 
         $this->recordStub(

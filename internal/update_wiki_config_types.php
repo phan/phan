@@ -163,7 +163,7 @@ class ConfigEntry
     }
 
     /**
-     * Returns markdown the description for this issue type
+     * Returns a markdown description for this issue type
      */
     public function getMarkdown() : string
     {
