@@ -1,18 +1,19 @@
 Phan NEWS
 
-?? ??? 201?, Phan 1.1.9 (dev)
+27 Dec 2018, Phan 1.1.9
 -----------------------
 
 New features(Analysis):
 + Warn about `split` and other functions that were removed in PHP 7.0 by default. (#2235, #2236)
   (`target_php_version` can now be set to `'5.6'` if you have a PHP 5.6 project that uses those)
-+ Infer more accurate literal string for `::class` constant.
 + Fix a false positive `PhanUnreferencedConstant` seen when calling `define()` with a dynamic name. (#2245)
 + Support analyzing `@template` in PHPDoc of closures, functions and methods. (#522)
+
   Phan currently requires the template type to be part of the parameter type(s) as well as the return type.
 
   New issue types: `PhanTemplateTypeNotUsedInFunctionReturn`, `PhanTemplateTypeNotDeclaredInFunctionParams`
 + Make `@template` on classes behave more consistently. (#522)
+
   Phan will now check the union types of parameters instead of assuming that arguments will always occur in the same order and positions as `@template`.
 + Phan can now infer template types from more categories of parameter types in constructors and regular functions/methods. (#522)
   - `@param T[]`
@@ -22,6 +23,7 @@ New features(Analysis):
   - Note that this implementation is currently incomplete - Phan is not yet able to extract `T` from types not mentioned here (e.g. `array{0:T}`, `Generator<T>`, etc.)
 + Add `callable-string` and `class-string` types. (#1346)
   Warn if an invalid/undefined callable/class name is passed to parameters declared with those exact types.
++ Infer a more accurate literal string for the `::class` constant.
 
   Additionally, support inferring that a function/method will return instances of the passed in class name, when code has PHPDoc such as the following:
 
