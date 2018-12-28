@@ -37,7 +37,7 @@ final class CallableParamPlugin extends PluginV2 implements
         if ($closure !== null) {
             return $closure;
         }
-        $closure = function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args) use ( $callable_params, $class_params) {
+        $closure = function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args) use ($callable_params, $class_params) {
             // TODO: Implement support for variadic callable arguments.
             foreach ($callable_params as $i) {
                 $arg = $args[$i] ?? null;

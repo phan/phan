@@ -1,0 +1,6 @@
+src/065_class_string_create.php:12 PhanTypeMismatchArgumentInternal Argument 1 (string) is \stdClass but \strlen() takes string
+src/065_class_string_create.php:13 PhanTypeMismatchArgumentInternal Argument 1 (string) is \invalidclass but \strlen() takes string
+src/065_class_string_create.php:13 PhanUndeclaredClassReference Reference to undeclared class \invalidclass
+src/065_class_string_create.php:14 PhanTypeMismatchArgumentInternal Argument 1 (string) is \int but \strlen() takes string
+src/065_class_string_create.php:14 PhanUndeclaredClassReference Reference to undeclared class \int
+src/065_class_string_create.php:15 PhanEmptyFQSENInClasslike Possible use of a classlike '' with an empty FQSEN.

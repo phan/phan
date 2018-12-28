@@ -1028,6 +1028,26 @@ class Type
     }
 
     /**
+     * @param array<int,UnionType> $template_parameter_type_list
+     * @param bool $is_nullable
+     */
+    private static function parseClassStringTypeFromTemplateParameterList(
+        array $template_parameter_type_list,
+        bool $is_nullable
+    ) : Type {
+        $template_count = count($template_parameter_type_list);
+        if ($template_count === 1) {
+            return new ClassStringType(
+                '',
+                'class-string',
+                $template_parameter_type_list,
+                $is_nullable
+            );
+        }
+        return ClassStringType::instance($is_nullable);
+    }
+
+    /**
      * @param string $string
      * A string representing a type
      *
@@ -1228,11 +1248,13 @@ class Type
 
         if (self::isInternalTypeString($type_name, $source)) {
             if (count($template_parameter_type_list) > 0) {
-                if (strtolower($type_name) === 'array') {
-                    return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
-                }
-                if (strtolower($type_name) === 'iterable') {
-                    return self::parseGenericIterableTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
+                switch (\strtolower($type_name)) {
+                    case 'array':
+                        return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
+                    case 'iterable':
+                        return self::parseGenericIterableTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
+                    case 'class-string':
+                        return self::parseClassStringTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
                 }
                 // TODO: Warn about unrecognized types.
             }
@@ -3155,8 +3177,8 @@ class Type
     }
 
     /**
-     * @param CodeBase $code_base may be used for resolving inheritance @phan-unused-param
-     * @param TemplateType $template_type the template type that this union type is being searched for @phan-unused-param
+     * @param CodeBase $code_base may be used for resolving inheritance
+     * @param TemplateType $template_type the template type that this union type is being searched for
      *
      * @return ?Closure(UnionType):UnionType a closure to determine the union type(s) that are in the same position(s) as the template type.
      * This is overridden in subclasses.
