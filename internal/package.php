@@ -31,7 +31,7 @@ $iterator = new CallbackFilterIterator(
         if ($file_info->getExtension() !== 'php') {
             return false;
         }
-        if (preg_match('@^vendor/symfony/console/Tests/@i', str_replace('\\', '/', $file_info->getPathname()))) {
+        if (preg_match('@^vendor/symfony/(console|debug)/Tests/@i', str_replace('\\', '/', $file_info->getPathname()))) {
             return false;
         }
         return true;
