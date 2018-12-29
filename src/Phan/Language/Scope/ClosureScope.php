@@ -34,7 +34,11 @@ class ClosureScope extends FunctionLikeScope
      */
     public function overrideClassFQSEN(FullyQualifiedClassName $fqsen = null)
     {
-        $this->flags |= Scope::IN_CLASS_SCOPE;
+        if ($fqsen) {
+            $this->flags |= Scope::IN_CLASS_SCOPE;
+        } else {
+            $this->flags &= ~Scope::IN_CLASS_SCOPE;
+        }
         $this->override_class_fqsen = $fqsen;
     }
 
