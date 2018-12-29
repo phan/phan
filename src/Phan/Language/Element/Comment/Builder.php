@@ -10,6 +10,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\Flags;
 use Phan\Language\FQSEN;
+use Phan\Language\Scope\TemplateScope;
 use Phan\Language\Type;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
@@ -26,6 +27,8 @@ use Phan\Library\Some;
  */
 final class Builder
 {
+    /** @var string the original raw comment */
+    public $comment;
     /** @var array<int,string> the list of lines of the doc comment */
     public $lines;
     /** @var int count($this->lines) */
@@ -42,7 +45,7 @@ final class Builder
     public $variable_list = [];
     /** @var array<int,Parameter> the list of extracted (at)param annotations */
     public $parameter_list = [];
-    /** @var array<int,TemplateType> the list of extracted (at)template annotations */
+    /** @var array<string,TemplateType> the list of extracted (at)template annotations */
     public $template_type_list = [];
     /** @var Option<Type> the (at)inherits annotation */
     public $inherited_type;
@@ -67,6 +70,9 @@ final class Builder
     /** @var UnionType the union type of the set of (at)throws annotations */
     public $throw_union_type;
 
+    /** @var bool did we add template types already */
+    protected $did_add_template_types;
+
     /**
      * A list of issues detected in the comment being built.
      * This is stored instead of immediately emitting the issue because later lines might suppress these issues.
@@ -80,14 +86,17 @@ final class Builder
         CodeBase $code_base,
         Context $context,
         int $lineno,
-        int $comment_type
+        int $comment_type,
+        bool $did_add_template_types = false
     ) {
+        $this->comment = $comment;
         $this->lines = \explode("\n", $comment);
         $this->comment_lines_count = \count($this->lines);
         $this->code_base = $code_base;
         $this->context = $context;
         $this->lineno = $lineno;
         $this->comment_type = $comment_type;
+        $this->did_add_template_types = $did_add_template_types;
 
         $this->inherited_type = new None();
         $this->return_comment = null;
@@ -290,15 +299,8 @@ final class Builder
         }
 
         if (\count($this->template_type_list)) {
-            switch ($this->comment_type) {
-                case Comment::ON_CLASS:
-                    // Resolve template types in magic methods, properties, etc.
-                    $this->fixClassTemplateTypes();
-                    break;
-                case Comment::ON_FUNCTION:
-                case Comment::ON_METHOD:
-                    $this->fixMethodTemplateTypes();
-                    break;
+            if (!$this->did_add_template_types) {
+                return $this->buildWithTemplateTypes();
             }
         }
         if ($this->issues) {
@@ -310,7 +312,7 @@ final class Builder
             $this->comment_flags,
             $this->variable_list,
             $this->parameter_list,
-            $this->template_type_list,
+            array_values($this->template_type_list),
             $this->inherited_type,
             $this->return_comment,
             $this->suppress_issue_list,
@@ -325,55 +327,20 @@ final class Builder
         );
     }
 
-    /**
-     * @return array<string,TemplateType>
-     */
-    private function buildTemplateFixMap(Context $context)
+    private function buildWithTemplateTypes() : Comment
     {
-        $template_fix_map = [];
-        foreach ($this->template_type_list as $t) {
-            $regular_type = Type::fromStringInContext($t->getName(), $context, Type::FROM_PHPDOC);
-            $template_fix_map[$regular_type->__toString()] = $t;
-        }
-        return $template_fix_map;
-    }
-
-    /**
-     * Fix any uses of (at)template annotations within this class comment.
-     * Affects (at)method annotations, (at)property annotations, etc.
-     *
-     * Precondition: $this->template_type_list has 1 or more elements
-     */
-    private function fixClassTemplateTypes()
-    {
-        $template_fix_map = $this->buildTemplateFixMap($this->context);
-        foreach ($this->magic_method_list as $method) {
-            $method->convertTypesToTemplateTypes($template_fix_map);
-        }
-        foreach ($this->magic_property_list as $property) {
-            $property->convertTypesToTemplateTypes($template_fix_map);
-        }
-    }
-
-    /**
-     * Fix any uses of (at)template annotations within this function/method comment.
-     * Affects (at)param annotations, (at)return annotations, etc.
-     *
-     * Precondition: $this->template_type_list has 1 or more elements
-     */
-    private function fixMethodTemplateTypes()
-    {
-        $template_fix_map = $this->buildTemplateFixMap($this->context);
-        foreach ($this->parameter_list as $parameter) {
-            $parameter->convertTypesToTemplateTypes($template_fix_map);
-        }
-        $return_comment = $this->return_comment;
-        if ($return_comment) {
-            $return_comment->convertTypesToTemplateTypes($template_fix_map);
-        }
-        foreach ($this->magic_property_list as $property) {
-            $property->convertTypesToTemplateTypes($template_fix_map);
-        }
+        $old_scope = $this->context->getScope();
+        $new_scope = new TemplateScope($old_scope, $this->template_type_list);
+        $new_context = $this->context->withScope($new_scope);
+        // $result = Type::fromStringInContext('T', $new_context, Type::FROM_PHPDOC, $this->code_base);
+        return (new self(
+            $this->comment,
+            $this->code_base,
+            $new_context,
+            $this->lineno,
+            $this->comment_type,
+            true
+        ))->build();
     }
 
     /**
@@ -471,19 +438,7 @@ final class Builder
             $this->checkCompatible('@template', Comment::HAS_TEMPLATE_ANNOTATION, $i);
             $template_type = $this->templateTypeFromCommentLine($line);
             if ($template_type) {
-                $this->template_type_list[] = $template_type;
-            }
-        }
-    }
-
-    private function maybeParsePhanTemplateType(int $i, string $line)
-    {
-        // Make sure support for generic types is enabled
-        if (Config::getValue('generic_types_enabled')) {
-            $this->checkCompatible('@template', Comment::HAS_TEMPLATE_ANNOTATION, $i);
-            $template_type = $this->templateTypeFromCommentLine($line);
-            if ($template_type) {
-                $this->phan_overrides['template'][] = $template_type;
+                $this->template_type_list[$template_type->getName()] = $template_type;
             }
         }
     }
@@ -621,7 +576,7 @@ final class Builder
         } elseif ($case_sensitive_type === 'phan-suppress-next-line' || $case_sensitive_type === 'phan-suppress-current-line') {
             // Do nothing, see BuiltinSuppressionPlugin
         } elseif ($type === 'phan-template') {
-            $this->maybeParsePhanTemplateType($i, $line);
+            $this->maybeParseTemplateType($i, $line);
         } elseif ($type === 'phan-inherits') {
             $this->maybeParsePhanInherits($i, $line);
         } elseif ($type === 'phan-read-only') {

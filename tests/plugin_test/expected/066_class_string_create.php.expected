@@ -1,0 +1,11 @@
+src/066_class_string_create.php:13 PhanStaticCallToNonStatic Static call to non-static method \C66::create_class() defined at src/066_class_string_create.php:8
+src/066_class_string_create.php:14 PhanStaticCallToNonStatic Static call to non-static method \C66::create_class() defined at src/066_class_string_create.php:8
+src/066_class_string_create.php:14 PhanTypeMismatchArgumentInternal Argument 1 (string) is \stdClass but \strlen() takes string
+src/066_class_string_create.php:15 PhanStaticCallToNonStatic Static call to non-static method \C66::create_class() defined at src/066_class_string_create.php:8
+src/066_class_string_create.php:15 PhanTypeMismatchArgumentInternal Argument 1 (string) is \invalidclass but \strlen() takes string
+src/066_class_string_create.php:15 PhanUndeclaredClassReference Reference to undeclared class \invalidclass
+src/066_class_string_create.php:16 PhanStaticCallToNonStatic Static call to non-static method \C66::create_class() defined at src/066_class_string_create.php:8
+src/066_class_string_create.php:16 PhanTypeMismatchArgumentInternal Argument 1 (string) is \int but \strlen() takes string
+src/066_class_string_create.php:16 PhanUndeclaredClassReference Reference to undeclared class \int
+src/066_class_string_create.php:17 PhanEmptyFQSENInClasslike Possible use of a classlike '' with an empty FQSEN.
+src/066_class_string_create.php:17 PhanStaticCallToNonStatic Static call to non-static method \C66::create_class() defined at src/066_class_string_create.php:8

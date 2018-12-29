@@ -255,18 +255,6 @@ abstract class NativeType extends Type
     }
 
     /**
-     * Replace the resolved reference to class T (possibly namespaced) with a regular template type.
-     *
-     * @param array<string,TemplateType> $template_fix_map maps the incorrectly resolved name to the template type @phan-unused-param
-     * @return Type
-     */
-    public function withConvertTypesToTemplateTypes(array $template_fix_map) : Type
-    {
-        // TODO: Override in subclasses
-        return $this;
-    }
-
-    /**
      * @override
      */
     public function withTemplateParameterTypeMap(

@@ -657,8 +657,6 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
      * mapped to concrete types defined in the given map.
      *
      * Overridden in subclasses
-     *
-     * @see self::withConvertTypesToTemplateTypes() for the opposite
      */
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
@@ -670,32 +668,6 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
         }
         // TODO: Override in array shape subclass
         return $new_element_type->asGenericArrayTypes($this->getKeyType());
-    }
-
-    /**
-     * Replace the resolved reference to class T (possibly namespaced) with a regular template type.
-     *
-     * @param array<string,TemplateType> $template_fix_map maps the incorrectly resolved name to the template type
-     * @return Type
-     *
-     * Overridden in subclasses
-     *
-     * @see self::withTemplateParameterTypeMap() for the opposite
-     */
-    public function withConvertTypesToTemplateTypes(
-        array $template_fix_map
-    ) : Type {
-        $element_type = $this->genericArrayElementType();
-        $new_element_type = $element_type->withConvertTypesToTemplateTypes($template_fix_map);
-        if ($element_type === $new_element_type) {
-            return $this;
-        }
-        // TODO: Override in array shape subclass
-        return GenericArrayType::fromElementType(
-            $new_element_type,
-            $this->is_nullable,
-            $this->key_type
-        );
     }
 
     /**

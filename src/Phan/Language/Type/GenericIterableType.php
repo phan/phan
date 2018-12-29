@@ -116,8 +116,6 @@ final class GenericIterableType extends IterableType
      * mapped to concrete types defined in the given map.
      *
      * Overridden in subclasses
-     *
-     * @see self::withConvertTypesToTemplateTypes() for the opposite
      */
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map

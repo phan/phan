@@ -135,6 +135,9 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
             if (!$this->shouldWarnAboutThrowType($expanded_type)) {
                 continue;
             }
+            if ($type->hasTemplateTypeRecursive()) {
+                continue;
+            }
             $throws_union_type = $analyzed_function->getThrowsUnionType();
             if ($throws_union_type->isEmpty()) {
                 if ($call !== null) {

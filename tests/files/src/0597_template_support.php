@@ -87,7 +87,7 @@ class TemplateOnMethods {
      * @param iterable<TKey,TValue> $i
      * @return array<int,TKey|TValue>
      *
-     * TODO: Finish fixing bugs in parsing TKey as a template type in the union type
+     * Phan can parse both TKey and TValue
      */
     public static function combinationIterable(iterable $i) {
         $result = [];

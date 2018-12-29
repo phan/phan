@@ -109,17 +109,6 @@ final class TemplateType extends Type
     }
 
     /**
-     * Replace the resolved reference to class T (possibly namespaced) with a regular template type.
-     *
-     * @param array<string,TemplateType> $template_fix_map maps the incorrectly resolved name to the template type @phan-unused-param
-     * @return Type
-     */
-    public function withConvertTypesToTemplateTypes(array $template_fix_map) : Type
-    {
-        return $this;
-    }
-
-    /**
      * Returns true for `T` and `T[]` and `\MyClass<T>`, but not `\MyClass<\OtherClass>`
      *
      * Overridden in subclasses.
@@ -136,8 +125,6 @@ final class TemplateType extends Type
      * @return UnionType
      * This UnionType with any template types contained herein
      * mapped to concrete types defined in the given map.
-     *
-     * @see UnionType::withConvertTypesToTemplateTypes() for the opposite
      */
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map

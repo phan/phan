@@ -3085,36 +3085,6 @@ class Type
     }
 
     /**
-     * Replace the resolved reference to class T (possibly namespaced) with a regular template type.
-     *
-     * @param array<string,TemplateType> $template_fix_map maps the incorrectly resolved name to the template type
-     * @return Type
-     *
-     * @see UnionType::withTemplateParameterTypeMap() for the opposite
-     */
-    public function withConvertTypesToTemplateTypes(array $template_fix_map) : Type
-    {
-        $result = $template_fix_map[$this->__toString()] ?? null;
-        if ($result) {
-            return $result;
-        }
-        $template_parameter_type_list = $this->template_parameter_type_list;
-        foreach ($template_parameter_type_list as $i => $type) {
-            $template_parameter_type_list[$i] = $type->withConvertTypesToTemplateTypes($template_fix_map);
-        }
-        if ($template_parameter_type_list === $this->template_parameter_type_list) {
-            return $this;
-        }
-        return static::make(
-            $this->namespace,
-            $this->name,
-            $template_parameter_type_list,
-            $this->is_nullable,
-            Type::FROM_TYPE
-        );
-    }
-
-    /**
      * Returns true if this is `MyNs\MyClass<T..>` when $type is `MyNs\MyClass`
      */
     public function isTemplateSubtypeOf(Type $type) : bool
@@ -3149,8 +3119,6 @@ class Type
      * mapped to concrete types defined in the given map.
      *
      * Overridden in subclasses
-     *
-     * @see self::withConvertTypesToTemplateTypes() for the opposite
      */
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map

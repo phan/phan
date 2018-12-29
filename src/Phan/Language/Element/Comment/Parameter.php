@@ -5,7 +5,6 @@ namespace Phan\Language\Element\Comment;
 
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
-use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 
 /**
@@ -198,16 +197,5 @@ class Parameter
         }
 
         return $string;
-    }
-
-    /**
-     * Replace the resolved reference to class T (possibly namespaced) with a regular template type.
-     *
-     * @param array<string,TemplateType> $template_fix_map maps the incorrectly resolved name to the template type
-     * @return void
-     */
-    public function convertTypesToTemplateTypes(array $template_fix_map)
-    {
-        $this->type = $this->type->withConvertTypesToTemplateTypes($template_fix_map);
     }
 }
