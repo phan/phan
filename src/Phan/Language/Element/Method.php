@@ -407,6 +407,9 @@ class Method extends ClassElement implements FunctionInterface
                 $parameter->cloneAsNonVariadic()
             );
         }
+        foreach ($comment->getTemplateTypeList() as $template_type) {
+            $method->getInternalScope()->addTemplateType($template_type);
+        }
 
         if (!$method->isPHPInternal()) {
             // If the method is Analyzable, set the node so that

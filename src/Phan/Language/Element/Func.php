@@ -217,6 +217,9 @@ class Func extends AddressableElement implements FunctionInterface
             // rescan it
             $func->setNode($node);
         }
+        foreach ($comment->getTemplateTypeList() as $template_type) {
+            $func->getInternalScope()->addTemplateType($template_type);
+        }
 
         // Keep an copy of the original parameter list, to check for fatal errors later on.
         $func->setRealParameterList($parameter_list);
