@@ -172,17 +172,4 @@ final class ClosureDeclarationParameter
         }
         return $result;
     }
-
-    /**
-     * Replace the resolved reference to class T (possibly namespaced) with a regular template type.
-     */
-    public function withConvertTypesToTemplateTypes(
-        array $template_fix_map
-    ) : ClosureDeclarationParameter {
-        $new_type = $this->type->withConvertTypesToTemplateTypes($template_fix_map);
-        if ($this->type === $new_type) {
-            return $this;
-        }
-        return new self($this->type, $this->is_variadic, $this->is_reference, $this->is_optional);
-    }
 }

@@ -800,29 +800,6 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /**
-     * Replace the resolved reference to class T (possibly namespaced) with a regular template type.
-     *
-     * @param array<string,TemplateType> $template_fix_map maps the incorrectly resolved name to the template type
-     * @return Type
-     *
-     * Overridden in subclasses
-     *
-     * @see self::withTemplateParameterTypeMap() for the opposite
-     */
-    public function withConvertTypesToTemplateTypes(
-        array $template_fix_map
-    ) : Type {
-        $return_type = $this->return_type->withConvertTypesToTemplateTypes($template_fix_map);
-        $params = array_map(function (ClosureDeclarationParameter $param) use ($template_fix_map) : ClosureDeclarationParameter {
-            return $param->withConvertTypesToTemplateTypes($template_fix_map);
-        }, $this->params);
-        if ($params === $this->params && $return_type === $this->return_type) {
-            return $this;
-        }
-        return new static($this->file_ref, $params, $return_type, $this->returns_reference, $this->is_nullable);
-    }
-
-    /**
      * Returns true for `T` and `T[]` and `\MyClass<T>`, but not `\MyClass<\OtherClass>` or `false`
      */
     public function hasTemplateTypeRecursive() : bool

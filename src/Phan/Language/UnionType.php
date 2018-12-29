@@ -669,8 +669,6 @@ class UnionType implements Serializable
      * @return UnionType
      * This UnionType with any template types contained herein
      * mapped to concrete types defined in the given map.
-     *
-     * @see UnionType::withConvertTypesToTemplateTypes() for the opposite
      */
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
@@ -713,6 +711,18 @@ class UnionType implements Serializable
     {
         return $this->hasTypeMatchingCallback(function (Type $type) : bool {
             return $type->hasTemplateTypeRecursive();
+        });
+    }
+
+    /**
+     * @return UnionType
+     * Removes template types from this union type, e.g. converts T|\stdClass to \stdClass.
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function withoutTemplateTypeRecursive() : UnionType
+    {
+        return $this->makeFromFilter(function (Type $type) : bool {
+            return !$type->hasTemplateTypeRecursive();
         });
     }
 
@@ -3619,27 +3629,6 @@ class UnionType implements Serializable
         $result = UnionType::empty();
         foreach ($this->type_set as $type) {
             $result = $result->withUnionType($type->getTypeAfterIncOrDec());
-        }
-        return $result;
-    }
-
-    /**
-     * Replace the resolved reference to class T (possibly namespaced) with a regular template type.
-     *
-     * @param array<string,TemplateType> $template_fix_map maps the incorrectly resolved name to the template type
-     * @return UnionType
-     *
-     * @see UnionType::withTemplateParameterTypeMap() for the opposite
-     */
-    public function withConvertTypesToTemplateTypes(array $template_fix_map) : UnionType
-    {
-        $result = $this;
-        foreach ($this->getTypeSet() as $type) {
-            $new_type = $type->withConvertTypesToTemplateTypes($template_fix_map);
-            if ($new_type === $type) {
-                continue;
-            }
-            $result = $result->withoutType($type)->withType($new_type);
         }
         return $result;
     }

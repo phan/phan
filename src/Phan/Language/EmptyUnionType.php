@@ -180,6 +180,12 @@ final class EmptyUnionType extends UnionType
         return false;
     }
 
+    /** @override */
+    public function withoutTemplateTypeRecursive() : UnionType
+    {
+        return $this;
+    }
+
     /**
      * @return bool
      * True if this union type has any types that have generic
@@ -1231,11 +1237,6 @@ final class EmptyUnionType extends UnionType
     }
 
     public function getTypeAfterIncOrDec() : UnionType
-    {
-        return $this;
-    }
-
-    public function withConvertTypesToTemplateTypes(array $template_fix_map) : UnionType
     {
         return $this;
     }

@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 201?, Phan 1.1.10(dev)
 -----------------------
 
+Bug fixes:
++ Refactor the way `@template` annotations are parsed on classes and function-likes to avoid various edge cases (#2253)
+
 27 Dec 2018, Phan 1.1.9
 -----------------------
 

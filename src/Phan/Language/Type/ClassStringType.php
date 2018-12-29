@@ -5,11 +5,12 @@ namespace Phan\Language\Type;
 use Closure;
 use Phan\CodeBase;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
-use Phan\Language\Type;
 use Phan\Language\UnionType;
 
 /**
- * Phan's representation for `class-string` and `class-string<T>`
+ * A type representing a string with an unknown value that is a fully qualified class name.
+ *
+ * Phan's representation for `class-string` and `class-string<T>`.
  */
 final class ClassStringType extends StringType
 {
@@ -74,31 +75,5 @@ final class ClassStringType extends StringType
             }
             return $result;
         };
-    }
-
-    /**
-     * Replace the resolved reference to class T (possibly namespaced) with a regular template type.
-     *
-     * @param array<string,TemplateType> $template_fix_map maps the incorrectly resolved name to the template type
-     * @return Type
-     *
-     * @see UnionType::withTemplateParameterTypeMap() for the opposite
-     */
-    public function withConvertTypesToTemplateTypes(array $template_fix_map) : Type
-    {
-        $template_union_type = $this->template_parameter_type_list[0] ?? null;
-        if (!$template_union_type) {
-            return $this;
-        }
-        $new_type = $template_union_type->withConvertTypesToTemplateTypes($template_fix_map);
-        if ($new_type === $template_union_type) {
-            return $this;
-        }
-        return new self(
-            '',
-            'class-string',
-            [$new_type],
-            $this->is_nullable
-        );
     }
 }
