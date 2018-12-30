@@ -796,6 +796,8 @@ Possibly zero references to private method {METHOD}
 Possibly zero references to private property {PROPERTY}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/070_suggest_global_constant.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/070_suggest_global_constant.php#L22).
+
 ## PhanUnreferencedProtectedClassConstant
 
 ```
@@ -2673,6 +2675,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 Reference to undeclared class {CLASS}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/065_class_string_create.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/065_class_string_create.php#L13).
+
 ## PhanUndeclaredClassStaticProperty
 
 ```
@@ -3179,6 +3183,32 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 # Syntax
 
 Emitted for syntax errors.
+
+## PhanContinueOrBreakTooManyLevels
+
+```
+Cannot '{OPERATOR}' {INDEX} levels.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0601_continue_scope_warning.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0601_continue_scope_warning.php#L6).
+
+## PhanContinueOrBreakNotInLoop
+
+```
+'{OPERATOR}' not in the 'loop' or 'switch' context.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0601_continue_scope_warning.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0601_continue_scope_warning.php#L24).
+
+## PhanContinueTargetingSwitch
+
+This detects code causing a [warning in PHP 7.3](http://php.net/manual/en/migration73.incompatible.php#migration73.incompatible.core.continue-targeting-switch).
+
+```
+"continue" targeting switch is equivalent to "break". Did you mean to use "continue 2"?
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/050_unreachable_code.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/050_unreachable_code.php#L13).
 
 ## PhanInvalidConstantExpression
 

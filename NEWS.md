@@ -6,6 +6,10 @@ Phan NEWS
 New features(Analysis):
 + Add suggestions if to `PhanUndeclaredConstant` issue messages about undeclared global constants, if possible. (#2240)
   Suggestions include other global constants, variables, class constants, properties, and function names.
++ Warn about `continue` and `break` with no matching loop/switch scope. (#1869)
+  New issue types: `PhanContinueOrBreakTooManyLevels`, `PhanContinueOrBreakNotInLoop`
++ Warn about `continue` statements targeting `switch` control structures (doing the same thing as a `break`) (#1869)
+  New issue types: `PhanContinueTargetingSwitch`
 
 Bug fixes:
 + Refactor the way `@template` annotations are parsed on classes and function-likes to avoid various edge cases (#2253)
