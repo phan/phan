@@ -3,6 +3,10 @@ Phan NEWS
 ?? ??? 201?, Phan 1.1.10(dev)
 -----------------------
 
+New features(Analysis):
++ Add suggestions if to `PhanUndeclaredConstant` issue messages about undeclared global constants, if possible. (#2240)
+  Suggestions include other global constants, variables, class constants, properties, and function names.
+
 Bug fixes:
 + Refactor the way `@template` annotations are parsed on classes and function-likes to avoid various edge cases (#2253)
 

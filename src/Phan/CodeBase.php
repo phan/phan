@@ -1576,6 +1576,7 @@ class CodeBase
         $this->function_names_in_namespace = null;
         $this->class_names_near_strlen_in_namespace = null;
         $this->function_names_near_strlen_in_namespace = null;
+        $this->constant_lookup_map_for_name = null;
     }
 
     /**
@@ -1835,10 +1836,11 @@ class CodeBase
      * @return array<int,FullyQualifiedFunctionName> 0 or more namespaced function names found in this code base with the same name but different namespaces
      */
     public function suggestSimilarGlobalFunctionInOtherNamespace(
-        FullyQualifiedFunctionName $missing_function,
-        Context $unused_context
+        string $namespace,
+        string $function_name,
+        Context $unused_context,
+        bool $include_same_namespace = false
     ) : array {
-        $function_name = $missing_function->getName();
         $function_name_lower = strtolower($function_name);
         $namespaces_for_function_names = $this->getNamespacesForFunctionNames();
 
@@ -1846,8 +1848,10 @@ class CodeBase
         if (count($namespaces_for_function) === 0) {
             return [];
         }
-        // We're looking for similar names, not identical ones
-        unset($namespaces_for_function[strtolower($missing_function->getNamespace())]);
+        if (!$include_same_namespace) {
+            // We're looking for similar names, not identical ones
+            unset($namespaces_for_function[strtolower($namespace)]);
+        }
         $namespaces_for_function = array_values($namespaces_for_function);
 
         usort($namespaces_for_function, 'strcmp');
@@ -1885,19 +1889,50 @@ class CodeBase
      * @return array<int,FullyQualifiedFunctionName|string> 0 or more namespaced function names found in this code base
      */
     public function suggestSimilarGlobalFunctionInSameNamespace(
-        FullyQualifiedFunctionName $missing_function,
+        string $namespace,
+        string $name,
         Context $context,
         bool $suggest_in_global_namespace
     ) : array {
-        $namespace = $missing_function->getNamespace();
-        $suggestions = $this->suggestSimilarGlobalFunctionForNamespaceAndName($namespace, $missing_function->getName(), $context);
+        $suggestions = $this->suggestSimilarGlobalFunctionForNamespaceAndName($namespace, $name, $context);
         if ($namespace !== "\\" && $suggest_in_global_namespace) {
             $suggestions = array_merge(
                 $suggestions,
-                $this->suggestSimilarGlobalFunctionForNamespaceAndName("\\", $missing_function->getName(), $context)
+                $this->suggestSimilarGlobalFunctionForNamespaceAndName("\\", $name, $context)
             );
         }
         return $suggestions;
+    }
+
+    /**
+     * @return array<int,FullyQualifiedGlobalConstantName> an array of constants similar to the missing constant.
+     */
+    public function suggestSimilarConstantsToConstant(string $name)
+    {
+        $map = $this->getConstantLookupMapForName();
+        $results = $map[strtolower($name)] ?? [];
+        return array_values($results);
+    }
+
+    /**
+     * @var ?array<string,array<string,FullyQualifiedGlobalConstantName>> maps lowercase name to FQSEN to constant
+     */
+    private $constant_lookup_map_for_name;
+
+    /** @return array<string,array<string,FullyQualifiedGlobalConstantName>> maps name to namespace to constant */
+    private function getConstantLookupMapForName() : array
+    {
+        return $this->constant_lookup_map_for_name ?? ($this->constant_lookup_map_for_name = $this->computeConstantLookupMapForName());
+    }
+
+    /** @return array<string,array<string,FullyQualifiedGlobalConstantName>> maps name to namespace to constant */
+    private function computeConstantLookupMapForName() : array
+    {
+        $result = [];
+        foreach ($this->fqsen_global_constant_map as $fqsen => $_) {
+            $result[strtolower($fqsen->getName())][$fqsen->__toString()] = $fqsen;
+        }
+        return $result;
     }
 
     /**

@@ -5,5 +5,5 @@
 %s:16 PhanInvalidConstantFQSEN '' is an invalid FQSEN for a constant
 %s:17 PhanInvalidConstantFQSEN '\\' is an invalid FQSEN for a constant
 %s:18 PhanUndeclaredClassConstant Reference to constant class from undeclared class \ns565\Missing565
-%s:23 PhanUndeclaredConstant Reference to undeclared constant \cons
-%s:25 PhanUndeclaredConstant Reference to undeclared constant \ns565\ns565\cons
+%s:23 PhanUndeclaredConstant Reference to undeclared constant \cons (Did you mean \ns565\cons)
+%s:25 PhanUndeclaredConstant Reference to undeclared constant \ns565\ns565\cons (Did you mean \ns565\cons)

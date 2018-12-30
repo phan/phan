@@ -1,1 +1,1 @@
-%s:5 PhanUndeclaredConstant Reference to undeclared constant \php_version_id
+%s:5 PhanUndeclaredConstant Reference to undeclared constant \php_version_id (Did you mean \PHP_VERSION_ID)
