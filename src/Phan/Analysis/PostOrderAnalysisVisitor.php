@@ -3324,6 +3324,98 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
     }
 
+    const LOOP_SCOPE_KINDS = [
+        ast\AST_FOR => true,
+        ast\AST_FOREACH => true,
+        ast\AST_WHILE => true,
+        ast\AST_DO_WHILE => true,
+        ast\AST_SWITCH => true,
+    ];
+
+    /**
+     * Analyzes a `break;` or `break N;` statement.
+     * Checks if there are enough loops to break out of.
+     */
+    public function visitBreak(Node $node) : Context
+    {
+        $depth = $node->children['depth'] ?? 1;
+        if (!\is_int($depth)) {
+            return $this->context;
+        }
+        foreach ($this->parent_node_list as $iter_node) {
+            if (\array_key_exists($iter_node->kind, self::LOOP_SCOPE_KINDS)) {
+                $depth--;
+                if ($depth <= 0) {
+                    return $this->context;
+                }
+            }
+        }
+        $this->warnBreakOrContinueWithoutLoop($node);
+        return $this->context;
+    }
+
+    /**
+     * Analyzes a `continue;` or `continue N;` statement.
+     * Checks for http://php.net/manual/en/migration73.incompatible.php#migration73.incompatible.core.continue-targeting-switch
+     * and similar issues.
+     */
+    public function visitContinue(Node $node) : Context
+    {
+        $nodes = $this->parent_node_list;
+        $depth = $node->children['depth'] ?? 1;
+        if (!\is_int($depth)) {
+            return $this->context;
+        }
+        for ($iter_node = \end($nodes); $iter_node instanceof Node; $iter_node = \prev($nodes)) {
+            switch ($iter_node->kind) {
+                case ast\AST_FOR:
+                case ast\AST_FOREACH:
+                case ast\AST_WHILE:
+                case ast\AST_DO_WHILE:
+                    $depth--;
+                    if ($depth <= 0) {
+                        return $this->context;
+                    }
+                    break;
+                case ast\AST_SWITCH:
+                    $depth--;
+                    if ($depth <= 0) {
+                        $this->emitIssue(
+                            Issue::ContinueTargetingSwitch,
+                            $node->lineno
+                        );
+                        return $this->context;
+                    }
+                    break;
+            }
+        }
+        $this->warnBreakOrContinueWithoutLoop($node);
+        return $this->context;
+    }
+
+    /**
+     * @return void
+     */
+    private function warnBreakOrContinueWithoutLoop(Node $node)
+    {
+        $depth = $node->children['depth'] ?? 1;
+        $name = $node->kind === ast\AST_BREAK ? 'break' : 'continue';
+        if ($depth !== 1) {
+            $this->emitIssue(
+                Issue::ContinueOrBreakTooManyLevels,
+                $node->lineno,
+                $name,
+                $depth
+            );
+            return;
+        }
+        $this->emitIssue(
+            Issue::ContinueOrBreakNotInLoop,
+            $node->lineno,
+            $name
+        );
+    }
+
     /**
      * @param Node $node
      * A decl to check to see if it's only effect

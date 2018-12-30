@@ -1,4 +1,5 @@
 src/050_unreachable_code.php:11 PhanPluginUnreachableCode Unreachable statement detected
+src/050_unreachable_code.php:13 PhanContinueTargetingSwitch "continue" targeting switch is equivalent to "break". Did you mean to use "continue 2"?
 src/050_unreachable_code.php:14 PhanPluginUnreachableCode Unreachable statement detected
 src/050_unreachable_code.php:17 PhanPluginUnreachableCode Unreachable statement detected
 src/050_unreachable_code.php:20 PhanPluginUnreachableCode Unreachable statement detected

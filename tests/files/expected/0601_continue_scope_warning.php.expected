@@ -1,0 +1,10 @@
+%s:6 PhanContinueOrBreakTooManyLevels Cannot 'continue' 2 levels.
+%s:12 PhanContinueOrBreakTooManyLevels Cannot 'break' 3 levels.
+%s:14 PhanContinueTargetingSwitch "continue" targeting switch is equivalent to "break". Did you mean to use "continue 2"?
+%s:16 PhanContinueOrBreakTooManyLevels Cannot 'continue' 4 levels.
+%s:24 PhanContinueOrBreakNotInLoop 'break' not in the 'loop' or 'switch' context.
+%s:26 PhanContinueOrBreakNotInLoop 'continue' not in the 'loop' or 'switch' context.
+%s:29 PhanContinueOrBreakNotInLoop 'break' not in the 'loop' or 'switch' context.
+%s:31 PhanContinueOrBreakTooManyLevels Cannot 'continue' 3 levels.
+%s:33 PhanContinueOrBreakNotInLoop 'break' not in the 'loop' or 'switch' context.
+%s:40 PhanContinueTargetingSwitch "continue" targeting switch is equivalent to "break". Did you mean to use "continue 2"?

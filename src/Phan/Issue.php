@@ -27,6 +27,9 @@ class Issue
     const InvalidNode                    = 'PhanInvalidNode';
     const InvalidWriteToTemporaryExpression = 'PhanInvalidWriteToTemporaryExpression';
     const InvalidTraitUse                = 'PhanInvalidTraitUse';
+    const ContinueTargetingSwitch        = 'PhanContinueTargetingSwitch';
+    const ContinueOrBreakNotInLoop       = 'PhanContinueOrBreakNotInLoop';
+    const ContinueOrBreakTooManyLevels   = 'PhanContinueOrBreakTooManyLevels';
 
     // Issue::CATEGORY_UNDEFINED
     const AmbiguousTraitAliasSource = 'PhanAmbiguousTraitAliasSource';
@@ -646,6 +649,31 @@ class Issue
                 'Invalid trait use: {DETAILS}',
                 self::REMEDIATION_A,
                 17004
+            ),
+            // Could try to make a better suggestion, optionally
+            new Issue(
+                self::ContinueTargetingSwitch,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_NORMAL,
+                '"continue" targeting switch is equivalent to "break". Did you mean to use "continue 2"?',
+                self::REMEDIATION_A,
+                17005
+            ),
+            new Issue(
+                self::ContinueOrBreakNotInLoop,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                '\'{OPERATOR}\' not in the \'loop\' or \'switch\' context.',
+                self::REMEDIATION_A,
+                17006
+            ),
+            new Issue(
+                self::ContinueOrBreakTooManyLevels,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                'Cannot \'{OPERATOR}\' {INDEX} levels.',
+                self::REMEDIATION_A,
+                17007
             ),
 
             // Issue::CATEGORY_UNDEFINED
