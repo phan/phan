@@ -13,6 +13,7 @@ use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use function strlen;
 use function strtolower;
 
@@ -92,14 +93,21 @@ class IssueFixSuggester
     /**
      * @return ?Suggestion
      */
-    public static function suggestSimilarGlobalFunction(CodeBase $code_base, Context $context, FullyQualifiedFunctionName $function_fqsen, bool $suggest_in_global_namespace = true, string $prefix = "")
-    {
+    public static function suggestSimilarGlobalFunction(
+        CodeBase $code_base,
+        Context $context,
+        FullyQualifiedFunctionName $function_fqsen,
+        bool $suggest_in_global_namespace = true,
+        string $prefix = ""
+    ) {
         if (!$prefix) {
             $prefix = self::DEFAULT_FUNCTION_SUGGESTION_PREFIX;
         }
+        $namespace = $function_fqsen->getNamespace();
+        $name = $function_fqsen->getName();
         $suggested_fqsens = array_merge(
-            $code_base->suggestSimilarGlobalFunctionInOtherNamespace($function_fqsen, $context),
-            $code_base->suggestSimilarGlobalFunctionInSameNamespace($function_fqsen, $context, $suggest_in_global_namespace)
+            $code_base->suggestSimilarGlobalFunctionInOtherNamespace($namespace, $name, $context),
+            $code_base->suggestSimilarGlobalFunctionInSameNamespace($namespace, $name, $context, $suggest_in_global_namespace)
         );
         if (count($suggested_fqsens) === 0) {
             return null;
@@ -374,6 +382,120 @@ class IssueFixSuggester
     }
 
     /**
+     * @return ?Suggestion with values similar to the given constant
+     */
+    public static function suggestSimilarGlobalConstant(CodeBase $code_base, Context $context, FullyQualifiedGlobalConstantName $fqsen)
+    {
+        if (Config::getValue('disable_suggestions')) {
+            return null;
+        }
+        $constant_name = $fqsen->getName();
+        if (strlen($constant_name) <= 1) {
+            return null;
+        }
+        $suggestions = array_merge(
+            self::suggestSimilarFunctionsToConstant($code_base, $context, $fqsen),
+            self::suggestSimilarClassConstantsToGlobalConstant($code_base, $context, $fqsen),
+            self::suggestSimilarClassPropertiesToGlobalConstant($code_base, $context, $fqsen),
+            $code_base->suggestSimilarConstantsToConstant($constant_name),
+            self::suggestSimilarVariablesToGlobalConstant($context, $fqsen)
+        );
+        if (count($suggestions) === 0) {
+            return null;
+        }
+        $suggestions = array_map('strval', $suggestions);
+        return Suggestion::fromString(
+            'Did you mean ' . implode(' or ', $suggestions)
+        );
+    }
+
+    private static function suggestSimilarFunctionsToConstant(CodeBase $code_base, Context $context, FullyQualifiedGlobalConstantName $fqsen) : array
+    {
+        $suggested_fqsens = $code_base->suggestSimilarGlobalFunctionInOtherNamespace(
+            $fqsen->getNamespace(),
+            $fqsen->getName(),
+            $context,
+            true
+        );
+        return array_map(function (FullyQualifiedFunctionName $fqsen) : string {
+            return $fqsen . '()';
+        }, $suggested_fqsens);
+    }
+
+    /**
+     * Suggests accessible class constants of the current class that are similar to the passed in global constant FQSEN
+     * @return array<int,string>
+     */
+    private static function suggestSimilarClassConstantsToGlobalConstant(CodeBase $code_base, Context $context, FullyQualifiedGlobalConstantName $fqsen) : array
+    {
+        if (!$context->isInClassScope()) {
+            return [];
+        }
+        if (ltrim($fqsen->getNamespace(), '\\') !== '') {
+            return [];
+        }
+        try {
+            $class = $context->getClassInScope($code_base);
+            $name = $fqsen->getName();
+            if ($class->hasConstantWithName($code_base, $name)) {
+                return ["self::$name"];
+            }
+        } catch (\Exception $_) {
+            // ignore
+        }
+        return [];
+    }
+
+    /**
+     * Suggests accessible class properties of the current class that are similar to the passed in global constant FQSEN
+     * @return array<int,string>
+     */
+    private static function suggestSimilarClassPropertiesToGlobalConstant(CodeBase $code_base, Context $context, FullyQualifiedGlobalConstantName $fqsen) : array
+    {
+        if (!$context->isInClassScope()) {
+            return [];
+        }
+        if (ltrim($fqsen->getNamespace(), '\\') !== '') {
+            return [];
+        }
+        $name = $fqsen->getName();
+        try {
+            $class = $context->getClassInScope($code_base);
+            if (!$class->hasPropertyWithName($code_base, $name)) {
+                return [];
+            }
+            $property = $class->getPropertyByName($code_base, $name);
+            if (!$property->isAccessibleFromClass($code_base, $class->getFQSEN())) {
+                return [];
+            }
+            if ($property->isStatic()) {
+                return ['self::$' . $name];
+            } else {
+                return ['$this->' . $name];
+            }
+        } catch (\Exception $_) {
+            // ignore
+        }
+        return [];
+    }
+
+    /**
+     * @return array<int,string> returns array variable names prefixed with '$' with a similar name, or an empty array if that wouldn't make sense or there would be too many suggestions
+     */
+    private static function suggestSimilarVariablesToGlobalConstant(Context $context, FullyQualifiedGlobalConstantName $fqsen) : array
+    {
+        if ($context->isInGlobalScope()) {
+            return [];
+        }
+        if (ltrim($fqsen->getNamespace(), '\\') !== '') {
+            // Give up if requesting a namespaced constant
+            // TODO: Better heuristics
+            return [];
+        }
+        return self::getVariableNamesInScopeWithSimilarName($context, $fqsen->getName());
+    }
+
+    /**
      * @return array<string,ClassConstant>
      */
     private static function suggestSimilarClassConstantMap(CodeBase $code_base, Context $context, Clazz $class, string $constant_name) : array
@@ -423,18 +545,7 @@ class IssueFixSuggester
             // Don't bother suggesting globals for now
             return null;
         }
-        $suggestions = [];
-        if (strlen($variable_name) > 1) {
-            $variable_candidates = $context->getScope()->getVariableMap();
-            if (count($variable_candidates) <= Config::getValue('suggestion_check_limit')) {
-                $variable_candidates = array_merge($variable_candidates, Variable::_BUILTIN_SUPERGLOBAL_TYPES);
-                $variable_suggestions = self::getSuggestionsForStringSet($variable_name, $variable_candidates);
-
-                foreach ($variable_suggestions as $suggested_variable_name => $_) {
-                    $suggestions[] = '$' . $suggested_variable_name;
-                }
-            }
-        }
+        $suggestions = self::getVariableNamesInScopeWithSimilarName($context, $variable_name);
         if ($context->isInClassScope()) {
             // TODO: Does this need to check for static closures
             $class_in_scope = $context->getClassInScope($code_base);
@@ -462,6 +573,25 @@ class IssueFixSuggester
         );
     }
 
+    /**
+     * @return array<int,string> Suggestions for variable names, prefixed with "$"
+     */
+    private static function getVariableNamesInScopeWithSimilarName(Context $context, string $variable_name) : array
+    {
+        $suggestions = [];
+        if (strlen($variable_name) > 1) {
+            $variable_candidates = $context->getScope()->getVariableMap();
+            if (count($variable_candidates) <= Config::getValue('suggestion_check_limit')) {
+                $variable_candidates = array_merge($variable_candidates, Variable::_BUILTIN_SUPERGLOBAL_TYPES);
+                $variable_suggestions = self::getSuggestionsForStringSet($variable_name, $variable_candidates);
+
+                foreach ($variable_suggestions as $suggested_variable_name => $_) {
+                    $suggestions[] = '$' . $suggested_variable_name;
+                }
+            }
+        }
+        return $suggestions;
+    }
     /**
      * A very simple way to get the closest case-insensitive string matches.
      *

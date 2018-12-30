@@ -1,4 +1,4 @@
 %s:19 PhanUndeclaredConstant Reference to undeclared constant \c
-%s:21 PhanUndeclaredConstant Reference to undeclared constant \foo
-%s:22 PhanUndeclaredConstant Reference to undeclared constant \A111\Bar
+%s:21 PhanUndeclaredConstant Reference to undeclared constant \foo (Did you mean \A111\Foo)
+%s:22 PhanUndeclaredConstant Reference to undeclared constant \A111\Bar (Did you mean \A111\bar)
 %s:23 PhanUndeclaredConstant Reference to undeclared constant \A111\UndeclaredConst

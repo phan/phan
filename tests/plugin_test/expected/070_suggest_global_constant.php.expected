@@ -1,0 +1,15 @@
+src/070_suggest_global_constant.php:5 PhanUndeclaredConstant Reference to undeclared constant \test_constant_completion (Did you mean \test_constant_completion())
+src/070_suggest_global_constant.php:5 PhanUnusedVariable Unused definition of variable $myVar
+src/070_suggest_global_constant.php:6 PhanUndeclaredConstant Reference to undeclared constant \myVar (Did you mean $myVar)
+src/070_suggest_global_constant.php:7 PhanUndeclaredConstant Reference to undeclared constant \AST_BINARY_OP (Did you mean \ast\AST_BINARY_OP)
+src/070_suggest_global_constant.php:8 PhanUnusedVariable Unused definition of variable $AST_UNARY_OP
+src/070_suggest_global_constant.php:9 PhanUndeclaredConstant Reference to undeclared constant \AST_UNARY_OP (Did you mean \ast\AST_UNARY_OP or $AST_UNARY_OP)
+src/070_suggest_global_constant.php:10 PhanUndeclaredConstant Reference to undeclared constant \other\AST_UNARY_op (Did you mean \ast\AST_UNARY_OP)
+src/070_suggest_global_constant.php:16 PhanUnreferencedConstant Possibly zero references to global constant \TestNS\SOME_lowercase_constant
+src/070_suggest_global_constant.php:19 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \TestNS\Foo70::SOME_CONSTANT_NAME
+src/070_suggest_global_constant.php:20 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \TestNS\Foo70::AST_BINARY_OP
+src/070_suggest_global_constant.php:21 PhanUnreferencedPublicProperty Possibly zero references to public property \TestNS\Foo70::$AST_BINARY_OP
+src/070_suggest_global_constant.php:22 PhanUnreferencedPrivateProperty Possibly zero references to private property \TestNS\Foo70->SOME_LOWERCASE_CONSTANT
+src/070_suggest_global_constant.php:24 PhanUndeclaredConstant Reference to undeclared constant \AST_BINARY_OP (Did you mean self::AST_BINARY_OP or self::$AST_BINARY_OP or \ast\AST_BINARY_OP)
+src/070_suggest_global_constant.php:25 PhanUndeclaredConstant Reference to undeclared constant \SOME_LOWERCASE_CONSTANT (Did you mean $this->SOME_LOWERCASE_CONSTANT or \TestNS\SOME_lowercase_constant)
+src/070_suggest_global_constant.php:26 PhanUndeclaredConstant Reference to undeclared constant \SOME_CONSTANT_NAME (Did you mean self::SOME_CONSTANT_NAME)

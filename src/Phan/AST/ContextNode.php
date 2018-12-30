@@ -1660,7 +1660,7 @@ class ContextNode
 
                     if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
                         if (\strpos($constant_name, '\\') !== false) {
-                            $this->throwUndeclaredGlobalConstantIssueException($fqsen);
+                            $this->throwUndeclaredGlobalConstantIssueException($code_base, $context, $fqsen);
                         }
                         $fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
                             $constant_name
@@ -1680,7 +1680,7 @@ class ContextNode
         // or a relative constant for which nothing was found in the namespace
 
         if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
-            $this->throwUndeclaredGlobalConstantIssueException($fqsen);
+            $this->throwUndeclaredGlobalConstantIssueException($code_base, $context, $fqsen);
         }
 
         $constant = $code_base->getGlobalConstantByFQSEN($fqsen);
@@ -1713,13 +1713,14 @@ class ContextNode
     /**
      * @throws IssueException
      */
-    private function throwUndeclaredGlobalConstantIssueException(FullyQualifiedGlobalConstantName $fqsen)
+    private function throwUndeclaredGlobalConstantIssueException(CodeBase $code_base, Context $context, FullyQualifiedGlobalConstantName $fqsen)
     {
         throw new IssueException(
             Issue::fromType(Issue::UndeclaredConstant)(
                 $this->context->getFile(),
                 $this->node->lineno ?? 0,
-                [ $fqsen ]
+                [ $fqsen ],
+                IssueFixSuggester::suggestSimilarGlobalConstant($code_base, $context, $fqsen)
             )
         );
     }
