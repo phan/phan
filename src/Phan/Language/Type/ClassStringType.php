@@ -5,6 +5,7 @@ namespace Phan\Language\Type;
 use Closure;
 use Phan\CodeBase;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Type;
 use Phan\Language\UnionType;
 
 /**
@@ -43,6 +44,20 @@ final class ClassStringType extends StringType
             }
         }
         return false;
+    }
+
+    /**
+     * Returns the class union type this class string represents, or the empty union type
+     */
+    public function getClassUnionType() : UnionType
+    {
+        $template_union_type = $this->template_parameter_type_list[0] ?? null;
+        if (!$template_union_type) {
+            return UnionType::empty();
+        }
+        return $template_union_type->makeFromFilter(function (Type $type) : bool {
+            return $type instanceof TemplateType || $type->isObjectWithKnownFQSEN();
+        });
     }
 
     /**
