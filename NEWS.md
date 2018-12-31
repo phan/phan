@@ -15,6 +15,7 @@ New features(Analysis):
 
 Bug fixes:
 + Refactor the way `@template` annotations are parsed on classes and function-likes to avoid various edge cases (#2253)
++ Fix a bug causing Phan to fail to analyze closures/uses of closures when used inline (e.g. in function calls)
 
 27 Dec 2018, Phan 1.1.9
 -----------------------

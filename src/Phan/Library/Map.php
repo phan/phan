@@ -72,9 +72,8 @@ class Map extends SplObjectStorage
     {
         $clone =
             /**
-             * @template T
-             * @param T $element
-             * @return T
+             * @param K|V $element
+             * @return K|V
              */
             function ($element) {
                 return clone($element);

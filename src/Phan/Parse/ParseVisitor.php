@@ -769,7 +769,7 @@ class ParseVisitor extends ScopeVisitor
     public function visitClosure(Node $node) : Context
     {
         $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
-            $this->context->withLineNumberStart($node->lineno ?? 0),
+            $this->context->withLineNumberStart($node->lineno),
             $node
         );
 

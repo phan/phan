@@ -87,7 +87,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
 
     /**
      * Generates a deterministic FQSEN for the closure of the passed in node.
-     * @param Node $node a Node type AST_CLOSURE.
+     * @param Node $node a Node type AST_CLOSURE, within the file $context->getFile()
      */
     public static function fromClosureInContext(
         Context $context,
@@ -95,7 +95,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
     ) : FullyQualifiedFunctionName {
         $hash_material =
             $context->getFile() . '|' .
-            $context->getLineNumberStart() . '|' .
+            $node->lineno . '|' .
             $node->children['__declId'];
 
         $name = 'closure_' . substr(md5($hash_material), 0, 12);
