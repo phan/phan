@@ -280,6 +280,14 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return false;
     }
 
+    /**
+     * @return ?FunctionInterface
+     */
+    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context)
+    {
+        return $this;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
     // Begin FunctionInterface overrides. Most of these are intentionally no-ops
     ////////////////////////////////////////////////////////////////////////////////
@@ -815,28 +823,6 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return false;
     }
 
-    /**
-     * @return ?FunctionInterface
-     */
-    private function getFunctionFromType(CodeBase $code_base, Type $type)
-    {
-        if ($type instanceof FunctionLikeDeclarationType) {
-            return $type;
-        } elseif ($type instanceof ClosureType) {
-            return $type->getFunctionLikeOrNull();
-        } elseif ($type instanceof LiteralStringType) {
-            try {
-                $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($type->getValue());
-                if ($code_base->hasFunctionWithFQSEN($fqsen)) {
-                    return $code_base->getFunctionByFQSEN($fqsen);
-                }
-            } catch (\Exception $_) {
-            }
-            return null;
-        }
-        return null;
-    }
-
     public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
     {
         // Create a closure to extract types for the template type from the return type and param types.
@@ -848,16 +834,19 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
             }
             $closure = TemplateType::combineParameterClosures(
                 $closure,
-                function (UnionType $union_type) use ($code_base, $i, $param_closure) : UnionType {
+                function (UnionType $union_type, Context $context) use ($code_base, $i, $param_closure) : UnionType {
                     $result = UnionType::empty();
                     foreach ($union_type->getTypeSet() as $type) {
-                        $func = $this->getFunctionFromType($code_base, $type);
+                        $func = $type->asFunctionInterfaceOrNull($code_base, $context);
                         if (!$func) {
                             continue;
                         }
                         $param = $func->getParameterForCaller($i);
                         if ($param) {
-                            $result = $result->withUnionType($param_closure($param->getNonVariadicUnionType()));
+                            $result = $result->withUnionType($param_closure(
+                                $param->getNonVariadicUnionType(),
+                                $context
+                            ));
                         }
                     }
                     return $result;
@@ -869,7 +858,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
 
     /**
      * Extracts a closure to extract the template type from the return type, or returns null
-     * @return ?Closure(UnionType):UnionType
+     * @return ?Closure(UnionType,Context):UnionType
      */
     private function getReturnTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
     {
@@ -877,12 +866,12 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         if (!$return_closure) {
             return null;
         }
-        return function (UnionType $union_type) use ($code_base, $return_closure) : UnionType {
+        return function (UnionType $union_type, Context $context) use ($code_base, $return_closure) : UnionType {
             $result = UnionType::empty();
             foreach ($union_type->getTypeSet() as $type) {
-                $func = $this->getFunctionFromType($code_base, $type);
+                $func = $type->asFunctionInterfaceOrNull($code_base, $context);
                 if ($func) {
-                    $result = $result->withUnionType($return_closure($func->getUnionType()));
+                    $result = $result->withUnionType($return_closure($func->getUnionType(), $context));
                 }
             }
             return $result;

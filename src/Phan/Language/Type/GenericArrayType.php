@@ -682,7 +682,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
      * If this generic array type in a parameter declaration has template types, get the closure to extract the real types for that template type from argument union types
      *
      * @param CodeBase $code_base
-     * @return ?Closure(UnionType):UnionType
+     * @return ?Closure(UnionType,Context):UnionType
      */
     public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
     {
@@ -691,8 +691,8 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
             return null;
         }
         // If a function expects T[], then T is the generic array element type of the passed in union type
-        return function (UnionType $array_type) use ($closure) : UnionType {
-            return $closure($array_type->genericArrayElementTypes());
+        return function (UnionType $array_type, Context $context) use ($closure) : UnionType {
+            return $closure($array_type->genericArrayElementTypes(), $context);
         };
     }
 }

@@ -3,6 +3,8 @@
 namespace Phan\Language\Type;
 
 use AssertionError;
+use Phan\CodeBase;
+use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
@@ -79,17 +81,6 @@ final class ClosureType extends Type
     public function asFQSEN() : FQSEN
     {
         return $this->fqsen ?? parent::asFQSEN();
-    }
-
-    /**
-     * Gets the function-like this type was created from.
-     *
-     * TODO: Uses of this may keep outdated data in language server mode.
-     * @return ?FunctionInterface
-     */
-    public function getFunctionLikeOrNull()
-    {
-        return $this->func;
     }
 
     /**
@@ -175,5 +166,23 @@ final class ClosureType extends Type
     public function isDefiniteNonCallableType() : bool
     {
         return false;
+    }
+
+    /**
+     * Gets the function-like this type was created from.
+     *
+     * TODO: Uses of this may keep outdated data in language server mode.
+     * @return ?FunctionInterface
+     * @deprecated use asFunctionInterfaceOrNull
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function getFunctionLikeOrNull()
+    {
+        return $this->func;
+    }
+
+    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context)
+    {
+        return $this->func;
     }
 }
