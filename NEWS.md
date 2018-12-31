@@ -14,7 +14,8 @@ New features(Analysis):
   int/string/mixed can be inferred from `array<TKey,\someType>` when `@template TKey` is in the class/function-like scope.
 + Phan can now infer template types from even more categories of parameter types in constructors and regular functions/methods. (#522)
 
-  - infer `T` from `function(T):\OtherClass`
+  - infer `T` from `Closure(T):\OtherClass` and `callable(T):\OtherClass`
+  - infer `T` from `array{keyName:T}`
   - infer `TKey` from `array<TKey,\OtherClass>` (as int, string, or mixed)
 
 Bug fixes:

@@ -1,0 +1,2 @@
+%s:13 PhanUndeclaredMethod Call to undeclared method \stdClass::method
+%s:24 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{0:\stdClass,1:int} but \strlen() takes string
