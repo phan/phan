@@ -1,7 +1,7 @@
 Phan NEWS
 
-?? ??? 201?, Phan 1.1.10(dev)
------------------------
+30 Dec 2018, Phan 1.1.10
+------------------------
 
 New features(Analysis):
 + Add suggestions if to `PhanUndeclaredConstant` issue messages about undeclared global constants, if possible. (#2240)
