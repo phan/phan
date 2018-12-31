@@ -1364,6 +1364,7 @@ trait FunctionTrait
         }
         $return_type = $this->getUnionType();
         $parameter_extracter_map = [];
+        $has_all_templates = true;
         foreach ($template_type_list as $template_type) {
             $template_type_map = [$template_type->getName() => MixedType::instance(false)->asUnionType()];
             $return_type_with_template = $return_type->withTemplateParameterTypeMap($template_type_map);
@@ -1376,7 +1377,8 @@ trait FunctionTrait
                     $template_type,
                     $this->getNameForIssue()
                 );
-                return;
+                $has_all_templates = false;
+                continue;
             }
             $parameter_extracter = $this->getTemplateTypeExtractorClosure($code_base, $template_type);
             if (!$parameter_extracter) {
@@ -1388,9 +1390,13 @@ trait FunctionTrait
                     $template_type,
                     $this->getNameForIssue()
                 );
-                return;
+                $has_all_templates = false;
+                continue;
             }
             $parameter_extracter_map[$template_type->getName()] = $parameter_extracter;
+        }
+        if (!$has_all_templates) {
+            return;
         }
         // Resolve the template types based on the parameters passed to the function
         $analyzer = function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args) use ($parameter_extracter_map) : UnionType {
