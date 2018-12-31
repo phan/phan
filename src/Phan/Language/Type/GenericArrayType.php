@@ -20,7 +20,7 @@ use Phan\Language\UnionTypeBuilder;
  * @see ArrayShapeType for representations of `array{key:MyClass}`
  * @see ArrayType for the representation of `array`
  */
-final class GenericArrayType extends ArrayType implements GenericArrayInterface
+class GenericArrayType extends ArrayType implements GenericArrayInterface
 {
     /** @phan-override */
     const NAME = 'array';
@@ -673,9 +673,9 @@ final class GenericArrayType extends ArrayType implements GenericArrayInterface
     /**
      * Precondition: Callers should check isObjectWithKnownFQSEN
      */
-    public function hasSameNamespaceAndName(Type $type) : bool
+    public function hasSameNamespaceAndName(Type $_) : bool
     {
-        return $this->name === $type->name && $this->namespace === $type->namespace;
+        return false;
     }
 
     /**

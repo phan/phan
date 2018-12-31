@@ -10,6 +10,8 @@ New features(Analysis):
   New issue types: `PhanContinueOrBreakTooManyLevels`, `PhanContinueOrBreakNotInLoop`
 + Warn about `continue` statements targeting `switch` control structures (doing the same thing as a `break`) (#1869)
   New issue types: `PhanContinueTargetingSwitch`
++ Support inferring template types from array keys.
+  int/string/mixed can be inferred from `array<TKey,\someType>` when `@template TKey` is in the class/function-like scope.
 
 Bug fixes:
 + Refactor the way `@template` annotations are parsed on classes and function-likes to avoid various edge cases (#2253)
