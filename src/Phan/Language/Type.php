@@ -31,6 +31,7 @@ use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\FunctionLikeDeclarationType;
+use Phan\Language\Type\GenericArrayTemplateKeyType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\GenericIterableType;
 use Phan\Language\Type\GenericMultiArrayType;
@@ -984,26 +985,38 @@ class Type
         bool $is_nullable
     ) : ArrayType {
         $template_count = count($template_parameter_type_list);
-        if ($template_count <= 2) {  // array<T> or array<key, T>
-            $key_type = ($template_count === 2)
-                ? GenericArrayType::keyTypeFromUnionTypeValues($template_parameter_type_list[0])
-                : GenericArrayType::KEY_MIXED;
-
-            $types = $template_parameter_type_list[$template_count - 1]->getTypeSet();
-            if (count($types) === 1) {
-                return GenericArrayType::fromElementType(
+        if ($template_count > 2) {
+            return ArrayType::instance($is_nullable);
+        }
+        // array<T> or array<key, T>
+        $types = $template_parameter_type_list[$template_count - 1]->getTypeSet();
+        if ($template_count === 2) {
+            if (count($types) === 1 && $template_parameter_type_list[0]->hasTemplateType()) {
+                return GenericArrayTemplateKeyType::fromTemplateAndElementType(
                     // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
                     \reset($types),
                     $is_nullable,
-                    $key_type
-                );
-            } elseif (count($types) > 1) {
-                return new GenericMultiArrayType(
-                    $types,
-                    $is_nullable,
-                    $key_type
+                    $template_parameter_type_list[0]
                 );
             }
+            $key_type = GenericArrayType::keyTypeFromUnionTypeValues($template_parameter_type_list[0]);
+        } else {
+            $key_type = GenericArrayType::KEY_MIXED;
+        }
+
+        if (count($types) === 1) {
+            return GenericArrayType::fromElementType(
+                // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
+                \reset($types),
+                $is_nullable,
+                $key_type
+            );
+        } elseif (count($types) > 1) {
+            return new GenericMultiArrayType(
+                $types,
+                $is_nullable,
+                $key_type
+            );
         }
         return ArrayType::instance($is_nullable);
     }
