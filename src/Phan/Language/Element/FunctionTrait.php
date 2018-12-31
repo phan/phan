@@ -782,7 +782,7 @@ trait FunctionTrait
         if (\count($type_set) === 0) {
             return $default_type;
         }
-        $normalized_default_type = new UnionType();
+        $normalized_default_type = UnionType::empty();
         foreach ($type_set as $type) {
             if ($type instanceof FalseType || $type instanceof NullType) {
                 return MixedType::instance(false)->asUnionType();

@@ -2,6 +2,7 @@
 
 namespace Phan\Language\Type;
 
+use Closure;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\RecursionDepthException;
@@ -9,7 +10,6 @@ use Phan\Language\AnnotatedUnionType;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Language\UnionTypeBuilder;
-
 use RuntimeException;
 
 /**
@@ -216,6 +216,14 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     public function genericArrayElementUnionType() : UnionType
     {
         return $this->generic_array_element_union_type ?? ($this->generic_array_element_union_type = UnionType::merge($this->field_types));
+    }
+
+    /**
+     * Returns true for `T` and `T[]` and `\MyClass<T>`, but not `\MyClass<\OtherClass>` or `false`
+     */
+    public function hasTemplateTypeRecursive() : bool
+    {
+        return $this->genericArrayElementUnionType()->hasTemplateTypeRecursive();
     }
 
     /**
@@ -614,5 +622,65 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             return true;
         }
         return false;
+    }
+
+    /**
+     * @param array<string,UnionType> $template_parameter_type_map
+     * A map from template type identifiers to concrete types
+     *
+     * @return UnionType
+     * This UnionType with any template types contained herein
+     * mapped to concrete types defined in the given map.
+     *
+     * Overridden in subclasses
+     */
+    public function withTemplateParameterTypeMap(
+        array $template_parameter_type_map
+    ) : UnionType {
+        $field_types = $this->field_types;
+        foreach ($field_types as $i => $type) {
+            $new_type = $type->withTemplateParameterTypeMap($template_parameter_type_map);
+            if ($new_type !== $type) {
+                $field_types[$i] = $new_type;
+            }
+        }
+        if ($field_types === $this->field_types) {
+            return $this->asUnionType();
+        }
+        return self::fromFieldTypes($field_types, $this->is_nullable)->asUnionType();
+    }
+
+    /**
+     * If this generic array type in a parameter declaration has template types, get the closure to extract the real types for that template type from argument union types
+     *
+     * @param CodeBase $code_base
+     * @return ?Closure(UnionType):UnionType
+     */
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    {
+        $closure = null;
+        foreach ($this->field_types as $key => $type) {
+            $field_closure = $type->getTemplateTypeExtractorClosure($code_base, $template_type);
+            if (!$field_closure) {
+                continue;
+            }
+            $closure = TemplateType::combineParameterClosures(
+                $closure,
+                function (UnionType $union_type) use ($key, $field_closure) : UnionType {
+                    $result = UnionType::empty();
+                    foreach ($union_type->getTypeSet() as $type) {
+                        if (!($type instanceof ArrayShapeType)) {
+                            continue;
+                        }
+                        $field_type = $type->field_types[$key] ?? null;
+                        if ($field_type) {
+                            $result = $result->withUnionType($field_closure($field_type));
+                        }
+                    }
+                    return $result;
+                }
+            );
+        }
+        return $closure;
     }
 }
