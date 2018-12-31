@@ -771,6 +771,7 @@ class ASTSimplifier
             function (Node $node) {
                 return $this->applyToStmts($node);
             },
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument should be impossible to be float
             $list
         );
         if ($new_list === $list) {

@@ -33,7 +33,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     }
 
     /**
-     * @return string[][] Array of <filename => [filename]>
+     * @return array<string,array{0:array,1:string}> Array of <filename => [filename]>
      */
     abstract public function getTestFiles();
 
@@ -88,7 +88,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      * Placeholder for getTestFiles dataProvider
      *
      * @param string $source_dir
-     * @return string[][]
+     * @return array<string,array{0:array,1:string}>
      */
     protected function scanSourceFilesDir(string $source_dir, string $expected_dir)
     {
