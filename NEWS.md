@@ -12,6 +12,10 @@ New features(Analysis):
   New issue types: `PhanContinueTargetingSwitch`
 + Support inferring template types from array keys.
   int/string/mixed can be inferred from `array<TKey,\someType>` when `@template TKey` is in the class/function-like scope.
++ Phan can now infer template types from even more categories of parameter types in constructors and regular functions/methods. (#522)
+
+  - infer `T` from `function(T):\OtherClass`
+  - infer `TKey` from `array<TKey,\OtherClass>` (as int, string, or mixed)
 
 Bug fixes:
 + Refactor the way `@template` annotations are parsed on classes and function-likes to avoid various edge cases (#2253)

@@ -380,7 +380,7 @@ final class ArgumentType
             // Get the type of the argument. We'll check it against
             // the parameter in a moment
             $argument_type = $get_argument_type($argument, $i);
-            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? 0, $i);
+            self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? $context->getLineNumberStart(), $i);
         }
     }
 

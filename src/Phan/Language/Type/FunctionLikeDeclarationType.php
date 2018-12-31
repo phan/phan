@@ -815,26 +815,93 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return false;
     }
 
+    /**
+     * @return ?FunctionInterface
+     */
+    private function getFunctionFromType(CodeBase $code_base, Type $type)
+    {
+        if ($type instanceof FunctionLikeDeclarationType) {
+            return $type;
+        } elseif ($type instanceof ClosureType) {
+            return $type->getFunctionLikeOrNull();
+        } elseif ($type instanceof LiteralStringType) {
+            try {
+                $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($type->getValue());
+                if ($code_base->hasFunctionWithFQSEN($fqsen)) {
+                    return $code_base->getFunctionByFQSEN($fqsen);
+                }
+            } catch (\Exception $_) {
+            }
+            return null;
+        }
+        return null;
+    }
+
     public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    {
+        // Create a closure to extract types for the template type from the return type and param types.
+        $closure = $this->getReturnTemplateTypeExtractorClosure($code_base, $template_type);
+        foreach ($this->params as $i => $param) {
+            $param_closure = $param->getNonVariadicUnionType()->getTemplateTypeExtractorClosure($code_base, $template_type);
+            if (!$param_closure) {
+                continue;
+            }
+            $closure = TemplateType::combineParameterClosures(
+                $closure,
+                function (UnionType $union_type) use ($code_base, $i, $param_closure) : UnionType {
+                    $result = UnionType::empty();
+                    foreach ($union_type->getTypeSet() as $type) {
+                        $func = $this->getFunctionFromType($code_base, $type);
+                        if (!$func) {
+                            continue;
+                        }
+                        $param = $func->getParameterForCaller($i);
+                        if ($param) {
+                            $result = $result->withUnionType($param_closure($param->getNonVariadicUnionType()));
+                        }
+                    }
+                    return $result;
+                }
+            );
+        }
+        return $closure;
+    }
+
+    /**
+     * Extracts a closure to extract the template type from the return type, or returns null
+     * @return ?Closure(UnionType):UnionType
+     */
+    private function getReturnTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
     {
         $return_closure = $this->getUnionType()->getTemplateTypeExtractorClosure($code_base, $template_type);
         if (!$return_closure) {
             return null;
         }
-        return function (UnionType $union_type) use ($return_closure) : UnionType {
+        return function (UnionType $union_type) use ($code_base, $return_closure) : UnionType {
             $result = UnionType::empty();
             foreach ($union_type->getTypeSet() as $type) {
-                if ($type instanceof FunctionLikeDeclarationType) {
-                    $result = $result->withUnionType($return_closure($type->getUnionType()));
-                } elseif ($type instanceof ClosureType) {
-                    $func = $type->getFunctionLikeOrNull();
-                    if ($func) {
-                        $result = $result->withUnionType($return_closure($func->getUnionType()));
-                    }
+                $func = $this->getFunctionFromType($code_base, $type);
+                if ($func) {
+                    $result = $result->withUnionType($return_closure($func->getUnionType()));
                 }
             }
             return $result;
         };
+    }
+
+    public function withTemplateParameterTypeMap(
+        array $template_parameter_type_map
+    ) : UnionType {
+        $new_params = array_map(function (ClosureDeclarationParameter $param) use ($template_parameter_type_map) : ClosureDeclarationParameter {
+            return $param->withTemplateParameterTypeMap($template_parameter_type_map);
+        }, $this->params);
+        $new_return_type = $this->return_type->withTemplateParameterTypeMap($template_parameter_type_map);
+        if ($new_params === $this->params && $new_return_type === $this->return_type) {
+            // no change
+            return $this->asUnionType();
+        }
+        // Create ClosureDeclarationType or CallableDeclarationType
+        return (new static($this->file_ref, $new_params, $new_return_type, $this->returns_reference, $this->is_nullable))->asUnionType();
     }
     ////////////////////////////////////////////////////////////////////////////////
     // End FunctionInterface overrides
