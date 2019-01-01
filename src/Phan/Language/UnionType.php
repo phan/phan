@@ -3649,6 +3649,17 @@ class UnionType implements Serializable
         }
         return $closure;
     }
+
+    /**
+     * Returns true if this references $template_type in any way
+     */
+    public function usesTemplateType(TemplateType $template_type) : bool
+    {
+        $new_union_type = $this->withTemplateParameterTypeMap([
+            $template_type->getName() => UnionType::fromFullyQualifiedString('mixed'),
+        ]);
+        return !$this->isEqualTo($new_union_type);
+    }
 }
 
 UnionType::init();

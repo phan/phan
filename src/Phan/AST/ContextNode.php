@@ -1341,16 +1341,12 @@ class ContextNode
             );
 
             if ($property->isDeprecated()) {
-                throw new IssueException(
-                    Issue::fromType(Issue::DeprecatedProperty)(
-                        $this->context->getFile(),
-                        $node->lineno ?? 0,
-                        [
-                            $property->getRepresentationForIssue(),
-                            $property->getFileRef()->getFile(),
-                            $property->getFileRef()->getLineNumberStart(),
-                        ]
-                    )
+                $this->emitIssue(
+                    Issue::DeprecatedProperty,
+                    $node->lineno,
+                    $property->getRepresentationForIssue(),
+                    $property->getFileRef()->getFile(),
+                    $property->getFileRef()->getLineNumberStart()
                 );
             }
 
@@ -1360,18 +1356,14 @@ class ContextNode
                     $this->context
                 )
             ) {
-                throw new IssueException(
-                    Issue::fromType(Issue::AccessPropertyInternal)(
-                        $this->context->getFile(),
-                        $node->lineno ?? 0,
-                        [
-                            $property->getRepresentationForIssue(),
-                            $property->getElementNamespace(),
-                            $property->getFileRef()->getFile(),
-                            $property->getFileRef()->getLineNumberStart(),
-                            $this->context->getNamespace(),
-                        ]
-                    )
+                $this->emitIssue(
+                    Issue::AccessPropertyInternal,
+                    $node->lineno,
+                    $property->getRepresentationForIssue(),
+                    $property->getElementNamespace(),
+                    $property->getFileRef()->getFile(),
+                    $property->getFileRef()->getLineNumberStart(),
+                    $this->context->getNamespace()
                 );
             }
 

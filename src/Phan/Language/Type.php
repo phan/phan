@@ -2686,7 +2686,7 @@ class Type
      * Gets the part of the Type string for the template parameters.
      * Precondition: $this->template_parameter_string is not null.
      */
-    private function templateParameterTypeListAsString() : string
+    final protected function templateParameterTypeListAsString() : string
     {
         return '<' .
             \implode(',', \array_map(function (UnionType $type) : string {

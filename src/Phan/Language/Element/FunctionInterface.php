@@ -3,6 +3,7 @@
 namespace Phan\Language\Element;
 
 use ast\Node;
+use Closure;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -417,4 +418,12 @@ interface FunctionInterface extends AddressableElementInterface
      * Does this function/method declare an (at)template type for this type?
      */
     public function declaresTemplateTypeInComment(TemplateType $template_type) : bool;
+
+    /**
+     * Create any plugins that exist due to doc comment annotations.
+     * Must be called after adding this FunctionInterface to the $code_base, so that issues can be emitted if needed.
+     * @return ?Closure(CodeBase, Context, array):UnionType
+     * @internal
+     */
+    public function getCommentParamAssertionClosure(CodeBase $code_base);
 }

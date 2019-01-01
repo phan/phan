@@ -559,6 +559,21 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
+     * @param Closure(CodeBase, Context, FunctionInterface, array):void $a
+     * @param ?Closure(CodeBase, Context, FunctionInterface, array):void $b
+     * @return Closure(CodeBase, Context, FunctionInterface, array):void $b
+     */
+    public static function mergeAnalyzeFunctionCallClosures(Closure $a, Closure $b = null)
+    {
+        if (!$b) {
+            return $a;
+        }
+        return static function (CodeBase $code_base, Context $context, FunctionInterface $func, array $args) use ($a, $b) {
+            $a($code_base, $context, $func, $args);
+            $b($code_base, $context, $func, $args);
+        };
+    }
+    /**
      * @param CodeBase $code_base
      * @return array<string,\Closure> maps FQSEN string to closure
      */
@@ -572,13 +587,7 @@ final class ConfigPluginSet extends PluginV2 implements
             // TODO: Make this case-insensitive.
             foreach ($plugin->getAnalyzeFunctionCallClosures($code_base) as $fqsen_name => $closure) {
                 $other_closure = $result[$fqsen_name] ?? null;
-                if ($other_closure !== null) {
-                    $old_closure = $closure;
-                    $closure = static function (CodeBase $code_base, Context $context, FunctionInterface $func, array $args) use ($old_closure, $other_closure) {
-                        $other_closure($code_base, $context, $func, $args);
-                        $old_closure($code_base, $context, $func, $args);
-                    };
-                }
+                $closure = self::mergeAnalyzeFunctionCallClosures($closure, $other_closure);
                 $result[$fqsen_name] = $closure;
             }
         }

@@ -1,0 +1,10 @@
+src/072_custom_assertions.php:41 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+src/072_custom_assertions.php:43 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \stdClass but \intdiv() takes int
+src/072_custom_assertions.php:86 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is false|string but \intdiv() takes int
+src/072_custom_assertions.php:87 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \stdClass but \intdiv() takes int
+src/072_custom_assertions.php:90 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+src/072_custom_assertions.php:93 PhanTypeMismatchArgumentInternal Argument 1 (string) is \ast\Node but \strlen() takes string
+src/072_custom_assertions.php:118 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \SomeNS\missingClass
+src/072_custom_assertions.php:120 PhanTypeMismatchArgumentInternal Argument 1 (string) is \stdClass but \strlen() takes string
+src/072_custom_assertions.php:121 PhanTypeSuspiciousEcho Suspicious argument \SomeNS\missingClass for an echo/print statement
+src/072_custom_assertions.php:122 PhanTypeMismatchArgumentInternal Argument 1 (string) is 5 but \strlen() takes string

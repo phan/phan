@@ -397,6 +397,7 @@ class Issue
     const UnextractableAnnotationSuffix    = 'PhanUnextractableAnnotationSuffix';
     const UnextractableAnnotationElementName = 'PhanUnextractableAnnotationElementName';
     const CommentParamWithoutRealParam     = 'PhanCommentParamWithoutRealParam';
+    const CommentParamAssertionWithoutRealParam = 'PhanCommentParamAssertionWithoutRealParam';
     const CommentParamOnEmptyParamList     = 'PhanCommentParamOnEmptyParamList';
     const CommentOverrideOnNonOverrideMethod = 'PhanCommentOverrideOnNonOverrideMethod';
     const CommentOverrideOnNonOverrideConstant = 'PhanCommentOverrideOnNonOverrideConstant';
@@ -3364,6 +3365,14 @@ class Issue
                 "Saw an @param annotation for {VARIABLE}, but it was not found in the param list of {FUNCTIONLIKE}",
                 self::REMEDIATION_B,
                 16004
+            ),
+            new Issue(
+                self::CommentParamAssertionWithoutRealParam,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw an @phan-assert annotation for {VARIABLE}, but it was not found in the param list of {FUNCTIONLIKE}",
+                self::REMEDIATION_B,
+                16019
             ),
             new Issue(
                 self::CommentParamOnEmptyParamList,

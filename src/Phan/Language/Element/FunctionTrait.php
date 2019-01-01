@@ -5,6 +5,8 @@ namespace Phan\Language\Element;
 use AssertionError;
 use ast\Node;
 use Closure;
+use Phan\Analysis\ConditionVisitor;
+use Phan\Analysis\NegatedConditionVisitor;
 use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -12,6 +14,7 @@ use Phan\Config;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
+use Phan\Language\Element\Comment\Assertion;
 use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -30,6 +33,7 @@ use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
+use Phan\Plugin\ConfigPluginSet;
 
 /**
  * This contains functionality common to global functions, closures, and methods
@@ -1329,6 +1333,8 @@ trait FunctionTrait
         }
         $comment = $this->comment;
         if ($comment) {
+            // Add plugins **after** the phpdoc and real comment types were merged.
+            // Plugins affecting return types (for template in (at)return)
             $template_type_list = $comment->getTemplateTypeList();
             if ($template_type_list) {
                 $this->addClosureForDependentTemplateType($code_base, $context, $template_type_list);
@@ -1349,6 +1355,26 @@ trait FunctionTrait
         return false;
     }
 
+    private function isTemplateTypeUsed(TemplateType $type) : bool
+    {
+        if ($this->getUnionType()->usesTemplateType($type)) {
+            // used in `@return`
+            return true;
+        }
+
+        $comment = $this->comment;
+        if ($comment) {
+            foreach ($comment->getParamAssertionMap() as $assertion) {
+                // @phan-suppress-next-line PhanAccessPropertyInternal
+                if ($assertion->union_type->usesTemplateType($type)) {
+                    // used in `@phan-assert`
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * @param TemplateType[] $template_type_list
      */
@@ -1362,13 +1388,10 @@ trait FunctionTrait
             // Shouldn't happen
             return;
         }
-        $return_type = $this->getUnionType();
         $parameter_extracter_map = [];
         $has_all_templates = true;
         foreach ($template_type_list as $template_type) {
-            $template_type_map = [$template_type->getName() => MixedType::instance(false)->asUnionType()];
-            $return_type_with_template = $return_type->withTemplateParameterTypeMap($template_type_map);
-            if ($return_type_with_template->isEqualTo($return_type)) {
+            if (!$this->isTemplateTypeUsed($template_type)) {
                 Issue::maybeEmit(
                     $code_base,
                     $context,
@@ -1421,21 +1444,30 @@ trait FunctionTrait
     /**
      * @param TemplateType $template_type the template type that this function is looking for references to in parameters
      *
-     * @return ?Closure(array<int,UnionType>, Context):UnionType
+     * @return ?Closure(array<int,Node|string|int|float|UnionType>, Context):UnionType
      */
-    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
+    public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type, int $skip_index = null)
     {
         $closure = null;
         foreach ($this->parameter_list as $i => $parameter) {
+            if ($i === $skip_index) {
+                continue;
+            }
             $closure_for_type = $parameter->getUnionType()->getTemplateTypeExtractorClosure($code_base, $template_type);
             if (!$closure_for_type) {
                 continue;
             }
             $closure = TemplateType::combineParameterClosures(
                 $closure,
-                function (array $parameters, Context $context) use ($i, $closure_for_type) : UnionType {
-                    $param_type = $parameters[$i] ?? null;
-                    if ($param_type) {
+                function (array $parameters, Context $context) use ($code_base, $i, $closure_for_type) : UnionType {
+                    $param_value = $parameters[$i] ?? null;
+                    if ($param_value !== null) {
+                        if ($param_value instanceof UnionType) {
+                            // This helper method has two callers - one passes in an array of union types, another passes in the raw nodes.
+                            $param_type = $param_value;
+                        } else {
+                            $param_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $param_value);
+                        }
                         return $closure_for_type($param_type, $context);
                     }
                     return UnionType::empty();
@@ -1443,5 +1475,185 @@ trait FunctionTrait
             );
         }
         return $closure;
+    }
+
+    /**
+     * Returns the index of the parameter with name $name.
+     * @return ?int
+     */
+    public function getParamIndexForName(string $name)
+    {
+        foreach ($this->getParameterList() as $i => $param) {
+            if ($param->getName() === $name) {
+                return $i;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Adds a plugin that will ensure postconditions in the comments take effect.
+     * This adds closures the same way getAnalyzeFunctionCallClosures in a plugin would.
+     *
+     * @param array<string, Assertion> $param_assertion_map
+     * @return ?Closure(CodeBase, Context, FunctionInterface, array):void
+     * @internal
+     */
+    private function getPluginForParamAssertionMap(CodeBase $code_base, array $param_assertion_map)
+    {
+        $closure = null;
+        foreach ($param_assertion_map as $param_name => $assertion) {
+            $i = $this->getParamIndexForName($param_name);
+            if ($i === null) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $this->getContext(),
+                    Issue::CommentParamAssertionWithoutRealParam,
+                    $this->getContext()->getLineNumberStart(),
+                    $param_name,
+                    $this->getNameForIssue()
+                );
+                continue;
+            }
+            $new_closure = $this->createClosureForAssertion($code_base, $assertion, $i);
+            if ($new_closure) {
+                $closure = ConfigPluginSet::mergeAnalyzeFunctionCallClosures($new_closure, $closure);
+            }
+        }
+        return $closure;
+    }
+
+    /**
+     * @param int $i the index of the parameter which $assertion acts upon.
+     * @return ?Closure(CodeBase, Context, FunctionInterface, array):void
+     * @suppress PhanAccessPropertyInternal
+     * @suppress PhanAccessClassConstantInternal
+     * @internal
+     */
+    public function createClosureForAssertion(CodeBase $code_base, Assertion $assertion, int $i)
+    {
+        $union_type = $assertion->union_type;
+        if ($union_type->hasTemplateTypeRecursive()) {
+            $union_type_extractor = $this->makeAssertionUnionTypeExtractor($code_base, $union_type, $i);
+            if (!$union_type_extractor) {
+                return;
+            }
+        } else {
+            $union_type_extractor = function (CodeBase $unused_code_base, Context $unused_context, array $unused_args) use ($union_type) : UnionType {
+                return $union_type;
+            };
+        }
+        return $this->createClosureForUnionTypeExtractorAndAssertionType($union_type_extractor, $assertion->assertion_type, $i);
+    }
+
+    /**
+     * @internal
+     * @suppress PhanAccessClassConstantInternal
+     * @param Closure(CodeBase, Context, array):UnionType $union_type_extractor
+     * @return ?Closure(CodeBase, Context, FunctionInterface, array):void
+     */
+    public function createClosureForUnionTypeExtractorAndAssertionType(Closure $union_type_extractor, int $assertion_type, int $i)
+    {
+        switch ($assertion_type) {
+            case Assertion::IS_OF_TYPE:
+                return function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i, $union_type_extractor) {
+                    $arg = $args[$i] ?? null;
+                    if (!($arg instanceof Node)) {
+                        return;
+                    }
+                    $union_type = $union_type_extractor($code_base, $context, $args);
+                    $new_context = ConditionVisitor::updateToHaveType($code_base, $context, $arg, $union_type);
+                    // NOTE: This is hackish. This modifies the passed in context's scope.
+                    $context->setScope($new_context->getScope());
+                };
+            case Assertion::IS_NOT_OF_TYPE:
+                return function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i, $union_type_extractor) {
+                    $arg = $args[$i] ?? null;
+                    if (!($arg instanceof Node)) {
+                        return;
+                    }
+                    $union_type = $union_type_extractor($code_base, $context, $args);
+                    $new_context = ConditionVisitor::updateToNotHaveType($code_base, $context, $arg, $union_type);
+                    // NOTE: This is hackish. This modifies the passed in context's scope.
+                    $context->setScope($new_context->getScope());
+                };
+            case Assertion::IS_TRUE:
+                return function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i) {
+                    $arg = $args[$i] ?? null;
+                    if (!($arg instanceof Node)) {
+                        return;
+                    }
+                    $new_context = (new ConditionVisitor($code_base, $context))->__invoke($arg);
+                    // NOTE: This is hackish. This modifies the passed in context's scope.
+                    $context->setScope($new_context->getScope());
+                };
+            case Assertion::IS_FALSE:
+                return function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i) {
+                    $arg = $args[$i] ?? null;
+                    if (!($arg instanceof Node)) {
+                        return;
+                    }
+                    $new_context = (new NegatedConditionVisitor($code_base, $context))->__invoke($arg);
+                    // NOTE: This is hackish. This modifies the passed in context's scope.
+                    $context->setScope($new_context->getScope());
+                };
+        }
+        // TODO: Support and test combining these closures
+        return null;
+    }
+
+    /**
+     * Creates a closure that can extract real types from template types used in (at)phan-assert.
+     *
+     * @return ?Closure(CodeBase, Context, array):UnionType
+     */
+    private function makeAssertionUnionTypeExtractor(CodeBase $code_base, UnionType $type, int $asserted_param_index)
+    {
+        $comment = $this->getComment();
+        if (!$comment) {
+            return null;
+        }
+        $parameter_extractor_map = [];
+        foreach ($comment->getTemplateTypeList() as $template_type) {
+            if (!$type->usesTemplateType($template_type)) {
+                continue;
+            }
+            $param_closure = $this->getTemplateTypeExtractorClosure($code_base, $template_type, $asserted_param_index);
+            if (!$param_closure) {
+                // TODO: Warn
+                return null;
+            }
+            $parameter_extractor_map[$template_type->getName()] = $param_closure;
+        }
+        if (!$parameter_extractor_map) {
+            return null;
+        }
+        return function (CodeBase $unused_code_base, Context $context, array $args) use ($type, $parameter_extractor_map) : UnionType {
+            $template_type_map = [];
+            foreach ($parameter_extractor_map as $template_type_name => $closure) {
+                $template_type_map[$template_type_name] = $closure($args, $context);
+            }
+            return $type->withTemplateParameterTypeMap($template_type_map);
+        };
+    }
+
+    /**
+     * Create any plugins that exist due to doc comment annotations.
+     * Must be called after adding this FunctionInterface to the $code_base, so that issues can be emitted if needed.
+     * @return ?Closure(CodeBase, Context, array):UnionType
+     * @internal
+     * @suppress PhanUnreferencedPublicMethod referenced in FunctionTrait
+     */
+    public function getCommentParamAssertionClosure(CodeBase $code_base)
+    {
+        $comment = $this->getComment();
+        if (!$comment) {
+            return null;
+        }
+        $param_assertion_map = $comment->getParamAssertionMap();
+        if ($param_assertion_map) {
+            return $this->getPluginForParamAssertionMap($code_base, $param_assertion_map);
+        }
+        return null;
     }
 }

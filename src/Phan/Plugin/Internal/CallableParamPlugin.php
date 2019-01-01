@@ -11,6 +11,7 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
 use Phan\Language\Type\CallableInterface;
 use Phan\Language\Type\ClassStringType;
+use Phan\Plugin\ConfigPluginSet;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
 
@@ -115,14 +116,30 @@ final class CallableParamPlugin extends PluginV2 implements
             }
             // Generate a de-duplicated closure.
             // fqsen can be global_function or ClassName::method
-            $result[(string)$function->getFQSEN()] = self::generateClosure($callable_params, $class_params);
+            $result[$function->getFQSEN()->__toString()] = self::generateClosure($callable_params, $class_params);
+        };
+
+        $add_another_closure = function (string $fqsen, Closure $closure) use (&$result) {
+            $result[$fqsen] = ConfigPluginSet::mergeAnalyzeFunctionCallClosures(
+                $closure,
+                $result[$fqsen] ?? null
+            );
+        };
+
+        $add_misc_closures = function (FunctionInterface $function) use ($add_callable_checker_closure, $add_another_closure, $code_base) {
+            $add_callable_checker_closure($function);
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $closure = $function->getCommentParamAssertionClosure($code_base);
+            if ($closure) {
+                $add_another_closure($function->getFQSEN()->__toString(), $closure);
+            }
         };
 
         foreach ($code_base->getFunctionMap() as $function) {
-            $add_callable_checker_closure($function);
+            $add_misc_closures($function);
         }
         foreach ($code_base->getMethodSet() as $function) {
-            $add_callable_checker_closure($function);
+            $add_misc_closures($function);
         }
 
         // new ReflectionFunction('my_func') is a usage of my_func()
