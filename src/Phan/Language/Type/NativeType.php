@@ -3,6 +3,7 @@
 namespace Phan\Language\Type;
 
 use Phan\CodeBase;
+use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
@@ -280,6 +281,12 @@ abstract class NativeType extends Type
 
     public function getTemplateTypeExtractorClosure(CodeBase $unused_code_base, TemplateType $unused_template_type)
     {
+        return null;
+    }
+
+    public function asFunctionInterfaceOrNull(CodeBase $unused_codebase, Context $unused_context)
+    {
+        // overridden in subclasses
         return null;
     }
 }

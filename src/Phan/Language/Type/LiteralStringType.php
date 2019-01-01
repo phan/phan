@@ -3,7 +3,11 @@
 namespace Phan\Language\Type;
 
 use InvalidArgumentException;
+use Phan\AST\UnionTypeVisitor;
+use Phan\CodeBase;
 use Phan\Config;
+use Phan\Language\Context;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use RuntimeException;
@@ -252,6 +256,21 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
         $v = $this->value;
         ++$v;
         return Type::nonLiteralFromObject($v)->asUnionType();
+    }
+
+    /**
+     * Returns the function interface that would be used if this type's string were a callable, or null.
+     * @param CodeBase $code_base the code base in which the function interface is found
+     * @param Context $context the context where the function interface is referenced (for emitting issues)
+     *
+     * @return ?FunctionInterface
+     */
+    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context)
+    {
+        // parse 'function_name' or 'class_name::method_name'
+        // NOTE: In other subclasses of Type, calling this might recurse.
+        $function_like_fqsens = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $this->value, true);
+        return $function_like_fqsens[0] ?? null;
     }
 }
 

@@ -4,6 +4,7 @@ namespace Phan\Language\Type;
 
 use Closure;
 use Phan\CodeBase;
+use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
@@ -66,7 +67,7 @@ class GenericArrayTemplateKeyType extends GenericArrayType
      * get the closure to extract the real types for that template type from argument union types
      *
      * @param CodeBase $code_base
-     * @return ?Closure(UnionType):UnionType
+     * @return ?Closure(UnionType, Context):UnionType
      */
     public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
     {

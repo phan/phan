@@ -5,6 +5,8 @@ Phan NEWS
 
 New features(Analysis):
 + Infer that `new $x` is of the template type `T` if `$x` is `class-string<T>` (#2257)
++ Improve detection of invalid arguments in code implicitly calling `__invoke`.
++ Support extracting template types from more forms of `callable` types. (#2264)
 
 30 Dec 2018, Phan 1.1.10
 ------------------------

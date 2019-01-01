@@ -2996,7 +2996,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return array<int,Closure(array<int,mixed>):UnionType>
+     * @return array<int,Closure(array<int,mixed>, Context):UnionType>
      */
     public function getGenericConstructorBuilder(CodeBase $code_base)
     {

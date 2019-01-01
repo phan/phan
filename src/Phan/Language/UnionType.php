@@ -3636,7 +3636,7 @@ class UnionType implements Serializable
     /**
      * @param TemplateType $template_type the template type that this union type is being searched for
      *
-     * @return ?Closure(UnionType):UnionType a closure to map types to the template type wherever it was in the original union type
+     * @return ?Closure(UnionType, Context):UnionType a closure to map types to the template type wherever it was in the original union type
      */
     public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
     {

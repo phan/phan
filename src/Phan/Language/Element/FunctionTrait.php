@@ -1411,8 +1411,7 @@ trait FunctionTrait
             );
             $template_type_map = [];
             foreach ($parameter_extracter_map as $name => $closure) {
-                // TODO: Do a better job of
-                $template_type_map[$name] = $closure ? $closure($args_types) : UnionType::empty();
+                $template_type_map[$name] = $closure ? $closure($args_types, $context) : UnionType::empty();
             }
             return $function->getUnionType()->withTemplateParameterTypeMap($template_type_map);
         };
@@ -1422,7 +1421,7 @@ trait FunctionTrait
     /**
      * @param TemplateType $template_type the template type that this function is looking for references to in parameters
      *
-     * @return ?Closure(array<int,UnionType>):UnionType
+     * @return ?Closure(array<int,UnionType>, Context):UnionType
      */
     public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
     {
@@ -1434,10 +1433,10 @@ trait FunctionTrait
             }
             $closure = TemplateType::combineParameterClosures(
                 $closure,
-                function (array $parameters) use ($i, $closure_for_type) : UnionType {
+                function (array $parameters, Context $context) use ($i, $closure_for_type) : UnionType {
                     $param_type = $parameters[$i] ?? null;
                     if ($param_type) {
-                        return $closure_for_type($param_type);
+                        return $closure_for_type($param_type, $context);
                     }
                     return UnionType::empty();
                 }

@@ -73,6 +73,7 @@ class Issue
     const UndeclaredStaticMethodInCallable = 'PhanUndeclaredStaticMethodInCallable';
     const UndeclaredFunctionInCallable = 'PhanUndeclaredFunctionInCallable';
     const UndeclaredMethodInCallable = 'PhanUndeclaredMethodInCallable';
+    const UndeclaredInvokeInCallable = 'PhanUndeclaredInvokeInCallable';
     const EmptyFQSENInCallable      = 'PhanEmptyFQSENInCallable';
     const InvalidFQSENInCallable    = 'PhanInvalidFQSENInCallable';
     const EmptyFQSENInClasslike     = 'PhanEmptyFQSENInClasslike';
@@ -1036,6 +1037,14 @@ class Issue
                 "Reference to magic constant {CONST} that is undeclared in the current scope",
                 self::REMEDIATION_B,
                 11044
+            ),
+            new Issue(
+                self::UndeclaredInvokeInCallable,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_LOW,
+                "Possible attempt to access missing magic method {FUNCTIONLIKE} of '{CLASS}'",
+                self::REMEDIATION_B,
+                11045
             ),
 
             // Issue::CATEGORY_ANALYSIS
@@ -3614,6 +3623,7 @@ class Issue
     }
 
     /**
+     * @param array<int,mixed> $template_parameters
      * @return IssueInstance
      */
     public function __invoke(

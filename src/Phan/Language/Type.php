@@ -17,6 +17,7 @@ use Phan\Exception\IssueException;
 use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\Language\Element\Comment;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
@@ -3161,7 +3162,7 @@ class Type
      * @param CodeBase $code_base may be used for resolving inheritance
      * @param TemplateType $template_type the template type that this union type is being searched for
      *
-     * @return ?Closure(UnionType):UnionType a closure to determine the union type(s) that are in the same position(s) as the template type.
+     * @return ?Closure(UnionType, Context):UnionType a closure to determine the union type(s) that are in the same position(s) as the template type.
      * This is overridden in subclasses.
      */
     public function getTemplateTypeExtractorClosure(CodeBase $code_base, TemplateType $template_type)
@@ -3180,12 +3181,12 @@ class Type
             }
             $closure = TemplateType::combineParameterClosures(
                 $closure,
-                function (UnionType $type) use ($inner_extracter_closure, $i) : UnionType {
+                function (UnionType $type, Context $context) use ($inner_extracter_closure, $i) : UnionType {
                     $result = UnionType::empty();
                     foreach ($type->getTypeSet() as $inner_type) {
                         $replacement_type = $inner_type->template_parameter_type_list[$i] ?? null;
                         if ($replacement_type) {
-                            $result = $result->withUnionType($inner_extracter_closure($replacement_type));
+                            $result = $result->withUnionType($inner_extracter_closure($replacement_type, $context));
                         }
                     }
                     return $result;
@@ -3194,5 +3195,37 @@ class Type
         }
 
         return $closure;
+    }
+
+    /**
+     * Returns the function interface that would be used if this type were a callable, or null.
+     *
+     * @param CodeBase $code_base the code base in which the function interface is found
+     * @param Context $context the context where the function interface is referenced (for emitting issues) @phan-unused-param
+     * @return ?FunctionInterface
+     */
+    public function asFunctionInterfaceOrNull(CodeBase $code_base, Context $context)
+    {
+        if (static::class !== self::class) {
+            // Overridden in other subclasses
+            return null;
+        }
+        $fqsen = FullyQualifiedClassName::fromType($this);
+        if (!$code_base->hasClassWithFQSEN($fqsen)) {
+            return null;
+        }
+        $class = $code_base->getClassByFQSEN($fqsen);
+        if (!$class->hasMethodWithName($code_base, '__invoke')) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::UndeclaredInvokeInCallable,
+                $context->getLineNumberStart(),
+                '__invoke',
+                $fqsen
+            );
+            return null;
+        }
+        return $class->getMethodByName($code_base, '__invoke');
     }
 }

@@ -6,6 +6,7 @@ src/062_strict_function_checking.php:36 PhanTypePossiblyInvalidCallable Saw type
 src/062_strict_function_checking.php:37 PhanTypeInvalidCallable Saw type array<string,mixed> which cannot be a callable
 src/062_strict_function_checking.php:38 PhanTypePossiblyInvalidCallable Saw type null|string which is possibly not a callable
 src/062_strict_function_checking.php:39 PhanTypePossiblyInvalidCallable Saw type int|string which is possibly not a callable
+src/062_strict_function_checking.php:42 PhanTypeInvalidCallableArraySize In a place where phan was expecting a callable, saw an array of size 1, but callable arrays must be of size 2
 src/062_strict_function_checking.php:42 PhanTypeInvalidCallable Saw type array{key:string} which cannot be a callable
 src/062_strict_function_checking.php:44 PhanTypeInvalidCallable Saw type 2 which cannot be a callable
 src/062_strict_function_checking.php:45 PhanPluginUnreachableCode Unreachable statement detected

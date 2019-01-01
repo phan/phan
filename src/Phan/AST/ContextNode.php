@@ -35,8 +35,6 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Type;
-use Phan\Language\Type\ClosureType;
-use Phan\Language\Type\FunctionLikeDeclarationType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
@@ -879,60 +877,10 @@ class ContextNode
 
         $has_type = false;
         foreach ($union_type->getTypeSet() as $type) {
-            // TODO: Allow CallableType to have FQSENs as well, e.g. `$x = [MyClass::class, 'myMethod']` has an FQSEN in a sense.
-            if ($type instanceof ClosureType) {
-                $closure_fqsen = $type->asFQSEN();
-
-                if ($closure_fqsen instanceof FullyQualifiedFunctionName) {
-                    if ($code_base->hasFunctionWithFQSEN($closure_fqsen)) {
-                        // Get the closure
-                        $function = $code_base->getFunctionByFQSEN(
-                            $closure_fqsen
-                        );
-
-                        $has_type = true;
-                        yield $function;
-                    }
-                } elseif ($closure_fqsen instanceof FullyQualifiedMethodName) {
-                    if ($code_base->hasMethodWithFQSEN($closure_fqsen)) {
-                        // Get the closure
-                        $function = $code_base->getMethodByFQSEN(
-                            $closure_fqsen
-                        );
-
-                        $has_type = true;
-                        yield $function;
-                    }
-                }
-            } elseif ($type instanceof FunctionLikeDeclarationType) {
+            $func = $type->asFunctionInterfaceOrNull($code_base, $context);
+            if ($func) {
+                yield $func;
                 $has_type = true;
-                yield $type;
-            } elseif ($type instanceof LiteralStringType) {
-                // TODO: deduplicate this functionality
-                try {
-                    yield (new ContextNode(
-                        $code_base,
-                        $context,
-                        $expression
-                    ))->getFunction($type->getValue());
-                    $has_type = true;
-                } catch (IssueException $exception) {
-                    Issue::maybeEmitInstance(
-                        $code_base,
-                        $context,
-                        $exception->getIssueInstance()
-                    );
-                    continue;
-                } catch (FQSENException $exception) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        $exception instanceof EmptyFQSENException ? Issue::EmptyFQSENInCallable : Issue::InvalidFQSENInCallable,
-                        $expression->lineno ?? $context->getLineNumberStart(),
-                        $exception->getFQSEN()
-                    );
-                    continue;
-                }
             }
         }
         if (!$has_type) {
@@ -2059,7 +2007,7 @@ class ContextNode
                 Issue::fromType($e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike)(
                     $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike,
                     $this->node->lineno ?? $this->context->getLineNumberStart(),
-                    $e->getFQSEN()
+                    [$e->getFQSEN()]
                 )
             );
         }
