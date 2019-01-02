@@ -1,7 +1,7 @@
 Phan NEWS
 
-?? ??? 201?, Phan 1.1.11 (dev)
-------------------------
+?? ??? 201?, Phan 1.2.0 (dev)
+-----------------------
 
 New features(Analysis):
 + Infer that `new $x` is of the template type `T` if `$x` is `class-string<T>` (#2257)
