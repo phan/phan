@@ -91,4 +91,19 @@ final class ClassStringType extends StringType
             return $result;
         };
     }
+
+    public function __toString() : string
+    {
+        $string = self::NAME;
+
+        if (\count($this->template_parameter_type_list) > 0) {
+            $string .= $this->templateParameterTypeListAsString();
+        }
+
+        if ($this->is_nullable) {
+            $string = '?' . $string;
+        }
+
+        return $string;
+    }
 }

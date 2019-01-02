@@ -135,6 +135,16 @@ Configuration settings can be added to `.phan/config.php`:
 If you wish to make sure that analyzed files would be accepted by those PHP versions
 (Requires that php72, php70, and php56 be locatable with the `$PATH` environment variable)
 
+#### PHPUnitNotDeadCodePlugin
+
+This plugin will make Phan infer side effects from calls to some of the helper methods that PHPUnit provides in test cases.
+
+- Infer that a condition is truthy from `assertTrue()` and `assertNotFalse()` (e.g. `assertTrue($x instanceof MyClass)`)
+- Infer that a condition is null/not null from `assertNull()` and `assertNotNull()`
+- Infer class types from `assertInstanceOf(MyClass::class, $actual)`
+- Infer that $actual has the exact type of $expected after calling `assertSame($expected, $actual)`
+- Other methods aren't supported yet.
+
 ### 3. Plugins Specific to Code Styles
 
 These plugins may be useful to enforce certain code styles,

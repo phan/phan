@@ -892,6 +892,12 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         // Create ClosureDeclarationType or CallableDeclarationType
         return (new static($this->file_ref, $new_params, $new_return_type, $this->returns_reference, $this->is_nullable))->asUnionType();
     }
+
+    public function getCommentParamAssertionClosure(CodeBase $code_base)
+    {
+        return null;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
     // End FunctionInterface overrides
     ////////////////////////////////////////////////////////////////////////////////

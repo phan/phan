@@ -8,6 +8,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\Element\Comment\Assertion;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\Comment\Method as CommentMethod;
 use Phan\Language\Element\Comment\NullComment;
@@ -150,6 +151,12 @@ class Comment
     protected $closure_scope;
 
     /**
+     * @var array<string,Assertion>
+     * An optional assertion on a parameter's type
+     */
+    protected $param_assertion_map = [];
+
+    /**
      * A private constructor meant to ingest a parsed comment
      * docblock.
      *
@@ -201,6 +208,7 @@ class Comment
         array $phan_overrides,
         Option $closure_scope,
         UnionType $throw_union_type,
+        array $param_assertion_map,
         CodeBase $code_base,
         Context $context
     ) {
@@ -213,6 +221,7 @@ class Comment
         $this->suppress_issue_list = $suppress_issue_list;
         $this->closure_scope = $closure_scope;
         $this->throw_union_type = $throw_union_type;
+        $this->param_assertion_map = $param_assertion_map;
 
         foreach ($this->parameter_list as $i => $parameter) {
             $name = $parameter->getName();
@@ -619,6 +628,14 @@ class Comment
     public function getVariableList() : array
     {
         return $this->variable_list;
+    }
+
+    /**
+     * @return array<string,Assertion> maps parameter names to assertions about those parameters
+     */
+    public function getParamAssertionMap() : array
+    {
+        return $this->param_assertion_map;
     }
 
     public function __toString() : string

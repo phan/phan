@@ -5,6 +5,8 @@ namespace Phan\Analysis;
 use ast\flags;
 use ast\Node;
 use Closure;
+use Phan\Analysis\ConditionVisitor\HasTypeCondition;
+use Phan\Analysis\ConditionVisitor\NotHasTypeCondition;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
@@ -939,5 +941,31 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             return $context;
         }
         return (new self($this->code_base, $context))->__invoke($left);
+    }
+
+    /**
+     * Update the variable represented by $expression to have the type $type.
+     */
+    public static function updateToHaveType(CodeBase $code_base, Context $context, Node $expression, UnionType $type) : Context
+    {
+        $cv = new ConditionVisitor($code_base, $context);
+        return $cv->analyzeBinaryConditionPattern(
+            $expression,
+            0,
+            new HasTypeCondition($type)
+        );
+    }
+
+    /**
+     * Update the variable represented by $expression to not have the type $type.
+     */
+    public static function updateToNotHaveType(CodeBase $code_base, Context $context, Node $expression, UnionType $type) : Context
+    {
+        $cv = new ConditionVisitor($code_base, $context);
+        return $cv->analyzeBinaryConditionPattern(
+            $expression,
+            0,
+            new NotHasTypeCondition($type)
+        );
     }
 }

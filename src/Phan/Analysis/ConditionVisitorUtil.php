@@ -21,9 +21,12 @@ use Phan\Language\Context;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
+use Phan\Language\Type\FalseType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
+use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
 use function is_string;
@@ -444,7 +447,7 @@ trait ConditionVisitorUtil
      * @param Node|int|float|string $right
      * @param BinaryCondition $condition
      */
-    private function analyzeBinaryConditionPattern($left, $right, BinaryCondition $condition) : Context
+    protected function analyzeBinaryConditionPattern($left, $right, BinaryCondition $condition) : Context
     {
         if ($left instanceof Node) {
             $result = $this->analyzeBinaryConditionSide($left, $right, $condition);
@@ -507,7 +510,7 @@ trait ConditionVisitorUtil
      * Returns a context where the variable for $object_node has the class found in $expr_node
      *
      * @param Node|string|int|float $object_node
-     * @param Node|string|int|float $expr_node
+     * @param Node|string|int|float|bool $expr_node
      * @return ?Context
      * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
@@ -695,6 +698,46 @@ trait ConditionVisitorUtil
             return null;
         }
         return $raw_function_name;
+    }
+
+    /**
+     * Generate a union type by excluding matching types in $excluded_type from $affected_type
+     */
+    public static function excludeMatchingTypes(CodeBase $code_base, UnionType $affected_type, UnionType $excluded_type) : UnionType
+    {
+        if ($affected_type->isEmpty() || $excluded_type->isEmpty()) {
+            return $affected_type;
+        }
+
+        foreach ($excluded_type->getTypeSet() as $type) {
+            if ($type instanceof NullType) {
+                $affected_type = $affected_type->nonNullableClone();
+            } elseif ($type instanceof FalseType) {
+                $affected_type = $affected_type->nonFalseClone();
+            } elseif ($type instanceof TrueType) {
+                $affected_type = $affected_type->nonTrueClone();
+            } else {
+                continue;
+            }
+            // TODO: Do a better job handling LiteralStringType and LiteralIntType
+            $excluded_type = $excluded_type->withoutType($type);
+        }
+        if ($excluded_type->isEmpty()) {
+            return $affected_type;
+        }
+        return $affected_type->makeFromFilter(function (Type $type) use ($code_base, $excluded_type) : bool {
+            return $type instanceof MixedType || !$type->asExpandedTypes($code_base)->canCastToUnionType($excluded_type);
+        });
+    }
+
+    /**
+     * Returns this ConditionVisitorUtil's CodeBase.
+     * This is needed by subclasses of BinaryCondition.
+     * @suppress PhanUnreferencedPublicMethod
+     */
+    public function getCodeBase() : CodeBase
+    {
+        return $this->code_base;
     }
 
     /**

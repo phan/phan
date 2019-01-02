@@ -1245,4 +1245,9 @@ final class EmptyUnionType extends UnionType
     {
         return null;
     }
+
+    public function usesTemplateType(TemplateType $template_type) : bool
+    {
+        return false;
+    }
 }

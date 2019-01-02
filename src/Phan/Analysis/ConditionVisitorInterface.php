@@ -3,7 +3,10 @@
 namespace Phan\Analysis;
 
 use ast\Node;
+use Phan\CodeBase;
+use Phan\Exception\IssueException;
 use Phan\Language\Context;
+use Phan\Language\Element\Variable;
 
 /**
  * This implements common functionality to update variables based on checks within a conditional (of an if/elseif/else/while/for/assert(), etc.)
@@ -12,6 +15,12 @@ use Phan\Language\Context;
  */
 interface ConditionVisitorInterface
 {
+    /**
+     * Returns this ConditionVisitorInterface's CodeBase.
+     * This is needed by subclasses of BinaryCondition.
+     */
+    public function getCodeBase() : CodeBase;
+
     /**
      * Returns this ConditionVisitorInterface's Context.
      * This is needed by subclasses of BinaryCondition.
@@ -67,8 +76,18 @@ interface ConditionVisitorInterface
      * Returns a context where the variable for $object_node has the class found in $expr_node
      *
      * @param Node|string|int|float $object_node
-     * @param Node|string|int|float $expr_node
+     * @param Node|string|int|float|bool $expr_node
      * @return ?Context
      */
     public function analyzeClassAssertion($object_node, $expr_node);
+
+    /**
+     * @return ?Variable - Returns null if the variable is undeclared and ignore_undeclared_variables_in_global_scope applies.
+     *                     or if assertions won't be applied?
+     * @throws IssueException if variable is undeclared and not ignored.
+     * @see UnionTypeVisitor::visitVar()
+     *
+     * TODO: support assertions on superglobals, within the current file scope?
+     */
+    public function getVariableFromScope(Node $var_node, Context $context);
 }

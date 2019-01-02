@@ -30,7 +30,7 @@ final class FileCacheTest extends BaseTest
     {
         $entry = FileCache::addEntry(self::MOCK_PATH, self::MOCK_CONTENTS);
         $read_entry = FileCache::getEntry(self::MOCK_PATH);
-        $this->assertSame($read_entry, $entry);
+        $this->assertSame($entry, $read_entry);
         $this->assertSame(self::MOCK_CONTENTS, $entry->getContents());
         $this->assertSame([1 => "Mock contents\n", 2 => "Other lines\n"], $entry->getLines());
         $this->assertSame("Other lines\n", $entry->getLine(2));
