@@ -14,16 +14,16 @@ use \Phan\Issue;
  * in addition to testing backwards compatibility checks and dead code detection.
  */
 return [
-    "target_php_version" => '7.1',
+    'target_php_version' => '7.1',
 
     // If true, missing properties will be created when
     // they are first seen. If false, we'll report an
     // error message.
-    "allow_missing_properties" => false,
+    'allow_missing_properties' => false,
 
     // Allow null to be cast as any type and for any
     // type to be cast to null.
-    "null_casts_as_any_type" => false,
+    'null_casts_as_any_type' => false,
 
     // If enabled, scalars (int, float, bool, string, null)
     // are treated as if they can cast to each other.
@@ -63,7 +63,7 @@ return [
     // can add quite a bit of time to the analysis.
     'analyze_signature_compatibility' => true,
 
-    "quick_mode" => false,
+    'quick_mode' => false,
 
     'generic_types_enabled' => true,
 

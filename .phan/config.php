@@ -33,7 +33,7 @@ return [
     //
     // Note that the **only** effect of choosing `'5.6'` is to infer that functions removed in php 7.0 exist.
     // (See `backward_compatibility_checks` for additional options)
-    "target_php_version" => null,
+    'target_php_version' => null,
 
     // Default: true. If this is set to true,
     // and target_php_version is newer than the version used to run Phan,
@@ -45,11 +45,11 @@ return [
     // If true, missing properties will be created when
     // they are first seen. If false, we'll report an
     // error message.
-    "allow_missing_properties" => false,
+    'allow_missing_properties' => false,
 
     // Allow null to be cast as any type and for any
     // type to be cast to null.
-    "null_casts_as_any_type" => false,
+    'null_casts_as_any_type' => false,
 
     // Allow null to be cast as any array-like type
     // This is an incremental step in migrating away from null_casts_as_any_type.
@@ -200,7 +200,7 @@ return [
 
     // If true, then run a quick version of checks that takes less time.
     // False by default.
-    "quick_mode" => false,
+    'quick_mode' => false,
 
     // If true, then before analysis, try to simplify AST into a form
     // which improves Phan's type inference in edge cases.
@@ -210,7 +210,7 @@ return [
     //
     // E.g. rewrites `if ($a = value() && $a > 0) {...}`
     // into $a = value(); if ($a) { if ($a > 0) {...}}`
-    "simplify_ast" => true,
+    'simplify_ast' => true,
 
     // If true, Phan will read `class_alias` calls in the global scope,
     // then (1) create aliases from the *parsed* files if no class definition was found,
@@ -454,13 +454,13 @@ return [
         'phan',
         'phan_client',
         'tool/make_stubs',
-        "internal/dump_fallback_ast.php",
-        "internal/internalsignatures.php",
-        "internal/package.php",
-        "internal/reflection_completeness_check.php",
-        "internal/sanitycheck.php",
-        "internal/update_wiki_config_types.php",
-        "internal/update_wiki_issue_types.php",
+        'internal/dump_fallback_ast.php',
+        'internal/internalsignatures.php',
+        'internal/package.php',
+        'internal/reflection_completeness_check.php',
+        'internal/sanitycheck.php',
+        'internal/update_wiki_config_types.php',
+        'internal/update_wiki_issue_types.php',
         // 'vendor/phpunit/phpunit/src/Framework/TestCase.php',
     ],
 
@@ -534,13 +534,13 @@ return [
     // information should be included.
     //
     // Generally, you'll want to include the directories for
-    // third-party code (such as "vendor/") in this list.
+    // third-party code (such as 'vendor/') in this list.
     //
     // n.b.: If you'd like to parse but not analyze 3rd
     //       party code, directories containing that code
     //       should be added to the `directory_list` as
     //       to `exclude_analysis_directory_list`.
-    "exclude_analysis_directory_list" => [
+    'exclude_analysis_directory_list' => [
         'vendor/'
     ],
 

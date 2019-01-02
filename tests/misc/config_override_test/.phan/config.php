@@ -18,11 +18,11 @@ return [
     // If true, missing properties will be created when
     // they are first seen. If false, we'll report an
     // error message.
-    "allow_missing_properties" => false,
+    'allow_missing_properties' => false,
 
     // Allow null to be cast as any type and for any
     // type to be cast to null.
-    "null_casts_as_any_type" => false,
+    'null_casts_as_any_type' => false,
 
     // If enabled, scalars (int, float, bool, string, null)
     // are treated as if they can cast to each other.
@@ -38,9 +38,9 @@ return [
     // Check for $$var[] and $foo->$bar['baz'] and Foo::$bar['baz']() and $this->$bar['baz']
     'backward_compatibility_checks' => false,
 
-    "quick_mode" => false,
+    'quick_mode' => false,
 
-    "simplify_ast" => false,
+    'simplify_ast' => false,
 
     'generic_types_enabled' => true,
 
