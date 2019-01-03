@@ -96,7 +96,7 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
                 }
                 $context = clone($this->context)->withLineNumberStart($next_node->lineno);
                 if ($this->context->isInFunctionLikeScope()) {
-                    if ($this->context->getFunctionLikeInScope($this->code_base)->hasSuppressIssue('PhanPluginUnreachableCode')) {
+                    if ($this->context->getFunctionLikeInScope($this->code_base)->checkHasSuppressIssueAndIncrementCount('PhanPluginUnreachableCode')) {
                         // don't emit the below issue.
                         break;
                     }

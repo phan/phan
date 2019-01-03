@@ -73,7 +73,7 @@ final class AlwaysReturnPlugin extends PluginV2 implements
             return;
         }
         if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list)) {
-            if (!$method->hasSuppressIssue('PhanPluginAlwaysReturnMethod')) {
+            if (!$method->checkHasSuppressIssueAndIncrementCount('PhanPluginAlwaysReturnMethod')) {
                 $this->emitIssue(
                     $code_base,
                     $method->getContext(),
@@ -110,7 +110,7 @@ final class AlwaysReturnPlugin extends PluginV2 implements
             return;
         }
         if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list)) {
-            if (!$function->hasSuppressIssue('PhanPluginAlwaysReturnFunction')) {
+            if (!$function->checkHasSuppressIssueAndIncrementCount('PhanPluginAlwaysReturnFunction')) {
                 $this->emitIssue(
                     $code_base,
                     $function->getContext(),
