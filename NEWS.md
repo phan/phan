@@ -32,6 +32,7 @@ Plugins:
 
 Bug fixes:
 - Infer that some internal classes' properties (such as `\Exception->message`) are protected (#2283)
+- Fix a crash running Phan without php-ast when no files were parsed (#2287)
 
 30 Dec 2018, Phan 1.1.10
 ------------------------

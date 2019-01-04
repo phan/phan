@@ -98,6 +98,10 @@ class Phan implements IgnoredFilesFilterInterface
         CodeBase $code_base,
         Closure $file_path_lister
     ) : bool {
+        if (!class_exists('\ast\Node')) {
+            // Fix for https://github.com/phan/phan/issues/2287
+            require_once __DIR__ . '/AST/TolerantASTConverter/ast_shim.php';
+        }
         FileCache::setMaxCacheSize(FileCache::MINIMUM_CACHE_SIZE);
         self::checkForSlowPHPOptions();
         self::loadConfiguredPHPExtensionStubs($code_base);
