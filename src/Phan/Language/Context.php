@@ -759,4 +759,16 @@ class Context extends FileRef
     {
         $this->parse_namespace_map = $code_base->getNamespaceMapFromParsePhase($this->getFile(), $this->namespace, $this->namespace_id);
     }
+
+    /**
+     * Copy private properties of $other to this
+     * @suppress PhanTypeSuspiciousNonTraversableForeach
+     * @return void
+     */
+    protected final function copyPropertiesFrom(Context $other)
+    {
+        foreach ($other as $k => $v) {
+            $this->{$k} = $v;
+        }
+    }
 }

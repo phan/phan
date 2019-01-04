@@ -29,6 +29,9 @@ Plugins:
   - Infer that `$actual` has the exact type of `$expected` after calling `assertSame($expected, $actual)`
   - Other methods aren't supported yet.
 
+Bug fixes:
+- Infer that some internal classes' properties (such as `\Exception->message`) are protected (#2283)
+
 30 Dec 2018, Phan 1.1.10
 ------------------------
 
