@@ -62,80 +62,80 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
     {
         // TODO: Add a helper method which will convert a doc comment and a stub php function source code to a closure for a param index (or indices)
         switch (\strtolower($name)) {
-        case 'asserttrue':
-        case 'assertnotfalse':
-            return $method->createClosureForAssertion(
-                $code_base,
-                new Assertion(UnionType::empty(), 'unusedParamName', Assertion::IS_TRUE),
-                0
-            );
-        case 'assertfalse':
-        case 'assertnottrue':
-            return $method->createClosureForAssertion(
-                $code_base,
-                new Assertion(UnionType::empty(), 'unusedParamName', Assertion::IS_FALSE),
-                0
-            );
-        case 'assertnull':
-            return $method->createClosureForAssertion(
-                $code_base,
-                new Assertion(UnionType::fromFullyQualifiedString('null'), 'unusedParamName', Assertion::IS_OF_TYPE),
-                0
-            );
-        case 'assertnotnull':
-            return $method->createClosureForAssertion(
-                $code_base,
-                new Assertion(UnionType::fromFullyQualifiedString('null'), 'unusedParamName', Assertion::IS_NOT_OF_TYPE),
-                0
-            );
-        case 'assertsame':
-            // Sets the type of $actual to $expected
-            //
-            // This is equivalent to the side effects of the below doc comment.
-            // Note that the doc comment would make phan emit warnings about invalid classes, etc.
-            // TODO: Reuse the code for templates here
-            //
-            // (at)template T
-            // (at)param T $expected
-            // (at)param mixed $actual
-            // (at)phan-assert T $actual
-            return $method->createClosureForUnionTypeExtractorAndAssertionType(
-                function (CodeBase $code_base, Context $context, array $args) : UnionType {
-                    if (\count($args) < 2) {
-                        return UnionType::empty();
-                    }
-                    return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
-                },
-                Assertion::IS_OF_TYPE,
-                1
-            );
-        case 'assertinstanceof':
-            // This is equivalent to the side effects of the below doc comment.
-            // Note that the doc comment would make phan emit warnings about invalid classes, etc.
-            // TODO: Reuse the code for class-string<T> here.
-            //
-            // (at)template T
-            // (at)param class-string<T> $expected
-            // (at)param mixed $actual
-            // (at)phan-assert T $actual
-            return $method->createClosureForUnionTypeExtractorAndAssertionType(
-                function (CodeBase $code_base, Context $context, array $args) : UnionType {
-                    if (\count($args) < 2) {
-                        return UnionType::empty();
-                    }
-                    $string = (UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]))->asSingleScalarValueOrNull();
-                    if (!is_string($string)) {
-                        return UnionType::empty();
-                    }
-                    try {
-                        return FullyQualifiedClassName::fromFullyQualifiedString($string)->asType()->asUnionType();
-                    } catch (\Exception $_) {
-                        return UnionType::empty();
-                    }
-                },
-                Assertion::IS_OF_TYPE,
-                1
-            );
+            case 'asserttrue':
+            case 'assertnotfalse':
+                return $method->createClosureForAssertion(
+                    $code_base,
+                    new Assertion(UnionType::empty(), 'unusedParamName', Assertion::IS_TRUE),
+                    0
+                );
+            case 'assertfalse':
+            case 'assertnottrue':
+                return $method->createClosureForAssertion(
+                    $code_base,
+                    new Assertion(UnionType::empty(), 'unusedParamName', Assertion::IS_FALSE),
+                    0
+                );
+            case 'assertnull':
+                return $method->createClosureForAssertion(
+                    $code_base,
+                    new Assertion(UnionType::fromFullyQualifiedString('null'), 'unusedParamName', Assertion::IS_OF_TYPE),
+                    0
+                );
+            case 'assertnotnull':
+                return $method->createClosureForAssertion(
+                    $code_base,
+                    new Assertion(UnionType::fromFullyQualifiedString('null'), 'unusedParamName', Assertion::IS_NOT_OF_TYPE),
+                    0
+                );
+            case 'assertsame':
+                // Sets the type of $actual to $expected
+                //
+                // This is equivalent to the side effects of the below doc comment.
+                // Note that the doc comment would make phan emit warnings about invalid classes, etc.
+                // TODO: Reuse the code for templates here
+                //
+                // (at)template T
+                // (at)param T $expected
+                // (at)param mixed $actual
+                // (at)phan-assert T $actual
+                return $method->createClosureForUnionTypeExtractorAndAssertionType(
+                    function (CodeBase $code_base, Context $context, array $args) : UnionType {
+                        if (\count($args) < 2) {
+                            return UnionType::empty();
+                        }
+                        return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+                    },
+                    Assertion::IS_OF_TYPE,
+                    1
+                );
+            case 'assertinstanceof':
+                // This is equivalent to the side effects of the below doc comment.
+                // Note that the doc comment would make phan emit warnings about invalid classes, etc.
+                // TODO: Reuse the code for class-string<T> here.
+                //
+                // (at)template T
+                // (at)param class-string<T> $expected
+                // (at)param mixed $actual
+                // (at)phan-assert T $actual
+                return $method->createClosureForUnionTypeExtractorAndAssertionType(
+                    function (CodeBase $code_base, Context $context, array $args) : UnionType {
+                        if (\count($args) < 2) {
+                            return UnionType::empty();
+                        }
+                        $string = (UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]))->asSingleScalarValueOrNull();
+                        if (!is_string($string)) {
+                            return UnionType::empty();
+                        }
+                        try {
+                            return FullyQualifiedClassName::fromFullyQualifiedString($string)->asType()->asUnionType();
+                        } catch (\Exception $_) {
+                            return UnionType::empty();
+                        }
+                    },
+                    Assertion::IS_OF_TYPE,
+                    1
+                );
         }
     }
 }

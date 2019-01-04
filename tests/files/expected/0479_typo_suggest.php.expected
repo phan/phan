@@ -1,4 +1,4 @@
-%s:4 PhanUnusedVariable Unused definition of variable $myValue
+%s:4 PhanUnusedVariable Unused definition of variable $myValue (Did you mean $my_value)
 %s:5 PhanUndeclaredVariable Variable $Param2 is undeclared (Did you mean $param2)
 %s:5 PhanUnusedVariable Unused definition of variable $x
 %s:7 PhanUndeclaredVariable Variable $my_value is undeclared (Did you mean $myValue)
@@ -9,8 +9,8 @@
 %s:11 PhanUnusedVariable Unused definition of variable $w
 %s:17 PhanUndeclaredVariable Variable $_prop is undeclared (Did you mean $this->_prop)
 %s:17 PhanUnusedVariable Unused definition of variable $x
-%s:18 PhanUnusedVariable Unused definition of variable $prop
+%s:18 PhanUnusedVariable Unused definition of variable $prop (Did you mean $_prop)
 %s:19 PhanUndeclaredVariable Variable $_prop is undeclared (Did you mean $prop or $this->_prop)
 %s:19 PhanUnusedVariable Unused definition of variable $y
-%s:20 PhanUnusedVariable Unused definition of variable $my_really_longname
+%s:20 PhanUnusedVariable Unused definition of variable $my_really_longname (Did you mean $myReallyLongname)
 %s:21 PhanUndeclaredVariable Variable $myReallyLongname is undeclared (Did you mean $my_really_longname)

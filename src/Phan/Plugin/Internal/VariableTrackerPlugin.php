@@ -5,8 +5,10 @@ namespace Phan\Plugin\Internal;
 use AssertionError;
 use ast;
 use ast\Node;
+use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Issue;
+use Phan\IssueFixSuggester;
 use Phan\Language\Element\Variable;
 use Phan\Plugin\Internal\VariableTracker\VariableGraph;
 use Phan\Plugin\Internal\VariableTracker\VariableTrackerVisitor;
@@ -14,6 +16,8 @@ use Phan\Plugin\Internal\VariableTracker\VariableTrackingScope;
 use Phan\PluginV2;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV2\PostAnalyzeNodeCapability;
+use Phan\Suggestion;
+use function count;
 
 /**
  * NOTE: This is automatically loaded by phan based on config settings.
@@ -196,7 +200,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                 continue;
             }
             foreach ($def_uses_for_variable as $definition_id => $use_list) {
-                if (\count($use_list) > 0) {
+                if (count($use_list) > 0) {
                     // Don't warn if there's at least one usage of that definition
                     continue;
                 }
@@ -215,14 +219,54 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                 } elseif ($graph->isCaughtException($definition_id)) {
                     $issue_type = Issue::UnusedVariableCaughtException;
                 }
-                Issue::maybeEmit(
+                Issue::maybeEmitWithParameters(
                     $this->code_base,
                     $this->context,
                     $issue_type,
                     $line,
-                    $variable_name
+                    [$variable_name],
+                    self::makeSuggestion($graph, $variable_name, $issue_type)
                 );
             }
         }
+    }
+
+    /**
+     * @return ?Suggestion
+     */
+    private static function makeSuggestion(VariableGraph $graph, string $variable_name, string $issue_type)
+    {
+        if ($issue_type !== Issue::UnusedVariable) {
+            return null;
+        }
+        if (strlen($variable_name) <= 1) {
+            // No point in guessing short variable names
+            return null;
+        }
+        if (count($graph->def_uses[$variable_name] ?? []) > 1) {
+            // We've defined this variable in more than one place, assume it's not a typo
+            return null;
+        }
+        // Take all of the variables that were used anywhere else
+        // (don't account for reachability)
+        $variable_set = $graph->variable_types;
+        // Suggest any variables with a similar name (excluding $variable_name) that were used in this class scope
+        // It's possible that the usage just hasn't been typed out yet
+        unset($variable_set[$variable_name]);
+        if (count($variable_set) > Config::getValue('suggestion_check_limit')) {
+            return null;
+        }
+        $suggestion_set = IssueFixSuggester::getSuggestionsForStringSet($variable_name, $variable_set);
+        if (count($suggestion_set) === 0) {
+            return null;
+        }
+
+        $suggestions = [];
+        foreach ($suggestion_set as $suggested_variable_name => $_) {
+            $suggestions[] = '$' . $suggested_variable_name;
+        }
+        sort($suggestions);
+
+        return Suggestion::fromString('Did you mean ' . implode(' or ', $suggestions));
     }
 }

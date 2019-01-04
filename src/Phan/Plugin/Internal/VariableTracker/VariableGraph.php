@@ -76,6 +76,11 @@ final class VariableGraph
      */
     public function recordVariableUsage(string $name, Node $node, VariableTrackingScope $scope)
     {
+        if (!\array_key_exists($name, $this->variable_types)) {
+            // Set this to 0 to record that the variable was used somewhere
+            // (it will be overridden later if there are flags to set)
+            $this->variable_types[$name] = 0;
+        }
         $defs_for_variable = $scope->getDefinition($name);
         if (!$defs_for_variable) {
             return;

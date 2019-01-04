@@ -1,4 +1,4 @@
-%s:7 PhanUnusedVariable Unused definition of variable $myVar
+%s:7 PhanUnusedVariable Unused definition of variable $myVar (Did you mean $myvAR or $myvar)
 %s:8 PhanUndeclaredVariableDim Variable $myvar was undeclared, but array fields are being added to it.
 %s:9 PhanUndeclaredVariableDim Variable $myvAR was undeclared, but array fields are being added to it.
 %s:11 PhanUndeclaredProperty Reference to undeclared property \Foo313->prop
