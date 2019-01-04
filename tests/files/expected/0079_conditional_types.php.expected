@@ -1,1 +1,1 @@
-%s:10 PhanUnusedVariable Unused definition of variable $v2
+%s:10 PhanUnusedVariable Unused definition of variable $v2 (Did you mean $v1)

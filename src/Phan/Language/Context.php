@@ -765,7 +765,7 @@ class Context extends FileRef
      * @suppress PhanTypeSuspiciousNonTraversableForeach
      * @return void
      */
-    protected final function copyPropertiesFrom(Context $other)
+    final protected function copyPropertiesFrom(Context $other)
     {
         foreach ($other as $k => $v) {
             $this->{$k} = $v;

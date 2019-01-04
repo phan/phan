@@ -18,6 +18,7 @@ New features(Analysis):
   - This can be used in combination with Phan's template support.
 
   See [tests/plugin_test/src/072_custom_assertions.php](tests/plugin_test/src/072_custom_assertions.php) for example uses of these annotations.
++ Suggest typo fixes when emitting `PhanUnusedVariable`, if only one definition was seen. (#2281)
 
 Plugins:
 - Add `PHPUnitAssertionPlugin`.

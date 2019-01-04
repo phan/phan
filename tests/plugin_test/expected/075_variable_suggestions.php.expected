@@ -1,0 +1,3 @@
+src/075_variable_suggestions.php:4 PhanUnusedVariable Unused definition of variable $unrelatedValuename (Did you mean $unrelatedValueName)
+src/075_variable_suggestions.php:8 PhanUnusedVariable Unused definition of variable $value2 (Did you mean $value1 or $value3)
+src/075_variable_suggestions.php:12 PhanUndeclaredVariable Variable $unrelatedValueName is undeclared (Did you mean $unrelatedValuename)
