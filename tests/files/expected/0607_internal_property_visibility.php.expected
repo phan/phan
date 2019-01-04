@@ -1,0 +1,1 @@
+%s:5 PhanPropertyAccessSignatureMismatchInternal Access level to private \MyException->code must be compatible with internal protected \Exception->code

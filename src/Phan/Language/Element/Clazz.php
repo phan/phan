@@ -18,6 +18,7 @@ use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment\Property as CommentProperty;
+use Phan\Language\ElementContext;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -36,6 +37,7 @@ use Phan\Library\Some;
 use Phan\Memoize;
 use Phan\Plugin\ConfigPluginSet;
 use ReflectionClass;
+use ReflectionProperty;
 use RuntimeException;
 
 /**
@@ -144,6 +146,16 @@ class Clazz extends AddressableElement
         ));
     }
 
+    private static function getASTFlagsForReflectionProperty(ReflectionProperty $prop) : int
+    {
+        if ($prop->isPrivate()) {
+            return \ast\flags\MODIFIER_PRIVATE;
+        } elseif ($prop->isProtected()) {
+            return \ast\flags\MODIFIER_PROTECTED;
+        }
+        return 0;
+    }
+
     /**
      * @param CodeBase $code_base
      * A reference to the entire code base in which this
@@ -238,11 +250,16 @@ class Clazz extends AddressableElement
                 $property_name
             );
 
+            $flags = 0;
+            if ($class->hasProperty($property_name)) {
+                $flags = self::getASTFlagsForReflectionProperty($class->getProperty($property_name));
+            }
+
             $property = new Property(
                 $property_context,
                 $property_name,
                 $property_type,
-                0,
+                $flags,
                 $property_fqsen
             );
 
@@ -255,7 +272,7 @@ class Clazz extends AddressableElement
         //       bother iterating over `$class->getProperties()`
         //       `$class->getStaticProperties()`.
 
-        foreach ($class->getDefaultProperties() as $name => $value) {
+        foreach ($class->getDefaultProperties() as $name => $default_value) {
             $property_context = $context->withScope($class_scope);
 
             $property_fqsen = FullyQualifiedPropertyName::make(
@@ -263,11 +280,18 @@ class Clazz extends AddressableElement
                 $name
             );
 
+            if ($clazz->hasPropertyWithName($code_base, $name)) {
+                continue;
+            }
+            $flags = 0;
+            if ($class->hasProperty($name)) {
+                $flags = self::getASTFlagsForReflectionProperty($class->getProperty($name));
+            }
             $property = new Property(
                 $property_context,
                 $name,
-                Type::fromObject($value)->asUnionType(),
-                0,
+                Type::fromObject($default_value)->asUnionType(),
+                $flags,
                 $property_fqsen
             );
 
@@ -740,7 +764,7 @@ class Clazz extends AddressableElement
                 if (!$overriding_property->checkHasSuppressIssueAndIncrementCount(Issue::PropertyAccessSignatureMismatchInternal)) {
                     Issue::maybeEmit(
                         $code_base,
-                        $overriding_property->getContext(),
+                        new ElementContext($overriding_property),
                         Issue::PropertyAccessSignatureMismatchInternal,
                         $overriding_property->getFileRef()->getLineNumberStart(),
                         $overriding_property->asVisibilityAndFQSENString(),
@@ -751,7 +775,7 @@ class Clazz extends AddressableElement
                 if (!$overriding_property->checkHasSuppressIssueAndIncrementCount(Issue::PropertyAccessSignatureMismatchInternal)) {
                     Issue::maybeEmit(
                         $code_base,
-                        $overriding_property->getContext(),
+                        new ElementContext($overriding_property),
                         Issue::PropertyAccessSignatureMismatch,
                         $overriding_property->getFileRef()->getLineNumberStart(),
                         $overriding_property,
@@ -767,7 +791,7 @@ class Clazz extends AddressableElement
         if ($overriding_property->isStatic() != $inherited_property->isStatic()) {
             Issue::maybeEmit(
                 $code_base,
-                $overriding_property->getContext(),
+                new ElementContext($overriding_property),
                 $overriding_property->isStatic() ? Issue::AccessNonStaticToStaticProperty : Issue::AccessStaticToNonStaticProperty,
                 $overriding_property->getFileRef()->getLineNumberStart(),
                 $inherited_property->asPropertyFQSENString(),
