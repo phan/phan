@@ -1,4 +1,4 @@
 %s:4 PhanTypeInvalidDimOffset Invalid offset 2 of array type array{0:string,1:string}
 %s:7 PhanTypeInvalidDimOffset Invalid offset 2 of array type array{0:array{0:string,1:int},1:array{0:string,1:int}}
-%s:10 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{0:string,1:int}[] but \strlen() takes string
-%s:13 PhanTypeMismatchArgumentInternal Argument 1 (string) is string[] but \strlen() takes string
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{0:array{0:string,1:int},name:array{0:string,1:int},1:array{0:string,1:int}} but \strlen() takes string
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{0:string,name:string,1:string} but \strlen() takes string

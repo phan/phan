@@ -4,6 +4,7 @@ namespace Phan\Library;
 
 use InvalidArgumentException;
 use function strlen;
+use function strpos;
 
 /**
  * This contains a heuristic for guessing the offsets and groups that are possible for a given regular expression.
@@ -55,18 +56,73 @@ class RegexKeyExtractor
         return $matcher->getMatchKeys();
     }
 
+    private function consumeUntil(string $nextChar) {
+        $end = strpos($this->pattern, $nextChar, $this->offset);
+        if ($end === false) {
+            throw new InvalidArgumentException('Unparseable');
+        }
+        $this->offset = $end + 1;
+    }
+
     /**
      * @throws InvalidArgumentException if an invalid pattern was seen
      */
     private function extractGroup()
     {
-        $this->matches[] = true;
-
         $pattern = $this->pattern;
-        $len = strlen($pattern);
         if ($pattern[$this->offset] === '?') {
-            throw new InvalidArgumentException('Support for complex patterns is not implemented');
+            switch ($pattern[++$this->offset] ?? ':') {
+                case ':':
+                    break;
+                case "'":
+                    // NOTE: Subpattern names must not be the empty strings, and must start with non-digits,
+                    // PregRegexPlugin would tell the user that.
+                    // Could add that check.
+                    $old_offset = $this->offset;
+                    $this->consumeUntil("'");
+                    // Add both a positional subgroup and a named subgroup
+                    $this->matches[\substr($pattern, $old_offset + 1, $this->offset - $old_offset - 2)] = true;
+                    $this->matches[] = true;
+                    break;
+
+                case '<':
+                    $old_offset = $this->offset;
+                    $this->consumeUntil(">");
+                    // Add both a positional subgroup and a named subgroup
+                    $this->matches[\substr($pattern, $old_offset + 1, $this->offset - $old_offset - 2)] = true;
+                    $this->matches[] = true;
+                    break;
+                case 'P':
+                    if (($pattern[++$this->offset] ?? '') !== '<') {
+                        throw new InvalidArgumentException('Unparseable named pattern');
+                    }
+                    $old_offset = $this->offset;
+                    $this->consumeUntil('>');
+                    // Add both a positional subgroup and a named subgroup
+                    $this->matches[\substr($pattern, $old_offset + 1, $this->offset - $old_offset - 2)] = true;
+                    $this->matches[] = true;
+                    break;
+                    // Internal option setting
+                case '-':
+                case 'i':
+                case 'm':
+                case 's':
+                case 'x':
+                case 'U':
+                case 'X':
+                case 'J':
+                    // Comments
+                case '#':
+                    $this->consumeUntil(')');
+                    return;
+                default:
+                    throw new InvalidArgumentException('Support for complex patterns is not implemented');
+            }
+        } else {
+            $this->matches[] = true;
         }
+
+        $len = strlen($pattern);
         while ($this->offset < $len) {
             $c = $pattern[$this->offset++];
             if ($c === '\\') {
