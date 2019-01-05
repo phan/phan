@@ -290,7 +290,12 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             if ($possible_return_types->isEmpty()) {
                 return $array_type->asUnionType();
             }
-            $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($get_argument_type($arguments[0], 0));
+            if (count($arguments) >= 2) {
+                // There were two or more arrays passed to the closure
+                $key_type_enum = GenericArrayType::KEY_INT;
+            } else {
+                $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($get_argument_type($arguments[0], 0));
+            }
 
             return $possible_return_types->elementTypesToGenericArray($key_type_enum);
         };
