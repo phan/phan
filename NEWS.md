@@ -1,5 +1,11 @@
 Phan NEWS
 
+?? ??? 2019, Phan 1.2.1 (dev)
+-----------------------
+
+New features(Analysis):
++ Infer that the result of `array_map` has integer keys when passed two or more arrays (#2277)
+
 05 Jan 2019, Phan 1.2.0
 -----------------------
 
