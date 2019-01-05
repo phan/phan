@@ -341,6 +341,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 Access level to {PROPERTY} must be compatible with internal {PROPERTY}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.0/tests/files/expected/0607_internal_property_visibility.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.0/tests/files/src/0607_internal_property_visibility.php#L5).
+
 # Analysis
 
 This category will be emitted when Phan doesn't know how to analyze something.
@@ -796,7 +798,7 @@ Possibly zero references to private method {METHOD}
 Possibly zero references to private property {PROPERTY}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/070_suggest_global_constant.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/070_suggest_global_constant.php#L22).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.0/tests/plugin_test/expected/070_suggest_global_constant.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.0/tests/plugin_test/src/070_suggest_global_constant.php#L22).
 
 ## PhanUnreferencedProtectedClassConstant
 
@@ -1912,6 +1914,8 @@ In a place where phan was expecting a callable, saw an array with an unexpected 
 In a place where phan was expecting a callable, saw an array of size {COUNT}, but callable arrays must be of size 2
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.0/tests/plugin_test/expected/062_strict_function_checking.php.expected#L9) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.0/tests/plugin_test/src/062_strict_function_checking.php#L42).
+
 ## PhanTypeInvalidCallableMethodName
 
 ```
@@ -2675,7 +2679,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 Reference to undeclared class {CLASS}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/065_class_string_create.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/065_class_string_create.php#L13).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.0/tests/plugin_test/expected/065_class_string_create.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.0/tests/plugin_test/src/065_class_string_create.php#L13).
 
 ## PhanUndeclaredClassStaticProperty
 
@@ -2756,13 +2760,21 @@ The following code will express this issue.
 class C17 implements UndeclaredInterface {}
 ```
 
+## PhanUndeclaredInvokeInCallable
+
+```
+Possible attempt to access missing magic method {FUNCTIONLIKE} of '{CLASS}'
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.0/tests/plugin_test/expected/071_other_callable_methods.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.0/tests/plugin_test/src/071_other_callable_methods.php#L26).
+
 ## PhanUndeclaredMagicConstant
 
 ```
 Reference to magic constant {CONST} that is undeclared in the current scope
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0594_magic_constant.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0594_magic_constant.php#L2).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.0/tests/files/expected/0594_magic_constant.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.0/tests/files/src/0594_magic_constant.php#L2).
 
 ## PhanUndeclaredMethod
 
@@ -2926,7 +2938,7 @@ This category contains issues related to [Phan's generic type support](https://g
 Missing template parameter for type {TYPE} on constructor for generic class {CLASS}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0203_generic_errors.php.expected#L7) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0203_generic_errors.php#L27).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.0/tests/files/expected/0203_generic_errors.php.expected#L7) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.0/tests/files/src/0203_generic_errors.php#L27).
 
 ## PhanGenericGlobalVariable
 
@@ -2948,7 +2960,7 @@ constant {CONST} may not have a template type
 Template type {TYPE} not declared in parameters of function/method {FUNCTIONLIKE} (or Phan can't extract template types for this use case)
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0597_template_support.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0597_template_support.php#L66).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.0/tests/files/expected/0597_template_support.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.0/tests/files/src/0597_template_support.php#L66).
 
 ## PhanTemplateTypeNotUsedInFunctionReturn
 
@@ -2956,7 +2968,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/
 Template type {TYPE} not used in return value of function/method {FUNCTIONLIKE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0577_unknown_tags.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0577_unknown_tags.php#L20).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.0/tests/files/expected/0577_unknown_tags.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.0/tests/files/src/0577_unknown_tags.php#L20).
 
 ## PhanTemplateTypeStaticMethod
 
@@ -3082,6 +3094,12 @@ Saw an @override annotation for method {METHOD}, but could not find an overridde
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0355_namespace_relative.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0355_namespace_relative.php#L34).
 
+## PhanCommentParamAssertionWithoutRealParam
+
+```
+Saw an @phan-assert annotation for {VARIABLE}, but it was not found in the param list of {FUNCTIONLIKE}
+```
+
 ## PhanCommentParamOnEmptyParamList
 
 ```
@@ -3184,21 +3202,21 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 
 Emitted for syntax errors.
 
-## PhanContinueOrBreakTooManyLevels
-
-```
-Cannot '{OPERATOR}' {INDEX} levels.
-```
-
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0601_continue_scope_warning.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0601_continue_scope_warning.php#L6).
-
 ## PhanContinueOrBreakNotInLoop
 
 ```
 '{OPERATOR}' not in the 'loop' or 'switch' context.
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0601_continue_scope_warning.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0601_continue_scope_warning.php#L24).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.0/tests/files/expected/0601_continue_scope_warning.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.0/tests/files/src/0601_continue_scope_warning.php#L24).
+
+## PhanContinueOrBreakTooManyLevels
+
+```
+Cannot '{OPERATOR}' {INDEX} levels.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.0/tests/files/expected/0601_continue_scope_warning.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.0/tests/files/src/0601_continue_scope_warning.php#L6).
 
 ## PhanContinueTargetingSwitch
 
@@ -3208,7 +3226,7 @@ This detects code causing a [warning in PHP 7.3](http://php.net/manual/en/migrat
 "continue" targeting switch is equivalent to "break". Did you mean to use "continue 2"?
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/050_unreachable_code.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/050_unreachable_code.php#L13).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.0/tests/plugin_test/expected/050_unreachable_code.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.0/tests/plugin_test/src/050_unreachable_code.php#L13).
 
 ## PhanInvalidConstantExpression
 
