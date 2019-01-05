@@ -9,8 +9,12 @@ src/000_plugins.php:29 PhanPluginComplexVariableInIsset Unanalyzable complex var
 src/000_plugins.php:29 PhanPluginDollarDollar $$ Variables are not allowed.
 src/000_plugins.php:33 PhanPluginNonBoolBranch Non bool value of type array evaluated in if clause
 src/000_plugins.php:40 PhanPluginNonBoolBranch Non bool value of type array evaluated in if clause
+src/000_plugins.php:47 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: '2e3' == '2000' (result is true)
 src/000_plugins.php:47 PhanPluginNumericalComparison non numerical values compared by the operators '==' or '!='
+src/000_plugins.php:48 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: '2e3' === '2000' (result is false)
+src/000_plugins.php:49 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 2.0 !== 2 (result is true)
 src/000_plugins.php:49 PhanPluginNumericalComparison numerical values compared by the operators '===' or '!=='
+src/000_plugins.php:50 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 2.0 != 2 (result is false)
 src/000_plugins.php:55 UnusedSuppression Element \testUnusedSuppressionPlugin suppresses issue PhanParamTooFew but does not use it
 src/000_plugins.php:61 PhanUnreferencedFunction Possibly zero references to function \testUnreferencedFunction()
 src/000_plugins.php:64 PhanUnusedGlobalFunctionParameter Parameter $className is never used
