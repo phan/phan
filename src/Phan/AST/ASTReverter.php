@@ -40,12 +40,16 @@ class ASTReverter
      *
      * This does not work for all node kinds, and may be ambiguous.
      *
-     * @param Node|string|int|float $node
+     * @param Node|string|int|float|bool|null $node
      * @return string
      */
     public static function toShortString($node)
     {
         if (!($node instanceof Node)) {
+            if ($node === null) {
+                // use lowercase 'null' instead of 'NULL'
+                return 'null';
+            }
             // TODO: One-line representations for strings, minimal representations for floats, etc.
             return \var_export($node, true);
         }

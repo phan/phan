@@ -6,6 +6,10 @@ Phan NEWS
 New features(Analysis):
 + Infer that the result of `array_map` has integer keys when passed two or more arrays (#2277)
 
+Plugins:
++ Add a new issue type to `DuplicateExpressionPlugin`: `PhanPluginBothLiteralsBinaryOp`. (#2297)
+  (warns about suspicious expressions such as `null == 'a literal` in `$x ?? null == 'a literal'`)
+
 05 Jan 2019, Phan 1.2.0
 -----------------------
 
