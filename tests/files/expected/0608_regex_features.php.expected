@@ -1,0 +1,6 @@
+%s:5 PhanTypeInvalidDimOffset Invalid offset 2 of array type array{0:string,1:string}
+%s:10 PhanTypeInvalidDimOffset Invalid offset 2 of array type array{0:string,1:string}
+%s:15 PhanTypeInvalidDimOffset Invalid offset 2 of array type array{0:string,name:string,1:string}
+%s:21 PhanTypeInvalidDimOffset Invalid offset 2 of array type array{0:string,a:string,1:string}
+%s:25 PhanTypeInvalidDimOffset Invalid offset 2 of array type array{0:string,de:string,1:string}
+%s:29 PhanTypeInvalidDimOffset Invalid offset 2 of array type array{0:string,caseInsensitive:string,1:string}

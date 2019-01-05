@@ -1,10 +1,10 @@
 Phan NEWS
 
-?? ??? 2019, Phan 1.2.0 (dev)
+05 Jan 2019, Phan 1.2.0
 -----------------------
 
 New features(Analysis):
-+ Infer that `new $x` is of the template type `T` if `$x` is `class-string<T>` (#2257)
++ Infer match keys of `$matches` for a wider range of regexes (e.g. non-capturing groups, named subgroups) (#2294)
 + Improve detection of invalid arguments in code implicitly calling `__invoke`.
 + Support extracting template types from more forms of `callable` types. (#2264)
 + Support `@phan-assert`, `@phan-assert-true-condition`, and `@phan-assert-false-condition`.
@@ -19,6 +19,7 @@ New features(Analysis):
 
   See [tests/plugin_test/src/072_custom_assertions.php](tests/plugin_test/src/072_custom_assertions.php) for example uses of these annotations.
 + Suggest typo fixes when emitting `PhanUnusedVariable`, if only one definition was seen. (#2281)
++ Infer that `new $x` is of the template type `T` if `$x` is `class-string<T>` (#2257)
 
 Plugins:
 - Add `PHPUnitAssertionPlugin`.
