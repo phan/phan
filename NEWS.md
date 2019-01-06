@@ -10,6 +10,7 @@ New features(Analysis):
 Plugins:
 + Add a new issue type to `DuplicateExpressionPlugin`: `PhanPluginBothLiteralsBinaryOp`. (#2297)
   (warns about suspicious expressions such as `null == 'a literal` in `$x ?? null == 'a literal'`)
++ Support `assertInternalType` in `PHPUnitAssertionPlugin` (#2290)
 
 05 Jan 2019, Phan 1.2.0
 -----------------------
