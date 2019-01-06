@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 
 use ast\Node;
+use Phan\AST\ASTHasher;
+use Phan\AST\ASTReverter;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Issue;
 use Phan\PluginV2;
@@ -35,6 +37,8 @@ class DuplicateArrayKeyPlugin extends PluginV2 implements PostAnalyzeNodeCapabil
  */
 class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
 {
+    const HASH_PREFIX = "\x00__phan_dnu_";
+
     // Do not define the visit() method unless a plugin has code and needs to visit most/all node types.
 
     /**
@@ -122,23 +126,13 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             if (!is_scalar($key)) {
                 $key = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key)->asSingleScalarValueOrNullOrSelf();
                 if (is_object($key)) {
-                    // Skip non-literal keys.
-                    continue;
+                    $key = self::HASH_PREFIX . ASTHasher::hash($entry->children['key']);
                 }
             }
 
             if (isset($key_set[$key])) {
-                $normalized_key = self::normalizeKey($key);
-                $this->emitPluginIssue(
-                    $this->code_base,
-                    clone($this->context)->withLineNumberStart($entry->lineno ?? $node->lineno),
-                    'PhanPluginDuplicateArrayKey',
-                    "Duplicate/Equivalent array key value({STRING_LITERAL}) detected in array - the earlier entry will be ignored.",
-                    [(string)$normalized_key],
-                    Issue::SEVERITY_NORMAL,
-                    Issue::REMEDIATION_A,
-                    15071
-                );
+                // @phan-suppress-next-line PhanPartialTypeMismatchArgument
+                $this->warnAboutDuplicateArrayKey($node, $entry, $key);
             }
             // @phan-suppress-next-line PhanTypeMismatchDimAssignment
             $key_set[$key] = true;
@@ -155,6 +149,37 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                 15071
             );
         }
+    }
+
+    /**
+     * @param int|string|float|bool|null $key
+     */
+    private function warnAboutDuplicateArrayKey(Node $node, Node $entry, $key)
+    {
+        if (is_string($key) && strncmp($key, self::HASH_PREFIX, strlen(self::HASH_PREFIX)) === 0) {
+            $this->emitPluginIssue(
+                $this->code_base,
+                clone($this->context)->withLineNumberStart($entry->lineno ?? $node->lineno),
+                'PhanPluginDuplicateArrayKeyExpression',
+                "Duplicate dynamic array key expression ({CODE}) detected in array - the earlier entry will be ignored if the expression had the same value.",
+                [ASTReverter::toShortString($entry->children['key'])],
+                Issue::SEVERITY_NORMAL,
+                Issue::REMEDIATION_A,
+                15071
+            );
+            return;
+        }
+        $normalized_key = self::normalizeKey($key);
+        $this->emitPluginIssue(
+            $this->code_base,
+            clone($this->context)->withLineNumberStart($entry->lineno ?? $node->lineno),
+            'PhanPluginDuplicateArrayKey',
+            "Duplicate/Equivalent array key value({STRING_LITERAL}) detected in array - the earlier entry will be ignored.",
+            [(string)$normalized_key],
+            Issue::SEVERITY_NORMAL,
+            Issue::REMEDIATION_A,
+            15071
+        );
     }
 
     /**
