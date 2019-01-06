@@ -142,6 +142,7 @@ This plugin will make Phan infer side effects from calls to some of the helper m
 - Infer that a condition is truthy from `assertTrue()` and `assertNotFalse()` (e.g. `assertTrue($x instanceof MyClass)`)
 - Infer that a condition is null/not null from `assertNull()` and `assertNotNull()`
 - Infer class types from `assertInstanceOf(MyClass::class, $actual)`
+- Infer types from `assertInternalType($expected, $actual)`
 - Infer that $actual has the exact type of $expected after calling `assertSame($expected, $actual)`
 - Other methods aren't supported yet.
 
