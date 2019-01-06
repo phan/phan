@@ -289,17 +289,21 @@ class IssueFixSuggester
         $suggestions = [];
         if ($is_static) {
             if ($class->hasConstantWithName($code_base, $wanted_property_name)) {
-                $suggestions[] = '::' . $wanted_property_name;
+                $suggestions[] = $class->getFQSEN() . '::' . $wanted_property_name;
             }
         }
         if ($class->hasMethodWithName($code_base, $wanted_property_name)) {
             $method = $class->getMethodByName($code_base, $wanted_property_name);
-            $suggestions[] = ($method->isStatic() ? '::' : '->') . $wanted_property_name . '()';
+            $suggestions[] = $class->getFQSEN() . ($method->isStatic() ? '::' : '->') . $wanted_property_name . '()';
         }
         foreach ($property_set as $property_name => $_) {
             $prefix = $is_static ? 'expr::$' : 'expr->' ;
             $suggestions[] = $prefix . $property_name;
         }
+        foreach (self::getVariableNamesInScopeWithSimilarName($context, $wanted_property_name) as $variable_name) {
+            $suggestions[] = $variable_name;
+        }
+
         if (count($suggestions) === 0) {
             return null;
         }
