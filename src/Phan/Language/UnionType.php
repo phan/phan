@@ -2265,6 +2265,23 @@ class UnionType implements Serializable
     }
 
     /**
+     * Takes `a|b[]|c|d[]|e|f[]|ArrayAccess` and returns `f[]`
+     *
+     * @return UnionType
+     * A UnionType with non-array types filtered out
+     *
+     * @see self::nonArrayTypes()
+     */
+    public function arrayTypes() : UnionType
+    {
+        return $this->makeFromFilter(
+            function (Type $type) : bool {
+                return $type instanceof ArrayType;
+            }
+        );
+    }
+
+    /**
      * @return bool
      * True if this is exclusively generic types
      */

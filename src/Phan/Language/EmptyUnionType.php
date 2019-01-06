@@ -823,6 +823,11 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
+    public function arrayTypes() : UnionType
+    {
+        return $this;
+    }
+
     /**
      * @return bool
      * True if this is exclusively generic types
