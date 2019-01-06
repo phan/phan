@@ -237,7 +237,7 @@ EOT;
         'average' => 3,
         'normal'  => 3,
         'weak'    => 4,
-        'weakest' => 3,
+        'weakest' => 5,
     ];
 
     /**
@@ -281,6 +281,7 @@ EOT;
                 'AlwaysReturnPlugin',
                 'DollarDollarPlugin',
                 'DuplicateArrayKeyPlugin',
+                'DuplicateExpressionPlugin',
                 'PregRegexCheckerPlugin',
                 'PrintfCheckerPlugin',
                 'SleepCheckerPlugin',
