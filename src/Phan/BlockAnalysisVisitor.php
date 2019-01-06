@@ -1250,17 +1250,22 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context_with_left_condition = (new ConditionVisitor(
                 $this->code_base,
                 $base_context
-            ))($left_node);
+            ))->__invoke($left_node);
+            $context_with_false_left_condition = (new NegatedConditionVisitor(
+                $this->code_base,
+                $base_context
+            ))->__invoke($left_node);
         } else {
             $context_with_left_condition = $context;
+            $context_with_false_left_condition = $context;
         }
 
         if ($right_node instanceof Node) {
             $right_context = $this->analyzeAndGetUpdatedContext($context_with_left_condition, $node, $right_node);
             $context = (new ContextMergeVisitor(
                 $context,
-                [$context, $context_with_left_condition, $right_context]
-            ))($node);
+                [$context, $context_with_false_left_condition, $right_context]
+            ))->combineChildContextList();
         }
 
         $context = $this->postOrderAnalyze($context, $node);

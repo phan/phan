@@ -361,6 +361,19 @@ class Context extends FileRef
     }
 
     /**
+     * Returns a string representing this Context for debugging
+     * @suppress PhanUnreferencedPublicMethod kept around to make it easy to dump variables in a context
+     */
+    public function toDebugString() : string
+    {
+        $result = (string)$this;
+        foreach ($this->getScope()->getVariableMap() as $variable) {
+            $result .= "\n$variable";
+        }
+        return $result;
+    }
+
+    /**
      * @return bool
      * True if this context is currently within a class
      * scope, else false.

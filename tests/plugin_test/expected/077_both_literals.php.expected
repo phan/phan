@@ -1,0 +1,19 @@
+src/077_both_literals.php:3 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 2 <=> 3 (result is -1)
+src/077_both_literals.php:4 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: null == 9 (result is false)
+src/077_both_literals.php:4 PhanPluginNumericalComparison non numerical values compared by the operators '==' or '!='
+src/077_both_literals.php:5 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: null === 9 (result is false)
+src/077_both_literals.php:6 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 1 !== 9 (result is true)
+src/077_both_literals.php:7 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 1 != 9 (result is true)
+src/077_both_literals.php:7 PhanPluginNumericalComparison non numerical values compared by the operators '==' or '!='
+src/077_both_literals.php:8 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 1 != 9 (result is true)
+src/077_both_literals.php:8 PhanPluginNumericalComparison non numerical values compared by the operators '==' or '!='
+src/077_both_literals.php:9 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 2 < 3 (result is true)
+src/077_both_literals.php:10 PhanPluginDuplicateExpressionBinaryOp Both sides of the binary operator <= are the same: 2
+src/077_both_literals.php:11 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 2 <= '700' (result is true)
+src/077_both_literals.php:12 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 3 > 2 (result is true)
+src/077_both_literals.php:13 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: 3 >= 4 (result is false)
+src/077_both_literals.php:14 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: true && false (result is false)
+src/077_both_literals.php:15 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: true && 'aString' (result is true)
+src/077_both_literals.php:15 PhanPluginNonBoolInLogicalArith Non bool value of type 'aString' in logical arithmetic
+src/077_both_literals.php:16 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: true || false (result is true)
+src/077_both_literals.php:17 PhanPluginBothLiteralsBinaryOp Suspicious usage of a binary operator where both operands are literals. Expression: true xor false (result is true)
