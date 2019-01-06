@@ -31,6 +31,7 @@ class Request
     const PARAM_METHOD = 'method';
     const PARAM_FILES  = 'files';
     const PARAM_FORMAT = 'format';
+    const PARAM_COLOR  = 'color';
     const PARAM_TEMPORARY_FILE_MAPPING_CONTENTS = 'temporary_file_mapping_contents';
 
     // success codes
@@ -205,9 +206,10 @@ class Request
      */
     public function getPrinter() : IssuePrinterInterface
     {
-        // TODO: check $this->request_config['format'] and support other formats
+        $this->handleClientColorOutput();
+
         $factory = new PrinterFactory();
-        $format = $this->request_config['format'] ?? 'json';
+        $format = $this->request_config[self::PARAM_FORMAT] ?? 'json';
         if (!in_array($format, $factory->getTypes())) {
             $this->sendJSONResponse([
                 "status" => self::STATUS_INVALID_FORMAT,
@@ -215,6 +217,20 @@ class Request
             exit(0);
         }
         return $factory->getPrinter($format, $this->buffered_output);
+    }
+
+    /**
+     * Handle a request created by the client with `phan_client --color`
+     */
+    private function handleClientColorOutput()
+    {
+        // Back up the original state: If pcntl isn't used, we don't want subsequent requests to be accidentally colorized.
+        static $original_color = null;
+        if ($original_color === null) {
+            $original_color = (bool)Config::getValue('color_issue_messages');
+        }
+        $new_color = $this->request_config[self::PARAM_COLOR] ?? $original_color;
+        Config::setValue('color_issue_messages', $new_color);
     }
 
     /**

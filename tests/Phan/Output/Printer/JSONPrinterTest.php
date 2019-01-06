@@ -24,7 +24,7 @@ final class JSONPrinterTest extends BaseTest
         $printer->print(new IssueInstance(Issue::fromType(Issue::SyntaxError), 'test.php', 1, ['fake error']));
         $printer->flush();
         // phpcs:ignore
-        $expected_output = '[{"type":"issue","type_id":11027,"check_name":"PhanUndeclaredVariableDim","description":"UndefError PhanUndeclaredVariableDim Variable $varName was undeclared, but array fields are being added to it.","severity":0,"location":{"path":"dim.php","lines":{"begin":10,"end":10}}},{"type":"issue","type_id":17000,"check_name":"PhanSyntaxError","description":"Syntax PhanSyntaxError fake error","severity":10,"location":{"path":"test.php","lines":{"begin":1,"end":1}}}]';
+        $expected_output = '[{"type":"issue","type_id":11027,"check_name":"PhanUndeclaredVariableDim","description":"UndefError PhanUndeclaredVariableDim Variable $varName was undeclared, but array fields are being added to it.","severity":0,"location":{"path":"dim.php","lines":{"begin":10,"end":10}}},{"type":"issue","type_id":17000,"check_name":"PhanSyntaxError","description":"Syntax PhanSyntaxError fake error","severity":10,"location":{"path":"test.php","lines":{"begin":1,"end":1}}}]' . "\n";
         $this->assertSame($expected_output, $output->fetch());
     }
 }

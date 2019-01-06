@@ -8,6 +8,14 @@ New features(Analysis):
 + Improve inferences about the left hand side of `&&` statements such as `$leftVar && (other_expression);` (#2300)
 + Warn about passing an undefined variable to a function expecting a reference parameter with a real, non-nullable type (#1344)
 
+Maintenance:
++ End the output for `--output-mode <json>` with a newline.
+
+Language Server/Daemon mode:
++ Add `--output-mode <mode>` to `phan_client`. (#1568)
+  Supported formats: `phan_client` (default), `text`, `json`, `csv`, `codeclimate`, `checkstyle`, or `pylint`
++ Add `--color` to `phan_client` (e.g. for use with `--output-mode text`)
+
 Plugins:
 + Add a new issue type to `DuplicateExpressionPlugin`: `PhanPluginBothLiteralsBinaryOp`. (#2297)
   (warns about suspicious expressions such as `null == 'a literal` in `$x ?? null == 'a literal'`)
