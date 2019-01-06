@@ -53,6 +53,8 @@ Warns about common errors in php array keys and switch statements. Has the follo
 - **PhanPluginDuplicateArrayKey**: a duplicate or equivalent array key literal.
 
   (E.g `[2 => "value", "other" => "s", "2" => "value2"]` duplicates the key `2`)
+- **PhanPluginDuplicateArrayKeyExpression**: `Duplicate/Equivalent dynamic array key expression ({CODE}) detected in array - the earlier entry will be ignored if the expression had the same value.`
+  (E.g. `[$x => 'value', $y => "s", $y => "value2"]`)
 - **PhanPluginDuplicateSwitchCase**: a duplicate or equivalent case statement.
 
   (E.g `switch ($x) { case 2: echo "A\n"; break; case 2: echo "B\n"; break;}` duplicates the key `2`. The later case statements are ignored.)
