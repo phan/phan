@@ -175,6 +175,17 @@ interface FunctionInterface extends AddressableElementInterface
     public function getParameterForCaller(int $i);
 
     /**
+     * Gets the $ith real parameter for the **caller**.
+     * In the case of variadic arguments, an infinite number of parameters exist.
+     * (The callee would see variadic arguments(T ...$args) as a single variable of type T[],
+     * while the caller sees a place expecting an expression of type T.
+     *
+     * @param int $i - offset of the parameter.
+     * @return Parameter|null The parameter type that the **caller** observes.
+     */
+    public function getRealParameterForCaller(int $i);
+
+    /**
      * @param Parameter $parameter
      * A parameter to append to the parameter list
      *

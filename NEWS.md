@@ -6,6 +6,7 @@ Phan NEWS
 New features(Analysis):
 + Infer that the result of `array_map` has integer keys when passed two or more arrays (#2277)
 + Improve inferences about the left hand side of `&&` statements such as `$leftVar && (other_expression);` (#2300)
++ Warn about passing an undefined variable to a function expecting a reference parameter with a real, non-nullable type (#1344)
 
 Plugins:
 + Add a new issue type to `DuplicateExpressionPlugin`: `PhanPluginBothLiteralsBinaryOp`. (#2297)

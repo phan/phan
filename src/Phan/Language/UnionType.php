@@ -968,6 +968,20 @@ class UnionType implements Serializable
     }
 
     /**
+     * @return bool - True if empty or at least one type is NullType or nullable.
+     * e.g. true for `?int`, `int|null`, or ``
+     */
+    public function containsNullableOrIsEmpty() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type->getIsNullable()) {
+                return true;
+            }
+        }
+        return \count($this->type_set) === 0;
+    }
+
+    /**
      * @return bool - True if not empty, not possibly undefined, and at least one type is NullType or nullable.
      */
     public function containsNullableOrUndefined() : bool
