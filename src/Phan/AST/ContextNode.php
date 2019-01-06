@@ -1174,15 +1174,17 @@ class ContextNode
     }
 
     /**
+     * @param Parameter $parameter the parameter types inferred from combination of real and union type
+     *
+     * @param ?Parameter $real_parameter the real parameter type from the type signature
+     *
      * @return Variable
      * A variable in scope or a new variable
      *
      * @throws NodeException
      * An exception is thrown if we can't understand the node
-     *
-     * TODO: Fix #1334 by passing in an extra nullable $real_parameter
      */
-    public function getOrCreateVariableForReferenceParameter(Parameter $parameter) : Variable
+    public function getOrCreateVariableForReferenceParameter(Parameter $parameter, $real_parameter) : Variable
     {
         try {
             return $this->getVariable();
@@ -1206,10 +1208,14 @@ class ContextNode
         if ($null_type === null) {
             $null_type = NullType::instance(false)->asUnionType();
         }
-        if ($parameter->getReferenceType() === Parameter::REFERENCE_READ_WRITE) {
+        if ($parameter->getReferenceType() === Parameter::REFERENCE_READ_WRITE ||
+            ($real_parameter && !$real_parameter->getNonVariadicUnionType()->containsNullableOrIsEmpty())) {
             // If this is a variable that is both read and written,
             // then set the previously undefined variable type to null instead so we can type check it
             // (e.g. arguments to array_shift())
+            //
+            // Also, if this has a real type signature that would make PHP throw a TypeError when passed null, then set this to null so the type checker will emit a warning (#1344)
+            //
             // (TODO: read/writeable is currently only possible to annotate for internal functions in FunctionSignatureMap.php),
 
             // TODO: How should this handle variadic references?

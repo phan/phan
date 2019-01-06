@@ -2679,7 +2679,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // If pass-by-reference, make sure the variable exists
             // or create it if it doesn't.
             if ($parameter->isPassByReference()) {
-                $this->createPassByReferenceArgumentInCall($argument, $parameter);
+                $this->createPassByReferenceArgumentInCall($argument, $parameter, $method->getRealParameterForCaller($i));
             }
         }
 
@@ -2720,7 +2720,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $argument,
                     $argument_list,
                     $method,
-                    $parameter
+                    $parameter,
+                    $method->getRealParameterForCaller($i)
                 );
             }
         }
@@ -2752,7 +2753,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         );
     }
 
-    private function createPassByReferenceArgumentInCall(Node $argument, Parameter $parameter)
+    /**
+     * @param Parameter $parameter the parameter types inferred from combination of real and union type
+     *
+     * @param ?Parameter $real_parameter the real parameter type from the type signature
+     */
+    private function createPassByReferenceArgumentInCall(Node $argument, Parameter $parameter, $real_parameter)
     {
         if ($argument->kind == ast\AST_VAR) {
             // We don't do anything with the new variable; just create it
@@ -2762,7 +2768,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->code_base,
                     $this->context,
                     $argument
-                ))->getOrCreateVariableForReferenceParameter($parameter);
+                ))->getOrCreateVariableForReferenceParameter($parameter, $real_parameter);
             } catch (NodeException $_) {
                 return;
             }
@@ -2799,6 +2805,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * @param Parameter $parameter the parameter types inferred from combination of real and union type
+     *
+     * @param ?Parameter $real_parameter the real parameter type from the type signature
+     *
      * @return void
      */
     private function analyzePassByReferenceArgument(
@@ -2807,7 +2817,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         Node $argument,
         array $argument_list,
         FunctionInterface $method,
-        Parameter $parameter
+        Parameter $parameter,
+        $real_parameter
     ) {
         $variable = null;
         $kind = $argument->kind;
@@ -2817,7 +2828,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $code_base,
                     $context,
                     $argument
-                ))->getOrCreateVariableForReferenceParameter($parameter);
+                ))->getOrCreateVariableForReferenceParameter($parameter, $real_parameter);
             } catch (NodeException $_) {
                 // E.g. `function_accepting_reference(${$varName})` - Phan can't analyze outer type of ${$varName}
                 return;
@@ -3264,7 +3275,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->code_base,
                     $this->context,
                     $argument
-                ))->getOrCreateVariableForReferenceParameter($parameter);
+                ))->getOrCreateVariableForReferenceParameter($parameter, $method->getRealParameterForCaller($parameter_offset));
             } catch (NodeException $_) {
                 // Could not figure out the node name
                 return;

@@ -534,6 +534,19 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /**
+     * @return Parameter|null
+     * @override
+     */
+    public function getRealParameterForCaller(int $i)
+    {
+        // FunctionLikeDeclarationType doesn't know if the phpdoc type is the real union type.
+        //
+        // This could instead call setUnionType and setDefaultValueType to the empty union type to avoid false positives about passing in null,
+        // but would miss some actual bugs.
+        return $this->getParameterForCaller($i);
+    }
+
+    /**
      * @return array<int,Parameter>
      */
     public function getParameterList() : array

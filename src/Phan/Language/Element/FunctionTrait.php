@@ -452,6 +452,33 @@ trait FunctionTrait
     }
 
     /**
+     * Gets the $ith parameter for the **caller**.
+     * In the case of variadic arguments, an infinite number of parameters exist.
+     * (The callee would see variadic arguments(T ...$args) as a single variable of type T[],
+     * while the caller sees a place expecting an expression of type T.
+     *
+     * @param int $i - offset of the parameter.
+     * @return Parameter|null The real parameter type (from php signature) that the **caller** observes.
+     * @suppress PhanUnreferencedPublicMethod false positive - this is referenced in FunctionInterface.
+     */
+    public function getRealParameterForCaller(int $i)
+    {
+        $list = $this->real_parameter_list;
+        if (count($list) === 0) {
+            return null;
+        }
+        $parameter = $list[$i] ?? null;
+        if ($parameter) {
+            return $parameter->asNonVariadic();
+        }
+        $last_parameter = $list[count($list) - 1];
+        if ($last_parameter->isVariadic()) {
+            return $last_parameter->asNonVariadic();
+        }
+        return null;
+    }
+
+    /**
      * @param array<int,Parameter> $parameter_list
      * A list of parameters to set on this method
      * (When quick_mode is false, this is also called to temporarily
