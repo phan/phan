@@ -182,6 +182,13 @@ class PhanPHPLinter
             'files' => $real_files,
             'format' => 'json',
         ];
+        if ($opts->output_mode) {
+            $request['format'] = $opts->output_mode;
+            $request['is_user_specified_format'] = true;
+        }
+        if ($opts->color) {
+            $request['color'] = true;
+        }
 
         if (count($temporary_file_mapping_contents) > 0) {
             $request['temporary_file_mapping_contents'] = $temporary_file_mapping_contents;
@@ -220,7 +227,7 @@ class PhanPHPLinter
         }
         $status = isset($response['status']) ? $response['status'] : null;
         if ($status === 'ok') {
-            self::dumpJSONIssues($response, $file_mapping);
+            self::dumpJSONIssues($response, $file_mapping, $request);
         } else {
             self::debugError(sprintf("Invalid response from phan for %s: %s", $opts->url, $response_bytes));
         }
@@ -231,18 +238,35 @@ class PhanPHPLinter
      * @param string[] $file_mapping
      * @return void
      */
-    private static function dumpJSONIssues(array $response, array $file_mapping)
+    private static function dumpJSONIssues(array $response, array $file_mapping, array $request)
     {
         $did_debug = false;
         $lines = [];
         // if ($response['issue_count'] > 0)
         $issues = $response['issues'];
-        if (!\is_array($issues)) {
-            if (\is_string($issues)) {
-                self::debugError(sprintf("Invalid issues response from phan: %s\n", $issues));
-            } else {
-                self::debugError(sprintf("Invalid type for issues response from phan: %s\n", gettype($issues)));
+        $format = $request['format'];
+        if ($format === 'json') {
+            if (!\is_array($issues)) {
+                if (\is_string($issues)) {
+                    self::debugError(sprintf("Invalid issues response from phan: %s\n", $issues));
+                } else {
+                    self::debugError(sprintf("Invalid type for issues response from phan: %s\n", gettype($issues)));
+                }
+                return;
             }
+            if (isset($request['is_user_specified_format'])) {
+                // The user requested the raw JSON, not what `phan_client` converts it to
+                echo json_encode($issues) . "\n";
+                return;
+            }
+        } else {
+            // When formats other than 'json' are requested, the Phan daemon returns the issues as a raw string.
+            // (e.g. codeclimate returns a string with JSON separated by "\x00")
+            if (!\is_string($issues)) {
+                self::debugError(sprintf("Invalid type for issues response from phan: %s\n", gettype($issues)));
+                return;
+            }
+            echo $issues;
             return;
         }
         foreach ($issues as $issue) {
@@ -294,6 +318,12 @@ class PhanPHPLinterOpts
     /** @var bool should this client request analysis from the Phan server when the file has syntax errors */
     public $use_fallback_parser;
 
+    /** @var ?string the output mode to use. If null, use the default from the daemon */
+    public $output_mode = null;
+
+    /** @var bool whether to color the output on the client */
+    public $color = false;
+
     /**
      * @var bool should this client print a usage text if an **unexpected** error occurred.
      */
@@ -333,6 +363,9 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
   Syntax check, and if the Phan daemon is running, analyze the following file (absolute path or relative to current working directory)
   This will only analyze the file if a full phan check (with .phan/config.php) would analyze the file.
 
+ -m <mode>, --output-mode
+  Output mode from 'phan_client' (default), 'text', 'json', 'csv', 'codeclimate', 'checkstyle', or 'pylint'
+
  -t, --temporary-file-map '{"file.php":"/path/to/tmp/file_copy.php"}'
   A json mapping from original path to absolute temporary path (E.g. of a file that is still being edited)
 
@@ -365,7 +398,7 @@ EOB;
 
         // Parse command line args
         $optind = 0;
-        $shortopts = "s:p:l:t:f:vhd";
+        $shortopts = "s:p:l:t:f:m:vhd";
         $longopts = [
             'help',
             'daemonize-socket:',
@@ -375,6 +408,8 @@ EOB;
             'temporary-file-map:',
             'use-fallback-parser',
             'flycheck-file:',
+            'output-mode:',
+            'color',
             'verbose',
         ];
         $getopt_reflection = new ReflectionFunction('getopt');
@@ -486,6 +521,21 @@ EOB;
                 case 'v':
                 case 'verbose':
                     break;  // already parsed.
+                case 'color':
+                    $this->color = true;
+                    break;
+                case 'm':
+                case 'output-mode':
+                    if (!is_string($value) || !in_array($value, ['text', 'json', 'csv', 'codeclimate', 'checkstyle', 'pylint', 'phan_client'])) {
+                        $this->usage("Expected --output-mode {text,json,csv,codeclimate,checkstyle,pylint}, but got " . json_encode($value), 1);
+                        break;  // unreachable
+                    }
+                    if ($value === 'phan_client') {
+                        // We're requesting the default
+                        break;
+                    }
+                    $this->output_mode = $value;
+                    break;
                 default:
                     $this->usage("Unknown option '-$key'", 1);
                     break;

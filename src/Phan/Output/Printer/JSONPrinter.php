@@ -58,7 +58,7 @@ final class JSONPrinter implements BufferedPrinterInterface
         if (!is_string($encoded_message)) {
             throw new AssertionError("Failed to encode anything for what should be an array");
         }
-        $this->output->write($encoded_message, false, OutputInterface::OUTPUT_RAW);
+        $this->output->write($encoded_message . "\n", false, OutputInterface::OUTPUT_RAW);
         $this->messages = [];
     }
 
