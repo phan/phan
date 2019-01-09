@@ -6,6 +6,7 @@ use Phan\CodeBase;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Language\Context;
+use Phan\Suggestion;
 
 /**
  * A trait which allows plugins to emit issues with custom error messages
@@ -45,6 +46,11 @@ trait IssueEmitter
      * Issue::REMEDIATION_F} with F being the hardest.
      *
      * @param int $issue_type_id An issue id for pylint
+     *
+     * @param ?Suggestion $suggestion
+     * If this plugin has suggestions on how to fix the issue,
+     * this can be added separately from the issue text.
+     *
      * @return void
      */
     public function emitPluginIssue(
@@ -55,7 +61,8 @@ trait IssueEmitter
         array $issue_message_args = [],
         int $severity = Issue::SEVERITY_NORMAL,
         int $remediation_difficulty = Issue::REMEDIATION_B,
-        int $issue_type_id = Issue::TYPE_ID_UNKNOWN
+        int $issue_type_id = Issue::TYPE_ID_UNKNOWN,
+        Suggestion $suggestion = null
     ) {
         $issue = new Issue(
             $issue_type,
@@ -70,7 +77,8 @@ trait IssueEmitter
             $issue,
             $context->getFile(),
             $context->getLineNumberStart(),
-            $issue_message_args
+            $issue_message_args,
+            $suggestion
         );
 
         Issue::maybeEmitInstance(

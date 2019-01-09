@@ -22,6 +22,7 @@ Plugins:
   (warns about suspicious expressions such as `null == 'a literal` in `$x ?? null == 'a literal'`)
 + Support `assertInternalType` in `PHPUnitAssertionPlugin` (#2290)
 + Warn when identical dynamic expressions (e.g. variables, function calls) are used as array keys in `DuplicateArrayKeyPlugin`
++ Allow plugins to include a `Suggestion` when calling `$this->emitIssue()`
 
 05 Jan 2019, Phan 1.2.0
 -----------------------
