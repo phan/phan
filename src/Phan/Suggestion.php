@@ -31,4 +31,12 @@ final class Suggestion
     {
         return $this->message;
     }
+
+    /**
+     * Contains the text of the suggestion to fix the issue
+     */
+    public function __toString() : string
+    {
+        return $this->message;
+    }
 }
