@@ -903,6 +903,8 @@ class Config
         ],
     ];
 
+    const COMPLETION_VSCODE = 'vscode';
+
     /**
      * Disallow the constructor.
      */

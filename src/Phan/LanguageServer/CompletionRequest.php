@@ -4,6 +4,7 @@ namespace Phan\LanguageServer;
 
 use Exception;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
@@ -100,19 +101,39 @@ final class CompletionRequest extends NodeInfoRequest
         $item->documentation = null;  // TODO: Better summary, use phpdoc summary
 
         $insert_text = null;
-        if ($element instanceof Property && $element->isStatic()) {
-            $insert_text = '$' . $element->getName();
+        if (!self::useVSCodeCompletion()) {
+            if ($element instanceof Property && $element->isStatic()) {
+                $insert_text = '$' . $element->getName();
+            }
+            if (is_string($prefix) && is_string($insert_text) && strncmp($insert_text, $prefix, strlen($prefix)) === 0) {
+                $insert_text = (string)substr($insert_text, strlen($prefix));
+            }
         }
-        if (is_string($prefix) && is_string($insert_text) && strncmp($insert_text, $prefix, strlen($prefix)) === 0) {
-            $insert_text = (string)substr($insert_text, strlen($prefix));
-        }
-
         $item->insertText = $insert_text;
+
         return $item;
+    }
+
+    /**
+     * If true, then return completion suggestions that are compatible with VS Code.
+     */
+    public static function useVSCodeCompletion() : bool
+    {
+        return Config::COMPLETION_VSCODE === Config::getValue('language_server_enable_completion');
     }
 
     private function labelForElement(TypedElementInterface $element) : string
     {
+        if (self::useVSCodeCompletion()) {
+            $name = $element->getName();
+            if ($element instanceof Variable) {
+                return '$' . $name;
+            }
+            if ($element instanceof Property && $element->isStatic()) {
+                return '$' . $name;
+            }
+            return $name;
+        }
         return $element->getName();
     }
 
@@ -154,7 +175,20 @@ final class CompletionRequest extends NodeInfoRequest
         if ($promise) {
             $result = $this->completions ?: null;
             if ($result !== null) {
-                uksort($result, 'strcasecmp');
+                // Sort completion suggestions alphabetically,
+                // ignoring the leading `$` in variables/static properties.
+                uksort(
+                    $result,
+                    /**
+                     * @param string $a
+                     * @param string $b
+                     */
+                    function ($a, $b) : int {
+                        $a = ltrim((string)$a, '$');
+                        $b = ltrim((string)$b, '$');
+                        return (strtolower($a) <=> strtolower($b)) ?: ($a <=> $b);
+                    }
+                );
                 $result_list = new CompletionList(array_values($result));
             } else {
                 $result_list = null;

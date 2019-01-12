@@ -58,9 +58,10 @@ final class LanguageServerIntegrationTest extends BaseTest
     private $messageId = 0;
 
     /**
+     * @param array{vscode_compatible_completions?:bool} $option_array
      * @return array{0:resource,1:resource,2:resource} [$proc, $proc_in, $proc_out]
      */
-    private function createPhanLanguageServer(bool $pcntlEnabled, bool $prefer_stdio = true)
+    private function createPhanLanguageServer(bool $pcntlEnabled, bool $prefer_stdio = true, array $option_array = [])
     {
         if (getenv('PHAN_RUN_INTEGRATION_TEST') != '1') {
             $this->markTestSkipped('skipping integration tests - set PHAN_RUN_INTEGRATION_TEST=1 to allow');
@@ -97,6 +98,9 @@ final class LanguageServerIntegrationTest extends BaseTest
             if ($tcpServer === false) {
                 $this->fail("Could not listen on $address. Error $errno\n$errstr");
             }
+        }
+        if ($option_array['vscode_compatible_completions'] ?? false) {
+            $options = "$options --language-server-completion-vscode";
         }
         $command = sprintf(
             '%s -d %s --quick --use-fallback-parser %s --language-server-enable-hover --language-server-enable-completion --language-server-enable-go-to-definition %s',
@@ -294,11 +298,12 @@ EOT;
     public function runTestCompletionWithPcntlSetting(
         Position $position,
         array $expected_completions,
+        bool $for_vscode,
         string $file_contents,
         bool $pcntl_enabled
     ) {
         $this->messageId = 0;
-        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntl_enabled);
+        list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntl_enabled, true, ['vscode_compatible_completions' => $for_vscode]);
         try {
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
@@ -328,20 +333,20 @@ EOT;
         }
     }
 
-    private function runTestCompletionWithAndWithoutPcntl(Position $position, array $expected_completions, string $file_contents)
+    private function runTestCompletionWithAndWithoutPcntl(Position $position, array $expected_completions, bool $for_vscode, string $file_contents)
     {
         if (function_exists('pcntl_fork')) {
-            $this->runTestCompletionWithPcntlSetting($position, $expected_completions, $file_contents, true);
+            $this->runTestCompletionWithPcntlSetting($position, $expected_completions, $for_vscode, $file_contents, true);
         }
-        $this->runTestCompletionWithPcntlSetting($position, $expected_completions, $file_contents, false);
+        $this->runTestCompletionWithPcntlSetting($position, $expected_completions, $for_vscode, $file_contents, false);
     }
 
     /**
      * @dataProvider completionBasicProvider
      */
-    public function testCompletionBasic(Position $position, array $expected_completions)
+    public function testCompletionBasic(Position $position, array $expected_completions, bool $for_vscode = false)
     {
-        $this->runTestCompletionWithAndWithoutPcntl($position, $expected_completions, self::COMPLETION_BASIC_FILE_CONTENTS);
+        $this->runTestCompletionWithAndWithoutPcntl($position, $expected_completions, $for_vscode, self::COMPLETION_BASIC_FILE_CONTENTS);
     }
 
     // Here, we use a prefix of M9 to avoid suggesting MYSQLI_...
@@ -385,18 +390,26 @@ function M9InnerFunction() { return [2]; }
 }
 EOT;
 
-    public function completionBasicProvider() : array
+    /**
+     * @param string $property_label
+     * @param ?string $property_insert_text
+     * @param ?string $insert_text_for_substr
+     * @param bool $for_vscode
+     * @return array<int,array{0:Position,1:array,2:bool}>
+     */
+    private function createCompletionBasicTestCases(string $property_label, $property_insert_text, $insert_text_for_substr, bool $for_vscode) : array
     {
-        $propertyCompletionItem = [
-            'label' => 'myVar',
+        // A static property
+        $property_completion_item = [
+            'label' => $property_label,
             'kind' => CompletionItemKind::PROPERTY,
             'detail' => 'int',
             'documentation' => null,
             'sortText' => null,
             'filterText' => null,
-            'insertText' => 'myVar',
+            'insertText' => $property_insert_text,
         ];
-        $myClassConstantItem = [
+        $my_class_constant_item = [
             'label' => 'my_class_const',
             'kind' => CompletionItemKind::VARIABLE,
             'detail' => "array{0:'literalString'}",
@@ -405,7 +418,7 @@ EOT;
             'filterText' => null,
             'insertText' => null,
         ];
-        $myClassClassItem = [
+        $my_class_class_item = [
             'label' => 'class',
             'kind' => CompletionItemKind::VARIABLE,
             'detail' => "'M9Example'",
@@ -414,7 +427,7 @@ EOT;
             'filterText' => null,
             'insertText' => null,
         ];
-        $myStaticFunctionItem = [
+        $my_static_function_item = [
             'label' => 'my_static_function',
             'kind' => CompletionItemKind::METHOD,
             'detail' => 'mixed',
@@ -423,7 +436,7 @@ EOT;
             'filterText' => null,
             'insertText' => null,
         ];
-        $myClassItem = [
+        $my_class_item = [
             'label' => 'M9Example',
             'kind' => CompletionItemKind::CLASS_,
             'detail' => '\M9Example',
@@ -432,7 +445,7 @@ EOT;
             'filterText' => null,
             'insertText' => null,
         ];
-        $myGlobalConstantItem = [
+        $my_global_constant_item = [
             'label' => 'M9GlobalConst',
             'kind' => CompletionItemKind::VARIABLE,
             'detail' => '42',
@@ -441,7 +454,7 @@ EOT;
             'filterText' => null,
             'insertText' => null,
         ];
-        $myOtherGlobalConstantItem = [
+        $my_other_global_constant_item = [
             'label' => 'M9OtherGlobalConst',
             'kind' => CompletionItemKind::VARIABLE,
             'detail' => '43',
@@ -450,7 +463,7 @@ EOT;
             'filterText' => null,
             'insertText' => null,
         ];
-        $myGlobalFunctionItem = [
+        $my_global_function_item = [
             'label' => 'M9GlobalFunction',
             'kind' => CompletionItemKind::FUNCTION,
             'detail' => 'array',
@@ -460,39 +473,49 @@ EOT;
             'insertText' => null,
         ];
         // These completions are returned to the language client in alphabetical order
-        $staticPropertyCompletions = [
-            $propertyCompletionItem,
+        $static_property_completions = [
+            $property_completion_item,
         ];
-        $staticPropertyCompletionsSubstr = [
-            array_merge($propertyCompletionItem, ['insertText' => 'Var']),
+        $static_property_completions_substr = [
+            array_merge($property_completion_item, ['insertText' => $insert_text_for_substr]),
         ];
-        $allStaticCompletions = [
-            $myClassClassItem,
-            $myClassConstantItem,
-            $myStaticFunctionItem,
-            $propertyCompletionItem,
+        $all_static_completions = [
+            $my_class_class_item,
+            $my_class_constant_item,
+            $my_static_function_item,
+            $property_completion_item,
         ];
-        $allConstantCompletions = [
-            $myClassItem,
-            $myGlobalConstantItem,
-            $myGlobalFunctionItem,
-            $myOtherGlobalConstantItem,
+        $all_constant_completions = [
+            $my_class_item,
+            $my_global_constant_item,
+            $my_global_function_item,
+            $my_other_global_constant_item,
         ];
 
         return [
-            [new Position(10, 17), $staticPropertyCompletions],
-            [new Position(11, 19), $staticPropertyCompletionsSubstr],
-            [new Position(12, 16), $allStaticCompletions],
-            [new Position(20, 7), $allConstantCompletions],
+            [new Position(10, 17), $static_property_completions, $for_vscode],
+            [new Position(11, 19), $static_property_completions_substr, $for_vscode],
+            [new Position(12, 16), $all_static_completions, $for_vscode],
+            [new Position(20, 7), $all_constant_completions, $for_vscode],
         ];
+    }
+    /**
+     * @return array<int,array{0:Position,1:array,2:bool}>
+     */
+    public function completionBasicProvider() : array
+    {
+        return array_merge(
+            $this->createCompletionBasicTestCases('myVar', 'myVar', 'Var', false),
+            $this->createCompletionBasicTestCases('$myVar', null, null, true)
+        );
     }
 
     /**
      * @dataProvider completionVariableProvider
      */
-    public function testCompletionVariable(Position $position, array $expected_completions)
+    public function testCompletionVariable(Position $position, array $expected_completions, bool $for_vscode = false)
     {
-        $this->runTestCompletionWithAndWithoutPcntl($position, $expected_completions, self::COMPLETION_VARIABLE_FILE_CONTENTS);
+        $this->runTestCompletionWithAndWithoutPcntl($position, $expected_completions, $for_vscode, self::COMPLETION_VARIABLE_FILE_CONTENTS);
     }
 
     // Here, we use a prefix of M9 to avoid suggesting MYSQLI_...
@@ -550,7 +573,11 @@ echo $j->my
 }  // end namespace LSP
 EOT;
 
-    public function completionVariableProvider() : array
+    /**
+     * @param string $variablePrefix expected prefix for labels of variables
+     * @return array<int,array{0:Position,1:array,2:bool}>
+     */
+    private function createCompletionVariableTestCases(string $variablePrefix, bool $for_vscode) : array
     {
         $otherPublicVarPropertyItem = [
             'label' => 'otherPublicVar',
@@ -628,7 +655,7 @@ EOT;
         ];
 
         $myLocalVarItem = [
-            'label' => 'myLocalVar',
+            'label' => $variablePrefix . 'myLocalVar',
             'kind' => CompletionItemKind::VARIABLE,
             'detail' => '\LSP\M9Class',
             'documentation' => null,
@@ -637,7 +664,7 @@ EOT;
             'insertText' => null,
         ];
         $myVarItem = [
-            'label' => 'myVar',
+            'label' => $variablePrefix . 'myVar',
             'kind' => CompletionItemKind::VARIABLE,
             'detail' => '4',
             'documentation' => null,
@@ -650,7 +677,7 @@ EOT;
             $myVarItem,
         ];
         $serverSuperglobal = [
-            'label' => '_SERVER',
+            'label' => $variablePrefix . '_SERVER',
             'kind' => CompletionItemKind::VARIABLE,
             'detail' => 'array<string,mixed>',
             'documentation' => null,
@@ -659,7 +686,7 @@ EOT;
             'insertText' => null,
         ];
         $sessionSuperglobal = [
-            'label' => '_SESSION',
+            'label' => $variablePrefix . '_SESSION',
             'kind' => CompletionItemKind::VARIABLE,
             'detail' => 'array<string,mixed>',
             'documentation' => null,
@@ -673,11 +700,22 @@ EOT;
         ];
 
         return [
-            [new Position(37, 16), $localVariableCompletions],
-            [new Position(38, 16), $superGlobalVariableCompletions],
-            [new Position(47, 15), $publicM9OtherCompletions],
-            [new Position(48, 11), $publicM9MyCompletions],
+            [new Position(37, 16), $localVariableCompletions, $for_vscode],
+            [new Position(38, 16), $superGlobalVariableCompletions, $for_vscode],
+            [new Position(47, 15), $publicM9OtherCompletions, $for_vscode],
+            [new Position(48, 11), $publicM9MyCompletions, $for_vscode],
         ];
+    }
+
+    /**
+     * @return array<int,array{0:Position,1:array,2:bool}>
+     */
+    public function completionVariableProvider() : array
+    {
+        return array_merge(
+            $this->createCompletionVariableTestCases('', false),
+            $this->createCompletionVariableTestCases('$', true)
+        );
     }
 
     /**

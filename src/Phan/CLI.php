@@ -87,6 +87,7 @@ class CLI
         'language-server-enable-go-to-definition',
         'language-server-enable-hover',
         'language-server-enable-completion',
+        'language-server-completion-vscode',
         'markdown-issue-messages',
         'memory-limit:',
         'minimum-severity:',
@@ -501,8 +502,13 @@ class CLI
                 case 'language-server-enable-hover':
                     Config::setValue('language_server_enable_hover', true);
                     break;
+                case 'language-server-completion-vscode':
+                    break;
                 case 'language-server-enable-completion':
-                    Config::setValue('language_server_enable_completion', true);
+                    Config::setValue(
+                        'language_server_enable_completion',
+                        isset($opts['language-server-completion-vscode']) ? Config::COMPLETION_VSCODE : true
+                    );
                     break;
                 case 'language-server-verbose':
                     Config::setValue('language_server_debug_level', 'info');
@@ -956,6 +962,10 @@ Extended help:
  --language-server-enable-completion
   Enables support for "Completion" in the Phan Language Server.
   Disabled by default.
+
+ --language-server-completion-vscode
+  Adds a workaround to make completion of variables and static properties
+  that are compatible with language clients such as VS Code.
 
  --language-server-verbose
   Emit verbose logging messages related to the language server implementation to stderr.
