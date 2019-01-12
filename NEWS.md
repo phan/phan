@@ -14,12 +14,14 @@ Maintenance:
 
 Language Server/Daemon mode:
 + Add `--output-mode <mode>` to `phan_client`. (#1568)
+
   Supported formats: `phan_client` (default), `text`, `json`, `csv`, `codeclimate`, `checkstyle`, or `pylint`
 + Add `--color` to `phan_client` (e.g. for use with `--output-mode text`)
 + Add `--language-server-completion-vscode`. This is a workaround to make completion of variables and static properties work in [the Phan plugin for VS Code](https://github.com/tysonandre/vscode-php-phan)
 
 Plugins:
 + Add a new issue type to `DuplicateExpressionPlugin`: `PhanPluginBothLiteralsBinaryOp`. (#2297)
+
   (warns about suspicious expressions such as `null == 'a literal` in `$x ?? null == 'a literal'`)
 + Support `assertInternalType` in `PHPUnitAssertionPlugin` (#2290)
 + Warn when identical dynamic expressions (e.g. variables, function calls) are used as array keys in `DuplicateArrayKeyPlugin`
