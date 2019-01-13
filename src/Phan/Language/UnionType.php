@@ -2769,17 +2769,17 @@ class UnionType implements Serializable
      */
     public static function internalFunctionSignatureMap(int $target_php_version) : array
     {
-        static $php72_map = [];
+        static $php73_map = [];
 
-        if (!$php72_map) {
-            $php72_map = self::computeLatestFunctionSignatureMap();
+        if (!$php73_map) {
+            $php73_map = self::computeLatestFunctionSignatureMap();
         }
         if ($target_php_version >= 70300) {
-            static $php73_map = [];
-            if (!$php73_map) {
-                $php73_map = self::computePHP73FunctionSignatureMap($php72_map);
-            }
             return $php73_map;
+        }
+        static $php72_map = [];
+        if (!$php72_map) {
+            $php72_map = self::computePHP72FunctionSignatureMap($php73_map);
         }
         if ($target_php_version >= 70200) {
             return $php72_map;
@@ -2817,13 +2817,13 @@ class UnionType implements Serializable
     }
 
     /**
-     * @param array<string,array<int|string,string>> $php72_map
+     * @param array<string,array<int|string,string>> $php73_map
      * @return array<string,array<int|string,string>>
      */
-    private static function computePHP73FunctionSignatureMap(array $php72_map) : array
+    private static function computePHP72FunctionSignatureMap(array $php73_map) : array
     {
         $delta_raw = require(__DIR__ . '/Internal/FunctionSignatureMap_php73_delta.php');
-        return self::applyDeltaToGetNewerSignatures($php72_map, $delta_raw);
+        return self::applyDeltaToGetOlderSignatures($php73_map, $delta_raw);
     }
 
     /**
@@ -2862,6 +2862,7 @@ class UnionType implements Serializable
      * @return array<string,array<int|string,string>>
      *
      * @see applyDeltaToGetOlderSignatures - This is doing the exact same thing in reverse.
+     * @suppress PhanUnreferencedPrivateMethod this will be used again when Phan supports the next PHP minor release
      */
     private static function applyDeltaToGetNewerSignatures(array $older_map, array $delta) : array
     {
