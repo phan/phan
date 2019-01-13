@@ -793,6 +793,9 @@ function example(MyClass $arg) {
 function example2($strVal, array $arrVal) {
     var_export($strVal);
     var_export($arrVal);  // line 20
+    $strVal = (string)$strVal;
+    echo strlen($strVal);
+    $n = ast\parse_code($strVal, 50);
 }
 EOT;
         return [
@@ -864,10 +867,10 @@ EOT
                 new Position(7, 4),  // MY_NAMESPACED_CONST
                 <<<'EOT'
 ```php
-function global_function_with_comment(int $x, $y)
+function global_function_with_comment(int $x, ?string $y) : void
 ```
 
-This has a mix of comments and annotations, annotations are excluded from hover
+This has a mix of comments and annotations, annotations are included in hover
 
 - Markup in comments is preserved,
   and leading whitespace is as well.
@@ -923,6 +926,32 @@ EOT
                 $example_file_contents,
                 new Position(20, 20),  // $arrVal
                 '`array<string,\stdClass>`',
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(22, 10),  // strlen
+                <<<'EOT'
+```php
+function strlen(string $string) : int
+```
+EOT
+                ,
+                null,
+                true
+            ],
+            // Currently, the namespace is left out from the hover text
+            [
+                $example_file_contents,
+                new Position(23, 14),  // ast\parse_code
+                <<<'EOT'
+```php
+namespace ast;
+function parse_code(string $code, int $version, string $filename = default) : \ast\Node
+```
+EOT
+                ,
                 null,
                 true
             ],

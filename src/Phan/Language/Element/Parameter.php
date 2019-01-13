@@ -541,8 +541,10 @@ class Parameter extends Variable
 
     /**
      * Convert this parameter to a stub that can be used by `tool/make_stubs`
+     *
+     * @param bool $is_internal is this being requested for the language server instead of real PHP code?
      */
-    public function toStubString() : string
+    public function toStubString(bool $is_internal = false) : string
     {
         $string = '';
 
@@ -576,7 +578,7 @@ class Parameter extends Variable
             if ($default_value instanceof Node) {
                 $kind = $default_value->kind;
                 if ($kind === \ast\AST_NAME) {
-                    $default_repr = $default_value->children['name'];
+                    $default_repr = (string)$default_value->children['name'];
                 } elseif ($kind === \ast\AST_ARRAY) {
                     $default_repr = '[]';
                 } else {
@@ -584,6 +586,16 @@ class Parameter extends Variable
                 }
             } else {
                 $default_repr = var_export($this->getDefaultValue(), true);
+            }
+            if (strtolower($default_repr) === 'null') {
+                $default_repr = 'null';
+                // If we're certain the parameter isn't nullable,
+                // then render the default as `default`, not `null`
+                if ($is_internal) {
+                    if (!$union_type->isEmpty() && !$union_type->containsNullable()) {
+                        $default_repr = 'default';
+                    }
+                }
             }
             $string .= ' = ' . $default_repr;
         }

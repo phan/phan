@@ -702,12 +702,15 @@ class Method extends ClassElement implements FunctionInterface
         }
         $string .= $this->getName();
 
-        $string .= '(' . implode(', ', array_map(function (Parameter $parameter) : string {
-            return $parameter->toStubString();
-        }, $this->getRealParameterList())) . ')';
+        $string .= '(' . $this->getParameterStubText() . ')';
 
-        if (!$this->getRealReturnType()->isEmpty()) {
-            $string .= ' : ' . (string)$this->getRealReturnType();
+        if ($this->isPHPInternal()) {
+            $return_type = $this->getUnionType();
+        } else {
+            $return_type = $this->real_return_type;
+        }
+        if ($return_type && !$return_type->isEmpty()) {
+            $string .= ' : ' . (string)$return_type;
         }
 
         return $string;
@@ -752,9 +755,7 @@ class Method extends ClassElement implements FunctionInterface
         }
         $string .= $this->getName();
 
-        $string .= '(' . implode(', ', array_map(function (Parameter $parameter) : string {
-            return $parameter->toStubString();
-        }, $this->getRealParameterList())) . ')';
+        $string .= '(' . $this->getRealParameterStubText() . ')';
 
         if (!$this->getRealReturnType()->isEmpty()) {
             $string .= ' : ' . (string)$this->getRealReturnType();

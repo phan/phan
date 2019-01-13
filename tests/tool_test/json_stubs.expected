@@ -9,8 +9,8 @@ interface JsonSerializable {
     function jsonSerialize();
 }
 
-function json_decode($json, $assoc = NULL, $depth = NULL, $options = NULL) {}
-function json_encode($value, $options = NULL, $depth = NULL) {}
+function json_decode($json, $assoc = null, $depth = null, $options = null) {}
+function json_encode($value, $options = null, $depth = null) {}
 function json_last_error() {}
 function json_last_error_msg() {}
 const JSON_BIGINT_AS_STRING = 2;

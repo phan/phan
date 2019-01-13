@@ -36,14 +36,14 @@ class MyNamespacedClass {
 
 namespace {
 /**
- * This has a mix of comments and annotations, annotations are excluded from hover
+ * This has a mix of comments and annotations, annotations are included in hover
  *
  * - Markup in comments is preserved,
  *   and leading whitespace is as well.
  *
  * @param ?string $y
  * @return void
- * Comment lines after the first phpdoc tag are ignored
+ * Comment lines after the first phpdoc tag are ignored (with a few exceptions)
  */
 function global_function_with_comment(int $x, $y) {
 }

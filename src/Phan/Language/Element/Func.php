@@ -385,11 +385,31 @@ class Func extends AddressableElement implements FunctionInterface
 
     public function getMarkupDescription() : string
     {
-        list($unused_namespace, $text) = $this->toStubInfo();
-        return rtrim($text, "\n {}");
+        $fqsen = $this->getFQSEN();
+        $namespace = ltrim($fqsen->getNamespace(), '\\');
+        $stub = '';
+        if ($namespace) {
+            $stub = "namespace $namespace;\n";
+        }
+        $stub .= 'function ';
+        if ($this->returnsRef()) {
+            $stub .= '&';
+        }
+        $stub .= $fqsen->getName();
+
+        $stub .= '(' . $this->getParameterStubText() . ')';
+
+        $return_type = $this->getUnionType();
+        if ($return_type && !$return_type->isEmpty()) {
+            $stub .= ' : ' . (string)$return_type;
+        }
+        return $stub;
     }
 
-    /** @return array{0:string,1:string} [string $namespace, string $text] */
+    /**
+     * Returns stub info for `tool/make_stubs`
+     * @return array{0:string,1:string} [string $namespace, string $text]
+     */
     public function toStubInfo() : array
     {
         $fqsen = $this->getFQSEN();
@@ -398,11 +418,12 @@ class Func extends AddressableElement implements FunctionInterface
             $stub .= '&';
         }
         $stub .= $fqsen->getName();
-        $stub .= '(' . implode(', ', array_map(function (Parameter $parameter) : string {
-            return $parameter->toStubString();
-        }, $this->getRealParameterList())) . ')';
-        if ($this->real_return_type && !$this->getRealReturnType()->isEmpty()) {
-            $stub .= ' : ' . (string)$this->getRealReturnType();
+
+        $stub .= '(' . $this->getRealParameterStubText() . ')';
+
+        $return_type = $this->real_return_type;
+        if ($return_type && !$return_type->isEmpty()) {
+            $stub .= ' : ' . (string)$return_type;
         }
         $stub .= " {}\n";
         $namespace = ltrim($fqsen->getNamespace(), '\\');

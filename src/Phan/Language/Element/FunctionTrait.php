@@ -1683,4 +1683,24 @@ trait FunctionTrait
         }
         return null;
     }
+
+    /**
+     * Returns stub text for the phpdoc parameters that can be used in markdown
+     */
+    protected function getParameterStubText() : string
+    {
+        return implode(', ', array_map(function (Parameter $parameter) : string {
+            return $parameter->toStubString($this->isPHPInternal());
+        }, $this->getParameterList()));
+    }
+
+    /**
+     * Returns stub text for the real parameters that can be used in `tool/make_stubs`
+     */
+    protected function getRealParameterStubText() : string
+    {
+        return implode(', ', array_map(function (Parameter $parameter) : string {
+            return $parameter->toStubString();
+        }, $this->getRealParameterList()));
+    }
 }

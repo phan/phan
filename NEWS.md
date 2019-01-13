@@ -18,6 +18,8 @@ Language Server/Daemon mode:
   Supported formats: `phan_client` (default), `text`, `json`, `csv`, `codeclimate`, `checkstyle`, or `pylint`
 + Add `--color` to `phan_client` (e.g. for use with `--output-mode text`)
 + Add `--language-server-completion-vscode`. This is a workaround to make completion of variables and static properties work in [the Phan plugin for VS Code](https://github.com/tysonandre/vscode-php-phan)
++ Include Phan's signature types in hover text for internal and user-defined methods (instead of just the real types) (#2309)
+  Also, show defaults of non-nullable parameters as `= default` instead of `= null`
 
 Plugins:
 + Add a new issue type to `DuplicateExpressionPlugin`: `PhanPluginBothLiteralsBinaryOp`. (#2297)
