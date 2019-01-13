@@ -263,7 +263,7 @@ Usage: ./phan [options] [files...]
     and will not include those paths in the generated config.
   [--init-overwrite] will allow 'phan --init' to overwrite .phan/config.php.
 
- --color
+ -C, --color
   Add colors to the outputted issues. Tested in Unix.
   This is recommended for only the default --output-mode ('text')
 
@@ -314,23 +314,31 @@ Usage: ./phan [options] [files...]
  --disable-plugins
   Don't run any plugins. Slightly faster.
 
- --plugin <pluginName|path/to/Plugin.php>
+ -P, --plugin <pluginName|path/to/Plugin.php>
   Add a plugin to run. This flag can be repeated.
   (Either pass the name of the plugin or a relative/absolute path to the plugin)
 
  --strict-method-checking
-  Enables the config option `strict_method_checking`.
+  Warn if any type in a method invocation's object is definitely not an object,
+  or any type in an invoked expression is not a callable.
+  (Enables the config option `strict_method_checking`)
 
  --strict-param-checking
-  Enables the config option `strict_param_checking`.
+  Warn if any type in an argument's union type cannot be cast to
+  the parameter's expected union type.
+  (Enables the config option `strict_param_checking`)
 
  --strict-property-checking
-  Enables the config option `strict_property_checking`.
+  Warn if any type in a property assignment's union type
+  cannot be cast to a type in the property's declared union type.
+  (Enables the config option `strict_property_checking`)
 
  --strict-return-checking
-  Enables the config option `strict_return_checking`.
+  Warn if any type in a returned value's union type
+  cannot be cast to the declared return type.
+  (Enables the config option `strict_return_checking`)
 
- --strict-type-checking
+ -S, --strict-type-checking
   Equivalent to
   `--strict-method-checking --strict-param-checking --strict-property-checking --strict-return-checking`.
 
