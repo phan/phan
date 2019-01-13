@@ -38,6 +38,7 @@ return [
     'mb_ord' => ['int', 'str'=>'string', 'enc='=>'string'],
     'mb_scrub' => ['string', 'str'=>'string', 'enc='=>'string'],
     'oci_register_taf_callback' => ['bool', 'connection'=>'resource', 'callback='=>'callable'],
+    'oci_set_call_timeout' => ['bool', 'connection'=>'resource', 'time_out'=>'int'],
     'oci_unregister_taf_callback' => ['bool', 'connection'=>'resource'],
     'ReflectionClass::isIterable' => ['bool'],
     'SQLite3::openBlob' => ['resource', 'table'=>'string', 'column'=>'string', 'rowid'=>'int', 'dbname'=>'string', 'flags='=>'int'],
