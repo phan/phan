@@ -646,7 +646,7 @@ allows casting null to a string, but not vice versa.
 
 ## strict_method_checking
 
-If enabled, Phan will warn if **any** type in a method's object expression
+If enabled, Phan will warn if **any** type in a method invocation's object
 is definitely not an object,
 or if **any** type in an invoked expression is not a callable.
 Setting this to true will introduce numerous false positives
@@ -656,8 +656,17 @@ Setting this to true will introduce numerous false positives
 
 ## strict_param_checking
 
-If enabled, Phan will warn if **any** type in the argument's type
-cannot be cast to a type in the parameter's expected type.
+If enabled, Phan will warn if **any** type in the argument's union type
+cannot be cast to a type in the parameter's expected union type.
+Setting this to true will introduce numerous false positives
+(and reveal some bugs).
+
+(Default: `false`)
+
+## strict_property_checking
+
+If enabled, Phan will warn if **any** type in a property assignment's union type
+cannot be cast to a type in the property's declared union type.
 Setting this to true will introduce numerous false positives
 (and reveal some bugs).
 
@@ -665,8 +674,8 @@ Setting this to true will introduce numerous false positives
 
 ## strict_return_checking
 
-If enabled, Phan will warn if **any** type in the return value's type
-cannot be cast to a type in the declared return type.
+If enabled, Phan will warn if **any** type in a returned value's union type
+cannot be cast to the declared return type.
 Setting this to true will introduce numerous false positives
 (and reveal some bugs).
 

@@ -299,21 +299,27 @@ class Config
         // will cut down on false positives.
         'null_casts_as_any_type' => false,
 
-        // If enabled, Phan will warn if **any** type in a method's object expression
+        // If enabled, Phan will warn if **any** type in a method invocation's object
         // is definitely not an object,
         // or if **any** type in an invoked expression is not a callable.
         // Setting this to true will introduce numerous false positives
         // (and reveal some bugs).
         'strict_method_checking' => false,
 
-        // If enabled, Phan will warn if **any** type in the argument's type
-        // cannot be cast to a type in the parameter's expected type.
+        // If enabled, Phan will warn if **any** type in the argument's union type
+        // cannot be cast to a type in the parameter's expected union type.
         // Setting this to true will introduce numerous false positives
         // (and reveal some bugs).
         'strict_param_checking' => false,
 
-        // If enabled, Phan will warn if **any** type in the return value's type
-        // cannot be cast to a type in the declared return type.
+        // If enabled, Phan will warn if **any** type in a property assignment's union type
+        // cannot be cast to a type in the property's declared union type.
+        // Setting this to true will introduce numerous false positives
+        // (and reveal some bugs).
+        'strict_property_checking' => false,
+
+        // If enabled, Phan will warn if **any** type in a returned value's union type
+        // cannot be cast to the declared return type.
         // Setting this to true will introduce numerous false positives
         // (and reveal some bugs).
         'strict_return_checking' => false,
