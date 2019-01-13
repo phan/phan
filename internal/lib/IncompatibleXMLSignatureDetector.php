@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use Phan\Config;
+use Phan\Memoize;
 
 require_once __DIR__ . '/IncompatibleSignatureDetectorBase.php';
 require_once __DIR__ . '/IncompatibleStubsSignatureDetector.php';
@@ -19,6 +20,8 @@ require_once __DIR__ . '/IncompatibleStubsSignatureDetector.php';
  */
 class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
 {
+    use Memoize;
+
     /** @var string the directory for english PHP element references */
     private $reference_directory;
 
@@ -82,17 +85,33 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         return $realpath;
     }
 
-    /** @var array<string,array<string,string>> a set of unique file names */
-    private $files_for_function_name_list;
-
-
     /** @return array<string,array<string,string>> a set of unique file names */
     private function getFilesForFunctionNameList() : array
     {
-        if ($this->files_for_function_name_list === null) {
-            $this->files_for_function_name_list = $this->populateFilesForFunctionNameList();
-        }
-        return $this->files_for_function_name_list;
+        return $this->memoize(__METHOD__, /** @return array<string,array<string,string>> */ function () {
+            $files_for_function_name_list = [];
+            $reference_directory = $this->reference_directory;
+            foreach (static::scandir($reference_directory) as $subpath) {
+                $functions_subsubdir = "$reference_directory/$subpath/functions";
+                if (is_dir($functions_subsubdir)) {
+                    foreach (static::scandirForXML($functions_subsubdir) as $function_doc_fullpath => $unused_function_name) {
+                        $xml = $this->getSimpleXMLForFile($function_doc_fullpath);
+                        if (!$xml) {
+                            continue;
+                        }
+                        $real_function_name = $this->getFunctionNameFromXML($xml);
+                        if (!$real_function_name) {
+                            continue;
+                        }
+                        if (in_array($real_function_name, static::INVALID_FUNCTION_NAMES, true)) {
+                            continue;
+                        }
+                        $files_for_function_name_list[strtolower($real_function_name)][$function_doc_fullpath] = $function_doc_fullpath;
+                    }
+                }
+            }
+            return $files_for_function_name_list;
+        });
     }
 
     /**
@@ -122,35 +141,6 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         // Deprecated method that has an effect if defined by PHP code.
         '__autoload',
     ];
-
-    /**
-     * @return array<string,array<string,string>>
-     */
-    private function populateFilesForFunctionNameList() : array
-    {
-        $this->files_for_function_name_list = [];
-        $reference_directory = $this->reference_directory;
-        foreach (static::scandir($reference_directory) as $subpath) {
-            $functions_subsubdir = "$reference_directory/$subpath/functions";
-            if (is_dir($functions_subsubdir)) {
-                foreach (static::scandirForXML($functions_subsubdir) as $function_doc_fullpath => $unused_function_name) {
-                    $xml = $this->getSimpleXMLForFile($function_doc_fullpath);
-                    if (!$xml) {
-                        continue;
-                    }
-                    $real_function_name = $this->getFunctionNameFromXML($xml);
-                    if (!$real_function_name) {
-                        continue;
-                    }
-                    if (in_array($real_function_name, static::INVALID_FUNCTION_NAMES, true)) {
-                        continue;
-                    }
-                    $this->files_for_function_name_list[strtolower($real_function_name)][$function_doc_fullpath] = $function_doc_fullpath;
-                }
-            }
-        }
-        return $this->files_for_function_name_list;
-    }
 
     /**
      * @var array<string,array<string,string>>
@@ -289,6 +279,16 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 // TODO: Sort .php.extra_signatures and .php.new
 
                 break;
+            case 'update-descriptions-svn':
+                if (count($argv) !== 3) {
+                    fwrite(STDERR, "Invalid argument count, update-descriptions-svn expects 1 argument\n");
+                    static::printUsageAndExit();
+                }
+                // TODO: Add a way to exclude /tests/
+                $detector = new IncompatibleXMLSignatureDetector($argv[2]);
+                $detector->selfTest();
+                $detector->updatePHPDocSummaries();
+                break;
             case 'help':
             case '--help':
             case '-h':
@@ -298,6 +298,33 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 fwrite(STDERR, "Invalid command '$command'\n");
                 static::printUsageAndExit(1);
         }
+    }
+
+    /**
+     * Update phpdoc summaries of elements with the docs from php.net
+     *
+     * @return void
+     */
+    private function updatePHPDocSummaries()
+    {
+        $this->updatePHPDocFunctionSummaries();
+        $this->updatePHPDocConstantSummaries();
+    }
+
+    private function updatePHPDocFunctionSummaries()
+    {
+        $new_function_documentation = $this->getAvailableMethodPHPDocSummaries();
+        $new_function_documentation_path = ORIGINAL_FUNCTION_DOCUMENTATION_PATH . '.new';
+        static::info("Saving modified function descriptions to $new_function_documentation_path\n");
+        static::saveFunctionDocumentationMap($new_function_documentation_path, $new_function_documentation);
+    }
+
+    private function updatePHPDocConstantSummaries()
+    {
+        $new_constant_documentation = $this->getAvailableConstantPHPDocSummaries();
+        $new_constant_documentation_path = ORIGINAL_CONSTANT_DOCUMENTATION_PATH . '.new';
+        static::info("Saving modified constant descriptions to $new_constant_documentation_path\n");
+        static::saveConstantDocumentationMap($new_constant_documentation_path, $new_constant_documentation);
     }
 
     /**
@@ -340,9 +367,9 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     }
 
     /**
-     * @return ?array<mixed,string>
+     * @return ?SimpleXMLElement the simple xml for the global function $function_name
      */
-    public function parseFunctionSignature(string $function_name)
+    public function getSimpleXMLForFunctionSignature(string $function_name)
     {
         $function_name_lc = strtolower($function_name);
         $function_name_file_map = $this->getFilesForFunctionNameList();
@@ -360,13 +387,19 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
             static::info("invalid signature file\n");
             return null;
         }
-        $signature_file_contents = file_get_contents($signature_file);
-        if (!is_string($signature_file_contents)) {
-            static::info("Could not read '$signature_file'\n");
+        // Not sure if there's a good way of using an external entity file in PHP.
+        return $this->getSimpleXMLForFile($signature_file);
+    }
+
+    /**
+     * @return ?array<mixed,string>
+     */
+    public function parseFunctionSignature(string $function_name)
+    {
+        $xml = $this->getSimpleXMLForFunctionSignature($function_name);
+        if ($xml === null) {
             return null;
         }
-        // Not sure if there's a good way of using an external entity file in PHP.
-        $xml = $this->getSimpleXMLForFile($signature_file);
         return $this->parseFunctionLikeSignatureForXML($function_name, $xml);
     }
 
@@ -435,12 +468,10 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         }
         $class_folder = \reset($class_name_files);
         $method_filename = "$class_folder/" . str_replace('_', '-', $method_name_lc) . ".xml";
-        if (!is_file($method_filename)) {
-            static::debug("Could not find $method_filename\n");
-            // TODO: What about inherited methods?
+        $xml = $this->getSimpleXMLForFile($method_filename);
+        if ($xml === null) {
             return null;
         }
-        $xml = $this->getSimpleXMLForFile($method_filename);
         return $this->parseFunctionLikeSignatureForXML("{$class_name}::{$method_name}", $xml);
     }
 
@@ -650,7 +681,6 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
      */
     protected function getAvailableGlobalFunctionSignatures() : array
     {
-
         return $this->memoize(__METHOD__, /** @return array<string,array<int|string,string>> */ function () : array {
             $function_name_map = [];
             foreach ($this->getFilesForFunctionNameList() as $function_name => $unused_files) {
@@ -661,6 +691,198 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 $function_name_map[$function_name] = $signature_from_doc;
             }
             return $function_name_map;
+        });
+    }
+
+    /**
+     * Normalize the extracted XML and convert it to markdown/HTML.
+     * @return ?string - Returns null if this is just a placeholder
+     */
+    private static function convertXMLToMarkdown(string $text)
+    {
+        $result = preg_replace_callback(
+            '/BEGINENTITY(\S*)ENDENTITY/',
+            /**
+             * @param array{0:string,1:string} $matches
+             */
+            static function (array $matches) : string {
+                $text = $matches[1];
+                $text = trim(preg_replace("/\\s+/m", " ", $text));
+                if (strtolower($text) === 'alias') {
+                    return 'Alias of';
+                }
+                return "<code>$text</code>";
+            },
+            trim($text)
+        );
+        switch (strtolower($result)) {
+            case '':
+                return null;
+        }
+        return $result;
+    }
+
+    /**
+     * Normalize the extracted XML and convert it to markdown/HTML for a summary.
+     * @return ?string - Returns null if this is just a placeholder
+     */
+    private static function normalizeExtractedXMLSummary(string $text)
+    {
+        $result = preg_replace('/\s+/m', ' ', self::convertXMLToMarkdown($text) ?? '');
+        if (!$result) {
+            return null;
+        }
+        if (strtolower($result) === 'description') {
+            return null;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Returns short phpdoc summaries of method signatures
+     *
+     * @return array<string,string>
+     */
+    protected function getAvailableMethodPHPDocSummaries() : array
+    {
+        return $this->memoize(__METHOD__, /** @return array<string,string> */ function () : array {
+            $method_name_map = [];
+            $maybe_add_refpurpose = function (string $name, SimpleXMLElement $xml) use (&$method_name_map) {
+                $refpurpose = $xml->xpath('//a:refentry/a:refnamediv/a:refpurpose');
+                if (is_array($refpurpose) && count($refpurpose) === 1) {
+                    $refpurpose = $refpurpose[0];
+                    if ($refpurpose instanceof SimpleXMLElement) {
+                        // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
+                        $refpurpose = strip_tags($refpurpose->asXML());
+                    }
+                    // echo "Looking at $method_name: refpurpose = $refpurpose\n";
+                    if (!$refpurpose) {
+                        return;
+                    }
+                    $refpurpose = self::normalizeExtractedXMLSummary(trim($refpurpose));
+                    if (!$refpurpose) {
+                        return;
+                    }
+                    $method_name_map[$name] = $refpurpose;
+                }
+            };
+            foreach ($this->getFoldersForClassNameList() as $class_name => $unused_folder) {
+                foreach ($this->getMethodsForClassName($class_name) ?? [] as $method_name => $xml) {
+                    $maybe_add_refpurpose($method_name, $xml);
+                }
+            }
+            foreach ($this->getFilesForFunctionNameList() as $function_name => $unused_files) {
+                $xml = $this->getSimpleXMLForFunctionSignature($function_name);
+                // echo "Looking at $function_name\n";
+                if (!$xml) {
+                    // echo "Could not find xml\n";
+                    continue;
+                }
+                $maybe_add_refpurpose($function_name, $xml);
+            }
+            self::sortSignatureMap($method_name_map);
+            return $method_name_map;
+        });
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    protected function getAvailableConstantPHPDocSummaries() : array
+    {
+        return $this->memoize(__METHOD__, /** @return array<string,string> */ function () : array {
+            $constant_name_map = [];
+            foreach ($this->getFilesForConstants() as $xml_file_name) {
+                $xml = $this->getSimpleXMLForFile($xml_file_name);
+                if (!$xml) {
+                    fwrite(STDERR, "Failed to parse XML for $xml_file_name\n");
+                    continue;
+                }
+                $constants_entries = $xml->xpath('//a:variablelist/a:varlistentry');
+                // var_export($constants_entries);
+                if (!is_array($constants_entries)) {
+                    continue;
+                }
+                $constant_name_map += self::extractEntries($constants_entries);
+            }
+            self::sortSignatureMap($constant_name_map);
+            return $constant_name_map;
+        });
+    }
+
+    /**
+     * @return ?string
+     */
+    private static function convertXMLElementToMarkdown(SimpleXMLElement $element) {
+        // TODO: Do a better job than strip_tags(), convert <literal> to <code>
+        return self::convertXMLToMarkdown(preg_replace('/\s+/m', ' ', strip_tags((string)$element->asXML())));
+    }
+
+    /**
+     * @param array<int,SimpleXMLElement> $constants_entries
+     * @return array<string,string>
+     */
+    private static function extractEntries(array $constants_entries) : array
+    {
+        $result = [];
+        foreach ($constants_entries as $entry)
+        {
+            $entry->registerXPathNamespace('a', 'http://docbook.org/ns/docbook');
+            $name = $entry->term->constant;
+            // var_export($entry);
+            // echo "The extracted names are:\n";
+            // var_export($name);
+            if ($name->count() !== 1) {
+                fwrite(STDERR, "Failed to parse $entry\n");
+                continue;
+            }
+            $name = (string)$name[0];
+            $description_paragraphs = $entry->listitem->simpara;
+            if (count($description_paragraphs) === 0) {
+                // fwrite(STDERR, "Failed to extract description for $entry\n");
+                continue;
+            }
+            $lines = [];
+            foreach ($description_paragraphs as $element) {
+                // TODO: Do a better job than strip_tags
+                $line = self::convertXMLElementToMarkdown($element);
+                // fwrite(STDERR, "Extracted $line from $element\n");
+                if ($line) {
+                    $lines[] = preg_replace('/\s+/m', ' ', $line);
+                }
+            }
+            if (!$lines) {
+                continue;
+            }
+            $result[$name] = implode("\n\n", $lines);
+            echo "$name: $result[$name]\n";
+        }
+        self::sortSignatureMap($result);
+        return $result;
+    }
+
+    /**
+     * @return array<string,string> maps extension name to constants.xml
+     */
+    private function getFilesForConstants() : array
+    {
+        return $this->memoize(__METHOD__, /** @return array<string,string> */ function () : array {
+            $constants_files = [];
+            $reserved_constants_file = $this->doc_base_directory . '/en/appendices/reserved.constants.core.xml';
+            if (!file_exists($reserved_constants_file)) {
+                throw new RuntimeException("Failed to load $reserved_constants_file");
+            }
+            $constants_files['reserved.core'] = $reserved_constants_file;
+
+            foreach (static::scandir($this->reference_directory) as $extension) {
+                $subpath = $this->reference_directory . "/$extension";
+                $constants_file_name = "$subpath/constants.xml";
+                if (file_exists($constants_file_name)) {
+                    $constants_files[$extension] = $constants_file_name;
+                }
+            }
+            return $constants_files;
         });
     }
 

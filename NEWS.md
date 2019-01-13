@@ -8,6 +8,9 @@ New features(Analysis):
 + Add `@phan-suppress-next-next-line` to suppress issues on the line 2 lines below the comment. This is useful in block comments/doc comments. (#2470)
 + Add `@phan-suppress-previous-line` to suppress issues on the line above the comment. (#2470)
 
+Language Server/Daemon mode:
++ Show plaintext summaries of internal functions, methods, and constants when hover text is requested.
+
 Plugins:
 + Add `HandleLazyLoadInternalFunctionCapability` so that plugins can modify Phan's information about internal global functions when those functions are loaded after analysis starts.
 + Add `SuspiciousParamOrderPlugin` which guesses if arguments to functions are out of order based on the names used in the argument expressions.

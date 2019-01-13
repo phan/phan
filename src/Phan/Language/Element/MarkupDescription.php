@@ -34,11 +34,71 @@ class MarkupDescription
     }
 
     /**
+     * @return array<string,string> mapping lowercase function/method FQSENs to short summaries.
+     * @internal - The data format may change
+     */
+    public static function loadFunctionDescriptionMap() : array
+    {
+        static $descriptions = null;
+        if (is_array($descriptions)) {
+            return $descriptions;
+        }
+        $descriptions = [];
+        foreach (require(dirname(__DIR__) . '/Internal/FunctionDocumentationMap.php') as $fqsen => $summary) {
+            $descriptions[strtolower($fqsen)] = $summary;
+        }
+        return $descriptions;
+    }
+
+    /**
+     * @return array<string,string> mapping lowercase constant/class constant FQSENs to short summaries.
+     * @internal - The data format may change
+     */
+    public static function loadConstantDescriptionMap() : array
+    {
+        static $descriptions = null;
+        if (is_array($descriptions)) {
+            return $descriptions;
+        }
+        $descriptions = [];
+        foreach (require(dirname(__DIR__) . '/Internal/ConstantDocumentationMap.php') as $fqsen => $summary) {
+            $descriptions[strtolower($fqsen)] = $summary;
+        }
+        return $descriptions;
+    }
+
+    /**
      * Extracts a plaintext description of the element from the doc comment of an element.
+     * (or from FunctionDocumentationMap.php)
      *
      * @return ?string
      */
     public static function extractDescriptionFromDocComment(AddressableElementInterface $element)
+    {
+        $extracted_doc_comment = self::extractDescriptionFromDocCommentRaw($element);
+        if ($extracted_doc_comment) {
+            return $extracted_doc_comment;
+        }
+
+        // This is an element internal to PHP.
+        if ($element->isPHPInternal()) {
+            if ($element instanceof FunctionInterface) {
+                // This is a function/method - Use Phan's FunctionDocumentationMap.php to try to load a markup description.
+                $key = strtolower(ltrim((string)$element->getFQSEN(), '\\'));
+                return self::loadFunctionDescriptionMap()[$key] ?? null;
+            } elseif ($element instanceof ConstantInterface) {
+                // This is a class or global constant - Use Phan's ConstantDocumentationMap.php to try to load a markup description.
+                $key = strtolower(ltrim((string)$element->getFQSEN(), '\\'));
+                return self::loadConstantDescriptionMap()[$key] ?? null;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return ?string
+     */
+    private static function extractDescriptionFromDocCommentRaw(AddressableElementInterface $element)
     {
         $doc_comment = $element->getDocComment();
         if (!$doc_comment) {
