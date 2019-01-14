@@ -10,7 +10,7 @@ php:
 
 # NOTE: Travis starts up 5 test suites at a time.
 # So, it's faster to run all of the tests at once per supported PHP version.
-dist: trusty
+dist: xenial
 sudo: false
 
 cache:
