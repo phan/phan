@@ -2,7 +2,6 @@
 
 namespace Phan\Output\Printer;
 
-use AssertionError;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Output\IssuePrinterInterface;
@@ -55,7 +54,8 @@ final class PylintPrinter implements IssuePrinterInterface
             case Issue::SEVERITY_CRITICAL:
                 return 'E' . $category_id;
             default:
-                throw new AssertionError("Unrecognized severity for " . __METHOD__ . ": " . $issue->getSeverity());
+                fwrite(STDERR, "Unrecognized severity for " . $instance . ": " . $issue->getSeverity() . " (expected 0, 5, or 10)\n");
+                return 'E' . $category_id;
         }
     }
 
