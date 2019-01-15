@@ -25,6 +25,7 @@ Language Server/Daemon mode:
 + Include Phan's signature types in hover text for internal and user-defined methods (instead of just the real types) (#2309)
   Also, show defaults of non-nullable parameters as `= default` instead of `= null`
 + Properly return a result set when requesting variable completion of `$` followed by nothing.
++ Fix code completion when `--language-server-analyze-only-on-save` is on. (#2327)
 
 Plugins:
 + Add a new issue type to `DuplicateExpressionPlugin`: `PhanPluginBothLiteralsBinaryOp`. (#2297)
