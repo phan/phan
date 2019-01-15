@@ -147,8 +147,11 @@ class TextDocument
             $this->file_mapping->addOverrideURI($textDocument->uri, $change->text);
         }
         Logger::logInfo("Called textDocument/didChange, uri={$textDocument->uri} version={$textDocument->version}");
+        if (Config::getValue('language_server_analyze_only_on_save')) {
+            // Track the change to the file, but don't trigger analysis.
+            return;
+        }
         $this->server->analyzeURIAsync($textDocument->uri);
-
         // TODO:   Maybe allow reloading .phan/config, at least the files and directories to parse/analyze
     }
 

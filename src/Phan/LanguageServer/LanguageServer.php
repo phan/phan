@@ -928,7 +928,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     {
         $textDocumentSyncOptions = new TextDocumentSyncOptions();
         $textDocumentSyncOptions->openClose = true;
-        $textDocumentSyncOptions->change = Config::getValue('language_server_analyze_only_on_save') ? TextDocumentSyncKind::NONE : TextDocumentSyncKind::FULL;
+        $textDocumentSyncOptions->change = TextDocumentSyncKind::FULL;
 
         $saveOptions = new SaveOptions();
         $saveOptions->includeText = true;

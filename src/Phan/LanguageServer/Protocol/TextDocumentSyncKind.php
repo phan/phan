@@ -13,6 +13,7 @@ abstract class TextDocumentSyncKind
 {
     /**
      * Documents should not be synced at all.
+     * @suppress PhanUnreferencedPublicClassConstant (unused)
      */
     const NONE = 0;
 
