@@ -104,6 +104,7 @@ class TolerantASTConverter
 
     const INCOMPLETE_CLASS_CONST = '__INCOMPLETE_CLASS_CONST__';
     const INCOMPLETE_PROPERTY = '__INCOMPLETE_PROPERTY__';
+    const INCOMPLETE_VARIABLE = '__INCOMPLETE_VARIABLE__';
 
     /**
      * @var int - A version in SUPPORTED_AST_VERSIONS
@@ -499,7 +500,7 @@ class TolerantASTConverter
                     $var_node = static::phpParserNodeToAstNode($n->leftOperand);
                 } catch (InvalidNodeException $_) {
                     if (self::$should_add_placeholders) {
-                        $var_node = new ast\Node(ast\AST_VAR, 0, ['name' => '__INCOMPLETE_VARIABLE__'], $start_line);
+                        $var_node = new ast\Node(ast\AST_VAR, 0, ['name' => self::INCOMPLETE_VARIABLE], $start_line);
                     } else {
                         // convert `;= $b;` to `;$b;`
                         return static::phpParserNodeToAstNode($n->rightOperand);

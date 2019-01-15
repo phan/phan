@@ -99,6 +99,9 @@ class CompletionResolver
                     if (!is_string($var_name)) {
                         return;
                     }
+                    if ($var_name === TolerantASTConverter::INCOMPLETE_VARIABLE) {
+                        $var_name = '';
+                    }
                     self::locateVariableCompletion($request, $code_base, $context, $var_name);
                     return;
             }

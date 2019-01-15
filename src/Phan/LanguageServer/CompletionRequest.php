@@ -71,7 +71,7 @@ final class CompletionRequest extends NodeInfoRequest
     /**
      * Records the definition of an element that can be used for a code completion
      *
-     * @param CodeBase $code_base used for resolving type location in "Go To Type Definition"
+     * @param CodeBase $code_base used for resolving type location in "Completion"
      * @param ClassConstant|Clazz|Func|GlobalConstant|Method|Property|Variable $element
      * @return void
      */
