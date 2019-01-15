@@ -306,6 +306,7 @@ EOT;
             // strict param/return checking has a lot of false positives. Limit it to the strongest analysis level.
             'strict_param_checking'    => $is_strongest_level,
             'strict_return_checking'   => $is_strongest_level,
+            'strict_property_checking' => $is_strongest_level,
             'ignore_undeclared_variables_in_global_scope' => $is_average_level,
             'ignore_undeclared_functions_with_known_signatures' => $is_strong_or_weaker_level,
             'backward_compatibility_checks' => false,  // this is slow
