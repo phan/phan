@@ -24,6 +24,7 @@ Language Server/Daemon mode:
 + Add `--language-server-completion-vscode`. This is a workaround to make completion of variables and static properties work in [the Phan plugin for VS Code](https://github.com/tysonandre/vscode-php-phan)
 + Include Phan's signature types in hover text for internal and user-defined methods (instead of just the real types) (#2309)
   Also, show defaults of non-nullable parameters as `= default` instead of `= null`
++ Properly return a result set when requesting variable completion of `$` followed by nothing.
 
 Plugins:
 + Add a new issue type to `DuplicateExpressionPlugin`: `PhanPluginBothLiteralsBinaryOp`. (#2297)
