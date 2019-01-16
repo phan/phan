@@ -158,8 +158,10 @@ final class StringUtil
                 if (isset(self::REPLACEMENTS[$str])) {
                     return self::REPLACEMENTS[$str];
                 } elseif ('x' === $str[0] || 'X' === $str[0]) {
+                    // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal
                     return chr(hexdec($str));
                 } elseif ('u' === $str[0]) {
+                    // @phan-suppress-next-line PhanPartialTypeMismatchArgument
                     return self::codePointToUtf8(hexdec($matches[2]));
                 } else {
                     return chr(octdec($str));

@@ -163,7 +163,8 @@ final class ConversionTest extends BaseTest
         try {
             $fallback_ast = $converter->parseCodeAsPHPAST($contents, $ast_version);
         } catch (\Throwable $e) {
-            throw new \RuntimeException("Error parsing $file_name with ast version $ast_version", $e->getCode(), $e);
+            $code = $e->getCode();
+            throw new \RuntimeException("Error parsing $file_name with ast version $ast_version", is_int($code) ? $code : 1, $e);
         }
         $this->assertInstanceOf('\ast\Node', $fallback_ast, 'The fallback must also return a tree of php-ast nodes');
 
