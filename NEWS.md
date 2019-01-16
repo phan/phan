@@ -15,6 +15,7 @@ New features(Analysis):
 Maintenance:
 + End the output for `--output-mode <json>` with a newline.
 + Upgrade tolerant-php-parser, making the polyfill/fallback properly parse `$a && $b = $c` (#2180)
++ Add updates to the function/method signature map from Psalm and PHPStan.
 
 Language Server/Daemon mode:
 + Add `--output-mode <mode>` to `phan_client`. (#1568)
