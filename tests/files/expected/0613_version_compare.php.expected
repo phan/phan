@@ -1,0 +1,2 @@
+%s:4 PhanTypeMismatchArgumentInternal Argument 3 (oper) is 'EQ' but \version_compare() takes '!='|'='|'=='|'\x3c'|'\x3c='|'\x3c\x3e'|'\x3e'|'\x3e='|'eq'|'ge'|'gt'|'le'|'lt'|'ne'
+%s:5 PhanTypeMismatchArgumentInternal Argument 3 (oper) is null but \version_compare() takes '!='|'='|'=='|'\x3c'|'\x3c='|'\x3c\x3e'|'\x3e'|'\x3e='|'eq'|'ge'|'gt'|'le'|'lt'|'ne'
