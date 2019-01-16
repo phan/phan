@@ -362,39 +362,39 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     }
 
     /**
-     * @param Node $node
+     * @param Node $unused_node
      * A node to check types on
      *
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryBoolAnd(Node $node) : UnionType
+    public function visitBinaryBoolAnd(Node $unused_node) : UnionType
     {
-        return $this->visitBinaryBool($node);
+        return BoolType::instance(false)->asUnionType();
     }
 
     /**
-     * @param Node $node
+     * @param Node $unused_node
      * A node to check types on
      *
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryBoolXor(Node $node) : UnionType
+    public function visitBinaryBoolXor(Node $unused_node) : UnionType
     {
-        return $this->visitBinaryBool($node);
+        return BoolType::instance(false)->asUnionType();
     }
 
     /**
-     * @param Node $node
+     * @param Node $unused_node
      * A node to check types on
      *
      * @return UnionType
      * The resulting type(s) of the binary operation
      */
-    public function visitBinaryBoolOr(Node $node) : UnionType
+    public function visitBinaryBoolOr(Node $unused_node) : UnionType
     {
-        return $this->visitBinaryBool($node);
+        return BoolType::instance(false)->asUnionType();
     }
 
     /**
@@ -850,35 +850,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     {
         // TODO: Warn about invalid left or right side
         return IntType::instance(false)->asUnionType();
-    }
-
-    /**
-     * Common visitor for binary boolean operations
-     *
-     * @param Node $node
-     * A node to check types on
-     *
-     * @return UnionType
-     * The resulting type(s) of the binary operation
-     */
-    private function visitBinaryBool(Node $node) : UnionType
-    {
-        // TODO: Check for suspicious operations (E.g. always false, always true, always object)
-        $unused_left = UnionTypeVisitor::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $node->children['left'],
-            $this->should_catch_issue_exception
-        );
-
-        $unused_right = UnionTypeVisitor::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $node->children['right'],
-            $this->should_catch_issue_exception
-        );
-
-        return BoolType::instance(false)->asUnionType();
     }
 
     /**

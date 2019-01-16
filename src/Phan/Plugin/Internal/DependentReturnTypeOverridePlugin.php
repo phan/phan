@@ -242,7 +242,10 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             Context $context,
             Func $unused_function,
             array $args
-        ) use($string_union_type, $callable) : UnionType {
+        ) use (
+            $string_union_type,
+            $callable
+) : UnionType {
             if (\count($args) !== 1) {
                 // Cut down on false positive warnings about substr($str, 0, $len) possibly being false
                 return $string_union_type;
