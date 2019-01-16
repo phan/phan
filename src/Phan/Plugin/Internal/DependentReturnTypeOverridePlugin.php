@@ -9,6 +9,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
+use Phan\Language\Type;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
@@ -201,6 +202,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $string_or_false;
         };
+
         $parse_url_handler = $make_arg_existence_dependent_type_method(
             1,
             'string|int|null|false',
@@ -224,7 +226,35 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             'pathinfo'                    => $make_arg_existence_dependent_type_method(1, 'string', 'array{dirname:string,basename:string,extension?:string,filename:string}'),
             'parse_url'                   => $parse_url_handler,
             'substr'                      => $substr_handler,
+            'dirname'                     => self::makeStringFunctionHandler('dirname'),
+            'basename'                    => self::makeStringFunctionHandler('basename'),
         ];
+    }
+
+    /**
+     * @param callable(string):string $callable a function that acts on strings.
+     */
+    private static function makeStringFunctionHandler(callable $callable) : Closure
+    {
+        $string_union_type = StringType::instance(false)->asUnionType();
+        return static function (
+            CodeBase $code_base,
+            Context $context,
+            Func $unused_function,
+            array $args
+        ) use($string_union_type, $callable) : UnionType {
+            if (\count($args) !== 1) {
+                // Cut down on false positive warnings about substr($str, 0, $len) possibly being false
+                return $string_union_type;
+            }
+            $arg = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0])->asSingleScalarValueOrNull();
+            if (!is_string($arg)) {
+                return $string_union_type;
+            }
+
+            $result = $callable($arg);
+            return Type::fromObject($result)->asUnionType();
+        };
     }
 
     /**
