@@ -266,11 +266,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             return $this->context;
         }
         $args = $node->children['args']->children;
-        foreach ($args as $arg) {
-            if ($arg instanceof Node) {
-                $this->checkVariablesDefined($arg);
-            }
-        }
 
         $context = $this->context;
         $function_name = \strtolower(\ltrim($raw_function_name, '\\'));

@@ -1,0 +1,2 @@
+%s:16 PhanTypeArraySuspiciousNullable Suspicious array access to nullable ?array
+%s:31 PhanTypeMismatchReturn Returning type ?string but test_false_positive_preg_match() is declared to return int
