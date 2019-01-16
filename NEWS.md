@@ -11,6 +11,7 @@ New features(Analysis):
 + Improve inferences about the left hand side of `&&` statements such as `$leftVar && (other_expression);` (#2300)
 + Warn about passing an undefined variable to a function expecting a reference parameter with a real, non-nullable type (#1344)
 + Include variables in scope as alternative suggestions for undeclared properties (#1680)
++ Infer a string literal when analyzing calls to `basename` or `dirname` on an expression that evaluates to a string literal. (#2323)
 
 Maintenance:
 + End the output for `--output-mode <json>` with a newline.

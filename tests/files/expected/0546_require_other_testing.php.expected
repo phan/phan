@@ -15,3 +15,6 @@
 %s:16 PhanInvalidRequireFile Required file "%stests%sfiles%ssrc" is not a file
 %s:17 PhanMissingRequireFile Missing required file "file:///notarealpath"
 %s:17 PhanRelativePathUsed require_once() statement was passed a relative path "file:///notarealpath" instead of an absolute path
+%s:18 PhanMissingRequireFile Missing required file "%stests%sfiles%ssrc%s0546_require_other_testing.php/missing"
+%s:19 PhanMissingRequireFile Missing required file "%stests%sfiles/src/missing2"
+%s:20 PhanMissingRequireFile Missing required file "%stests%sfiles%ssrc/0546_require_other_testing.php.missing"
