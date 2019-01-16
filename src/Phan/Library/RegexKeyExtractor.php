@@ -56,9 +56,9 @@ class RegexKeyExtractor
         return $matcher->getMatchKeys();
     }
 
-    private function consumeUntil(string $nextChar)
+    private function consumeUntil(string $next_char)
     {
-        $end = strpos($this->pattern, $nextChar, $this->offset);
+        $end = strpos($this->pattern, $next_char, $this->offset);
         if ($end === false) {
             throw new InvalidArgumentException('Unparseable');
         }

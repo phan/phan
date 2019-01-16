@@ -12,25 +12,25 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/slevomat/coding-standard.git",
-                "reference": "f6fd0f1f92c5433c52190e05ef6d339693f3115b"
+                "reference": "6c2299a894e0bc093fbce51f434c7a4d64c30086"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/f6fd0f1f92c5433c52190e05ef6d339693f3115b",
-                "reference": "f6fd0f1f92c5433c52190e05ef6d339693f3115b",
+                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/6c2299a894e0bc093fbce51f434c7a4d64c30086",
+                "reference": "6c2299a894e0bc093fbce51f434c7a4d64c30086",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.1",
-                "squizlabs/php_codesniffer": "^3.3.1"
+                "squizlabs/php_codesniffer": "^3.4.0"
             },
             "require-dev": {
                 "jakub-onderka/php-parallel-lint": "1.0.0",
                 "phing/phing": "2.16.1",
-                "phpstan/phpstan": "0.9.2",
-                "phpstan/phpstan-phpunit": "0.9.4",
-                "phpstan/phpstan-strict-rules": "0.9",
-                "phpunit/phpunit": "7.3.5"
+                "phpstan/phpstan": "0.10.7",
+                "phpstan/phpstan-phpunit": "0.10",
+                "phpstan/phpstan-strict-rules": "0.10.1",
+                "phpunit/phpunit": "7.5.1"
             },
             "type": "phpcodesniffer-standard",
             "autoload": {
@@ -43,7 +43,7 @@
                 "MIT"
             ],
             "description": "Slevomat Coding Standard for PHP_CodeSniffer complements Consistence Coding Standard by providing sniffs with additional checks.",
-            "time": "2018-11-27T18:57:46+00:00"
+            "time": "2019-01-15T11:07:23+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
@@ -51,12 +51,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "b53f64e10e41aa754ffa7c11999af1881e6c1780"
+                "reference": "d86ad3c3d8a6cb40f45a377695d8f35b592ca821"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/b53f64e10e41aa754ffa7c11999af1881e6c1780",
-                "reference": "b53f64e10e41aa754ffa7c11999af1881e6c1780",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/d86ad3c3d8a6cb40f45a377695d8f35b592ca821",
+                "reference": "d86ad3c3d8a6cb40f45a377695d8f35b592ca821",
                 "shasum": ""
             },
             "require": {
@@ -94,7 +94,7 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2018-11-27T02:04:54+00:00"
+            "time": "2019-01-14T05:30:36+00:00"
         }
     ],
     "packages-dev": [],
