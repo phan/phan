@@ -12,6 +12,8 @@ use Phan\Language\Type;
 use Phan\Language\UnionType;
 use RuntimeException;
 
+use function filter_var;
+
 /**
  * Phan's representation of the type for a specific string, e.g. `'a string'`
  */
@@ -209,11 +211,35 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      */
     protected function canCastToNonNullableType(Type $type) : bool
     {
-        if ($type instanceof StringType) {
-            if ($type instanceof LiteralStringType) {
-                return $type->getValue() === $this->getValue();
+        if ($type instanceof ScalarType) {
+            switch ($type::NAME) {
+                case 'string':
+                    if ($type instanceof LiteralStringType) {
+                        return $type->value === $this->value;
+                    }
+                    return true;
+                case 'int':
+                    // Allow int or float strings to cast to int or floats
+                    if (filter_var($this->value, FILTER_VALIDATE_INT) === false) {
+                        return false;
+                    }
+                    break;
+                case 'float':
+                    if (filter_var($this->value, FILTER_VALIDATE_FLOAT) === false) {
+                        return false;
+                    }
+                    break;
+                case 'true':
+                    if (!$this->value) {
+                        return false;
+                    }
+                    break;
+                case 'false':
+                    if ($this->value) {
+                        return false;
+                    }
+                    break;
             }
-            return true;
         }
 
         return parent::canCastToNonNullableType($type);

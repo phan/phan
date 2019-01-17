@@ -2,6 +2,7 @@
 
 namespace Phan\Tests\Language;
 
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
@@ -636,5 +637,61 @@ final class TypeTest extends BaseTest
         $expected_callable_string_type = CallableStringType::instance(true);
         $this->assertSameType($expected_callable_string_type, $callable_string_type);
         $this->assertSame('?callable-string', (string)$callable_string_type);
+    }
+
+    private function assertCannotCastToType(Type $source, Type $target, string $details)
+    {
+        $this->assertFalse($source->canCastToType($target), "expected type $source not to be able to cast to type $target when $details");
+    }
+
+    private function assertCanCastToType(Type $source, Type $target, string $details)
+    {
+        $this->assertTrue($source->canCastToType($target), "expected type $source to be able to cast to type $target when $details");
+    }
+
+    public function testCastingLiteralStringToInt()
+    {
+        $empty_string = LiteralStringType::instanceForValue('', false);
+        $zero_string = LiteralStringType::instanceForValue('0', false);
+        $decimal_string = LiteralStringType::instanceForValue('1234567890', false);
+        $float_string = LiteralStringType::instanceForValue('1.5', false);
+        $hex_string = LiteralStringType::instanceForValue('0x2', false);
+        $regular_string = LiteralStringType::instanceForValue('foo', false);
+        $int_type = IntType::instance(false);
+        $float_type = FloatType::instance(false);
+        $false_type = FalseType::instance(false);
+        $true_type = TrueType::instance(false);
+        try {
+            Config::setValue('scalar_implicit_cast', false);
+            foreach ([$int_type, $float_type] as $a_numeric_type) {
+                $this->assertCannotCastToType($empty_string, $a_numeric_type, 'scalar_implicit_cast is disabled');
+                $this->assertCannotCastToType($zero_string, $a_numeric_type, 'scalar_implicit_cast is disabled');
+                $this->assertCannotCastToType($decimal_string, $a_numeric_type, 'scalar_implicit_cast is disabled');
+                $this->assertCannotCastToType($hex_string, $a_numeric_type, 'scalar_implicit_cast is disabled');
+                $this->assertCannotCastToType($regular_string, $a_numeric_type, 'scalar_implicit_cast is disabled');
+                $this->assertCannotCastToType($float_string, $a_numeric_type, 'scalar_implicit_cast is disabled');
+            }
+            $this->assertCannotCastToType($empty_string, $true_type, 'scalar_implicit_cast is disabled');
+            $this->assertCannotCastToType($empty_string, $false_type, 'scalar_implicit_cast is disabled');
+            Config::setValue('scalar_implicit_cast', true);
+            foreach ([$int_type, $float_type] as $a_numeric_type) {
+                $this->assertCannotCastToType($empty_string, $a_numeric_type, 'scalar_implicit_cast is enabled');
+                $this->assertCanCastToType($zero_string, $a_numeric_type, 'scalar_implicit_cast is enabled');
+                $this->assertCanCastToType($decimal_string, $a_numeric_type, 'scalar_implicit_cast is enabled');
+                $this->assertCannotCastToType($hex_string, $a_numeric_type, 'scalar_implicit_cast is enabled');
+                $this->assertCannotCastToType($regular_string, $a_numeric_type, 'scalar_implicit_cast is enabled');
+            }
+            $this->assertCanCastToType($float_string, $float_type, 'scalar_implicit_cast is enabled');
+            $this->assertCannotCastToType($float_string, $int_type, 'scalar_implicit_cast is enabled');
+            $this->assertCannotCastToType($empty_string, $true_type, 'scalar_implicit_cast is disabled');
+            $this->assertCanCastToType($empty_string, $false_type, 'scalar_implicit_cast is disabled');
+            $this->assertCanCastToType($zero_string, $false_type, 'scalar_implicit_cast is disabled');
+            $this->assertCannotCastToType($regular_string, $false_type, 'scalar_implicit_cast is disabled');
+            $this->assertCanCastToType($regular_string, $true_type, 'scalar_implicit_cast is disabled');
+
+        } finally {
+            Config::setValue('scalar_implicit_cast', false);
+            Config::setValue('scalar_implicit_partial', []);
+        }
     }
 }
