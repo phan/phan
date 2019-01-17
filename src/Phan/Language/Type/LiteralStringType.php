@@ -239,6 +239,12 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
                         return false;
                     }
                     break;
+                case 'null':
+                    // null is also a scalar.
+                    if ($this->value && !Config::get_null_casts_as_any_type()) {
+                        return false;
+                    }
+                    break;
             }
         }
 

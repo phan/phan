@@ -691,7 +691,6 @@ final class TypeTest extends BaseTest
 
         } finally {
             Config::setValue('scalar_implicit_cast', false);
-            Config::setValue('scalar_implicit_partial', []);
         }
     }
 }

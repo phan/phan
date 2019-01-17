@@ -3,6 +3,7 @@
 namespace Phan\Language\Type;
 
 use Phan\Language\Type;
+use Phan\Config;
 
 use RuntimeException;
 
@@ -149,6 +150,12 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
                     break;
                 case 'false':
                     if ($this->value) {
+                        return false;
+                    }
+                    break;
+                case 'null':
+                    // null is also a scalar.
+                    if ($this->value && !Config::get_null_casts_as_any_type()) {
                         return false;
                     }
                     break;
