@@ -13,6 +13,7 @@ use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
@@ -412,6 +413,28 @@ final class ArgumentType
                 return;
             }
         }
+
+		if ($method instanceof Func && $method->getName() === 'class_alias')
+		{
+			if (($class_name = $node->children[0] ?? false) && is_string($class_name)) {
+				try {
+					$reflection = new \ReflectionClass($class_name);
+					if (!$reflection->isUserDefined())
+					{
+						Issue::maybeEmit(
+							$code_base,
+							$context,
+							Issue::ParamMustBeUserDefinedClassname,
+							$node->lineno ?? 0,
+							$class_name
+						);
+					}
+				} catch (\ReflectionException $_) {
+					// here we don't care about a non-existing class
+				}
+
+			}
+		}
 
         foreach ($node->children as $i => $argument) {
             if (!\is_int($i)) {
