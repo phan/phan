@@ -414,27 +414,27 @@ final class ArgumentType
             }
         }
 
-		if ($method instanceof Func && $method->getName() === 'class_alias')
-		{
-			if (($class_name = $node->children[0] ?? false) && is_string($class_name)) {
-				try {
-					$reflection = new \ReflectionClass($class_name);
-					if (!$reflection->isUserDefined())
-					{
-						Issue::maybeEmit(
-							$code_base,
-							$context,
-							Issue::ParamMustBeUserDefinedClassname,
-							$node->lineno ?? 0,
-							$class_name
-						);
-					}
-				} catch (\ReflectionException $_) {
-					// here we don't care about a non-existing class
-				}
+        if ($method instanceof Func && $method->getName() === 'class_alias')
+        {
+            if (($class_name = $node->children[0] ?? false) && is_string($class_name)) {
+                try {
+                    $reflection = new \ReflectionClass($class_name);
+                    if (!$reflection->isUserDefined())
+                    {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::ParamMustBeUserDefinedClassname,
+                            $node->lineno ?? 0,
+                            $class_name
+                        );
+                    }
+                } catch (\ReflectionException $_) {
+                    // here we don't care about a non-existing class
+                }
 
-			}
-		}
+            }
+        }
 
         foreach ($node->children as $i => $argument) {
             if (!\is_int($i)) {
