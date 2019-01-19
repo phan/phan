@@ -354,7 +354,7 @@ final class Builder
         // https://secure.php.net/manual/en/regexp.reference.internal-options.php
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope)(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/', $line, $matches)) {
+        if (\preg_match('/@((?i)param|var|return|throws|throw|returns|inherits|extends|suppress|phan-[a-z0-9_-]*(?-i)|method|property|property-read|property-write|template|PhanClosureScope)(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/', $line, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
 
@@ -364,8 +364,8 @@ final class Builder
                 $this->maybeParseVarLine($i, $line);
             } elseif ($type === 'template') {
                 $this->maybeParseTemplateType($i, $line);
-            } elseif ($type === 'inherits') {
-                $this->maybeParseInherits($i, $line);
+            } elseif ($type === 'inherits' || $type === 'extends') {
+                $this->maybeParseInherits($i, $line, $type);
             } elseif ($type === 'return') {
                 $this->maybeParseReturn($i, $line);
             } elseif ($type === 'returns') {
@@ -446,18 +446,18 @@ final class Builder
         }
     }
 
-    private function maybeParseInherits(int $i, string $line)
+    private function maybeParseInherits(int $i, string $line, string $type)
     {
-        $this->checkCompatible('@inherits', [Comment::ON_CLASS], $i);
+        $this->checkCompatible('@' . $type, [Comment::ON_CLASS], $i);
         // Make sure support for generic types is enabled
         if (Config::getValue('generic_types_enabled')) {
             $this->inherited_type = $this->inheritsFromCommentLine($line);
         }
     }
 
-    private function maybeParsePhanInherits(int $i, string $line)
+    private function maybeParsePhanInherits(int $i, string $line, string $type)
     {
-        $this->checkCompatible('@inherits', [Comment::ON_CLASS], $i);
+        $this->checkCompatible('@' . $type, [Comment::ON_CLASS], $i);
         // Make sure support for generic types is enabled
         if (Config::getValue('generic_types_enabled')) {
             $this->phan_overrides['inherits'] = $this->inheritsFromCommentLine($line);
@@ -641,7 +641,8 @@ final class Builder
                 $this->maybeParseTemplateType($i, $line);
                 return;
             case 'phan-inherits':
-                $this->maybeParsePhanInherits($i, $line);
+            case 'phan-extends':
+                $this->maybeParsePhanInherits($i, $line, (string)substr($type, 5));
                 return;
             case 'phan-read-only':
                 $this->setPhanAccessFlag($i, false);
@@ -667,6 +668,7 @@ final class Builder
                         '@phan-assert-true-condition',
                         '@phan-assert-false-condition',
                         '@phan-closure-scope',
+                        '@phan-extends',
                         '@phan-file-suppress',
                         '@phan-forbid-undeclared-magic-methods',
                         '@phan-forbid-undeclared-magic-properties',
@@ -821,7 +823,7 @@ final class Builder
         string $line
     ) {
         $match = [];
-        if (preg_match('/@(?:phan-)?inherits\s+(' . Type::type_regex . ')/', $line, $match)) {
+        if (preg_match('/@(?:phan-)?(?:inherits|extends)\s+(' . Type::type_regex . ')/', $line, $match)) {
             $type_string = $match[1];
 
             $type = new Some(Type::fromStringInContext(

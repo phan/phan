@@ -18,7 +18,7 @@ abstract class Either {
 
 /**
  * @template T
- * @inherits Either<T,mixed>
+ * @extends Either<T,mixed>
  */
 class Left extends Either {
     /** @var T */
@@ -46,7 +46,7 @@ class Left extends Either {
 
 /**
  * @template T
- * @inherits Either<mixed,T>
+ * @phan-extends Either<mixed,T>
  */
 class Right extends Either {
     /** @var T */
