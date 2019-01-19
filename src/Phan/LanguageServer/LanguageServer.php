@@ -442,7 +442,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         Position $position,
         bool $is_type_definition_request
     ) : Promise {
-        // TODO: Add a way to "go to definition" without emitting analysis results as a side effect
+        // TODO: Add a way to "go to definition" (etc.) without emitting analysis results as a side effect
         $path_to_analyze = Utils::uriToPath($uri);
         $logType = $is_type_definition_request ? 'awaitTypeDefinition' : 'awaitDefinition';
         Logger::logInfo("Called LanguageServer->$logType, uri=$uri, position=" . StringUtil::jsonEncode($position));

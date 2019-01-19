@@ -305,6 +305,13 @@ EOT;
         $this->messageId = 0;
         list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntl_enabled, true, ['vscode_compatible_completions' => $for_vscode]);
         try {
+            /*
+            // This block can be uncommented when developing tests for completions
+            $line_contents = explode("\n", $file_contents)[$position->line];
+            $completion_cursor = substr($line_contents, 0, $position->character) . '<>' . substr($line_contents, $position->character);
+            fwrite(STDERR, "Checking at $completion_cursor\n");
+             */
+
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
             $this->writeDidChangeNotificationToDefaultFile($proc_in, $file_contents);
@@ -386,7 +393,19 @@ const M9AnotherConst = 33;
 class M9InnerClass {}
 /** @return array<int,int>  */
 function M9InnerFunction() { return [2]; }
-
+// line 35
+}
+namespace Other {
+function M9InnerFunction($first_arg, \M9Example $second_arg) {
+    // here, we look for completions
+    if (rand(0, 1) > 0) {  // line 40
+        echo \M9Example::
+        return $second_arg;
+    } else {
+        echo $second_arg->
+        return $first_arg;
+    }
+}
 }
 EOT;
 
@@ -431,6 +450,15 @@ EOT;
             'label' => 'my_static_function',
             'kind' => CompletionItemKind::METHOD,
             'detail' => 'mixed',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $my_instance_property_item = [
+            'label' => 'myInstanceVar',
+            'kind' => CompletionItemKind::PROPERTY,
+            'detail' => 'int',
             'documentation' => null,
             'sortText' => null,
             'filterText' => null,
@@ -485,6 +513,10 @@ EOT;
             $my_static_function_item,
             $property_completion_item,
         ];
+        $all_instance_completions = [
+            $my_static_function_item,
+            $my_instance_property_item,
+        ];
         $all_constant_completions = [
             $my_class_item,
             $my_global_constant_item,
@@ -497,6 +529,8 @@ EOT;
             [new Position(11, 19), $static_property_completions_substr, $for_vscode],
             [new Position(12, 16), $all_static_completions, $for_vscode],
             [new Position(20, 7), $all_constant_completions, $for_vscode],
+            [new Position(41, 25), $all_static_completions, $for_vscode],
+            [new Position(44, 26), $all_instance_completions, $for_vscode],
         ];
     }
     /**
