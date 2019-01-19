@@ -24,14 +24,16 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 class CompletionResolver
 {
     /**
-     * @return Closure(Context,Node):void
+     * @return Closure(Context,Node, array<int,Node>):void
      * NOTE: The helper methods distinguish between "Go to definition"
      * and "go to type definition" in their implementations,
      * based on $request->getIsTypeDefinitionRequest()
      */
     public static function createCompletionClosure(CompletionRequest $request, CodeBase $code_base)
     {
-        return function (Context $context, Node $node) use ($request, $code_base) {
+        // TODO: Could use the parent node list
+        // (e.g. don't use a method with a void return as an argument to another function)
+        return function (Context $context, Node $node, array $unused_parent_node_list) use ($request, $code_base) {
             // @phan-suppress-next-line PhanUndeclaredProperty this is overridden
             $selected_fragment = $node->selectedFragment ?? null;
             if (is_string($selected_fragment)) {

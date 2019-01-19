@@ -633,12 +633,9 @@ final class ConfigPluginSet extends PluginV2 implements
             throw new AssertionError("Invalid kind for node");
         }
 
-        /**
-         * @phan-closure-scope NodeSelectionVisitor
-         */
-        $closure = (static function (CodeBase $code_base, Context $context, Node $node, array $unused_parent_node_list = []) {
+        $closure = (static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) {
             $visitor = new NodeSelectionVisitor($code_base, $context);
-            $visitor->visitCommonImplementation($node);
+            $visitor->visitCommonImplementation($node, $parent_node_list);
         });
 
         $this->addNodeSelectionClosureForKind($node->kind, $closure);

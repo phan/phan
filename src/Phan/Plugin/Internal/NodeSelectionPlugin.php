@@ -15,7 +15,7 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
 class NodeSelectionPlugin extends PluginV2 implements PostAnalyzeNodeCapability
 {
     /**
-     * @param ?Closure(Context,Node):void $closure
+     * @param ?Closure(Context,Node,array<int,Node>):void $closure
      * @return void
      * TODO: Fix false positive TypeMismatchDeclaredParam with Closure $closure = null in this method
      */
@@ -42,7 +42,7 @@ class NodeSelectionPlugin extends PluginV2 implements PostAnalyzeNodeCapability
  */
 class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
 {
-    /** @var ?Closure(Context,Node):void $closure */
+    /** @var ?Closure(Context,Node,Node[]):void $closure */
     public static $closure = null;
 
     // A plugin's visitors should not override visit() unless they need to.
@@ -52,10 +52,12 @@ class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node $node
      * A node to check
      *
+     * @param array<int,Node> $parent_node_list
+     *
      * @return void
      * @see ConfigPluginSet::prepareNodeSelectionPlugin() for how this is called
      */
-    public function visitCommonImplementation(Node $node)
+    public function visitCommonImplementation(Node $node, array $parent_node_list)
     {
         if (!\property_exists($node, 'isSelected')) {
             return;
@@ -66,7 +68,7 @@ class NodeSelectionVisitor extends PluginAwarePostAnalysisVisitor
             // fwrite(STDERR, "Calling NodeSelectionVisitor without a closure\n");
             return;
         }
-        $closure($this->context, $node);
+        $closure($this->context, $node, $parent_node_list);
     }
 }
 

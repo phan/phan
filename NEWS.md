@@ -10,6 +10,9 @@ Language Server/Daemon mode:
 + Make code completion immediately after typing `->` and `::` behave more consistently (#2343)
   Note: this fix only applies at the very last character of a line
 + Be more consistent about including types in hover text for properties (#2348)
++ Make "Go to Definition" on `new MyClass` go to `MyClass::__construct` if it exists. (#2276)
++ Support "Go to Definition" for references to global functions and global constants in comments and literal strings.
+  Previously, Phan would only look for class definitions in comments and literal strings.
 
 18 Jan 2019, Phan 1.2.1
 -----------------------
