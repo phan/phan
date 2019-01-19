@@ -688,7 +688,6 @@ final class TypeTest extends BaseTest
             $this->assertCanCastToType($zero_string, $false_type, 'scalar_implicit_cast is disabled');
             $this->assertCannotCastToType($regular_string, $false_type, 'scalar_implicit_cast is disabled');
             $this->assertCanCastToType($regular_string, $true_type, 'scalar_implicit_cast is disabled');
-
         } finally {
             Config::setValue('scalar_implicit_cast', false);
         }

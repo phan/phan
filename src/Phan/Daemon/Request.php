@@ -4,6 +4,7 @@ namespace Phan\Daemon;
 
 use Closure;
 use Phan\Analysis;
+use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Daemon;
@@ -182,6 +183,9 @@ class Request
     ) : Request {
         FileCache::clear();
         $file_mapping_contents = self::normalizeFileMappingContents($file_mapping->getOverrides(), $error_message);
+        if ($most_recent_node_info_request instanceof CompletionRequest) {
+            $file_mapping_contents = self::adjustFileMappingContentsForCompletionRequest($file_mapping_contents, $most_recent_node_info_request);
+        }
         // Use the temporary contents if they're available
         Request::reloadFilePathListForDaemon($code_base, $file_path_lister, $file_mapping_contents, $file_names);
         if ($error_message !== null) {
@@ -199,6 +203,43 @@ class Request
             $should_exit
         );
         return $result;
+    }
+
+    /**
+     * When a user types :: or -> and requests code completion at the end of a line,
+     * then add __INCOMPLETE_PROPERTY__ or __INCOMPLETE_CLASS_CONST__ so that this
+     * can get parsed and completed.
+     * @return array<string,string>
+     */
+    private static function adjustFileMappingContentsForCompletionRequest(
+        array $file_mapping_contents,
+        CompletionRequest $completion_request
+    ) {
+        $file = FileRef::getProjectRelativePathForPath($completion_request->getPath());
+        // fwrite(STDERR, "\nSaw $file in " . json_encode(array_keys($file_mapping_contents)) . "\n");
+        $contents = $file_mapping_contents[$file] ?? null;
+        if ($contents) {
+            $position = $completion_request->getPosition();
+            $lines = explode("\n", $contents);
+            $line = $lines[$position->line] ?? null;
+            // $len = strlen($line ?? ''); fwrite(STDERR, "Looking at $line : $position of $len\n");
+            if (is_string($line) && strlen($line) === $position->character + 1 && $position->character > 0) {
+                // fwrite(STDERR, "cursor at the end of the line\n");
+                if (preg_match('/(::|->)$/', $line, $matches)) {
+                    // fwrite(STDERR, "Updating the file\n");
+                    if ($matches[1] === '::') {
+                        $addition = TolerantASTConverter::INCOMPLETE_CLASS_CONST;
+                    } else {
+                        $addition = TolerantASTConverter::INCOMPLETE_PROPERTY;
+                    }
+                    $lines[$position->line] .= $addition;
+                    $new_contents = implode("\n", $lines);
+                    $file_mapping_contents[$file] = $new_contents;
+                    // fwrite(STDERR, "Going to complete\n$new_contents\n====\nA");
+                }
+            }
+        }
+        return $file_mapping_contents;
     }
 
     /**
@@ -405,12 +446,14 @@ class Request
     /**
      * @param array<string,string> $file_mapping_contents
      * @param ?string &$error_message @phan-output-reference
+     * @return array<string,string>
      */
     public static function normalizeFileMappingContents($file_mapping_contents, &$error_message) : array
     {
         $error_message = null;
         if (!\is_array($file_mapping_contents)) {
             $error_message = 'Invalid value of temporary_file_mapping_contents';
+            return [];
         }
         $new_file_mapping_contents = [];
         foreach ($file_mapping_contents ?? [] as $file => $contents) {
