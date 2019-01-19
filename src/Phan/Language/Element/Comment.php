@@ -328,6 +328,7 @@ class Comment
                 $this->template_type_list = $value;
                 return;
             case 'inherits':
+            case 'extends':
                 $this->inherited_type = $value;
                 return;
         }

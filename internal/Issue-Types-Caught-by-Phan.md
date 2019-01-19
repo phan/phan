@@ -1,7 +1,7 @@
 <!-- This is mirrored at https://github.com/phan/phan/wiki/Issue-Types-Caught-by-Phan -->
 <!-- The copy distributed with Phan is in the internal folder because it may be removed or moved elsewhere -->
 
-See [\Phan\Issue](https://github.com/phan/phan/blob/master/src/Phan/Issue.php) for the most up to date list of error types that are emitted. Below is a listing of all issue types as of [47e98af](https://github.com/phan/phan/tree/47e98af627276a90c377fd349c69f6cd3063efda/). The test case [0101_one_of_each.php](https://github.com/phan/phan/blob/master/tests/files/src/0101_one_of_each.php) was originally intended to cover all examples in this document.
+See [\Phan\Issue](https://github.com/phan/phan/blob/master/src/Phan/Issue.php) for the most up to date list of error types that are emitted. Below is a listing of all issue types, which is periodically updated. The test case [0101_one_of_each.php](https://github.com/phan/phan/blob/master/tests/files/src/0101_one_of_each.php) was originally intended to cover all examples in this document.
 
 A concise summary of issue categories found by Phan can be seen in [Phan's README](https://github.com/phan/phan#features).
 
@@ -3072,11 +3072,15 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 Comment declares @property* ${PROPERTY} multiple times
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.1/tests/files/expected/0612_comment_duplicated_property.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.1/tests/files/src/0612_comment_duplicated_property.php#L11).
+
 ## PhanCommentDuplicateParam
 
 ```
 Comment declares @param ${PARAMETER} multiple times
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.1/tests/files/expected/0611_comment_duplicated_param.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.1/tests/files/src/0611_comment_duplicated_param.php#L10).
 
 ## PhanCommentOverrideOnNonOverrideConstant
 

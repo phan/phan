@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 2019, Phan 1.2.2 (dev)
 -----------------------
 
+New features(CLI):
++ Add `@phan-extends` and `@extends` as an alias of `@inherits` (#2351)
+
 Language Server/Daemon mode:
 + Make code completion immediately after typing `->` and `::` behave more consistently (#2343)
   Note: this fix only applies at the very last character of a line
