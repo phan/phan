@@ -14,6 +14,7 @@ use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
 use Phan\LanguageServer\ProtocolStreamReader;
 use Phan\LanguageServer\Utils;
 use Phan\Tests\BaseTest;
+use RuntimeException;
 use stdClass;
 
 /**
@@ -130,13 +131,13 @@ final class LanguageServerIntegrationTest extends BaseTest
                 $pipes
             );
             if (!$proc) {
-                throw new \RuntimeException("Failed to create a proc");
+                throw new RuntimeException("Failed to create a proc");
             }
             '@phan-var-force resource $tcpServer';
             $socket = stream_socket_accept($tcpServer, 5);
             if (!$socket) {
                 proc_close($proc);
-                throw new \RuntimeException("Failed to receive a connection from language server in 5 seconds");
+                throw new RuntimeException("Failed to receive a connection from language server in 5 seconds");
             }
             // Don't set this to async - the rest of this test assumes synchronous streams.
             // stream_set_blocking($socket, false);
@@ -258,32 +259,74 @@ EOT;
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
             $new_file_contents = <<<'EOT'
-<?php  // line 0
+<?php namespace { // line 0
 class MyExample {
+    public function __construct() {}
     const MyConst = 2;
 }
-echo MyExample::MyConst;  // line 4
+echo MyExample::MyConst;  // line 5
+$x = new MyExample();
+echo MyExample::class;
+class MyExampleWithoutConstructor { }
+$y = new MyExampleWithoutConstructor();
+// Some comment referring to \MyExample  at line 10
+function my_other_global_function() {}
+my_other_global_function();
+// Some comment referring to \\\my_other_global_function() - Current implementation only works when followed by a node
+// Should not crash if there are too many backslashes
+// line 15 - Can refer to constant MY_GLOBAL_CONSTANT
+const MY_GLOBAL_CONSTANT = [2,3];
+$z = MY_GLOBAL_CONSTANT;
+
+
+
+}
+// line 20
+namespace Ns {
+}
 EOT;
             $this->writeDidChangeNotificationToDefaultFile($proc_in, $new_file_contents);
             $this->assertHasEmptyPublishDiagnosticsNotification($proc_out);
 
+            $id = 2;
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
             // NOTE: Line numbers are 0-based for Position
-            $definition_response = $this->writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, new Position(4, 6));
-
-            $this->assertSame([
-                'result' => [
-                    [
-                        'uri' => $this->getDefaultFileURI(),
-                        'range' => [
-                            'start' => ['line' => 1, 'character' => 0],
-                            'end'   => ['line' => 2, 'character' => 0],
+            $assert_has_definition = function (Position $position, int $line) use ($proc_in, $proc_out, &$id) {
+                $definition_response = $this->writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, $position);
+                $this->assertSame([
+                    'result' => [
+                        [
+                            'uri' => $this->getDefaultFileURI(),
+                            'range' => [
+                                'start' => ['line' => $line,     'character' => 0],
+                                'end'   => ['line' => $line + 1, 'character' => 0],
+                            ],
                         ],
                     ],
-                ],
-                'id' => 2,
-                'jsonrpc' => '2.0',
-            ], $definition_response);
+                    'id' => $id++,
+                    'jsonrpc' => '2.0',
+                ], $definition_response, "Unexpected result at $position");
+            };
+
+            $assert_has_definition(new Position(5, 6),   1);
+            $assert_has_definition(new Position(5, 15),  3);
+            // new MyExample() gives location of MyExample::__construct at "new"
+            $assert_has_definition(new Position(6, 5),   2);
+            // new MyExample() gives location of MyExample::__construct at "MyExample"
+            $assert_has_definition(new Position(6, 17),  2);
+            // Foo::class gives location of "class Foo"
+            $assert_has_definition(new Position(7, 17),  1);
+            // new MyExampleWithoutConstructor() gives the location of "class MyExampleWithoutConstructor"
+            $assert_has_definition(new Position(9, 9),   8);
+            // Referring to a class in a comment works.
+            $assert_has_definition(new Position(10, 31), 1);
+            // A function call can be located
+            $assert_has_definition(new Position(12, 0),  11);
+            // A function name in a comment can be located
+            $assert_has_definition(new Position(13, 32), 11);
+            // A global constant name can be located (in comments and code)
+            $assert_has_definition(new Position(15, 50), 16);
+            $assert_has_definition(new Position(17, 5), 16);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);

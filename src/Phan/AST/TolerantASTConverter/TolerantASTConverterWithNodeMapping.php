@@ -277,7 +277,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
                 $ast_node->isSelectedApproximate = self::$closest_node_or_token_symbol;
                 $ast_node->selectedFragment = $fragment;
             }
-            // fwrite(STDERR, "Marking node with kind $ast_node->kind as selected\n");
+            // fwrite(STDERR, "Marking node with kind " . ast\get_kind_name($ast_node->kind) . " as selected\n");
             $ast_node->isSelected = true;
             $closure = self::$handle_selected_node;
             if ($closure) {
