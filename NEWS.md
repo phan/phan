@@ -6,6 +6,7 @@ Phan NEWS
 Language Server/Daemon mode:
 + Make code completion immediately after typing `->` and `::` behave more consistently (#2343)
   Note: this fix only applies at the very last character of a line
++ Be more consistent about including types in hover text for properties (#2348)
 
 18 Jan 2019, Phan 1.2.1
 -----------------------

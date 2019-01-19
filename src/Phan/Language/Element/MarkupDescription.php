@@ -3,6 +3,7 @@
 namespace Phan\Language\Element;
 
 use Phan\Language\Element\Comment\Builder;
+use Phan\Language\UnionType;
 
 /**
  * APIs for generating markup (markdown) description of elements
@@ -48,7 +49,7 @@ class MarkupDescription
         } elseif ($element instanceof FunctionInterface) {
             $comment_category = Comment::ON_FUNCTION;
         }
-        $extracted_doc_comment = self::extractDocComment($doc_comment, $comment_category);
+        $extracted_doc_comment = self::extractDocComment($doc_comment, $comment_category, $element->getUnionType());
         return $extracted_doc_comment ?: null;
     }
 
@@ -135,7 +136,7 @@ class MarkupDescription
      * @return string markup string
      * @internal
      */
-    public static function extractDocComment(string $doc_comment, int $comment_category = null) : string
+    public static function extractDocComment(string $doc_comment, int $comment_category = null, UnionType $element_type = null) : string
     {
         // Trim the start and the end of the doc comment.
         //
@@ -146,6 +147,8 @@ class MarkupDescription
         $results = [];
         $lines = explode("\n", $doc_comment);
         $saw_phpdoc_tag = false;
+        $did_build_from_phpdoc_tag = false;
+
         foreach ($lines as $i => $line) {
             $line = self::trimLine($line);
             if (!is_string($line) || preg_match('/^\s*@/', $line) > 0) {
@@ -158,6 +161,7 @@ class MarkupDescription
                         if (preg_match('/^\s*@var\s/', $line) > 0) {
                             $new_lines = self::extractTagSummary($lines, $i);
                             if (isset($new_lines[0])) {
+                                $did_build_from_phpdoc_tag = true;
                                 // @phan-suppress-next-line PhanAccessClassConstantInternal
                                 $new_lines[0] = \preg_replace(Builder::PARAM_COMMENT_REGEX, '`\0`', $new_lines[0]);
                             }
@@ -192,7 +196,13 @@ class MarkupDescription
             array_pop($results);
         }
         $results = self::trimLeadingWhitespace($results);
-        return implode("\n", $results);
+        $str = implode("\n", $results);
+        if ($comment_category === Comment::ON_PROPERTY && !$did_build_from_phpdoc_tag) {
+            if ($element_type && !$element_type->isEmpty()) {
+                $str = trim("`@var $element_type` $str");
+            }
+        }
+        return $str;
     }
 
     private static function trimLine(string $line) : string

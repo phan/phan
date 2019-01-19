@@ -818,8 +818,8 @@ function example(MyClass $arg) {
     $c->counter += 1;
     var_export(ExampleClass::HTTP_500);  // line 10
     var_export($c);
+    var_export($c->descriptionlessProp); var_export(ExampleClass::$typelessProp);
 }
-
 /**
  * @param string|false $strVal line 15
  * @param array<string,stdClass> $arrVal
@@ -830,6 +830,9 @@ function example2($strVal, array $arrVal) {
     $strVal = (string)$strVal;
     echo strlen($strVal);
     $n = ast\parse_code($strVal, 50);
+}
+function test(ExampleClass $c) {  // line 25
+    var_export($c->propWithDefault);
 }
 EOT;
         return [
@@ -951,6 +954,34 @@ EOT
             ],
             [
                 $example_file_contents,
+                new Position(12, 24),  // ExampleClass->descriptionlessProp
+                <<<'EOT'
+```php
+public $descriptionlessProp
+```
+
+`@var array<string, \stdClass>`
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(12, 70),  // ExampleClass->typelessProp
+                <<<'EOT'
+```php
+public static $typelessProp
+```
+
+This has no type
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
                 new Position(19, 15),  // $strVal
                 '`false|string`',
                 null,
@@ -984,6 +1015,20 @@ EOT
 namespace ast;
 function parse_code(string $code, int $version, string $filename = default) : \ast\Node
 ```
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(26, 20),  // ExampleClass->propWithDefault
+                <<<'EOT'
+```php
+public $propWithDefault
+```
+
+`@var array{0:2,1:3}` This has a default
 EOT
                 ,
                 null,
