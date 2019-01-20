@@ -30,6 +30,8 @@ Phan and details on how to configure Phan for your project.<br />
 * **Installing Dependencies**<br />
   Take a look at [Installing Phan Dependencies](https://github.com/phan/phan/wiki/Getting-Started#installing-phan-dependencies) for help getting Phan's dependencies installed on your system.
 
+The [Wiki has more information about using Phan](https://github.com/phan/phan/wiki#using-phan).
+
 # Features
 
 Phan is able to perform the following kinds of analysis:
