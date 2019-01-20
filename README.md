@@ -50,7 +50,7 @@ Phan is able to perform the following kinds of analysis:
   Phan also checks for final classes/methods being overridden, that abstract methods are implemented, and that the implemented interface is really an interface (and so on).
 * Supports namespaces, traits and variadics.
 * Supports [Union Types](https://github.com/phan/phan/wiki/About-Union-Types).
-* Supports [Generic Types (i.e. `@template`)](https://github.com/phan/phan/wiki/Generic Types).
+* Supports [Generic Types (i.e. `@template`)](https://github.com/phan/phan/wiki/Generic-Types).
 * Supports generic arrays such as `int[]`, `UserObject[]`, `array<int,UserObject>`, etc..
 * Supports array shapes such as `array{key:string,otherKey:?stdClass}`, etc. (internally and in PHPDoc tags)
   This also supports indicating that fields of an array shape are optional
