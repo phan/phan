@@ -2,9 +2,8 @@ Phan is a static analyzer for PHP that prefers to minimize false-positives. Phan
 
 Phan looks for common issues and will verify type compatibility on various operations when type
 information is available or can be deduced. Phan has a good (but not comprehensive) understanding of flow control
-and does not attempt to track values.
+and can track values in a few use cases (e.g. arrays, integers, and strings).
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/3940135c0dfbd5387c94/maintainability)](https://codeclimate.com/github/phan/phan/maintainability) [![Build Status](https://travis-ci.org/phan/phan.svg?branch=master)](https://travis-ci.org/phan/phan) [![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/phan/phan?branch=master&svg=true)](https://ci.appveyor.com/project/TysonAndre/phan/branch/master)
 [![Gitter](https://badges.gitter.im/phan/phan.svg)](https://gitter.im/phan/phan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Latest Stable Version](https://img.shields.io/packagist/v/phan/phan.svg)](https://packagist.org/packages/phan/phan)
 [![License](https://img.shields.io/packagist/l/phan/phan.svg)](https://github.com/phan/phan/blob/master/LICENSE)
@@ -20,11 +19,8 @@ composer require phan/phan
 With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/phan/phan/wiki/Getting-Started#creating-a-config-file) in
 your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
 
-This version (branch) of Phan depends on PHP 7.x with the [php-ast](https://github.com/nikic/php-ast) extension (0.1.5 or newer, uses AST version 50) and supports PHP version 7.0-7.2 syntax.
-The master branch is the basis for the 1.x.y releases.
+This version (branch) of Phan depends on PHP 7.x with the [php-ast](https://github.com/nikic/php-ast) extension (0.1.5+ or 1.0.0+) and supports PHP version 7.0-7.3 syntax.
 Installation instructions for php-ast can be found [here](https://github.com/nikic/php-ast#installation).
-Having PHP's `pcntl` extension installed is strongly recommended (not available on Windows), in order to support using parallel processes for analysis
-(`pcntl` is recommended for daemon mode and LSP to work efficiently, but both should work without that extension).
 
 * **Alternative Installation Methods**<br />
   See [Getting Started](https://github.com/phan/phan/wiki/Getting-Started) for alternative methods of using
@@ -36,7 +32,7 @@ Phan and details on how to configure Phan for your project.<br />
 
 # Features
 
-Phan is able to perform the following kinds of analysis.
+Phan is able to perform the following kinds of analysis:
 
 * Check that all methods, functions, classes, traits, interfaces, constants, properties and variables are defined and accessible.
 * Check for type safety and arity issues on method/function/closure calls.
@@ -54,6 +50,7 @@ Phan is able to perform the following kinds of analysis.
   Phan also checks for final classes/methods being overridden, that abstract methods are implemented, and that the implemented interface is really an interface (and so on).
 * Supports namespaces, traits and variadics.
 * Supports [Union Types](https://github.com/phan/phan/wiki/About-Union-Types).
+* Supports [Generic Types (i.e. `@template`)](https://github.com/phan/phan/wiki/Generic Types).
 * Supports generic arrays such as `int[]`, `UserObject[]`, `array<int,UserObject>`, etc..
 * Supports array shapes such as `array{key:string,otherKey:?stdClass}`, etc. (internally and in PHPDoc tags)
   This also supports indicating that fields of an array shape are optional
@@ -72,10 +69,6 @@ Phan is able to perform the following kinds of analysis.
 * Supports analysis of closures and return types passed to `array_map`, `array_filter`, and other internal array functions.
 * Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
 * Can be run on many cores. (requires `pcntl`)
-* [Can run in the background (daemon mode)](https://github.com/phan/phan/wiki/Using-Phan-Daemon-Mode), to then quickly respond to requests to analyze the latest version of a file.
-  This can also act as a linter in the [Language Server Protocol](https://github.com/Microsoft/language-server-protocol).
-  Parts of the language server implementation are based on [felixfbecker/php-language-server](https://github.com/felixfbecker/php-language-server).
-  While running in the background, Phan can be used from [various editors](https://github.com/phan/phan/wiki/Editor-Support).
 * Output is emitted in text, checkstyle, json, pylint, csv, or codeclimate formats.
 * Can run [user plugins on source for checks specific to your code](https://github.com/phan/phan/wiki/Writing-Plugins-for-Phan).
   [Phan includes various plugins you may wish to enable for your project](https://github.com/phan/phan/tree/master/.phan/plugins#2-general-use-plugins).
@@ -86,6 +79,9 @@ and examples of all issues that can be detected by Phan. Take a look at the
 definition of each error type.
 
 Take a look at the [Tutorial for Analyzing a Large Sloppy Code Base](https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base) to get a sense of what the process of doing ongoing analysis might look like for you.
+
+Phan can be used from [various editors and IDEs](https://github.com/phan/phan/wiki/Editor-Support) for its error checking, "go to definition" support, etc. via the [Language Server Protocol](https://github.com/Microsoft/language-server-protocol).
+Editors and tools can also request analysis of individual files in a project using the simpler [Daemon Mode](https://github.com/phan/phan/wiki/Using-Phan-Daemon-Mode).
 
 See the [tests](https://github.com/phan/phan/blob/master/tests/files) directory for some examples of the various checks.
 
