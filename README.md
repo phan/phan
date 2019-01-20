@@ -103,7 +103,7 @@ Additional analysis features have been provided by [plugins](https://github.com/
 - [Checking coding style conventions](https://github.com/phan/phan/tree/master/.phan/plugins#3-plugins-specific-to-code-styles)
 - [Others](https://github.com/phan/phan/tree/master/.phan/plugins#plugins)
 
-Example: [Phan's plugins for self-analysis.](https://github.com/phan/phan/blob/1.0.0/.phan/config.php#L542-L563)
+Example: [Phan's plugins for self-analysis.](https://github.com/phan/phan/blob/1.2.1/.phan/config.php#L593-L613)
 
 # Usage
 
