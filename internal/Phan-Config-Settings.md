@@ -160,6 +160,9 @@ will be emitted by Phan.
 See https://github.com/phan/phan/wiki/Issue-Types-Caught-by-Phan
 for the full list of issues that Phan detects.
 
+Phan is capable of detecting hundreds of types of issues.
+Projects should almost always use [`suppress_issue_types`](#suppress_issue_types) instead.
+
 (Default: `[]`)
 
 # Analysis
