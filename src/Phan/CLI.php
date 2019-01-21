@@ -206,7 +206,16 @@ class CLI
         // Before reading the config, check for an override on
         // the location of the config file path.
         $config_file_override = $opts['k'] ?? $opts['config-file'] ?? null;
-        if (is_string($config_file_override)) {
+        if ($config_file_override !== null) {
+            if (!is_string($config_file_override)) {
+                // Doesn't work for a mix of -k and --config-file, but low priority
+                fprintf(STDERR, "Expected exactly one file for --config-file, but saw " . StringUtil::jsonEncode($config_file_override) . "\n");
+                exit(1);
+            }
+            if (!is_file($config_file_override)) {
+                fprintf(STDERR, "Could not find the config file override " . StringUtil::jsonEncode($config_file_override) . "\n");
+                exit(1);
+            }
             $this->config_file = $config_file_override;
         }
 
