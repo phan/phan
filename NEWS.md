@@ -14,6 +14,9 @@ Language Server/Daemon mode:
 + Support "Go to Definition" for references to global functions and global constants in comments and literal strings.
   Previously, Phan would only look for class definitions in comments and literal strings.
 
+Bug fixes:
++ Emit a warning and exit if `--config-file <file>` does not exist (#2271)
+
 18 Jan 2019, Phan 1.2.1
 -----------------------
 
