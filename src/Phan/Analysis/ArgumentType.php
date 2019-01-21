@@ -10,6 +10,7 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
+use Phan\Exception\FQSENException;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -18,6 +19,7 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Variable;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\NullType;
@@ -414,25 +416,33 @@ final class ArgumentType
             }
         }
 
-        if ($method instanceof Func && $method->getName() === 'class_alias')
-        {
-            if (($class_name = $node->children[0] ?? false) && is_string($class_name)) {
-                try {
-                    $reflection = new \ReflectionClass($class_name);
-                    if (!$reflection->isUserDefined())
-                    {
-                        Issue::maybeEmit(
-                            $code_base,
-                            $context,
-                            Issue::ParamMustBeUserDefinedClassname,
-                            $node->lineno ?? 0,
-                            $class_name
-                        );
-                    }
-                } catch (\ReflectionException $_) {
-                    // here we don't care about a non-existing class
-                }
+        if ($method instanceof Func && $method->getName() === 'class_alias') {
+            $class_alias_first_param = $node->children[0] ?? false;
 
+            if (is_string($class_alias_first_param)) {
+                try {
+                    $first_param_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_alias_first_param);
+                    if ($code_base->hasClassWithFQSEN($first_param_fqsen)) {
+                        $class = $code_base->getClassByFQSEN($first_param_fqsen);
+                        if ($class->isPHPInternal()) {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $context,
+                                Issue::ParamMustBeUserDefinedClassname,
+                                $node->lineno ?? 0,
+                                $class->getName()
+                            );
+                        }
+                    }
+                } catch (FQSENException $_) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::TypeComparisonToInvalidClass,
+                        $context->getLineNumberStart(),
+                        $class_alias_first_param
+                    );
+                }
             }
         }
 
