@@ -17,6 +17,9 @@ Language Server/Daemon mode:
 + Support "Go to Definition" for references to global functions and global constants in comments and literal strings.
   Previously, Phan would only look for class definitions in comments and literal strings.
 
+Maintenance:
++ Warn and exit immediately if any plugins are missing or invalid (instead of crashing after parsing all files)
+
 Bug fixes:
 + Emit a warning and exit if `--config-file <file>` does not exist (#2271)
 
