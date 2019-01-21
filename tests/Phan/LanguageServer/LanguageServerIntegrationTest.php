@@ -308,20 +308,20 @@ EOT;
                 ], $definition_response, "Unexpected result at $position");
             };
 
-            $assert_has_definition(new Position(5, 6),   1);
-            $assert_has_definition(new Position(5, 15),  3);
+            $assert_has_definition(new Position(5, 6), 1);
+            $assert_has_definition(new Position(5, 15), 3);
             // new MyExample() gives location of MyExample::__construct at "new"
-            $assert_has_definition(new Position(6, 5),   2);
+            $assert_has_definition(new Position(6, 5), 2);
             // new MyExample() gives location of MyExample::__construct at "MyExample"
-            $assert_has_definition(new Position(6, 17),  2);
+            $assert_has_definition(new Position(6, 17), 2);
             // Foo::class gives location of "class Foo"
-            $assert_has_definition(new Position(7, 17),  1);
+            $assert_has_definition(new Position(7, 17), 1);
             // new MyExampleWithoutConstructor() gives the location of "class MyExampleWithoutConstructor"
-            $assert_has_definition(new Position(9, 9),   8);
+            $assert_has_definition(new Position(9, 9), 8);
             // Referring to a class in a comment works.
             $assert_has_definition(new Position(10, 31), 1);
             // A function call can be located
-            $assert_has_definition(new Position(12, 0),  11);
+            $assert_has_definition(new Position(12, 0), 11);
             // A function name in a comment can be located
             $assert_has_definition(new Position(13, 32), 11);
             // A global constant name can be located (in comments and code)

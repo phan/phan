@@ -11,6 +11,7 @@ use Phan\Language\Type;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Logger as LanguageServerLogger;
 use Phan\Library\FileCache;
+use Phan\Library\StringUtil;
 use Phan\Output\BufferedPrinterInterface;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\IgnoredFilesFilterInterface;
@@ -134,6 +135,9 @@ class Phan implements IgnoredFilesFilterInterface
         $file_path_list = $file_path_lister();
 
         $file_count = count($file_path_list);
+        if ($file_count === 0) {
+            fprintf(STDERR, "Phan did not parse any files in the project %s - This may be an issue with the Phan config or CLI options.\n", StringUtil::jsonEncode(Config::getProjectRootDirectory()));
+        }
 
         // We'll construct a set of files that we'll
         // want to run an analysis on

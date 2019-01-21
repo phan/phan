@@ -4,6 +4,9 @@ Phan NEWS
 -----------------------
 
 New features(CLI):
++ Emit a warning to stderr if no files were parsed when Phan is invoked. (#2289)
+
+New features(Analysis):
 + Add `@phan-extends` and `@extends` as an alias of `@inherits` (#2351)
 
 Language Server/Daemon mode:
