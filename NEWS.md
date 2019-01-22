@@ -22,6 +22,7 @@ Maintenance:
 
 Bug fixes:
 + Emit a warning and exit if `--config-file <file>` does not exist (#2271)
++ Fix inferences about `foreach ($arr as [[$nested]]) {...}` (#2362)
 
 18 Jan 2019, Phan 1.2.1
 -----------------------
