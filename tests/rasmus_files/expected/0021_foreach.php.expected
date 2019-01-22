@@ -1,1 +1,2 @@
+%s:7 PhanTypeInvalidExpressionArrayDestructuring Invalid value of type 1|2|3 in an array destructuring assignment, expected array|ArrayAccess
 %s:8 PhanTypeConversionFromArray array to string conversion
