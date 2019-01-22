@@ -3,6 +3,7 @@
 namespace Phan\Analysis;
 
 use AssertionError;
+use ast;
 use ast\Node;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
@@ -60,7 +61,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     }
 
     /**
-     * Visit a node with kind `\ast\AST_CLASS`
+     * Visit a node with kind `ast\AST_CLASS`
      *
      * @param Node $node
      * A node to parse
@@ -77,7 +78,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitClass(Node $node) : Context
     {
-        if ($node->flags & \ast\flags\CLASS_ANONYMOUS) {
+        if ($node->flags & ast\flags\CLASS_ANONYMOUS) {
             $class_name =
                 (new ContextNode(
                     $this->code_base,
@@ -125,7 +126,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     }
 
     /**
-     * Visit a node with kind `\ast\AST_METHOD`
+     * Visit a node with kind `ast\AST_METHOD`
      *
      * @param Node $node
      * A node to parse
@@ -183,7 +184,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         }
 
         // Add $this to the scope of non-static methods
-        if (!($node->flags & \ast\flags\MODIFIER_STATIC)) {
+        if (!($node->flags & ast\flags\MODIFIER_STATIC)) {
             if (!($clazz->getInternalScope()->hasVariableWithName('this'))) {
                 throw new AssertionError("Classes must have a \$this variable.");
             }
@@ -216,7 +217,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     }
 
     /**
-     * Visit a node with kind `\ast\AST_FUNC_DECL`
+     * Visit a node with kind `ast\AST_FUNC_DECL`
      *
      * @param Node $node
      * A node to parse
@@ -347,7 +348,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         Func $func
     ) {
         // skip adding $this to internal scope if the closure is a static one
-        if ($func->getFlags() == \ast\flags\MODIFIER_STATIC) {
+        if ($func->getFlags() == ast\flags\MODIFIER_STATIC) {
             return;
         }
 
@@ -377,7 +378,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
 
     /**
-     * Visit a node with kind `\ast\AST_CLOSURE`
+     * Visit a node with kind `ast\AST_CLOSURE`
      *
      * @param Node $node
      * A node to parse
@@ -404,10 +405,10 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // Make the closure reachable by FQSEN from anywhere
         $code_base->addFunction($func);
 
-        if (($node->children['uses']->kind ?? null) == \ast\AST_CLOSURE_USES) {
+        if (($node->children['uses']->kind ?? null) == ast\AST_CLOSURE_USES) {
             $uses = $node->children['uses'];
             foreach ($uses->children as $use) {
-                if (!($use instanceof Node) || $use->kind != \ast\AST_CLOSURE_VAR) {
+                if (!($use instanceof Node) || $use->kind != ast\AST_CLOSURE_VAR) {
                     $this->emitIssue(
                         Issue::VariableUseClause,
                         $node->lineno ?? 0
@@ -433,7 +434,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 )) {
                     // If this is not pass-by-reference variable we
                     // have a problem
-                    if (!($use->flags & \ast\flags\PARAM_REF)) {
+                    if (!($use->flags & ast\flags\PARAM_REF)) {
                         Issue::maybeEmitWithParameters(
                             $this->code_base,
                             clone($context)->withLineNumberStart($use->lineno),
@@ -464,7 +465,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     // If this isn't a pass-by-reference variable, we
                     // clone the variable so state within this scope
                     // doesn't update the outer scope
-                    if (!($use->flags & \ast\flags\PARAM_REF)) {
+                    if (!($use->flags & ast\flags\PARAM_REF)) {
                         $variable = clone($variable);
                     }
                 }
@@ -556,10 +557,10 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitAssign(Node $node) : Context
     {
-        // In php 7.0, a **valid** parsed AST would be an \ast\AST_LIST.
-        // However, --force-polyfill-parser will emit \ast\AST_ARRAY.
+        // In php 7.0, a **valid** parsed AST would be an ast\AST_LIST.
+        // However, --force-polyfill-parser will emit ast\AST_ARRAY.
         $var_node = $node->children['var'];
-        if (Config::get_closest_target_php_version_id() < 70100 && $var_node instanceof Node && $var_node->kind === \ast\AST_ARRAY) {
+        if (Config::get_closest_target_php_version_id() < 70100 && $var_node instanceof Node && $var_node->kind === ast\AST_ARRAY) {
             $this->analyzeArrayAssignBackwardsCompatibility($var_node);
         }
         return $this->context;
@@ -595,7 +596,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         if (!($value_node instanceof Node)) {
             return $context;
         }
-        if ($value_node->kind == \ast\AST_ARRAY) {
+        if ($value_node->kind == ast\AST_ARRAY) {
             if (Config::get_closest_target_php_version_id() < 70100) {
                 $this->analyzeArrayAssignBackwardsCompatibility($value_node);
             }
@@ -631,7 +632,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // If there's a key, make a variable out of that too
         $key_node = $node->children['key'];
         if ($key_node instanceof Node) {
-            if ($key_node->kind == \ast\AST_LIST) {
+            if ($key_node->kind == ast\AST_LIST) {
                 throw new NodeException(
                     $node,
                     "Can't use list() as a key element - aborting"
@@ -722,7 +723,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
     private function analyzeArrayAssignBackwardsCompatibility(Node $node)
     {
-        if ($node->flags !== \ast\flags\ARRAY_SYNTAX_LIST) {
+        if ($node->flags !== ast\flags\ARRAY_SYNTAX_LIST) {
             $this->emitIssue(
                 Issue::CompatibleShortArrayAssignPHP70,
                 $node->lineno ?? 0
@@ -740,6 +741,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     }
 
     /**
+     * @param Node $value_node a node of type ast\AST_ARRAY
      * @return void
      */
     private function inferTypesForForeachArrayDestructuring(
@@ -816,13 +818,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 }
             }
 
-            $variable = Variable::fromNodeInContext(
-                $value_elem_node,
-                $this->context,
-                $this->code_base,
-                false
-            );
-
             if (\is_scalar($key_value)) {
                 $second_order_non_generic_expression_union_type = UnionTypeVisitor::resolveArrayShapeElementTypesForOffset($element_union_type, $key_value);
                 if ($second_order_non_generic_expression_union_type === null) {
@@ -839,6 +834,22 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             } else {
                 $second_order_non_generic_expression_union_type = $get_fallback_second_order_element_type();
             }
+
+            if (($value_elem_node->kind ?? null) === ast\AST_ARRAY) {
+                // e.g. foreach ($x as [[$a],[$b]]) {...}
+                $this->inferTypesForForeachArrayDestructuring(
+                    $second_order_non_generic_expression_union_type,
+                    $value_elem_node
+                );
+                continue;
+            }
+
+            $variable = Variable::fromNodeInContext(
+                $value_elem_node,
+                $this->context,
+                $this->code_base,
+                false
+            );
 
             // If we were able to figure out the type and it's
             // a generic type, then set its element types as
