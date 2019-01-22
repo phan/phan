@@ -1257,4 +1257,26 @@ class AssignmentVisitor extends AnalysisVisitor
         }
         return $right_type;
     }
+
+    /**
+     * @param Node $node
+     * A node to parse of type AST_REF (found only in foreach)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitRef(Node $node) : Context
+    {
+        // Note: AST_REF is only ever generated in AST_FOREACH, so this should be fine.
+        $var = $node->children['var'];
+        if ($var instanceof Node) {
+            return $this->__invoke($var);
+        }
+        $this->emitIssue(
+            Issue::Unanalyzable,
+            $node->lineno
+        );
+        return $this->context;
+    }
 }

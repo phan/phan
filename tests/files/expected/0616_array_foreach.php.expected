@@ -1,0 +1,7 @@
+%s:12 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:12 PhanTypeMismatchArgumentInternal Argument 2 (divisor) is string but \intdiv() takes int
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:13 PhanTypeMismatchArgumentInternal Argument 2 (divisor) is string but \intdiv() takes int
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,string> but \strlen() takes string
+%s:23 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:24 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,array<int,array<int,string>>>|array{} but \strlen() takes string
