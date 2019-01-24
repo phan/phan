@@ -1366,10 +1366,10 @@ class ContextNode
                     Issue::AccessPropertyInternal,
                     $node->lineno,
                     $property->getRepresentationForIssue(),
-                    $property->getElementNamespace(),
+                    $property->getElementNamespace() ?: '\\',
                     $property->getFileRef()->getFile(),
                     $property->getFileRef()->getLineNumberStart(),
-                    $this->context->getNamespace()
+                    $this->context->getNamespace() ?: '\\'
                 );
             }
 

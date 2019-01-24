@@ -11,7 +11,6 @@ declare(strict_types=1);
  */
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
-use Exception;
 use Phan\Config;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;

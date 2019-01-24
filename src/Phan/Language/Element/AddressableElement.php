@@ -196,10 +196,10 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         Context $context
     ) : bool {
         // Figure out which namespace this element is within
-        $element_namespace = $this->getElementNamespace();
+        $element_namespace = $this->getElementNamespace() ?: '\\';
 
         // Get our current namespace from the context
-        $context_namespace = $context->getNamespace();
+        $context_namespace = $context->getNamespace() ?: '\\';
 
         // Test to see if the context is within the same
         // namespace as where the element is defined

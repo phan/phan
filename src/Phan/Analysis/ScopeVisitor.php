@@ -161,7 +161,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
                 self::analyzeUseElemCompatibility($alias, $target, $target_php_version, $lineno);
             }
             if (\strcasecmp($target->getNamespace(), $context->getNamespace()) === 0) {
-                $this->maybeWarnSameNamespaceUse($target, $flags, $lineno);
+                $this->maybeWarnSameNamespaceUse($alias, $target, $flags, $lineno);
             }
             $context = $context->withNamespaceMap(
                 $flags,
@@ -174,8 +174,11 @@ abstract class ScopeVisitor extends AnalysisVisitor
         return $context;
     }
 
-    private function maybeWarnSameNamespaceUse(FullyQualifiedGlobalStructuralElement $target, int $flags, int $lineno)
+    private function maybeWarnSameNamespaceUse(string $alias, FullyQualifiedGlobalStructuralElement $target, int $flags, int $lineno)
     {
+        if (\strcasecmp($alias, $target->getName()) !== 0) {
+            return;
+        }
         if ($flags === ast\flags\USE_FUNCTION) {
             if ($target->getNamespace() !== '\\') {
                 return;

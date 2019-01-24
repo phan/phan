@@ -1,3 +1,5 @@
+%s:4 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace uselessimport (\uselessimport)
+%s:4 PhanUseNormalNoEffect The use statement for class/namespace \uselessimport in the global namespace has no effect
 %s:21 PhanUndeclaredClassMethod Call to method __construct from undeclared class \a\Missing
 %s:22 PhanUndeclaredConstant Reference to undeclared constant \ast\MISSING_CONST
 %s:23 PhanUndeclaredFunction Call to undeclared function \ast\missing_function()
