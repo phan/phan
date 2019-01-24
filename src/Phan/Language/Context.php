@@ -30,9 +30,10 @@ class Context extends FileRef
 {
     /**
      * @var string
-     * The namespace of the file
+     * The namespace of the file.
+     * To be consistent with what ScopeVisitor sets in visitNamespace(), this is '\\' for the root namespace as well.
      */
-    private $namespace = '';
+    private $namespace = '\\';
 
     /**
      * @var int

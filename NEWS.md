@@ -23,6 +23,8 @@ Maintenance:
 Bug fixes:
 + Emit a warning and exit if `--config-file <file>` does not exist (#2271)
 + Fix inferences about `foreach ($arr as [[$nested]]) {...}` (#2362)
++ Properly analyze accesses of `@internal` elements of the root namespace from other parts of the root namespace. (#2366)
++ Consistently emit `UseNormalNoEffect` (etc.) when using names/functions/constants of the global scrope from the global scope.
 
 18 Jan 2019, Phan 1.2.1
 -----------------------
