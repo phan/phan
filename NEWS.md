@@ -8,6 +8,7 @@ New features(CLI):
 
 New features(Analysis):
 + Add `@phan-extends` and `@extends` as an alias of `@inherits` (#2351)
++ Make checks such as `$x !== 'a literal'` (and `!=`) remove the literal string/int type from the union type. (#1789)
 
 Language Server/Daemon mode:
 + Make code completion immediately after typing `->` and `::` behave more consistently (#2343)

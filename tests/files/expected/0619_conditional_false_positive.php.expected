@@ -1,0 +1,10 @@
+%s:8 PhanInvalidFQSENInClasslike Possible use of a classlike 'invalid.fqsen' with an invalid FQSEN.
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 (string) is 256 but \strlen() takes string
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 (var) is 255 but \count() takes \Countable|array
+%s:19 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:20 PhanTypeMismatchArgumentInternal Argument 1 (var) is float but \count() takes \Countable|array
+%s:29 PhanInvalidFQSENInClasslike Possible use of a classlike 'invalid.fqsen' with an invalid FQSEN.
+%s:34 PhanTypeMismatchArgumentInternal Argument 1 (string) is 256 but \strlen() takes string
+%s:35 PhanTypeMismatchArgumentInternal Argument 1 (var) is 255 but \count() takes \Countable|array
+%s:40 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:41 PhanTypeMismatchArgumentInternal Argument 1 (var) is float but \count() takes \Countable|array
