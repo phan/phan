@@ -10095,7 +10095,7 @@ return [
 'Redis::geoRadius' => ['array<int,mixed>|int', 'key'=>'string', 'longitude'=>'float', 'latitude'=>'float', 'radius'=>'float', 'unit'=>'float', 'options='=>'array<string,mixed>'],
 'Redis::geoRadiusByMember' => ['array<int,mixed>|int', 'key'=>'string', 'member'=>'string', 'radius'=>'float', 'units'=>'string', 'options='=>'array<string,mixed>'],
 'Redis::get' => ['string|false', 'key'=>'string'],
-'Redis::getAuth' => ['string|false|null', 'key'=>'string'],
+'Redis::getAuth' => ['string|false|null'],
 'Redis::getBit' => ['int', 'key'=>'string', 'offset'=>'int'],
 'Redis::getDBNum' => ['int'],
 'Redis::getHost' => ['string'],
