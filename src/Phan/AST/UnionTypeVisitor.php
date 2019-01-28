@@ -792,11 +792,11 @@ class UnionTypeVisitor extends AnalysisVisitor
             $true_context = (new ConditionVisitor(
                 $this->code_base,
                 isset($node->children['true']) ? $base_context : $this->context  // special case: $c = (($d = foo()) ?: 'fallback')
-            ))($cond_node);
+            ))->__invoke($cond_node);
             $false_context = (new NegatedConditionVisitor(
                 $this->code_base,
                 $base_context
-            ))($cond_node);
+            ))->__invoke($cond_node);
 
             if (!isset($node->children['true'])) {
                 $true_type = UnionTypeVisitor::unionTypeFromNode(

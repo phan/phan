@@ -23,12 +23,16 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\LiteralIntType;
+use Phan\Language\Type\LiteralStringType;
+use Phan\Language\Type\LiteralTypeInterface;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
+use function is_int;
 use function is_string;
 
 /**
@@ -104,6 +108,59 @@ trait ConditionVisitorUtil
                 return $type->nonNullableClone();
             },
             $suppress_issues
+        );
+    }
+
+    /**
+     * @param int|string|float $value
+     */
+    final protected function removeLiteralScalarFromVariable(
+        Node $var_node,
+        Context $context,
+        $value,
+        bool $strict_equality
+    ) : Context {
+        if (!is_int($value) && !is_string($value)) {
+            return $context;
+        }
+        if ($strict_equality) {
+            if (is_int($value)) {
+                $cb = function (Type $type) use ($value) : bool {
+                    return $type instanceof LiteralIntType && $type->getValue() === $value;
+                };
+            } else { // string
+                $cb = function (Type $type) use ($value) : bool {
+                    return $type instanceof LiteralStringType && $type->getValue() === $value;
+                };
+            }
+        } else {
+            $cb = function (Type $type) use ($value) : bool {
+                return $type instanceof LiteralTypeInterface && $type->getValue() == $value;
+            };
+        }
+        return $this->updateVariableWithConditionalFilter(
+            $var_node,
+            $context,
+            function (UnionType $union_type) use ($cb) : bool {
+                return $union_type->hasTypeMatchingCallback($cb);
+            },
+            function (UnionType $union_type) use ($cb) : UnionType {
+                $has_nullable = false;
+                foreach ($union_type->getTypeSet() as $type) {
+                    if ($cb($type)) {
+                        $union_type = $union_type->withoutType($type);
+                        $has_nullable = $has_nullable || $type->getIsNullable();
+                    }
+                }
+                if ($has_nullable) {
+                    if ($union_type->isEmpty()) {
+                        return NullType::instance(false)->asUnionType();
+                    }
+                    return $union_type->nullableClone();
+                }
+                return $union_type;
+            },
+            false
         );
     }
 
@@ -341,20 +398,24 @@ trait ConditionVisitorUtil
         $var_name = $var_node->children['name'] ?? null;
         if (\is_string($var_name)) {
             try {
-                if ($expr instanceof Node && $expr->kind === ast\AST_CONST) {
-                    $expr_name_node = $expr->children['name'];
-                    if ($expr_name_node->kind === ast\AST_NAME) {
-                        // Currently, only add this inference when we're absolutely sure this is a check rejecting null/false/true
-                        $expr_name = $expr_name_node->children['name'];
-                        switch (\strtolower($expr_name)) {
-                            case 'null':
-                                return $this->removeNullFromVariable($var_node, $context, false);
-                            case 'false':
-                                return $this->removeFalseFromVariable($var_node, $context);
-                            case 'true':
-                                return $this->removeTrueFromVariable($var_node, $context);
+                if ($expr instanceof Node) {
+                    if ($expr->kind === ast\AST_CONST) {
+                        $expr_name_node = $expr->children['name'];
+                        if ($expr_name_node->kind === ast\AST_NAME) {
+                            // Currently, only add this inference when we're absolutely sure this is a check rejecting null/false/true
+                            $expr_name = $expr_name_node->children['name'];
+                            switch (\strtolower($expr_name)) {
+                                case 'null':
+                                    return $this->removeNullFromVariable($var_node, $context, false);
+                                case 'false':
+                                    return $this->removeFalseFromVariable($var_node, $context);
+                                case 'true':
+                                    return $this->removeTrueFromVariable($var_node, $context);
+                            }
                         }
                     }
+                } else {
+                    return $this->removeLiteralScalarFromVariable($var_node, $context, $expr, true);
                 }
             } catch (\Exception $_) {
                 // Swallow it (E.g. IssueException for undefined variable)
@@ -366,7 +427,7 @@ trait ConditionVisitorUtil
     /**
      * @param Node $var_node
      * @param Node|int|float|string $expr
-     * @return Context - Constant after inferring type from an expression such as `if ($x !== 'literal')`
+     * @return Context - Constant after inferring type from an expression such as `if ($x != 'literal')`
      * @suppress PhanUnreferencedPublicMethod referenced in ConditionVisitorInterface
      */
     final public function updateVariableToBeNotEqual(
@@ -395,13 +456,20 @@ trait ConditionVisitorUtil
                             }
                         }
                     }
-                } elseif ($expr == false) {
+                    return $context;
+                }
+                // Remove all of the types which are loosely equal
+                if (is_int($expr) || is_string($expr)) {
+                    $context = $this->removeLiteralScalarFromVariable($var_node, $context, $expr, false);
+                }
+
+                if ($expr == false) {
                     if ($expr == null) {
                         return $this->removeFalseyFromVariable($var_node, $context, false);
                     }
                     return $this->removeFalseFromVariable($var_node, $context);
                 } elseif ($expr == null) {
-                    return $this->removeNullFromVariable($var_node, $context, false);
+                    $context = $this->removeNullFromVariable($var_node, $context, false);
                 } elseif ($expr == true) {  // e.g. 1, "1", -1
                     return $this->removeTrueFromVariable($var_node, $context);
                 }
