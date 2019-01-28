@@ -1,6 +1,35 @@
 Phan NEWS
 
-?? ??? 2019, Phan 1.2.1 (dev)
+?? ??? 2019, Phan 1.2.2 (dev)
+-----------------------
+
+New features(CLI):
++ Emit a warning to stderr if no files were parsed when Phan is invoked. (#2289)
+
+New features(Analysis):
++ Add `@phan-extends` and `@extends` as an alias of `@inherits` (#2351)
++ Make checks such as `$x !== 'a literal'` (and `!=`) remove the literal string/int type from the union type. (#1789)
+
+Language Server/Daemon mode:
++ Make code completion immediately after typing `->` and `::` behave more consistently (#2343)
+  Note: this fix only applies at the very last character of a line
++ Be more consistent about including types in hover text for properties (#2348)
++ Make "Go to Definition" on `new MyClass` go to `MyClass::__construct` if it exists. (#2276)
++ Support "Go to Definition" for references to global functions and global constants in comments and literal strings.
+  Previously, Phan would only look for class definitions in comments and literal strings.
++ Fix a crash requesting completion results for some class names/global constants.
+
+Maintenance:
++ Warn and exit immediately if any plugins are missing or invalid (instead of crashing after parsing all files) (#2099)
+
+Bug fixes:
++ Emit a warning and exit if `--config-file <file>` does not exist (#2271)
++ Fix inferences about `foreach ($arr as [[$nested]]) {...}` (#2362)
++ Properly analyze accesses of `@internal` elements of the root namespace from other parts of the root namespace. (#2366)
++ Consistently emit `UseNormalNoEffect` (etc.) when using names/functions/constants of the global scrope from the global scope.
++ Fix a bug causing incorrect warnings due to uses of global/class constants.
+
+18 Jan 2019, Phan 1.2.1
 -----------------------
 
 New features(CLI):

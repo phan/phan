@@ -691,7 +691,7 @@ class Issue
             new Issue(
                 self::MissingRequireFile,
                 self::CATEGORY_UNDEFINED,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Missing required file {FILE}",
                 self::REMEDIATION_B,
                 11040
@@ -699,7 +699,7 @@ class Issue
             new Issue(
                 self::InvalidRequireFile,
                 self::CATEGORY_UNDEFINED,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Required file {FILE} is not a file",
                 self::REMEDIATION_B,
                 11041
@@ -891,7 +891,7 @@ class Issue
             new Issue(
                 self::ClassContainsAbstractMethod,
                 self::CATEGORY_UNDEFINED,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "non-abstract class {CLASS} contains abstract method {METHOD} declared at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 11022
@@ -899,7 +899,7 @@ class Issue
             new Issue(
                 self::ClassContainsAbstractMethodInternal,
                 self::CATEGORY_UNDEFINED,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "non-abstract class {CLASS} contains abstract internal method {METHOD}",
                 self::REMEDIATION_B,
                 11023
@@ -1069,7 +1069,7 @@ class Issue
             new Issue(
                 self::InvalidConstantFQSEN,
                 self::CATEGORY_ANALYSIS,
-                self::SEVERITY_LOW,
+                self::SEVERITY_NORMAL,
                 "'{CONST}' is an invalid FQSEN for a constant",
                 self::REMEDIATION_B,
                 2002
@@ -1720,7 +1720,7 @@ class Issue
             new Issue(
                 self::TypeObjectUnsetDeclaredProperty,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_LOW,  // There are valid reasons to do this, e.g. for the typed properties V2 RFC or to change serialization
                 "Suspicious attempt to unset class {TYPE}'s property {PROPERTY} declared at {FILE}:{LINE} (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)",
                 self::REMEDIATION_B,
                 10081
@@ -1752,7 +1752,7 @@ class Issue
             new Issue(
                 self::TypeInvalidRequire,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Require statement was passed an invalid expression of type {TYPE} (expected a string)",
                 self::REMEDIATION_B,
                 10085
@@ -1760,7 +1760,7 @@ class Issue
             new Issue(
                 self::TypeInvalidEval,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Eval statement was passed an invalid expression of type {TYPE} (expected a string)",
                 self::REMEDIATION_B,
                 10086
@@ -1776,7 +1776,7 @@ class Issue
             new Issue(
                 self::TypeInvalidCloneNotObject,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Expected an object to be passed to clone() but got {TYPE}",
                 self::REMEDIATION_B,
                 10088
@@ -1784,7 +1784,7 @@ class Issue
             new Issue(
                 self::TypeInvalidTraitReturn,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Expected a class or interface (or built-in type) to be the real return type of {FUNCTIONLIKE} but got trait {TRAIT}",
                 self::REMEDIATION_B,
                 10089
@@ -1792,7 +1792,7 @@ class Issue
             new Issue(
                 self::TypeInvalidTraitParam,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "{FUNCTIONLIKE} is declared to have a parameter \${PARAMETER} with a real type of trait {TYPE} (expected a class or interface or built-in type)",
                 self::REMEDIATION_B,
                 10090
@@ -2097,7 +2097,7 @@ class Issue
             new Issue(
                 self::ParamRedefined,
                 self::CATEGORY_PARAMETER,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Redefinition of parameter {PARAMETER}",
                 self::REMEDIATION_B,
                 7012
@@ -2121,6 +2121,8 @@ class Issue
                 self::REMEDIATION_B,
                 7014
             ),
+            // NOTE: Incompatibilities in param types does not cause the php interpreter to throw an error.
+            // It emits a warning instead, so these are SEVERITY_NORMAL.
             new Issue(
                 self::ParamSignaturePHPDocMismatchReturnType,
                 self::CATEGORY_PARAMETER,
@@ -2180,7 +2182,7 @@ class Issue
             new Issue(
                 self::ParamSignatureRealMismatchHasNoParamType,
                 self::CATEGORY_PARAMETER,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_NORMAL,  // NOTE: See allow_method_param_type_widening
                 "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}') defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7019
@@ -3231,7 +3233,7 @@ class Issue
                 self::TemplateTypeStaticMethod,
                 self::CATEGORY_GENERIC,
                 self::SEVERITY_NORMAL,
-                "static method {METHOD} may not use template types",
+                "static method {METHOD} does not declare template type in its own comment and may not use the template type of class instances",
                 self::REMEDIATION_B,
                 14001
             ),
@@ -3259,6 +3261,7 @@ class Issue
                 self::REMEDIATION_B,
                 14004
             ),
+            // TODO: Reword this if template types can be used for phan-assert or for compatibility with other arguments
             new Issue(
                 self::TemplateTypeNotUsedInFunctionReturn,
                 self::CATEGORY_GENERIC,

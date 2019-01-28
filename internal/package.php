@@ -38,9 +38,9 @@ $iterator = new CallbackFilterIterator(
     }
 );
 $phar->buildFromIterator($iterator, $dir);
-$phar->addFile('LICENSE');
-$phar->addFile('LICENSE.LANGUAGE_SERVER');
-$phar->addFile('LICENSE.PHP_PARSER');
+foreach (glob('LICENSE*') as $license) {
+    $phar->addFile($license);
+}
 foreach ($phar as $file) {
     echo $file->getFileName() . "\n";
 }

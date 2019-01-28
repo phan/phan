@@ -2,9 +2,8 @@
 
 namespace Phan\Language\Type;
 
-use Phan\Language\Type;
 use Phan\Config;
-
+use Phan\Language\Type;
 use RuntimeException;
 
 /**

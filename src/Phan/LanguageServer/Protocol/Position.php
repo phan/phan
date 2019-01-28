@@ -82,4 +82,12 @@ class Position
             $data['character'] ?? null
         );
     }
+
+    /**
+     * Used for debugging
+     */
+    public function __toString() : string
+    {
+        return "$this->line:$this->character";
+    }
 }

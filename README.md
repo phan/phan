@@ -2,9 +2,10 @@ Phan is a static analyzer for PHP that prefers to minimize false-positives. Phan
 
 Phan looks for common issues and will verify type compatibility on various operations when type
 information is available or can be deduced. Phan has a good (but not comprehensive) understanding of flow control
-and does not attempt to track values.
+and can track values in a few use cases (e.g. arrays, integers, and strings).
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/3940135c0dfbd5387c94/maintainability)](https://codeclimate.com/github/phan/phan/maintainability) [![Build Status](https://travis-ci.org/phan/phan.svg?branch=master)](https://travis-ci.org/phan/phan) [![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/phan/phan?branch=master&svg=true)](https://ci.appveyor.com/project/TysonAndre/phan/branch/master)
+[![Build Status](https://travis-ci.org/phan/phan.svg?branch=master)](https://travis-ci.org/phan/phan)
+[![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/phan/phan?branch=master&svg=true)](https://ci.appveyor.com/project/TysonAndre/phan/branch/master)
 [![Gitter](https://badges.gitter.im/phan/phan.svg)](https://gitter.im/phan/phan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Latest Stable Version](https://img.shields.io/packagist/v/phan/phan.svg)](https://packagist.org/packages/phan/phan)
 [![License](https://img.shields.io/packagist/l/phan/phan.svg)](https://github.com/phan/phan/blob/master/LICENSE)
@@ -20,11 +21,8 @@ composer require phan/phan
 With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/phan/phan/wiki/Getting-Started#creating-a-config-file) in
 your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
 
-This version (branch) of Phan depends on PHP 7.x with the [php-ast](https://github.com/nikic/php-ast) extension (0.1.5 or newer, uses AST version 50) and supports PHP version 7.0-7.2 syntax.
-The master branch is the basis for the 1.x.y releases.
+This version (branch) of Phan depends on PHP 7.x with the [php-ast](https://github.com/nikic/php-ast) extension (0.1.5+ or 1.0.0+) and supports PHP version 7.0-7.3 syntax.
 Installation instructions for php-ast can be found [here](https://github.com/nikic/php-ast#installation).
-Having PHP's `pcntl` extension installed is strongly recommended (not available on Windows), in order to support using parallel processes for analysis
-(`pcntl` is recommended for daemon mode and LSP to work efficiently, but both should work without that extension).
 
 * **Alternative Installation Methods**<br />
   See [Getting Started](https://github.com/phan/phan/wiki/Getting-Started) for alternative methods of using
@@ -34,9 +32,11 @@ Phan and details on how to configure Phan for your project.<br />
 * **Installing Dependencies**<br />
   Take a look at [Installing Phan Dependencies](https://github.com/phan/phan/wiki/Getting-Started#installing-phan-dependencies) for help getting Phan's dependencies installed on your system.
 
+The [Wiki has more information about using Phan](https://github.com/phan/phan/wiki#using-phan).
+
 # Features
 
-Phan is able to perform the following kinds of analysis.
+Phan is able to perform the following kinds of analysis:
 
 * Check that all methods, functions, classes, traits, interfaces, constants, properties and variables are defined and accessible.
 * Check for type safety and arity issues on method/function/closure calls.
@@ -54,6 +54,7 @@ Phan is able to perform the following kinds of analysis.
   Phan also checks for final classes/methods being overridden, that abstract methods are implemented, and that the implemented interface is really an interface (and so on).
 * Supports namespaces, traits and variadics.
 * Supports [Union Types](https://github.com/phan/phan/wiki/About-Union-Types).
+* Supports [Generic Types (i.e. `@template`)](https://github.com/phan/phan/wiki/Generic-Types).
 * Supports generic arrays such as `int[]`, `UserObject[]`, `array<int,UserObject>`, etc..
 * Supports array shapes such as `array{key:string,otherKey:?stdClass}`, etc. (internally and in PHPDoc tags)
   This also supports indicating that fields of an array shape are optional
@@ -72,10 +73,6 @@ Phan is able to perform the following kinds of analysis.
 * Supports analysis of closures and return types passed to `array_map`, `array_filter`, and other internal array functions.
 * Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
 * Can be run on many cores. (requires `pcntl`)
-* [Can run in the background (daemon mode)](https://github.com/phan/phan/wiki/Using-Phan-Daemon-Mode), to then quickly respond to requests to analyze the latest version of a file.
-  This can also act as a linter in the [Language Server Protocol](https://github.com/Microsoft/language-server-protocol).
-  Parts of the language server implementation are based on [felixfbecker/php-language-server](https://github.com/felixfbecker/php-language-server).
-  While running in the background, Phan can be used from [various editors](https://github.com/phan/phan/wiki/Editor-Support).
 * Output is emitted in text, checkstyle, json, pylint, csv, or codeclimate formats.
 * Can run [user plugins on source for checks specific to your code](https://github.com/phan/phan/wiki/Writing-Plugins-for-Phan).
   [Phan includes various plugins you may wish to enable for your project](https://github.com/phan/phan/tree/master/.phan/plugins#2-general-use-plugins).
@@ -86,6 +83,9 @@ and examples of all issues that can be detected by Phan. Take a look at the
 definition of each error type.
 
 Take a look at the [Tutorial for Analyzing a Large Sloppy Code Base](https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base) to get a sense of what the process of doing ongoing analysis might look like for you.
+
+Phan can be used from [various editors and IDEs](https://github.com/phan/phan/wiki/Editor-Support) for its error checking, "go to definition" support, etc. via the [Language Server Protocol](https://github.com/Microsoft/language-server-protocol).
+Editors and tools can also request analysis of individual files in a project using the simpler [Daemon Mode](https://github.com/phan/phan/wiki/Using-Phan-Daemon-Mode).
 
 See the [tests](https://github.com/phan/phan/blob/master/tests/files) directory for some examples of the various checks.
 
@@ -103,7 +103,7 @@ Additional analysis features have been provided by [plugins](https://github.com/
 - [Checking coding style conventions](https://github.com/phan/phan/tree/master/.phan/plugins#3-plugins-specific-to-code-styles)
 - [Others](https://github.com/phan/phan/tree/master/.phan/plugins#plugins)
 
-Example: [Phan's plugins for self-analysis.](https://github.com/phan/phan/blob/1.0.0/.phan/config.php#L542-L563)
+Example: [Phan's plugins for self-analysis.](https://github.com/phan/phan/blob/1.2.1/.phan/config.php#L593-L613)
 
 # Usage
 
@@ -179,211 +179,7 @@ Take a look at [Creating a Config File](https://github.com/phan/phan/wiki/Gettin
 [Incrementally Strengthening Analysis](https://github.com/phan/phan/wiki/Incrementally-Strengthening-Analysis) for
 more details.
 
-Running `phan --help` will show usage information and command-line options.
-
-```
-Usage: ./phan [options] [files...]
- -f, --file-list <filename>
-  A file containing a list of PHP files to be analyzed
-
- -l, --directory <directory>
-  A directory that should be parsed for class and
-  method information. After excluding the directories
-  defined in --exclude-directory-list, the remaining
-  files will be statically analyzed for errors.
-
-  Thus, both first-party and third-party code being used by
-  your application should be included in this list.
-
-  You may include multiple `--directory DIR` options.
-
- --exclude-file <file>
-  A file that should not be parsed or analyzed (or read
-  at all). This is useful for excluding hopelessly
-  unanalyzable files.
-
- -3, --exclude-directory-list <dir_list>
-  A comma-separated list of directories that defines files
-  that will be excluded from static analysis, but whose
-  class and method information should be included.
-
-  Generally, you'll want to include the directories for
-  third-party code (such as "vendor/") in this list.
-
- --include-analysis-file-list <file_list>
-  A comma-separated list of files that will be included in
-  static analysis. All others won't be analyzed.
-
-  This is primarily intended for performing standalone
-  incremental analysis.
-
- -d, --project-root-directory </path/to/project>
-  Hunt for a directory named `.phan` in the provided directory
-  and read configuration file `.phan/config.php` from that path.
-
- -r, --file-list-only
-  A file containing a list of PHP files to be analyzed to the
-  exclusion of any other directories or files passed in. This
-  is unlikely to be useful.
-
- -k, --config-file
-  A path to a config file to load (instead of the default of
-  `.phan/config.php`).
-
- -m <mode>, --output-mode
-  Output mode from 'text', 'json', 'csv', 'codeclimate', 'checkstyle', or 'pylint'
-
- -o, --output <filename>
-  Output filename
-
- --init
-   [--init-level=3]
-   [--init-analyze-dir=path/to/src]
-   [--init-analyze-file=path/to/file.php]
-   [--init-no-composer]
-
-  Generates a `.phan/config.php` in the current directory
-  based on the project's composer.json.
-  The logic used to generate the config file is currently very simple.
-  Some third party classes (e.g. in vendor/)
-  will need to be manually added to 'directory_list' or excluded,
-  and you may end up with a large number of issues to be manually suppressed.
-  See https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base
-
-  [--init-level] affects the generated settings in `.phan/config.php`
-    (e.g. null_casts_as_array).
-    `--init-level` can be set to 1 (strictest) to 5 (least strict)
-  [--init-analyze-dir] can be used as a relative path alongside directories
-    that Phan infers from composer.json's "autoload" settings
-  [--init-analyze-file] can be used as a relative path alongside files
-    that Phan infers from composer.json's "bin" settings
-  [--init-no-composer] can be used to tell Phan that the project
-    is not a composer project.
-    Phan will not check for composer.json or vendor/,
-    and will not include those paths in the generated config.
-  [--init-overwrite] will allow 'phan --init' to overwrite .phan/config.php.
-
- -C, --color
-  Add colors to the outputted issues. Tested in Unix.
-  This is recommended for only the default --output-mode ('text')
-
- -p, --progress-bar
-  Show progress bar
-
- -q, --quick
-  Quick mode - doesn't recurse into all function calls
-
- -b, --backward-compatibility-checks
-  Check for potential PHP 5 -> PHP 7 BC issues
-
- --target-php-version {7.0,7.1,7.2,7.3,native}
-  The PHP version that the codebase will be checked for compatibility against.
-  For best results, the PHP binary used to run Phan should have the same PHP version.
-  (Phan relies on Reflection for some param counts
-   and checks for undefined classes/methods/functions)
-
- -i, --ignore-undeclared
-  Ignore undeclared functions and classes
-
- -y, --minimum-severity <level in {0,5,10}>
-  Minimum severity level (low=0, normal=5, critical=10) to report.
-  Defaults to 0.
-
- -c, --parent-constructor-required
-  Comma-separated list of classes that require
-  parent::__construct() to be called
-
- -x, --dead-code-detection
-  Emit issues for classes, methods, functions, constants and
-  properties that are probably never referenced and can
-  be removed. This implies `--unused-variable-detection`.
-
- --unused-variable-detection
-  Emit issues for variables, parameters and closure use variables
-  that are probably never referenced.
-  This has a few known false positives, e.g. for loops or branches.
-
- -j, --processes <int>
-  The number of parallel processes to run during the analysis
-  phase. Defaults to 1.
-
- -z, --signature-compatibility
-  Analyze signatures for methods that are overrides to ensure
-  compatibility with what they're overriding.
-
- --disable-plugins
-  Don't run any plugins. Slightly faster.
-
- -P, --plugin <pluginName|path/to/Plugin.php>
-  Add a plugin to run. This flag can be repeated.
-  (Either pass the name of the plugin or a relative/absolute path to the plugin)
-
- --strict-method-checking
-  Warn if any type in a method invocation's object is definitely not an object,
-  or any type in an invoked expression is not a callable.
-  (Enables the config option `strict_method_checking`)
-
- --strict-param-checking
-  Warn if any type in an argument's union type cannot be cast to
-  the parameter's expected union type.
-  (Enables the config option `strict_param_checking`)
-
- --strict-property-checking
-  Warn if any type in a property assignment's union type
-  cannot be cast to a type in the property's declared union type.
-  (Enables the config option `strict_property_checking`)
-
- --strict-return-checking
-  Warn if any type in a returned value's union type
-  cannot be cast to the declared return type.
-  (Enables the config option `strict_return_checking`)
-
- -S, --strict-type-checking
-  Equivalent to
-  `--strict-method-checking --strict-param-checking --strict-property-checking --strict-return-checking`.
-
- --use-fallback-parser
-  If a file to be analyzed is syntactically invalid
-  (i.e. "php --syntax-check path/to/file" would emit a syntax error),
-  then retry, using a different, slower error tolerant parser to parse it.
-  (And phan will then analyze what could be parsed).
-  This flag is experimental and may result in unexpected exceptions or errors.
-  This flag does not affect excluded files and directories.
-
- --allow-polyfill-parser
-  If the `php-ast` extension isn't available or is an outdated version,
-  then use a slower parser (based on tolerant-php-parser) instead.
-  Note that https://github.com/Microsoft/tolerant-php-parser
-  has some known bugs which may result in false positive parse errors.
-
- --force-polyfill-parser
-  Use a slower parser (based on tolerant-php-parser) instead of the native parser,
-  even if the native parser is available.
-  Useful mainly for debugging.
-
- -s, --daemonize-socket </path/to/file.sock>
-  Unix socket for Phan to listen for requests on, in daemon mode.
-
- --daemonize-tcp-host
-  TCP hostname for Phan to listen for JSON requests on, in daemon mode.
-  (e.g. 'default', which is an alias for host 127.0.0.1, or `0.0.0.0` for
-  usage with Docker). `phan_client` can be used to communicate with the Phan Daemon.
-
- --daemonize-tcp-port <default|1024-65535>
-  TCP port for Phan to listen for JSON requests on, in daemon mode.
-  (e.g. 'default', which is an alias for port 4846.)
-  `phan_client` can be used to communicate with the Phan Daemon.
-
- -v, --version
-  Print Phan's version number
-
- -h, --help
-  This help information
-
- --extended-help
-  This help information, plus less commonly used flags
-  (E.g. for daemon mode)
-```
+Running `phan --help` will show [usage information and command-line options](./internal/CLI-HELP.md).
 
 ## Annotating Your Source Code
 

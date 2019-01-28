@@ -633,12 +633,9 @@ final class ConfigPluginSet extends PluginV2 implements
             throw new AssertionError("Invalid kind for node");
         }
 
-        /**
-         * @phan-closure-scope NodeSelectionVisitor
-         */
-        $closure = (static function (CodeBase $code_base, Context $context, Node $node, array $unused_parent_node_list = []) {
+        $closure = (static function (CodeBase $code_base, Context $context, Node $node, array $parent_node_list = []) {
             $visitor = new NodeSelectionVisitor($code_base, $context);
-            $visitor->visitCommonImplementation($node);
+            $visitor->visitCommonImplementation($node, $parent_node_list);
         });
 
         $this->addNodeSelectionClosureForKind($node->kind, $closure);
@@ -720,6 +717,22 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
+     * Given a plugin's name in the config, return the path Phan expects the plugin to be located in
+     * Allow any word/UTF-8 identifier as a php file name.
+     * E.g. 'AlwaysReturnPlugin' becomes /path/to/phan/.phan/plugins/AlwaysReturnPlugin.php
+     * (Useful when using phan.phar, etc.)
+     *
+     * @internal
+     */
+    public static function normalizePluginPath(string $plugin_file_name) : string
+    {
+        if (\preg_match('@^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$@', $plugin_file_name) > 0) {
+            return dirname(dirname(dirname(__DIR__))) . '/.phan/plugins/' . $plugin_file_name . '.php';
+        }
+        return $plugin_file_name;
+    }
+
+    /**
      * @return void
      */
     private function ensurePluginsExist()
@@ -730,12 +743,7 @@ final class ConfigPluginSet extends PluginV2 implements
         // Add user-defined plugins.
         $plugin_set = array_map(
             function (string $plugin_file_name) : PluginV2 {
-                // Allow any word/UTF-8 identifier as a php file name.
-                // E.g. 'AlwaysReturnPlugin' becomes /path/to/phan/.phan/plugins/AlwaysReturnPlugin.php
-                // (Useful when using phan.phar, etc.)
-                if (\preg_match('@^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$@', $plugin_file_name) > 0) {
-                    $plugin_file_name = __DIR__ . '/../../../.phan/plugins/' . $plugin_file_name . '.php';
-                }
+                $plugin_file_name = self::normalizePluginPath($plugin_file_name);
 
                 try {
                     $plugin_instance = require($plugin_file_name);

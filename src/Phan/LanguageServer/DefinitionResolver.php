@@ -6,6 +6,7 @@ use AssertionError;
 use ast;
 use ast\Node;
 use Closure;
+use Exception;
 use Phan\Analysis\ScopeVisitor;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
@@ -28,19 +29,29 @@ use Phan\Language\UnionType;
 class DefinitionResolver
 {
     /**
-     * @return Closure(Context,Node):void
+     * @return Closure(Context,Node,array<int,Node>):void
      * NOTE: The helper methods distinguish between "Go to definition"
      * and "go to type definition" in their implementations,
      * based on $request->getIsTypeDefinitionRequest()
      */
     public static function createGoToDefinitionClosure(GoToDefinitionRequest $request, CodeBase $code_base)
     {
-        return function (Context $context, Node $node) use ($request, $code_base) {
+        /**
+         * @param array<int,Node> $parent_node_list
+         */
+        return function (Context $context, Node $node, array $parent_node_list = []) use ($request, $code_base) {
             // @phan-suppress-next-line PhanUndeclaredProperty this is overridden
             $selected_fragment = $node->selectedFragment ?? null;
             if (is_string($selected_fragment)) {
                 self::locateCommentDefinition($request, $code_base, $context, $selected_fragment);
                 return;
+            }
+
+            $parent_node = end($parent_node_list);
+            if ($parent_node instanceof Node) {
+                if ($node->kind === ast\AST_NAME && $parent_node->kind === ast\AST_NEW) {
+                    $node = $parent_node;
+                }
             }
             // TODO: Better way to be absolutely sure this $node is in the same requested file path?
             // I think it's possible that we'll have more than one Node to check against (with simplify_ast)
@@ -62,6 +73,9 @@ class DefinitionResolver
                 case ast\AST_STATIC_CALL:
                 case ast\AST_METHOD_CALL:
                     self::locateMethodDefinition($request, $code_base, $context, $node);
+                    return;
+                case ast\AST_NEW:
+                    self::locateNewDefinition($request, $code_base, $context, $node);
                     return;
                 case ast\AST_CALL:
                     self::locateFuncDefinition($request, $code_base, $context, $node);
@@ -85,6 +99,17 @@ class DefinitionResolver
         };
     }
 
+    /**
+     * Locate an element from a fragment seen in a comment or string
+     *
+     * This can currently refer to
+     *
+     * 1. a class
+     * 2. a global function
+     * 3. a global constant
+     *
+     * Other types (e.g. class constants) aren't supported yet.
+     */
     private static function locateCommentDefinition(
         GoToDefinitionRequest $request,
         CodeBase $code_base,
@@ -92,14 +117,93 @@ class DefinitionResolver
         string $selected_fragment
     ) {
         // fprintf(STDERR, "locateCommentDefinition called for %s\n", $selected_fragment);
+        if (self::locateClassDefinitionFromComment($request, $code_base, $context, $selected_fragment)) {
+            return;
+        }
+        if (self::locateGlobalFunctionDefinitionFromComment($request, $code_base, $context, $selected_fragment)) {
+            return;
+        }
+        if (self::locateGlobalConstantDefinitionFromComment($request, $code_base, $context, $selected_fragment)) {
+            return;
+        }
+    }
+
+    private static function locateClassDefinitionFromComment(
+        GoToDefinitionRequest $request,
+        CodeBase $code_base,
+        Context $context,
+        string $selected_fragment
+    ) : bool {
         // TODO: Handle method references in doc comments, global functions, etc.
         try {
             $union_type = UnionType::fromStringInContext($selected_fragment, $context, Type::FROM_PHPDOC);
-        } catch (\Exception $e) {
-            fprintf(STDERR, "Unexpected error in " . __METHOD__ . ": " . $e->getMessage() . "\n");
-            return;
+        } catch (Exception $_) {
+            // fprintf(STDERR, "Unexpected error in " . __METHOD__ . ": " . $_->getMessage() . "\n");
+            return false;
         }
-        self::locateClassDefinitionForUnionType($request, $code_base, $union_type);
+        if ($union_type->isEmpty()) {
+            return false;
+        }
+        // This is the name of a class
+        return self::locateClassDefinitionForUnionType($request, $code_base, $union_type);
+    }
+
+    private static function locateGlobalFunctionDefinitionFromComment(
+        GoToDefinitionRequest $request,
+        CodeBase $code_base,
+        Context $context,
+        string $selected_fragment
+    ) : bool {
+        // TODO: Handle method references in doc comments, global functions, etc.
+        try {
+            $fqsen = FullyQualifiedFunctionName::make('', $selected_fragment);
+        } catch (Exception $_) {
+            return false;
+        }
+        // fwrite(STDERR, "Looking up function with fqsen $fqsen\n");
+        if (!$code_base->hasFunctionWithFQSEN($fqsen)) {
+            if (substr($selected_fragment, 0, 1) !== '\\') {
+                try {
+                    $fqsen = FullyQualifiedFunctionName::make($context->getNamespace(), $selected_fragment);
+                } catch (Exception $_) {
+                    return false;
+                }
+            }
+            if (!$code_base->hasFunctionWithFQSEN($fqsen)) {
+                return false;
+            }
+        }
+        $request->recordDefinitionElement($code_base, $code_base->getFunctionByFQSEN($fqsen), true);
+        return true;
+    }
+
+    private static function locateGlobalConstantDefinitionFromComment(
+        GoToDefinitionRequest $request,
+        CodeBase $code_base,
+        Context $context,
+        string $selected_fragment
+    ) : bool {
+        // TODO: Handle method references in doc comments, global functions, etc.
+        try {
+            $fqsen = FullyQualifiedGlobalConstantName::make('', $selected_fragment);
+        } catch (Exception $_) {
+            return false;
+        }
+        // fwrite(STDERR, "Looking up function with fqsen $fqsen\n");
+        if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
+            if (substr($selected_fragment, 0, 1) !== '\\') {
+                try {
+                    $fqsen = FullyQualifiedGlobalConstantName::make($context->getNamespace(), $selected_fragment);
+                } catch (Exception $_) {
+                    return false;
+                }
+            }
+            if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
+                return false;
+            }
+        }
+        $request->recordDefinitionElement($code_base, $code_base->getGlobalConstantByFQSEN($fqsen), true);
+        return true;
     }
 
     /**
@@ -126,7 +230,8 @@ class DefinitionResolver
         GoToDefinitionRequest $request,
         CodeBase $code_base,
         UnionType $union_type
-    ) {
+    ) : bool {
+        $found = false;
         foreach ($union_type->getTypeSet() as $type) {
             if ($type->isNativeType()) {
                 continue;
@@ -139,7 +244,9 @@ class DefinitionResolver
             // Note: Does the same thing (Return the class)
             // both for "Go To Definition" and "Go To Type Definition"
             $request->recordDefinitionElement($code_base, $class, false);
+            $found = true;
         }
+        return $found;
     }
 
     /**
@@ -224,6 +331,42 @@ class DefinitionResolver
         $variable = $context->getScope()->getVariableByName($name);
 
         $request->recordDefinitionOfVariableType($code_base, $context, $variable);
+    }
+
+    /**
+     * Given a node of type AST_NEW, locate the constructor definition (or class definition)
+     * @return void
+     */
+    private static function locateNewDefinition(GoToDefinitionRequest $request, CodeBase $code_base, Context $context, Node $node)
+    {
+        try {
+            $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node);
+            self::locateConstructorDefinitionForUnionType($request, $code_base, $union_type);
+        } catch (Exception $_) {
+            // Hopefully warn elsewhere
+            return;
+        }
+    }
+
+    private static function locateConstructorDefinitionForUnionType(
+        GoToDefinitionRequest $request,
+        CodeBase $code_base,
+        UnionType $union_type
+    ) {
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type->isNativeType()) {
+                continue;
+            }
+            $class_fqsen = FullyQualifiedClassName::fromType($type);
+            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                continue;
+            }
+            $class = $code_base->getClassByFQSEN($class_fqsen);
+            $method = $class->getMethodByName($code_base, '__construct');
+            // Note: Does the same thing (Return the class)
+            // both for "Go To Definition" and "Go To Type Definition"
+            $request->recordDefinitionElement($code_base, $method, false);
+        }
     }
 
     /**

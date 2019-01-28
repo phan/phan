@@ -5,6 +5,7 @@ namespace Phan\AST;
 use AssertionError;
 use ast;
 use ast\Node;
+use Exception;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
@@ -1366,10 +1367,10 @@ class ContextNode
                     Issue::AccessPropertyInternal,
                     $node->lineno,
                     $property->getRepresentationForIssue(),
-                    $property->getElementNamespace(),
+                    $property->getElementNamespace() ?: '\\',
                     $property->getFileRef()->getFile(),
                     $property->getFileRef()->getLineNumberStart(),
-                    $this->context->getNamespace()
+                    $this->context->getNamespace() ?: '\\'
                 );
             }
 
@@ -1638,18 +1639,14 @@ class ContextNode
             )
         ) {
             // TODO: Refactor and also check namespaced constants
-            throw new IssueException(
-                Issue::fromType(Issue::AccessConstantInternal)(
-                    $context->getFile(),
-                    $node->lineno ?? 0,
-                    [
-                        (string)$constant->getFQSEN(),
-                        $constant->getElementNamespace(),
-                        $constant->getFileRef()->getFile(),
-                        $constant->getFileRef()->getLineNumberStart(),
-                        $context->getNamespace()
-                    ]
-                )
+            $this->emitIssue(
+                Issue::AccessConstantInternal,
+                $node->lineno,
+                (string)$constant->getFQSEN(),
+                $constant->getElementNamespace(),
+                $constant->getFileRef()->getFile(),
+                $constant->getFileRef()->getLineNumberStart(),
+                $context->getNamespace()
             );
         }
 
@@ -1747,16 +1744,12 @@ class ContextNode
                     $this->context
                 )
             ) {
-                throw new IssueException(
-                    Issue::fromType(Issue::AccessClassConstantInternal)(
-                        $this->context->getFile(),
-                        $node->lineno ?? 0,
-                        [
-                            (string)$constant->getFQSEN(),
-                            $constant->getFileRef()->getFile(),
-                            $constant->getFileRef()->getLineNumberStart(),
-                        ]
-                    )
+                $this->emitIssue(
+                    Issue::AccessClassConstantInternal,
+                    $node->lineno,
+                    (string)$constant->getFQSEN(),
+                    $constant->getFileRef()->getFile(),
+                    $constant->getFileRef()->getLineNumberStart()
                 );
             }
 
@@ -2151,14 +2144,15 @@ class ContextNode
             }
             try {
                 $constant = (new ContextNode($this->code_base, $this->context, $node))->getConst();
-            } catch (\Exception $_) {
+            } catch (Exception $_) {
+                // Is there a need to catch IssueException as well?
                 return $node;
             }
             // TODO: Recurse, but don't try to resolve constants again
             $new_node = $constant->getNodeForValue();
             if (is_object($new_node)) {
                 // Avoid infinite recursion, only resolve once
-                $new_node = $this->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
+                $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
             }
             return $new_node;
         } elseif ($kind === ast\AST_CLASS_CONST) {
@@ -2174,7 +2168,7 @@ class ContextNode
             $new_node = $constant->getNodeForValue();
             if (is_object($new_node)) {
                 // Avoid infinite recursion, only resolve once
-                $new_node = $this->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
+                $new_node = (new ContextNode($this->code_base, $constant->getContext(), $new_node))->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
             }
             return $new_node;
         } elseif ($kind === ast\AST_MAGIC_CONST) {

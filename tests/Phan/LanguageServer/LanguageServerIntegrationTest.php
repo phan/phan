@@ -14,6 +14,7 @@ use Phan\LanguageServer\Protocol\TextDocumentIdentifier;
 use Phan\LanguageServer\ProtocolStreamReader;
 use Phan\LanguageServer\Utils;
 use Phan\Tests\BaseTest;
+use RuntimeException;
 use stdClass;
 
 /**
@@ -130,13 +131,13 @@ final class LanguageServerIntegrationTest extends BaseTest
                 $pipes
             );
             if (!$proc) {
-                throw new \RuntimeException("Failed to create a proc");
+                throw new RuntimeException("Failed to create a proc");
             }
             '@phan-var-force resource $tcpServer';
             $socket = stream_socket_accept($tcpServer, 5);
             if (!$socket) {
                 proc_close($proc);
-                throw new \RuntimeException("Failed to receive a connection from language server in 5 seconds");
+                throw new RuntimeException("Failed to receive a connection from language server in 5 seconds");
             }
             // Don't set this to async - the rest of this test assumes synchronous streams.
             // stream_set_blocking($socket, false);
@@ -258,32 +259,74 @@ EOT;
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
             $new_file_contents = <<<'EOT'
-<?php  // line 0
+<?php namespace { // line 0
 class MyExample {
+    public function __construct() {}
     const MyConst = 2;
 }
-echo MyExample::MyConst;  // line 4
+echo MyExample::MyConst;  // line 5
+$x = new MyExample();
+echo MyExample::class;
+class MyExampleWithoutConstructor { }
+$y = new MyExampleWithoutConstructor();
+// Some comment referring to \MyExample  at line 10
+function my_other_global_function() {}
+my_other_global_function();
+// Some comment referring to \\\my_other_global_function() - Current implementation only works when followed by a node
+// Should not crash if there are too many backslashes
+// line 15 - Can refer to constant MY_GLOBAL_CONSTANT
+const MY_GLOBAL_CONSTANT = [2,3];
+$z = MY_GLOBAL_CONSTANT;
+
+
+
+}
+// line 20
+namespace Ns {
+}
 EOT;
             $this->writeDidChangeNotificationToDefaultFile($proc_in, $new_file_contents);
             $this->assertHasEmptyPublishDiagnosticsNotification($proc_out);
 
+            $id = 2;
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
             // NOTE: Line numbers are 0-based for Position
-            $definition_response = $this->writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, new Position(4, 6));
-
-            $this->assertSame([
-                'result' => [
-                    [
-                        'uri' => $this->getDefaultFileURI(),
-                        'range' => [
-                            'start' => ['line' => 1, 'character' => 0],
-                            'end'   => ['line' => 2, 'character' => 0],
+            $assert_has_definition = function (Position $position, int $line) use ($proc_in, $proc_out, &$id) {
+                $definition_response = $this->writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, $position);
+                $this->assertSame([
+                    'result' => [
+                        [
+                            'uri' => $this->getDefaultFileURI(),
+                            'range' => [
+                                'start' => ['line' => $line,     'character' => 0],
+                                'end'   => ['line' => $line + 1, 'character' => 0],
+                            ],
                         ],
                     ],
-                ],
-                'id' => 2,
-                'jsonrpc' => '2.0',
-            ], $definition_response);
+                    'id' => $id++,
+                    'jsonrpc' => '2.0',
+                ], $definition_response, "Unexpected result at $position");
+            };
+
+            $assert_has_definition(new Position(5, 6), 1);
+            $assert_has_definition(new Position(5, 15), 3);
+            // new MyExample() gives location of MyExample::__construct at "new"
+            $assert_has_definition(new Position(6, 5), 2);
+            // new MyExample() gives location of MyExample::__construct at "MyExample"
+            $assert_has_definition(new Position(6, 17), 2);
+            // Foo::class gives location of "class Foo"
+            $assert_has_definition(new Position(7, 17), 1);
+            // new MyExampleWithoutConstructor() gives the location of "class MyExampleWithoutConstructor"
+            $assert_has_definition(new Position(9, 9), 8);
+            // Referring to a class in a comment works.
+            $assert_has_definition(new Position(10, 31), 1);
+            // A function call can be located
+            $assert_has_definition(new Position(12, 0), 11);
+            // A function name in a comment can be located
+            $assert_has_definition(new Position(13, 32), 11);
+            // A global constant name can be located (in comments and code)
+            $assert_has_definition(new Position(15, 50), 16);
+            $assert_has_definition(new Position(17, 5), 16);
 
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
@@ -305,6 +348,13 @@ EOT;
         $this->messageId = 0;
         list($proc, $proc_in, $proc_out) = $this->createPhanLanguageServer($pcntl_enabled, true, ['vscode_compatible_completions' => $for_vscode]);
         try {
+            /*
+            // This block can be uncommented when developing tests for completions
+            $line_contents = explode("\n", $file_contents)[$position->line];
+            $completion_cursor = substr($line_contents, 0, $position->character) . '<>' . substr($line_contents, $position->character);
+            fwrite(STDERR, "Checking at $completion_cursor\n");
+             */
+
             $this->writeInitializeRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeInitializedNotification($proc_in);
             $this->writeDidChangeNotificationToDefaultFile($proc_in, $file_contents);
@@ -386,7 +436,19 @@ const M9AnotherConst = 33;
 class M9InnerClass {}
 /** @return array<int,int>  */
 function M9InnerFunction() { return [2]; }
-
+// line 35
+}
+namespace Other {
+function M9InnerFunction($first_arg, \M9Example $second_arg) {
+    // here, we look for completions
+    if (rand(0, 1) > 0) {  // line 40
+        echo \M9Example::
+        return $second_arg;
+    } else {
+        echo $second_arg->
+        return $first_arg;
+    }
+}
 }
 EOT;
 
@@ -431,6 +493,15 @@ EOT;
             'label' => 'my_static_function',
             'kind' => CompletionItemKind::METHOD,
             'detail' => 'mixed',
+            'documentation' => null,
+            'sortText' => null,
+            'filterText' => null,
+            'insertText' => null,
+        ];
+        $my_instance_property_item = [
+            'label' => 'myInstanceVar',
+            'kind' => CompletionItemKind::PROPERTY,
+            'detail' => 'int',
             'documentation' => null,
             'sortText' => null,
             'filterText' => null,
@@ -485,6 +556,10 @@ EOT;
             $my_static_function_item,
             $property_completion_item,
         ];
+        $all_instance_completions = [
+            $my_static_function_item,
+            $my_instance_property_item,
+        ];
         $all_constant_completions = [
             $my_class_item,
             $my_global_constant_item,
@@ -497,6 +572,8 @@ EOT;
             [new Position(11, 19), $static_property_completions_substr, $for_vscode],
             [new Position(12, 16), $all_static_completions, $for_vscode],
             [new Position(20, 7), $all_constant_completions, $for_vscode],
+            [new Position(41, 25), $all_static_completions, $for_vscode],
+            [new Position(44, 26), $all_instance_completions, $for_vscode],
         ];
     }
     /**
@@ -784,8 +861,8 @@ function example(MyClass $arg) {
     $c->counter += 1;
     var_export(ExampleClass::HTTP_500);  // line 10
     var_export($c);
+    var_export($c->descriptionlessProp); var_export(ExampleClass::$typelessProp);
 }
-
 /**
  * @param string|false $strVal line 15
  * @param array<string,stdClass> $arrVal
@@ -796,6 +873,9 @@ function example2($strVal, array $arrVal) {
     $strVal = (string)$strVal;
     echo strlen($strVal);
     $n = ast\parse_code($strVal, 50);
+}
+function test(ExampleClass $c) {  // line 25
+    var_export($c->propWithDefault);
 }
 EOT;
         return [
@@ -917,6 +997,34 @@ EOT
             ],
             [
                 $example_file_contents,
+                new Position(12, 24),  // ExampleClass->descriptionlessProp
+                <<<'EOT'
+```php
+public $descriptionlessProp
+```
+
+`@var array<string, \stdClass>`
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(12, 70),  // ExampleClass->typelessProp
+                <<<'EOT'
+```php
+public static $typelessProp
+```
+
+This has no type
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
                 new Position(19, 15),  // $strVal
                 '`false|string`',
                 null,
@@ -950,6 +1058,20 @@ EOT
 namespace ast;
 function parse_code(string $code, int $version, string $filename = default) : \ast\Node
 ```
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(26, 20),  // ExampleClass->propWithDefault
+                <<<'EOT'
+```php
+public $propWithDefault
+```
+
+`@var array{0:2,1:3}` This has a default
 EOT
                 ,
                 null,

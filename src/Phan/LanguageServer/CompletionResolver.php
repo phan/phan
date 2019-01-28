@@ -24,14 +24,16 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 class CompletionResolver
 {
     /**
-     * @return Closure(Context,Node):void
+     * @return Closure(Context,Node, array<int,Node>):void
      * NOTE: The helper methods distinguish between "Go to definition"
      * and "go to type definition" in their implementations,
      * based on $request->getIsTypeDefinitionRequest()
      */
     public static function createCompletionClosure(CompletionRequest $request, CodeBase $code_base)
     {
-        return function (Context $context, Node $node) use ($request, $code_base) {
+        // TODO: Could use the parent node list
+        // (e.g. don't use a method with a void return as an argument to another function)
+        return function (Context $context, Node $node, array $unused_parent_node_list) use ($request, $code_base) {
             // @phan-suppress-next-line PhanUndeclaredProperty this is overridden
             $selected_fragment = $node->selectedFragment ?? null;
             if (is_string($selected_fragment)) {
@@ -279,7 +281,6 @@ class CompletionResolver
     }
 
     /**
-     * @suppress PhanUnusedPrivateMethodParameter
      * @suppress PhanUnusedPrivateMethodParameter TODO: Use $node and check if fully qualified
      */
     private static function locateClassCompletion(
@@ -302,10 +303,14 @@ class CompletionResolver
                 continue;
             }
             // @phan-suppress-next-line PhanThrowTypeAbsentForCall should be impossible if found in codebase
-            $constant_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_name);
+            $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_name);
+            // Call hasClassWithFQSEN to trigger loading the class as a side effect
+            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                continue;
+            }
             $request->recordCompletionElement(
                 $code_base,
-                $code_base->getClassByFQSEN($constant_fqsen),
+                $code_base->getClassByFQSEN($class_fqsen),
                 $class_name
             );
         }

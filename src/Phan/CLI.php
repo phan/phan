@@ -12,6 +12,7 @@ use Phan\Output\Filter\ChainedIssueFilter;
 use Phan\Output\Filter\FileIssueFilter;
 use Phan\Output\Filter\MinimumSeverityFilter;
 use Phan\Output\PrinterFactory;
+use Phan\Plugin\ConfigPluginSet;
 use Phan\Plugin\Internal\MethodSearcherPlugin;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -31,7 +32,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '1.2.1-dev';
+    const PHAN_VERSION = '1.2.2-dev';
 
     /**
      * List of short flags passed to getopt
@@ -206,7 +207,16 @@ class CLI
         // Before reading the config, check for an override on
         // the location of the config file path.
         $config_file_override = $opts['k'] ?? $opts['config-file'] ?? null;
-        if (is_string($config_file_override)) {
+        if ($config_file_override !== null) {
+            if (!is_string($config_file_override)) {
+                // Doesn't work for a mix of -k and --config-file, but low priority
+                fprintf(STDERR, "Expected exactly one file for --config-file, but saw " . StringUtil::jsonEncode($config_file_override) . "\n");
+                exit(1);
+            }
+            if (!is_file($config_file_override)) {
+                fprintf(STDERR, "Could not find the config file override " . StringUtil::jsonEncode($config_file_override) . "\n");
+                exit(1);
+            }
             $this->config_file = $config_file_override;
         }
 
@@ -560,6 +570,7 @@ class CLI
             }
         }
 
+        self::checkPluginsExist();
         $this->ensureASTParserExists();
 
         $output = $this->output;
@@ -616,6 +627,29 @@ class CLI
         if (Config::getValue('processes') !== 1
             && Config::getValue('dead_code_detection')) {
             throw new AssertionError("We cannot run dead code detection on more than one core.");
+        }
+    }
+
+    private static function checkPluginsExist()
+    {
+        $all_plugins_exist = true;
+        foreach (Config::getValue('plugins') as $plugin_path_or_name) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $plugin_file_name = ConfigPluginSet::normalizePluginPath($plugin_path_or_name);
+            if (!is_file($plugin_file_name)) {
+                $details = $plugin_file_name === $plugin_path_or_name ? '' : ' (Referenced as ' . StringUtil::jsonEncode($plugin_path_or_name) . ')';
+                fprintf(
+                    STDERR,
+                    "Phan could not find plugin %s%s\n",
+                    StringUtil::jsonEncode($plugin_file_name),
+                    $details
+                );
+                $all_plugins_exist = false;
+            }
+        }
+        if (!$all_plugins_exist) {
+            fwrite(STDERR, "Exiting due to invalid plugin config.\n");
+            exit(1);
         }
     }
 

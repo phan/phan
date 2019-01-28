@@ -1,7 +1,7 @@
 <?php
 
 use ast as a;
-
+use uselessimport as uselessimport;
 // Should not warn
 var_export(ast\parse_code('', 50));
 var_export(ast\AST_UNPACK);

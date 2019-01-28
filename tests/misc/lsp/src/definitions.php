@@ -54,5 +54,18 @@ class ExampleClass {
 
     /** @var int value of an HTTP response code */
     const HTTP_500 = 500;
+
+    /** @var array<string, \stdClass> */
+    public $descriptionlessProp;
+
+    /**
+     * This has a default
+     */
+    public $propWithDefault = [2,3];
+
+    /**
+     * This has no type
+     */
+    public static $typelessProp;
 }
 }  // end namespace
