@@ -281,7 +281,6 @@ class CompletionResolver
     }
 
     /**
-     * @suppress PhanUnusedPrivateMethodParameter
      * @suppress PhanUnusedPrivateMethodParameter TODO: Use $node and check if fully qualified
      */
     private static function locateClassCompletion(
@@ -304,10 +303,14 @@ class CompletionResolver
                 continue;
             }
             // @phan-suppress-next-line PhanThrowTypeAbsentForCall should be impossible if found in codebase
-            $constant_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_name);
+            $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_name);
+            // Call hasClassWithFQSEN to trigger loading the class as a side effect
+            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                continue;
+            }
             $request->recordCompletionElement(
                 $code_base,
-                $code_base->getClassByFQSEN($constant_fqsen),
+                $code_base->getClassByFQSEN($class_fqsen),
                 $class_name
             );
         }
