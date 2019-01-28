@@ -25,6 +25,7 @@ Bug fixes:
 + Fix inferences about `foreach ($arr as [[$nested]]) {...}` (#2362)
 + Properly analyze accesses of `@internal` elements of the root namespace from other parts of the root namespace. (#2366)
 + Consistently emit `UseNormalNoEffect` (etc.) when using names/functions/constants of the global scrope from the global scope.
++ Fix a bug causing incorrect warnings due to uses of global/class constants.
 
 18 Jan 2019, Phan 1.2.1
 -----------------------
