@@ -200,7 +200,6 @@ class PhanPHPLinter
             exit(1);
         }
 
-        // TODO: Make TCP port configurable
         // TODO: check if the folder is within a folder with subdirectory .phan/config.php
         // TODO: Check if there is a lock before attempting to connect?
         $client = @stream_socket_client($opts->url, $errno, $errstr, 20.0);

@@ -11,6 +11,9 @@ New features(Analysis):
 + Make checks such as `$x !== 'a literal'` (and `!=`) remove the literal string/int type from the union type. (#1789)
 
 Language Server/Daemon mode:
++ Limit analysis results of the language server to only the currently open files. (#1722)
++ Limit analysis results of Phan daemon to just the requested files in **all** output formats (#2374)
+  (not just when `phan_client` post-processes the output)
 + Make code completion immediately after typing `->` and `::` behave more consistently (#2343)
   Note: this fix only applies at the very last character of a line
 + Be more consistent about including types in hover text for properties (#2348)
