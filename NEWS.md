@@ -24,6 +24,7 @@ Language Server/Daemon mode:
 
 Maintenance:
 + Warn and exit immediately if any plugins are missing or invalid (instead of crashing after parsing all files) (#2099)
++ Emit warnings to stderr if any config settings seem to be the wrong type (#2376)
 
 Bug fixes:
 + Emit a warning and exit if `--config-file <file>` does not exist (#2271)

@@ -19,7 +19,7 @@ use TypeError;
 class Initializer
 {
     /**
-     * @param array{init-overwrite:mixed=,init-no-composer:mixed=,init-level:string=} $opts
+     * @param array{init-overwrite?:mixed,init-no-composer?:mixed,init-level?:(int|string)} $opts
      * Returns a process exit code for `phan --init`
      */
     public static function initPhanConfig(array $opts) : int
@@ -243,10 +243,11 @@ EOT;
     /**
      * @param array<string,mixed> $composer_settings (can be empty for --init-no-composer)
      * @param ?string $vendor_path (can be null for --init-no-composer)
-     * @param array{init-overwrite:mixed=,init-no-composer:mixed=,init-level:string=} $opts parsed from getopt
+     * @param array{init-analyze-file?:string,init-overwrite?:mixed,init-no-composer?:mixed,init-level?:(int|string)} $opts parsed from getopt
      * @return ?InitializedSettings
+     * @internal
      */
-    private static function createPhanSettingsForComposerSettings(array $composer_settings, $vendor_path, array $opts)
+    public static function createPhanSettingsForComposerSettings(array $composer_settings, $vendor_path, array $opts)
     {
         $level = $opts['init-level'] ?? 3;
         $level = self::LEVEL_MAP[strtolower((string)$level)] ?? $level;
