@@ -105,6 +105,7 @@ class Phan implements IgnoredFilesFilterInterface
         }
         FileCache::setMaxCacheSize(FileCache::MINIMUM_CACHE_SIZE);
         self::checkForSlowPHPOptions();
+        Config::warnIfInvalid();
         self::loadConfiguredPHPExtensionStubs($code_base);
         $is_daemon_request = Config::getValue('daemonize_socket') || Config::getValue('daemonize_tcp');
         $language_server_config = Config::getValue('language_server_config');

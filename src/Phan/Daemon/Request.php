@@ -18,6 +18,7 @@ use Phan\LanguageServer\NodeInfoRequest;
 use Phan\Library\FileCache;
 use Phan\Library\StringUtil;
 use Phan\Output\IssuePrinterInterface;
+use Phan\Output\Printer\FilteringPrinter;
 use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\BufferedOutput;
 
@@ -257,7 +258,16 @@ class Request
             ]);
             exit(0);
         }
-        return $factory->getPrinter($format, $this->buffered_output);
+        // In both the Language Server and the Daemon,
+        // this deliberately sends only analysis results of the files that are currently open.
+        //
+        // Otherwise, there might be an overwhelming number of issues to solve in some projects before using this in the IDE (e.g. PhanUnreferencedUseNormal)
+        $printer = $factory->getPrinter($format, $this->buffered_output);
+        $files = $this->request_config[self::PARAM_FILES] ?? null;
+        if (is_array($files) && count($files) > 0) {
+            return new FilteringPrinter($files, $printer);
+        }
+        return $printer;
     }
 
     /**

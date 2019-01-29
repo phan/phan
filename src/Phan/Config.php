@@ -1006,6 +1006,234 @@ class Config
     {
         return Paths::toAbsolutePath(self::getProjectRootDirectory(), $relative_path);
     }
+
+    /**
+     * @param mixed $value
+     */
+    private static function errSuffixGotType($value) : string
+    {
+        return ", but got type '" . gettype($value) . "'";
+    }
+
+    /**
+     * @param array<string,mixed> $configuration
+     * @return array<int,string> a list of 0 or more error messages for invalid config settings
+     */
+    public static function getConfigErrors(array $configuration) : array
+    {
+        /**
+         * @param mixed $value
+         * @return ?string
+         */
+        $is_scalar = function ($value) {
+            if (is_null($value) || is_scalar($value)) {
+                return null;
+            }
+            return 'Expected a scalar' . self::errSuffixGotType($value);
+        };
+        /**
+         * @param mixed $value
+         * @return ?string
+         */
+        $is_bool = function ($value) {
+            if (is_bool($value)) {
+                return null;
+            }
+            return 'Expected a boolean' . self::errSuffixGotType($value);
+        };
+        /**
+         * @param mixed $value
+         * @return ?string
+         */
+        $is_string_or_null = function ($value) {
+            if (is_null($value) || is_string($value)) {
+                return null;
+            }
+            return 'Expected a string' . self::errSuffixGotType($value);
+        };
+        /**
+         * @param mixed $value
+         * @return ?string
+         */
+        $is_string = function ($value) {
+            if (is_string($value)) {
+                return null;
+            }
+            return 'Expected a string' . self::errSuffixGotType($value);
+        };
+        /**
+         * @param mixed $value
+         * @return ?string
+         */
+        $is_array = function ($value) {
+            if (is_array($value)) {
+                return null;
+            }
+            return 'Expected an array' . self::errSuffixGotType($value);
+        };
+        /**
+         * @param mixed $value
+         * @return ?string
+         */
+        $is_int_strict = function ($value) {
+            if (is_int($value)) {
+                return null;
+            }
+            return 'Expected an integer' . self::errSuffixGotType($value);
+        };
+        /**
+         * @param mixed $value
+         * @return ?string
+         */
+        $is_string_list = function ($value) {
+            if (!is_array($value)) {
+                return 'Expected a list of strings' . self::errSuffixGotType($value);
+            }
+            foreach ($value as $i => $element) {
+                if (!is_string($element)) {
+                    return "Expected a list of strings: index $i is type '" . gettype($element) . "'";
+                }
+            }
+            return null;
+        };
+        /**
+         * @param mixed $value
+         * @return ?string
+         */
+        $is_associative_string_array = function ($value) {
+            if (!is_array($value)) {
+                return 'Expected an associative array mapping strings to strings'  . self::errSuffixGotType($value);
+            }
+            foreach ($value as $i => $element) {
+                if (!is_string($element)) {
+                    return "Expected an associative array mapping strings to strings: index $i is '" . gettype($element) . "'";
+                }
+            }
+            return null;
+        };
+        $config_checks = [
+            'allow_method_param_type_widening' => $is_bool,
+            'allow_missing_properties' => $is_bool,
+            'analyzed_file_extensions' => $is_string_list,
+            'analyze_signature_compatibility' => $is_bool,
+            'array_casts_as_null' => $is_bool,
+            'autoload_internal_extension_signatures' => $is_associative_string_array,
+            'backward_compatibility_checks' => $is_bool,
+            'check_docblock_signature_param_type_match' => $is_bool,
+            'check_docblock_signature_return_type_match' => $is_bool,
+            'color_issue_messages' => $is_bool,
+            'color_scheme' => $is_associative_string_array,
+            'consistent_hashing_file_order' => $is_bool,
+            'daemonize_socket' => $is_scalar,
+            'daemonize_tcp_host' => $is_string,
+            'daemonize_tcp' => $is_bool,
+            'daemonize_tcp_port' => $is_int_strict,
+            'dead_code_detection' => $is_bool,
+            'dead_code_detection_prefer_false_negative' => $is_bool,
+            'directory_list' => $is_string_list,
+            'disable_line_based_suppression' => $is_bool,
+            'disable_suggestions' => $is_bool,
+            'disable_suppression' => $is_bool,
+            'dump_ast' => $is_bool,
+            'dump_matching_functions' => $is_bool,
+            'dump_parsed_file_list' => $is_bool,
+            'dump_signatures_file' => $is_string_or_null,
+            'enable_class_alias_support' => $is_bool,
+            'enable_include_path_checks' => $is_bool,
+            'enable_internal_return_type_plugins' => $is_bool,
+            'exception_classes_with_optional_throws_phpdoc' => $is_string_list,
+            'exclude_analysis_directory_list' => $is_string_list,
+            'exclude_file_list' => $is_string_list,
+            'exclude_file_regex' => $is_string_or_null,
+            'file_list' => $is_string_list,
+            'force_tracking_references' => $is_bool,
+            'generic_types_enabled' => $is_bool,
+            'globals_type_map' => $is_associative_string_array,
+            'guess_unknown_parameter_type_using_default' => $is_bool,
+            'ignore_undeclared_functions_with_known_signatures' => $is_bool,
+            'ignore_undeclared_variables_in_global_scope' => $is_bool,
+            'include_analysis_file_list' => $is_string_list,
+            'include_paths' => $is_string_list,
+            'inherit_phpdoc_types' => $is_bool,
+            'language_server_analyze_only_on_save' => $is_bool,
+            // 'language_server_config' => array|false,  // should not be set directly
+            'language_server_debug_level' => $is_string_or_null,
+            'language_server_enable_completion' => $is_bool,
+            'language_server_enable_go_to_definition' => $is_bool,
+            'language_server_enable_hover' => $is_bool,
+            'language_server_hide_category_of_issues' => $is_bool,
+            'language_server_use_pcntl_fallback' => $is_bool,
+            'markdown_issue_messages' => $is_bool,
+            'max_literal_string_type_length' => $is_int_strict,
+            'minimum_severity' => $is_int_strict,
+            'null_casts_as_any_type' => $is_bool,
+            'null_casts_as_array' => $is_bool,
+            'parent_constructor_required' => $is_string_list,
+            'phpdoc_type_mapping' => $is_associative_string_array,
+            'plugin_config' => $is_array,
+            'plugins' => $is_string_list,
+            'polyfill_parse_all_element_doc_comments' => $is_bool,
+            'prefer_narrowed_phpdoc_param_type' => $is_bool,
+            'prefer_narrowed_phpdoc_return_type' => $is_bool,
+            'pretend_newer_core_methods_exist' => $is_bool,
+            'print_memory_usage_summary' => $is_bool,
+            'processes' => $is_int_strict,
+            'profiler_enabled' => $is_bool,
+            'progress_bar' => $is_bool,
+            'progress_bar_sample_interval' => $is_scalar,
+            'quick_mode' => $is_bool,
+            'randomize_file_order' => $is_bool,
+            'read_magic_method_annotations' => $is_bool,
+            'read_magic_property_annotations' => $is_bool,
+            'read_type_annotations' => $is_bool,
+            'runkit_superglobals' => $is_string_list,
+            'scalar_array_key_cast' => $is_bool,
+            'scalar_implicit_cast' => $is_bool,
+            'scalar_implicit_partial' => $is_array,
+            'simplify_ast' => $is_bool,
+            'skip_missing_tokenizer_warning' => $is_bool,
+            'skip_slow_php_options_warning' => $is_bool,
+            'strict_method_checking' => $is_bool,
+            'strict_param_checking' => $is_bool,
+            'strict_property_checking' => $is_bool,
+            'strict_return_checking' => $is_bool,
+            'suggestion_check_limit' => $is_int_strict,
+            'suppress_issue_types' => $is_string_list,
+            'target_php_version' => $is_scalar,
+            'unused_variable_detection' => $is_bool,
+            'use_fallback_parser' => $is_bool,
+            'use_polyfill_parser' => $is_bool,
+            'warn_about_redundant_use_namespaced_class' => $is_bool,
+            'warn_about_relative_include_statement' => $is_bool,
+            'warn_about_undocumented_exceptions_thrown_by_invoked_functions' => $is_bool,
+            'warn_about_undocumented_throw_statements' => $is_bool,
+            'whitelist_issue_types' => $is_string_list,
+        ];
+        $result = [];
+        foreach ($config_checks as $config_name => $check_closure) {
+            if (!array_key_exists($config_name, $configuration)) {
+                continue;
+            }
+            $value = $configuration[$config_name];
+            $error = $check_closure($value);
+            if ($error) {
+                $result[] = "Invalid config value for '$config_name': $error";
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Prints errors to stderr if any config options are definitely invalid.
+     * @return void
+     */
+    public static function warnIfInvalid()
+    {
+        $errors = self::getConfigErrors(self::$configuration);
+        foreach ($errors as $error) {
+            fwrite(STDERR, $error . PHP_EOL);
+        }
+    }
 }
 
 // Call init() to trigger the magic setters.
