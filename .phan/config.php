@@ -446,6 +446,7 @@ return [
         'PregRegexCheckerPlugin',
         'PrintfCheckerPlugin',
         'PHPUnitAssertionPlugin',  // analyze assertSame/assertInstanceof/assertTrue/assertFalse
+        // 'UseReturnValuePlugin',  // This has other configuration options but uses simple checks by default.
 
         // UnknownElementTypePlugin warns about unknown types in element signatures.
         'UnknownElementTypePlugin',

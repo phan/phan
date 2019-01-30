@@ -1,4 +1,5 @@
 src/062_strict_function_checking.php:31 PhanParamTooFewInternal Call with 0 arg(s) to \strlen() which requires 1 arg(s)
+src/062_strict_function_checking.php:31 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \strlen
 src/062_strict_function_checking.php:33 PhanTypePossiblyInvalidCallable Saw type ?string which is possibly not a callable
 src/062_strict_function_checking.php:34 PhanTypeInvalidCallable Saw type null which cannot be a callable
 src/062_strict_function_checking.php:35 PhanTypePossiblyInvalidCallable Saw type callable|false which is possibly not a callable

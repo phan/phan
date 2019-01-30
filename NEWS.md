@@ -35,6 +35,14 @@ Bug fixes:
 + Consistently emit `UseNormalNoEffect` (etc.) when using names/functions/constants of the global scrope from the global scope.
 + Fix a bug causing incorrect warnings due to uses of global/class constants.
 
+Plugins:
++ Add `UseReturnValuePlugin`, which will warn about code that calls a function/method such as `sprintf` or `array_merge` without using the return value.
+
+  The list it uses is not comprehensive; it is a small subset of commonly used functions.
+
+  This plugin can also be configured to automatically warn about failing to use a return value of **any** user-defined or internal function-like,
+  when over 98% of the other calls in the codebase did use the return value.
+
 18 Jan 2019, Phan 1.2.1
 -----------------------
 
