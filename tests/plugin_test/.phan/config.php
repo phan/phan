@@ -119,6 +119,7 @@ return [
         'PrintfCheckerPlugin',
         'UnreachableCodePlugin',
         'UnusedSuppressionPlugin',
+        'UseReturnValuePlugin',
         'SleepCheckerPlugin',
         'DuplicateExpressionPlugin',
     ],
