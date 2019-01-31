@@ -1,6 +1,6 @@
 <?php
 
-// Regression test for earlier bugs caused because namespace {} is treated slightly differently from the absense of a namespace statement.
+// Regression test for earlier bugs caused because namespace {} is treated slightly differently from the absence of a namespace statement.
 // This was fixed already.
 
 /**

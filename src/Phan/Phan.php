@@ -185,12 +185,12 @@ class Phan implements IgnoredFilesFilterInterface
                 // Save this to the set of files to analyze
                 $analyze_file_path_list[] = $file_path;
             } catch (\AssertionError $assertion_error) {
-                error_log("While parsing $file_path...\n");
-                error_log("$assertion_error\n");
+                fwrite(STDERR, "While parsing $file_path...\n");
+                fwrite(STDERR, "$assertion_error\n");
                 exit(EXIT_FAILURE);
             } catch (\Throwable $throwable) {
                 // Catch miscellaneous errors such as $throwable and print their stack traces.
-                error_log("While parsing $file_path, caught: " . $throwable . "\n");
+                fwrite(STDERR, "While parsing $file_path, caught: " . $throwable . "\n");
                 $code_base->recordUnparsableFile($file_path);
             }
         }
@@ -229,7 +229,7 @@ class Phan implements IgnoredFilesFilterInterface
                 $request = Daemon::run($code_base, $file_path_lister);
                 if (!$request) {
                     // TODO: Add a way to cleanly shut down.
-                    error_log("Finished serving requests, exiting");
+                    fwrite(STDERR, "Finished serving requests, exiting\n");
                     exit(2);
                 }
             } else {
@@ -240,7 +240,7 @@ class Phan implements IgnoredFilesFilterInterface
                 $request = LanguageServer::run($code_base, $file_path_lister, $language_server_config);
                 if (!$request) {
                     // TODO: Add a way to cleanly shut down.
-                    error_log("Finished serving requests, exiting");
+                    fwrite(STDERR, "Finished serving requests, exiting\n");
                     exit(2);
                 }
                 LanguageServerLogger::logInfo(sprintf("language server (pid=%d) accepted connection", getmypid()));
@@ -573,7 +573,7 @@ class Phan implements IgnoredFilesFilterInterface
     {
         $encoded_signatures = json_encode($code_base->exportFunctionAndMethodSet(), JSON_PRETTY_PRINT);
         if (!file_put_contents($filename, $encoded_signatures)) {
-            error_log(sprintf("Could not save contents to path '%s'\n", $filename));
+            fprintf(STDERR, "Could not save contents to path '%s'\n", $filename);
             return EXIT_FAILURE;
         }
         return EXIT_SUCCESS;

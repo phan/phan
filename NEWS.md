@@ -25,6 +25,8 @@ Language Server/Daemon mode:
 Maintenance:
 + Warn and exit immediately if any plugins are missing or invalid (instead of crashing after parsing all files) (#2099)
 + Emit warnings to stderr if any config settings seem to be the wrong type (#2376)
++ Standardize on logging to stderr.
++ Add more details about the call that crashed to the crash report.
 
 Bug fixes:
 + Emit a warning and exit if `--config-file <file>` does not exist (#2271)
@@ -41,7 +43,7 @@ New features(CLI):
 
 New features(Analysis):
 + Infer that the result of `array_map` has integer keys when passed two or more arrays (#2277)
-+ Improve inferences about the left hand side of `&&` statements such as `$leftVar && (other_expression);` (#2300)
++ Improve inferences about the left-hand side of `&&` statements such as `$leftVar && (other_expression);` (#2300)
 + Warn about passing an undefined variable to a function expecting a reference parameter with a real, non-nullable type (#1344)
 + Include variables in scope as alternative suggestions for undeclared properties (#1680)
 + Infer a string literal when analyzing calls to `basename` or `dirname` on an expression that evaluates to a string literal. (#2323)
