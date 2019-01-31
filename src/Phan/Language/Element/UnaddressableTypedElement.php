@@ -210,4 +210,6 @@ abstract class UnaddressableTypedElement
     {
         return $this->file_ref;
     }
+
+    abstract public function __toString() : string;
 }

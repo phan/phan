@@ -99,24 +99,35 @@ function phan_error_handler($errno, $errstr, $errfile, $errline)
         // Don't execute the PHP internal error handler
         return true;
     }
-    error_log("$errfile:$errline [$errno] $errstr\n");
-    if (class_exists(CodeBase::class, false)) {
-        $most_recent_file = CodeBase::getMostRecentlyParsedOrAnalyzedFile();
-        if (is_string($most_recent_file)) {
-            error_log(sprintf("(Phan %s crashed when parsing/analyzing '%s')\n", CLI::PHAN_VERSION, $most_recent_file));
-        } else {
-            error_log(sprintf("(Phan %s crashed)\n", CLI::PHAN_VERSION));
-        }
-    }
+    fprintf(STDERR, "$errfile:$errline [$errno] $errstr\n");
     if (error_reporting() === 0) {
         // https://secure.php.net/manual/en/language.operators.errorcontrol.php
         // Don't make Phan terminate if the @-operator was being used on an expression.
         return false;
     }
 
+    if (class_exists(CodeBase::class, false)) {
+        $most_recent_file = CodeBase::getMostRecentlyParsedOrAnalyzedFile();
+        if (is_string($most_recent_file)) {
+            fprintf(STDERR, "(Phan %s crashed when parsing/analyzing '%s')" . PHP_EOL, CLI::PHAN_VERSION, $most_recent_file);
+        } else {
+            fprintf(STDERR, "(Phan %s crashed)" . PHP_EOL, CLI::PHAN_VERSION);
+        }
+    }
     ob_start();
     debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-    error_log(ob_get_clean() ?: 'failed to dump backtrace');
+    fwrite(STDERR, rtrim(ob_get_clean() ?: "failed to dump backtrace") . PHP_EOL);
+
+    $frames = debug_backtrace();
+    if (isset($frames[1])) {
+        fwrite(STDERR, 'More details:' . PHP_EOL);
+        foreach ($frames as $i => $frame) {
+            if ($i == 0) {
+                continue;
+            }
+            fprintf(STDERR, '#%d: %s' . PHP_EOL, $i, \Phan\Debug\Frame::frameToString($frame));
+        }
+    }
 
     exit(EXIT_FAILURE);
 }
