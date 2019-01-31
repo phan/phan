@@ -2146,7 +2146,7 @@ class Type
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
-            throw new RecursionDepthException("Recursion has gotten out of hand");
+            throw new RecursionDepthException("Recursion has gotten out of hand: expanding type=$this");
         }
         $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) {
             $union_type = $this->asUnionType();
@@ -2228,7 +2228,7 @@ class Type
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
-            throw new RecursionDepthException("Recursion has gotten out of hand");
+            throw new RecursionDepthException("Recursion has gotten out of hand: expanding type=$this");
         }
         $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) {
             $union_type = $this->asUnionType();
