@@ -251,7 +251,6 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'feof' => true,
         'fgets' => true,
         'file_exists' => true,
-        'file_get_contents' => true,
         'filemtime' => true,
         'filesize' => true,
         'filter_input_array' => true,
@@ -359,7 +358,6 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'method_exists' => true,
         'microtime' => true,
         'min' => true,
-        'mkdir' => true,
         'mktime' => true,
         'mt_getrandmax' => true,
         'mt_rand' => true,
@@ -370,7 +368,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'numberformatter::getsymbol' => true,
         'numberformatter::gettextattribute' => true,
         'number_format' => true,
-        'ob_get_clean' => true,
+        'ob_get_clean' => true,  // prefer ob_end_clean
         'ob_get_contents' => true,
         'ob_get_level' => true,
         'octdec' => true,
@@ -388,7 +386,6 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'preg_replace_callback' => true,
         'preg_replace' => true,
         'preg_split' => true,
-        'print_r' => true,
         'proc_open' => true,
         'property_exists' => true,
         'random_bytes' => true,
@@ -433,7 +430,6 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'reflectionparameter::isvariadic' => true,
         'reflectionproperty::ispublic' => true,
         'reflectionproperty::isstatic' => true,
-        'rename' => true,
         'resourcebundle::geterrorcode' => true,
         'round' => true,
         'rtrim' => true,
@@ -512,11 +508,15 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'vsprintf' => true,
         'wordwrap' => true,
 
-        'preg_match' => false,  // useful if known
-        'var_export' => false,  // can also dump to stdout
-        'session_id' => false,  // Triggers regeneration
         'class_exists' => false,  // Triggers class autoloader to load the class
+        'file_get_contents' => false,  // can be used for urls
+        'mkdir' => false,  // some code is optimistic
+        'preg_match' => false,  // useful if known
+        'print_r' => false,  // has mode to return string
+        'rename' => false,  // some code is optimistic
+        'session_id' => false,  // Triggers regeneration
         'strtok' => false,  // advances a cursor if called with 1 argument
+        'var_export' => false,  // can also dump to stdout
     ];
 }
 
