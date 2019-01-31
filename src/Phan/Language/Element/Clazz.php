@@ -1289,6 +1289,13 @@ class Clazz extends AddressableElement
             $constant_fqsen
         );
 
+        if ($constant->isPublic()) {
+            // Most constants are public, check that first.
+            return $constant;
+        }
+
+        // Visibility checks for private/protected class constants:
+
         // Are we within a class referring to the class
         // itself?
         $is_local_access = (
@@ -1296,23 +1303,13 @@ class Clazz extends AddressableElement
             && $context->getClassInScope($code_base) === $constant->getClass($code_base)
         );
 
-        // Are we within a class or an extending sub-class
-        // referring to the class?
-        $is_local_or_remote_access = (
-            $is_local_access
-            || (
-                $context->isInClassScope()
-                && $context->getClassInScope($code_base)
-                ->getUnionType()->canCastToExpandedUnionType(
-                    $this->getUnionType(),
-                    $code_base
-                )
-            )
-        );
+        if ($is_local_access) {
+            // Classes can always access constants declared in the same class
+            return $constant;
+        }
 
-        // If we have the constant, but its inaccessible, emit
-        // an issue
-        if (!$is_local_access && $constant->isPrivate()) {
+        if ($constant->isPrivate()) {
+            // This is attempting to access a private constant from outside of the class
             throw new IssueException(
                 Issue::fromType(Issue::AccessClassConstantPrivate)(
                     $context->getFile(),
@@ -1324,7 +1321,21 @@ class Clazz extends AddressableElement
                     ]
                 )
             );
-        } elseif (!$is_local_or_remote_access && $constant->isProtected()) {
+        }
+
+        // We now know that $constant is a protected constant
+
+        // Are we within a class or an extending sub-class
+        // referring to the class?
+        $is_remote_access = $context->isInClassScope()
+            && $context->getClassInScope($code_base)
+            ->getUnionType()->canCastToExpandedUnionType(
+                $this->getUnionType(),
+                $code_base
+            );
+
+        if (!$is_remote_access) {
+            // And the access is not from anywhere on the class hierarchy, so throw
             throw new IssueException(
                 Issue::fromType(Issue::AccessClassConstantProtected)(
                     $context->getFile(),
@@ -1338,6 +1349,7 @@ class Clazz extends AddressableElement
             );
         }
 
+        // Valid access to a protected constant.
         return $constant;
     }
 
