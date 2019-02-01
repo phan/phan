@@ -155,6 +155,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'abs' => true,
         'addcslashes' => true,
         'addslashes' => true,
+        'array_change_key_case' => true,
         'array_chunk' => true,
         'array_column' => true,
         'array_combine' => true,
@@ -336,7 +337,6 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'implode' => true,
         'in_array' => true,
         'ini_get' => true,
-        'interface_exists' => true,
         'internal)' => true,
         'intl_get_error_code' => true,
         'intl_get_error_message' => true,
@@ -388,6 +388,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'mb_convert_encoding' => true,
         'mb_detect_encoding' => true,
         'mb_strlen' => true,
+        'mb_strpos' => true,
         'mb_strtolower' => true,
         'mb_strwidth' => true,
         'mb_substr' => true,
@@ -404,6 +405,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'mt_getrandmax' => true,
         'mt_rand' => true,
         'ngettext' => true,
+        'numberformatter::format' => true,
         'numberformatter::getattribute' => true,
         'numberformatter::geterrorcode' => true,
         'numberformatter::geterrormessage' => true,
@@ -529,6 +531,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'splobjectstorage::contains' => true,
         'splobjectstorage::offsetexists' => true,
         'splobjectstorage::offsetget' => true,
+        'splstack::top' => true,
         'sprintf' => true,
         'stat' => true,
         'strcasecmp' => true,
@@ -579,7 +582,6 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'time' => true,
         'token_get_all' => true,
         'token_name' => true,
-        'trait_exists' => true,
         'trim' => true,
         'ucfirst' => true,
         'ucwords' => true,
@@ -598,15 +600,22 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'call_user_func' => false,  // dynamic
         'call_user_func_array' => false,
         'chmod' => false,  // some code is optimistic
-        'class_exists' => false,  // Triggers class autoloader to load the class
-        'copy' => true,  // some code is optimistic
+        'class_exists' => false,  // triggers class autoloader to load the class
+        'copy' => false,  // some code is optimistic
+        'define' => false,
+        'end' => false,  // move array cursor
         'file_get_contents' => false,  // can be used for urls
+        'interface_exists' => false,  // triggers class autoloader to load the interface
         'mkdir' => false,  // some code is optimistic
+        'next' => false,  // move array cursor
         'preg_match' => false,  // useful if known
+        'prev' => false,  // move array cursor
         'print_r' => false,  // has mode to return string
         'rename' => false,  // some code is optimistic
+        'reset' => false,  // move array cursor
         'session_id' => false,  // Triggers regeneration
         'strtok' => false,  // advances a cursor if called with 1 argument
+        'trait_exists' => false,  // triggers class autoloader to load the trait
         'var_export' => false,  // can also dump to stdout
     ];
 }
