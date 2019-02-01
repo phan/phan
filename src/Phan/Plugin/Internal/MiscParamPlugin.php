@@ -606,6 +606,16 @@ final class MiscParamPlugin extends PluginV2 implements
 
             $class_alias_first_param = $args[0];
 
+            if ($class_alias_first_param instanceof Node) {
+                try {
+                    $name_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $class_alias_first_param, false);
+                } catch (IssueException $_) {
+                    return;
+                }
+
+                $class_alias_first_param = $name_type->asSingleScalarValueOrNull();
+            }
+
             if (is_string($class_alias_first_param)) {
                 try {
                     $first_param_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_alias_first_param);
