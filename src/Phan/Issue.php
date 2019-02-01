@@ -227,6 +227,7 @@ class Issue
     const ParamSignatureMismatch    = 'PhanParamSignatureMismatch';
     const ParamSignatureMismatchInternal = 'PhanParamSignatureMismatchInternal';
     const ParamRedefined            = 'PhanParamRedefined';
+    const ParamMustBeUserDefinedClassname = 'PhanParamMustBeUserDefinedClassname';
 
     const ParamSignatureRealMismatchReturnType                        = 'PhanParamSignatureRealMismatchReturnType';
     const ParamSignatureRealMismatchReturnTypeInternal                = 'PhanParamSignatureRealMismatchReturnTypeInternal';
@@ -2369,6 +2370,14 @@ class Issue
                 "Call with {COUNT} or more args to {FUNCTIONLIKE} which only takes {COUNT} arg(s) (argument unpacking was used)",
                 self::REMEDIATION_B,
                 7047
+            ),
+            new Issue(
+                self::ParamMustBeUserDefinedClassname,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_CRITICAL,
+                "First argument of class_alias() must be a name of user defined class ('{CLASS}' attempted)",
+                self::REMEDIATION_B,
+                7048
             ),
 
             // Issue::CATEGORY_NOOP

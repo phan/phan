@@ -7,6 +7,7 @@ use Closure;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
+use Phan\Exception\FQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
 use Phan\Issue;
@@ -14,6 +15,7 @@ use Phan\IssueInstance;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Variable;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\CallableType;
@@ -592,6 +594,55 @@ final class MiscParamPlugin extends PluginV2 implements
             );
         };
 
+        $class_alias_callback = static function (
+            CodeBase $code_base,
+            Context $context,
+            FunctionInterface $unused_function,
+            array $args
+        ) {
+            if (count($args) < 2) {
+                return;
+            }
+
+            $class_alias_first_param = $args[0];
+
+            if ($class_alias_first_param instanceof Node) {
+                try {
+                    $name_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $class_alias_first_param, false);
+                } catch (IssueException $_) {
+                    return;
+                }
+
+                $class_alias_first_param = $name_type->asSingleScalarValueOrNull();
+            }
+
+            if (is_string($class_alias_first_param)) {
+                try {
+                    $first_param_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_alias_first_param);
+                    if ($code_base->hasClassWithFQSEN($first_param_fqsen)) {
+                        $class = $code_base->getClassByFQSEN($first_param_fqsen);
+                        if ($class->isPHPInternal()) {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $context,
+                                Issue::ParamMustBeUserDefinedClassname,
+                                $args[0]->lineno ?? $context->getLineNumberStart(),
+                                $class->getName()
+                            );
+                        }
+                    }
+                } catch (FQSENException $_) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::TypeComparisonToInvalidClass,
+                        $context->getLineNumberStart(),
+                        $class_alias_first_param
+                    );
+                }
+            }
+        };
+
         return [
             'array_udiff' => $array_udiff_callback,
             'array_diff_uassoc' => $array_udiff_callback,
@@ -616,6 +667,8 @@ final class MiscParamPlugin extends PluginV2 implements
             'max' => $min_max_callback,
 
             'define' => $define_callback,
+
+            'class_alias' => $class_alias_callback
             // TODO: sort and usort should convert array<string,T> to array<int,T> (same for array shapes)
         ];
     }
