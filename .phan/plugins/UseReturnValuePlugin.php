@@ -13,7 +13,6 @@ use Phan\PluginV2\FinalizeProcessCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV2\PostAnalyzeNodeCapability;
 
-
 /**
  * A plugin that checks for invocations of functions/methods where the return value should be used.
  * Also, gathers statistics on how often those functions/methods are used.
@@ -104,9 +103,6 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
                 continue;
             }
 
-            if ($known_must_use_return_value === null &&  $total_count < 5) {
-                continue;
-            }
             if ($unused_count > 0 && $used_percentage >= $threshold_percentage) {
                 $percentage_string = number_format($used_percentage, 2);
                 foreach ($counter->unused_locations as $key => $context) {
@@ -155,6 +151,9 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'abs' => true,
         'addcslashes' => true,
         'addslashes' => true,
+        'apcu_fetch' => true,
+        'arrayaccess::offsetexists' => true,
+        'arrayaccess::offsetget' => true,
         'array_change_key_case' => true,
         'array_chunk' => true,
         'array_column' => true,
@@ -168,6 +167,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'array_intersect_key' => true,
         'array_intersect' => true,
         'arrayiterator::current' => true,
+        'arrayiterator::key' => true,
         'arrayiterator::valid' => true,
         'array_key_exists' => true,
         'array_keys' => true,
@@ -185,38 +185,59 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'array_sum' => true,
         'array_unique' => true,
         'array_values' => true,
+        'atan2' => true,
+        'atan' => true,
         'base64_decode' => true,
         'base64_encode' => true,
         'base_convert' => true,
         'basename' => true,
-        'bcadd' => true,  // todo: add the rest of bcadd
+        'bcadd' => true,
         'bccomp' => true,
         'bcdiv' => true,
+        'bcmod' => true,
         'bcmul' => true,
+        'bcpow' => true,
+        'bcpowmod' => true,
+        'bcscale' => true,
+        'bcsqrt' => true,
         'bcsub' => true,
         'bin2hex' => true,
         'bindec' => true,
+        'boolval' => true,
         'ceil' => true,
+        'checkdate' => true,
+        'checkdnsrr' => true,
         'chr' => true,
+        'chunk_split' => true,
         'class_implements' => true,
+        'class_parents' => true,
         'closure::bindto' => true,
         'closure::bind' => true,
         'closure::fromcallable' => true,
         'compact' => true,
         'constant' => true,
+        'cosh' => true,
         'cos' => true,
+        'countable::count' => true,
         'count' => true,
         'crc32' => true,
+        'ctype_alnum' => true,
         'ctype_alpha' => true,
         'ctype_digit' => true,
+        'ctype_lower' => true,
+        'ctype_space' => true,
+        'ctype_upper' => true,
+        'ctype_xdigit' => true,
         'curl_errno' => true,
         'curl_error' => true,
         'curl_exec' => true,
+        'curl_getinfo' => true,
         'curl_init' => true,
         'curl_version' => true,
         'current' => true,
         'date_create' => true,
         'date_default_timezone_get' => true,
+        'dateinterval::format' => true,
         'datetime::createfromformat' => true,
         'datetime::diff' => true,
         'datetime::format' => true,
@@ -236,9 +257,12 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'debug_backtrace' => true,
         'decbin' => true,
         'dechex' => true,
+        'decoct' => true,
         'defined' => true,
         'deg2rad' => true,
         'dirname' => true,
+        'domdocument::createcdatasection' => true,
+        'domdocument::createcomment' => true,
         'domdocument::createelementns' => true,
         'domdocument::createelement' => true,
         'domdocument::createtextnode' => true,
@@ -249,6 +273,8 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'domelement::getattribute' => true,
         'domelement::getelementsbytagnamens' => true,
         'domelement::hasattribute' => true,
+        'domelement::haschildnodes' => true,
+        'domelement::issamenode' => true,
         'domnodelist::item' => true,
         'domxpath::query' => true,
         'doubleval' => true,
@@ -270,8 +296,10 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'exception::gettraceasstring' => true,
         'exception::gettrace' => true,
         'explode' => true,
+        'exp' => true,
         'extension_loaded' => true,
         'feof' => true,
+        'fgetcsv' => true,
         'fgets' => true,
         'file_exists' => true,
         'filemtime' => true,
@@ -281,9 +309,11 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'filter_input_array' => true,
         'filter_input' => true,
         'filteriterator::current' => true,
+        'filteriterator::getinneriterator' => true,
         'filter_var' => true,
         'floatval' => true,
         'floor' => true,
+        'fmod' => true,
         'fopen' => true,
         'fread' => true,
         'fsockopen' => true,
@@ -296,6 +326,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'function_exists' => true,
         'get_called_class' => true,
         'get_cfg_var' => true,
+        'get_class_methods' => true,
         'get_class' => true,
         'getcwd' => true,
         'getdate' => true,
@@ -319,11 +350,15 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'glob' => true,
         'gmdate' => true,
         'gmmktime' => true,
+        'gzcompress' => true,
         'gzinflate' => true,
+        'gzopen' => true,
         'gzuncompress' => true,
         'hash_equals' => true,
         'hash_file' => true,
+        'hash_final' => true,
         'hash_hmac' => true,
+        'hash_init' => true,
         'hash' => true,
         'headers_sent' => true,
         'hex2bin' => true,
@@ -333,11 +368,13 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'htmlspecialchars_decode' => true,
         'htmlspecialchars' => true,
         'http_build_query' => true,
+        'iconv_strlen' => true,
         'iconv' => true,
+        'imagecreatetruecolor' => true,
         'implode' => true,
         'in_array' => true,
+        'inet_pton' => true,
         'ini_get' => true,
-        'internal)' => true,
         'intl_get_error_code' => true,
         'intl_get_error_message' => true,
         'intl_is_failure' => true,
@@ -348,7 +385,9 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'is_a' => true,
         'is_bool' => true,
         'is_callable' => true,
+        'is_countable' => true,
         'is_dir' => true,
+        'is_double' => true,
         'is_executable' => true,
         'is_file' => true,
         'is_float' => true,
@@ -357,18 +396,23 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'is_int' => true,
         'is_iterable' => true,
         'is_link' => true,
+        'is_long' => true,
         'is_nan' => true,
         'is_null' => true,
         'is_numeric' => true,
         'is_object' => true,
         'is_readable' => true,
+        'is_real' => true,
         'is_resource' => true,
         'is_scalar' => true,
         'is_string' => true,
         'is_subclass_of' => true,
         'is_writable' => true,
         'is_writeable' => true,
+        'iteratoraggregate::getiterator' => true,
+        'iterator_count' => true,
         'iterator::current' => true,
+        'iteratoriterator::current' => true,
         'iterator_to_array' => true,
         'iterator::valid' => true,
         'join' => true,
@@ -380,11 +424,13 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'lcfirst' => true,
         'levenshtein' => true,
         'libxml_get_errors' => true,
+        'localeconv' => true,
         'locale::getdefault' => true,
         'log' => true,
         'long2ip' => true,
         'ltrim' => true,
         'max' => true,
+        'mb_convert_case' => true,
         'mb_convert_encoding' => true,
         'mb_detect_encoding' => true,
         'mb_strlen' => true,
@@ -395,6 +441,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'md5_file' => true,
         'md5' => true,
         'memcached::getoption' => true,
+        'memcached::getresultcode' => true,
         'memcached::get' => true,
         'memory_get_peak_usage' => true,
         'memory_get_usage' => true,
@@ -405,6 +452,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'mt_getrandmax' => true,
         'mt_rand' => true,
         'ngettext' => true,
+        'nl2br' => true,
         'numberformatter::format' => true,
         'numberformatter::getattribute' => true,
         'numberformatter::geterrorcode' => true,
@@ -417,21 +465,32 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'ob_get_level' => true,
         'octdec' => true,
         'opendir' => true,
+        'openssl_encrypt' => true,
         'openssl_error_string' => true,
+        'openssl_random_pseudo_bytes' => true,
         'ord' => true,
         'pack' => true,
+        'parse_ini_file' => true,
         'parse_url' => true,
         'pathinfo' => true,
+        'pdoexception::getcode' => true,
+        'pdoexception::getmessage' => true,
         'pdo::getattribute' => true,
         'pdo::prepare' => true,
+        'pdo::quote' => true,
         'pdostatement::execute' => true,
+        'pdostatement::fetchall' => true,
         'pdostatement::fetchcolumn' => true,
+        'pdostatement::fetch' => true,
+        'pdostatement::rowcount' => true,
+        'php_sapi_name' => true,
         'php_uname' => true,
         'phpversion' => true,
         'popen' => true,
         'posix_isatty' => true,
         'pow' => true,
         'preg_grep' => true,
+        'preg_last_error' => true,
         'preg_quote' => true,
         'preg_replace_callback' => true,
         'preg_replace' => true,
@@ -445,28 +504,36 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'rawurldecode' => true,
         'rawurlencode' => true,
         'readdir' => true,
+        'readlink' => true,
         'realpath' => true,
         'redis::getoption' => true,
         'reflectionclass::getconstructor' => true,
         'reflectionclass::getdoccomment' => true,
         'reflectionclass::getfilename' => true,
+        'reflectionclass::getinterfaces' => true,
         'reflectionclass::getmethods' => true,
         'reflectionclass::getmethod' => true,
+        'reflectionclass::getnamespacename' => true,
         'reflectionclass::getname' => true,
         'reflectionclass::getparentclass' => true,
         'reflectionclass::getproperties' => true,
         'reflectionclass::getproperty' => true,
+        'reflectionclass::getshortname' => true,
+        'reflectionclass::gettraits' => true,
         'reflectionclass::hasmethod' => true,
         'reflectionclass::hasproperty' => true,
         'reflectionclass::implementsinterface' => true,
         'reflectionclass::isabstract' => true,
         'reflectionclass::isfinal' => true,
+        'reflectionclass::isinstantiable' => true,
         'reflectionclass::isinterface' => true,
         'reflectionclass::isinternal' => true,
         'reflectionclass::issubclassof' => true,
         'reflectionclass::istrait' => true,
+        'reflectionclass::isuserdefined' => true,
         'reflectionclass::newinstanceargs' => true,
         'reflectionclass::newinstance' => true,
+        'reflectionexception::getmessage' => true,
         'reflectionfunction::getclosurescopeclass' => true,
         'reflectionfunction::getfilename' => true,
         'reflectionfunction::getparameters' => true,
@@ -474,17 +541,22 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'reflectionmethod::getdoccomment' => true,
         'reflectionmethod::getfilename' => true,
         'reflectionmethod::getname' => true,
+        'reflectionmethod::getnumberofparameters' => true,
         'reflectionmethod::getnumberofrequiredparameters' => true,
         'reflectionmethod::getparameters' => true,
         'reflectionmethod::getreturntype' => true,
         'reflectionmethod::getstartline' => true,
         'reflectionmethod::hasreturntype' => true,
+        'reflectionmethod::isabstract' => true,
         'reflectionmethod::isconstructor' => true,
         'reflectionmethod::isfinal' => true,
         'reflectionmethod::ispublic' => true,
         'reflectionmethod::isstatic' => true,
+        'reflectionmethod::returnsreference' => true,
+        'reflectionnamedtype::getname' => true,
         'reflectionobject::getfilename' => true,
         'reflectionobject::getmethod' => true,
+        'reflectionobject::getproperties' => true,
         'reflectionobject::getproperty' => true,
         'reflectionobject::hasmethod' => true,
         'reflectionparameter::allowsnull' => true,
@@ -492,20 +564,24 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'reflectionparameter::getdefaultvalue' => true,
         'reflectionparameter::getname' => true,
         'reflectionparameter::gettype' => true,
+        'reflectionparameter::hastype' => true,
         'reflectionparameter::isarray' => true,
         'reflectionparameter::isdefaultvalueavailable' => true,
         'reflectionparameter::isoptional' => true,
         'reflectionparameter::ispassedbyreference' => true,
         'reflectionparameter::isvariadic' => true,
+        'reflectionproperty::getdeclaringclass' => true,
         'reflectionproperty::getname' => true,
         'reflectionproperty::getvalue' => true,
         'reflectionproperty::ispublic' => true,
         'reflectionproperty::isstatic' => true,
+        'reflectiontype::__tostring' => true,
         'resourcebundle::geterrorcode' => true,
         'round' => true,
         'rtrim' => true,
         'runtimeexception::getcode' => true,
         'runtimeexception::getmessage' => true,
+        'scandir' => true,
         'seekableiterator::current' => true,
         'seekableiterator::key' => true,
         'seekableiterator::valid' => true,
@@ -514,8 +590,14 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'session_status' => true,
         'sha1' => true,
         'simplexmlelement::asxml' => true,
+        'simplexmlelement::attributes' => true,
+        'simplexmlelement::children' => true,
+        'simplexmlelement::getnamespaces' => true,
         'simplexmlelement::xpath' => true,
         'simplexml_import_dom' => true,
+        'simplexml_load_file' => true,
+        'simplexml_load_string' => true,
+        'sinh' => true,
         'sin' => true,
         'sizeof' => true,
         'socket_close' => true,
@@ -523,9 +605,15 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'socket_strerror' => true,
         'solrresponse::getresponse' => true,
         'solrutils::escapequerychars' => true,
+        'spl_autoload_functions' => true,
+        'splfileinfo::getbasename' => true,
+        'splfileinfo::getfilename' => true,
         'splfileinfo::getpathname' => true,
         'splfileinfo::getrealpath' => true,
         'splfileinfo::getsize' => true,
+        'splfixedarray::count' => true,
+        'splfixedarray::getsize' => true,
+        'splfixedarray::offsetexists' => true,
         'spl_object_hash' => true,
         'spl_object_id' => true,
         'splobjectstorage::contains' => true,
@@ -533,19 +621,24 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'splobjectstorage::offsetget' => true,
         'splstack::top' => true,
         'sprintf' => true,
+        'sqrt' => true,
         'stat' => true,
         'strcasecmp' => true,
         'strcmp' => true,
         'strcspn' => true,
+        'stream_context_create' => true,
         'stream_get_contents' => true,
         'stream_get_meta_data' => true,
+        'stream_isatty' => true,
         'stream_is_local' => true,
         'stream_resolve_include_path' => true,
         'stream_socket_client' => true,
+        'strftime' => true,
         'stripcslashes' => true,
         'stripos' => true,
         'stripslashes' => true,
         'strip_tags' => true,
+        'str_ireplace' => true,
         'stristr' => true,
         'strlen' => true,
         'strnatcasecmp' => true,
@@ -571,8 +664,9 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'substr_replace' => true,
         'substr' => true,
         'sys_get_temp_dir' => true,
+        'tan' => true,
         'tempnam' => true,
-        'throwable::getcode' => true,  // todo: figure out how to inherit that.
+        'throwable::getcode' => true,  // todo: make these apply to subclasses automatically
         'throwable::getfile' => true,
         'throwable::getline' => true,
         'throwable::getmessage' => true,
@@ -586,16 +680,22 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'ucfirst' => true,
         'ucwords' => true,
         'umask' => true,
+        'unexpectedvalueexception::getmessage' => true,
         'uniqid' => true,
         'unpack' => true,
         'unserialize' => true,
         'urldecode' => true,
         'urlencode' => true,
+        'utf8_decode' => true,
+        'utf8_encode' => true,
         'version_compare' => true,
         'vsprintf' => true,
         'wordwrap' => true,
         'xml_get_error_code' => true,
         'xml_parser_create' => true,
+        'xmlreader::getattribute' => true,
+        'ziparchive::getfromname' => true,
+        'ziparchive::locatename' => true,
 
         'call_user_func' => false,  // dynamic
         'call_user_func_array' => false,
@@ -611,6 +711,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'preg_match' => false,  // useful if known
         'prev' => false,  // move array cursor
         'print_r' => false,  // has mode to return string
+        'reflectionmethod::invokeargs' => false,  // may be a void
         'rename' => false,  // some code is optimistic
         'reset' => false,  // move array cursor
         'session_id' => false,  // Triggers regeneration
@@ -623,7 +724,8 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
 /**
  * Information about the function and the locations where the function was called for one FQSEN
  */
-class StatsForFQSEN {
+class StatsForFQSEN
+{
     /** @var array<string,Context> the locations where the return value was unused */
     public $unused_locations = [];
     /** @var array<string,Context> the locations where the return value was used */
@@ -651,7 +753,8 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitCall(Node $node) {
+    public function visitCall(Node $node)
+    {
         $parent = end($this->parent_node_list);
         if (!$parent) {
             //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
@@ -682,7 +785,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 if (!$counter) {
                     UseReturnValuePlugin::$stats[$fqsen] = $counter = new StatsForFQSEN($function);
                 }
-                if ($used)  {
+                if ($used) {
                     $counter->used_locations[$key] = $this->context;
                 } else {
                     $counter->unused_locations[$key] = $this->context;
@@ -697,7 +800,8 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitMethodCall(Node $node) {
+    public function visitMethodCall(Node $node)
+    {
         $parent = end($this->parent_node_list);
         if (!$parent) {
             //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
@@ -730,7 +834,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         if (!$counter) {
             UseReturnValuePlugin::$stats[$fqsen] = $counter = new StatsForFQSEN($method);
         }
-        if ($used)  {
+        if ($used) {
             $counter->used_locations[$key] = $this->context;
         } else {
             $counter->unused_locations[$key] = $this->context;
@@ -742,7 +846,8 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      * @return void
      * @override
      */
-    public function visitStaticCall(Node $node) {
+    public function visitStaticCall(Node $node)
+    {
         $parent = end($this->parent_node_list);
         if (!$parent) {
             //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
@@ -775,7 +880,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         if (!$counter) {
             UseReturnValuePlugin::$stats[$fqsen] = $counter = new StatsForFQSEN($method);
         }
-        if ($used)  {
+        if ($used) {
             $counter->used_locations[$key] = $this->context;
         } else {
             $counter->unused_locations[$key] = $this->context;

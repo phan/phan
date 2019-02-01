@@ -137,7 +137,22 @@ Configuration settings can be added to `.phan/config.php`:
 If you wish to make sure that analyzed files would be accepted by those PHP versions
 (Requires that php72, php70, and php56 be locatable with the `$PATH` environment variable)
 
-#### PHPUnitNotDeadCodePlugin
+#### UseReturnValuePlugin.php
+
+This plugin warns when code fails to use the return value of internal functions/methods such as `sprintf` or `array_merge` or `Exception->getCode()`.
+(functions/methods where the return value should almost always be used)
+
+- **PhanPluginUseReturnValueInternalKnown**: `Expected to use the return value of the internal function/method {FUNCTION}`,
+
+This plugin also has a dynamic mode(disabled by default and slow) where it will warn if a function or method's return value is unused.
+This checks if the function/method's return value is used 98% or more of the time, then warns about the remaining places where the return value was unused.
+
+- **PhanPluginUseReturnValue**: `Expected to use the return value of the user-defined function/method {FUNCTION} - {SCALAR}%% of calls use it in the rest of the codebase`,
+- **PhanPluginUseReturnValueInternal**: `Expected to use the return value of the internal function/method {FUNCTION} - {SCALAR}%% of calls use it in the rest of the codebase`,
+
+See [UseReturnValuePlugin.php](./UseReturnValuePlugin.php) for configuration options.
+
+#### PHPUnitAssertionPlugin.php
 
 This plugin will make Phan infer side effects from calls to some of the helper methods that PHPUnit provides in test cases.
 
