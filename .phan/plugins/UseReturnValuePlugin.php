@@ -35,9 +35,12 @@ use Phan\PluginV2\PostAnalyzeNodeCapability;
  */
 class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability, FinalizeProcessCapability
 {
+    // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
+    // this is deliberate for issue names
     const UseReturnValue = 'PhanPluginUseReturnValue';
     const UseReturnValueInternal = 'PhanPluginUseReturnValueInternal';
     const UseReturnValueInternalKnown = 'PhanPluginUseReturnValueInternalKnown';
+    // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
 
     const DEFAULT_THRESHOLD_PERCENTAGE = 98;
 
