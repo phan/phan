@@ -287,6 +287,7 @@ EOT;
                 'PrintfCheckerPlugin',
                 'SleepCheckerPlugin',
                 'UnreachableCodePlugin',
+                'UseReturnValuePlugin',
             ];
         }
 
