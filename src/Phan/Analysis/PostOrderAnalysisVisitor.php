@@ -8,6 +8,7 @@ use ast\flags;
 use ast\Node;
 use Exception;
 use Phan\AST\AnalysisVisitor;
+use Phan\AST\ASTSimplifier;
 use Phan\AST\ContextNode;
 use Phan\AST\PhanAnnotationAdder;
 use Phan\AST\UnionTypeVisitor;
@@ -727,7 +728,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
-     * A node to parse
+     * A node of type AST_BINARY_OP to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
@@ -735,16 +736,26 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitBinaryOp(Node $node) : Context
     {
+        $flags = $node->flags;
         if ((\end($this->parent_node_list)->kind ?? null) === ast\AST_STMT_LIST) {
-            if (!\in_array($node->flags, [flags\BINARY_BOOL_AND, flags\BINARY_BOOL_OR, flags\BINARY_COALESCE])) {
+            if (\in_array($flags, [flags\BINARY_BOOL_AND, flags\BINARY_BOOL_OR, flags\BINARY_COALESCE], true)) {
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                if (ASTSimplifier::isExpressionWithoutSideEffects($node->children['right'])) {
+                    $this->emitIssue(
+                        Issue::NoopBinaryOperator,
+                        $node->lineno,
+                        self::NAME_FOR_BINARY_OP[$flags] ?? ''
+                    );
+                }
+            } else {
                 $this->emitIssue(
                     Issue::NoopBinaryOperator,
                     $node->lineno,
-                    self::NAME_FOR_BINARY_OP[$node->flags] ?? ''
+                    self::NAME_FOR_BINARY_OP[$flags] ?? ''
                 );
             }
         }
-        if ($node->flags === flags\BINARY_CONCAT) {
+        if ($flags === flags\BINARY_CONCAT) {
             $this->analyzeBinaryConcat($node);
         }
         return $this->context;
@@ -769,6 +780,78 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         flags\UNARY_PLUS => '+',
         flags\UNARY_MINUS => '-',
     ];
+
+    /**
+     * @param Node $node
+     * A node of type AST_EMPTY to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitEmpty(Node $node) : Context
+    {
+        if ((\end($this->parent_node_list)->kind ?? null) === ast\AST_STMT_LIST) {
+            $this->emitIssue(
+                Issue::NoopEmpty,
+                $node->lineno
+            );
+        }
+        return $this->context;
+    }
+
+    /**
+     * @internal
+     * Maps the flags of nodes with kind AST_CAST to their types
+     */
+    const AST_CAST_FLAGS_LOOKUP = [
+        flags\TYPE_NULL => 'unset',
+        flags\TYPE_BOOL => 'bool',
+        flags\TYPE_LONG => 'int',
+        flags\TYPE_DOUBLE => 'float',
+        flags\TYPE_STRING => 'string',
+        flags\TYPE_ARRAY => 'array',
+        flags\TYPE_OBJECT => 'object',
+    ];
+
+    /**
+     * @param Node $node
+     * A node of type AST_EMPTY to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitCast(Node $node) : Context
+    {
+        if ((\end($this->parent_node_list)->kind ?? null) === ast\AST_STMT_LIST) {
+            $this->emitIssue(
+                Issue::NoopCast,
+                $node->lineno,
+                self::AST_CAST_FLAGS_LOOKUP[$node->flags] ?? 'unknown'
+            );
+        }
+        return $this->context;
+    }
+
+    /**
+     * @param Node $node
+     * A node of type AST_EMPTY to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitIsset(Node $node) : Context
+    {
+        if ((\end($this->parent_node_list)->kind ?? null) === ast\AST_STMT_LIST) {
+            $this->emitIssue(
+                Issue::NoopIsset,
+                $node->lineno
+            );
+        }
+        return $this->context;
+    }
 
     /**
      * @param Node $node

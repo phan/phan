@@ -271,6 +271,9 @@ class Issue
     const NoopStringLiteral             = 'PhanNoopStringLiteral';
     const NoopEncapsulatedStringLiteral = 'PhanNoopEncapsulatedStringLiteral';
     const NoopNumericLiteral            = 'PhanNoopNumericLiteral';
+    const NoopEmpty                     = 'PhanNoopEmpty';
+    const NoopIsset                     = 'PhanNoopIsset';
+    const NoopCast                      = 'PhanNoopCast';
     const UnreachableCatch              = 'PhanUnreachableCatch';
     const UnreferencedClass             = 'PhanUnreferencedClass';
     const UnreferencedFunction          = 'PhanUnreferencedFunction';
@@ -2444,6 +2447,30 @@ class Issue
                 "Unused result of a string literal {STRING_LITERAL} near this line",
                 self::REMEDIATION_B,
                 6029
+            ),
+            new Issue(
+                self::NoopEmpty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused result of an empty(expr) check",
+                self::REMEDIATION_B,
+                6051
+            ),
+            new Issue(
+                self::NoopIsset,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused result of an isset(expr) check",
+                self::REMEDIATION_B,
+                6052
+            ),
+            new Issue(
+                self::NoopCast,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused result of a ({TYPE})(expr) cast",
+                self::REMEDIATION_B,
+                6053
             ),
             new Issue(
                 self::NoopEncapsulatedStringLiteral,

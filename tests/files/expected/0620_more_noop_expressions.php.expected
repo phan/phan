@@ -1,0 +1,13 @@
+%s:3 PhanNoopEmpty Unused result of an empty(expr) check
+%s:4 PhanNoopIsset Unused result of an isset(expr) check
+%s:7 PhanNoopCast Unused result of a (string)(expr) cast
+%s:8 PhanNoopCast Unused result of a (int)(expr) cast
+%s:9 PhanNoopCast Unused result of a (bool)(expr) cast
+%s:10 PhanNoopCast Unused result of a (unset)(expr) cast
+%s:11 PhanNoopCast Unused result of a (float)(expr) cast
+%s:12 PhanNoopCast Unused result of a (array)(expr) cast
+%s:13 PhanNoopCast Unused result of a (object)(expr) cast
+%s:22 PhanNoopBinaryOperator Unused result of a binary '??' operator
+%s:26 PhanNoopBinaryOperator Unused result of a binary '??' operator
+%s:28 PhanNoopBinaryOperator Unused result of a binary '&&' operator
+%s:29 PhanNoopBinaryOperator Unused result of a binary '||' operator
