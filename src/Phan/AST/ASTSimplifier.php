@@ -179,8 +179,9 @@ class ASTSimplifier
      * (E.g. returns true for `MY_CONST` or `false` in `if (MY_CONST === ($x = y))`
      *
      * @param Node|string|float|int $node
+     * @internal the way this behaves may change
      */
-    private static function isExpressionWithoutSideEffects($node) : bool
+    public static function isExpressionWithoutSideEffects($node) : bool
     {
         if (!($node instanceof Node)) {
             return true;
@@ -190,6 +191,8 @@ class ASTSimplifier
             case \ast\AST_MAGIC_CONST:
             case \ast\AST_NAME:
                 return true;
+            case \ast\AST_UNARY_OP:
+                return self::isExpressionWithoutSideEffects($node->children['expr']);
             case \ast\AST_BINARY_OP:
                 return self::isExpressionWithoutSideEffects($node->children['left']) &&
                     self::isExpressionWithoutSideEffects($node->children['right']);
