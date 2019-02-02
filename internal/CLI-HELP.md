@@ -23,13 +23,15 @@ Usage: ./phan [options] [files...]
   A comma-separated list of directories that defines files
   that will be excluded from static analysis, but whose
   class and method information should be included.
+  (can be repeated, ignored if --include-analysis-directory-list is used)
 
   Generally, you'll want to include the directories for
   third-party code (such as "vendor/") in this list.
 
- --include-analysis-file-list <file_list>
+ -I, --include-analysis-file-list <file_list>
   A comma-separated list of files that will be included in
   static analysis. All others won't be analyzed.
+  (can be repeated)
 
   This is primarily intended for performing standalone
   incremental analysis.

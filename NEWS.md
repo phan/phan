@@ -3,6 +3,11 @@ Phan NEWS
 ?? ??? 2019, Phan 1.2.3 (dev)
 -----------------------
 
+New features(CLI):
++ Add `-I <file_list>` as an alias of `--include-analysis-file-list <file>`.
++ Support repeating the include option (`-I <file_or_list> -I <file_or_list>`)
+  and the exclude option (`-3 <file_or_list> -3 <file_or_list>`).
+
 New features(Analysis):
 + Detect more expressions without side effects: `PhanNoopEmpty` and `PhanNoopIsset` (for `isset(expr)` and `empty(expr)`) (#2389)
 + Also emit `PhanNoopBinaryOperator` for the `??`, `||`, and `&&` operators,
