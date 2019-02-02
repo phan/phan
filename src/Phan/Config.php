@@ -1158,7 +1158,7 @@ class Config
             'language_server_analyze_only_on_save' => $is_bool,
             // 'language_server_config' => array|false,  // should not be set directly
             'language_server_debug_level' => $is_string_or_null,
-            'language_server_enable_completion' => $is_bool,
+            'language_server_enable_completion' => $is_scalar,
             'language_server_enable_go_to_definition' => $is_bool,
             'language_server_enable_hover' => $is_bool,
             'language_server_hide_category_of_issues' => $is_bool,

@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 2019, Phan 1.2.3 (dev)
 -----------------------
 
+Maintenance
++ Don't emit a warning to stderr when `--language-server-completion-vscode` is used.
+
 02 Feb 2019, Phan 1.2.2
 -----------------------
 

@@ -51,4 +51,25 @@ final class ConfigTest extends BaseTest
         ];
         $this->assertSame($expected_errors, Config::getConfigErrors($config), 'Should warn for invalid settings');
     }
+
+    /**
+     * @dataProvider warnsEnableCompletionProvider
+     * @param mixed $value
+     */
+    public function testWarnsEnableCompletion($value, string ...$expected_errors)
+    {
+        $config = ['language_server_enable_completion' => $value];
+        $this->assertSame($expected_errors, Config::getConfigErrors($config));
+    }
+
+
+    public function warnsEnableCompletionProvider() : array
+    {
+        return [
+            [false],
+            [true],
+            [Config::COMPLETION_VSCODE],
+            [[], "Invalid config value for 'language_server_enable_completion': Expected a scalar, but got type 'array'"],
+        ];
+    }
 }
