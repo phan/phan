@@ -1034,6 +1034,14 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/plugin_test/expe
 
 This category of error comes up when you're messing up your method or function parameters in some way.
 
+## PhanParamMustBeUserDefinedClassname
+
+```
+First argument of class_alias() must be a name of user defined class ('{CLASS}' attempted)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0615_class_alias.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0615_class_alias.php#L3).
+
 ## PhanParamRedefined
 
 ```
@@ -2975,7 +2983,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.2.0/tests/files/expected/0
 This is emitted when a static method's PHPDoc contains a param/return type declared in a class's phpdoc template annotations.
 
 ```
-static method {METHOD} may not use template types
+static method {METHOD} does not declare template type in its own comment and may not use the template type of class instances
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0203_generic_errors.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0203_generic_errors.php#L16).
