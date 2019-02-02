@@ -28,7 +28,6 @@ declare(strict_types=1);
 namespace ast;
 
 const AST_ARG_LIST = 128;
-const AST_LIST = 255;
 const AST_ARRAY = 129;
 const AST_ENCAPS_LIST = 130;
 const AST_EXPR_LIST = 131;

@@ -555,8 +555,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitAssign(Node $node) : Context
     {
-        // In php 7.0, a **valid** parsed AST would be an ast\AST_LIST.
-        // However, --force-polyfill-parser will emit ast\AST_ARRAY.
         $var_node = $node->children['var'];
         if (Config::get_closest_target_php_version_id() < 70100 && $var_node instanceof Node && $var_node->kind === ast\AST_ARRAY) {
             $this->analyzeArrayAssignBackwardsCompatibility($var_node);
@@ -610,30 +608,23 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // If there's a key, make a variable out of that too
         $key_node = $node->children['key'];
         if ($key_node instanceof Node) {
-            if ($key_node->kind == ast\AST_LIST) {
-                throw new NodeException(
-                    $node,
+            if ($key_node->kind === ast\AST_ARRAY) {
+                $this->emitIssue(
+                    Issue::InvalidNode,
+                    $key_node->lineno,
                     "Can't use list() as a key element - aborting"
                 );
-            }
-
-            $variable = Variable::fromNodeInContext(
-                $key_node,
-                $context,
-                $code_base,
-                false
-            );
-            if (!$expression_union_type->isEmpty()) {
+            } else {
                 // TODO: Support Traversable<Key, T> then return Key.
                 // If we see array<int,T> or array<string,T> and no other array types, we're reasonably sure the foreach key is an integer or a string, so set it.
                 // (Or if we see iterable<int,T>
-                $union_type_of_array_key = $expression_union_type->iterableKeyUnionType($code_base);
-                if ($union_type_of_array_key !== null) {
-                    $variable->setUnionType($union_type_of_array_key);
-                }
+                $context = (new AssignmentVisitor(
+                    $code_base,
+                    $context,
+                    $key_node,
+                    $expression_union_type->iterableKeyUnionType($code_base)
+                ))->__invoke($key_node);
             }
-
-            $context->addScopeVariable($variable);
         }
 
         // Note that we're not creating a new scope, just

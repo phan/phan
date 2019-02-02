@@ -7,6 +7,7 @@ New features(Analysis):
 + Detect more expressions without side effects: `PhanNoopEmpty` and `PhanNoopIsset` (for `isset(expr)` and `empty(expr)`) (#2389)
 + Also emit `PhanNoopBinaryOperator` for the `??`, `||`, and `&&` operators,
   but only when the result is unused and the right hand side has no obvious side effects. (#2389)
++ Properly analyze effects of a property/field access expression as the key of a `foreach` statement. (#1601)
 
 Maintenance
 + Don't emit a warning to stderr when `--language-server-completion-vscode` is used.
