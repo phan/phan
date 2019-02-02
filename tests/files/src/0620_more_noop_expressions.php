@@ -11,8 +11,8 @@ isset($a);
 (float)$a;
 (array)$a;
 (object)$a;
-
-function some_function() : ?string {
+/** @return ?string */
+function some_function() {
     echo "Something";
     return rand(0,1) ? "value" : null;
 }
