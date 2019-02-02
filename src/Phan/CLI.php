@@ -391,7 +391,7 @@ class CLI
                     break;
                 case '3':
                 case 'exclude-directory-list':
-                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
+                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgument, PhanPartialTypeMismatchArgument
                     Config::setValue('exclude_analysis_directory_list', self::readCommaSeparatedListOrLists($value));
                     break;
                 case 'exclude-file':
@@ -402,7 +402,7 @@ class CLI
                     break;
                 case 'I':
                 case 'include-analysis-file-list':
-                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
+                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgument, PhanPartialTypeMismatchArgument
                     Config::setValue('include_analysis_file_list', self::readCommaSeparatedListOrLists($value));
                     break;
                 case 'j':
