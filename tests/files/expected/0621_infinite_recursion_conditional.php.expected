@@ -1,0 +1,2 @@
+%s:5 PhanInfiniteRecursion main() is calling itself in a way that may cause infinite recursion.
+%s:19 PhanInfiniteRecursion infiniteRecursion() is calling itself in a way that may cause infinite recursion.

@@ -262,6 +262,33 @@ final class ReachabilityChecker extends KindVisitorImplementation
     }
 
     /**
+     * Analyzes a node with kind \ast\AST_CONDITIONAL
+     * @return ?bool the result seen for a conditional
+     */
+    public function visitConditional(Node $node)
+    {
+        $cond = $node->children['cond'];
+        if ($cond instanceof Node) {
+            $result = $this->__invoke($cond);
+            if ($result !== null) {
+                return $result;
+            }
+        }
+        foreach (['true', 'false'] as $sub_node_name) {
+            $value = $node->children[$sub_node_name];
+            if (!($value instanceof Node)) {
+                continue;
+            }
+            $result = $this->__invoke($value);
+            if ($result !== null) {
+                // This is a conditional; it's not guaranteed to work
+                return false;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns true if there are no break/return/throw/etc statements
      * within the method that would prevent $inner (a descendant node of $node)
      * to be reached from the start of evaluating the statements in $node.
