@@ -39,7 +39,7 @@ class CLI
      * still available: g,n,t,u,w
      * @internal
      */
-    const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:xj:zhvs:SCP:';
+    const GETOPT_SHORT_OPTIONS = 'f:m:o:c:k:aeqbr:pid:3:y:l:xj:zhvs:SCP:I:';
 
     /**
      * List of long flags passed to getopt
@@ -153,6 +153,24 @@ class CLI
      * A possibly null path to the config file to load
      */
     private $config_file = null;
+
+    /**
+     * @param string|string[] $value
+     * @return array<int,string>
+     */
+    public static function readCommaSeparatedListOrLists($value) : array {
+        if (is_array($value)) {
+            $value = implode(',', $value);
+        }
+        $value_set = [];
+        foreach (explode(',', (string)$value) as $file) {
+            if ($file === '')  {
+                continue;
+            }
+            $value_set[$file] = true;
+        }
+        return array_map('strval', array_keys($value_set));
+    }
 
     /**
      * Create and read command line arguments, configuring
@@ -369,11 +387,12 @@ class CLI
                     break;
                 case 'i':
                 case 'ignore-undeclared':
-                    $mask ^= Issue::CATEGORY_UNDEFINED;
+                    $mask |= Issue::CATEGORY_UNDEFINED;
                     break;
                 case '3':
                 case 'exclude-directory-list':
-                    Config::setValue('exclude_analysis_directory_list', explode(',', $value));
+                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
+                    Config::setValue('exclude_analysis_directory_list', self::readCommaSeparatedListOrLists($value));
                     break;
                 case 'exclude-file':
                     Config::setValue('exclude_file_list', array_merge(
@@ -381,8 +400,10 @@ class CLI
                         \is_array($value) ? $value : [$value]
                     ));
                     break;
+                case 'I':
                 case 'include-analysis-file-list':
-                    Config::setValue('include_analysis_file_list', explode(',', $value));
+                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
+                    Config::setValue('include_analysis_file_list', self::readCommaSeparatedListOrLists($value));
                     break;
                 case 'j':
                 case 'processes':
@@ -793,13 +814,15 @@ Usage: {$argv[0]} [options] [files...]
   A comma-separated list of directories that defines files
   that will be excluded from static analysis, but whose
   class and method information should be included.
+  (can be repeated, ignored if --include-analysis-directory-list is used)
 
   Generally, you'll want to include the directories for
   third-party code (such as "vendor/") in this list.
 
- --include-analysis-file-list <file_list>
+ -I, --include-analysis-file-list <file_list>
   A comma-separated list of files that will be included in
   static analysis. All others won't be analyzed.
+  (can be repeated)
 
   This is primarily intended for performing standalone
   incremental analysis.
