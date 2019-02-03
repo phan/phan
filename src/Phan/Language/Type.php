@@ -2310,6 +2310,9 @@ class Type
      * @return bool
      * True if this type represents a class which is a sub-type of
      * the class represented by the passed type.
+     *
+     * @deprecated
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function isSubclassOf(CodeBase $code_base, Type $parent) : bool
     {

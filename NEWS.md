@@ -17,6 +17,9 @@ New features(Analysis):
 Maintenance
 + Don't emit a warning to stderr when `--language-server-completion-vscode` is used.
 
+Bug fixes:
++ Fix edge cases in checking if properties/methods are accessible from a trait (#2371)
+
 02 Feb 2019, Phan 1.2.2
 -----------------------
 

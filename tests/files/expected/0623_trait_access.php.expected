@@ -1,0 +1,2 @@
+%s:23 PhanAccessPropertyPrivate Cannot access private property \NS2371\SubClass->inaccessiblePrivateProp defined at %s:42
+%s:24 PhanAccessMethodPrivate Cannot access private method \NS2371\SubClass::inaccessiblePrivateMethod defined at %s:43
