@@ -4,6 +4,7 @@ namespace Phan\Language\Type;
 
 use InvalidArgumentException;
 use Phan\CodeBase;
+use Phan\Debug\Frame;
 use Phan\Exception\RecursionDepthException;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
@@ -191,7 +192,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
-            throw new RecursionDepthException("Recursion has gotten out of hand");
+            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
 
         // TODO: Use UnionType::merge from a future change?
@@ -234,7 +235,7 @@ final class GenericMultiArrayType extends ArrayType implements MultiType, Generi
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
-            throw new RecursionDepthException("Recursion has gotten out of hand");
+            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
 
         // TODO: Use UnionType::merge from a future change?

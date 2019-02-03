@@ -103,4 +103,23 @@ class Frame
             return $invocation . '(). Args: ' . self::encodeValue($args);
         });
     }
+
+    /**
+     * Returns details about a call to asExpandedTypes that hit a RecursionDepthException
+     */
+    public static function getExpandedTypesDetails() : string
+    {
+        $result = [];
+        foreach (debug_backtrace() as $frame) {
+            if (($frame['function'] ?? null) === 'asExpandedTypes' && isset($frame['object'])) {
+                $object = $frame['object'];
+                if ($object instanceof Type) {
+                    $result[] = 'when expanding type (' . (string)$object . ')';
+                } elseif ($object instanceof UnionType) {
+                    $result[] = 'when expanding union type (' . (string)$object . ')';
+                }
+            }
+        }
+        return implode("\n", $result);
+    }
 }

@@ -3,6 +3,7 @@
 namespace Phan\Analysis;
 
 use Phan\CodeBase;
+use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
@@ -30,9 +31,12 @@ class ThrowsTypesAnalyzer
         CodeBase $code_base,
         FunctionInterface $method
     ) {
-        foreach ($method->getThrowsUnionType()->getTypeSet() as $type) {
-            // TODO: When analyzing the method body, only check the valid exceptions
-            self::analyzeSingleThrowType($code_base, $method, $type);
+        try {
+            foreach ($method->getThrowsUnionType()->getTypeSet() as $type) {
+                // TODO: When analyzing the method body, only check the valid exceptions
+                self::analyzeSingleThrowType($code_base, $method, $type);
+            }
+        } catch (RecursionDepthException $_) {
         }
     }
 

@@ -11,6 +11,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\NodeException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
@@ -526,10 +527,14 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         }
         if (!$func->isReturnTypeUndefined()) {
             $func_return_type = $func->getUnionType();
-            $func_return_type_can_cast = $func_return_type->canCastToExpandedUnionType(
-                Type::fromNamespaceAndName('\\', 'Generator', false)->asUnionType(),
-                $this->code_base
-            );
+            try {
+                $func_return_type_can_cast = $func_return_type->canCastToExpandedUnionType(
+                    Type::fromNamespaceAndName('\\', 'Generator', false)->asUnionType(),
+                    $this->code_base
+                );
+            } catch (RecursionDepthException $_) {
+                return;
+            }
             if (!$func_return_type_can_cast) {
                 // At least one of the documented return types must
                 // be Generator, Iterable, or Traversable.
@@ -646,8 +651,11 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             );
         }
         foreach ($union_type->getTypeSet() as $type) {
-            if ($type->asExpandedTypes($this->code_base)->hasTraversable()) {
-                continue;
+            try {
+                if ($type->asExpandedTypes($this->code_base)->hasTraversable()) {
+                    continue;
+                }
+            } catch (RecursionDepthException $_) {
             }
             if (!$type->isObjectWithKnownFQSEN()) {
                 continue;

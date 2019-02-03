@@ -13,6 +13,7 @@ use Phan\Exception\EmptyFQSENException;
 use Phan\Exception\FQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
@@ -767,10 +768,13 @@ class ContextNode
                     $method_name
                 );
                 if ($method->hasTemplateType()) {
-                    return $method->resolveTemplateType(
-                        $this->code_base,
-                        UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr'] ?? $node->children['class'])
-                    );
+                    try {
+                        return $method->resolveTemplateType(
+                            $this->code_base,
+                            UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr'] ?? $node->children['class'])
+                        );
+                    } catch (RecursionDepthException $_) {
+                    }
                 }
                 return $method;
             } elseif (!$is_static && $class->allowsCallingUndeclaredInstanceMethod($this->code_base)) {

@@ -18,6 +18,7 @@ use Phan\AST\TolerantASTConverter\ParseException;
 use Phan\AST\Visitor\Element;
 use Phan\Daemon\Request;
 use Phan\Exception\FQSENException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
@@ -432,7 +433,11 @@ class Analysis
             }
         }
         foreach ($classes as $class) {
-            $class->analyze($code_base);
+            try {
+                $class->analyze($code_base);
+            } catch (RecursionDepthException $_) {
+                continue;
+            }
         }
     }
 

@@ -10,6 +10,7 @@ use InvalidArgumentException;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Debug\Frame;
 use Phan\Exception\EmptyFQSENException;
 use Phan\Exception\FQSENException;
 use Phan\Exception\InvalidFQSENException;
@@ -2146,7 +2147,7 @@ class Type
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
-            throw new RecursionDepthException("Recursion has gotten out of hand: expanding type=$this");
+            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
         $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) {
             $union_type = $this->asUnionType();
@@ -2228,7 +2229,7 @@ class Type
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
-            throw new RecursionDepthException("Recursion has gotten out of hand: expanding type=$this");
+            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
         $union_type = $this->memoize(__METHOD__, /** @return UnionType */ function () use ($code_base, $recursion_depth) {
             $union_type = $this->asUnionType();

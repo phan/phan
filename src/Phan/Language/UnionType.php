@@ -7,6 +7,7 @@ use Generator;
 use InvalidArgumentException;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Debug\Frame;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Exception\RecursionDepthException;
@@ -2581,7 +2582,7 @@ class UnionType implements Serializable
         int $recursion_depth = 0
     ) : UnionType {
         if ($recursion_depth >= 12) {
-            throw new RecursionDepthException("Recursion has gotten out of hand: expanding union type=$this");
+            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
 
         $type_set = $this->type_set;
@@ -2626,7 +2627,7 @@ class UnionType implements Serializable
         int $recursion_depth = 0
     ) : UnionType {
         if ($recursion_depth >= 12) {
-            throw new RecursionDepthException("Recursion has gotten out of hand: expanding union type=$this");
+            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
 
         $type_set = $this->type_set;

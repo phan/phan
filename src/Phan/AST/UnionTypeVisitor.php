@@ -20,6 +20,7 @@ use Phan\Exception\FQSENException;
 use Phan\Exception\InvalidFQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
@@ -1310,7 +1311,12 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
 
             if (!$dim_type->isEmpty()) {
-                if (!$union_type->hasMixedType() && !$union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
+                try {
+                    $should_check = !$union_type->hasMixedType() && !$union_type->asExpandedTypes($this->code_base)->hasArrayAccess();
+                } catch (RecursionDepthException $_) {
+                    $should_check = false;
+                }
+                if ($should_check) {
                     if (Config::getValue('scalar_array_key_cast')) {
                         $expected_key_type = $int_or_string_union_type;
                     } else {
@@ -1396,6 +1402,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     }
                 }
             } catch (CodeBaseException $_) {
+            } catch (RecursionDepthException $_) {
             }
 
             if (!$union_type->hasArrayLike()) {
@@ -2015,10 +2022,13 @@ class UnionTypeVisitor extends AnalysisVisitor
                     $method->analyzeReturnTypes($this->code_base);  // For daemon/server mode, call this to consistently ensure accurate return types.
 
                     if ($method->hasTemplateType()) {
-                        $method = $method->resolveTemplateType(
-                            $this->code_base,
-                            UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $class_node)
-                        );
+                        try {
+                            $method = $method->resolveTemplateType(
+                                $this->code_base,
+                                UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $class_node)
+                            );
+                        } catch (RecursionDepthException $_) {
+                        }
                     }
 
                     if ($method->hasDependentReturnType()) {

@@ -12,6 +12,7 @@ use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
@@ -716,7 +717,11 @@ class AssignmentVisitor extends AnalysisVisitor
                 );
                 return $this->context;
             }
-            return $this->analyzePropAssignment($clazz, $property, $node);
+            try {
+                return $this->analyzePropAssignment($clazz, $property, $node);
+            } catch (RecursionDepthException $_) {
+                return $this->context;
+            }
         }
 
         // Check if it is a built in class with dynamic properties but (possibly) no __set, such as SimpleXMLElement or stdClass or V8Js
@@ -1047,7 +1052,11 @@ class AssignmentVisitor extends AnalysisVisitor
                 return $this->context;
             }
 
-            return $this->analyzePropAssignment($clazz, $property, $node);
+            try {
+                return $this->analyzePropAssignment($clazz, $property, $node);
+            } catch (RecursionDepthException $_) {
+                return $this->context;
+            }
         }
 
         if (\count($class_list) > 0) {
