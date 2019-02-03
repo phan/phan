@@ -2670,12 +2670,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         Method $method,
         Node $node
     ) {
-        if ($method->isPrivate()
-            && (
-                !$this->context->isInClassScope()
-                || $this->context->getClassFQSEN() != $method->getDefiningClassFQSEN()
-            )
-        ) {
+        if ($method->isPublic()) {
+            return;
+        }
+        if ($method->isAccessibleFromClass($this->code_base, $this->context->getClassFQSENOrNull())) {
+            return;
+        }
+        if ($method->isPrivate()) {
             $has_call_magic_method = !$method->isStatic()
                 && $method->getDefiningClass($this->code_base)->hasMethodWithName($this->code_base, '__call');
 
@@ -2687,7 +2688,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $method->getFileRef()->getFile(),
                 (string)$method->getFileRef()->getLineNumberStart()
             );
-        } elseif ($method->isProtected() && !$this->canAccessProtectedMethodFromContext($method)) {
+        } else {
             $has_call_magic_method = !$method->isStatic()
                 && $method->getDefiningClass($this->code_base)->hasMethodWithName($this->code_base, '__call');
 
@@ -2700,32 +2701,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 (string)$method->getFileRef()->getLineNumberStart()
             );
         }
-    }
-
-    private function canAccessProtectedMethodFromContext(Method $method) : bool
-    {
-        $context = $this->context;
-        if (!$context->isInClassScope()) {
-            return false;
-        }
-        $class_fqsen = $context->getClassFQSEN();
-        $class_fqsen_type = $class_fqsen->asType();
-        $method_class_fqsen_type = $method->getClassFQSEN()->asType();
-        if ($class_fqsen_type->canCastToType($method_class_fqsen_type)) {
-            return true;
-        }
-        $method_defining_class_fqsen = $method->getDefiningClassFQSEN();
-        if ($class_fqsen === $method_defining_class_fqsen) {
-            return true;
-        }
-        $method_defining_class_fqsen_type = $method_defining_class_fqsen->asType();
-        if ($class_fqsen_type->isSubclassOf($this->code_base, $method_defining_class_fqsen_type)) {
-            return true;
-        }
-        if ($method_defining_class_fqsen_type->isSubclassOf($this->code_base, $class_fqsen_type)) {
-            return true;
-        }
-        return false;
     }
 
     /**

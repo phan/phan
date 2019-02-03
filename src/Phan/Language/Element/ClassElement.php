@@ -78,6 +78,17 @@ abstract class ClassElement extends AddressableElement
     }
 
     /**
+     * Gets the real defining FQSEN.
+     * This differs from getDefiningFQSEN() if the definition was from a trait.
+     *
+     * @return FullyQualifiedClassElement
+     */
+    public function getRealDefiningFQSEN()
+    {
+        return $this->getDefiningFQSEN();
+    }
+
+    /**
      * @return FullyQualifiedClassName
      * The FQSEN of this class element from where it was
      * originally defined
@@ -239,7 +250,19 @@ abstract class ClassElement extends AddressableElement
         if ($defining_fqsen === $accessing_class_fqsen) {
             return true;
         }
+        $real_defining_fqsen = $this->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+        if ($real_defining_fqsen === $accessing_class_fqsen) {
+            return true;
+        }
         if ($this->isPrivate()) {
+            if ($code_base->hasClassWithFQSEN($defining_fqsen)) {
+                $defining_class = $code_base->getClassByFQSEN($defining_fqsen);
+                foreach ($defining_class->getTraitFQSENList() as $trait_fqsen) {
+                    if ($trait_fqsen === $accessing_class_fqsen) {
+                        return true;
+                    }
+                }
+            }
             return false;
         }
         return $this->checkCanAccessProtectedElement($code_base, $defining_fqsen, $accessing_class_fqsen);
