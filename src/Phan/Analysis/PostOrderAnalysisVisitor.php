@@ -24,6 +24,7 @@ use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
@@ -35,6 +36,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
@@ -1709,11 +1711,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitNew(Node $node) : Context
     {
         try {
-            $context_node = (new ContextNode(
+            $context_node = new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node
-            ));
+            );
 
             $method = $context_node->getMethod(
                 '__construct',
@@ -1773,26 +1775,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             );
 
             foreach ($class_list as $class) {
-                // Make sure we're not instantiating an abstract
-                // class
-                if ($class->isAbstract()
-                    && (!$this->context->isInClassScope()
-                    || $class->getFQSEN() != $this->context->getClassFQSEN())
-                ) {
-                    $this->emitIssue(
-                        Issue::TypeInstantiateAbstract,
-                        $node->lineno ?? 0,
-                        (string)$class->getFQSEN()
-                    );
-                }
-
-                // Make sure we're not instantiating an interface
-                if ($class->isInterface()) {
-                    $this->emitIssue(
-                        Issue::TypeInstantiateInterface,
-                        $node->lineno ?? 0,
-                        (string)$class->getFQSEN()
-                    );
+                if ($class->isAbstract() || $class->isInterface() || $class->isTrait()) {
+                    // Check the full list of classes if any of the classes
+                    // are abstract or interfaces.
+                    $this->checkForInvalidNewType($node, $class_list);
+                    break;
                 }
             }
         } catch (IssueException $exception) {
@@ -1808,6 +1795,103 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         return $this->context;
+    }
+
+    /**
+     * @param Node $node a node of type AST_NEW
+     * @param Clazz[] $class_list
+     */
+    private function checkForInvalidNewType(Node $node, array $class_list) {
+        // This is either a string (new 'something'()) or a class name (new something())
+        $class_node = $node->children['class'];
+        if (!$class_node instanceof Node) {
+            foreach ($class_list as $class) {
+                $this->warnIfInvalidClassForNew($class, $node);
+            }
+            return;
+        }
+
+        if ($class_node->kind === ast\AST_NAME) {
+            $class_name = $class_node->children['name'];
+            if (is_string($class_name) && \strcasecmp('static', $class_name) === 0) {
+                if ($this->isStaticGuaranteedToBeNonAbstract()) {
+                    return;
+                }
+            }
+            foreach ($class_list as $class) {
+                $this->warnIfInvalidClassForNew($class, $class_node);
+            }
+            return;
+        }
+        foreach (UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $class_node)->getTypeSet() as $type) {
+            if ($type instanceof LiteralStringType) {
+                try {
+                    $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($type->getValue());
+                } catch (FQSENException $_) {
+                    // Probably already emitted elsewhere, but emit anyway
+                    Issue::maybeEmit(
+                        $this->code_base,
+                        $this->context,
+                        Issue::TypeExpectedObjectOrClassName,
+                        $node->lineno,
+                        $type->getValue()
+                    );
+                    continue;
+                }
+                if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
+                    continue;
+                }
+                $class = $this->code_base->getClassByFQSEN($class_fqsen);
+                $this->warnIfInvalidClassForNew($class, $class_node);
+            }
+        }
+    }
+
+    /**
+     * Given a call to `new static`, is the context likely to be guaranteed to be a non-abstract class?
+     */
+    private function isStaticGuaranteedToBeNonAbstract() : bool
+    {
+        if (!$this->context->isInMethodScope()) {
+            return false;
+        }
+        // TODO: Could do a better job with closures inside of methods
+        $method = $this->context->getFunctionLikeInScope($this->code_base);
+        if (!($method instanceof Method)) {
+            if ($method instanceof Func && $method->isClosure()) {
+                // closures can be rebound
+                return true;
+            }
+            return false;
+        }
+        return !$method->isStatic();
+    }
+
+    private function warnIfInvalidClassForNew(Clazz $class, Node $node)
+    {
+        // Make sure we're not instantiating an abstract
+        // class
+        if ($class->isAbstract()) {
+            $this->emitIssue(
+                Issue::TypeInstantiateAbstract,
+                $node->lineno ?? 0,
+                (string)$class->getFQSEN()
+            );
+        } elseif ($class->isInterface()) {
+            // Make sure we're not instantiating an interface
+            $this->emitIssue(
+                Issue::TypeInstantiateInterface,
+                $node->lineno ?? 0,
+                (string)$class->getFQSEN()
+            );
+        } elseif ($class->isTrait()) {
+            // Make sure we're not instantiating a trait
+            $this->emitIssue(
+                Issue::TypeInstantiateTrait,
+                $node->lineno ?? 0,
+                (string)$class->getFQSEN()
+            );
+        }
     }
 
     /**
@@ -2020,17 +2104,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($node->children['class']->kind !== ast\AST_NAME) {
             return;
         }
-        $class_context_node = (new ContextNode(
-            $this->code_base,
-            $this->context,
-            $node->children['class']
-        ));
         // TODO: check for self/static/<class name of self> and warn about recursion?
         // TODO: Only allow calls to __construct from other constructors?
         $found_ancestor_constructor = false;
         if ($this->context->isInMethodScope()) {
             try {
-                $possible_ancestor_type = $class_context_node->getClassUnionType();
+                $possible_ancestor_type = UnionTypeVisitor::unionTypeFromClassNode(
+                    $this->code_base,
+                    $this->context,
+                    $node->children['class']
+                );
             } catch (FQSENException $e) {
                 $this->emitIssue(
                     $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInCallable : Issue::InvalidFQSENInCallable,

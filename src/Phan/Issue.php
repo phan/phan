@@ -95,6 +95,7 @@ class Issue
     const TypeConversionFromArray   = 'PhanTypeConversionFromArray';
     const TypeInstantiateAbstract   = 'PhanTypeInstantiateAbstract';
     const TypeInstantiateInterface  = 'PhanTypeInstantiateInterface';
+    const TypeInstantiateTrait      = 'PhanTypeInstantiateTrait';
     const TypeInvalidCloneNotObject = 'PhanTypeInvalidCloneNotObject';
     const TypeInvalidClosureScope   = 'PhanTypeInvalidClosureScope';
     const TypeInvalidLeftOperand    = 'PhanTypeInvalidLeftOperand';
@@ -1366,6 +1367,14 @@ class Issue
                 "Instantiation of interface {INTERFACE}",
                 self::REMEDIATION_B,
                 10014
+            ),
+            new Issue(
+                self::TypeInstantiateTrait,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Instantiation of trait {TRAIT}",
+                self::REMEDIATION_B,
+                10074
             ),
             new Issue(
                 self::TypeInvalidClosureScope,

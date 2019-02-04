@@ -1,3 +1,5 @@
-%s:5 PhanInvalidFQSENInClasslike Possible use of a classlike 'foo.bar' with an invalid FQSEN.
+%s:5 PhanInvalidFQSENInClasslike Possible use of a classlike '\foo.bar' with an invalid FQSEN.
+%s:7 PhanEmptyFQSENInClasslike Possible use of a classlike '' with an empty FQSEN.
 %s:7 PhanTypeExpectedObjectOrClassName Expected an object instance or the name of a class but saw expression with type ''
+%s:10 PhanEmptyFQSENInClasslike Possible use of a classlike '\' with an empty FQSEN.
 %s:10 PhanTypeExpectedObjectOrClassName Expected an object instance or the name of a class but saw expression with type '\\'

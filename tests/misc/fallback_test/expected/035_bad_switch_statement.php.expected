@@ -1,2 +1,2 @@
-src/035_bad_switch_statement.php:0 PhanNoopNumericLiteral Unused result of a numeric literal 5 near this line
+src/035_bad_switch_statement.php:1 PhanNoopNumericLiteral Unused result of a numeric literal 5 near this line
 src/035_bad_switch_statement.php:3 PhanSyntaxError syntax error, unexpected ')'
