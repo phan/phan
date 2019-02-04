@@ -599,6 +599,14 @@ Unused result of a binary '{OPERATOR}' operator
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0421_binary_operator.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0421_binary_operator.php#L4).
 
+## PhanNoopCast
+
+```
+Unused result of a ({TYPE})(expr) cast
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0620_more_noop_expressions.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0620_more_noop_expressions.php#L7).
+
 ## PhanNoopClosure
 
 Emitted when you have a closure that is unused.
@@ -628,6 +636,14 @@ const C = 42;
 C;
 ```
 
+## PhanNoopEmpty
+
+```
+Unused result of an empty(expr) check
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0620_more_noop_expressions.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0620_more_noop_expressions.php#L3).
+
 ## PhanNoopEncapsulatedStringLiteral
 
 ```
@@ -635,6 +651,14 @@ Unused result of an encapsulated string literal
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0470_noop_scalar.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0470_noop_scalar.php#L4).
+
+## PhanNoopIsset
+
+```
+Unused result of an isset(expr) check
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/011_isset_intrinsic_expression5.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/011_isset_intrinsic_expression5.php#L2).
 
 ## PhanNoopNumericLiteral
 
@@ -1893,6 +1917,14 @@ This issue will be emitted for the following code
 ```php
 interface E {} (new E);
 ```
+
+## PhanTypeInstantiateTrait
+
+```
+Instantiation of trait {TRAIT}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0624_instantiate_abstract.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0624_instantiate_abstract.php#L42).
 
 ## PhanTypeInvalidBitwiseBinaryOperator
 
