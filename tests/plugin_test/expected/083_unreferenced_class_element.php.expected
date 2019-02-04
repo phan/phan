@@ -1,0 +1,4 @@
+src/083_unreferenced_class_element.php:4 PhanUnreferencedPrivateClassConstant Possibly zero references to public class constant \CUnref::X
+src/083_unreferenced_class_element.php:5 PhanUnreferencedProtectedClassConstant Possibly zero references to protected class constant \CUnref::Y
+src/083_unreferenced_class_element.php:6 PhanUnreferencedProtectedProperty Possibly zero references to protected property \CUnref::$protectedProp
+src/083_unreferenced_class_element.php:7 PhanUnreferencedPrivateMethod Possibly zero references to private method \CUnref::privateMethod()

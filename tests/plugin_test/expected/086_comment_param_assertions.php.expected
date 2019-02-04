@@ -1,0 +1,2 @@
+src/086_comment_param_assertions.php:3 PhanCommentParamOnEmptyParamList Saw an @param annotation for args, but the param list of function no_params(); is empty
+src/086_comment_param_assertions.php:14 PhanCommentParamAssertionWithoutRealParam Saw an @phan-assert annotation for second, but it was not found in the param list of assert_wrong_param()
