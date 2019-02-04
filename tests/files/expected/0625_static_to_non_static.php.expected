@@ -1,0 +1,1 @@
+%s:7 PhanAccessStaticToNonStatic Cannot make static method \Base625::staticMethod() non static
