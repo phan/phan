@@ -64,6 +64,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      * there are multiple definitions of the element
      *
      * @return static
+     * @suppress PhanTypeInstantiateAbstract this error is correct, but this should never be called directly
      */
     public static function make(
         FullyQualifiedClassName $fully_qualified_class_name,

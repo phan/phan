@@ -97,11 +97,11 @@ class ContextNode
 
         $union_type = UnionType::empty();
         foreach ($this->node->children as $name_node) {
-            $union_type = $union_type->withUnionType((new ContextNode(
+            $union_type = $union_type->withUnionType(UnionTypeVisitor::unionTypeFromClassNode(
                 $this->code_base,
                 $this->context,
                 $name_node
-            ))->getClassUnionType());
+            ));
         }
         return \array_map('strval', $union_type->getTypeSet());
     }
@@ -112,10 +112,15 @@ class ContextNode
      * @return string
      *
      * @throws FQSENException if the node is invalid
+     * @internal TODO: Stop using this
      */
     public function getQualifiedName() : string
     {
-        return $this->getClassUnionType()->__toString();
+        return UnionTypeVisitor::unionTypeFromClassNode(
+            $this->code_base,
+            $this->context,
+            $this->node
+        )->__toString();
     }
 
     /**
@@ -457,6 +462,8 @@ class ContextNode
     /**
      * @return UnionType the union type of the class for this class node. (Typically has just one Type, but only for kind \ast\AST_NAME)
      * @throws FQSENException if class union type is invalid
+     * @deprecated call UnionTypeVisitor::unionTypeFromClassNode
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function getClassUnionType() : UnionType
     {
@@ -597,22 +604,21 @@ class ContextNode
                     if ($type instanceof LiteralStringType) {
                         $type_value = $type->getValue();
                         try {
-                            // TODO: warn about invalid types and unparsable types
                             $fqsen = FullyQualifiedClassName::fromFullyQualifiedString($type_value);
                             if ($this->code_base->hasClassWithFQSEN($fqsen)) {
                                 $class_list[] = $this->code_base->getClassByFQSEN($fqsen);
                             } else {
                                 $this->emitIssue(
                                     Issue::UndeclaredClass,
-                                    $this->node->lineno ?? 0,
+                                    $this->node->lineno ?? $this->context->getLineNumberStart(),
                                     (string)$fqsen
                                 );
                             }
                         } catch (FQSENException $e) {
                             $this->emitIssue(
                                 $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike,
-                                $this->node->lineno ?? 0,
-                                $e->getMessage()
+                                $this->node->lineno ?? $this->context->getLineNumberStart(),
+                                $e->getFQSEN()
                             );
                         }
                     }
@@ -695,13 +701,13 @@ class ContextNode
                 $this->context,
                 $node->children['expr']
                     ?? $node->children['class']
-            ))->getClassList(false, self::CLASS_LIST_ACCEPT_ANY);
+            ))->getClassList(false, $is_new_expression ? self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME : self::CLASS_LIST_ACCEPT_ANY);
         } catch (CodeBaseException $exception) {
             $exception_fqsen = $exception->getFQSEN();
             throw new IssueException(
                 Issue::fromType(Issue::UndeclaredClassMethod)(
                     $this->context->getFile(),
-                    $node->lineno ?? 0,
+                    $node->lineno,
                     [$method_name, (string)$exception_fqsen],
                     ($exception_fqsen instanceof FullyQualifiedClassName
                         ? IssueFixSuggester::suggestSimilarClassForMethod($this->code_base, $this->context, $exception_fqsen, $method_name, $is_static)
@@ -725,7 +731,7 @@ class ContextNode
                 throw new IssueException(
                     Issue::fromType($e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike)(
                         $this->context->getFile(),
-                        $node->lineno ?? 0,
+                        $node->lineno,
                         [$e->getFQSEN()]
                     )
                 );
@@ -747,7 +753,7 @@ class ContextNode
                 throw new IssueException(
                     Issue::fromType(Issue::NonClassMethodCall)(
                         $this->context->getFile(),
-                        $node->lineno ?? 0,
+                        $node->lineno,
                         [ $method_name, (string)$union_type ]
                     )
                 );
@@ -796,7 +802,7 @@ class ContextNode
             throw new IssueException(
                 Issue::fromType(Issue::UndeclaredStaticMethod)(
                     $this->context->getFile(),
-                    $node->lineno ?? 0,
+                    $node->lineno,
                     [ (string)$method_fqsen ],
                     IssueFixSuggester::suggestSimilarMethod($this->code_base, $this->context, $first_class, $method_name, $is_static)
                 )
@@ -806,7 +812,7 @@ class ContextNode
         throw new IssueException(
             Issue::fromType(Issue::UndeclaredMethod)(
                 $this->context->getFile(),
-                $node->lineno ?? 0,
+                $node->lineno,
                 [ (string)$method_fqsen ],
                 IssueFixSuggester::suggestSimilarMethod($this->code_base, $this->context, $first_class, $method_name, $is_static)
             )
@@ -919,7 +925,7 @@ class ContextNode
         throw new IssueException(
             Issue::fromType(Issue::UndeclaredFunction)(
                 $this->context->getFile(),
-                $this->node->lineno ?? 0,
+                $this->node->lineno ?? $this->context->getLineNumberStart(),
                 [ "$function_fqsen()" ],
                 IssueFixSuggester::suggestSimilarGlobalFunction($this->code_base, $this->context, $namespaced_function_fqsen ?? $function_fqsen, $suggest_in_global_namespace)
             )
@@ -999,7 +1005,7 @@ class ContextNode
                     throw new IssueException(
                         Issue::fromType(Issue::UndeclaredFunction)(
                             $context->getFile(),
-                            $node->lineno ?? 0,
+                            $node->lineno,
                             [ "$function_fqsen()" ],
                             IssueFixSuggester::suggestSimilarGlobalFunction($this->code_base, $context, $function_fqsen)
                         )
@@ -1071,7 +1077,7 @@ class ContextNode
             throw new IssueException(
                 Issue::fromType(Issue::UndeclaredVariable)(
                     $this->context->getFile(),
-                    $node->lineno ?? 0,
+                    $node->lineno,
                     [ $variable_name ],
                     IssueFixSuggester::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
                 )
@@ -1127,7 +1133,7 @@ class ContextNode
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredVariable)(
                         $this->context->getFile(),
-                        $node->lineno ?? 0,
+                        $node->lineno,
                         [ $variable_name ],
                         IssueFixSuggester::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
                     )
@@ -1296,7 +1302,7 @@ class ContextNode
                 throw new IssueException(
                     Issue::fromType($is_static ? Issue::UndeclaredClassStaticProperty : Issue::UndeclaredClassProperty)(
                         $this->context->getFile(),
-                        $node->lineno ?? 0,
+                        $node->lineno,
                         [ $property_name, $exception_fqsen ]
                     )
                 );
@@ -1306,7 +1312,7 @@ class ContextNode
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredStaticProperty)(
                         $this->context->getFile(),
-                        $node->lineno ?? 0,
+                        $node->lineno,
                         [ $property_name, (string)$exception->getFQSEN() ]
                     )
                 );
@@ -1314,7 +1320,7 @@ class ContextNode
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredProperty)(
                         $this->context->getFile(),
-                        $node->lineno ?? 0,
+                        $node->lineno,
                         [ "{$exception->getFQSEN()}->$property_name" ]
                     )
                 );
@@ -1431,7 +1437,7 @@ class ContextNode
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredStaticProperty)(
                         $this->context->getFile(),
-                        $node->lineno ?? 0,
+                        $node->lineno,
                         [ $property_name, (string)$class_fqsen ],
                         $suggestion
                     )
@@ -1440,7 +1446,7 @@ class ContextNode
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredProperty)(
                         $this->context->getFile(),
-                        $node->lineno ?? 0,
+                        $node->lineno,
                         [ "$class_fqsen->$property_name" ],
                         $suggestion
                     )
@@ -1513,7 +1519,7 @@ class ContextNode
             throw new IssueException(
                 Issue::fromType(Issue::UndeclaredClassReference)(
                     $this->context->getFile(),
-                    $node->lineno ?? 0,
+                    $node->lineno,
                     [ $exception->getFQSEN() ]
                 )
             );
@@ -1665,7 +1671,7 @@ class ContextNode
         throw new IssueException(
             Issue::fromType(Issue::UndeclaredConstant)(
                 $this->context->getFile(),
-                $this->node->lineno ?? 0,
+                $this->node->lineno ?? $context->getLineNumberStart(),
                 [ $fqsen ],
                 IssueFixSuggester::suggestSimilarGlobalConstant($code_base, $context, $fqsen)
             )
@@ -1717,7 +1723,7 @@ class ContextNode
             throw new IssueException(
                 Issue::fromType(Issue::UndeclaredClassConstant)(
                     $this->context->getFile(),
-                    $node->lineno ?? 0,
+                    $node->lineno,
                     [$constant_name, (string)$exception_fqsen],
                     IssueFixSuggester::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception_fqsen)
                 )
@@ -1766,7 +1772,7 @@ class ContextNode
             throw new IssueException(
                 Issue::fromType(Issue::UndeclaredConstant)(
                     $this->context->getFile(),
-                    $node->lineno ?? 0,
+                    $node->lineno,
                     [ "$class_fqsen::$constant_name" ],
                     IssueFixSuggester::suggestSimilarClassConstant($this->code_base, $this->context, $class_constant_fqsen)
                 )
@@ -1955,7 +1961,7 @@ class ContextNode
                     $this->code_base,
                     $this->context,
                     Issue::CompatiblePHP7,
-                    $this->node->lineno ?? 0
+                    $this->node->lineno
                 );
             }
         }
@@ -1979,11 +1985,11 @@ class ContextNode
                 && $arg->kind === ast\AST_CLASS_CONST
                 && \strcasecmp($arg->children['const'], 'class') === 0
             ) {
-                $class_type = (new ContextNode(
+                $class_type = UnionTypeVisitor::unionTypeFromClassNode(
                     $this->code_base,
                     $this->context,
                     $arg->children['class']
-                ))->getClassUnionType();
+                );
 
                 // If we find a class definition, then return it. There should be 0 or 1.
                 // (Expressions such as 'int::class' are syntactically valid, but would have 0 results).

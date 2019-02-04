@@ -209,28 +209,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         foreach ($node->children as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
-                if (\is_string($child_node)) {
-                    if (\strpos($child_node, '@phan-') !== false) {
-                        // Add @phan-var and @phan-suppress annotations in string literals to the local scope
-                        $this->analyzeSubstituteVarAssert($this->code_base, $context, $child_node);
-                    } else {
-                        Issue::maybeEmit(
-                            $this->code_base,
-                            $context,
-                            Issue::NoopStringLiteral,
-                            $context->getLineNumberStart(),
-                            json_encode($child_node, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
-                        );
-                    }
-                } elseif (\is_scalar($child_node)) {
-                    Issue::maybeEmit(
-                        $this->code_base,
-                        $context,
-                        Issue::NoopNumericLiteral,
-                        $context->getLineNumberStart(),
-                        var_export($child_node, true)
-                    );
-                }
+                $this->handleScalarStmt($node, $context, $child_node);
                 continue;
             }
             $context->clearCachedUnionTypes();
@@ -251,6 +230,47 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $this->parent_node_list
         );
         return $context;
+    }
+
+    /**
+     * @param Node $node
+     * @param Context $context
+     * @param int|float|string|null $child_node (probably not null)
+     * @return void
+     */
+    private function handleScalarStmt(Node $node, Context $context, $child_node)
+    {
+        if (\is_string($child_node)) {
+            if (\strpos($child_node, '@phan-') !== false) {
+                // Add @phan-var and @phan-suppress annotations in string literals to the local scope
+                $this->analyzeSubstituteVarAssert($this->code_base, $context, $child_node);
+            } else {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $context,
+                    Issue::NoopStringLiteral,
+                    $context->getLineNumberStart() ?: $this->getLineNumberOfParent() ?: $node->lineno,
+                    json_encode($child_node, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+                );
+            }
+        } elseif (\is_scalar($child_node)) {
+            Issue::maybeEmit(
+                $this->code_base,
+                $context,
+                Issue::NoopNumericLiteral,
+                $context->getLineNumberStart() ?: $this->getLineNumberOfParent() ?: $node->lineno,
+                var_export($child_node, true)
+            );
+        }
+    }
+
+    private function getLineNumberOfParent() : int
+    {
+        $parent = end($this->parent_node_list);
+        if (!($parent instanceof Node)) {
+            return 0;
+        }
+        return $parent->lineno;
     }
 
     const PHAN_FILE_SUPPRESS_REGEX =

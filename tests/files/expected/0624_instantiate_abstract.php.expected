@@ -1,0 +1,13 @@
+%s:12 PhanTypeInstantiateInterface Instantiation of interface \NS624\AbstractInterface
+%s:13 PhanTypeInstantiateAbstract Instantiation of abstract class \NS624\AbstractExample
+%s:17 PhanTypeInstantiateInterface Instantiation of interface \NS624\AbstractInterface
+%s:18 PhanTypeInstantiateAbstract Instantiation of abstract class \NS624\AbstractExample
+%s:20 PhanInvalidFQSENInClasslike Possible use of a classlike '\..' with an invalid FQSEN.
+%s:20 PhanTypeExpectedObjectOrClassName Expected an object instance or the name of a class but saw expression with type '..'
+%s:25 PhanTypeInstantiateAbstract Instantiation of abstract class \NS624\AbstractExample
+%s:26 PhanTypeInstantiateAbstract Instantiation of abstract class \NS624\AbstractExample
+%s:31 PhanTypeInstantiateAbstract Instantiation of abstract class \NS624\AbstractExample
+%s:33 PhanTypeInstantiateAbstract Instantiation of abstract class \NS624\AbstractExample
+%s:42 PhanTypeInstantiateTrait Instantiation of trait \NS624\T
+%s:43 PhanTypeInstantiateTrait Instantiation of trait \NS624\T
+%s:46 PhanTypeInstantiateTrait Instantiation of trait \NS624\T

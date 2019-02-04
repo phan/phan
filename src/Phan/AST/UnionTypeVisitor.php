@@ -561,8 +561,8 @@ class UnionTypeVisitor extends AnalysisVisitor
         } catch (FQSENException $e) {
             $this->emitIssue(
                 $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike,
-                $node->lineno ?? 0,
-                '\\' . $name
+                $node->lineno,
+                $e->getFQSEN()
             );
             return UnionType::empty();
         }
@@ -1119,7 +1119,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         if (!($class_node instanceof Node)) {
             $this->emitIssue(
                 Issue::InvalidNode,
-                $node->lineno ?? 0,
+                $node->lineno,
                 "Invalid ClassName for new ClassName()"
             );
             return ObjectType::instance(false)->asUnionType();
@@ -1305,7 +1305,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if (!($node->flags & self::FLAG_IGNORE_NULLABLE) && $this->isSuspiciousNullable($union_type)) {
                 $this->emitIssue(
                     Issue::TypeArraySuspiciousNullable,
-                    $node->lineno ?? 0,
+                    $node->lineno,
                     (string)$union_type
                 );
             }
@@ -1336,7 +1336,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                         if ($this->should_catch_issue_exception) {
                             $this->emitIssue(
                                 $issue_type,
-                                $node->lineno ?? 0,
+                                $node->lineno,
                                 (string)$union_type,
                                 (string)$dim_type,
                                 (string)$expected_key_type
@@ -1347,7 +1347,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                         throw new IssueException(
                             Issue::fromType($issue_type)(
                                 $this->context->getFile(),
-                                $node->lineno ?? 0,
+                                $node->lineno,
                                 [(string)$union_type, (string)$dim_type, (string)$expected_key_type]
                             )
                         );
@@ -1380,7 +1380,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 if (!$union_type->isEmpty() && !$union_type->asExpandedTypes($this->code_base)->hasArrayLike()) {
                     $this->emitIssue(
                         Issue::TypeMismatchDimFetch,
-                        $node->lineno ?? 0,
+                        $node->lineno,
                         $union_type,
                         (string)$dim_type,
                         $int_union_type
@@ -1408,7 +1408,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if (!$union_type->hasArrayLike()) {
                 $this->emitIssue(
                     Issue::TypeArraySuspicious,
-                    $node->lineno ?? 0,
+                    $node->lineno,
                     (string)$union_type
                 );
             }
@@ -1447,7 +1447,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         if ($resulting_element_type === false) {
             $this->emitIssue(
                 Issue::TypeInvalidDimOffset,
-                $dim_node->lineno ?? $node->lineno ?? 0,
+                $dim_node->lineno ?? $node->lineno,
                 StringUtil::jsonEncode($dim_value),
                 (string)$union_type
             );
@@ -1545,7 +1545,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 throw new IssueException(
                     Issue::fromType(Issue::TypeMismatchUnpackValue)(
                         $this->context->getFile(),
-                        $node->lineno ?? 0,
+                        $node->lineno,
                         [(string)$union_type]
                     )
                 );
@@ -1557,7 +1557,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             throw new IssueException(
                 Issue::fromType(Issue::TypeMismatchUnpackKey)(
                     $this->context->getFile(),
-                    $node->lineno ?? 0,
+                    $node->lineno,
                     [(string)$union_type, 'string']
                 )
             );
@@ -1628,7 +1628,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 ]);
             }
             if (!$name_node_type->canCastToUnionType($int_or_string_type)) {
-                Issue::maybeEmit($this->code_base, $this->context, Issue::TypeSuspiciousIndirectVariable, $name_node->lineno ?? 0, (string)$name_node_type);
+                Issue::maybeEmit($this->code_base, $this->context, Issue::TypeSuspiciousIndirectVariable, $name_node->lineno, (string)$name_node_type);
                 return MixedType::instance(false)->asUnionType();
             }
             $name_node = $name_node_type->asSingleScalarValueOrNull();
@@ -1652,7 +1652,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredVariable)(
                         $this->context->getFile(),
-                        $node->lineno ?? 0,
+                        $node->lineno,
                         [$variable_name],
                         IssueFixSuggester::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
                     )
@@ -1832,7 +1832,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if ($property->isWriteOnly()) {
                 $this->emitIssue(
                     $property->isFromPHPDoc() ? Issue::AccessWriteOnlyMagicProperty : Issue::AccessWriteOnlyProperty,
-                    $node->lineno ?? 0,
+                    $node->lineno,
                     $property->asPropertyFQSENString(),
                     $property->getContext()->getFile(),
                     $property->getContext()->getLineNumberStart()
@@ -1878,7 +1878,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
             $this->emitIssueWithSuggestion(
                 Issue::UndeclaredProperty,
-                $node->lineno ?? 0,
+                $node->lineno,
                 ["{$exception_fqsen}->{$property_name}"],
                 $suggestion
             );
@@ -2000,7 +2000,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 // Other places will also emit NonClassMethodCall for the same node
                 $this->emitIssue(
                     Issue::NonClassMethodCall,
-                    $node->lineno ?? 0,
+                    $node->lineno,
                     $method_name,
                     UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $class_node)
                 );
@@ -2074,7 +2074,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $exception_fqsen = $exception->getFQSEN();
             $this->emitIssueWithSuggestion(
                 Issue::UndeclaredClassMethod,
-                $node->lineno ?? 0,
+                $node->lineno,
                 [$method_name, (string)$exception->getFQSEN()],
                 ($exception_fqsen instanceof FullyQualifiedClassName
                     ? IssueFixSuggester::suggestSimilarClassForMethod($this->code_base, $this->context, $exception_fqsen, $method_name, $node->kind === \ast\AST_STATIC_CALL)
@@ -2275,7 +2275,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         if (!$this->context->isInClassScope()) {
             $this->emitIssue(
                 Issue::ContextNotObject,
-                $node->lineno ?? 0,
+                $node->lineno,
                 $class_name
             );
 
@@ -2292,7 +2292,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if (!$parent_type_option->isDefined()) {
                 $this->emitIssue(
                     Issue::ParentlessClass,
-                    $node->lineno ?? 0,
+                    $node->lineno,
                     (string)$class->getFQSEN()
                 );
 
@@ -2334,8 +2334,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                 } catch (FQSENException $e) {
                     $this->emitIssue(
                         $e instanceof EmptyFQSENException ? Issue::EmptyFQSENInClasslike : Issue::InvalidFQSENInClasslike,
-                        $node->lineno ?? 0,
-                        $value
+                        $node->lineno,
+                        $e->getFQSEN()
                     );
                     continue;
                 }
@@ -2362,7 +2362,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             // See https://github.com/phan/phan/issues/1926 - `new $obj()` is valid PHP and documented in the manual.
             $this->emitIssue(
                 Issue::TypeExpectedObjectOrClassName,
-                $node->lineno ?? 0,
+                $node->lineno,
                 $node_type
             );
         }
@@ -2378,7 +2378,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * like to determine a type
      *
      * @param Node|mixed $node
-     * The node for which we'd like to determine its type
+     * The node which we'd like to determine the type of.
      *
      * @return UnionType
      * The UnionType associated with the given node
@@ -2435,7 +2435,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 throw new IssueException(
                     Issue::fromType(Issue::ContextNotObject)(
                         $context->getFile(),
-                        $node->lineno ?? 0,
+                        $node->lineno ?? $context->getLineNumberStart(),
                         [$class_name]
                     )
                 );
@@ -2447,7 +2447,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 throw new IssueException(
                     Issue::fromType(Issue::TraitParentReference)(
                         $context->getFile(),
-                        $node->lineno ?? 0,
+                        $node->lineno ?? $context->getLineNumberStart(),
                         [(string)$context->getClassFQSEN() ]
                     )
                 );
@@ -2457,7 +2457,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 throw new IssueException(
                     Issue::fromType(Issue::ParentlessClass)(
                         $context->getFile(),
-                        $node->lineno ?? 0,
+                        $node->lineno ?? $context->getLineNumberStart(),
                         [ (string)$context->getClassFQSEN() ]
                     )
                 );
@@ -2469,7 +2469,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredClass)(
                         $context->getFile(),
-                        $node->lineno ?? 0,
+                        $node->lineno ?? $context->getLineNumberStart(),
                         [ (string)$parent_class_fqsen ],
                         IssueFixSuggester::suggestSimilarClass($code_base, $context, $parent_class_fqsen)
                     )
@@ -2570,7 +2570,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredClassReference)(
                         $this->context->getFile(),
-                        $node->lineno ?? 0,
+                        $node->lineno,
                         [ (string)$class_fqsen ]
                     )
                 );
@@ -2993,7 +2993,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if (\count($node) !== 2) {
                 $this->emitIssue(
                     Issue::TypeInvalidCallableArraySize,
-                    $orig_node->lineno ?? 0,
+                    $orig_node->lineno ?? $this->context->getLineNumberStart(),
                     \count($node)
                 );
                 return [];
@@ -3003,7 +3003,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 if ($key !== $i) {
                     $this->emitIssue(
                         Issue::TypeInvalidCallableArrayKey,
-                        $orig_node->lineno ?? 0,
+                        $orig_node->lineno ?? $this->context->getLineNumberStart(),
                         $i
                     );
                     return [];
@@ -3131,7 +3131,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         $this->emitIssue(
             Issue::CompatibleNegativeStringOffset,
-            $node->children['dim']->lineno ?? $node->lineno ?? 0
+            $node->children['dim']->lineno ?? $node->lineno
         );
     }
 }
