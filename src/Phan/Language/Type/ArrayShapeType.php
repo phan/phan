@@ -6,6 +6,7 @@ use Closure;
 use Exception;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Debug\Frame;
 use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\Language\AnnotatedUnionType;
@@ -455,7 +456,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
-            throw new RecursionDepthException("Recursion has gotten out of hand");
+            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
         return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
             $result_fields = [];
@@ -502,7 +503,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
-            throw new RecursionDepthException("Recursion has gotten out of hand");
+            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
         return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
             $result_fields = [];

@@ -5,6 +5,7 @@ namespace Phan\Language\Element;
 use AssertionError;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassElement;
@@ -280,16 +281,19 @@ abstract class ClassElement extends AddressableElement
 
         // If the definition of the property is protected,
         // then the subclasses of the defining class can access it.
-        foreach ($accessing_class_type->asExpandedTypes($code_base)->getTypeSet() as $type) {
-            if ($type->canCastToType($type_of_class_of_property)) {
-                return true;
+        try {
+            foreach ($accessing_class_type->asExpandedTypes($code_base)->getTypeSet() as $type) {
+                if ($type->canCastToType($type_of_class_of_property)) {
+                    return true;
+                }
             }
-        }
-        // and base classes of the defining class can access it
-        foreach ($type_of_class_of_property->asExpandedTypes($code_base)->getTypeSet() as $type) {
-            if ($type->canCastToType($accessing_class_type)) {
-                return true;
+            // and base classes of the defining class can access it
+            foreach ($type_of_class_of_property->asExpandedTypes($code_base)->getTypeSet() as $type) {
+                if ($type->canCastToType($accessing_class_type)) {
+                    return true;
+                }
             }
+        } catch (RecursionDepthException $_) {
         }
         return false;
     }

@@ -158,13 +158,14 @@ class CLI
      * @param string|string[] $value
      * @return array<int,string>
      */
-    public static function readCommaSeparatedListOrLists($value) : array {
+    public static function readCommaSeparatedListOrLists($value) : array
+    {
         if (is_array($value)) {
             $value = implode(',', $value);
         }
         $value_set = [];
         foreach (explode(',', (string)$value) as $file) {
-            if ($file === '')  {
+            if ($file === '') {
                 continue;
             }
             $value_set[$file] = true;

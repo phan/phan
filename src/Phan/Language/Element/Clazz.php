@@ -14,6 +14,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
@@ -2780,6 +2781,7 @@ class Clazz extends AddressableElement
      * This method should be called after hydration
      *
      * @return void
+     * @throws RecursionDepthException for deep class hierarchies
      */
     final public function analyze(CodeBase $code_base)
     {

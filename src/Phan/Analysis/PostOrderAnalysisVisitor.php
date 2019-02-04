@@ -19,6 +19,7 @@ use Phan\Exception\EmptyFQSENException;
 use Phan\Exception\FQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
@@ -445,6 +446,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 }
             } catch (CodeBaseException $_) {
                 // Swallow "Cannot find class", go on to emit issue
+            } catch (RecursionDepthException $_) {
             }
             $this->emitIssue(
                 Issue::TypeSuspiciousStringExpression,
@@ -1238,15 +1240,18 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $yield_value_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $yield_value_node);
         }
         $expected_value_type = $template_type_list[\min(1, $type_list_count - 1)];
-        if (!$yield_value_type->asExpandedTypes($code_base)->canCastToUnionType($expected_value_type)) {
-            $this->emitIssue(
-                Issue::TypeMismatchGeneratorYieldValue,
-                $node->lineno,
-                (string)$yield_value_type,
-                $method->getNameForIssue(),
-                (string)$expected_value_type,
-                '\Generator<' . implode(',', $template_type_list) . '>'
-            );
+        try {
+            if (!$yield_value_type->asExpandedTypes($code_base)->canCastToUnionType($expected_value_type)) {
+                $this->emitIssue(
+                    Issue::TypeMismatchGeneratorYieldValue,
+                    $node->lineno,
+                    (string)$yield_value_type,
+                    $method->getNameForIssue(),
+                    (string)$expected_value_type,
+                    '\Generator<' . implode(',', $template_type_list) . '>'
+                );
+            }
+        } catch (RecursionDepthException $_) {
         }
 
         if ($type_list_count > 1) {
@@ -1377,8 +1382,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         // We allow base classes to cast to subclasses, and subclasses to cast to base classes,
         // but don't allow subclasses to cast to subclasses on a separate branch of the inheritance tree
-        return $expression_type->asExpandedTypes($code_base)->canCastToUnionType($method_return_type) ||
-            $expression_type->canCastToUnionType($method_return_type->asExpandedTypes($code_base));
+        try {
+            return $expression_type->asExpandedTypes($code_base)->canCastToUnionType($method_return_type) ||
+                $expression_type->canCastToUnionType($method_return_type->asExpandedTypes($code_base));
+        } catch (RecursionDepthException $_) {
+            return false;
+        }
     }
 
     /**
@@ -1403,7 +1412,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // For the strict
         foreach ($type_set as $type) {
             // Expand it to include all parent types up the chain
-            $individual_type_expanded = $type->asExpandedTypes($code_base);
+            try {
+                $individual_type_expanded = $type->asExpandedTypes($code_base);
+            } catch (RecursionDepthException $_) {
+                continue;
+            }
 
             // See if the argument can be cast to the
             // parameter

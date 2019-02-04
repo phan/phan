@@ -5,6 +5,7 @@ namespace Phan\Analysis;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
@@ -42,6 +43,19 @@ class ParameterTypesAnalyzer
      * @return void
      */
     public static function analyzeParameterTypes(
+        CodeBase $code_base,
+        FunctionInterface $method
+    ) {
+        try {
+            self::analyzeParameterTypesInner($code_base, $method);
+        } catch (RecursionDepthException $_) {
+        }
+    }
+
+    /**
+     * @see analyzeParameterTypes
+     */
+    private static function analyzeParameterTypesInner(
         CodeBase $code_base,
         FunctionInterface $method
     ) {

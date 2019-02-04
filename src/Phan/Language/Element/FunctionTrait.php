@@ -11,6 +11,7 @@ use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
@@ -1218,7 +1219,10 @@ trait FunctionTrait
             return;
         }
         $this->did_analyze_return_types = true;
-        $this->analyzeReturnTypesInner($code_base);
+        try {
+            $this->analyzeReturnTypesInner($code_base);
+        } catch (RecursionDepthException $_) {
+        }
     }
 
     /**

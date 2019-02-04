@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Debug\Frame;
 use Phan\Exception\RecursionDepthException;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -308,7 +309,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
-            throw new RecursionDepthException("Recursion has gotten out of hand");
+            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
 
         return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {
@@ -387,7 +388,7 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
         // is taller than some value we probably messed up
         // and should bail out.
         if ($recursion_depth >= 20) {
-            throw new RecursionDepthException("Recursion has gotten out of hand");
+            throw new RecursionDepthException("Recursion has gotten out of hand: " . Frame::getExpandedTypesDetails());
         }
 
         return $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) : UnionType {

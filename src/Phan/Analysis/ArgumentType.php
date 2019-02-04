@@ -11,6 +11,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
+use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
@@ -495,8 +496,12 @@ final class ArgumentType
     public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i)
     {
         // Expand it to include all parent types up the chain
-        $argument_type_expanded =
-            $argument_type->asExpandedTypes($code_base);
+        try {
+            $argument_type_expanded =
+                $argument_type->asExpandedTypes($code_base);
+        } catch (RecursionDepthException $_) {
+            return;
+        }
 
         // Check the method to see if it has the correct
         // parameter types. If not, keep hunting through
