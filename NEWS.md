@@ -25,7 +25,7 @@ Bug fixes:
 + Fix edge cases checking for `PhanTypeInstantiateInterface` and `PhanTypeInstantiateAbstract` (#2379)
 
 Plugins:
-+ Infer the literal string's value when calling `sprintf` on literal scalar types in `PrintfCheckerPlugin`. (#2131)
++ Infer a literal string return value when calling `sprintf` on known literal scalar types in `PrintfCheckerPlugin`. (#2131)
 
 02 Feb 2019, Phan 1.2.2
 -----------------------
