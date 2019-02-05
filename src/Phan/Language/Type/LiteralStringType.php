@@ -43,6 +43,16 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
     }
 
     /**
+     * Check if Phan will represent strings of a given length in its type system.
+     * @param int|float $length
+     */
+    public static function canRepresentStringOfLength($length) : bool
+    {
+        // The config can only be used to increase this limit, not decrease it.
+        return $length <= self::MINIMUM_MAX_STRING_LENGTH || $length <= Config::getValue('max_literal_string_type_length');
+    }
+
+    /**
      * @return StringType|LiteralStringType a StringType for $value
      * This will construct an StringType instead if the value is longer than the longest supported string type
      *
@@ -51,8 +61,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
      */
     public static function instanceForValue(string $value, bool $is_nullable)
     {
-        if (\strlen($value) > self::MINIMUM_MAX_STRING_LENGTH && \strlen($value) > Config::getValue('max_literal_string_type_length')) {
-            // The config can only be used to increase this limit, not decrease it.
+        if (!self::canRepresentStringOfLength(\strlen($value))) {
             return StringType::instance($is_nullable);
         }
 

@@ -1,0 +1,8 @@
+src/087_sprintf_on_literals.php:6 PhanPluginPrintfIncompatibleArgumentType Format string "Foo %s %d" refers to argument #2 as %d, so type int is expected, but sprintf was passed incompatible type '2nd bad arg'
+src/087_sprintf_on_literals.php:6 PhanTypeMismatchArgument Argument 1 (a) is 'Foo arg 2' but \expects_int() takes int defined at src/087_sprintf_on_literals.php:3
+src/087_sprintf_on_literals.php:7 PhanPluginPrintfNoArguments No format string arguments are given for "Foo %s", consider using echo instead
+src/087_sprintf_on_literals.php:7 PhanPluginPrintfNonexistentArgument Format string "Foo %s" refers to nonexistent argument #1 in "%s"
+src/087_sprintf_on_literals.php:7 PhanTypeMismatchArgument Argument 1 (a) is false but \expects_int() takes int defined at src/087_sprintf_on_literals.php:3
+src/087_sprintf_on_literals.php:8 PhanPluginPrintfUnusedArgument Format string "Foo %s" does not use provided argument #2
+src/087_sprintf_on_literals.php:8 PhanTypeMismatchArgument Argument 1 (a) is 'Foo arg' but \expects_int() takes int defined at src/087_sprintf_on_literals.php:3
+src/087_sprintf_on_literals.php:9 PhanTypeMismatchArgument Argument 1 (a) is 'Foo 5' but \expects_int() takes int defined at src/087_sprintf_on_literals.php:3

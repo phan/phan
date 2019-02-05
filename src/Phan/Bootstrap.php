@@ -62,7 +62,9 @@ set_exception_handler(function (Throwable $throwable) {
  * e.g. notices in preg_match() when checking if a regex is valid
  * and you don't want the default behavior of terminating the program.
  *
- * @return mixed
+ * @template T
+ * @param Closure():T $closure
+ * @return T
  * @see PregRegexCheckerPlugin
  */
 function with_disabled_phan_error_handler(Closure $closure)
