@@ -11,12 +11,17 @@ use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Type;
 use Phan\Language\Type\FloatType;
+use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\PluginV2;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
+
+use function count;
+use function is_int;
+use function is_string;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
@@ -63,11 +68,11 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
                 $type_if_false,
                 $expected_bool_pos
 ) : UnionType {
-                if (\count($args) <= $expected_bool_pos) {
+                if (count($args) <= $expected_bool_pos) {
                     return $type_if_false;
                 }
                 $result = (new ContextNode($code_base, $context, $args[$expected_bool_pos]))->getEquivalentPHPScalarValue();
-                if (\is_int($result)) {
+                if (is_int($result)) {
                     $result = (bool)$result;
                 }
                 if ($result === true) {
@@ -124,11 +129,11 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             //  mixed json_decode ( string $json [, bool $assoc = FALSE [, int $depth = 512 [, int $options = 0 ]]] )
             //  $options can include JSON_OBJECT_AS_ARRAY in a bitmask
             // TODO: reject `...` operator? (Low priority)
-            if (\count($args) < 2) {
+            if (count($args) < 2) {
                 return $json_decode_object_types;
             }
             $result = (new ContextNode($code_base, $context, $args[1]))->getEquivalentPHPScalarValue();
-            if (\is_int($result)) {
+            if (is_int($result)) {
                 // We are already warning about the param type. E.g. var_export($arg, 1) returns a string
                 $result = (bool)$result;
             }
@@ -138,11 +143,11 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             if ($result !== false) {
                 return $json_decode_array_or_object_types;
             }
-            if (\count($args) < 4) {
+            if (count($args) < 4) {
                 return $json_decode_object_types;
             }
             $options_result = (new ContextNode($code_base, $context, $args[3]))->getEquivalentPHPScalarValue();
-            if (!\is_int($options_result)) {
+            if (!is_int($options_result)) {
                 // unable to resolve value. TODO: Support bitmask operators in getEquivalentPHPScalarValue
                 return $json_decode_array_or_object_types;
             }
@@ -165,7 +170,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             //  mixed json_decode ( string $json [, bool $assoc = FALSE [, int $depth = 512 [, int $options = 0 ]]] )
             //  $options can include JSON_OBJECT_AS_ARRAY in a bitmask
             // TODO: reject `...` operator? (Low priority)
-            if (\count($args) < 3) {
+            if (count($args) < 3) {
                 return $str_replace_types;
             }
             $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2]);
@@ -182,7 +187,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             Func $unused_function,
             array $args
         ) use ($string_or_false) : UnionType {
-            if (\count($args) === 0 && Config::get_closest_target_php_version_id() >= 70100) {
+            if (count($args) === 0 && Config::get_closest_target_php_version_id() >= 70100) {
                 return UnionType::fromFullyQualifiedString('array<string,string>');
             }
             return $string_or_false;
@@ -196,7 +201,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             $string_or_false,
             $string_union_type
 ) : UnionType {
-            if (\count($args) >= 2 && \is_int($args[1]) && $args[1] <= 0) {
+            if (count($args) >= 2 && is_int($args[1]) && $args[1] <= 0) {
                 // Cut down on false positive warnings about substr($str, 0, $len) possibly being false
                 return $string_union_type;
             }
@@ -208,6 +213,40 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             'string|int|null|false',
             'array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|false'
         );
+
+        $dirname_handler = static function (
+            CodeBase $code_base,
+            Context $context,
+            Func $unused_function,
+            array $args
+        ) use (
+            $string_union_type
+) : UnionType {
+            if (count($args) !== 1) {
+                if (count($args) !== 2) {
+                    // Cut down on false positive warnings about substr($str, 0, $len) possibly being false
+                    return $string_union_type;
+                }
+                $levels = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1])->asSingleScalarValueOrNull();
+                if (!is_int($levels)) {
+                    return $string_union_type;
+                }
+                if ($levels <= 0) {
+                    // TODO: Could warn but not common
+                    return NullType::instance(false)->asUnionType();
+                }
+            } else {
+                $levels = 1;
+            }
+            $arg = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0])->asSingleScalarValueOrNull();
+            if (!is_string($arg)) {
+                return $string_union_type;
+            }
+
+            $result = dirname($arg, $levels);
+            return Type::fromObject($result)->asUnionType();
+        };
+
 
         return [
             // commonly used functions where the return type depends on a passed in boolean
@@ -226,7 +265,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             'pathinfo'                    => $make_arg_existence_dependent_type_method(1, 'string', 'array{dirname:string,basename:string,extension?:string,filename:string}'),
             'parse_url'                   => $parse_url_handler,
             'substr'                      => $substr_handler,
-            'dirname'                     => self::makeStringFunctionHandler('dirname'),
+            'dirname'                     => $dirname_handler,
             'basename'                    => self::makeStringFunctionHandler('basename'),
         ];
     }
@@ -246,7 +285,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             $string_union_type,
             $callable
 ) : UnionType {
-            if (\count($args) !== 1) {
+            if (count($args) !== 1) {
                 // Cut down on false positive warnings about substr($str, 0, $len) possibly being false
                 return $string_union_type;
             }
