@@ -624,7 +624,6 @@ class ParseVisitor extends ScopeVisitor
             $constant->setIsNSInternal($comment->isNSInternal());
             $constant->setIsOverrideIntended($comment->isOverrideIntended());
             $constant->setSuppressIssueList($comment->getSuppressIssueList());
-
             $value_node = $child_node->children['value'];
             if ($value_node instanceof Node) {
                 try {
@@ -652,6 +651,15 @@ class ParseVisitor extends ScopeVisitor
                 $this->code_base,
                 $constant
             );
+            foreach ($comment->getVariableList() as $var) {
+                if ($var->getUnionType()->hasTemplateTypeRecursive()) {
+                    $this->emitIssue(
+                        Issue::TemplateTypeConstant,
+                        $constant->getFileRef()->getLineNumberStart(),
+                        (string)$constant->getFQSEN()
+                    );
+                }
+            }
         }
 
         return $this->context;

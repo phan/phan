@@ -345,8 +345,8 @@ class Issue
     const AccessSignatureMismatchInternal = 'PhanAccessSignatureMismatchInternal';
     const PropertyAccessSignatureMismatch = 'PhanPropertyAccessSignatureMismatch';
     const PropertyAccessSignatureMismatchInternal  = 'PhanPropertyAccessSignatureMismatchInternal';
-    const AccessConstantSignatureMismatch = 'PhanConstantAccessSignatureMismatch';
-    const AccessConstantSignatureMismatchInternal  = 'PhanConstantAccessSignatureMismatchInternal';
+    const ConstantAccessSignatureMismatch = 'PhanConstantAccessSignatureMismatch';
+    const ConstantAccessSignatureMismatchInternal  = 'PhanConstantAccessSignatureMismatchInternal';
     const AccessStaticToNonStatic         = 'PhanAccessStaticToNonStatic';
     const AccessNonStaticToStatic         = 'PhanAccessNonStaticToStatic';
     const AccessStaticToNonStaticProperty = 'PhanAccessStaticToNonStaticProperty';
@@ -2990,7 +2990,7 @@ class Issue
                 1023
             ),
             new Issue(
-                self::AccessConstantSignatureMismatch,
+                self::ConstantAccessSignatureMismatch,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
                 "Access level to {CONST} must be compatible with {CONST} defined in {FILE}:{LINE}",
@@ -2998,7 +2998,7 @@ class Issue
                 1024
             ),
             new Issue(
-                self::AccessConstantSignatureMismatchInternal,
+                self::ConstantAccessSignatureMismatchInternal,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
                 "Access level to {CONST} must be compatible with internal {CONST}",

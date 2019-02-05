@@ -1,4 +1,3 @@
-%s:8 PhanTemplateTypeConstant constant \C::C may not have a template type
 %s:11 PhanTemplateTypeStaticProperty static property \C::$p may not have a template type
 %s:16 PhanTemplateTypeStaticMethod static method \C::f does not declare template type in its own comment and may not use the template type of class instances
 %s:21 PhanTemplateTypeStaticMethod static method \C::g does not declare template type in its own comment and may not use the template type of class instances

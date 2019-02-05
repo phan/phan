@@ -14,6 +14,7 @@ New features(Analysis):
   but only when the result is unused and the right hand side has no obvious side effects. (#2389)
 + Properly analyze effects of a property/field access expression as the key of a `foreach` statement. (#1601)
 + Emit `PhanTypeInstantiateTrait` when calling `new TraitName()` (#2379)
++ Emit `PhanTemplateTypeConstant` when using `@var T` on a class constant's doc comment. (#2402)
 
 Maintenance
 + Don't emit a warning to stderr when `--language-server-completion-vscode` is used.

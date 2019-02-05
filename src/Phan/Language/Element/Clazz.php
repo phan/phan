@@ -1162,22 +1162,22 @@ class Clazz extends AddressableElement
         // Traits don't have constants, thankfully, so the logic is simple.
         if ($inherited_constant->isStrictlyMoreVisibileThan($overriding_constant)) {
             if ($inherited_constant->isPHPInternal()) {
-                if (!$overriding_constant->checkHasSuppressIssueAndIncrementCount(Issue::AccessConstantSignatureMismatchInternal)) {
+                if (!$overriding_constant->checkHasSuppressIssueAndIncrementCount(Issue::ConstantAccessSignatureMismatchInternal)) {
                     Issue::maybeEmit(
                         $code_base,
                         $overriding_constant->getContext(),
-                        Issue::AccessConstantSignatureMismatchInternal,
+                        Issue::ConstantAccessSignatureMismatchInternal,
                         $overriding_constant->getFileRef()->getLineNumberStart(),
                         $overriding_constant->asVisibilityAndFQSENString(),
                         $inherited_constant->asVisibilityAndFQSENString()
                     );
                 }
             } else {
-                if (!$overriding_constant->checkHasSuppressIssueAndIncrementCount(Issue::AccessConstantSignatureMismatchInternal)) {
+                if (!$overriding_constant->checkHasSuppressIssueAndIncrementCount(Issue::ConstantAccessSignatureMismatchInternal)) {
                     Issue::maybeEmit(
                         $code_base,
                         $overriding_constant->getContext(),
-                        Issue::AccessConstantSignatureMismatch,
+                        Issue::ConstantAccessSignatureMismatch,
                         $overriding_constant->getFileRef()->getLineNumberStart(),
                         $overriding_constant->asVisibilityAndFQSENString(),
                         $inherited_constant->asVisibilityAndFQSENString(),

@@ -1801,7 +1801,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @param Node $node a node of type AST_NEW
      * @param Clazz[] $class_list
      */
-    private function checkForInvalidNewType(Node $node, array $class_list) {
+    private function checkForInvalidNewType(Node $node, array $class_list)
+    {
         // This is either a string (new 'something'()) or a class name (new something())
         $class_node = $node->children['class'];
         if (!$class_node instanceof Node) {
