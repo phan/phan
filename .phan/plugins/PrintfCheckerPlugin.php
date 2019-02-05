@@ -13,9 +13,13 @@ use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
+use Phan\Language\Type\FalseType;
+use Phan\Language\Type\LiteralStringType;
+use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
+use Phan\PluginV2\ReturnTypeOverrideCapability;
 use function implode;
 use function var_export;
 
@@ -36,7 +40,7 @@ use function var_export;
  * TODO: Add optional verbose warnings about unanalyzable strings
  * TODO: Check if arg can cast to string.
  */
-class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapability
+class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapability, ReturnTypeOverrideCapability
 {
 
     // Pylint error codes for emitted issues.
@@ -165,6 +169,53 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         }
         $str = $left->value . $right->value;
         return new PrimitiveValue($str);
+    }
+
+    public function getReturnTypeOverrides(CodeBase $unused_code_base) : array
+    {
+        $string_union_type = StringType::instance(false)->asUnionType();
+        $sprintf_handler = static function (
+            CodeBase $code_base,
+            Context $context,
+            Func $unused_function,
+            array $args
+        ) use ($string_union_type) : UnionType {
+            if (count($args) < 1) {
+                return FalseType::instance(false)->asUnionType();
+            }
+            $format_string = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0])->asSingleScalarValueOrNullOrSelf();
+            if (!is_string($format_string)) {
+                // Give up
+                return $string_union_type;
+            }
+            $min_width = 0;
+            foreach (ConversionSpec::extractAll($format_string) as $spec_group) {
+                foreach ($spec_group as $spec) {
+                    $min_width += ($spec->width ?: 0);
+                }
+            }
+            if (!LiteralStringType::canRepresentStringOfLength($min_width)) {
+                return $string_union_type;
+            }
+            $sprintf_args = [];
+            for ($i = 1; $i < count($args); $i++) {
+                $arg = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[$i])->asSingleScalarValueOrNullOrSelf();
+                if (is_object($arg)) {
+                    return $string_union_type;
+                }
+                $sprintf_args[] = $arg;
+            }
+            $result = with_disabled_phan_error_handler(
+                /** @return string */
+                function () use ($format_string, $sprintf_args) {
+                    return @vsprintf($format_string, $sprintf_args);
+                }
+            );
+            return Type::fromObject($result)->asUnionType();
+        };
+        return [
+            'sprintf'                     => $sprintf_handler,
+        ];
     }
 
     /**

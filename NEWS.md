@@ -24,6 +24,9 @@ Bug fixes:
 + Fix edge cases in checking if properties/methods are accessible from a trait (#2371)
 + Fix edge cases checking for `PhanTypeInstantiateInterface` and `PhanTypeInstantiateAbstract` (#2379)
 
+Plugins:
++ Infer the literal string's value when calling `sprintf` on literal scalar types in `PrintfCheckerPlugin`. (#2131)
+
 02 Feb 2019, Phan 1.2.2
 -----------------------
 
