@@ -703,7 +703,6 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'sinh' => true,
         'sin' => true,
         'sizeof' => true,
-        'socket_close' => true,
         'socket_last_error' => true,
         'socket_strerror' => true,
         'solrresponse::getresponse' => true,
