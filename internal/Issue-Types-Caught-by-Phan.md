@@ -1158,6 +1158,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}') defined in {FILE}:{LINE}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0627_signature_mismatch.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0627_signature_mismatch.php#L20).
+
 ## PhanParamSignaturePHPDocMismatchHasParamType
 
 ```
@@ -1172,6 +1174,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} is a non-reference parameter overriding a reference parameter) defined in {FILE}:{LINE}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0627_signature_mismatch.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0627_signature_mismatch.php#L18).
+
 ## PhanParamSignaturePHPDocMismatchParamIsReference
 
 ```
@@ -1183,6 +1187,8 @@ Declaration of real/@method {METHOD} should be compatible with real/@method {MET
 ```
 Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} is a non-variadic parameter replacing a variadic parameter) defined in {FILE}:{LINE}
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0627_signature_mismatch.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0627_signature_mismatch.php#L24).
 
 ## PhanParamSignaturePHPDocMismatchParamType
 
@@ -1198,17 +1204,23 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} is a variadic parameter replacing a non-variadic parameter) defined in {FILE}:{LINE}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0627_signature_mismatch.php.expected#L9) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0627_signature_mismatch.php#L21).
+
 ## PhanParamSignaturePHPDocMismatchReturnType
 
 ```
 Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (method returning '{TYPE}' cannot override method returning '{TYPE}') defined in {FILE}:{LINE}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0627_signature_mismatch.php.expected#L11) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0627_signature_mismatch.php#L22).
+
 ## PhanParamSignaturePHPDocMismatchTooFewParameters
 
 ```
 Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (the method override accepts {COUNT} parameter(s), but the overridden method can accept {COUNT}) defined in {FILE}:{LINE}
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0627_signature_mismatch.php.expected#L13) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0627_signature_mismatch.php#L23).
 
 ## PhanParamSignaturePHPDocMismatchTooManyRequiredParameters
 
@@ -3035,6 +3047,8 @@ This is emitted when a class constant's PHPDoc contains a type declared in a cla
 ```
 constant {CONST} may not have a template type
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0203_generic_errors.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0203_generic_errors.php#L8).
 
 ## PhanTemplateTypeNotDeclaredInFunctionParams
 
