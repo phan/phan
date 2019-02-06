@@ -80,7 +80,8 @@ class Utils
      *
      * Does nothing if not an absolute path.
      */
-    public static function normalizePathFromWindowsURI(string $filepath) : string {
+    public static function normalizePathFromWindowsURI(string $filepath) : string
+    {
         if (!preg_match('@[a-zA-Z]:[\\\\/]@', $filepath)) {
             return $filepath;
         }
