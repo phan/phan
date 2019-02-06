@@ -264,7 +264,7 @@ class Request
         // Otherwise, there might be an overwhelming number of issues to solve in some projects before using this in the IDE (e.g. PhanUnreferencedUseNormal)
         $printer = $factory->getPrinter($format, $this->buffered_output);
         $files = $this->request_config[self::PARAM_FILES] ?? null;
-        if (is_array($files) && count($files) > 0) {
+        if (is_array($files) && count($files) > 0 && !Config::getValue('language_server_disable_output_filter')) {
             return new FilteringPrinter($files, $printer);
         }
         return $printer;

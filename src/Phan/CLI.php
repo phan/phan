@@ -80,6 +80,7 @@ class CLI
         'language-server-tcp-connect:',
         'language-server-tcp-server:',
         'language-server-verbose',
+        'language-server-disable-output-filter',
         'language-server-hide-category',
         'language-server-allow-missing-pcntl',
         'language-server-force-missing-pcntl',
@@ -546,6 +547,9 @@ class CLI
                     break;
                 case 'language-server-verbose':
                     Config::setValue('language_server_debug_level', 'info');
+                    break;
+                case 'language-server-disable-output-filter':
+                    Config::setValue('language_server_disable_output_filter', true);
                     break;
                 case 'x':
                 case 'dead-code-detection':
@@ -1038,6 +1042,13 @@ Extended help:
 
  --language-server-verbose
   Emit verbose logging messages related to the language server implementation to stderr.
+  This is useful when developing or debugging language server clients.
+
+ --language-server-disable-output-filter
+  Emit all issues detected from the language server (e.g. invalid phpdoc in parsed files),
+  not just issues in files currently open in the editor/IDE.
+  This can be very verbose and has more false positives.
+
   This is useful when developing or debugging language server clients.
 
  --language-server-allow-missing-pcntl

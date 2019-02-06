@@ -696,6 +696,11 @@ class Config
         // Valid values: null, 'info'. Used when developing or debugging a language server client of Phan.
         'language_server_debug_level' => null,
 
+        // Set this to true to emit all issues detected from the language server (e.g. invalid phpdoc in parsed files),
+        // not just issues in files currently open in the editor/IDE.
+        // This can be very verbose and has more false positives.
+        'language_server_disable_output_filter' => false,
+
         // This should only be set by CLI (`--language-server-force-missing-pcntl` or `language-server-require-pcntl`), which will set this to true for debugging.
         // When true, this will manually back up the state of the PHP process and restore it.
         'language_server_use_pcntl_fallback' => false,
@@ -1158,6 +1163,7 @@ class Config
             'language_server_analyze_only_on_save' => $is_bool,
             // 'language_server_config' => array|false,  // should not be set directly
             'language_server_debug_level' => $is_string_or_null,
+            'language_server_disable_output_filter' => $is_bool,
             'language_server_enable_completion' => $is_scalar,
             'language_server_enable_go_to_definition' => $is_bool,
             'language_server_enable_hover' => $is_bool,

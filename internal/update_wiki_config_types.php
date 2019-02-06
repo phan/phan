@@ -126,6 +126,7 @@ class ConfigEntry
         'language_server_config' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'language_server_analyze_only_on_save' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'language_server_debug_level' => self::CATEGORY_HIDDEN_CLI_ONLY,
+        'language_server_disable_output_filter' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'language_server_use_pcntl_fallback' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'language_server_enable_go_to_definition' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'language_server_enable_hover' => self::CATEGORY_HIDDEN_CLI_ONLY,

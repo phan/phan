@@ -23,6 +23,14 @@ final class FilteringPrinter implements BufferedPrinterInterface
     /** @var IssuePrinterInterface the wrapped printer */
     private $printer;
 
+    /**
+     * @param string $file
+     */
+    private static function normalize($file) : string
+    {
+        return str_replace(DIRECTORY_SEPARATOR, "//", (string)$file);
+    }
+
     /** @param array<int, string> $files a non-empty list of relative file paths. */
     public function __construct(
         array $files,
@@ -32,7 +40,7 @@ final class FilteringPrinter implements BufferedPrinterInterface
             throw new InvalidArgumentException("FilteringPrinter expects 1 or more files");
         }
         foreach ($files as $file) {
-            $this->file_set[$file] = true;
+            $this->file_set[self::normalize($file)] = true;
         }
         $this->printer = $printer;
     }
@@ -44,7 +52,7 @@ final class FilteringPrinter implements BufferedPrinterInterface
     public function print(IssueInstance $instance)
     {
         $file = $instance->getFile();
-        if (!isset($this->file_set[$file])) {
+        if (!isset($this->file_set[self::normalize($file)])) {
             return;
         }
         $this->printer->print($instance);

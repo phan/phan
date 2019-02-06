@@ -69,12 +69,24 @@ class Utils
             throw new InvalidArgumentException("Not a valid file URI: $uri");
         }
         $filepath = \urldecode($fragments['path']);
-        if (strpos($filepath, ':') !== false) {
-            if ($filepath[0] === '/') {
-                $filepath = (string)\substr($filepath, 1);
-            }
-            $filepath = \str_replace('/', '\\', $filepath);
+        if (DIRECTORY_SEPARATOR === "\\") {
+            $filepath = self::normalizePathFromWindowsURI($filepath);
         }
         return $filepath;
+    }
+
+    /**
+     * Converts "/C:/something/else.php" to "C:\something\else.php"
+     *
+     * Does nothing if not an absolute path.
+     */
+    public static function normalizePathFromWindowsURI(string $filepath) : string {
+        if (!preg_match('@[a-zA-Z]:[\\\\/]@', $filepath)) {
+            return $filepath;
+        }
+        if ($filepath[0] === '/') {
+            $filepath = (string)\substr($filepath, 1);
+        }
+        return \str_replace('/', '\\', $filepath);
     }
 }
