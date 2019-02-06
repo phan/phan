@@ -862,19 +862,47 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
     protected $parent_node_list;
 
     /**
+     * Skip unary ops when determining the parent node.
+     * E.g. for `@foo();`, the parent node is AST_STMT_LIST (which we infer means the result is unused)
+     * For `$x = +foo();` the parent node is AST_ASSIGN.
+     * @return ?Node
+     */
+    private function findNonUnaryParentNodeNode()
+    {
+        $parent = end($this->parent_node_list);
+        if (!$parent) {
+            return null;
+        }
+        if ($parent->kind !== ast\AST_UNARY_OP) {
+            return $parent;
+        }
+
+        for ($i = key($this->parent_node_list) - 1; $i >= 0; $i--) {
+            $parent = $this->parent_node_list[$i];
+            if ($parent->kind !== ast\AST_UNARY_OP) {
+                return $parent;
+            }
+        }
+        return null;
+    }
+
+    /**
      * @param Node $node a node of type AST_CALL
      * @return void
      * @override
      */
     public function visitCall(Node $node)
     {
-        $parent = end($this->parent_node_list);
+        $parent = $this->findNonUnaryParentNodeNode();
         if (!$parent) {
             //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
             return;
         }
-        $key = $this->context->getFile() . ':' . $this->context->getLineNumberStart();
         $used = $parent->kind !== ast\AST_STMT_LIST;
+        if ($used && !UseReturnValuePlugin::$use_dynamic) {
+            return;
+        }
+        $key = $this->context->getFile() . ':' . $this->context->getLineNumberStart();
         //fwrite(STDERR, "Saw parent of type " . ast\get_kind_name($parent->kind)  . "\n");
 
         $expression = $node->children['expr'];
@@ -891,7 +919,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 }
                 $fqsen = $function->getFQSEN()->__toString();
                 if (!UseReturnValuePlugin::$use_dynamic) {
-                    $this->quickCheck($fqsen, $node->lineno);
+                    $this->quickWarn($fqsen, $node->lineno);
                     continue;
                 }
                 $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
@@ -915,13 +943,16 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      */
     public function visitMethodCall(Node $node)
     {
-        $parent = end($this->parent_node_list);
+        $parent = $this->findNonUnaryParentNodeNode();
         if (!$parent) {
             //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
             return;
         }
-        $key = $this->context->getFile() . ':' . $this->context->getLineNumberStart();
         $used = $parent->kind !== ast\AST_STMT_LIST;
+        if ($used && !UseReturnValuePlugin::$use_dynamic) {
+            return;
+        }
+        $key = $this->context->getFile() . ':' . $this->context->getLineNumberStart();
         //fwrite(STDERR, "Saw parent of type " . ast\get_kind_name($parent->kind)  . "\n");
 
         $method_name = $node->children['method'];
@@ -940,7 +971,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         }
         $fqsen = $method->getDefiningFQSEN()->__toString();
         if (!UseReturnValuePlugin::$use_dynamic) {
-            $this->quickCheck($fqsen, $node->lineno);
+            $this->quickWarn($fqsen, $node->lineno);
             return;
         }
         $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
@@ -961,13 +992,16 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      */
     public function visitStaticCall(Node $node)
     {
-        $parent = end($this->parent_node_list);
+        $parent = $this->findNonUnaryParentNodeNode();
         if (!$parent) {
             //fwrite(STDERR, "No parent in " . __METHOD__ . "\n");
             return;
         }
-        $key = $this->context->getFile() . ':' . $this->context->getLineNumberStart();
         $used = $parent->kind !== ast\AST_STMT_LIST;
+        if ($used && !UseReturnValuePlugin::$use_dynamic) {
+            return;
+        }
+        $key = $this->context->getFile() . ':' . $this->context->getLineNumberStart();
         //fwrite(STDERR, "Saw parent of type " . ast\get_kind_name($parent->kind)  . "\n");
 
         $method_name = $node->children['method'];
@@ -986,7 +1020,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         }
         $fqsen = $method->getDefiningFQSEN()->__toString();
         if (!UseReturnValuePlugin::$use_dynamic) {
-            $this->quickCheck($fqsen, $node->lineno);
+            $this->quickWarn($fqsen, $node->lineno);
             return;
         }
         $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
@@ -1000,11 +1034,8 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    private function quickCheck(string $fqsen, int $lineno)
+    private function quickWarn(string $fqsen, int $lineno)
     {
-        if ((end($this->parent_node_list)->kind ?? null) !== ast\AST_STMT_LIST) {
-            return;
-        }
         $fqsen_key = strtolower(ltrim($fqsen, "\\"));
         if (UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? false) {
             $this->emitPluginIssue(
