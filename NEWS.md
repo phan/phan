@@ -16,6 +16,11 @@ New features(Analysis):
 + Emit `PhanTypeInstantiateTrait` when calling `new TraitName()` (#2379)
 + Emit `PhanTemplateTypeConstant` when using `@var T` on a class constant's doc comment. (#2402)
 
+Language Server/Daemon mode:
++ Attempted fixes for bugs with issue filtering in the language server on Windows.
++ Add `--language-server-disable-output-filter`, which disables the language server filter to limit outputted issues
+  to those in files currently open in the IDE.
+
 Maintenance
 + Don't emit a warning to stderr when `--language-server-completion-vscode` is used.
 + Catch the rare RecursionDepthException in more places, improve readability of its exception message. (#2386)
