@@ -1,0 +1,3 @@
+src/088_possibly_invalid_argument.php:6 PhanPossiblyFalseTypeArgument Argument 1 (x) is \stdClass|false but \expect_stdclass() takes \stdClass (false is incompatible) defined at src/088_possibly_invalid_argument.php:2
+src/088_possibly_invalid_argument.php:8 PhanPossiblyNullTypeArgument Argument 1 (x) is \stdClass|null but \expect_stdclass() takes \stdClass (null is incompatible) defined at src/088_possibly_invalid_argument.php:2
+src/088_possibly_invalid_argument.php:10 PhanPartialTypeMismatchArgument Argument 1 (x) is \ArrayObject|\stdClass but \expect_stdclass() takes \stdClass (\ArrayAccess|\ArrayObject|\Countable|\IteratorAggregate|\Serializable|\Traversable|iterable is incompatible) defined at src/088_possibly_invalid_argument.php:2

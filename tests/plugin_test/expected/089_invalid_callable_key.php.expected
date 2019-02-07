@@ -1,0 +1,2 @@
+src/089_invalid_callable_key.php:3 PhanTypeInvalidCallableArrayKey In a place where phan was expecting a callable, saw an array with an unexpected key for element #1 (expected [$class_or_expr, $method_name])
+src/089_invalid_callable_key.php:3 PhanTypeMismatchArgumentInternal Argument 1 (function) is array{0:string,2:string} but \call_user_func() takes callable
