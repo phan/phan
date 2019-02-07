@@ -398,6 +398,11 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
+    public function isExclusivelyNarrowedFormOf(CodeBase $code_base, UnionType $other) : bool
+    {
+        return $other->isEmpty();
+    }
+
     /**
      * @param Type[] $type_list
      * A list of types

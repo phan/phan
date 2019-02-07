@@ -9,6 +9,7 @@ use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Comment\Parameter as CommentParameter;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
@@ -844,11 +845,19 @@ class ParameterTypesAnalyzer
         }
         if ($is_possibly_compatible) {
             if (Config::getValue('inherit_phpdoc_types')) {
-                self::inheritPHPDoc($method, $o_method);
+                self::inheritPHPDoc($code_base, $method, $o_method);
             }
         }
     }
 
+    /**
+     * @return array<string,CommentParameter>
+     */
+    private static function extractCommentParameterMap(Method $method) : array
+    {
+        $comment = $method->getComment();
+        return $comment ? $comment->getParameterMap() : [];
+    }
     /**
      * Inherit any missing phpdoc types for (at)return and (at)param of $method from $o_method.
      * This is the default behavior, see https://www.phpdoc.org/docs/latest/guides/inheritance.html
@@ -856,33 +865,65 @@ class ParameterTypesAnalyzer
      * @return void
      */
     private static function inheritPHPDoc(
+        CodeBase $code_base,
         Method $method,
         Method $o_method
     ) {
         // Get the parameters for that method
         $phpdoc_parameter_list = $method->getParameterList();
         $o_phpdoc_parameter_list = $o_method->getParameterList();
+        $comment_parameter_map = null;
         foreach ($phpdoc_parameter_list as $i => $parameter) {
-            $parameter_type = $parameter->getUnionType();
+            $parameter_type = $parameter->getNonVariadicUnionType();
             if (!$parameter_type->isEmpty()) {
-                continue;
+                $comment_parameter_map = $comment_parameter_map ?? self::extractCommentParameterMap($method);
+                $comment_parameter = $comment_parameter_map[$parameter->getName()] ?? null;
+                if ($comment_parameter) {
+                    $comment_parameter_type = $comment_parameter->getUnionType();
+                    if (!$comment_parameter_type->isEmpty()) {
+                        continue;
+                    }
+                }
             }
             $parent_parameter = $o_phpdoc_parameter_list[$i] ?? null;
             if ($parent_parameter) {
-                $parent_parameter_type = $parent_parameter->getUnionType();
+                $parent_parameter_type = $parent_parameter->getNonVariadicUnionType();
                 if ($parent_parameter_type->isEmpty()) {
                     continue;
                 }
-                $parameter->setUnionType($parent_parameter_type);
+                if ($parameter_type->isEmpty() || $parent_parameter_type->isExclusivelyNarrowedFormOf($code_base, $parameter_type)) {
+                    $parameter->setUnionType($parent_parameter_type);
+                }
             }
         }
 
-        $phpdoc_return_type = $method->getUnionType();
-        if ($phpdoc_return_type->isEmpty()) {
-            $parent_phpdoc_return_type = $o_method->getUnionType();
-            if (!$parent_phpdoc_return_type->isEmpty()) {
+        $parent_phpdoc_return_type = $o_method->getUnionType();
+        if (!$parent_phpdoc_return_type->isEmpty()) {
+            $phpdoc_return_type = $method->getUnionType();
+            if ($phpdoc_return_type->isEmpty()) {
                 $method->setUnionType($parent_phpdoc_return_type);
+            } else {
+                self::maybeInheritCommentReturnType($code_base, $method, $parent_phpdoc_return_type);
             }
+        }
+    }
+
+    /**
+     * @param Method $method a method which has a union type, but is permitted to inherit a more specific type.
+     * @param UnionType $inherited_union_type a non-empty union type
+     */
+    private static function maybeInheritCommentReturnType(CodeBase $code_base, Method $method, UnionType $inherited_union_type)
+    {
+        $comment = $method->getComment();
+        if ($comment && $comment->hasReturnUnionType()) {
+            if (!$comment->getReturnType()->isEmpty()) {
+                // This comment explicitly specified the desired return type.
+                // Give up on inheriting
+                return;
+            }
+        }
+        if ($inherited_union_type->isExclusivelyNarrowedFormOf($code_base, $method->getUnionType())) {
+            $method->setUnionType($inherited_union_type);
         }
     }
 
