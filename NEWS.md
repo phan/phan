@@ -9,6 +9,11 @@ New features(CLI):
   and the exclude option (`-3 <file_or_list> -3 <file_or_list>`).
 
 New features(Analysis):
++ Inherit more specific phpdoc types even when there are real types in the signature. (#2409)
+  e.g. inherit `@param array<int,\stdClass>` and `@return MyClass[]` from the
+  ancestor class of `function someMethod(array $x) : array {}`.
+
+  This is only done when each phpdoc type is compatible with the real signature type.
 + Detect more expressions without side effects: `PhanNoopEmpty` and `PhanNoopIsset` (for `isset(expr)` and `empty(expr)`) (#2389)
 + Also emit `PhanNoopBinaryOperator` for the `??`, `||`, and `&&` operators,
   but only when the result is unused and the right hand side has no obvious side effects. (#2389)
