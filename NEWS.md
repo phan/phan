@@ -15,6 +15,9 @@ New features(Analysis):
 + Properly analyze effects of a property/field access expression as the key of a `foreach` statement. (#1601)
 + Emit `PhanTypeInstantiateTrait` when calling `new TraitName()` (#2379)
 + Emit `PhanTemplateTypeConstant` when using `@var T` on a class constant's doc comment. (#2402)
++ Warn for invalid operands of a wider variety of binary operators (`/`, `/=`, `>>`, `<<=`, `-`, `%`, `**`, etc) (#2410)
+  New issue types: `PhanTypeInvalidRightOperandOfIntegerOp` and `PhanTypeInvalidLeftOperandOfIntegerOp`.
+  Also, mention the operator name in the issue message.
 
 Language Server/Daemon mode:
 + Attempted fixes for bugs with issue filtering in the language server on Windows.

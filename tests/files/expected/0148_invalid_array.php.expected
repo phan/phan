@@ -1,1 +1,1 @@
-%s:15 PhanTypeInvalidLeftOperandOfNumericOp Invalid operator: left operand is array (expected number)
+%s:15 PhanTypeInvalidLeftOperandOfNumericOp Invalid operator: left operand of - is array (expected number)

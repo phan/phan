@@ -6,6 +6,7 @@ use AssertionError;
 use ast;
 use ast\flags;
 use ast\Node;
+use Closure;
 use Exception;
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\ASTSimplifier;
@@ -36,6 +37,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\IntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
@@ -759,10 +761,106 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 );
             }
         }
-        if ($flags === flags\BINARY_CONCAT) {
-            $this->analyzeBinaryConcat($node);
+        switch ($flags) {
+            case flags\BINARY_CONCAT:
+                $this->analyzeBinaryConcat($node);
+                break;
+            case flags\BINARY_DIV:
+            case flags\BINARY_POW:
+            case flags\BINARY_MOD:
+                $this->analyzeBinaryNumericOp($node);
+                break;
+            case flags\BINARY_SHIFT_LEFT:
+            case flags\BINARY_SHIFT_RIGHT:
+                $this->analyzeBinaryShift($node);
+                break;
         }
         return $this->context;
+    }
+
+    private function analyzeBinaryShift(Node $node)
+    {
+        $left = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['left']
+        );
+
+        $right = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['right']
+        );
+        $this->warnAboutInvalidUnionType(
+            $node,
+            static function (Type $type) : bool {
+                return $type instanceof IntType && !$type->getIsNullable();
+            },
+            $left,
+            $right,
+            Issue::TypeInvalidLeftOperandOfIntegerOp,
+            Issue::TypeInvalidRightOperandOfIntegerOp
+        );
+    }
+
+    private function analyzeBinaryNumericOp(Node $node)
+    {
+        $left = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['left']
+        );
+
+        $right = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['right']
+        );
+        $this->warnAboutInvalidUnionType(
+            $node,
+            static function (Type $type) : bool {
+                return $type->isValidNumericOperand();
+            },
+            $left,
+            $right,
+            Issue::TypeInvalidLeftOperandOfNumericOp,
+            Issue::TypeInvalidRightOperandOfNumericOp
+        );
+    }
+
+    /**
+     * @param Node $node with type AST_BINARY_OP
+     * @param Closure(Type):bool $is_valid_type
+     * @return void
+     */
+    private function warnAboutInvalidUnionType(
+        Node $node,
+        Closure $is_valid_type,
+        UnionType $left,
+        UnionType $right,
+        string $left_issue_type,
+        string $right_issue_type
+    ) {
+        if (!$left->isEmpty()) {
+            if (!$left->hasTypeMatchingCallback($is_valid_type)) {
+                $this->emitIssue(
+                    $left_issue_type,
+                    $node->children['left']->lineno ?? $node->lineno,
+                    PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
+                    $left
+                );
+            }
+        }
+        if (!$right->isEmpty()) {
+            if (!$right->hasTypeMatchingCallback($is_valid_type)) {
+                $this->emitIssue(
+                    $right_issue_type,
+                    $node->children['right']->lineno ?? $node->lineno,
+                    PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
+                    $right
+                );
+            }
+        }
     }
 
     private function analyzeBinaryConcat(Node $node)

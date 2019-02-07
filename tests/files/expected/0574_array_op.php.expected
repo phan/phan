@@ -1,3 +1,5 @@
-%s:8 PhanTypeArrayOperator Invalid array operand provided to operator '/' between types float|int and array{0:2}
+%s:8 PhanTypeInvalidLeftOperandOfNumericOp Invalid operator: left operand of /= is array{0:4} (expected number)
+%s:8 PhanTypeInvalidRightOperandOfNumericOp Invalid operator: right operand of /= is array{0:2} (expected number)
 %s:9 PhanTypeArrayOperator Invalid array operand provided to operator '^' between types int and array{0:2}
-%s:10 PhanTypeArrayOperator Invalid array operand provided to operator '/' between types array{0:4} and array{0:2}
+%s:10 PhanTypeInvalidLeftOperandOfNumericOp Invalid operator: left operand of / is array{0:4} (expected number)
+%s:10 PhanTypeInvalidRightOperandOfNumericOp Invalid operator: right operand of / is array{0:2} (expected number)
