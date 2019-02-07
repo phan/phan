@@ -117,14 +117,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         if ($left->isExclusivelyArray()
             || $right->isExclusivelyArray()
         ) {
-            $this->emitIssue(
-                Issue::TypeArrayOperator,
-                $node->lineno ?? 0,
-                PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
-                $left,
-                $right
-            );
-
             return UnionType::empty();
         } elseif ($left->hasType(FloatType::instance(false))
             || $right->hasType(FloatType::instance(false))
@@ -245,17 +237,6 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $this->should_catch_issue_exception
         );
 
-        if ($left->hasArray() || $right->hasArray()) {
-            $this->emitIssue(
-                Issue::TypeArrayOperator,
-                $node->lineno ?? 0,
-                PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
-                $left,
-                $right
-            );
-
-            return UnionType::empty();
-        }
         if ($left->hasNonNullIntType()) {
             if ($right->hasNonNullIntType()) {
                 return $this->computeIntegerOperationResult($node, $left, $right);
@@ -608,6 +589,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $this->emitIssue(
                     $left_issue_type,
                     $node->children['left']->lineno ?? $node->lineno,
+                    PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
                     $left
                 );
             }
@@ -617,6 +599,7 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $this->emitIssue(
                     $right_issue_type,
                     $node->children['right']->lineno ?? $node->lineno,
+                    PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$node->flags],
                     $right
                 );
             }

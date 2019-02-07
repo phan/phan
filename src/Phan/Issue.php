@@ -104,6 +104,8 @@ class Issue
     const TypeInvalidRightOperandOfAdd = 'PhanTypeInvalidRightOperandOfAdd';
     const TypeInvalidLeftOperandOfNumericOp = 'PhanTypeInvalidLeftOperandOfNumericOp';
     const TypeInvalidRightOperandOfNumericOp = 'PhanTypeInvalidRightOperandOfNumericOp';
+    const TypeInvalidLeftOperandOfIntegerOp = 'PhanTypeInvalidLeftOperandOfIntegerOp';
+    const TypeInvalidRightOperandOfIntegerOp = 'PhanTypeInvalidRightOperandOfIntegerOp';
     const TypeInvalidUnaryOperandNumeric = 'PhanTypeInvalidUnaryOperandNumeric';
     const TypeInvalidUnaryOperandBitwiseNot = 'PhanTypeInvalidUnaryOperandBitwiseNot';
     const TypeInvalidUnaryOperandIncOrDec = 'PhanTypeInvalidUnaryOperandIncOrDec';
@@ -1404,7 +1406,7 @@ class Issue
                 self::TypeInvalidRightOperandOfAdd,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Invalid operator: right operand is {TYPE} (expected array or number)",
+                "Invalid operator: right operand of {OPERATOR} is {TYPE} (expected array or number)",
                 self::REMEDIATION_B,
                 10070
             ),
@@ -1412,7 +1414,7 @@ class Issue
                 self::TypeInvalidLeftOperandOfAdd,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Invalid operator: left operand is {TYPE} (expected array or number)",
+                "Invalid operator: left operand of {OPERATOR} is {TYPE} (expected array or number)",
                 self::REMEDIATION_B,
                 10071
             ),
@@ -1420,7 +1422,7 @@ class Issue
                 self::TypeInvalidRightOperandOfNumericOp,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Invalid operator: right operand is {TYPE} (expected number)",
+                "Invalid operator: right operand of {OPERATOR} is {TYPE} (expected number)",
                 self::REMEDIATION_B,
                 10072
             ),
@@ -1428,9 +1430,25 @@ class Issue
                 self::TypeInvalidLeftOperandOfNumericOp,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Invalid operator: left operand is {TYPE} (expected number)",
+                "Invalid operator: left operand of {OPERATOR} is {TYPE} (expected number)",
                 self::REMEDIATION_B,
                 10073
+            ),
+            new Issue(
+                self::TypeInvalidRightOperandOfIntegerOp,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Invalid operator: right operand of {OPERATOR} is {TYPE} (expected int)",
+                self::REMEDIATION_B,
+                10100
+            ),
+            new Issue(
+                self::TypeInvalidLeftOperandOfIntegerOp,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Invalid operator: left operand of {OPERATOR} is {TYPE} (expected int)",
+                self::REMEDIATION_B,
+                10101
             ),
             new Issue(
                 self::TypeInvalidUnaryOperandNumeric,

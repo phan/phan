@@ -43,7 +43,7 @@ function test298() {
     expect_string_298($intVar ^= 2);
     expect_string_298($intVar &= 0xffff);
     expect_string_298($intVar /= 2);
-    expect_string_298($intVar *= 2);
+    expect_string_298($intVar *= 2);  // TODO: Do a better job at carrying the result of the assignment operator out of the scope of the above argument
     expect_string_298($intVar **= 2);
     expect_string_298($intVar %= 5);
     $intVar = 42;

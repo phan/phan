@@ -321,4 +321,37 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             FloatType::instance(false)
         ]));
     }
+
+    /** @override */
+    public function visitBinaryDiv(Node $_) : UnionType
+    {
+        // analyzed in AssignOperatorAnalysisVisitor
+        return FloatType::instance(false)->asUnionType();
+    }
+
+    /** @override */
+    public function visitBinaryMod(Node $_) : UnionType
+    {
+        // analyzed in AssignOperatorAnalysisVisitor
+        return IntType::instance(false)->asUnionType();
+    }
+
+    /** @override */
+    public function visitBinaryPow(Node $_) : UnionType
+    {
+        // analyzed in AssignOperatorAnalysisVisitor
+        return FloatType::instance(false)->asUnionType();
+    }
+
+    /** @override */
+    public function visitBinaryShiftLeft(Node $_) : UnionType
+    {
+        return IntType::instance(false)->asUnionType();
+    }
+
+    /** @override */
+    public function visitBinaryShiftRight(Node $_) : UnionType
+    {
+        return IntType::instance(false)->asUnionType();
+    }
 }
