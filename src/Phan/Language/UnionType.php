@@ -1386,7 +1386,7 @@ class UnionType implements Serializable
         if ($other->isEmpty()) {
             return true;
         }
-        if ($this->isEmpty()) {
+        if ($this->isEmpty() || $this->hasMixedType()) {
             return false;
         }
         foreach ($this->type_set as $type) {
