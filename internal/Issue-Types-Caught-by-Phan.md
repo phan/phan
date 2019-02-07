@@ -259,6 +259,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 Access level to {METHOD} must be compatible with internal {METHOD}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0630_access_level_internal.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0630_access_level_internal.php#L3).
+
 ## PhanAccessStaticToNonStatic
 
 This issue is emitted when a class redeclares an inherited static method as an instance method.
@@ -570,6 +572,8 @@ f1();
 ```
 Call to deprecated function {FUNCTIONLIKE}
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/php72_files/expected/0006_deprecated_create_internal_function.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/php72_files/src/0006_deprecated_create_internal_function.php#L4).
 
 ## PhanDeprecatedInterface
 
@@ -1697,6 +1701,8 @@ This issue (and similar issues) may be emitted when `strict_param_checking` is t
 Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/088_possibly_invalid_argument.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/088_possibly_invalid_argument.php#L10).
+
 ## PhanPartialTypeMismatchArgumentInternal
 
 This issue may be emitted when `strict_param_checking` is true, when analyzing an internal function.
@@ -1735,6 +1741,8 @@ This issue may be emitted when `strict_param_checking` is true
 ```
 Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/088_possibly_invalid_argument.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/088_possibly_invalid_argument.php#L6).
 
 ## PhanPossiblyFalseTypeArgumentInternal
 
@@ -1779,6 +1787,8 @@ This issue may be emitted when `strict_param_checking` is true
 ```
 Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE} takes {TYPE} ({TYPE} is incompatible) defined at {FILE}:{LINE}
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/088_possibly_invalid_argument.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/088_possibly_invalid_argument.php#L8).
 
 ## PhanPossiblyNullTypeArgumentInternal
 
@@ -2002,6 +2012,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.3/tests/misc/fallback_te
 In a place where phan was expecting a callable, saw an array with an unexpected key for element #{INDEX} (expected [$class_or_expr, $method_name])
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/089_invalid_callable_key.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/089_invalid_callable_key.php#L3).
+
 ## PhanTypeInvalidCallableArraySize
 
 ```
@@ -2093,13 +2105,23 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 ## PhanTypeInvalidLeftOperandOfAdd
 
 ```
-Invalid operator: left operand is {TYPE} (expected array or number)
+Invalid operator: left operand of {OPERATOR} is {TYPE} (expected array or number)
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0628_arithmetic_op_more_warn.php.expected#L18) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0628_arithmetic_op_more_warn.php#L34).
+
+## PhanTypeInvalidLeftOperandOfIntegerOp
+
+```
+Invalid operator: left operand of {OPERATOR} is {TYPE} (expected int)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0628_arithmetic_op_more_warn.php.expected#L13) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0628_arithmetic_op_more_warn.php#L27).
 
 ## PhanTypeInvalidLeftOperandOfNumericOp
 
 ```
-Invalid operator: left operand is {TYPE} (expected number)
+Invalid operator: left operand of {OPERATOR} is {TYPE} (expected number)
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0148_invalid_array.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0148_invalid_array.php#L15).
@@ -2131,14 +2153,26 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/misc/fallback_te
 ## PhanTypeInvalidRightOperandOfAdd
 
 ```
-Invalid operator: right operand is {TYPE} (expected array or number)
+Invalid operator: right operand of {OPERATOR} is {TYPE} (expected array or number)
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0628_arithmetic_op_more_warn.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0628_arithmetic_op_more_warn.php#L5).
+
+## PhanTypeInvalidRightOperandOfIntegerOp
+
+```
+Invalid operator: right operand of {OPERATOR} is {TYPE} (expected int)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0628_arithmetic_op_more_warn.php.expected#L9) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0628_arithmetic_op_more_warn.php#L16).
 
 ## PhanTypeInvalidRightOperandOfNumericOp
 
 ```
-Invalid operator: right operand is {TYPE} (expected number)
+Invalid operator: right operand of {OPERATOR} is {TYPE} (expected number)
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0574_array_op.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0574_array_op.php#L8).
 
 ## PhanTypeInvalidStaticMethodName
 

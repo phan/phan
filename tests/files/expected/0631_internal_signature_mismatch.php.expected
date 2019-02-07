@@ -1,0 +1,11 @@
+%s:9 PhanParamSignatureMismatchInternal Declaration of function unserialize(string $_) should be compatible with internal function unserialize($serialized) : void
+%s:9 PhanParamSignatureRealMismatchHasParamTypeInternal Declaration of function unserialize(string $_) should be compatible with internal function unserialize($serialized) (parameter #1 has type 'string' which cannot replace original parameter with no type)
+%s:15 PhanParamSignatureMismatchInternal Declaration of function unserialize($x) : int should be compatible with internal function unserialize($serialized) : void
+%s:21 PhanParamSignatureMismatchInternal Declaration of function unserialize(&$_) should be compatible with internal function unserialize($serialized) : void
+%s:21 PhanParamSignatureRealMismatchParamIsReferenceInternal Declaration of function unserialize(&$_) should be compatible with internal function unserialize($serialized) (parameter #1 is a reference parameter overriding a non-reference parameter)
+%s:27 PhanParamSignatureMismatchInternal Declaration of function unserialize(...$_) should be compatible with internal function unserialize($serialized) : void
+%s:27 PhanParamSignatureRealMismatchParamVariadicInternal Declaration of function unserialize(...$_) should be compatible with internal function unserialize($serialized) (parameter #1 is a variadic parameter replacing a non-variadic parameter)
+%s:33 PhanParamSignatureMismatchInternal Declaration of function unserialize() should be compatible with internal function unserialize($serialized) : void
+%s:33 PhanParamSignatureRealMismatchTooFewParametersInternal Declaration of function unserialize() should be compatible with internal function unserialize($serialized) (the method override accepts 0 parameter(s), but the overridden method can accept 1)
+%s:39 PhanParamSignatureMismatchInternal Declaration of function unserialize($unused_1, $unused_2) should be compatible with internal function unserialize($serialized) : void
+%s:39 PhanParamSignatureRealMismatchTooManyRequiredParametersInternal Declaration of function unserialize($unused_1, $unused_2) should be compatible with internal function unserialize($serialized) (the method override requires 2 parameter(s), but the overridden method requires only 1)

@@ -30,4 +30,6 @@ call_user_func(function () {
     var_export (3.5 >> 2);
     $o >>= 2;
     var_export($o);
+    $o = new stdClass();
+    var_export($o + 2);  // this correctly warns
 });
