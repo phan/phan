@@ -25,7 +25,11 @@ abstract class IncompatibleSignatureDetectorBase
     /** @var array<string,string> maps aliases to originals - only set for xml parser */
     protected $aliases = [];
 
-    const FUNCTIONLIKE_BLACKLIST = '@(^___PHPSTORM_HELPERS)|PS_UNRESERVE_PREFIX@';
+    const FUNCTIONLIKE_BLACKLIST = '@' .
+        '(^___PHPSTORM_HELPERS)|PS_UNRESERVE_PREFIX|' .
+        '(^(ereg|expression|getsession|hrtime_|imageps|mssql_|mysql_|split|sql_regcase|sybase|xmldiff_$))|' .
+        '\.' .  // a literal `.`
+        '@';
 
     /**
      * @return void (does not return)
