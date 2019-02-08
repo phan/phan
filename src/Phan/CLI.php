@@ -5,6 +5,8 @@ namespace Phan;
 use AssertionError;
 use InvalidArgumentException;
 use Phan\Config\Initializer;
+use Phan\Daemon\ExitException;
+use Phan\Exception\UsageException;
 use Phan\Library\StringUtil;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\Filter\CategoryIssueFilter;
@@ -175,10 +177,42 @@ class CLI
     }
 
     /**
-     * Create and read command line arguments, configuring
-     * \Phan\Config as a side effect.
+     * @param array<string,mixed> $opts
+     * @param array<int,string> $argv
+     * @throws UsageException
      */
-    public function __construct()
+    private function checkAllArgsUsed(array $opts, array $argv)
+    {
+        $pruneargv = [];
+        foreach ($opts as $opt => $value) {
+            foreach ($argv as $key => $chunk) {
+                $regex = '/^' . (isset($opt[1]) ? '--' : '-') . $opt . '/';
+
+                if (in_array($chunk, is_array($value) ? $value : [$value])
+                    && $argv[$key - 1][0] == '-'
+                    || preg_match($regex, $chunk)
+                ) {
+                    $pruneargv[] = $key;
+                }
+            }
+        }
+
+        while (count($pruneargv) > 0) {
+            $key = array_pop($pruneargv);
+            unset($argv[$key]);
+        }
+
+        foreach ($argv as $arg) {
+            if ($arg[0] == '-') {
+                throw new UsageException("Unknown option '{$arg}'", EXIT_FAILURE);
+            }
+        }
+    }
+
+    /**
+     * Creates a CLI object from argv
+     */
+    public static function fromArgv() : CLI
     {
         global $argv;
 
@@ -186,15 +220,57 @@ class CLI
         $opts = getopt(self::GETOPT_SHORT_OPTIONS, self::GETOPT_LONG_OPTIONS);
         $opts = $opts ?? [];
 
+        try {
+            return new self($opts, $argv);
+        } catch (UsageException $e) {
+            self::usage($e->getMessage(), (int)$e->getCode(), $e->print_extended_help);
+            exit((int)$e->getCode());  // unreachable
+        } catch (ExitException $e) {
+            $message = $e->getMessage();
+            if ($message) {
+                fwrite(STDERR, $message);
+            }
+            exit($e->getCode());
+        }
+    }
+
+    /**
+     * Create and read command line arguments, configuring
+     * \Phan\Config as a side effect.
+     *
+     * @param array<string,string|array<int,mixed>|false> $opts
+     * @param array<int,string> $argv
+     * @return CLI
+     * @throws ExitException
+     * @throws UsageException
+     * @internal - used for unit tests only
+     */
+    public static function fromRawValues(array $opts, array $argv)
+    {
+        return new self($opts, $argv);
+    }
+
+    /**
+     * Create and read command line arguments, configuring
+     * \Phan\Config as a side effect.
+     *
+     * @param array<string,string|array<int,mixed>|false> $opts
+     * @param array<int,string> $argv
+     * @return void
+     * @throws ExitException
+     * @throws UsageException
+     */
+    private function __construct(array $opts, array $argv)
+    {
         if (\array_key_exists('extended-help', $opts)) {
-            $this->usage('', EXIT_SUCCESS, true);  // --help prints help and calls exit(0)
+            throw new UsageException('', EXIT_SUCCESS, true);  // --help prints help and calls exit(0)
         }
         if (\array_key_exists('h', $opts) || \array_key_exists('help', $opts)) {
-            $this->usage();  // --help prints help and calls exit(0)
+            throw new UsageException();  // --help prints help and calls exit(0)
         }
         if (\array_key_exists('v', $opts ?? []) || \array_key_exists('version', $opts ?? [])) {
             printf("Phan %s\n", self::PHAN_VERSION);
-            exit(EXIT_SUCCESS);
+            throw new ExitException('', EXIT_SUCCESS);
         }
 
         // Determine the root directory of the project from which
@@ -202,7 +278,7 @@ class CLI
         $overridden_project_root_directory = $opts['d'] ?? $opts['project-root-directory'] ?? null;
         if (\is_string($overridden_project_root_directory)) {
             if (!\is_dir($overridden_project_root_directory)) {
-                $this->usage(\json_encode($overridden_project_root_directory) . ' is not a directory', EXIT_FAILURE);
+                throw new UsageException(StringUtil::jsonEncode($overridden_project_root_directory) . ' is not a directory', EXIT_FAILURE);
             }
             // Set the current working directory so that relative paths within the project will work.
             // TODO: Add an option to allow searching ancestor directories?
@@ -220,8 +296,7 @@ class CLI
             if ($exit_code === 0) {
                 exit($exit_code);
             }
-            fprintf(STDERR, "\nUsage:\n\n%s", self::INIT_HELP);
-            exit($exit_code);
+            throw new UsageException('', $exit_code);
         }
 
         // Before reading the config, check for an override on
@@ -230,12 +305,10 @@ class CLI
         if ($config_file_override !== null) {
             if (!is_string($config_file_override)) {
                 // Doesn't work for a mix of -k and --config-file, but low priority
-                fprintf(STDERR, "Expected exactly one file for --config-file, but saw " . StringUtil::jsonEncode($config_file_override) . "\n");
-                exit(1);
+                throw new ExitException(sprintf("Expected exactly one file for --config-file, but saw " . StringUtil::jsonEncode($config_file_override) . "\n"), 1);
             }
             if (!is_file($config_file_override)) {
-                fprintf(STDERR, "Could not find the config file override " . StringUtil::jsonEncode($config_file_override) . "\n");
-                exit(1);
+                throw new ExitException("Could not find the config file override " . StringUtil::jsonEncode($config_file_override) . "\n", 1);
             }
             $this->config_file = $config_file_override;
         }
@@ -318,7 +391,7 @@ class CLI
                 case 'm':
                 case 'output-mode':
                     if (!is_string($value) || !in_array($value, $factory->getTypes(), true)) {
-                        $this->usage(
+                        throw new UsageException(
                             sprintf(
                                 'Unknown output mode %s. Known values are [%s]',
                                 StringUtil::jsonEncode($value),
@@ -326,9 +399,7 @@ class CLI
                             ),
                             EXIT_FAILURE
                         );
-                        return;  // unreachable
                     }
-
                     $printer_type = $value;
                     break;
                 case 'c':
@@ -365,8 +436,7 @@ class CLI
                         // @phan-suppress-next-line PhanAccessMethodInternal
                         MethodSearcherPlugin::setSearchString($value);
                     } catch (InvalidArgumentException $e) {
-                        fwrite(STDERR, "Invalid argument '$value' to --find-signature. Error: " . $e->getMessage() . "\n");
-                        exit(EXIT_FAILURE);
+                        throw new UsageException("Invalid argument '$value' to --find-signature. Error: " . $e->getMessage() . "\n", EXIT_FAILURE);
                     }
 
                     Config::setValue('plugins', array_merge(
@@ -377,13 +447,11 @@ class CLI
                 case 'o':
                 case 'output':
                     if (!is_string($value)) {
-                        fprintf(STDERR, "Invalid arguments to --output: args=%s", StringUtil::jsonEncode($value));
-                        exit(EXIT_FAILURE);
+                        throw new UsageException(sprintf("Invalid arguments to --output: args=%s\n", StringUtil::jsonEncode($value)), EXIT_FAILURE);
                     }
                     $output_file = fopen($value, 'w');
                     if (!is_resource($output_file)) {
-                        fwrite(STDERR, "Failed to open output file '$value'\n");
-                        exit(EXIT_FAILURE);
+                        throw new UsageException("Failed to open output file '$value'\n", EXIT_FAILURE);
                     }
                     $this->output = new StreamOutput($output_file);
                     break;
@@ -480,8 +548,7 @@ class CLI
                 case 'daemonize-socket':
                     $this->checkCanDaemonize('unix', $key);
                     if (!is_string($value)) {
-                        fprintf(STDERR, "Invalid arguments to --daemonize-socket: args=%s", StringUtil::jsonEncode($value));
-                        exit(EXIT_FAILURE);
+                        throw new UsageException(sprintf("Invalid arguments to --daemonize-socket: args=%s", StringUtil::jsonEncode($value)), EXIT_FAILURE);
                     }
                     $socket_dirname = realpath(dirname($value));
                     if (!is_string($socket_dirname) || !file_exists($socket_dirname) || !is_dir($socket_dirname)) {
@@ -490,7 +557,7 @@ class CLI
                             StringUtil::jsonEncode($value),
                             StringUtil::jsonEncode($socket_dirname)
                         );
-                        $this->usage($msg, 1);
+                        throw new UsageException($msg, 1);
                     } else {
                         Config::setValue('daemonize_socket', $value);  // Daemonize. Assumes the file list won't change. Accepts requests over a Unix socket, or some other IPC mechanism.
                     }
@@ -501,7 +568,7 @@ class CLI
                     Config::setValue('daemonize_tcp', true);
                     $host = filter_var($value, FILTER_VALIDATE_IP);
                     if (strcasecmp($value, 'default') !== 0 && !$host) {
-                        $this->usage("daemonize-tcp-host must be the string 'default' or a valid hostname, got '$value'", 1);
+                        throw new UsageException("daemonize-tcp-host must be the string 'default' or a valid hostname, got '$value'", 1);
                     }
                     if ($host) {
                         Config::setValue('daemonize_tcp_host', $host);
@@ -512,7 +579,7 @@ class CLI
                     Config::setValue('daemonize_tcp', true);
                     $port = filter_var($value, FILTER_VALIDATE_INT);
                     if (strcasecmp($value, 'default') !== 0 && !($port >= 1024 && $port <= 65535)) {
-                        $this->usage("daemonize-tcp-port must be the string 'default' or a value between 1024 and 65535, got '$value'", 1);
+                        throw new UsageException("daemonize-tcp-port must be the string 'default' or a value between 1024 and 65535, got '$value'", 1);
                     }
                     if ($port) {
                         Config::setValue('daemonize_tcp_port', $port);
@@ -591,8 +658,7 @@ class CLI
                     Config::setValue('color_issue_messages', true);
                     break;
                 default:
-                    $this->usage("Unknown option '-$key'" . self::getFlagSuggestionString($key), EXIT_FAILURE);
-                    break;
+                    throw new UsageException("Unknown option '-$key'" . self::getFlagSuggestionString($key), EXIT_FAILURE);
             }
         }
 
@@ -608,33 +674,10 @@ class CLI
         ]);
         $collector = new BufferingCollector($filter);
 
+        $this->checkAllArgsUsed($opts, $argv);
+
         Phan::setPrinter($printer);
         Phan::setIssueCollector($collector);
-
-        $pruneargv = [];
-        foreach ($opts as $opt => $value) {
-            foreach ($argv as $key => $chunk) {
-                $regex = '/^' . (isset($opt[1]) ? '--' : '-') . $opt . '/';
-
-                if (in_array($chunk, is_array($value) ? $value : [$value])
-                    && $argv[$key - 1][0] == '-'
-                    || preg_match($regex, $chunk)
-                ) {
-                    $pruneargv[] = $key;
-                }
-            }
-        }
-
-        while (count($pruneargv) > 0) {
-            $key = array_pop($pruneargv);
-            unset($argv[$key]);
-        }
-
-        foreach ($argv as $arg) {
-            if ($arg[0] == '-') {
-                $this->usage("Unknown option '{$arg}'", EXIT_FAILURE);
-            }
-        }
         if (!$this->file_list_only) {
             // Merge in any remaining args on the CLI
             $this->file_list_in_config = array_merge(
@@ -726,20 +769,23 @@ class CLI
         }
     }
 
-    /** @return void - exits on usage error */
+    /**
+     * @return void - exits on usage error
+     * @throws UsageException
+     */
     private function checkCanDaemonize(string $protocol, string $opt)
     {
         $opt = strlen($opt) >= 2 ? "--$opt" : "-$opt";
         if (!in_array($protocol, stream_get_transports())) {
-            $this->usage("The $protocol:///path/to/file schema is not supported on this system, cannot create a daemon with $opt", 1);
+            throw new UsageException("The $protocol:///path/to/file schema is not supported on this system, cannot create a daemon with $opt", 1);
         }
         if (!Config::getValue('language_server_use_pcntl_fallback') && !function_exists('pcntl_fork')) {
-            $this->usage("The pcntl extension is not available to fork a new process, so $opt will not be able to create workers to respond to requests.", 1);
+            throw new UsageException("The pcntl extension is not available to fork a new process, so $opt will not be able to create workers to respond to requests.", 1);
         }
         if ($opt === '--daemonize-socket' && Config::getValue('daemonize_tcp')) {
-            $this->usage('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
+            throw new UsageException('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
         } elseif (($opt === '--daemonize-tcp-host' || $opt === '--daemonize-tcp-port') && Config::getValue('daemonize_socket')) {
-            $this->usage("Can specify --daemonize-socket or $opt only once", 1);
+            throw new UsageException("Can specify --daemonize-socket or $opt only once", 1);
         }
     }
 
@@ -785,7 +831,7 @@ EOT;
     // FIXME: If I stop using defined() in UnionTypeVisitor,
     // this will warn about the undefined constant EXIT_SUCCESS when a
     // user-defined constant is used in parse phase in a function declaration
-    private function usage(string $msg = '', int $exit_code = EXIT_SUCCESS, bool $print_extended_help = false)
+    private static function usage(string $msg = '', int $exit_code = EXIT_SUCCESS, bool $print_extended_help = false)
     {
         global $argv;
 
@@ -1342,9 +1388,10 @@ EOB;
     }
 
     /**
-     * Look for a .phan/config file up to a few directories
+     * Look for a `.phan/config` file up to a few directories
      * up the hierarchy and apply anything in there to
      * the configuration.
+     * @throws UsageException
      */
     private function maybeReadConfigFile(bool $require_config_exists)
     {
@@ -1366,9 +1413,9 @@ EOB;
                 // But if the CLI option --require-config-exists is provided, exit immediately.
                 // (Include extended help documenting that option)
                 if ($config_file_name !== false) {
-                    $this->usage("Could not find a config file at '$config_file_name', but --require-config-exists was set", EXIT_FAILURE, true);
+                    throw new UsageException("Could not find a config file at '$config_file_name', but --require-config-exists was set", EXIT_FAILURE, true);
                 } else {
-                    $this->usage(sprintf("Could not figure out the path for config file %s, but --require-config-exists was set", StringUtil::encodeValue($this->config_file)), EXIT_FAILURE, true);
+                    throw new UsageException(sprintf("Could not figure out the path for config file %s, but --require-config-exists was set", StringUtil::encodeValue($this->config_file)), EXIT_FAILURE, true);
                 }
             }
             return;

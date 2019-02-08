@@ -27,7 +27,7 @@ if (extension_loaded('ast')) {
 }
 
 // Create our CLI interface and load arguments
-$cli = new CLI();
+$cli = CLI::fromArgv();
 
 // Analyze the file list provided via the CLI
 $is_issue_found =

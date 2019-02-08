@@ -13,7 +13,7 @@ use Phan\CLI;
 use Phan\Prep;
 
 // Create our CLI interface and load arguments
-$cli = new CLI();
+$cli = CLI::fromArgv();
 
 $file_list = $cli->getFileList();
 
