@@ -3,6 +3,7 @@
 namespace Phan\Tests;
 
 use PHPUnit\Framework\TestCase;
+use Phan\Config;
 
 /**
  * Any common initialization or configuration should go here
@@ -12,12 +13,16 @@ abstract class BaseTest extends TestCase
 {
     /**
      * @return void
+     * @suppress PhanAccessMethodInternal
      */
     public static function setUpBeforeClass()
     {
         parent::setUpBeforeClass();
         ini_set('memory_limit', '1G');
+        chdir(dirname(__DIR__, 2));
+        Config::reset();
     }
+
     /**
      * Needed to prevent phpunit from backing up these private static variables.
      * See https://phpunit.de/manual/current/en/fixtures.html#fixtures.global-state
