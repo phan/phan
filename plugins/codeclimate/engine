@@ -23,7 +23,7 @@ $old_cwd = getcwd();
 
 // Create our CLI interface and load arguments
 chdir('/code');
-$cli = new CLI();
+$cli = CLI::fromArgv();
 chdir($old_cwd);
 
 // Obtain the config
