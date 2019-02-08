@@ -181,12 +181,12 @@ class CLI
      * @param array<int,string> $argv
      * @throws UsageException
      */
-    private function checkAllArgsUsed(array $opts, array $argv)
+    private function checkAllArgsUsed(array $opts, array &$argv)
     {
         $pruneargv = [];
         foreach ($opts as $opt => $value) {
             foreach ($argv as $key => $chunk) {
-                $regex = '/^' . (isset($opt[1]) ? '--' : '-') . $opt . '/';
+                $regex = '/^' . (isset($opt[1]) ? '--' : '-') . preg_quote($opt, '/') . '/';
 
                 if (in_array($chunk, is_array($value) ? $value : [$value])
                     && $argv[$key - 1][0] == '-'

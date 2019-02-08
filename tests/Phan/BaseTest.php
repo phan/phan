@@ -2,8 +2,8 @@
 
 namespace Phan\Tests;
 
-use PHPUnit\Framework\TestCase;
 use Phan\Config;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Any common initialization or configuration should go here

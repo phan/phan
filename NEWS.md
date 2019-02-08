@@ -36,7 +36,6 @@ Maintenance
 Bug fixes:
 + Fix edge cases in checking if properties/methods are accessible from a trait (#2371)
 + Fix edge cases checking for `PhanTypeInstantiateInterface` and `PhanTypeInstantiateAbstract` (#2379)
-+ Fix `--output-mode` not being properly handled.
 
 Plugins:
 + Infer a literal string return value when calling `sprintf` on known literal scalar types in `PrintfCheckerPlugin`. (#2131)

@@ -75,7 +75,7 @@ final class CLITest extends BaseTest
     {
         $opts = array_merge(['project-root-directory' => dirname(__DIR__) . '/misc/config/'], $opts);
         $expected_changed_options = array_merge(['directory_list' => ['src']], $expected_changed_options);
-        $unused_cli = CLI::fromRawValues($opts, []);
+        $cli = CLI::fromRawValues($opts, []);
         $changed = [];
         foreach (Config::DEFAULT_CONFIGURATION as $key => $value) {
             $new_value = Config::getValue($key);
@@ -86,11 +86,15 @@ final class CLITest extends BaseTest
         ksort($changed);
         ksort($expected_changed_options);
         $this->assertSame($expected_changed_options, $changed);
+
+        $this->assertSame([], $cli->getFileList());
+
         $printer_class = $extra['printer_class'] ?? null;
         unset($extra['printer_class']);
         if ($printer_class) {
             $this->assertInstanceOf($printer_class, Phan::$printer);
         }
+        $this->assertSame($extra, []);
     }
 
     public function setsConfigOptionsProvider() : array
