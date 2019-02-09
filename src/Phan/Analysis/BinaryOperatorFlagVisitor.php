@@ -122,11 +122,11 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             || $right->hasType(FloatType::instance(false))
         ) {
             if ($left->hasTypeMatchingCallback(
-                function (Type $type) : bool {
+                static function (Type $type) : bool {
                     return !($type instanceof FloatType);
                 }
             ) && $right->hasTypeMatchingCallback(
-                function (Type $type) : bool {
+                static function (Type $type) : bool {
                     return !($type instanceof FloatType);
                 }
             )) {

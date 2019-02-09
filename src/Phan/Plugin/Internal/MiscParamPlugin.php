@@ -49,7 +49,7 @@ final class MiscParamPlugin extends PluginV2 implements
         /**
          * @return void
          */
-        $min_max_callback = function (
+        $min_max_callback = static function (
             CodeBase $code_base,
             Context $context,
             FunctionInterface $function,
@@ -63,7 +63,7 @@ final class MiscParamPlugin extends PluginV2 implements
                 $context,
                 $code_base,
                 ArrayType::instance(false)->asUnionType(),
-                function (UnionType $node_type) use ($context, $function) : IssueInstance {
+                static function (UnionType $node_type) use ($context, $function) : IssueInstance {
                     // "arg#1(values) is %s but {$function->getFQSEN()}() takes array when passed only one arg"
                     return Issue::fromType(Issue::ParamSpecial2)(
                         $context->getFile(),
@@ -82,7 +82,7 @@ final class MiscParamPlugin extends PluginV2 implements
         /**
          * @return void
          */
-        $array_udiff_callback = function (
+        $array_udiff_callback = static function (
             CodeBase $code_base,
             Context $context,
             FunctionInterface $function,
@@ -97,7 +97,7 @@ final class MiscParamPlugin extends PluginV2 implements
                 $context,
                 $code_base,
                 CallableType::instance(false)->asUnionType(),
-                function (UnionType $unused_node_type) use ($context, $function) : IssueInstance {
+                static function (UnionType $unused_node_type) use ($context, $function) : IssueInstance {
                     // "The last argument to {$function->getFQSEN()} must be a callable"
                     return Issue::fromType(Issue::ParamSpecial3)(
                         $context->getFile(),
@@ -116,7 +116,7 @@ final class MiscParamPlugin extends PluginV2 implements
                     $context,
                     $code_base,
                     ArrayType::instance(false)->asUnionType(),
-                    function (UnionType $node_type) use ($context, $function, $i) : IssueInstance {
+                    static function (UnionType $node_type) use ($context, $function, $i) : IssueInstance {
                         // "arg#".($i+1)." is %s but {$function->getFQSEN()}() takes array"
                         return Issue::fromType(Issue::ParamTypeMismatch)(
                             $context->getFile(),
@@ -138,7 +138,7 @@ final class MiscParamPlugin extends PluginV2 implements
          * @throws StopParamAnalysisException
          * to prevent Phan's default incorrect analysis of a call to join()
          */
-        $join_callback = function (
+        $join_callback = static function (
             CodeBase $code_base,
             Context $context,
             FunctionInterface $function,
@@ -153,7 +153,7 @@ final class MiscParamPlugin extends PluginV2 implements
                     $args[0],
                     $context,
                     $code_base,
-                    function (UnionType $node_type) use ($context, $function) : IssueInstance {
+                    static function (UnionType $node_type) use ($context, $function) : IssueInstance {
                         // "arg#1(pieces) is %s but {$function->getFQSEN()}() takes array when passed only 1 arg"
                         return Issue::fromType(Issue::ParamSpecial2)(
                             $context->getFile(),
@@ -252,7 +252,7 @@ final class MiscParamPlugin extends PluginV2 implements
         /**
          * @return void
          */
-        $array_uintersect_uassoc_callback = function (
+        $array_uintersect_uassoc_callback = static function (
             CodeBase $code_base,
             Context $context,
             FunctionInterface $function,
@@ -270,7 +270,7 @@ final class MiscParamPlugin extends PluginV2 implements
                 $context,
                 $code_base,
                 CallableType::instance(false)->asUnionType(),
-                function (UnionType $unused_node_type) use ($context, $function) : IssueInstance {
+                static function (UnionType $unused_node_type) use ($context, $function) : IssueInstance {
                     // "The last argument to {$function->getFQSEN()} must be a callable"
                     return Issue::fromType(Issue::ParamSpecial3)(
                         $context->getFile(),
@@ -288,7 +288,7 @@ final class MiscParamPlugin extends PluginV2 implements
                 $context,
                 $code_base,
                 CallableType::instance(false)->asUnionType(),
-                function (UnionType $unused_node_type) use ($context, $function) : IssueInstance {
+                static function (UnionType $unused_node_type) use ($context, $function) : IssueInstance {
                     // "The second last argument to {$function->getFQSEN()} must be a callable"
                     return Issue::fromType(Issue::ParamSpecial4)(
                         $context->getFile(),
@@ -307,7 +307,7 @@ final class MiscParamPlugin extends PluginV2 implements
                     $context,
                     $code_base,
                     ArrayType::instance(false)->asUnionType(),
-                    function (UnionType $node_type) use ($context, $function, $i) : IssueInstance {
+                    static function (UnionType $node_type) use ($context, $function, $i) : IssueInstance {
                     // "arg#".($i+1)." is %s but {$function->getFQSEN()}() takes array"
                         return Issue::fromType(Issue::ParamTypeMismatch)(
                             $context->getFile(),
@@ -328,7 +328,7 @@ final class MiscParamPlugin extends PluginV2 implements
          * @param Node|int|string|float|null $node
          * @return ?Variable the variable
          */
-        $get_variable = function (
+        $get_variable = static function (
             CodeBase $code_base,
             Context $context,
             $node
@@ -479,7 +479,7 @@ final class MiscParamPlugin extends PluginV2 implements
                 if (!is_string($field_name)) {
                     continue;
                 }
-                $add_variable = function (string $name) use ($context, $field_type, $scope) {
+                $add_variable = static function (string $name) use ($context, $field_type, $scope) {
                     if (!Variable::isValidIdentifier($name)) {
                         return;
                     }

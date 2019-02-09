@@ -761,7 +761,7 @@ class CLI
 
             $this->file_list = array_filter(
                 $this->file_list,
-                function (string $file) use ($exclude_file_set) : bool {
+                static function (string $file) use ($exclude_file_set) : bool {
                     // Handle edge cases such as 'mydir/subdir\subsubdir' on Windows, if mydir/subdir was in the Phan config.
                     return !isset($exclude_file_set[\str_replace('\\', '/', $file)]);
                 }
@@ -1133,13 +1133,13 @@ EOB;
     public static function getFlagSuggestionString(
         string $key
     ) : string {
-        $trim = function (string $s) : string {
+        $trim = static function (string $s) : string {
             return rtrim($s, ':');
         };
-        $generate_suggestion = function (string $suggestion) : string {
+        $generate_suggestion = static function (string $suggestion) : string {
             return (strlen($suggestion) === 1 ? '-' : '--') . $suggestion;
         };
-        $generate_suggestion_text = function (string $suggestion, string ...$other_suggestions) use ($generate_suggestion) : string {
+        $generate_suggestion_text = static function (string $suggestion, string ...$other_suggestions) use ($generate_suggestion) : string {
             $suggestions = array_merge([$suggestion], $other_suggestions);
             return ' (did you mean ' . implode(' or ', array_map($generate_suggestion, $suggestions)) . '?)';
         };
@@ -1218,7 +1218,7 @@ EOB;
                         \RecursiveDirectoryIterator::FOLLOW_SYMLINKS
                     )
                 ),
-                function (\SplFileInfo $file_info) use ($file_extensions, $exclude_file_regex) : bool {
+                static function (\SplFileInfo $file_info) use ($file_extensions, $exclude_file_regex) : bool {
                     if (!in_array($file_info->getExtension(), $file_extensions, true)) {
                         return false;
                     }
@@ -1250,7 +1250,7 @@ EOB;
             $file_path = preg_replace('@^(\.[/\\\\]+)+@', '', $file_path);
             $normalized_file_list[$file_path] = $file_path;
         }
-        usort($normalized_file_list, function (string $a, string $b) : int {
+        usort($normalized_file_list, static function (string $a, string $b) : int {
             // Sort lexicographically by paths **within the results for a directory**,
             // to work around some file systems not returning results lexicographically.
             // Keep directories together by replacing directory separators with the null byte

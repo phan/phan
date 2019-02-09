@@ -123,7 +123,7 @@ class Initializer
         if ($lines === null) {
             return '';
         }
-        return implode('', array_map(function (string $line) : string {
+        return implode('', array_map(static function (string $line) : string {
             return "    $line\n";
         }, $lines));
     }

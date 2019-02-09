@@ -742,7 +742,7 @@ final class ConfigPluginSet extends PluginV2 implements
         }
         // Add user-defined plugins.
         $plugin_set = array_map(
-            function (string $plugin_file_name) : PluginV2 {
+            static function (string $plugin_file_name) : PluginV2 {
                 $plugin_file_name = self::normalizePluginPath($plugin_file_name);
 
                 try {

@@ -210,7 +210,7 @@ class Set extends \SplObjectStorage
              * @param T $element
              * @return object
              */
-            function ($element) {
+            static function ($element) {
                 return clone($element);
             }
         );

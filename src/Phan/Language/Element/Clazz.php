@@ -426,9 +426,9 @@ class Clazz extends AddressableElement
             if ($contains_templated_type) {
                 $parent_type = Type::fromType(
                     $parent_type,
-                    \array_map(function (UnionType $union_type) use ($template_type_map) : UnionType {
+                    \array_map(static function (UnionType $union_type) use ($template_type_map) : UnionType {
                         return UnionType::of(
-                            \array_map(function (Type $type) use ($template_type_map) : Type {
+                            \array_map(static function (Type $type) use ($template_type_map) : Type {
                                 return $template_type_map[$type->getName()] ?? $type;
                             }, $union_type->getTypeSet())
                         );
@@ -877,7 +877,7 @@ class Clazz extends AddressableElement
                 $class_fqsen,
                 $method_name
             );
-            $real_parameter_list = \array_map(function (\Phan\Language\Element\Comment\Parameter $parameter) use ($context) : Parameter {
+            $real_parameter_list = \array_map(static function (\Phan\Language\Element\Comment\Parameter $parameter) use ($context) : Parameter {
                 return $parameter->asRealParameter($context);
             }, $comment_method->getParameterList());
             $method = new Method(
@@ -1442,7 +1442,7 @@ class Clazz extends AddressableElement
 
                 // Map each method parameter
                 $method->setParameterList(
-                    \array_map(function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
+                    \array_map(static function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
 
                         if (!$parameter->getUnionType()->hasTemplateType()) {
                             return $parameter;
@@ -2464,8 +2464,8 @@ class Clazz extends AddressableElement
 
         // A function that maps a list of elements to the
         // total reference count for all elements
-        $list_count = function (array $list) use ($code_base) : int {
-            return \array_reduce($list, function (
+        $list_count = static function (array $list) use ($code_base) : int {
+            return \array_reduce($list, static function (
                 int $count,
                 AddressableElement $element
             ) use ($code_base) : int {
@@ -2638,7 +2638,7 @@ class Clazz extends AddressableElement
         $constant_map = $this->getConstantMap($code_base);
         if (count($constant_map) > 0) {
             $stub .= "\n\n    // constants\n";
-            $stub .= implode("\n", array_map(function (ClassConstant $constant) : string {
+            $stub .= implode("\n", array_map(static function (ClassConstant $constant) : string {
                 return $constant->toStub();
             }, $constant_map));
         }
@@ -2647,12 +2647,12 @@ class Clazz extends AddressableElement
         if (count($property_map) > 0) {
             $stub .= "\n\n    // properties\n";
 
-            $stub .= implode("\n", array_map(function (Property $property) : string {
+            $stub .= implode("\n", array_map(static function (Property $property) : string {
                 return $property->toStub();
             }, $property_map));
         }
         $reflection_class = new \ReflectionClass((string)$this->getFQSEN());
-        $method_map = array_filter($this->getMethodMap($code_base), function (Method $method) use ($reflection_class) : bool {
+        $method_map = array_filter($this->getMethodMap($code_base), static function (Method $method) use ($reflection_class) : bool {
             if ($method->getFQSEN()->isAlternate()) {
                 return false;
             }
@@ -2666,7 +2666,7 @@ class Clazz extends AddressableElement
             $stub .= "\n\n    // methods\n";
 
             $is_interface = $this->isInterface();
-            $stub .= implode("\n", array_map(function (Method $method) use ($is_interface) : string {
+            $stub .= implode("\n", array_map(static function (Method $method) use ($is_interface) : string {
                 return $method->toStub($is_interface);
             }, $method_map));
         }
@@ -2995,7 +2995,7 @@ class Clazz extends AddressableElement
             // Low priority because that is uncommon
             return array_filter(
                 $this->getPropertyMap($code_base),
-                function (Property $property) : bool {
+                static function (Property $property) : bool {
                     return !$property->isDynamicOrFromPHPDoc();
                 }
             );
@@ -3067,7 +3067,7 @@ class Clazz extends AddressableElement
                                 $this->getFQSEN()
                             );
                         }
-                        $template_type_resolver = function (array $unused_arg_list) : UnionType {
+                        $template_type_resolver = static function (array $unused_arg_list) : UnionType {
                             return MixedType::instance(false)->asUnionType();
                         };
                     }

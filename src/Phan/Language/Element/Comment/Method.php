@@ -124,7 +124,7 @@ class Method
     {
         return array_reduce(
             $this->parameters,
-            function (int $carry, Parameter $parameter) : int {
+            static function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isRequired() ? 1 : 0));
             },
             0
@@ -139,7 +139,7 @@ class Method
     {
         return array_reduce(
             $this->parameters,
-            function (int $carry, Parameter $parameter) : int {
+            static function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isOptional() ? 1 : 0));
             },
             0

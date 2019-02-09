@@ -334,7 +334,7 @@ class Phan implements IgnoredFilesFilterInterface
             // analysis
             $analyze_file_path_list = array_filter(
                 $analyze_file_path_list,
-                function (string $file_path) : bool {
+                static function (string $file_path) : bool {
                     return !self::isExcludedAnalysisFile($file_path);
                 }
             );
@@ -364,7 +364,7 @@ class Phan implements IgnoredFilesFilterInterface
              * This worker takes a file and analyzes it
              * @return void
              */
-            $analysis_worker = function (int $i, string $file_path) use ($file_count, $code_base, $temporary_file_mapping, $request) {
+            $analysis_worker = static function (int $i, string $file_path) use ($file_count, $code_base, $temporary_file_mapping, $request) {
                 CLI::progress('analyze', ($i + 1) / $file_count);
                 Analysis::analyzeFile($code_base, $file_path, $request, $temporary_file_mapping[$file_path] ?? null);
             };
@@ -391,13 +391,13 @@ class Phan implements IgnoredFilesFilterInterface
                 $pool = new ForkPool(
                     $process_file_list_map,
                     /** @return void */
-                    function () {
+                    static function () {
                         // Remove any issues that were collected prior to forking
                         // to prevent duplicate issues in the output.
                         self::getIssueCollector()->reset();
                     },
                     $analysis_worker,
-                    function () use ($code_base) : array {
+                    static function () use ($code_base) : array {
                         // This closure is run once, after running analysis_worker on each input.
                         // If there are any plugins defining finalizeProcess(), run those.
                         ConfigPluginSet::instance()->finalizeProcess($code_base);

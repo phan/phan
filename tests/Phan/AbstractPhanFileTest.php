@@ -94,7 +94,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     {
         $files = array_filter(
             scandir($source_dir) ?: [],
-            function (string $filename) : bool {
+            static function (string $filename) : bool {
                 // Ignore directories and hidden files.
                 return !in_array($filename, ['.', '..'], true) && substr($filename, 0, 1) !== '.' && preg_match('@\.php$@', $filename);
             }
@@ -113,7 +113,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             $files,
             array_map(
                 /** @return array{0:array{0:string},1:string} */
-                function (string $filename) use ($source_dir, $expected_dir, $suffix) : array {
+                static function (string $filename) use ($source_dir, $expected_dir, $suffix) : array {
                     return [
                         [self::getFileForPHPVersion($source_dir . DIRECTORY_SEPARATOR . $filename, $suffix)],
                         self::getFileForPHPVersion($expected_dir . DIRECTORY_SEPARATOR . $filename . self::EXPECTED_SUFFIX, $suffix),
@@ -124,7 +124,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         );
     }
 
-    protected function getFileForPHPVersion(string $path, string $suffix) : string
+    protected static function getFileForPHPVersion(string $path, string $suffix) : string
     {
         $suffix_path = $path . $suffix;
         if (file_exists($suffix_path)) {
@@ -177,7 +177,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         Phan::setIssueCollector(new BufferingCollector());
 
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall should not throw Exception for any passing tests
-        Phan::analyzeFileList($this->code_base, function () use ($test_file_list) : array {
+        Phan::analyzeFileList($this->code_base, static function () use ($test_file_list) : array {
             return $test_file_list;
         });
 

@@ -35,7 +35,7 @@ final class FrameTest extends BaseTest
         $this->assertHasEncodedValue('[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ... 5 more element(s)]', range(1, 15));
         $this->assertHasEncodedValue('{"key":"value://something"}', ['key' => 'value://something']);
         $this->assertHasEncodedValue('[]', []);
-        $this->assertHasEncodedValue('Closure', function () {
+        $this->assertHasEncodedValue('Closure', static function () {
         });
         $this->assertHasEncodedValue('stdClass({})', new stdClass());
         $this->assertHasEncodedValue('stdClass({"key":"value","2":"other"})', (object)['key' => 'value', '2' => 'other']);

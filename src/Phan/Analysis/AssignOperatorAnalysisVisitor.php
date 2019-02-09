@@ -410,7 +410,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryConcat(Node $node)
     {
-        return $this->updateTargetWithType($node, function (UnionType $unused_left) : UnionType {
+        return $this->updateTargetWithType($node, static function (UnionType $unused_left) : UnionType {
             // TODO: Check if both sides can cast to string and warn if they can't.
             return StringType::instance(false)->asUnionType();
         });
@@ -430,7 +430,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     public function visitBinaryMod(Node $node)
     {
         $this->warnForInvalidOperandsOfNumericOp($node);
-        return $this->updateTargetWithType($node, function (UnionType $unused_left) : UnionType {
+        return $this->updateTargetWithType($node, static function (UnionType $unused_left) : UnionType {
             // TODO: Check if both sides can cast to string and warn if they can't.
             return IntType::instance(false)->asUnionType();
         });
@@ -460,7 +460,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     public function visitBinaryShiftLeft(Node $node)
     {
         $this->analyzeBinaryShift($node);
-        return $this->updateTargetWithType($node, function (UnionType $unused_left) : UnionType {
+        return $this->updateTargetWithType($node, static function (UnionType $unused_left) : UnionType {
             // TODO: Check if both sides can cast to int and warn if they can't.
             // TODO: Handle both sides being literals
             return IntType::instance(false)->asUnionType();
@@ -473,7 +473,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
     public function visitBinaryShiftRight(Node $node)
     {
         $this->analyzeBinaryShift($node);
-        return $this->updateTargetWithType($node, function (UnionType $unused_left) : UnionType {
+        return $this->updateTargetWithType($node, static function (UnionType $unused_left) : UnionType {
             // TODO: Check if both sides can cast to int and warn if they can't.
             // TODO: Handle both sides being literals
             return IntType::instance(false)->asUnionType();

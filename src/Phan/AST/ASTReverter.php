@@ -63,21 +63,21 @@ class ASTReverter
      */
     public static function init()
     {
-        self::$noop = function (Node $_) : string {
+        self::$noop = static function (Node $_) : string {
             return '(unknown)';
         };
         self::$closure_map = [
-            ast\AST_CLASS_CONST => function (Node $node) : string {
+            ast\AST_CLASS_CONST => static function (Node $node) : string {
                 return self::toShortString($node->children['class']) . '::' . $node->children['const'];
             },
-            ast\AST_CONST => function (Node $node) : string {
+            ast\AST_CONST => static function (Node $node) : string {
                 return self::toShortString($node->children['name']);
             },
-            ast\AST_VAR => function (Node $node) : string {
+            ast\AST_VAR => static function (Node $node) : string {
                 $name_node = $node->children['name'];
                 return '$' . (is_string($name_node) ? $name_node : ('{' . self::toShortString($name_node) . '}'));
             },
-            ast\AST_NAME => function (Node $node) : string {
+            ast\AST_NAME => static function (Node $node) : string {
                 $result = $node->children['name'];
                 switch ($node->flags) {
                     case ast\flags\NAME_FQ:
@@ -88,7 +88,7 @@ class ASTReverter
                         return (string)$result;
                 }
             },
-            ast\AST_ARRAY => function (Node $node) : string {
+            ast\AST_ARRAY => static function (Node $node) : string {
                 $parts = [];
                 foreach ($node->children as $elem) {
                     if (!$elem) {
@@ -113,7 +113,7 @@ class ASTReverter
                 }
             },
             /** @suppress PhanAccessClassConstantInternal */
-            ast\AST_BINARY_OP => function (Node $node) : string {
+            ast\AST_BINARY_OP => static function (Node $node) : string {
                 return \sprintf(
                     "(%s %s %s)",
                     self::toShortString($node->children['left']),
@@ -121,7 +121,7 @@ class ASTReverter
                     self::toShortString($node->children['right'])
                 );
             },
-            ast\AST_PROP => function (Node $node) : string {
+            ast\AST_PROP => static function (Node $node) : string {
                 $prop_node = $node->children['prop'];
                 return \sprintf(
                     '%s->%s',
@@ -129,7 +129,7 @@ class ASTReverter
                     $prop_node instanceof Node ? '{' . self::toShortString($prop_node) . '}' : (string)$prop_node
                 );
             },
-            ast\AST_STATIC_PROP => function (Node $node) : string {
+            ast\AST_STATIC_PROP => static function (Node $node) : string {
                 $prop_node = $node->children['prop'];
                 return \sprintf(
                     '%s::$%s',

@@ -47,7 +47,7 @@ class IssueFixSuggester
         /**
          * @param FullyQualifiedClassName $alternate_fqsen
          */
-        return function ($alternate_fqsen) use ($code_base, $class_closure) : bool {
+        return static function ($alternate_fqsen) use ($code_base, $class_closure) : bool {
             if (!($alternate_fqsen instanceof FullyQualifiedClassName)) {
                 return false;
             }
@@ -63,7 +63,7 @@ class IssueFixSuggester
      */
     public static function createFQSENFilterForClasslikeCategories(CodeBase $code_base, bool $allow_class, bool $allow_trait, bool $allow_interface)
     {
-        return self::createFQSENFilterFromClassFilter($code_base, function (Clazz $class) use ($allow_class, $allow_trait, $allow_interface) : bool {
+        return self::createFQSENFilterFromClassFilter($code_base, static function (Clazz $class) use ($allow_class, $allow_trait, $allow_interface) : bool {
             if ($class->isTrait()) {
                 return $allow_trait;
             } elseif ($class->isInterface()) {
@@ -116,7 +116,7 @@ class IssueFixSuggester
         /**
          * @param string|FullyQualifiedFunctionName $fqsen
          */
-        $generate_type_representation = function ($fqsen) : string {
+        $generate_type_representation = static function ($fqsen) : string {
             return $fqsen . '()';
         };
         $suggestion_text = $prefix . ' ' . implode(' or ', array_map($generate_type_representation, $suggested_fqsens));
@@ -163,7 +163,7 @@ class IssueFixSuggester
         /**
          * @param FullyQualifiedClassName|string $fqsen
          */
-        $generate_type_representation = function ($fqsen) use ($code_base) : string {
+        $generate_type_representation = static function ($fqsen) use ($code_base) : string {
             if (\is_string($fqsen)) {
                 return $fqsen;  // Not a class name, e.g. 'int', 'callable', etc.
             }
@@ -421,7 +421,7 @@ class IssueFixSuggester
             $context,
             true
         );
-        return array_map(function (FullyQualifiedFunctionName $fqsen) : string {
+        return array_map(static function (FullyQualifiedFunctionName $fqsen) : string {
             return $fqsen . '()';
         }, $suggested_fqsens);
     }

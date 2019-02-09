@@ -226,7 +226,7 @@ class Func extends AddressableElement implements FunctionInterface
 
         $func->setNumberOfRequiredParameters(\array_reduce(
             $parameter_list,
-            function (int $carry, Parameter $parameter) : int {
+            static function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isRequired() ? 1 : 0));
             },
             0
@@ -234,7 +234,7 @@ class Func extends AddressableElement implements FunctionInterface
 
         $func->setNumberOfOptionalParameters(\array_reduce(
             $parameter_list,
-            function (int $carry, Parameter $parameter) : int {
+            static function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isOptional() ? 1 : 0));
             },
             0
@@ -271,7 +271,7 @@ class Func extends AddressableElement implements FunctionInterface
 
             // FIXME properly handle self/static in closures declared within methods.
             if ($union_type->hasSelfType()) {
-                $union_type = $union_type->makeFromFilter(function (Type $type) : bool {
+                $union_type = $union_type->makeFromFilter(static function (Type $type) : bool {
                     return !$type->isSelfType();
                 });
                 if ($context->isInClassScope()) {
@@ -455,7 +455,7 @@ class Func extends AddressableElement implements FunctionInterface
         if ($this->returnsRef()) {
             $stub .= '&';
         }
-        $stub .= '(' . implode(', ', array_map(function (Parameter $parameter) : string {
+        $stub .= '(' . implode(', ', array_map(static function (Parameter $parameter) : string {
             return $parameter->toStubString();
         }, $this->getRealParameterList())) . ')';
         if ($this->real_return_type && !$this->getRealReturnType()->isEmpty()) {

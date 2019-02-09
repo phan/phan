@@ -55,7 +55,7 @@ final class ClassStringType extends StringType
         if (!$template_union_type) {
             return UnionType::empty();
         }
-        return $template_union_type->makeFromFilter(function (Type $type) : bool {
+        return $template_union_type->makeFromFilter(static function (Type $type) : bool {
             return $type instanceof TemplateType || $type->isObjectWithKnownFQSEN();
         });
     }

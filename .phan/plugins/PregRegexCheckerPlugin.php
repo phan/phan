@@ -38,7 +38,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
          * @suppress PhanParamSuspiciousOrder 100% deliberate use of varying regex and constant $subject for preg_match
          * @return ?array
          */
-        $err = with_disabled_phan_error_handler(function () use ($pattern) {
+        $err = with_disabled_phan_error_handler(static function () use ($pattern) {
             $old_error_reporting = error_reporting();
             \error_reporting(0);
             \ob_start();

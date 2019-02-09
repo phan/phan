@@ -40,7 +40,7 @@ EOT;
     private static function getSortedIssueMap() : array
     {
         $map = Issue::issueMap();
-        uasort($map, function (Issue $lhs, Issue $rhs) : int {
+        uasort($map, static function (Issue $lhs, Issue $rhs) : int {
             // Order by category, then by the issue name (natural order)
             return ($lhs->getCategory() <=> $rhs->getCategory())
                 // ?: ($rhs->getSeverity() <=> $lhs->getSeverity())
@@ -202,7 +202,7 @@ EOT;
         if ($issue instanceof Issue) {
             self::debugLog("Found $issue_name\n");
             /** @param array<int,string> $unused_match */
-            $text = preg_replace_callback('@\n```\n[^\n]*\n```@', function ($unused_match) use ($issue) : string {
+            $text = preg_replace_callback('@\n```\n[^\n]*\n```@', static function ($unused_match) use ($issue) : string {
                 return "\n```\n{$issue->getTemplateRaw()}\n```";
             }, $text);
             if (!preg_match('@```php|https?://@i', $text)) {
@@ -271,7 +271,7 @@ EOT;
             }
         }
         // Put the longest files first, we overwrite issue names even if they were seen already
-        usort($records, function (UnitTestRecord $a, UnitTestRecord $b) : int {
+        usort($records, static function (UnitTestRecord $a, UnitTestRecord $b) : int {
             return (strlen($b->src_contents) <=> strlen($a->src_contents)) ?: strcmp($a->src_filename, $b->src_filename);
         });
 

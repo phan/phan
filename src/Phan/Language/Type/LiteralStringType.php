@@ -112,7 +112,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
              * @param array{0:string} $match
              * @return string
              */
-            function (array $match) {
+            static function (array $match) {
                 $c = $match[0];
                 return self::ESCAPE_CHARACTER_LOOKUP[$c] ?? \sprintf('\\x%02x', \ord($c));
             },
@@ -140,7 +140,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
         $escaped_string = preg_replace_callback(
             '/\\\\(?:[\'\\\\trn]|x[0-9a-fA-F]{2})/',
             /** @param array{0:string} $matches */
-            function (array $matches) : string {
+            static function (array $matches) : string {
                 $x = $matches[0];
                 if (\strlen($x) === 2) {
                     // Parses one of \t \r \n \\ \'

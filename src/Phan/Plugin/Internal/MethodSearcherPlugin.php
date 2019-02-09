@@ -122,7 +122,7 @@ final class MethodSearcherPlugin extends PluginV2 implements
             fwrite(STDERR, "Phoogle could not find '$fqsen' in any namespace\n");
             exit(EXIT_FAILURE);
         }
-        return array_map(function (FullyQualifiedClassName $fqsen) use ($type) : Type {
+        return array_map(static function (FullyQualifiedClassName $fqsen) use ($type) : Type {
             return $fqsen->asType()->withIsNullable($type->getIsNullable());
         }, $fqsens);
     }

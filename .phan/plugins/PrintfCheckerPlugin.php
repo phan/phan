@@ -207,7 +207,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             }
             $result = with_disabled_phan_error_handler(
                 /** @return string */
-                function () use ($format_string, $sprintf_args) {
+                static function () use ($format_string, $sprintf_args) {
                     return @vsprintf($format_string, $sprintf_args);
                 }
             );
@@ -604,7 +604,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      */
     private function getSpecStringsRepresentation(array $specs) : string
     {
-        return \implode(',', \array_unique(\array_map(function (ConversionSpec $spec) : string {
+        return \implode(',', \array_unique(\array_map(static function (ConversionSpec $spec) : string {
             return $spec->directive;
         }, $specs)));
     }

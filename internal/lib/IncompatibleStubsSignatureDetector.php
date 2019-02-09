@@ -90,7 +90,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
                     \RecursiveDirectoryIterator::FOLLOW_SYMLINKS
                 )
             ),
-            function (\SplFileInfo $file_info) : bool {
+            static function (\SplFileInfo $file_info) : bool {
                 if ($file_info->getExtension() !== 'php') {
                     return false;
                 }

@@ -132,7 +132,7 @@ class Ordering
                  * @param array{depth:int,file:string} $a
                  * @param array{depth:int,file:string} $b
                  */
-                function (array $a, array $b) : int {
+                static function (array $a, array $b) : int {
                     return ($a['depth'] <=> $b['depth']) ?:
                            strcmp($a['file'], $b['file']);
                 }

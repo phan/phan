@@ -66,7 +66,7 @@ class Daemon
                      * @param int|null $pid
                      * @return void
                      */
-                    function ($signo, $status = null, $pid = null) use (&$got_signal) {
+                    static function ($signo, $status = null, $pid = null) use (&$got_signal) {
                         $got_signal = true;
                         Request::childSignalHandler($signo, $status, $pid);
                     }
@@ -82,7 +82,7 @@ class Daemon
                  * @param int $line
                  * @return bool
                  */
-                $previous_error_handler = set_error_handler(function ($severity, $message, $file, $line) use (&$previous_error_handler) {
+                $previous_error_handler = set_error_handler(static function ($severity, $message, $file, $line) use (&$previous_error_handler) {
                     self::debugf("In new error handler '$message'");
                     if (!preg_match('/stream_socket_accept/i', $message)) {
                         return $previous_error_handler($severity, $message, $file, $line);
@@ -147,7 +147,7 @@ class Daemon
                      * @param int $line
                      * @return bool
                      */
-                    function ($severity, $message, $file, $line) use (&$previous_error_handler) {
+                    static function ($severity, $message, $file, $line) use (&$previous_error_handler) {
                         self::debugf("In new error handler '$message'");
                         if (!preg_match('/stream_socket_accept/i', $message)) {
                             return $previous_error_handler($severity, $message, $file, $line);

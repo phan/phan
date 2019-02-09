@@ -628,7 +628,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         $union_type = $this->__invoke($node->children['type']);
 
         // Make each nullable
-        return $union_type->asMappedUnionType(function (Type $type) : Type {
+        return $union_type->asMappedUnionType(static function (Type $type) : Type {
             return $type->withIsNullable(true);
         });
     }
@@ -2132,7 +2132,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         if ($flags === \ast\flags\UNARY_MINUS) {
             $this->warnAboutInvalidUnaryOp(
                 $node,
-                function (Type $type) : bool {
+                static function (Type $type) : bool {
                     if ($type instanceof LiteralStringType) {
                         // Strings are invalid if they're not numeric
                         return \is_numeric($type->getValue());
@@ -2148,7 +2148,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         } elseif ($flags === \ast\flags\UNARY_PLUS) {
             $this->warnAboutInvalidUnaryOp(
                 $node,
-                function (Type $type) : bool {
+                static function (Type $type) : bool {
                     if ($type instanceof LiteralStringType) {
                         // Strings are invalid if they're not numeric
                         return \is_numeric($type->getValue());
@@ -2164,7 +2164,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         } elseif ($flags === \ast\flags\UNARY_BITWISE_NOT) {
             $this->warnAboutInvalidUnaryOp(
                 $node,
-                function (Type $type) : bool {
+                static function (Type $type) : bool {
                     // Adding $type instanceof StringType in case it becomes necessary later
                     return $type->isValidNumericOperand() || $type instanceof StringType;
                 },
