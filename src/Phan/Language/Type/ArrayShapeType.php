@@ -672,7 +672,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             }
             $closure = TemplateType::combineParameterClosures(
                 $closure,
-                function (UnionType $union_type, Context $context) use ($key, $field_closure) : UnionType {
+                static function (UnionType $union_type, Context $context) use ($key, $field_closure) : UnionType {
                     $result = UnionType::empty();
                     foreach ($union_type->getTypeSet() as $type) {
                         if (!($type instanceof ArrayShapeType)) {

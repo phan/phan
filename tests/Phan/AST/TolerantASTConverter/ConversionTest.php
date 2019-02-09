@@ -70,7 +70,7 @@ final class ConversionTest extends BaseTest
             }
             $token_counts[$file] = count(token_get_all($contents));
         }
-        usort($files, function (string $path1, string $path2) use ($token_counts) : int {
+        usort($files, static function (string $path1, string $path2) use ($token_counts) : int {
             return $token_counts[$path1] <=> $token_counts[$path2];
         });
     }

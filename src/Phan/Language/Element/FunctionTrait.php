@@ -546,7 +546,7 @@ trait FunctionTrait
     public function getRealParameterList()
     {
         // Excessive cloning, to ensure that this stays immutable.
-        return array_map(/** @return Parameter */ function (Parameter $param) {
+        return array_map(/** @return Parameter */ static function (Parameter $param) {
             return clone($param);
         }, $this->real_parameter_list);
     }
@@ -559,7 +559,7 @@ trait FunctionTrait
      */
     public function setRealParameterList(array $parameter_list)
     {
-        $this->real_parameter_list = array_map(/** @return Parameter */ function (Parameter $param) {
+        $this->real_parameter_list = array_map(/** @return Parameter */ static function (Parameter $param) {
             return clone($param);
         }, $parameter_list);
 
@@ -1121,7 +1121,7 @@ trait FunctionTrait
     {
         $this->setParameterList(
             \array_map(
-                function (Parameter $parameter) : Parameter {
+                static function (Parameter $parameter) : Parameter {
                     return clone($parameter);
                 },
                 $this->getParameterList()
@@ -1146,7 +1146,7 @@ trait FunctionTrait
 
     private function createFunctionLikeDeclarationType() : FunctionLikeDeclarationType
     {
-        $params = array_map(function (Parameter $parameter) : ClosureDeclarationParameter {
+        $params = array_map(static function (Parameter $parameter) : ClosureDeclarationParameter {
             return $parameter->asClosureDeclarationParameter();
         }, $this->getParameterList());
 
@@ -1453,12 +1453,12 @@ trait FunctionTrait
             return;
         }
         // Resolve the template types based on the parameters passed to the function
-        $analyzer = function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args) use ($parameter_extracter_map) : UnionType {
+        $analyzer = static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args) use ($parameter_extracter_map) : UnionType {
             $args_types = array_map(
                 /**
                  * @param mixed $node
                  */
-                function ($node) use ($code_base, $context) : UnionType {
+                static function ($node) use ($code_base, $context) : UnionType {
                     return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node);
                 },
                 $args
@@ -1490,7 +1490,7 @@ trait FunctionTrait
             }
             $closure = TemplateType::combineParameterClosures(
                 $closure,
-                function (array $parameters, Context $context) use ($code_base, $i, $closure_for_type) : UnionType {
+                static function (array $parameters, Context $context) use ($code_base, $i, $closure_for_type) : UnionType {
                     $param_value = $parameters[$i] ?? null;
                     if ($param_value !== null) {
                         if ($param_value instanceof UnionType) {
@@ -1570,7 +1570,7 @@ trait FunctionTrait
                 return;
             }
         } else {
-            $union_type_extractor = function (CodeBase $unused_code_base, Context $unused_context, array $unused_args) use ($union_type) : UnionType {
+            $union_type_extractor = static function (CodeBase $unused_code_base, Context $unused_context, array $unused_args) use ($union_type) : UnionType {
                 return $union_type;
             };
         }
@@ -1587,7 +1587,7 @@ trait FunctionTrait
     {
         switch ($assertion_type) {
             case Assertion::IS_OF_TYPE:
-                return function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i, $union_type_extractor) {
+                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i, $union_type_extractor) {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
                         return;
@@ -1598,7 +1598,7 @@ trait FunctionTrait
                     $context->setScope($new_context->getScope());
                 };
             case Assertion::IS_NOT_OF_TYPE:
-                return function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i, $union_type_extractor) {
+                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i, $union_type_extractor) {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
                         return;
@@ -1609,7 +1609,7 @@ trait FunctionTrait
                     $context->setScope($new_context->getScope());
                 };
             case Assertion::IS_TRUE:
-                return function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i) {
+                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i) {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
                         return;
@@ -1619,7 +1619,7 @@ trait FunctionTrait
                     $context->setScope($new_context->getScope());
                 };
             case Assertion::IS_FALSE:
-                return function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i) {
+                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i) {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
                         return;
@@ -1659,7 +1659,7 @@ trait FunctionTrait
         if (!$parameter_extractor_map) {
             return null;
         }
-        return function (CodeBase $unused_code_base, Context $context, array $args) use ($type, $parameter_extractor_map) : UnionType {
+        return static function (CodeBase $unused_code_base, Context $context, array $args) use ($type, $parameter_extractor_map) : UnionType {
             $template_type_map = [];
             foreach ($parameter_extractor_map as $template_type_name => $closure) {
                 $template_type_map[$template_type_name] = $closure($args, $context);
@@ -1703,7 +1703,7 @@ trait FunctionTrait
      */
     protected function getRealParameterStubText() : string
     {
-        return implode(', ', array_map(function (Parameter $parameter) : string {
+        return implode(', ', array_map(static function (Parameter $parameter) : string {
             return $parameter->toStubString();
         }, $this->getRealParameterList()));
     }

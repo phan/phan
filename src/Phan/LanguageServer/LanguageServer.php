@@ -257,14 +257,14 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                  * @param int|null $pid
                  * @return void
                  */
-                function ($signo, $status = null, $pid = null) use (&$got_signal) {
+                static function ($signo, $status = null, $pid = null) use (&$got_signal) {
                     $got_signal = true;
                     Request::childSignalHandler($signo, $status, $pid);
                 }
             );
         }
 
-        $make_language_server = function (ProtocolStreamReader $in, ProtocolStreamWriter $out) use ($code_base, $file_path_lister) : LanguageServer {
+        $make_language_server = static function (ProtocolStreamReader $in, ProtocolStreamWriter $out) use ($code_base, $file_path_lister) : LanguageServer {
             return new LanguageServer(
                 $in,
                 $out,

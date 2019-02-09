@@ -243,7 +243,7 @@ EOT;
      */
     public static function sortSignatureMap(array &$phan_signatures)
     {
-        uksort($phan_signatures, function (string $a, string $b) : int {
+        uksort($phan_signatures, static function (string $a, string $b) : int {
             $a = strtolower(str_replace("'", "\x0", $a));
             $b = strtolower(str_replace("'", "\x0", $b));
             return $a <=> $b;

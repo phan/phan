@@ -183,7 +183,7 @@ final class CompletionRequest extends NodeInfoRequest
                      * @param string $a
                      * @param string $b
                      */
-                    function ($a, $b) : int {
+                    static function ($a, $b) : int {
                         $a = ltrim((string)$a, '$');
                         $b = ltrim((string)$b, '$');
                         return (strtolower($a) <=> strtolower($b)) ?: ($a <=> $b);

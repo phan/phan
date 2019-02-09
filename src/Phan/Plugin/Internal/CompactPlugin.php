@@ -46,7 +46,7 @@ final class CompactPlugin extends PluginV2 implements
             Func $unused_func,
             array $args
         ) {
-            $maybe_emit_issue = function (string $variable_name, $arg = null) use ($code_base, $context) {
+            $maybe_emit_issue = static function (string $variable_name, $arg = null) use ($code_base, $context) {
                 if (!$context->getScope()->hasVariableWithName($variable_name)) {
                     Issue::maybeEmitWithParameters(
                         $code_base,

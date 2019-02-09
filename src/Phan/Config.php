@@ -1030,7 +1030,7 @@ class Config
          * @param mixed $value
          * @return ?string
          */
-        $is_scalar = function ($value) {
+        $is_scalar = static function ($value) {
             if (is_null($value) || is_scalar($value)) {
                 return null;
             }
@@ -1040,7 +1040,7 @@ class Config
          * @param mixed $value
          * @return ?string
          */
-        $is_bool = function ($value) {
+        $is_bool = static function ($value) {
             if (is_bool($value)) {
                 return null;
             }
@@ -1050,7 +1050,7 @@ class Config
          * @param mixed $value
          * @return ?string
          */
-        $is_string_or_null = function ($value) {
+        $is_string_or_null = static function ($value) {
             if (is_null($value) || is_string($value)) {
                 return null;
             }
@@ -1060,7 +1060,7 @@ class Config
          * @param mixed $value
          * @return ?string
          */
-        $is_string = function ($value) {
+        $is_string = static function ($value) {
             if (is_string($value)) {
                 return null;
             }
@@ -1070,7 +1070,7 @@ class Config
          * @param mixed $value
          * @return ?string
          */
-        $is_array = function ($value) {
+        $is_array = static function ($value) {
             if (is_array($value)) {
                 return null;
             }
@@ -1080,7 +1080,7 @@ class Config
          * @param mixed $value
          * @return ?string
          */
-        $is_int_strict = function ($value) {
+        $is_int_strict = static function ($value) {
             if (is_int($value)) {
                 return null;
             }
@@ -1090,7 +1090,7 @@ class Config
          * @param mixed $value
          * @return ?string
          */
-        $is_string_list = function ($value) {
+        $is_string_list = static function ($value) {
             if (!is_array($value)) {
                 return 'Expected a list of strings' . self::errSuffixGotType($value);
             }
@@ -1105,7 +1105,7 @@ class Config
          * @param mixed $value
          * @return ?string
          */
-        $is_associative_string_array = function ($value) {
+        $is_associative_string_array = static function ($value) {
             if (!is_array($value)) {
                 return 'Expected an associative array mapping strings to strings'  . self::errSuffixGotType($value);
             }

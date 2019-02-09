@@ -151,7 +151,7 @@ final class TemplateType extends Type
         /**
          * @param mixed $params
          */
-        return function ($params, Context $context) use ($left, $right) : UnionType {
+        return static function ($params, Context $context) use ($left, $right) : UnionType {
             return $left($params, $context)->withUnionType($right($params, $context));
         };
     }
@@ -164,7 +164,7 @@ final class TemplateType extends Type
     public function getTemplateTypeExtractorClosure(CodeBase $unused_code_base, TemplateType $template_type)
     {
         if ($this === $template_type) {
-            return function (UnionType $type, Context $_) : UnionType {
+            return static function (UnionType $type, Context $_) : UnionType {
                 return $type;
             };
         }

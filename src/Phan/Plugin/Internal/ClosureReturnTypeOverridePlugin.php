@@ -156,7 +156,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
                 return ClosureType::instance(false)->asUnionType();
             }
             $types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0], true);
-            $types = $types->makeFromFilter(function (Type $type) : bool {
+            $types = $types->makeFromFilter(static function (Type $type) : bool {
                 if ($type instanceof ClosureType) {
                     return $type->hasKnownFQSEN();
                 }
@@ -282,7 +282,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
         /**
          * @param Node|int|string|float|null $argument
          */
-        return function ($argument, int $i) use ($code_base, $context, &$cache) : UnionType {
+        return static function ($argument, int $i) use ($code_base, $context, &$cache) : UnionType {
             $argument_type = $cache[$i] ?? null;
             if (isset($argument_type)) {
                 return $argument_type;

@@ -459,7 +459,7 @@ final class UnionTypeTest extends BaseTest
         $types = $union_type->getTypeSet();
         $type = reset($types);
 
-        $array_type = function (Type $type) : GenericArrayType {
+        $array_type = static function (Type $type) : GenericArrayType {
             return self::createGenericArrayTypeWithMixedKey($type, false);
         };
 

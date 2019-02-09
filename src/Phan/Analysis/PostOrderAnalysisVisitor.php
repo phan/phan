@@ -3244,7 +3244,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         try {
             // Even though we don't modify the parameter list, we still need to know the types
             // -- as an optimization, we don't run quick mode again if the types didn't change?
-            $parameter_list = \array_map(/** @return Parameter */ function (Parameter $parameter) {
+            $parameter_list = \array_map(/** @return Parameter */ static function (Parameter $parameter) {
                 return clone($parameter);
             }, $method->getParameterList());
 
@@ -3329,7 +3329,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         try {
             // Even though we don't modify the parameter list, we still need to know the types
             // -- as an optimization, we don't run quick mode again if the types didn't change?
-            $parameter_list = \array_map(function (Parameter $parameter) : Parameter {
+            $parameter_list = \array_map(static function (Parameter $parameter) : Parameter {
                 return $parameter->cloneAsNonVariadic();
             }, $method->getParameterList());
 

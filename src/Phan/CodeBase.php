@@ -643,7 +643,7 @@ class CodeBase
         $this->fqsen_class_map_user_defined->offsetSet($fqsen, $class);
         if ($this->undo_tracker) {
             // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-            $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($fqsen) {
+            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($fqsen) {
                 Daemon::debugf("Undoing addClass %s\n", $fqsen);
                 $inner->fqsen_class_map->offsetUnset($fqsen);
                 $inner->fqsen_class_map_user_defined->offsetUnset($fqsen);
@@ -669,7 +669,7 @@ class CodeBase
         $this->parsed_namespace_maps[$file][$key] = $namespace_map;
         if ($this->undo_tracker) {
             // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-            $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($file, $key) {
+            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($file, $key) {
                 Daemon::debugf("Undoing addParsedNamespaceMap file = %s namespace = %s\n", $file, $key);
                 unset($inner->parsed_namespace_maps[$file][$key]);
                 // Hack: addParsedNamespaceMap is called at least once per each file, so unset file-level suppressions at the same time in daemon mode
@@ -746,7 +746,7 @@ class CodeBase
             // TODO: Track a count of aliases instead? This doesn't work in daemon mode if multiple files add the same alias to the same class.
             // TODO: Allow .phan/config.php to specify aliases or precedences for aliases?
             // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-            $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($original, $alias_record) {
+            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($original, $alias_record) {
                 $fqsen_alias_map = $inner->fqsen_alias_map[$original] ?? null;
                 if ($fqsen_alias_map) {
                     $fqsen_alias_map->detach($alias_record);
@@ -978,7 +978,7 @@ class CodeBase
         if ($this->undo_tracker) {
             // The addClass's recordUndo should remove the class map. Only need to remove it from method_set
             // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-            $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($method) {
+            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($method) {
                 $inner->method_set->detach($method);
             });
         }
@@ -1117,7 +1117,7 @@ class CodeBase
 
         if ($this->undo_tracker) {
             // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-            $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($function) {
+            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($function) {
                 Daemon::debugf("Undoing addFunction on %s\n", $function->getFQSEN());
                 unset($inner->fqsen_func_map[$function->getFQSEN()]);
             });
@@ -1230,7 +1230,7 @@ class CodeBase
         ] = $global_constant;
         if ($this->undo_tracker) {
             // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-            $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($global_constant) {
+            $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($global_constant) {
                 Daemon::debugf("Undoing addGlobalConstant on %s\n", $global_constant->getFQSEN());
                 unset($inner->fqsen_global_constant_map[$global_constant->getFQSEN()]);
             });
@@ -1827,7 +1827,7 @@ class CodeBase
         usort($namespaces_for_class, 'strcmp');
 
         /** @suppress PhanThrowTypeAbsentForCall */
-        return array_map(function (string $namespace_name) use ($class_name) : FullyQualifiedClassName {
+        return array_map(static function (string $namespace_name) use ($class_name) : FullyQualifiedClassName {
             return FullyQualifiedClassName::make($namespace_name, $class_name);
         }, $namespaces_for_class);
     }
@@ -1857,7 +1857,7 @@ class CodeBase
         usort($namespaces_for_function, 'strcmp');
 
         /** @suppress PhanThrowTypeAbsentForCall */
-        return array_map(function (string $namespace_name) use ($function_name) : FullyQualifiedFunctionName {
+        return array_map(static function (string $namespace_name) use ($function_name) : FullyQualifiedFunctionName {
             return FullyQualifiedFunctionName::make($namespace_name, $function_name);
         }, $namespaces_for_function);
     }
@@ -1970,7 +1970,7 @@ class CodeBase
         /**
          * @suppress PhanThrowTypeAbsentForCall
          */
-        return array_map(function (string $function_name_lower) use ($namespace, $function_names_in_namespace) : FullyQualifiedFunctionName {
+        return array_map(static function (string $function_name_lower) use ($namespace, $function_names_in_namespace) : FullyQualifiedFunctionName {
             $function_name = $function_names_in_namespace[$function_name_lower];
             return FullyQualifiedFunctionName::make($namespace, $function_name);
         }, $suggested_function_names);
@@ -2025,7 +2025,7 @@ class CodeBase
          * @return string|FullyQualifiedClassName
          * @suppress PhanThrowTypeAbsentForCall
          */
-        return array_map(function (string $class_name_lower) use ($namespace, $class_names_in_namespace) {
+        return array_map(static function (string $class_name_lower) use ($namespace, $class_names_in_namespace) {
             if (!\array_key_exists($class_name_lower, $class_names_in_namespace)) {
                 // This is a builtin type
                 return $class_name_lower;

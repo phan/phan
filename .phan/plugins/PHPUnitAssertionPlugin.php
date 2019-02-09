@@ -100,7 +100,7 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
                 // (at)param mixed $actual
                 // (at)phan-assert T $actual
                 return $method->createClosureForUnionTypeExtractorAndAssertionType(
-                    function (CodeBase $code_base, Context $context, array $args) : UnionType {
+                    static function (CodeBase $code_base, Context $context, array $args) : UnionType {
                         if (\count($args) < 2) {
                             return UnionType::empty();
                         }
@@ -198,7 +198,7 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
                 // (at)param mixed $actual
                 // (at)phan-assert T $actual
                 return $method->createClosureForUnionTypeExtractorAndAssertionType(
-                    function (CodeBase $code_base, Context $context, array $args) : UnionType {
+                    static function (CodeBase $code_base, Context $context, array $args) : UnionType {
                         if (\count($args) < 2) {
                             return UnionType::empty();
                         }

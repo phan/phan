@@ -275,7 +275,7 @@ EOT;
             }
             $results[$config_name] = $entry;
         }
-        uasort($results, function (ConfigEntry $a, ConfigEntry $b) : int {
+        uasort($results, static function (ConfigEntry $a, ConfigEntry $b) : int {
             return
                 $a->getCategoryIndex() <=> $b->getCategoryIndex() ?:
                 strcasecmp($a->getCategory(), $b->getCategory()) ?:

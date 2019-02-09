@@ -69,10 +69,10 @@ trait ConditionVisitorUtil
         return $this->updateVariableWithConditionalFilter(
             $var_node,
             $context,
-            function (UnionType $type) : bool {
+            static function (UnionType $type) : bool {
                 return $type->containsTruthy();
             },
-            function (UnionType $type) : UnionType {
+            static function (UnionType $type) : UnionType {
                 return $type->nonTruthyClone();
             },
             $suppress_issues
@@ -85,10 +85,10 @@ trait ConditionVisitorUtil
         return $this->updateVariableWithConditionalFilter(
             $var_node,
             $context,
-            function (UnionType $type) : bool {
+            static function (UnionType $type) : bool {
                 return $type->containsFalsey();
             },
-            function (UnionType $type) : UnionType {
+            static function (UnionType $type) : UnionType {
                 return $type->nonFalseyClone();
             },
             $suppress_issues
@@ -101,10 +101,10 @@ trait ConditionVisitorUtil
         return $this->updateVariableWithConditionalFilter(
             $var_node,
             $context,
-            function (UnionType $type) : bool {
+            static function (UnionType $type) : bool {
                 return $type->containsNullable();
             },
-            function (UnionType $type) : UnionType {
+            static function (UnionType $type) : UnionType {
                 return $type->nonNullableClone();
             },
             $suppress_issues
@@ -125,26 +125,26 @@ trait ConditionVisitorUtil
         }
         if ($strict_equality) {
             if (is_int($value)) {
-                $cb = function (Type $type) use ($value) : bool {
+                $cb = static function (Type $type) use ($value) : bool {
                     return $type instanceof LiteralIntType && $type->getValue() === $value;
                 };
             } else { // string
-                $cb = function (Type $type) use ($value) : bool {
+                $cb = static function (Type $type) use ($value) : bool {
                     return $type instanceof LiteralStringType && $type->getValue() === $value;
                 };
             }
         } else {
-            $cb = function (Type $type) use ($value) : bool {
+            $cb = static function (Type $type) use ($value) : bool {
                 return $type instanceof LiteralTypeInterface && $type->getValue() == $value;
             };
         }
         return $this->updateVariableWithConditionalFilter(
             $var_node,
             $context,
-            function (UnionType $union_type) use ($cb) : bool {
+            static function (UnionType $union_type) use ($cb) : bool {
                 return $union_type->hasTypeMatchingCallback($cb);
             },
-            function (UnionType $union_type) use ($cb) : UnionType {
+            static function (UnionType $union_type) use ($cb) : UnionType {
                 $has_nullable = false;
                 foreach ($union_type->getTypeSet() as $type) {
                     if ($cb($type)) {
@@ -169,10 +169,10 @@ trait ConditionVisitorUtil
         return $this->updateVariableWithConditionalFilter(
             $var_node,
             $context,
-            function (UnionType $type) : bool {
+            static function (UnionType $type) : bool {
                 return $type->containsFalse();
             },
-            function (UnionType $type) : UnionType {
+            static function (UnionType $type) : UnionType {
                 return $type->nonFalseClone();
             },
             false
@@ -184,10 +184,10 @@ trait ConditionVisitorUtil
         return $this->updateVariableWithConditionalFilter(
             $var_node,
             $context,
-            function (UnionType $type) : bool {
+            static function (UnionType $type) : bool {
                 return $type->containsTrue();
             },
-            function (UnionType $type) : UnionType {
+            static function (UnionType $type) : UnionType {
                 return $type->nonTrueClone();
             },
             false
@@ -357,7 +357,7 @@ trait ConditionVisitorUtil
                 $variable = clone($variable);
 
                 // TODO: Filter out nullable types
-                $union_type = $variable->getUnionType()->makeFromFilter(function (Type $type) use ($expr_value, $flags) : bool {
+                $union_type = $variable->getUnionType()->makeFromFilter(static function (Type $type) use ($expr_value, $flags) : bool {
                     // @phan-suppress-next-line PhanAccessMethodInternal
                     return $type->canSatisfyComparison($expr_value, $flags);
                 });
@@ -793,7 +793,7 @@ trait ConditionVisitorUtil
         if ($excluded_type->isEmpty()) {
             return $affected_type;
         }
-        return $affected_type->makeFromFilter(function (Type $type) use ($code_base, $excluded_type) : bool {
+        return $affected_type->makeFromFilter(static function (Type $type) use ($code_base, $excluded_type) : bool {
             return $type instanceof MixedType || !$type->asExpandedTypes($code_base)->canCastToUnionType($excluded_type);
         });
     }

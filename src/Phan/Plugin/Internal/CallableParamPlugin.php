@@ -38,7 +38,7 @@ final class CallableParamPlugin extends PluginV2 implements
         if ($closure !== null) {
             return $closure;
         }
-        $closure = function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args) use ($callable_params, $class_params) {
+        $closure = static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args) use ($callable_params, $class_params) {
             // TODO: Implement support for variadic callable arguments.
             foreach ($callable_params as $i) {
                 $arg = $args[$i] ?? null;
@@ -93,19 +93,19 @@ final class CallableParamPlugin extends PluginV2 implements
     private function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
     {
         $result = [];
-        $add_callable_checker_closure = function (FunctionInterface $function) use (&$result) {
+        $add_callable_checker_closure = static function (FunctionInterface $function) use (&$result) {
             $callable_params = [];
             $class_params = [];
             foreach ($function->getParameterList() as $i => $param) {
                 // If there's a type such as Closure|string|int, don't automatically assume that any string or array passed in is meant to be a callable.
                 // Explicitly require at least one type to be `callable`
-                if ($param->getUnionType()->hasTypeMatchingCallback(function (Type $type) : bool {
+                if ($param->getUnionType()->hasTypeMatchingCallback(static function (Type $type) : bool {
                     // TODO: More specific closure for CallableDeclarationType
                     return $type instanceof CallableInterface;
                 })) {
                     $callable_params[] = $i;
                 }
-                if ($param->getUnionType()->hasTypeMatchingCallback(function (Type $type) : bool {
+                if ($param->getUnionType()->hasTypeMatchingCallback(static function (Type $type) : bool {
                     return $type instanceof ClassStringType;
                 })) {
                     $class_params[] = $i;
@@ -119,14 +119,14 @@ final class CallableParamPlugin extends PluginV2 implements
             $result[$function->getFQSEN()->__toString()] = self::generateClosure($callable_params, $class_params);
         };
 
-        $add_another_closure = function (string $fqsen, Closure $closure) use (&$result) {
+        $add_another_closure = static function (string $fqsen, Closure $closure) use (&$result) {
             $result[$fqsen] = ConfigPluginSet::mergeAnalyzeFunctionCallClosures(
                 $closure,
                 $result[$fqsen] ?? null
             );
         };
 
-        $add_misc_closures = function (FunctionInterface $function) use ($add_callable_checker_closure, $add_another_closure, $code_base) {
+        $add_misc_closures = static function (FunctionInterface $function) use ($add_callable_checker_closure, $add_another_closure, $code_base) {
             $add_callable_checker_closure($function);
             // @phan-suppress-next-line PhanAccessMethodInternal
             $closure = $function->getCommentParamAssertionClosure($code_base);

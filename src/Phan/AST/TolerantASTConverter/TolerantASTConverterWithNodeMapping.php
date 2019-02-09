@@ -343,7 +343,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
              * @throws InvalidArgumentException for invalid token classes
              * @suppress PhanThrowTypeMismatchForCall can throw if debugDumpNodeOrToken fails
              */
-            $fallback_closure = function ($n, int $unused_start_line) : ast\Node {
+            $fallback_closure = static function ($n, int $unused_start_line) : ast\Node {
                 if (!($n instanceof PhpParser\Node) && !($n instanceof Token)) {
                     throw new InvalidArgumentException("Invalid type for node: " . (\is_object($n) ? \get_class($n) : \gettype($n)) . ": " . static::debugDumpNodeOrToken($n));
                 }
@@ -382,7 +382,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
              * @param PhpParser\Node|Token $n
              * @throws InvalidArgumentException for invalid token classes
              */
-            $fallback_closure = function ($n, int $unused_start_line) : ast\Node {
+            $fallback_closure = static function ($n, int $unused_start_line) : ast\Node {
                 if (!($n instanceof PhpParser\Node) && !($n instanceof Token)) {
                     // @phan-suppress-next-line PhanThrowTypeMismatchForCall debugDumpNodeOrToken can throw
                     throw new InvalidArgumentException("Invalid type for node: " . (\is_object($n) ? \get_class($n) : \gettype($n)) . ": " . static::debugDumpNodeOrToken($n));

@@ -847,7 +847,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
             }
             $closure = TemplateType::combineParameterClosures(
                 $closure,
-                function (UnionType $union_type, Context $context) use ($code_base, $i, $param_closure) : UnionType {
+                static function (UnionType $union_type, Context $context) use ($code_base, $i, $param_closure) : UnionType {
                     $result = UnionType::empty();
                     foreach ($union_type->getTypeSet() as $type) {
                         $func = $type->asFunctionInterfaceOrNull($code_base, $context);
@@ -879,7 +879,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         if (!$return_closure) {
             return null;
         }
-        return function (UnionType $union_type, Context $context) use ($code_base, $return_closure) : UnionType {
+        return static function (UnionType $union_type, Context $context) use ($code_base, $return_closure) : UnionType {
             $result = UnionType::empty();
             foreach ($union_type->getTypeSet() as $type) {
                 $func = $type->asFunctionInterfaceOrNull($code_base, $context);
@@ -894,7 +894,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
     ) : UnionType {
-        $new_params = array_map(function (ClosureDeclarationParameter $param) use ($template_parameter_type_map) : ClosureDeclarationParameter {
+        $new_params = array_map(static function (ClosureDeclarationParameter $param) use ($template_parameter_type_map) : ClosureDeclarationParameter {
             return $param->withTemplateParameterTypeMap($template_parameter_type_map);
         }, $this->params);
         $new_return_type = $this->return_type->withTemplateParameterTypeMap($template_parameter_type_map);

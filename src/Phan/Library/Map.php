@@ -75,7 +75,7 @@ class Map extends SplObjectStorage
              * @param K|V $element
              * @return K|V
              */
-            function ($element) {
+            static function ($element) {
                 return clone($element);
             };
         return $this->keyValueMap($clone, $clone);

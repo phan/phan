@@ -53,7 +53,7 @@ class ThrowsTypesAnalyzer
         /**
          * @param array<int,int|string|Type> $args
          */
-        $maybe_emit_for_method = function (string $issue_type, array $args, Suggestion $suggestion = null) use ($code_base, $method) {
+        $maybe_emit_for_method = static function (string $issue_type, array $args, Suggestion $suggestion = null) use ($code_base, $method) {
             Issue::maybeEmitWithParameters(
                 $code_base,
                 $method->getContext(),
@@ -136,7 +136,7 @@ class ThrowsTypesAnalyzer
             $code_base,
             $context,
             $type_fqsen,
-            IssueFixSuggester::createFQSENFilterFromClassFilter($code_base, function (Clazz $class) use ($code_base) : bool {
+            IssueFixSuggester::createFQSENFilterFromClassFilter($code_base, static function (Clazz $class) use ($code_base) : bool {
                 if ($class->isTrait()) {
                     return false;
                 }

@@ -627,7 +627,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         /**
          * @param array<int,string> $matches
          */
-        return preg_replace_callback('/&([-a-zA-Z_.0-9]+);/', function ($matches) use ($entities) : string {
+        return preg_replace_callback('/&([-a-zA-Z_.0-9]+);/', static function ($matches) use ($entities) : string {
             $entity_name = $matches[1];
             if (isset($entities[strtolower($entity_name)])) {
                 return "BEGINENTITY{$entity_name}ENDENTITY";

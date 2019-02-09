@@ -46,7 +46,7 @@ final class CLITest extends BaseTest
 
     public function getFlagSuggestionStringProvider() : array
     {
-        $wrap_suggestion = function (string $text) : string {
+        $wrap_suggestion = static function (string $text) : string {
             return " (did you mean $text?)";
         };
         return [

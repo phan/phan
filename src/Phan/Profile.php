@@ -63,7 +63,7 @@ trait Profile
 
         // Create a shutdown function to emit the log when we're
         // all done
-        register_shutdown_function(function () {
+        register_shutdown_function(static function () {
             $label_metric_map = [];
 
             // Compute whatever metric we care about
@@ -79,7 +79,7 @@ trait Profile
             }
 
             // Sort such that the highest metric value is on top
-            uasort($label_metric_map, function (array $a, array $b) : int {
+            uasort($label_metric_map, static function (array $a, array $b) : int {
                 return $b[1] <=> $a[1];
             });
 
@@ -87,7 +87,7 @@ trait Profile
             foreach ($label_metric_map as $label => $metrics) {
                 print $label
                     . "\t"
-                    . implode("\t", array_map(function (float $v) : string {
+                    . implode("\t", array_map(static function (float $v) : string {
                         return sprintf("%0.6f", $v);
                     }, $metrics))
                     . "\n";

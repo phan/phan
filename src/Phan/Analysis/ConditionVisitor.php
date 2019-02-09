@@ -637,7 +637,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             self::analyzeIsObjectAssertion($variable);
         };
         /** @return void */
-        $is_a_callback = function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($object_callback) {
+        $is_a_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($object_callback) {
             $class_name = $args[1] ?? null;
             if ($class_name instanceof Node) {
                 $class_name = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $class_name)->asSingleScalarValueOrNull();
@@ -686,7 +686,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         $make_callback = static function (string $extract_types, UnionType $default_if_empty) : Closure {
             $method = new ReflectionMethod(UnionType::class, $extract_types);
             /** @return void */
-            return function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($method, $default_if_empty) {
+            return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($method, $default_if_empty) {
                 // Change the type to match the is_a relationship
                 // If we already have possible callable types, then keep those
                 // (E.g. Closure|false becomes Closure)

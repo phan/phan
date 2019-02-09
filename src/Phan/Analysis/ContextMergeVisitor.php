@@ -130,7 +130,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         }
         // Get the list of scopes for each branch of the
         // conditional
-        $scope_list = \array_map(function (Context $context) : Scope {
+        $scope_list = \array_map(static function (Context $context) : Scope {
             return $context->getScope();
         }, $this->child_context_list);
 
@@ -212,7 +212,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
     {
         // Get the list of scopes for each branch of the
         // conditional
-        $scope_list = \array_map(function (Context $context) : Scope {
+        $scope_list = \array_map(static function (Context $context) : Scope {
             return $context->getScope();
         }, $this->child_context_list);
 
@@ -255,7 +255,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         if (\count($child_context_list) < 2) {
             throw new AssertionError("Expected at least two child contexts in " . __METHOD__);
         }
-        $scope_list = \array_map(function (Context $context) : Scope {
+        $scope_list = \array_map(static function (Context $context) : Scope {
             return $context->getScope();
         }, $child_context_list);
         return $this->combineScopeList($scope_list);
@@ -283,7 +283,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // every branch
         $is_defined_on_all_branches =
             /** @return bool */
-            function (string $variable_name) use ($scope_list) {
+            static function (string $variable_name) use ($scope_list) {
                 foreach ($scope_list as $scope) {
                     if (!$scope->hasVariableWithName($variable_name)) {
                         return false;
@@ -296,7 +296,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // the variable from every side of the branch
         $union_type =
             /** @return UnionType */
-            function (string $variable_name) use ($scope_list) {
+            static function (string $variable_name) use ($scope_list) {
                 $previous_type = null;
                 $type_list = [];
                 // Get a list of all variables with the given name from

@@ -159,7 +159,7 @@ class FunctionFactory
          * @param array<string,mixed> $map
          * @suppress PhanPossiblyFalseTypeArgumentInternal, PhanPossiblyFalseTypeArgument
          */
-        return \array_map(function ($map) use (
+        return \array_map(static function ($map) use (
             $function,
             &$alternate_id
         ) : FunctionInterface {
@@ -234,7 +234,7 @@ class FunctionFactory
             $alternate_function->setNumberOfRequiredParameters(
                 \array_reduce(
                     $alternate_function->getParameterList(),
-                    function (int $carry, Parameter $parameter) : int {
+                    static function (int $carry, Parameter $parameter) : int {
                         return ($carry + (
                             $parameter->isOptional() ? 0 : 1
                         ));

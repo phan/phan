@@ -416,7 +416,7 @@ class Type
         $key = ($is_nullable ? '?' : '') . static::KEY_PREFIX . $namespace . '\\' . $type_name;
 
         if ($template_parameter_type_list) {
-            $key .= '<' . \implode(',', \array_map(function (UnionType $union_type) : string {
+            $key .= '<' . \implode(',', \array_map(static function (UnionType $union_type) : string {
                 return $union_type->__toString();
             }, $template_parameter_type_list)) . '>';
         }
@@ -942,7 +942,7 @@ class Type
      */
     private static function createTemplateParameterTypeList(array $template_parameter_type_name_list)
     {
-        return \array_map(function (string $type_name) : UnionType {
+        return \array_map(static function (string $type_name) : UnionType {
             return UnionType::fromFullyQualifiedString($type_name);
         }, $template_parameter_type_name_list);
     }
@@ -1177,7 +1177,7 @@ class Type
         // Map the names of the types to actual types in the
         // template parameter type list
         $template_parameter_type_list =
-            \array_map(function (string $type_name) use ($code_base, $context, $source) : UnionType {
+            \array_map(static function (string $type_name) use ($code_base, $context, $source) : UnionType {
                 return UnionType::fromStringInContext($type_name, $context, $source, $code_base);
             }, $template_parameter_type_name_list);
 
@@ -2693,7 +2693,7 @@ class Type
     final protected function templateParameterTypeListAsString() : string
     {
         return '<' .
-            \implode(',', \array_map(function (UnionType $type) : string {
+            \implode(',', \array_map(static function (UnionType $type) : string {
                 return $type->__toString();
             }, $this->template_parameter_type_list)) . '>';
     }
@@ -3185,7 +3185,7 @@ class Type
             }
             $closure = TemplateType::combineParameterClosures(
                 $closure,
-                function (UnionType $type, Context $context) use ($inner_extracter_closure, $i) : UnionType {
+                static function (UnionType $type, Context $context) use ($inner_extracter_closure, $i) : UnionType {
                     $result = UnionType::empty();
                     foreach ($type->getTypeSet() as $inner_type) {
                         $replacement_type = $inner_type->template_parameter_type_list[$i] ?? null;

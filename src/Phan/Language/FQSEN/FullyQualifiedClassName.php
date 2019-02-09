@@ -106,7 +106,7 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
      */
     public static function getStdClassFQSEN() : FullyQualifiedClassName
     {
-        return self::memoizeStatic(__METHOD__, function () : FullyQualifiedClassName {
+        return self::memoizeStatic(__METHOD__, static function () : FullyQualifiedClassName {
             // @phan-suppress-next-line PhanThrowTypeAbsentForCall
             return self::fromFullyQualifiedString("\stdClass");
         });

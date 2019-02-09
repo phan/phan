@@ -159,7 +159,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
                     } elseif (\count($args) === 1) {
                         // array_filter with count($args) === 1 implies elements of the resulting array aren't falsey
                         return $generic_passed_array_type->withFlattenedArrayShapeOrLiteralTypeInstances()
-                                                         ->withMappedElementTypes(function (UnionType $union_type) : UnionType {
+                                                         ->withMappedElementTypes(static function (UnionType $union_type) : UnionType {
                                                             return $union_type->nonFalseyClone();
                                                          });
                     }
@@ -231,7 +231,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             /**
              * @param Node|int|string|float|null $argument
              */
-            $get_argument_type = function ($argument, int $i) use ($code_base, $context, &$cache_outer) : UnionType {
+            $get_argument_type = static function ($argument, int $i) use ($code_base, $context, &$cache_outer) : UnionType {
                 if (isset($cache_outer[$i])) {
                     return $cache_outer[$i];
                 }
@@ -249,7 +249,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             /**
              * @param Node|int|string|float|null $argument
              */
-            $get_argument_type_for_array_map = function ($argument, int $i) use ($get_argument_type, &$cache) : UnionType {
+            $get_argument_type_for_array_map = static function ($argument, int $i) use ($get_argument_type, &$cache) : UnionType {
                 if (isset($cache[$i])) {
                     return $cache[$i];
                 }

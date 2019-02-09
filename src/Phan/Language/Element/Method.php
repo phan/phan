@@ -423,7 +423,7 @@ class Method extends ClassElement implements FunctionInterface
 
         $method->setNumberOfRequiredParameters(array_reduce(
             $parameter_list,
-            function (int $carry, Parameter $parameter) : int {
+            static function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isRequired() ? 1 : 0));
             },
             0
@@ -431,7 +431,7 @@ class Method extends ClassElement implements FunctionInterface
 
         $method->setNumberOfOptionalParameters(array_reduce(
             $parameter_list,
-            function (int $carry, Parameter $parameter) : int {
+            static function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isOptional() ? 1 : 0));
             },
             0

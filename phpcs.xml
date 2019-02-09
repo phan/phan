@@ -9,6 +9,7 @@
   <rule ref="SlevomatCodingStandard.Classes.ModernClassNameReference" />
   <rule ref="SlevomatCodingStandard.Commenting.EmptyComment" />
   <rule ref="SlevomatCodingStandard.ControlStructures.DisallowEmpty" />
+  <rule ref="SlevomatCodingStandard.Functions.StaticClosure" />
   <rule ref="SlevomatCodingStandard.Namespaces.UseDoesNotStartWithBackslash" />
   <rule ref="SlevomatCodingStandard.Namespaces.UselessAlias" />
   <rule ref="SlevomatCodingStandard.Namespaces.AlphabeticallySortedUses">

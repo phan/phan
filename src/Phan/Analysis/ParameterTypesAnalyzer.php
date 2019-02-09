@@ -431,7 +431,7 @@ class ParameterTypesAnalyzer
         // template type parameters we may have
         if ($type_option->isDefined()) {
             $o_parameter_list =
-                \array_map(function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
+                \array_map(static function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
 
                     if (!$parameter->getUnionType()->hasTemplateTypeRecursive()) {
                         return $parameter;

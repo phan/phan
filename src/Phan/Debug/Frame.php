@@ -94,7 +94,7 @@ class Frame
      */
     public static function frameToString(array $frame) : string
     {
-        return with_disabled_phan_error_handler(function () use ($frame) : string {
+        return with_disabled_phan_error_handler(static function () use ($frame) : string {
             $invocation = $frame['function'] ?? '(unknown)';
             if (isset($frame['class'])) {
                 $invocation = $frame['class'] . ($frame['type'] ?? '::') . $invocation;

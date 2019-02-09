@@ -156,7 +156,7 @@ final class GenericIterableType extends IterableType
         $closure = $this->element_union_type->getTemplateTypeExtractorClosure($code_base, $template_type);
         if ($closure) {
             // If a function expects T[], then T is the generic array element type of the passed in union type
-            $element_closure = function (UnionType $type, Context $context) use ($code_base, $closure) : UnionType {
+            $element_closure = static function (UnionType $type, Context $context) use ($code_base, $closure) : UnionType {
                 return $closure($type->iterableValueUnionType($code_base), $context);
             };
         } else {
@@ -164,7 +164,7 @@ final class GenericIterableType extends IterableType
         }
         $closure = $this->key_union_type->getTemplateTypeExtractorClosure($code_base, $template_type);
         if ($closure) {
-            $key_closure = function (UnionType $type, Context $context) use ($code_base, $closure) : UnionType {
+            $key_closure = static function (UnionType $type, Context $context) use ($code_base, $closure) : UnionType {
                 return $closure($type->iterableKeyUnionType($code_base), $context);
             };
         } else {

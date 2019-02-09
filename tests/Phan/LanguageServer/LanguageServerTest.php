@@ -19,7 +19,7 @@ final class LanguageServerTest extends BaseTest
 {
     public function testInitialize()
     {
-        $mock_file_path_lister = function () : array {
+        $mock_file_path_lister = static function () : array {
             return [];
         };
         $code_base = new CodeBase([], [], [], [], []);

@@ -152,7 +152,7 @@ final class StringUtil
              * @param array<int,string> $matches
              * @return string
              */
-            function ($matches) {
+            static function ($matches) {
                 $str = $matches[1];
 
                 if (isset(self::REPLACEMENTS[$str])) {
