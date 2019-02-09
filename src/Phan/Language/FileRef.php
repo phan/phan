@@ -110,12 +110,24 @@ class FileRef implements \Serializable
      * The starting line number of the element within the file
      *
      * @return static
-     * This context with the given value is returned
+     * This context with the given line number is returned
      */
     public function withLineNumberStart(int $line_number)
     {
         $this->line_number_start = $line_number;
         return $this;
+    }
+
+    /**
+     * @var int $line_number
+     * The starting line number of the element within the file
+     *
+     * @return void
+     * Both this and withLineNumberStart modify the original context.
+     */
+    public function setLineNumberStart(int $line_number)
+    {
+        $this->line_number_start = $line_number;
     }
 
     /**

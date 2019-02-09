@@ -126,7 +126,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // Give up, this should be impossible except with the fallback
             $this->emitIssue(
                 Issue::InvalidNode,
-                $node->lineno ?? 0,
+                $node->lineno,
                 "Expected left side of assignment to be a variable"
             );
             return $this->context;
@@ -135,7 +135,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($right_type->isType(VoidType::instance(false))) {
             $this->emitIssue(
                 Issue::TypeVoidAssignment,
-                $node->lineno ?? 0
+                $node->lineno
             );
         }
 
@@ -151,12 +151,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         $expr_node = $node->children['expr'];
         if ($expr_node instanceof Node
-            && $expr_node->kind == ast\AST_CLOSURE
+            && $expr_node->kind === ast\AST_CLOSURE
         ) {
             $method = (new ContextNode(
                 $this->code_base,
                 $this->context->withLineNumberStart(
-                    $expr_node->lineno ?? 0
+                    $expr_node->lineno
                 ),
                 $expr_node
             ))->getClosure();
@@ -263,7 +263,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if (!$union_type->asExpandedTypes($this->code_base)->hasArrayLike() && !$union_type->hasMixedType()) {
                 $this->emitIssue(
                     Issue::TypeArrayUnsetSuspicious,
-                    $node->lineno ?? 0,
+                    $node->lineno,
                     (string)$union_type
                 );
             }
@@ -318,7 +318,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 }
                 $this->emitIssue(
                     Issue::TypeObjectUnsetDeclaredProperty,
-                    $node->lineno ?? 0,
+                    $node->lineno,
                     (string)$type,
                     $prop_name,
                     $prop->getFileRef()->getFile(),
@@ -487,7 +487,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         ) {
             $this->emitIssueWithSuggestion(
                 Issue::UndeclaredVariable,
-                $node->lineno ?? 0,
+                $node->lineno,
                 [$variable_name],
                 IssueFixSuggester::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
             );
@@ -1154,7 +1154,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         ) {
             $this->emitIssue(
                 Issue::TypeMissingReturn,
-                $node->lineno ?? 0,
+                $node->lineno,
                 (string)$func->getFQSEN(),
                 (string)$return_type
             );
@@ -1830,7 +1830,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 if ($class->isDeprecated()) {
                     $this->emitIssue(
                         Issue::DeprecatedClass,
-                        $node->lineno ?? 0,
+                        $node->lineno,
                         (string)$class->getFQSEN(),
                         $class->getContext()->getFile(),
                         (string)$class->getContext()->getLineNumberStart()
@@ -1841,7 +1841,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     if ($clazz->isDeprecated()) {
                         $this->emitIssue(
                             Issue::DeprecatedInterface,
-                            $node->lineno ?? 0,
+                            $node->lineno,
                             (string)$clazz->getFQSEN(),
                             $clazz->getContext()->getFile(),
                             (string)$clazz->getContext()->getLineNumberStart()
@@ -1853,7 +1853,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     if ($clazz->isDeprecated()) {
                         $this->emitIssue(
                             Issue::DeprecatedTrait,
-                            $node->lineno ?? 0,
+                            $node->lineno,
                             (string)$clazz->getFQSEN(),
                             $clazz->getContext()->getFile(),
                             (string)$clazz->getContext()->getLineNumberStart()
@@ -1973,21 +1973,21 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($class->isAbstract()) {
             $this->emitIssue(
                 Issue::TypeInstantiateAbstract,
-                $node->lineno ?? 0,
+                $node->lineno,
                 (string)$class->getFQSEN()
             );
         } elseif ($class->isInterface()) {
             // Make sure we're not instantiating an interface
             $this->emitIssue(
                 Issue::TypeInstantiateInterface,
-                $node->lineno ?? 0,
+                $node->lineno,
                 (string)$class->getFQSEN()
             );
         } elseif ($class->isTrait()) {
             // Make sure we're not instantiating a trait
             $this->emitIssue(
                 Issue::TypeInstantiateTrait,
-                $node->lineno ?? 0,
+                $node->lineno,
                 (string)$class->getFQSEN()
             );
         }
@@ -2020,7 +2020,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } catch (CodeBaseException $exception) {
             $this->emitIssueWithSuggestion(
                 Issue::UndeclaredClassInstanceof,
-                $node->lineno ?? 0,
+                $node->lineno,
                 [(string)$exception->getFQSEN()],
                 IssueFixSuggester::suggestSimilarClassForGenericFQSEN(
                     $this->code_base,
@@ -2145,7 +2145,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
                     $this->emitIssue(
                         Issue::StaticCallToNonStatic,
-                        $node->lineno ?? 0,
+                        $node->lineno,
                         "{$class->getFQSEN()}::{$method_name}()",
                         $method->getFileRef()->getFile(),
                         (string)$method->getFileRef()->getLineNumberStart()
@@ -2230,7 +2230,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 if ($possible_ancestor_type->hasStaticType()) {
                     $this->emitIssue(
                         Issue::AccessOwnConstructor,
-                        $node->lineno ?? 0,
+                        $node->lineno,
                         $static_class
                     );
                     $found_ancestor_constructor = true;
@@ -2238,7 +2238,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     if ($type->canCastToUnionType($possible_ancestor_type)) {
                         $this->emitIssue(
                             Issue::AccessOwnConstructor,
-                            $node->lineno ?? 0,
+                            $node->lineno,
                             $static_class
                         );
                     }
@@ -2261,7 +2261,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         $this->emitIssue(
             Issue::UndeclaredStaticMethod,
-            $node->lineno ?? 0,
+            $node->lineno,
             "{$static_class}::{$method_name}()"
         );
     }
@@ -2369,7 +2369,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             ) {
                 $this->emitIssue(
                     Issue::TypeMissingReturn,
-                    $node->lineno ?? 0,
+                    $node->lineno,
                     (string)$method->getFQSEN(),
                     (string)$return_type
                 );
@@ -2379,21 +2379,22 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($method->getHasReturn() && $method->getIsMagicAndVoid()) {
             $this->emitIssue(
                 Issue::TypeMagicVoidWithReturn,
-                $node->lineno ?? 0,
+                $node->lineno,
                 (string)$method->getFQSEN()
             );
         }
 
         $parameters_seen = [];
         foreach ($method->getParameterList() as $i => $parameter) {
-            if (isset($parameters_seen[$parameter->getName()])) {
+            $name = $parameter->getName();
+            if (isset($parameters_seen[$name])) {
                 $this->emitIssue(
                     Issue::ParamRedefined,
-                    $node->lineno ?? 0,
-                    '$' . $parameter->getName()
+                    $node->lineno,
+                    '$' . $name
                 );
             } else {
-                $parameters_seen[$parameter->getName()] = $i;
+                $parameters_seen[$name] = $i;
             }
         }
 
@@ -2426,7 +2427,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         ) {
             $this->emitIssue(
                 Issue::TypeMissingReturn,
-                $node->lineno ?? 0,
+                $node->lineno,
                 (string)$method->getFQSEN(),
                 (string)$return_type
             );
@@ -2437,7 +2438,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if (isset($parameters_seen[$parameter->getName()])) {
                 $this->emitIssue(
                     Issue::ParamRedefined,
-                    $node->lineno ?? 0,
+                    $node->lineno,
                     '$' . $parameter->getName()
                 );
             } else {
@@ -2878,7 +2879,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->emitIssue(
                 $has_call_magic_method ?
                     Issue::AccessMethodPrivateWithCallMagicMethod : Issue::AccessMethodPrivate,
-                $node->lineno ?? 0,
+                $node->lineno,
                 (string)$method->getFQSEN(),
                 $method->getFileRef()->getFile(),
                 (string)$method->getFileRef()->getLineNumberStart()
@@ -2890,7 +2891,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->emitIssue(
                 $has_call_magic_method ?
                     Issue::AccessMethodProtectedWithCallMagicMethod : Issue::AccessMethodProtected,
-                $node->lineno ?? 0,
+                $node->lineno,
                 (string)$method->getFQSEN(),
                 $method->getFileRef()->getFile(),
                 (string)$method->getFileRef()->getLineNumberStart()
@@ -3195,7 +3196,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function trackReferenceToClosure(Node $argument)
     {
         try {
-            $inner_context = $this->context->withLineNumberStart($argument->lineno ?? 0);
+            $inner_context = $this->context->withLineNumberStart($argument->lineno);
             $method = (new ContextNode(
                 $this->code_base,
                 $inner_context,

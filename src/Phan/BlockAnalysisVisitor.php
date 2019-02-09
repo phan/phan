@@ -81,7 +81,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     public function visitVar(Node $node) : Context
     {
         $context = $this->context->withLineNumberStart(
-            $node->lineno ?? 0
+            $node->lineno
         );
 
         // Let any configured plugins do a pre-order
@@ -124,7 +124,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     public function visitNamespace(Node $node) : Context
     {
         $context = $this->context->withLineNumberStart(
-            $node->lineno ?? 0
+            $node->lineno
         );
 
         // If there are multiple namespaces in the file, have to warn about unused entries in the current namespace first.
@@ -384,9 +384,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      */
     public function visit(Node $node) : Context
     {
-        $context = $this->context->withLineNumberStart(
-            $node->lineno ?? 0
-        );
+        $context = $this->context;
+        $context->setLineNumberStart($node->lineno);
 
         // Visit the given node populating the code base
         // with anything we learn and get a new context
@@ -428,6 +427,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * Effectively the same as (new BlockAnalysisVisitor(..., $context, $node, ...)child_node))
      * but is much less repetitive and verbose, and slightly more efficient.
      *
+     * NOTE: This is called extremely frequently, so the real signature types were omitted for performance.
+     *
      * @param Context $context - The original context for $node, before analyzing $child_node
      *
      * @param Node $node - The parent node of $child_node
@@ -436,7 +437,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @return Context (The unmodified $context, or a different Context instance with modifications)
      */
-    private function analyzeAndGetUpdatedContext(Context $context, Node $node, Node $child_node) : Context
+    private function analyzeAndGetUpdatedContext($context, $node, $child_node)
     {
         // Modify the original object instead of creating a new BlockAnalysisVisitor.
         // this is slightly more efficient, especially if a large number of unchanged parameters would exist.
@@ -494,13 +495,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     public function visitFor(Node $node) : Context
     {
         $context = $this->context->withLineNumberStart(
-            $node->lineno ?? 0
+            $node->lineno
         );
 
         $init_node = $node->children['init'];
         if ($init_node instanceof Node) {
             $context = $this->analyzeAndGetUpdatedContext(
-                $context->withLineNumberStart($init_node->lineno ?? 0),
+                $context->withLineNumberStart($init_node->lineno),
                 $node,
                 $init_node
             );
@@ -514,7 +515,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             foreach ($condition_node->children as $condition_subnode) {
                 if ($condition_subnode instanceof Node) {
                     $context = $this->analyzeAndGetUpdatedContext(
-                        $context->withLineNumberStart($condition_subnode->lineno ?? 0),
+                        $context->withLineNumberStart($condition_subnode->lineno),
                         $node,  // TODO: condition_node?
                         $condition_subnode
                     );
@@ -539,7 +540,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $context = $this->analyzeAndGetUpdatedContext(
                     $context->withScope(
                         new BranchScope($context->getScope())
-                    )->withLineNumberStart($stmts_node->lineno ?? 0),
+                    )->withLineNumberStart($stmts_node->lineno),
                     $node,
                     $stmts_node
                 );
@@ -549,7 +550,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $loop_node = $node->children['loop'];
         if ($loop_node instanceof Node) {
             $context = $this->analyzeAndGetUpdatedContext(
-                $context->withLineNumberStart($loop_node->lineno ?? 0),
+                $context->withLineNumberStart($loop_node->lineno),
                 $node,
                 $loop_node
             );
@@ -602,7 +603,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     public function visitWhile(Node $node) : Context
     {
         $context = $this->context->withLineNumberStart(
-            $node->lineno ?? 0
+            $node->lineno
         );
 
         // Let any configured plugins do a pre-order
@@ -617,7 +618,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         if ($condition_node instanceof Node) {
             // Analyze the cond expression.
             $context = $this->analyzeAndGetUpdatedContext(
-                $context->withLineNumberStart($condition_node->lineno ?? 0),
+                $context->withLineNumberStart($condition_node->lineno),
                 $node,
                 $condition_node
             );
@@ -641,7 +642,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $context = $this->analyzeAndGetUpdatedContext(
                     $context->withScope(
                         new BranchScope($context->getScope())
-                    )->withLineNumberStart($stmts_node->lineno ?? 0),
+                    )->withLineNumberStart($stmts_node->lineno),
                     $node,
                     $stmts_node
                 );
@@ -669,7 +670,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     public function visitIfElem(Node $node) : Context
     {
         $context = $this->context->withLineNumberStart(
-            $node->lineno ?? 0
+            $node->lineno
         );
 
         // NOTE: This is different from other analysis visitors because analyzing 'cond' with `||` has side effects
@@ -689,7 +690,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $condition_node = $node->children['cond'];
         if ($condition_node instanceof Node) {
             $context = $this->analyzeAndGetUpdatedContext(
-                $context->withLineNumberStart($condition_node->lineno ?? 0),
+                $context->withLineNumberStart($condition_node->lineno),
                 $node,
                 $condition_node
             );
@@ -702,7 +703,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $context = $this->analyzeAndGetUpdatedContext(
                     $context->withScope(
                         new BranchScope($context->getScope())
-                    )->withLineNumberStart($stmts_node->lineno ?? 0),
+                    )->withLineNumberStart($stmts_node->lineno),
                     $node,
                     $stmts_node
                 );
@@ -747,11 +748,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // Make a copy of the internal context so that we don't
         // leak any changes within the closed context to the
         // outer scope
-        $context = clone($this->context->withLineNumberStart(
-            $node->lineno ?? 0
-        ));
-
-        $context = $this->preOrderAnalyze($context, $node);
+        $context = $this->context;
+        $context->setLineNumberStart($node->lineno);
+        $context = $this->preOrderAnalyze(clone($context), $node);
 
         // We collect all child context so that the
         // PostOrderAnalysisVisitor can optionally operate on
@@ -784,7 +783,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $child_context_list
         ))->__invoke($node);
 
-        $unused_final_context = $this->postOrderAnalyze($context, $node);
+        $this->postOrderAnalyze($context, $node);
 
         // Return the initial context as we exit
         return $this->context;
@@ -802,11 +801,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // Make a copy of the internal context so that we don't
         // leak any changes within the closed context to the
         // outer scope
-        $context = clone($this->context->withLineNumberStart(
-            $node->lineno ?? 0
-        ));
+        $context = $this->context;
+        $context->setLineNumberStart($node->lineno);
+        $context = $this->preOrderAnalyze(clone($context), $node);
 
-        $context = $this->preOrderAnalyze($context, $node);
         $scope = $context->getScope();
         $child_context_list = [];
 
@@ -957,7 +955,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     public function visitIf(Node $node) : Context
     {
         $context = $this->context->withLineNumberStart(
-            $node->lineno ?? 0
+            $node->lineno
         );
 
         $context = $this->preOrderAnalyze($context, $node);
@@ -986,7 +984,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $child_context = clone($fallthrough_context);
 
             $child_context->withLineNumberStart(
-                $child_node->lineno ?? 0
+                $child_node->lineno
             );
 
             // Step into each child node and get an
@@ -1050,7 +1048,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     public function visitTry(Node $node) : Context
     {
         $context = $this->context->withLineNumberStart(
-            $node->lineno ?? 0
+            $node->lineno
         );
 
         $context = $this->preOrderAnalyze($context, $node);
@@ -1068,7 +1066,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         );
 
         $try_context->withLineNumberStart(
-            $try_node->lineno ?? 0
+            $try_node->lineno
         );
 
         // Step into each try node and get an
@@ -1106,7 +1104,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             );
 
             $catch_context->withLineNumberStart(
-                $catch_node->lineno ?? 0
+                $catch_node->lineno
             );
 
             // Step into each catch node and get an
@@ -1143,7 +1141,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             );
 
             $context->withLineNumberStart(
-                $finally_node->lineno ?? 0
+                $finally_node->lineno
             );
 
             // Step into each finally node and get an
@@ -1182,7 +1180,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $catch_node->children['class']
             )->objectTypesWithKnownFQSENs();
 
-            $catch_line = $catch_node->lineno ?? 0;
+            $catch_line = $catch_node->lineno;
 
             foreach ($union_type->getTypeSet() as $type) {
                 foreach ($type->asExpandedTypes($code_base)->getTypeSet() as $ancestor_type) {
@@ -1240,7 +1238,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     public function analyzeBinaryBoolAnd(Node $node) : Context
     {
         $context = $this->context->withLineNumberStart(
-            $node->lineno ?? 0
+            $node->lineno
         );
 
         ConfigPluginSet::instance()->preAnalyzeNode(
@@ -1304,7 +1302,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     public function analyzeBinaryBoolOr(Node $node) : Context
     {
         $context = $this->context->withLineNumberStart(
-            $node->lineno ?? 0
+            $node->lineno
         );
 
         ConfigPluginSet::instance()->preAnalyzeNode(
@@ -1360,7 +1358,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     public function visitConditional(Node $node) : Context
     {
         $context = $this->context->withLineNumberStart(
-            $node->lineno ?? 0
+            $node->lineno
         );
 
         // Visit the given node populating the code base
@@ -1462,7 +1460,31 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      */
     public function visitMethod(Node $node) : Context
     {
-        return $this->visitClosedContext($node);
+        // Make a copy of the internal context so that we don't
+        // leak any changes within the method to the
+        // outer scope
+        $context = $this->context;
+        $context->setLineNumberStart($node->lineno);
+        $context = $this->preOrderAnalyze(clone($context), $node);
+
+        // With a context that is inside of the node passed
+        // to this method, we analyze all children of the
+        // node.
+        foreach ($node->children as $child_node) {
+            // Skip any non Node children.
+            if (!($child_node instanceof Node)) {
+                continue;
+            }
+
+            // Step into each child node and get an
+            // updated context for the node
+            $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
+        }
+
+        $this->postOrderAnalyze($context, $node);
+
+        // Return the initial context as we exit
+        return $this->context;
     }
 
     /**
@@ -1476,7 +1498,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      */
     public function visitFuncDecl(Node $node) : Context
     {
-        return $this->visitClosedContext($node);
+        // Analyze nodes with AST_FUNC_DECL the same way as AST_METHOD
+        return $this->visitMethod($node);
     }
 
     /**
@@ -1551,7 +1574,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // Equivalent to (new PostOrderAnalysisVisitor(...)($node)) but faster than using __invoke()
         $context = (new PostOrderAnalysisVisitor(
             $this->code_base,
-            $context->withLineNumberStart($node->lineno ?? 0),
+            $context->withLineNumberStart($node->lineno),
             $this->parent_node_list
         ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
@@ -1578,7 +1601,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     public function visitGroupUse(Node $node) : Context
     {
         $context = $this->context->withLineNumberStart(
-            $node->lineno ?? 0
+            $node->lineno
         );
 
         // Visit the given node populating the code base
@@ -1623,7 +1646,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context->getScope(),
             FullyQualifiedPropertyName::make($class->getFQSEN(), $prop_name)
         ))->withLineNumberStart(
-            $node->lineno ?? 0
+            $node->lineno
         );
 
         // Don't bother calling PreOrderAnalysisVisitor, it does nothing

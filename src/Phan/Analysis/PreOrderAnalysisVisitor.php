@@ -391,7 +391,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $code_base = $this->code_base;
         $context = $this->context;
         $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
-            $context->withLineNumberStart($node->lineno ?? 0),
+            $context->withLineNumberStart($node->lineno),
             $node
         );
         $func = $code_base->getFunctionByFQSEN($closure_fqsen);
@@ -410,7 +410,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 if (!($use instanceof Node) || $use->kind != ast\AST_CLOSURE_VAR) {
                     $this->emitIssue(
                         Issue::VariableUseClause,
-                        $node->lineno ?? 0
+                        $node->lineno
                     );
                     continue;
                 }
@@ -438,7 +438,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                             $this->code_base,
                             clone($context)->withLineNumberStart($use->lineno),
                             Issue::UndeclaredVariable,
-                            $node->lineno ?? 0,
+                            $node->lineno,
                             [$variable_name],
                             IssueFixSuggester::suggestVariableTypoFix($this->code_base, $context, $variable_name)
                         );
@@ -542,7 +542,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 // the check is done exactly once.
                 $this->emitIssue(
                     Issue::TypeMismatchReturn,
-                    $node->lineno ?? 0,
+                    $node->lineno,
                     '\\Generator',
                     $func->getNameForIssue(),
                     (string)$func_return_type
@@ -703,14 +703,14 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         if ($node->flags !== ast\flags\ARRAY_SYNTAX_LIST) {
             $this->emitIssue(
                 Issue::CompatibleShortArrayAssignPHP70,
-                $node->lineno ?? 0
+                $node->lineno
             );
         }
         foreach ($node->children as $array_elem) {
             if (isset($array_elem->children['key'])) {
                 $this->emitIssue(
                     Issue::CompatibleKeyedArrayAssignPHP70,
-                    $array_elem->lineno ?? 0
+                    $array_elem->lineno
                 );
                 break;
             }
@@ -740,7 +740,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             if (Config::get_closest_target_php_version_id() < 70100 && \count($class_list) > 1) {
                 $this->emitIssue(
                     Issue::CompatibleMultiExceptionCatchPHP70,
-                    $node->lineno ?? 0
+                    $node->lineno
                 );
             }
 
@@ -752,7 +752,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 $this->code_base,
                 $this->context,
                 Issue::UndeclaredClassCatch,
-                $node->lineno ?? 0,
+                $node->lineno,
                 [(string)$exception->getFQSEN()],
                 IssueFixSuggester::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception->getFQSEN())
             );

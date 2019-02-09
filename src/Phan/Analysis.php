@@ -164,6 +164,8 @@ class Analysis
      * returned context is the new context from within the
      * given node.
      *
+     * NOTE: This is called extremely frequently, so the real signature types were omitted for performance.
+     *
      * @param CodeBase $code_base
      * The global code base in which we store all
      * state
@@ -177,10 +179,10 @@ class Analysis
      * @return Context
      * The context from within the node is returned
      */
-    public static function parseNodeInContext(CodeBase $code_base, Context $context, Node $node) : Context
+    public static function parseNodeInContext(CodeBase $code_base, Context $context, Node $node)
     {
-        // Save a reference to the outer context
-        $outer_context = $context;
+        $kind = $node->kind;
+        $context->setLineNumberStart($node->lineno);
 
         // Visit the given node populating the code base
         // with anything we learn and get a new context
@@ -190,19 +192,17 @@ class Analysis
         // (E.g. on a large number of the analyzed project's vendor dependencies,
         // proportionally to the node count in the files), so code style was sacrificed for performance.
         // Equivalent to (new ParseVisitor(...))($node), which uses ParseVisitor->__invoke
-        $context = (new ParseVisitor(
+        $inner_context = (new ParseVisitor(
             $code_base,
-            $context->withLineNumberStart($node->lineno ?? 0)
-        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
-
-        $kind = $node->kind;
+            $context
+        ))->{Element::VISIT_LOOKUP_TABLE[$kind] ?? 'handleMissingNodeKind'}($node);
 
         // ast\AST_GROUP_USE has ast\AST_USE as a child.
         // We don't want to use block twice in the parse phase.
         // (E.g. `use MyNS\{const A, const B}` would lack the MyNs part if this were to recurse.
         // And ast\AST_DECLARE has AST_CONST_DECL as a child, so don't parse a constant declaration either.
         if ($kind === ast\AST_GROUP_USE) {
-            return $context;
+            return $inner_context;
         }
         if ($kind === ast\AST_DECLARE) {
             // Check for class declarations, etc. within the statements of a declare directive.
@@ -210,22 +210,20 @@ class Analysis
             if ($child_node !== null) {
                 // Step into each child node and get an
                 // updated context for the node
-                return self::parseNodeInContext($code_base, $context, $child_node);
+                return self::parseNodeInContext($code_base, $inner_context, $child_node);
             }
-            return $context;
+            return $inner_context;
         }
 
         // Recurse into each child node
-        $child_context = $context;
+        $child_context = $inner_context;
         foreach ($node->children as $child_node) {
             // Skip any non Node children.
-            if (!($child_node instanceof Node)) {
-                continue;
+            if (\is_object($child_node)) {
+                // Step into each child node and get an
+                // updated context for the node
+                $child_context = self::parseNodeInContext($code_base, $child_context, $child_node);
             }
-
-            // Step into each child node and get an
-            // updated context for the node
-            $child_context = self::parseNodeInContext($code_base, $child_context, $child_node);
         }
 
         // For closed context elements (that have an inner scope)
@@ -237,7 +235,7 @@ class Analysis
             ast\AST_FUNC_DECL,
             ast\AST_CLOSURE,
         ], true)) {
-            return $outer_context;
+            return $context;
         }
         if ($kind === ast\AST_STMT_LIST) {
             // Workaround that ensures that the context from namespace blocks gets passed to the caller.
@@ -245,7 +243,7 @@ class Analysis
         }
 
         // Pass the context back up to our parent
-        return $context;
+        return $inner_context;
     }
 
     /**
