@@ -59,7 +59,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
         // $failures += $this->expectFunctionLikeSignaturesMatch('ob_clean', ['void']);
         $failures += $this->expectFunctionLikeSignaturesMatch('intdiv', ['int', 'numerator' => 'int', 'divisor' => 'int']);
         $failures += $this->expectFunctionLikeSignaturesMatch('ArrayIterator::seek', ['void', 'position' => 'int']);
-        $failures += $this->expectFunctionLikeSignaturesMatch('Redis::hGet', ['string', 'key' => 'string', 'hashKey' => 'string']);
+        $failures += $this->expectFunctionLikeSignaturesMatch('Redis::hGet', ['false|string', 'key' => 'string', 'hashKey' => 'string']);
         if ($failures > 0) {
             exit(1);
         }
