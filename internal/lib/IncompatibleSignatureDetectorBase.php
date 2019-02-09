@@ -27,7 +27,8 @@ abstract class IncompatibleSignatureDetectorBase
 
     const FUNCTIONLIKE_BLACKLIST = '@' .
         '(^___PHPSTORM_HELPERS)|PS_UNRESERVE_PREFIX|' .
-        '(^(ereg|expression|getsession|hrtime_|imageps|mssql_|mysql_|split|sql_regcase|sybase|xmldiff_$))|' .
+        '(^(ereg|expression|getsession|hrtime_|imageps|mssql_|mysql_|split|sql_regcase|sybase|xmldiff_))|' .
+        '(^closure_)|' .  // Phan's representation of a closure
         '\.' .  // a literal `.`
         '@';
 
