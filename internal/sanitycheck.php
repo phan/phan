@@ -283,7 +283,15 @@ function check_fields(string $function_name, array $fields, array $signatures)
             }
 
             if ($reflection_parameter->hasType()) {
-                $reflection_representation = (string)$reflection_parameter->getType();
+                $reflection_type = $reflection_parameter->getType();
+                if ($reflection_type === null) {
+                    echo "Null reflection_type for $original_function_name should not happen\n";
+                    continue;
+                }
+                $reflection_representation = (string)$reflection_type;
+                if ($reflection_type->allowsNull()) {
+                    $reflection_representation = "?$reflection_representation";
+                }
                 $phan_representation = $phan_parameter->value;
                 if (strcasecmp($reflection_representation, $phan_representation) !== 0) {
                     if ($reflection_representation === 'array' && stripos($phan_representation, '[]') !== false) {
