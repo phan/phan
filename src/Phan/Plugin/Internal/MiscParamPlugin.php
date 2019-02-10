@@ -496,40 +496,40 @@ final class MiscParamPlugin extends PluginV2 implements
                 // TODO: Ignore superglobals
 
                 // Some parts of this are probably wrong - EXTR_OVERWRITE and EXTR_SKIP are probably the most common?
-                switch ($flags & ~EXTR_REFS) {
+                switch ($flags & ~\EXTR_REFS) {
                     default:
-                    case EXTR_OVERWRITE:
+                    case \EXTR_OVERWRITE:
                         $add_variable($field_name);
                         break;
-                    case EXTR_SKIP:
+                    case \EXTR_SKIP:
                         if ($scope->hasVariableWithName($field_name)) {
                             break;
                         }
                         $add_variable($field_name);
                         break;
                     // TODO: Do all of these behave like EXTR_OVERWRITE or like EXTR_SKIP?
-                    case EXTR_PREFIX_SAME:
+                    case \EXTR_PREFIX_SAME:
                         if ($scope->hasVariableWithName($field_name)) {
                             $field_name = $prefix . $field_name;
                         }
                         $add_variable($field_name);
                         break;
-                    case EXTR_PREFIX_ALL:
+                    case \EXTR_PREFIX_ALL:
                         $field_name = $prefix . $field_name;
                         $add_variable($field_name);
                         break;
-                    case EXTR_PREFIX_INVALID:
+                    case \EXTR_PREFIX_INVALID:
                         if (!Variable::isValidIdentifier($field_name)) {
                             $field_name = $prefix . $field_name;
                         }
                         $add_variable($field_name);
                         break;
-                    case EXTR_IF_EXISTS:
+                    case \EXTR_IF_EXISTS:
                         if ($scope->hasVariableWithName($field_name)) {
                             $add_variable($field_name);
                         }
                         break;
-                    case EXTR_PREFIX_IF_EXISTS:
+                    case \EXTR_PREFIX_IF_EXISTS:
                         if ($scope->hasVariableWithName($field_name) && $prefix !== '') {
                             $add_variable($prefix . $field_name);
                         }

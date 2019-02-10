@@ -25,7 +25,7 @@ class StringUtil
      */
     public static function jsonEncode($value) : string
     {
-        $result = \json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR);
+        $result = \json_encode($value, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_PARTIAL_OUTPUT_ON_ERROR);
         return \is_string($result) ? $result : '(invalid data)';
     }
 

@@ -36,6 +36,8 @@ use function count;
 use function strlen;
 use function strtolower;
 
+use const STDERR;
+
 /**
  * A CodeBase represents the known state of a code base
  * we're analyzing.

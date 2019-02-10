@@ -643,8 +643,8 @@ class Context extends FileRef
      * 0x10(node_id) is used for getUnionTypeOfNodeIfCached(int $node_id, true)
      * 0x01(node_id) is used for getCachedClassListOfNode(int $node_id)
      */
-    const HIGH_BIT_1 = (1 << (PHP_INT_SIZE * 8) - 1);
-    const HIGH_BIT_2 = (1 << (PHP_INT_SIZE * 8) - 2);
+    const HIGH_BIT_1 = (1 << (\PHP_INT_SIZE * 8) - 1);
+    const HIGH_BIT_2 = (1 << (\PHP_INT_SIZE * 8) - 2);
 
     /**
      * @param int $node_id \spl_object_id($node)

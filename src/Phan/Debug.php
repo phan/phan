@@ -230,7 +230,7 @@ class Debug
      */
     public static function backtrace(int $levels = 0)
     {
-        $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $levels + 1);
+        $bt = debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, $levels + 1);
         foreach ($bt as $level => $context) {
             if (!$level) {
                 continue;

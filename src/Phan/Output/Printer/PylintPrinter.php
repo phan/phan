@@ -54,7 +54,7 @@ final class PylintPrinter implements IssuePrinterInterface
             case Issue::SEVERITY_CRITICAL:
                 return 'E' . $category_id;
             default:
-                fwrite(STDERR, "Unrecognized severity for " . $instance . ": " . $issue->getSeverity() . " (expected 0, 5, or 10)\n");
+                fwrite(\STDERR, "Unrecognized severity for " . $instance . ": " . $issue->getSeverity() . " (expected 0, 5, or 10)\n");
                 return 'E' . $category_id;
         }
     }

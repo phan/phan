@@ -151,7 +151,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
                 // unable to resolve value. TODO: Support bitmask operators in getEquivalentPHPScalarValue
                 return $json_decode_array_or_object_types;
             }
-            return ($options_result & JSON_OBJECT_AS_ARRAY) !== 0 ? $json_decode_array_types : $json_decode_object_types;
+            return ($options_result & \JSON_OBJECT_AS_ARRAY) !== 0 ? $json_decode_array_types : $json_decode_object_types;
         };
 
         $str_replace_types = UnionType::fromFullyQualifiedString('string|string[]');

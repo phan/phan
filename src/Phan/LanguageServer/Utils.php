@@ -69,7 +69,7 @@ class Utils
             throw new InvalidArgumentException("Not a valid file URI: $uri");
         }
         $filepath = \urldecode($fragments['path']);
-        if (DIRECTORY_SEPARATOR === "\\") {
+        if (\DIRECTORY_SEPARATOR === "\\") {
             $filepath = self::normalizePathFromWindowsURI($filepath);
         }
         return $filepath;

@@ -5,6 +5,7 @@ namespace Phan\Output\Printer;
 use Phan\IssueInstance;
 use Phan\Output\BufferedPrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use const ENT_NOQUOTES;
 
 /**
  * This prints `IssueInstance`s in the checkstyle XML format to the configured OutputInterface

@@ -59,7 +59,7 @@ class Daemon
 
             if (function_exists('pcntl_signal')) {
                 pcntl_signal(
-                    SIGCHLD,
+                    \SIGCHLD,
                     /**
                      * @param int $signo
                      * @param int|null $status

@@ -217,7 +217,7 @@ final class DumpPHPDocPlugin extends PluginV2 implements
         ksort($this->stubs);
         echo "# Phan Signatures\n\n";
         echo implode('', $this->stubs);
-        exit(EXIT_SUCCESS);
+        exit(\EXIT_SUCCESS);
     }
 }
 

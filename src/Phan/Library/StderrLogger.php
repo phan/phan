@@ -22,6 +22,6 @@ class StderrLogger implements LoggerInterface
      */
     public function log($level, $message, array $unused_context = [])
     {
-        fprintf(STDERR, "[%s] %s\n", $level, $message);
+        fprintf(\STDERR, "[%s] %s\n", $level, $message);
     }
 }

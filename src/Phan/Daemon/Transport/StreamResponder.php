@@ -79,7 +79,7 @@ class StreamResponder implements Responder
         // Note: This is likely a giant hack,
         // and pcntl and sockets may break in the future if used together. (multiple processes owning a single resource).
         // Not sure how to do that safely.
-        stream_socket_shutdown($connection, STREAM_SHUT_RDWR);
+        stream_socket_shutdown($connection, \STREAM_SHUT_RDWR);
         fclose($connection);
         $this->connection = null;
     }

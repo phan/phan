@@ -79,7 +79,7 @@ class FileRef implements \Serializable
         );
 
         // Strip any beginning directory separators
-        if (0 === ($pos = \strpos($path, DIRECTORY_SEPARATOR))) {
+        if (0 === ($pos = \strpos($path, \DIRECTORY_SEPARATOR))) {
             // Work around substr being pedantic
             $path = (string)\substr($path, $pos + 1);
         }

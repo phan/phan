@@ -538,7 +538,7 @@ trait FunctionTrait
         }
         $raw_bytes = \md5($param_repr, true);
         // @phan-suppress-next-line PhanPossiblyNullTypeReturn we checked
-        return unpack(PHP_INT_SIZE === 8 ? 'q' : 'l', $raw_bytes)[1];
+        return unpack(\PHP_INT_SIZE === 8 ? 'q' : 'l', $raw_bytes)[1];
     }
 
     /**

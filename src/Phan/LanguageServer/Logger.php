@@ -6,6 +6,8 @@ namespace Phan\LanguageServer;
 use Phan\Config;
 use Phan\Library\StringUtil;
 
+use const STDERR;
+
 /**
  * A logger used by Phan for developing or debugging the language server.
  * Logs to stderr by default.

@@ -62,7 +62,7 @@ class RegexAnalyzer
             return $array_type;
         }
         // TODO: Support PREG_UNMATCHED_AS_NULL
-        if ($bit & PREG_OFFSET_CAPTURE) {
+        if ($bit & \PREG_OFFSET_CAPTURE) {
             if (\is_array($regex_group_keys)) {
                 return self::makeArrayShape($regex_group_keys, $shape_array_inner_type);
             }

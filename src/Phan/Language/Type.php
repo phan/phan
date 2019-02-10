@@ -328,7 +328,7 @@ class Type
     /** @throws Error this should not be called accidentally */
     public function __wakeup()
     {
-        debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        \debug_print_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS);
         throw new Error("Cannot unserialize Type '$this'");
     }
 
@@ -929,7 +929,7 @@ class Type
             // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
             return LiteralStringType::fromEscapedString($escaped_literal, $is_nullable);
         }
-        $value = filter_var($escaped_literal, FILTER_VALIDATE_INT);
+        $value = filter_var($escaped_literal, \FILTER_VALIDATE_INT);
         if (\is_int($value)) {
             return LiteralIntType::instanceForValue($value, $is_nullable);
         }

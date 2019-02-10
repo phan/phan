@@ -17,7 +17,7 @@ final class ASTSimplifierTest extends AbstractPhanFileTest
      */
     public function getTestFiles()
     {
-        return $this->scanSourceFilesDir(AST_TEST_FILE_DIR, AST_EXPECTED_DIR);
+        return $this->scanSourceFilesDir(\AST_TEST_FILE_DIR, \AST_EXPECTED_DIR);
     }
 
     /**
