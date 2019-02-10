@@ -223,6 +223,14 @@ See https://secure.php.net/assert
 
 - **PhanPluginNoAssert**: `assert() is discouraged. Although phan supports using assert() for type annotations, PHP's documentation recommends assertions only for debugging, and assert() has surprising behaviors.`
 
+#### NotFullyQualifiedUsagePlugin.php
+
+Encourages the usage of fully qualified global functions and constants (slightly faster, especially for functions such as `strlen`, `count`, etc.)
+
+- **PhanPluginNotFullyQualifiedFunctionCall**: `Expected function call to {FUNCTION}() to be fully qualified or have a use statement but none were found in namespace {NAMESPACE}`
+- **PhanPluginNotFullyQualifiedOptimizableFunctionCall**: `Expected function call to {FUNCTION}() to be fully qualified or have a use statement but none were found in namespace {NAMESPACE} (opcache can optimize fully qualified calls to this function in recent php versions)`
+- **PhanPluginNotFullyQualifiedGlobalConstant**: `Expected usage of {CONST} to be fully qualified or have a use statement but none were found in namespace {NAMESPACE}`
+
 #### NumericalComparisonPlugin.php
 
 Enforces that loose equality is used for numeric operands (e.g. `2 == 2.0`), and that strict equality is used for non-numeric operands (e.g. `"2" === "2e0"` is false).
