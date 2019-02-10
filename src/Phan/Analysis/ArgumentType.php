@@ -24,6 +24,8 @@ use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use Phan\PluginV2\StopParamAnalysisException;
 
+use function is_string;
+
 /**
  * This visitor analyzes arguments of calls to methods, functions, and closures
  * and emits issues for incorrect argument types.

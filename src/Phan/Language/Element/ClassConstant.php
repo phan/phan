@@ -171,10 +171,10 @@ class ClassConstant extends ClassElement implements ConstantInterface
         // Also, PHP modules probably won't have private/protected constants.
         $string .= 'const ' . $this->getName() . ' = ';
         $fqsen = $this->getFQSEN()->__toString();
-        if (defined($fqsen)) {
+        if (\defined($fqsen)) {
             // TODO: Could start using $this->getNodeForValue()?
             // NOTE: This is used by tool/make_stubs, which is why it uses reflection instead of getting a node.
-            $string .= var_export(constant($fqsen), true) . ';';
+            $string .= var_export(\constant($fqsen), true) . ';';
         } else {
             $string .= "null;  // could not find";
         }

@@ -24,8 +24,8 @@ class StreamResponder implements Responder
     /** @param resource $connection a stream */
     public function __construct($connection, bool $expect_request)
     {
-        if (!is_resource($connection)) {
-            throw new TypeError("Expected connection to be resource, saw " . gettype($connection));
+        if (!\is_resource($connection)) {
+            throw new TypeError("Expected connection to be resource, saw " . \gettype($connection));
         }
         $this->connection = $connection;
         if (!$expect_request) {
@@ -51,7 +51,7 @@ class StreamResponder implements Responder
                 $request_bytes .= fgets($response_connection);
             }
             $request = json_decode($request_bytes, true);
-            if (!is_array($request)) {
+            if (!\is_array($request)) {
                 Daemon::debugf("Received invalid request, expected JSON: %s", StringUtil::jsonEncode($request_bytes));
                 $request = null;
             }

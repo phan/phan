@@ -118,7 +118,7 @@ class Colorizing
         /** @param array<int,string> $matches */
         return preg_replace_callback('/{([A-Z_]+)}|%[sdf]/', static function (array $matches) use ($template, $template_parameters, &$i) : string {
             $j = $i++;
-            if ($j >= count($template_parameters)) {
+            if ($j >= \count($template_parameters)) {
                 error_log("Missing argument for colorized output ($template), offset $j");
                 return '(MISSING)';
             }

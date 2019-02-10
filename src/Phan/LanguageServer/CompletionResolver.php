@@ -16,6 +16,7 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use function is_string;
 
 /**
  * This implements closures for finding completions for valid/invalid nodes where isSelected is set

@@ -7,6 +7,8 @@ use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
+use function in_array;
+
 /**
  * Phan's base class for native types such as IntType, ObjectType, etc.
  *

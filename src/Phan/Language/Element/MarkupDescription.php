@@ -5,6 +5,9 @@ namespace Phan\Language\Element;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\UnionType;
 
+use function count;
+use function is_string;
+
 /**
  * APIs for generating markup (markdown) description of elements
  *

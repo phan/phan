@@ -39,7 +39,7 @@ final class CSVPrinter implements BufferedPrinterInterface
     {
         fseek($this->stream, 0);
         $contents = stream_get_contents($this->stream);
-        if (!is_string($contents)) {
+        if (!\is_string($contents)) {
             throw new AssertionError("Failed to read in-memory csv stream");
         }
         $this->output->write($contents);

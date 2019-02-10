@@ -149,7 +149,7 @@ class UnionType implements Serializable
      */
     public static function init()
     {
-        if (is_null(self::$empty_instance)) {
+        if (\is_null(self::$empty_instance)) {
             self::$empty_instance = EmptyUnionType::instance();
         }
     }
@@ -177,7 +177,7 @@ class UnionType implements Serializable
         static $memoize_map = [];
         $union_type = $memoize_map[$fully_qualified_string] ?? null;
 
-        if (is_null($union_type)) {
+        if (\is_null($union_type)) {
             $types = \array_map(static function (string $type_name) : Type {
                 // @phan-suppress-next-line PhanThrowTypeAbsentForCall FIXME: Standardize on InvalidArgumentException
                 return Type::fromFullyQualifiedString($type_name);
@@ -2922,7 +2922,7 @@ class UnionType implements Serializable
     public function asNormalizedTypes() : UnionType
     {
         $type_set = $this->type_set;
-        if (count($type_set) <= 1) {
+        if (\count($type_set) <= 1) {
             // Optimization: can't simplify if there's only one type
             return $this;
         }

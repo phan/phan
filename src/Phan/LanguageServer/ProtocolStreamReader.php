@@ -88,7 +88,7 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
                     }
                     break;
                 case self::PARSE_BODY:
-                    if (strlen($this->buffer) === $this->content_length) {
+                    if (\strlen($this->buffer) === $this->content_length) {
                         if (!$this->is_accepting_new_requests) {
                             // If we fork, don't read any bytes in the input buffer from the worker process.
                             $this->emitClose();

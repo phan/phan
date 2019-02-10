@@ -6,6 +6,9 @@ use Exception;
 use Microsoft\PhpParser\Node;
 use Microsoft\PhpParser\Token;
 
+use function get_class;
+use function gettype;
+use function is_object;
 use function substr;
 
 /**

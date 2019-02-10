@@ -10,6 +10,11 @@ use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
+use function count;
+use function get_class;
+use function is_array;
+use function is_object;
+use function is_resource;
 
 /**
  * Debug utilities for working with frames of debug_backtrace()

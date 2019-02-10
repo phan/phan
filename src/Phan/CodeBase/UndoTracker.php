@@ -7,6 +7,9 @@ use Phan\CodeBase;
 use Phan\Daemon;
 use Phan\Phan;
 
+use function count;
+use function in_array;
+
 /**
  * UndoTracker maps a file path to a list of operations(e.g. Closures) that must be executed to
  * remove all traces of a file from the CodeBase, etc. if a file was removed or edited.

@@ -18,6 +18,8 @@ use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV2\PostAnalyzeNodeCapability;
 use Phan\Suggestion;
 use function count;
+use function is_string;
+use function strlen;
 
 /**
  * NOTE: This is automatically loaded by phan based on config settings.

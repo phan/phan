@@ -458,7 +458,7 @@ final class MiscParamPlugin extends PluginV2 implements
             // TODO: Handle unexpected types of flags and prefix and warn, low priority
             if (isset($args[1])) {
                 $flags = (new ContextNode($code_base, $context, $args[1]))->getEquivalentPHPScalarValue();
-                if (!is_int($flags)) {
+                if (!\is_int($flags)) {
                     // Could warn here, low priority
                     $flags = null;
                 }
@@ -476,7 +476,7 @@ final class MiscParamPlugin extends PluginV2 implements
             $scope = $context->getScope();
 
             foreach ($shape->getFieldTypes() as $field_name => $field_type) {
-                if (!is_string($field_name)) {
+                if (!\is_string($field_name)) {
                     continue;
                 }
                 $add_variable = static function (string $name) use ($context, $field_type, $scope) {
@@ -616,7 +616,7 @@ final class MiscParamPlugin extends PluginV2 implements
                 $class_alias_first_param = $name_type->asSingleScalarValueOrNull();
             }
 
-            if (is_string($class_alias_first_param)) {
+            if (\is_string($class_alias_first_param)) {
                 try {
                     $first_param_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_alias_first_param);
                     if ($code_base->hasClassWithFQSEN($first_param_fqsen)) {

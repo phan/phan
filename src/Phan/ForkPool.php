@@ -6,6 +6,11 @@ use AssertionError;
 use Closure;
 use InvalidArgumentException;
 
+use function count;
+use function gettype;
+use function intval;
+use function strlen;
+
 /**
  * Fork off to n-processes and divide up tasks between
  * each process.

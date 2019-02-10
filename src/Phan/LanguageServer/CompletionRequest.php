@@ -19,6 +19,10 @@ use Phan\LanguageServer\Protocol\CompletionItemKind;
 use Phan\LanguageServer\Protocol\CompletionList;
 use Phan\LanguageServer\Protocol\Position;
 
+use function is_array;
+use function is_string;
+use function strlen;
+
 /**
  * Represents the Language Server Protocol's "Completion" request for an element
  * (property, method, class constant, etc.)

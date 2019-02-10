@@ -31,6 +31,8 @@ use Phan\Language\UnionType;
 use Phan\Library\Map;
 use Phan\Library\Set;
 use ReflectionClass;
+
+use function count;
 use function strlen;
 use function strtolower;
 

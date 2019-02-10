@@ -34,6 +34,8 @@ use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\Tests\BaseTest;
 
+use function get_class;
+
 /**
  * Unit tests of Type
  * @phan-file-suppress PhanThrowTypeAbsentForCall

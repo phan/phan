@@ -6,6 +6,8 @@ use AssertionError;
 use ast\Node;
 use Phan\AST\Visitor\KindVisitorImplementation;
 
+use function count;
+
 /**
  * This checks what exit statuses are possible for AST nodes: `break;`, `continue;`, `throw`, `return`, proceeding, etc.
  *

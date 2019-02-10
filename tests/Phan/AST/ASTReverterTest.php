@@ -21,7 +21,7 @@ final class ASTReverterTest extends BaseTest
         $expected = $expected ?? $snippet;
         $file_contents = '<' . '?php ' . $snippet . ';';
         $statements = \ast\parse_code($file_contents, Config::AST_VERSION);
-        $this->assertSame(1, count($statements->children));
+        $this->assertSame(1, \count($statements->children));
         $snippet_node = $statements->children[0];
         if ($snippet_node === null) {
             throw new AssertionError("invalid first statement in statement list");

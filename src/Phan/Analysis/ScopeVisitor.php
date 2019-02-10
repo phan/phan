@@ -80,7 +80,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
         foreach ($declares->children as $elem) {
             $name = $elem->children['name'];
             $value = $elem->children['value'];
-            if ('strict_types' === $name && is_int($value)) {
+            if ('strict_types' === $name && \is_int($value)) {
                 $context = $context->withStrictTypes($value);
             }
         }

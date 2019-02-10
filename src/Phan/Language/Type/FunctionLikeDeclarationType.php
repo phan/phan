@@ -522,7 +522,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function getParameterForCaller(int $i)
     {
         $list = $this->params;
-        if (count($list) === 0) {
+        if (\count($list) === 0) {
             return null;
         }
         $parameter = $list[$i] ?? null;
@@ -700,7 +700,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
 
     public function hasSuppressIssue(string $issue_type) : bool
     {
-        return in_array($issue_type, $this->getSuppressIssueList());
+        return \in_array($issue_type, $this->getSuppressIssueList(), true);
     }
 
     public function checkHasSuppressIssueAndIncrementCount(string $issue_type) : bool

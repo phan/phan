@@ -625,7 +625,7 @@ final class VariableTrackerVisitor extends AnalysisVisitor
         $main_scope = $outer_scope->mergeWithSingleBranchScope($try_scope);
 
         $catch_node_list = $node->children['catches']->children;
-        if (count($catch_node_list) > 0) {
+        if (\count($catch_node_list) > 0) {
             $catches_scope = new VariableTrackingBranchScope($main_scope);
             $catches_scope = $this->analyze($catches_scope, $node->children['catches']);
             // @phan-suppress-next-line PhanTypeMismatchArgument

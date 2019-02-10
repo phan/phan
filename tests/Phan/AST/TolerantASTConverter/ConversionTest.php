@@ -12,6 +12,13 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
 
+use function count;
+use function get_class;
+use function in_array;
+use function is_array;
+use function is_int;
+use function is_string;
+
 /**
  * Tests that the polyfill works with valid ASTs
  *

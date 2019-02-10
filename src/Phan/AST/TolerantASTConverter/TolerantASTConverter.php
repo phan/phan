@@ -17,6 +17,9 @@ use Microsoft\PhpParser\Parser;
 use Microsoft\PhpParser\Token;
 use Microsoft\PhpParser\TokenKind;
 use RuntimeException;
+use function count;
+use function get_class;
+use function is_array;
 use function substr;
 
 // If php-ast isn't loaded already, then load this file to generate equivalent

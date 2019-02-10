@@ -40,7 +40,7 @@ class RegexKeyExtractor
      */
     public static function getKeys($regex) : array
     {
-        if (!is_string($regex)) {
+        if (!\is_string($regex)) {
             throw new InvalidArgumentException("regex is not a string");
         }
         $inner_pattern = self::extractInnerRegexPattern($regex);

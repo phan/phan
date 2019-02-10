@@ -21,6 +21,7 @@ use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\PluginV2;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
+use function count;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.

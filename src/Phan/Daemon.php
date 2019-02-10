@@ -210,7 +210,7 @@ class Daemon
         $analyze_file_path_list = $request->filterFilesToAnalyze($code_base->getParsedFilePathList());
         $code_base->disableUndoTracking();
         Phan::setPrinter($request->getPrinter());
-        if (count($analyze_file_path_list) === 0) {
+        if (\count($analyze_file_path_list) === 0) {
             // Nothing to do, don't start analysis
             $request->respondWithNoFilesToAnalyze();  // respond and exit.
             return;

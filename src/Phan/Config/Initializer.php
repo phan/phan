@@ -12,6 +12,12 @@ use Phan\Issue;
 use Phan\Language\Context;
 use TypeError;
 
+use function count;
+use function is_array;
+use function is_int;
+use function is_null;
+use function is_string;
+
 /**
  * This class is used by 'phan --init' to generate a phan config for a composer project.
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod

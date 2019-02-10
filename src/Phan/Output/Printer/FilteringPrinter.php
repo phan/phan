@@ -36,7 +36,7 @@ final class FilteringPrinter implements BufferedPrinterInterface
         array $files,
         IssuePrinterInterface $printer
     ) {
-        if (count($files) === 0) {
+        if (\count($files) === 0) {
             throw new InvalidArgumentException("FilteringPrinter expects 1 or more files");
         }
         foreach ($files as $file) {
