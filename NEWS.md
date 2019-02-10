@@ -32,6 +32,7 @@ Language Server/Daemon mode:
 Maintenance
 + Don't emit a warning to stderr when `--language-server-completion-vscode` is used.
 + Catch the rare RecursionDepthException in more places, improve readability of its exception message. (#2386)
++ Warn that php-ast 1.0.0 and older always crash with PHP 7.4-dev or newer.
 
 Bug fixes:
 + Fix edge cases in checking if properties/methods are accessible from a trait (#2371)

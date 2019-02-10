@@ -16,6 +16,7 @@ use Phan\Output\Filter\MinimumSeverityFilter;
 use Phan\Output\PrinterFactory;
 use Phan\Plugin\ConfigPluginSet;
 use Phan\Plugin\Internal\MethodSearcherPlugin;
+use ReflectionExtension;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
@@ -632,7 +633,8 @@ class CLI
                         Config::setValue('use_polyfill_parser', true);
                         break;
                     }
-                    if (version_compare((new \ReflectionExtension('ast'))->getVersion(), '0.1.5') < 0) {
+                    $ast_version = (new ReflectionExtension('ast'))->getVersion();
+                    if (version_compare($ast_version, '0.1.5') < 0) {
                         Config::setValue('use_polyfill_parser', true);
                         break;
                     }
