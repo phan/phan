@@ -16,6 +16,8 @@ use Phan\LanguageServer\Utils;
 use Phan\Tests\BaseTest;
 use RuntimeException;
 use stdClass;
+use function is_array;
+use function strlen;
 
 /**
  * Integration Tests of functionality of the Language Server.

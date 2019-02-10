@@ -22,6 +22,7 @@ use ReflectionMethod;
 use ReflectionParameter;
 use RuntimeException;
 use TypeError;
+use function count;
 
 /**
  * Checks that EmptyUnionType behaves the same way as an empty UnionType instance

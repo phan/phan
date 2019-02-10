@@ -10,6 +10,8 @@ use Phan\Output\Printer\PlainTextPrinter;
 use Phan\Phan;
 use Phan\Plugin\ConfigPluginSet;
 use Symfony\Component\Console\Output\BufferedOutput;
+use function in_array;
+use function strlen;
 
 /**
  * Base class for tests that contain

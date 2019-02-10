@@ -40,8 +40,8 @@ use function count;
 use function get_class;
 use function is_array;
 use function is_string;
-use function strlen;
 use function Sabre\Event\coroutine;
+use function strlen;
 
 /**
  * Based on https://github.com/felixfbecker/php-language-server/blob/master/bin/php-language-server.php

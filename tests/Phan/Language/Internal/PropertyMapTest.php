@@ -5,6 +5,9 @@ namespace Phan\Tests\Language\Internal;
 use Phan\Language\UnionType;
 use Phan\Tests\BaseTest;
 
+use function is_array;
+use function is_string;
+
 /**
  * This is a sanity check that Phan's property signature map has the correct structure
  * and can be parsed into a property signature.

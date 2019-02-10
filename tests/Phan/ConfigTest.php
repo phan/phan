@@ -45,7 +45,7 @@ final class ConfigTest extends BaseTest
         );
         // NOTE: gettype change from 'integer' in php 7.3 to 'int' in php 7.4
         $expected_errors = [
-            "Invalid config value for 'file_list': Expected a list of strings: index 0 is type '" . gettype(2) . "'",
+            "Invalid config value for 'file_list': Expected a list of strings: index 0 is type '" . \gettype(2) . "'",
             "Invalid config value for 'plugins': Expected a list of strings, but got type 'string'",
             "Invalid config value for 'target_php_version': Expected a scalar, but got type 'array'",
         ];
