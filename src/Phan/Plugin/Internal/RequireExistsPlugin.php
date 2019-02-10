@@ -51,7 +51,7 @@ class RequireExistsVisitor extends PluginAwarePostAnalysisVisitor
             $path = $expr;
         }
 
-        if (!is_string($path)) {
+        if (!\is_string($path)) {
             $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr);
             if (!$type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
                 $this->emitIssue(

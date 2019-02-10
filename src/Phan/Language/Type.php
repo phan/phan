@@ -663,7 +663,7 @@ class Type
             case 'resource':
                 return ResourceType::instance(false);  // For inferring the type of constants STDIN, etc.
             default:
-                throw new \AssertionError("Unknown type " . gettype($object));
+                throw new \AssertionError("Unknown type " . \gettype($object));
         }
     }
 

@@ -41,6 +41,8 @@ use ReflectionClass;
 use ReflectionProperty;
 use RuntimeException;
 
+use function count;
+
 /**
  * Clazz represents the information Phan knows about a class, trait, or interface,
  * the state of Phan populating that information (hydration),

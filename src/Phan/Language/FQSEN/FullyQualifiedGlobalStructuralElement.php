@@ -9,6 +9,8 @@ use Phan\Exception\InvalidFQSENException;
 use Phan\Language\Context;
 use Phan\Language\Type;
 
+use function array_slice;
+
 /**
  * A Fully-Qualified Global Structural Element
  */

@@ -96,11 +96,11 @@ class Logger
      */
     public static function setLogFile($new_file)
     {
-        if (!is_resource($new_file)) {
-            throw new \TypeError("Expected newFile to be a resource, got " . gettype($new_file));
+        if (!\is_resource($new_file)) {
+            throw new \TypeError("Expected newFile to be a resource, got " . \gettype($new_file));
         }
         $old_file = self::$file;
-        if (is_resource($old_file)) {
+        if (\is_resource($old_file)) {
             if ($old_file === $new_file) {
                 return;
             }

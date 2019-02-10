@@ -61,7 +61,9 @@ use ReflectionException;
 use ReflectionProperty;
 use Throwable;
 use UnusedSuppressionPlugin;
+use function get_class;
 use function is_null;
+use function is_object;
 
 /**
  * The root plugin that calls out each hook

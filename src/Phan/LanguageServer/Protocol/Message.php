@@ -60,7 +60,7 @@ class Message
     public function __toString(): string
     {
         $body = (string)$this->body;
-        $contentLength = strlen($body);
+        $contentLength = \strlen($body);
         $this->headers['Content-Length'] = (string)$contentLength;
         $headers = '';
         foreach ($this->headers as $name => $value) {

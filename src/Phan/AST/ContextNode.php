@@ -47,6 +47,9 @@ use Phan\Language\UnionType;
 use Phan\Library\FileCache;
 use Phan\Library\None;
 
+use function is_object;
+use function is_string;
+
 if (!\function_exists('spl_object_id')) {
     require_once __DIR__ . '/../../spl_object_id.php';
 }

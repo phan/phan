@@ -23,6 +23,7 @@ use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 use function count;
+use function get_class;
 use function in_array;
 use function is_array;
 use function is_string;

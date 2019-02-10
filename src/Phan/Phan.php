@@ -19,6 +19,10 @@ use Phan\Output\IssueCollectorInterface;
 use Phan\Output\IssuePrinterInterface;
 use Phan\Plugin\ConfigPluginSet;
 
+use function count;
+use function in_array;
+use function is_array;
+
 /**
  * This executes the parse, method/function, then the analysis phases.
  *

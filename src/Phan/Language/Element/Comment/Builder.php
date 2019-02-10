@@ -20,6 +20,8 @@ use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;
 
+use function count;
+
 /**
  * This constructs comments from doc comments (or other comment types).
  *
@@ -265,7 +267,7 @@ final class Builder
     ) {
 
         $match_offset = \strpos($line, $raw_match);
-        $end_offset = $match_offset + strlen($raw_match);
+        $end_offset = $match_offset + \strlen($raw_match);
 
         $char_at_end_offset = $line[$end_offset] ?? ' ';
         $issue_line = $this->guessActualLineLocation($i);

@@ -36,6 +36,8 @@ use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\Plugin\ConfigPluginSet;
 
+use function count;
+
 /**
  * This contains functionality common to global functions, closures, and methods
  * @see FunctionInterface - Classes using this trait use that interface

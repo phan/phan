@@ -30,7 +30,7 @@ class VariableTrackingBranchScope extends VariableTrackingScope
         $definitions = $this->defs[$variable_name] ?? null;
         if ($definitions === null) {
             $parent_definitions = $this->parent_scope->getDefinition($variable_name);
-            if (is_array($parent_definitions)) {
+            if (\is_array($parent_definitions)) {
                 $this->defs[$variable_name] = $parent_definitions;
             }
             return $parent_definitions;

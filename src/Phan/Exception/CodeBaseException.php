@@ -37,7 +37,7 @@ class CodeBaseException extends \Exception
      */
     public function hasFQSEN() : bool
     {
-        return !is_null($this->missing_fqsen);
+        return !\is_null($this->missing_fqsen);
     }
 
     /**

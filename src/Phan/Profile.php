@@ -69,7 +69,7 @@ trait Profile
             // Compute whatever metric we care about
             foreach (self::$label_delta_map as $label => $delta_list) {
                 $total_time = array_sum($delta_list);
-                $count = count($delta_list);
+                $count = \count($delta_list);
                 $average_time = $total_time / $count;
                 $label_metric_map[$label] = [
                     $count,

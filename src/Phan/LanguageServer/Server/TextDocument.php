@@ -121,7 +121,7 @@ class TextDocument
      */
     public function didSave(TextDocumentIdentifier $textDocument, string $text = null)
     {
-        Logger::logInfo("Called textDocument/didSave, uri={$textDocument->uri} len(text)=" . strlen($text ?? ''));
+        Logger::logInfo("Called textDocument/didSave, uri={$textDocument->uri} len(text)=" . \strlen($text ?? ''));
         try {
             Utils::pathToUri(Utils::uriToPath($textDocument->uri));
         } catch (InvalidArgumentException $e) {

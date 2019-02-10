@@ -23,6 +23,9 @@ use Phan\LanguageServer\Protocol\Location;
 use Phan\LanguageServer\Protocol\MarkupContent;
 use Phan\LanguageServer\Protocol\Position;
 
+use function count;
+use function is_array;
+
 /**
  * Represents the Language Server Protocol's "Go to Definition" or "Go to Type Definition" or "Hover" request for a usage of an Element
  * (class, property, function-like, constant, etc.)

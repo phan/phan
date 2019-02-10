@@ -17,11 +17,11 @@ do {
     /** @var string|null */
     $input = readline("breakpoint> ");
 
-    if (is_string($input)) {
+    if (\is_string($input)) {
         readline_add_history($input);
     }
 
-    if (in_array($input, [
+    if (\in_array($input, [
         'quit',
         'exit',
         'continue',

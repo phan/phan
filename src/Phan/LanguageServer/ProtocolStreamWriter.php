@@ -72,11 +72,11 @@ class ProtocolStreamWriter implements ProtocolWriter
 
             // Determine if this message was completely sent
             // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
-            if (strlen($message) === 0) {
-                array_shift($this->messages);
+            if (\strlen($message) === 0) {
+                \array_shift($this->messages);
 
                 // This was the last message in the queue, remove the write handler.
-                if (count($this->messages) === 0) {
+                if (\count($this->messages) === 0) {
                     Loop\removeWriteStream($this->output);
                     $keepWriting = false;
                 }

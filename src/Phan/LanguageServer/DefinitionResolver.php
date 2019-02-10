@@ -22,6 +22,9 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
+use function count;
+use function is_string;
+
 /**
  * This implements closures for finding definitions for nodes where isSelected is set
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod

@@ -59,7 +59,7 @@ class Consistent implements Hasher
     {
         $search_hash = self::generateKeyHash($key);
         $begin = 0;
-        $end = count($this->hash_ring_ids) - 1;
+        $end = \count($this->hash_ring_ids) - 1;
         while ($begin <= $end) {
             $pos = $begin + (($end - $begin) >> 1);
             $cur_val = $this->hash_ring_ids[$pos];
