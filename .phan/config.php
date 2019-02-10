@@ -439,7 +439,6 @@ return [
     // or relative/absolute paths to the plugin (Relative to the project root).
     'plugins' => [
         'AlwaysReturnPlugin',
-        'DemoPlugin',
         'DollarDollarPlugin',
         'UnreachableCodePlugin',
         'DuplicateArrayKeyPlugin',

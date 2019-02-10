@@ -41,6 +41,7 @@ Bug fixes:
 Plugins:
 + Infer a literal string return value when calling `sprintf` on known literal scalar types in `PrintfCheckerPlugin`. (#2131)
 + Infer that `;@foo();` is not a usage of `foo()` in `UseReturnValuePlugin`. (#2412)
++ Implement `NotFullyQualifiedUsagePlugin` to warn about uses of global functions and constants that aren't fully qualified. (#857)
 
 02 Feb 2019, Phan 1.2.2
 -----------------------
