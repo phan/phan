@@ -8,6 +8,8 @@ use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\UnionType;
 
+use function count;
+
 /**
  * This analyzer checks if the signatures of inherited properties match
  */

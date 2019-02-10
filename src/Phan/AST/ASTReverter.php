@@ -7,6 +7,7 @@ use ast\Node;
 use Closure;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use function implode;
+use function is_string;
 
 /**
  * This converts a PHP AST into an approximate string representation.

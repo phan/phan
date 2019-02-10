@@ -32,6 +32,8 @@ use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
 use Throwable;
 
+use function strlen;
+
 /**
  * This class is the entry point into the static analyzer.
  */

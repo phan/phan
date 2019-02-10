@@ -138,7 +138,7 @@ class Debug
         $string .= self::nodeName($node);
 
         $string .= ' ['
-            . (is_int($kind) ? self::astFlagDescription($node->flags ?? 0, $kind) : 'unknown')
+            . (\is_int($kind) ? self::astFlagDescription($node->flags ?? 0, $kind) : 'unknown')
             . ']';
 
         if (isset($node->lineno)) {
@@ -214,7 +214,7 @@ class Debug
                     $names[] = $name;
                 }
             }
-            if (count($names) > 0) {
+            if (\count($names) > 0) {
                 return implode(" | ", $names) . " ($flags)";
             }
         }

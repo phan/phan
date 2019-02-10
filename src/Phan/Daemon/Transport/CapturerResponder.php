@@ -37,7 +37,7 @@ class CapturerResponder implements Responder
      */
     public function sendResponseAndClose(array $data)
     {
-        if (is_array($this->response_data)) {
+        if (\is_array($this->response_data)) {
             throw new \RuntimeException("Called sendResponseAndClose twice: data = " . StringUtil::jsonEncode($data));
         }
         $this->response_data = $data;

@@ -63,13 +63,13 @@ class RegexAnalyzer
         }
         // TODO: Support PREG_UNMATCHED_AS_NULL
         if ($bit & PREG_OFFSET_CAPTURE) {
-            if (is_array($regex_group_keys)) {
+            if (\is_array($regex_group_keys)) {
                 return self::makeArrayShape($regex_group_keys, $shape_array_inner_type);
             }
             return $shape_array_type;
         }
 
-        if (is_array($regex_group_keys)) {
+        if (\is_array($regex_group_keys)) {
             return self::makeArrayShape($regex_group_keys, $string_type);
         }
         return $string_array_type;

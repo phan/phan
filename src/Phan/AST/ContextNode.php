@@ -843,11 +843,7 @@ class ContextNode
             $name = $expression->children['name'];
             try {
                 return [
-                    (new ContextNode(
-                        $this->code_base,
-                        $this->context,
-                        $expression
-                    ))->getFunction($name),
+                    $this->getFunction($name),
                 ];
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(

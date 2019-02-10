@@ -1726,7 +1726,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function getReturnTypesOfArray(Context $context, Node $node)
     {
-        if (count($node->children) === 0) {
+        if (\count($node->children) === 0) {
             // Possibly unreachable (array shape would be returned instead)
             yield $node->lineno => MixedType::instance(false)->asUnionType();
             return;
@@ -1912,7 +1912,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         if ($class_node->kind === ast\AST_NAME) {
             $class_name = $class_node->children['name'];
-            if (is_string($class_name) && \strcasecmp('static', $class_name) === 0) {
+            if (\is_string($class_name) && \strcasecmp('static', $class_name) === 0) {
                 if ($this->isStaticGuaranteedToBeNonAbstract()) {
                     return;
                 }

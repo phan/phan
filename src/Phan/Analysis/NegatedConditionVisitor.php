@@ -753,7 +753,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         if ($var_node->kind === \ast\AST_VAR) {
             // Don't check if variables are defined - don't emit notices for if (!empty($x)) {}, etc.
             $var_name = $var_node->children['name'];
-            if (is_string($var_name)) {
+            if (\is_string($var_name)) {
                 if (!$context->getScope()->hasVariableWithName($var_name)) {
                     // Support analyzing cases such as `if (!empty($x)) { use($x); }`, or `assert(!empty($x))`
                     // (In the PHP language, empty($x) is equivalent to (!isset($x) || !$x))

@@ -997,7 +997,7 @@ class ParameterTypesAnalyzer
         FunctionInterface $method
     ) {
         $phpdoc_parameter_map = $method->getPHPDocParameterTypeMap();
-        if (count($phpdoc_parameter_map) === 0) {
+        if (\count($phpdoc_parameter_map) === 0) {
             // nothing to check.
             return;
         }

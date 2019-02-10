@@ -886,7 +886,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitArray(Node $node) : UnionType
     {
         $children = $node->children;
-        if (count($children) > 0) {
+        if (\count($children) > 0) {
             $value_types_builder = new UnionTypeBuilder();
 
             $key_set = $this->getEquivalentArraySet($node);
