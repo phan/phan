@@ -2,9 +2,8 @@
 <?php
 declare(strict_types=1);
 
-require_once dirname(__DIR__) . '/src/Phan/Library/StringUtil.php';
-
-use Phan\Library\StringUtil;
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+require_once dirname(__DIR__) . '/internal/lib/IncompatibleSignatureDetectorBase.php';
 
 // @phan-file-suppress PhanNativePHPSyntaxCheckPlugin, UnusedPluginFileSuppression caused by inline HTML before declare
 /**
@@ -57,6 +56,7 @@ function getParametersCountsFromPhan(array $fields) : array
     }
     return [$num_required, $num_optional, $saw_optional_after_required];
 }
+
 /**
  * Gets the number of required and actual parameters from reflection.
  *
@@ -79,6 +79,30 @@ function getParameterCountsFromReflection(array $args) : array
         }
     }
     return [$num_required, $num_optional];
+}
+
+/**
+ * @return array<mixed,string> the return type(key 0) and named param types in order
+ */
+function getPhanSignatureArrayFromReflection(ReflectionFunctionAbstract $function) : array
+{
+    $return_type = $function->getReturnType();
+    $return_type_representation = getUnionTypeStringForReflectionType($return_type);
+    $result = [0 => $return_type_representation];
+    foreach ($function->getParameters() as $reflection_parameter) {
+        $param_name = $reflection_parameter->getName();
+        if ($reflection_parameter->isVariadic()) {
+            $param_name = "...$param_name";
+        }
+        if ($reflection_parameter->isOptional()) {
+            $param_name = "$param_name=";
+        }
+        if ($reflection_parameter->isPassedByReference()) {
+            $param_name = "&$param_name";
+        }
+        $result[$param_name] = getUnionTypeStringForReflectionType($reflection_parameter->getType());
+    }
+    return $result;
 }
 
 /**
@@ -142,6 +166,21 @@ function get_parameters_from_phan($fields) : array
 }
 
 /**
+ * Given a reflection type, return Phan's union type string for that type
+ */
+function getUnionTypeStringForReflectionType(ReflectionType $reflection_type = null) : string
+{
+    if (!$reflection_type) {
+        return '';
+    }
+    $reflection_representation = (string)$reflection_type;
+    if ($reflection_type->allowsNull()) {
+        $reflection_representation = "?$reflection_representation";
+    }
+    return $reflection_representation;
+}
+
+/**
  * Check if Phan's function signature map has any contradictions with PHP's function signature map.
  *
  * This may either be a bug in Phan's signature map or in the reflection info.
@@ -179,12 +218,25 @@ function check_fields(string $function_name, array $fields, array $signatures)
         echo "Found mismatch for $function_name: Reflection says return type is '$real_return_type', Phan says return type is '$return_type'\n";
     }
 
+    /**
+     * Shorter wrapper name.
+     * @param array<mixed,string> $fields
+     */
+    $encode_signature = static function (array $fields) : string {
+        return IncompatibleSignatureDetectorBase::encodeSignatureArguments($fields);
+    };
+
+
     $reflection_parameters = $function->getParameters();
     list($phan_required_count, $phan_optional_count, $saw_optional_after_required) = getParametersCountsFromPhan($fields);
     list($php_computed_required_count, $php_optional_count) = getParameterCountsFromReflection($reflection_parameters);
+    $generate_comparison_text = static function () use ($encode_signature, $fields, $function) : string {
+        $php_fields = getPhanSignatureArrayFromReflection($function);
+        return sprintf("%s vs PHP's %s", $encode_signature($fields), $encode_signature($php_fields));
+    };
     $php_required_count = $function->getNumberOfRequiredParameters();
     if ($saw_optional_after_required) {
-        echo "Saw optional after required for $original_function_name: " . json_encode($fields) . "\n";
+        echo "Saw optional after required for $original_function_name: " . $encode_signature($fields) . "\n";
     }
     if ($php_computed_required_count !== $php_required_count) {
         if ($has_alternate) {
@@ -197,13 +249,26 @@ function check_fields(string $function_name, array $fields, array $signatures)
         if ($has_alternate) {
             echo "(Has alternate): ";
         }
-        echo "Found mismatch for $original_function_name: PHP has fewer required parameters ($php_required_count) than phan does ($phan_required_count): " . json_encode($fields) . "\n";
+        printf(
+            "Found mismatch for %s: PHP has fewer required parameters (%d) than phan does (%d): %s\n",
+            $original_function_name,
+            $php_required_count,
+            $phan_required_count,
+            $generate_comparison_text()
+        );
     }
+
     if ($php_optional_count > $phan_optional_count) {
         if ($has_alternate) {
             echo "(Has alternate): ";
         }
-        echo "Found mismatch for $original_function_name: PHP has more optional parameters ($php_optional_count) than phan does ($phan_optional_count): " . json_encode($fields) . "\n";
+        printf(
+            "Found mismatch for %s: PHP has more optional parameters (%d) than phan does (%d): %s\n",
+            $original_function_name,
+            $php_optional_count,
+            $phan_optional_count,
+            $generate_comparison_text()
+        );
     }
 
     $phan_parameters = get_parameters_from_phan($fields);
@@ -222,7 +287,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
                         $original_function_name,
                         $reflection_parameter->getName(),
                         $phan_parameter->name,
-                        StringUtil::jsonEncode($fields)
+                        $generate_comparison_text()
                     );
                 } else {
                     printf(
@@ -230,7 +295,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
                         $original_function_name,
                         $reflection_parameter->getName(),
                         $phan_parameter->name,
-                        StringUtil::jsonEncode($fields)
+                        $generate_comparison_text()
                     );
                 }
             }
@@ -245,7 +310,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
                         $original_function_name,
                         $reflection_parameter->getName(),
                         $phan_parameter->name,
-                        StringUtil::jsonEncode($fields)
+                        $generate_comparison_text()
                     );
                 } else {
                     printf(
@@ -253,7 +318,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
                         $original_function_name,
                         $reflection_parameter->getName(),
                         $phan_parameter->name,
-                        StringUtil::jsonEncode($fields)
+                        $generate_comparison_text()
                     );
                 }
             }
@@ -269,7 +334,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
                         $original_function_name,
                         $reflection_parameter->getName(),
                         $phan_parameter->name,
-                        StringUtil::jsonEncode($fields)
+                        $generate_comparison_text()
                     );
                 } else {
                     printf(
@@ -277,7 +342,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
                         $original_function_name,
                         $reflection_parameter->getName(),
                         $phan_parameter->name,
-                        StringUtil::jsonEncode($fields)
+                        $generate_comparison_text()
                     );
                 }
             }
@@ -288,10 +353,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
                     echo "Null reflection_type for $original_function_name should not happen\n";
                     continue;
                 }
-                $reflection_representation = (string)$reflection_type;
-                if ($reflection_type->allowsNull()) {
-                    $reflection_representation = "?$reflection_representation";
-                }
+                $reflection_representation = getUnionTypeStringForReflectionType($reflection_type);
                 $phan_representation = $phan_parameter->value;
                 if (strcasecmp($reflection_representation, $phan_representation) !== 0) {
                     if ($reflection_representation === 'array' && stripos($phan_representation, '[]') !== false) {
@@ -307,7 +369,7 @@ function check_fields(string $function_name, array $fields, array $signatures)
                             $phan_parameter->name,
                             $reflection_representation,
                             $phan_representation,
-                            StringUtil::jsonEncode($fields)
+                            $generate_comparison_text()
                         );
                     }
                 }
