@@ -195,7 +195,7 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
                 continue;
             }
             $kind = $token[0];
-            if ($kind !== T_COMMENT && $kind !== T_DOC_COMMENT) {
+            if ($kind !== \T_COMMENT && $kind !== \T_DOC_COMMENT) {
                 continue;
             }
             $comment_text = $token[1];
@@ -209,7 +209,7 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
                 self::SUPPRESS_ISSUE_REGEX,
                 $comment_text,
                 $matches,
-                PREG_OFFSET_CAPTURE
+                \PREG_OFFSET_CAPTURE
             );
             if (!$match_count) {
                 continue;

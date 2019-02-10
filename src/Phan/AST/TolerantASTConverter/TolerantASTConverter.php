@@ -21,6 +21,11 @@ use function count;
 use function get_class;
 use function is_array;
 use function substr;
+use const FILTER_FLAG_ALLOW_HEX;
+use const FILTER_FLAG_ALLOW_OCTAL;
+use const FILTER_VALIDATE_FLOAT;
+use const FILTER_VALIDATE_INT;
+use const PHP_VERSION_ID;
 
 // If php-ast isn't loaded already, then load this file to generate equivalent
 // class, constant, and function definitions.

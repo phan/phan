@@ -64,6 +64,9 @@ use UnusedSuppressionPlugin;
 use function get_class;
 use function is_null;
 use function is_object;
+use const EXIT_FAILURE;
+use const PHP_EOL;
+use const STDERR;
 
 /**
  * The root plugin that calls out each hook

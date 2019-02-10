@@ -24,7 +24,7 @@ class UsageException extends ExitException
      */
     public function __construct(
         string $message = "",
-        int $code = EXIT_SUCCESS,
+        int $code = \EXIT_SUCCESS,
         bool $print_extended_help = false
     ) {
         parent::__construct($message, $code);

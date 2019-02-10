@@ -47,12 +47,11 @@ final class BufferingCollector implements IssueCollectorInterface
      */
     private function formatSortableKey(IssueInstance $issue) : string
     {
-
         // This needs to be a sortable key so that output
         // is in the expected order
-        return implode('|', [
+        return \implode('|', [
             $issue->getFile(),
-            str_pad((string)$issue->getLine(), 5, '0', STR_PAD_LEFT),
+            \str_pad((string)$issue->getLine(), 5, '0', \STR_PAD_LEFT),
             $issue->getIssue()->getType(),
             $issue->getMessage()
         ]);

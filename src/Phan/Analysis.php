@@ -34,6 +34,8 @@ use Throwable;
 
 use function strlen;
 
+use const STDERR;
+
 /**
  * This class is the entry point into the static analyzer.
  */

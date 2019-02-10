@@ -63,7 +63,7 @@ class Ordering
 
         // Construct a Hasher implementation based on config.
         if (Config::getValue('consistent_hashing_file_order')) {
-            sort($analysis_file_list, SORT_STRING);
+            \sort($analysis_file_list, \SORT_STRING);
             $hasher = new Consistent($process_count);
         } else {
             $hasher = new Sequential($process_count);
@@ -95,7 +95,7 @@ class Ordering
         }
 
         if (Config::getValue('consistent_hashing_file_order')) {
-            ksort($file_names_for_classes, SORT_STRING);
+            ksort($file_names_for_classes, \SORT_STRING);
         }
 
         foreach ($file_names_for_classes as $file_name => $class) {

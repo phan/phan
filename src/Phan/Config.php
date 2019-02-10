@@ -3,7 +3,6 @@
 namespace Phan;
 
 use Phan\Library\Paths;
-
 use function array_key_exists;
 use function gettype;
 use function is_array;
@@ -12,6 +11,9 @@ use function is_float;
 use function is_int;
 use function is_null;
 use function is_string;
+use const PHP_EOL;
+use const PHP_VERSION;
+use const STDERR;
 
 /**
  * Program configuration.

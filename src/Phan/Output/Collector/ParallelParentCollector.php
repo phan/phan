@@ -54,8 +54,8 @@ class ParallelParentCollector implements IssueCollectorInterface
 
         // Listen for ALARMS that indicate we should flush
         // the queue
-        pcntl_sigprocmask(SIG_UNBLOCK, [SIGUSR1], $old);
-        pcntl_signal(SIGUSR1, function () {
+        pcntl_sigprocmask(\SIG_UNBLOCK, [\SIGUSR1], $old);
+        pcntl_signal(\SIGUSR1, function () {
             $this->readQueuedIssues();
         });
     }

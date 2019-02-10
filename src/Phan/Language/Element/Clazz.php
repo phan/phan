@@ -360,7 +360,7 @@ class Clazz extends AddressableElement
 
     private static function addTargetedPHPVersionMethodsToInternalClass(CodeBase $code_base, Clazz $clazz)
     {
-        if (Config::get_closest_target_php_version_id() >= 70100 && PHP_VERSION_ID < 70100) {
+        if (Config::get_closest_target_php_version_id() >= 70100 && \PHP_VERSION_ID < 70100) {
             self::addPHP71MethodsToInternalClass($code_base, $clazz);
         }
     }

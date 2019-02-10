@@ -262,7 +262,7 @@ class MarkupDescription
         if (count($lines) === 0) {
             return [];
         }
-        $min_whitespace = PHP_INT_MAX;
+        $min_whitespace = \PHP_INT_MAX;
         foreach ($lines as $line) {
             if ($line === '') {
                 continue;

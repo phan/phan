@@ -11,8 +11,9 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use RuntimeException;
-
 use function filter_var;
+use const FILTER_VALIDATE_FLOAT;
+use const FILTER_VALIDATE_INT;
 
 /**
  * Phan's representation of the type for a specific string, e.g. `'a string'`

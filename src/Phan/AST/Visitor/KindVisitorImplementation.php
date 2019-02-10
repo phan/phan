@@ -5,6 +5,7 @@ namespace Phan\AST\Visitor;
 use AssertionError;
 use ast\Node;
 use Phan\Debug;
+use const STDERR;
 
 /**
  * A visitor of AST nodes based on the node's kind value

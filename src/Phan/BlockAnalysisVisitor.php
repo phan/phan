@@ -26,6 +26,7 @@ use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Scope\PropertyScope;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Phan\Library\StringUtil;
 use Phan\Plugin\ConfigPluginSet;
 
 use function array_map;
@@ -250,7 +251,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     $context,
                     Issue::NoopStringLiteral,
                     $context->getLineNumberStart() ?: $this->getLineNumberOfParent() ?: $node->lineno,
-                    json_encode($child_node, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+                    StringUtil::jsonEncode($child_node)
                 );
             }
         } elseif (\is_scalar($child_node)) {
@@ -290,7 +291,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     private function analyzeSubstituteVarAssert(CodeBase $code_base, Context $context, string $text)
     {
         $has_known_annotations = false;
-        if (\preg_match_all(self::PHAN_VAR_REGEX, $text, $matches, PREG_SET_ORDER) > 0) {
+        if (\preg_match_all(self::PHAN_VAR_REGEX, $text, $matches, \PREG_SET_ORDER) > 0) {
             $has_known_annotations = true;
             foreach ($matches as $group) {
                 $annotation_name = $group[1];
@@ -301,7 +302,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             }
         }
 
-        if (\preg_match_all(self::PHAN_FILE_SUPPRESS_REGEX, $text, $matches, PREG_SET_ORDER) > 0) {
+        if (\preg_match_all(self::PHAN_FILE_SUPPRESS_REGEX, $text, $matches, \PREG_SET_ORDER) > 0) {
             $has_known_annotations = true;
             if (!Config::getValue('disable_file_based_suppression')) {
                 foreach ($matches as $group) {

@@ -11,6 +11,9 @@ use function gettype;
 use function intval;
 use function strlen;
 
+use const EXIT_FAILURE;
+use const EXIT_SUCCESS;
+
 /**
  * Fork off to n-processes and divide up tasks between
  * each process.
@@ -69,7 +72,7 @@ class ForkPool
         // pool size
         for ($proc_id = 0; $proc_id < $pool_size; $proc_id++) {
             // Create an IPC socket pair.
-            $sockets = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+            $sockets = stream_socket_pair(\STREAM_PF_UNIX, \STREAM_SOCK_STREAM, \STREAM_IPPROTO_IP);
             if (!$sockets) {
                 error_log("unable to create stream socket pair");
                 exit(EXIT_FAILURE);

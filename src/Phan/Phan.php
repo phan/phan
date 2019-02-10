@@ -23,6 +23,13 @@ use function count;
 use function in_array;
 use function is_array;
 
+use const EXIT_FAILURE;
+use const EXIT_SUCCESS;
+use const JSON_PRETTY_PRINT;
+use const PHP_DEBUG;
+use const SORT_STRING;
+use const STDERR;
+
 /**
  * This executes the parse, method/function, then the analysis phases.
  *

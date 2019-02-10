@@ -30,6 +30,17 @@ use function is_resource;
 use function is_string;
 use function strlen;
 
+use const DIRECTORY_SEPARATOR;
+use const EXIT_FAILURE;
+use const EXIT_SUCCESS;
+use const FILE_IGNORE_NEW_LINES;
+use const FILE_SKIP_EMPTY_LINES;
+use const FILTER_VALIDATE_INT;
+use const FILTER_VALIDATE_IP;
+use const PHP_OS;
+use const STDERR;
+use const STR_PAD_LEFT;
+
 /**
  * Contains methods for parsing CLI arguments to Phan,
  * outputting to the CLI, as well as helper methods to retrieve files/folders
