@@ -316,18 +316,30 @@ EOT;
     }
 
     /**
-     * @param string[] $arguments the return type and parameter signatures
+     * @param array<mixed,string> $arguments the return type and parameter signatures
+
      */
     public static function encodeSingleSignature(string $function_like_name, array $arguments) : string
     {
-        $result = static::encodeScalar($function_like_name) . ' => [';
+        $result = static::encodeScalar($function_like_name) . ' => ';
+        $result .= static::encodeSignatureArguments($arguments);
+        $result .= ",\n";
+        return $result;
+    }
+
+    /**
+     * @param array<mixed,string> $arguments
+     */
+    public static function encodeSignatureArguments(array $arguments) : string
+    {
+        $result = '[';
         foreach ($arguments as $key => $arg) {
             if ($key !== 0) {
                 $result .= ', ' . static::encodeScalar($key) . '=>';
             }
             $result .= static::encodeScalar($arg);
         }
-        $result .= "],\n";
+        $result .= "]";
         return $result;
     }
 }
