@@ -18,14 +18,6 @@ require_once(__DIR__ . '/Phan/Bootstrap.php');
 use Phan\CLI;
 use Phan\Phan;
 
-if (extension_loaded('ast')) {
-    // Warn if the php-ast version is too low.
-    $ast_version = (new ReflectionExtension('ast'))->getVersion();
-    if (version_compare($ast_version, '0.1.5') < 0) {
-        fprintf(STDERR, "Phan supports php-ast version 0.1.5 or newer, but the installed php-ast version is $ast_version. You may see bugs in some edge cases\n");
-    }
-}
-
 // Create our CLI interface and load arguments
 $cli = CLI::fromArgv();
 

@@ -150,3 +150,19 @@ if (!class_exists(CompileError::class)) {
     {
     }
 }
+
+if (extension_loaded('ast')) {
+    // Warn if the php-ast version is too low.
+    $ast_version = (new ReflectionExtension('ast'))->getVersion();
+    if (PHP_VERSION_ID >= 70400) {
+        if (version_compare($ast_version, '1.0.0') <= 0) {
+            fwrite(STDERR, "Phan is being run with php-ast version $ast_version.\n");
+            fwrite(STDERR, "However, when run with PHP 7.4+, Phan requires 1.0.1, which has not been released yet. Older versions of php-ast will crash Phan. 1.0.1-dev can be built from the source available at https://github.com/nikic/php-ast\n");
+            fwrite(STDERR, "Alternately, to run this version of Phan with PHP 7.4 without upgrading php-ast, uninstall/disable php-ast in php.ini then add the CLI option --allow-polyfill-parser (which is noticeably slower)\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    if (version_compare($ast_version, '0.1.5') < 0) {
+        fprintf(STDERR, "Phan supports php-ast version 0.1.5 or newer, but the installed php-ast version is $ast_version. You may see bugs in some edge cases\n");
+    }
+}
