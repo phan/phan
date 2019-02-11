@@ -60,7 +60,7 @@ case "$TEST_SUITE" in
 	__FakeAllPHPUnitTests)
 		PROCESSORS=$(nproc || echo 2)
 		if [[ "$PROCESSORS" > 1 ]]; then
-			vendor/bin/paratest --processes "$PROCESSORS"
+			vendor/bin/paratest --processes "$PROCESSORS" --runner WrapperRunner
 		else
 			vendor/bin/phpunit
 		fi

@@ -1144,6 +1144,39 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
+     * A node of kind `ast\AST_CLASS_NAME` to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitClassName(Node $node) : Context
+    {
+        try {
+            (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node->children['class']
+            ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
+        } catch (CodeBaseException $exception) {
+            $exception_fqsen = $exception->getFQSEN();
+            $this->emitIssueWithSuggestion(
+                Issue::UndeclaredClassConstant,
+                $node->lineno,
+                ['class', (string)$exception_fqsen],
+                IssueFixSuggester::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception_fqsen)
+            );
+        }
+
+        // Check to make sure we're doing something with the
+        // ::class class constant
+        $this->analyzeNoOp($node, Issue::NoopConstant);
+
+        return $this->context;
+    }
+
+    /**
+     * @param Node $node
      * A node to parse
      *
      * @return Context

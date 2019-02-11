@@ -61,17 +61,22 @@ EOB;
 
     $as_php_ast = false;
     $as_php_ast_with_placeholders = false;
+    $as_php_ast_native = false;
     foreach ($argv as $i => $arg) {
         if ($arg === '--php-ast') {
             $as_php_ast = true;
-            unset($argv[$i]);
+        } elseif ($arg === '--php-ast-native') {
+            $as_php_ast = true;
+            $as_php_ast_native = true;
         } elseif ($arg === '--php-ast-with-placeholders') {
             $as_php_ast = true;
             $as_php_ast_with_placeholders = true;
-            unset($argv[$i]);
         } elseif (in_array($argv[$i], ['help', '-h', '--help'])) {
             $print_help(0);
+        } else {
+            continue;
         }
+        unset($argv[$i]);
     }
     $argv = array_values($argv);
 
@@ -89,7 +94,7 @@ EOB;
     }
 
     if ($as_php_ast) {
-        dump_expr_as_ast($expr, $as_php_ast_with_placeholders);
+        dump_expr_as_ast($expr, $as_php_ast_with_placeholders, $as_php_ast_native);
     } else {
         dump_expr($expr);
     }
@@ -99,11 +104,15 @@ EOB;
  * Parses $expr and echoes the compact AST representation to stdout.
  * @return void
  */
-function dump_expr_as_ast(string $expr, bool $with_placeholders)
+function dump_expr_as_ast(string $expr, bool $with_placeholders, bool $native)
 {
-    $converter = new \Phan\AST\TolerantASTConverter\TolerantASTConverter();
-    $converter->setShouldAddPlaceholders($with_placeholders);
-    $ast_data = $converter->parseCodeAsPHPAST($expr, 50);
+    if ($native) {
+        $ast_data = ast\parse_code($expr, \Phan\Config::AST_VERSION);
+    } else {
+        $converter = new \Phan\AST\TolerantASTConverter\TolerantASTConverter();
+        $converter->setShouldAddPlaceholders($with_placeholders);
+        $ast_data = $converter->parseCodeAsPHPAST($expr, 50);
+    }
     echo \Phan\Debug::nodeToString($ast_data);
 }
 

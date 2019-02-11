@@ -3,6 +3,7 @@
 %s:13 PhanUndeclaredMethod Call to undeclared method \stdClass::method
 %s:16 PhanUndeclaredMethod Call to undeclared method \stdClass::method
 %s:18 PhanUndeclaredClassConstant Reference to constant class from undeclared class \Foo\stdClass (Did you mean class \stdClass)
+%s:19 PhanUndeclaredClassMethod Call to method method from undeclared class \Foo\stdClass (Did you mean class \stdClass)
 %s:21 PhanTypeComparisonToInvalidClass Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN 'A|B'
 %s:26 PhanTypeComparisonToInvalidClass Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN ','
 %s:29 PhanTypeComparisonToInvalidClass Saw code asserting that an expression has a class, but that class is an invalid/impossible FQSEN '\\stdClass'

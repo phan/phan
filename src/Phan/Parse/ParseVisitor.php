@@ -373,7 +373,7 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
-     * Visit a node with kind `\ast\AST_PROP_DECL`
+     * Visit a node with kind `\ast\AST_PROP_GROUP`
      *
      * @param Node $node
      * A node to parse
@@ -382,12 +382,15 @@ class ParseVisitor extends ScopeVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitPropDecl(Node $node) : Context
+    public function visitPropGroup(Node $node) : Context
     {
         // Bomb out if we're not in a class context
+        $props_node = $node->children['props'];
+        // TODO: Use $node->children['type']
+
         $class = $this->getContextClass();
         $doc_comment = '';
-        $first_child_node = $node->children[0] ?? null;
+        $first_child_node = $props_node->children[0] ?? null;
         if ($first_child_node instanceof Node) {
             $doc_comment = $first_child_node->children['docComment'] ?? '';
         }
@@ -396,11 +399,11 @@ class ParseVisitor extends ScopeVisitor
             $doc_comment,
             $this->code_base,
             $this->context,
-            $node->lineno ?? 0,
+            $props_node->lineno ?? 0,
             Comment::ON_PROPERTY
         );
 
-        foreach ($node->children as $i => $child_node) {
+        foreach ($props_node->children as $i => $child_node) {
             // Ignore children which are not property elements
             if (!($child_node instanceof Node)
                 || $child_node->kind != \ast\AST_PROP_ELEM
@@ -482,7 +485,7 @@ class ParseVisitor extends ScopeVisitor
                 $context_for_property,
                 $property_name,
                 $union_type,
-                $node->flags ?? 0,
+                $node->flags,
                 $property_fqsen
             );
 

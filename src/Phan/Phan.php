@@ -6,6 +6,7 @@ use AssertionError;
 use Closure;
 use Exception;
 use InvalidArgumentException;
+use Phan\AST\TolerantASTConverter\Shim;
 use Phan\Daemon\Request;
 use Phan\Language\Type;
 use Phan\LanguageServer\LanguageServer;
@@ -23,7 +24,6 @@ use function array_flip;
 use function array_merge;
 use function array_unique;
 use function array_values;
-use function class_exists;
 use function count;
 use function file_exists;
 use function file_put_contents;
@@ -131,10 +131,7 @@ class Phan implements IgnoredFilesFilterInterface
         CodeBase $code_base,
         Closure $file_path_lister
     ) : bool {
-        if (!class_exists('\ast\Node')) {
-            // Fix for https://github.com/phan/phan/issues/2287
-            require_once __DIR__ . '/AST/TolerantASTConverter/ast_shim.php';
-        }
+        Shim::load();
         FileCache::setMaxCacheSize(FileCache::MINIMUM_CACHE_SIZE);
         self::checkForSlowPHPOptions();
         Config::warnIfInvalid();

@@ -1788,6 +1788,51 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
+     * Visit a node with kind `\ast\AST_CLASS_NAME`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     *
+     * @throws IssueException
+     * An exception is thrown if we can't find the constant
+     */
+    public function visitClassName(Node $node) : UnionType
+    {
+        try {
+            $class_list = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node->children['class']
+            ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
+        } catch (CodeBaseException $exception) {
+            $exception_fqsen = $exception->getFQSEN();
+            $this->emitIssueWithSuggestion(
+                Issue::UndeclaredClassConstant,
+                $node->lineno,
+                ['class', (string)$exception_fqsen],
+                IssueFixSuggester::suggestSimilarClassForGenericFQSEN($this->code_base, $this->context, $exception_fqsen)
+            );
+            return LiteralStringType::instanceForValue(
+                \ltrim($exception_fqsen->__toString(), '\\'),
+                false
+            )->asUnionType();
+        }
+        // Return the first class FQSEN
+        foreach ($class_list as $class) {
+            return LiteralStringType::instanceForValue(
+                \ltrim($class->getFQSEN()->__toString(), '\\'),
+                false
+            )->asUnionType();
+        }
+        return StringType::instance(false)->asUnionType();
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_PROP`
      *
      * @param Node $node

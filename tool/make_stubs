@@ -5,6 +5,7 @@
  * @phan-file-suppress PhanNativePHPSyntaxCheckPlugin, UnusedPluginFileSuppression php warns about declare() after the inline HTML /usr/bin/env php
  */
 
+use Phan\AST\TolerantASTConverter\Shim;
 use Phan\CodeBase;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
@@ -19,9 +20,7 @@ require_once(dirname(__DIR__) . '/src/Phan/Bootstrap.php');
 
 // If php-ast isn't loaded already, then load this file to generate equivalent
 // class, constant, and function definitions.
-if (!class_exists('\ast\Node')) {
-    require_once __DIR__ . '/../src/Phan/AST/TolerantASTConverter/ast_shim.php';
-}
+Shim::load();
 
 /**
  * Generates PHP stubs for extensions that can be used in the autoload_internal_extension_signatures `.phan/config.php` setting.

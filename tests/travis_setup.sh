@@ -9,7 +9,7 @@ fi
 set -xeu
 
 # Ensure the build directory exists.
-PHP_VERSION_ID=$(php -r "echo PHP_VERSION_ID . '_' . PHP_DEBUG . '_' . PHP_ZTS;")
+PHP_VERSION_ID=$(php -r "echo PHP_VERSION_ID . '_' . PHP_DEBUG . '_' . PHP_ZTS . '_new';")
 PHAN_BUILD_DIR="$HOME/.cache/phan-ast"
 EXPECTED_AST_FILE="$PHAN_BUILD_DIR/build/php-ast-$PHP_VERSION_ID.so"
 
@@ -41,7 +41,7 @@ echo "extension=$EXPECTED_AST_FILE" >> ~/.phpenv/versions/$(phpenv version-name)
 
 php -r 'function_exists("ast\parse_code") || (print("Failed to enable php-ast\n") && exit(1));'
 
-# Disable xdebug, since we aren't currently gathering code coverage data and
+# Disable xdebug if it's enabled, since we aren't currently gathering code coverage data and
 # having xdebug slows down Composer a bit.
-# TODO(optional): Once xdebug is enabled for PHP 7.3 on Travis, get rid of the '|| true'
+# I'm keeping the `|| true` here for future PHP versions (7.4, 8.0, etc)
 phpenv config-rm xdebug.ini || true

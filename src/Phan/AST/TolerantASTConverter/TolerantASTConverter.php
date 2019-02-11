@@ -36,9 +36,7 @@ use const PHP_VERSION_ID;
 
 // If php-ast isn't loaded already, then load this file to generate equivalent
 // class, constant, and function definitions.
-if (!class_exists('ast\Node')) {
-    require_once __DIR__ . '/ast_shim.php';
-}
+Shim::load();
 
 /**
  * Source: https://github.com/TysonAndre/tolerant-php-parser-to-php-ast
@@ -99,8 +97,8 @@ if (!class_exists('ast\Node')) {
 class TolerantASTConverter
 {
     // The latest stable version of php-ast.
-    // For something > 50, update the library's release.
-    const AST_VERSION = 50;
+    // For something != 70, update the library's release.
+    const AST_VERSION = 70;
 
     // The versions that this supports
     // TODO: Also enable support for version 60 once there is a stable 1.0.0 release. (Issue #2038)
@@ -1208,7 +1206,6 @@ class TolerantASTConverter
                     static::phpParserVisibilityToAstVisibility($n->modifiers) | ($n->byRefToken !== null ? flags\FUNC_RETURNS_REF : 0),
                     [
                         'params' => static::phpParserParamsToAstParams($n->parameters, $start_line),
-                        'uses' => null,
                         'stmts' => static::phpParserStmtlistToAstNode($statements, self::getStartLine($statements), true),
                         'returnType' => $ast_return_type,
                     ],
@@ -2030,7 +2027,6 @@ class TolerantASTConverter
             $by_ref ? flags\FUNC_RETURNS_REF : 0,
             [
                 'params' => $params,
-                'uses' => null,
                 'stmts' => $stmts,
                 'returnType' => $return_type,
             ],
@@ -2535,7 +2531,12 @@ class TolerantASTConverter
         }
         $flags = static::phpParserVisibilityToAstVisibility($n->modifiers, false);
 
-        return new ast\Node(ast\AST_PROP_DECL, $flags, $prop_elems, $prop_elems[0]->lineno ?? (self::getStartLine($n) ?: $start_line));
+        $line = $prop_elems[0]->lineno ?? (self::getStartLine($n) ?: $start_line);
+        $prop_decl = new ast\Node(ast\AST_PROP_DECL, 0, $prop_elems, $line);
+        return new ast\Node(ast\AST_PROP_GROUP, $flags, [
+            'type' => null,  // TODO
+            'props' => $prop_decl,
+        ], $line);
     }
 
     private static function phpParserClassConstToAstNode(PhpParser\Node\ClassConstDeclaration $n, int $start_line) : ast\Node

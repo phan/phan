@@ -1705,6 +1705,7 @@ EOB;
                 . Config::AST_VERSION
                 . ') in configuration. '
                 . "You may need to rebuild the latest version of the php-ast extension.\n"
+                . "(You are using php-ast " . (new ReflectionExtension('ast'))->getVersion() . ", but " . Config::MINIMUM_AST_EXTENSION_VERSION . " or newer is required. Alternately, test with --force-polyfill-parser (which is noticeably slower))\n"
             );
             exit(EXIT_FAILURE);
         }
