@@ -3,6 +3,9 @@ Phan NEWS
 ?? ??? 2019, Phan 1.2.4 (dev)
 -----------------------
 
+Bug fixes:
++ Fix a crash seen when parsing return typehint for `Closure` in a different case (e.g. `closure`) (#2438)
+
 10 Feb 2019, Phan 1.2.3
 -----------------------
 

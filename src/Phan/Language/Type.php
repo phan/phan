@@ -431,11 +431,11 @@ class Type
         $value = self::$canonical_object_map[$key] ?? null;
         if (!$value) {
             if ($namespace === '\\') {
-                switch ($type_name) {
-                    case 'Closure':
+                switch (strtolower($type_name)) {
+                    case 'closure':
                         $value = new ClosureType(
                             $namespace,
-                            $type_name,
+                            'Closure',
                             $template_parameter_type_list,
                             $is_nullable
                         );
@@ -443,7 +443,7 @@ class Type
                     case 'callable':
                         $value = new CallableType(
                             $namespace,
-                            $type_name,
+                            'callable',
                             $template_parameter_type_list,
                             $is_nullable
                         );
@@ -451,7 +451,7 @@ class Type
                     case 'callable-string':
                         $value = new CallableStringType(
                             $namespace,
-                            $type_name,
+                            'callable-string',
                             $template_parameter_type_list,
                             $is_nullable
                         );
@@ -459,7 +459,7 @@ class Type
                     case 'class-string':
                         $value = new ClassStringType(
                             $namespace,
-                            $type_name,
+                            'class-string',
                             $template_parameter_type_list,
                             $is_nullable
                         );
