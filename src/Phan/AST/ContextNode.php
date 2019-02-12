@@ -46,9 +46,12 @@ use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Library\FileCache;
 use Phan\Library\None;
-
+use function implode;
 use function is_object;
 use function is_string;
+use function strcasecmp;
+use function strpos;
+use function strtolower;
 
 if (!\function_exists('spl_object_id')) {
     require_once __DIR__ . '/../../spl_object_id.php';

@@ -19,9 +19,32 @@ use Phan\Output\IssueCollectorInterface;
 use Phan\Output\IssuePrinterInterface;
 use Phan\Plugin\ConfigPluginSet;
 
+use function array_filter;
+use function array_flip;
+use function array_merge;
+use function array_unique;
+use function array_values;
+use function class_exists;
 use function count;
+use function file_exists;
+use function file_put_contents;
+use function fprintf;
+use function fwrite;
+use function gc_enable;
+use function getmypid;
 use function in_array;
 use function is_array;
+use function is_string;
+use function is_file;
+use function json_encode;
+use function memory_get_usage;
+use function memory_get_peak_usage;
+use function realpath;
+use function sort;
+use function sprintf;
+use function strpos;
+use function str_replace;
+use function var_export;
 
 use const EXIT_FAILURE;
 use const EXIT_SUCCESS;
@@ -214,7 +237,7 @@ class Phan implements IgnoredFilesFilterInterface
             exit(EXIT_SUCCESS);
         }
 
-        if (\is_string(Config::getValue('dump_signatures_file'))) {
+        if (is_string(Config::getValue('dump_signatures_file'))) {
             exit(self::dumpSignaturesToFile($code_base, Config::getValue('dump_signatures_file')));
         }
 
@@ -661,7 +684,7 @@ class Phan implements IgnoredFilesFilterInterface
             if (\extension_loaded($extension_name)) {
                 continue;
             }
-            if (!\is_string($path_to_extension)) {
+            if (!is_string($path_to_extension)) {
                 throw new \InvalidArgumentException("Invalid autoload_internal_extension_signatures: path for $extension_name is not a string: value: " . var_export($path_to_extension, true));
             }
             $path_to_extension = Config::projectPath($path_to_extension);

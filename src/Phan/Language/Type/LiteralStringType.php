@@ -138,7 +138,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
             throw new InvalidArgumentException("Expected the literal type string to begin and end with \"'\"");
         }
         $escaped_string = \substr($escaped_string, 1, -1);
-        $escaped_string = preg_replace_callback(
+        $escaped_string = \preg_replace_callback(
             '/\\\\(?:[\'\\\\trn]|x[0-9a-fA-F]{2})/',
             /** @param array{0:string} $matches */
             static function (array $matches) : string {

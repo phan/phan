@@ -59,8 +59,13 @@ use Phan\Library\Option;
 use Phan\Library\Some;
 use Phan\Library\Tuple5;
 use function count;
+use function explode;
+use function in_array;
+use function preg_match;
+use function strcasecmp;
 use function stripos;
 use function strtolower;
+use function trim;
 
 /**
  * The base class for all of Phan's types.
@@ -929,7 +934,7 @@ class Type
             // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
             return LiteralStringType::fromEscapedString($escaped_literal, $is_nullable);
         }
-        $value = filter_var($escaped_literal, \FILTER_VALIDATE_INT);
+        $value = \filter_var($escaped_literal, \FILTER_VALIDATE_INT);
         if (\is_int($value)) {
             return LiteralIntType::instanceForValue($value, $is_nullable);
         }
@@ -2484,7 +2489,7 @@ class Type
 
         // Check for allowable type conversions from object types to native types
         if ($type::NAME === 'iterable') {
-            if ($this->namespace === '\\' && \in_array($this->name, ['Generator', 'Traversable', 'Iterator'], true)) {
+            if ($this->namespace === '\\' && in_array($this->name, ['Generator', 'Traversable', 'Iterator'], true)) {
                 if (count($this->template_parameter_type_list) === 0 || !($type instanceof GenericIterableType)) {
                     return true;
                 }

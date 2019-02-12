@@ -44,6 +44,7 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
+use function implode;
 
 /**
  * PostOrderAnalysisVisitor is where we do the post-order part of the analysis

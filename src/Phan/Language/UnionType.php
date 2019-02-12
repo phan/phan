@@ -2526,7 +2526,7 @@ class UnionType implements Serializable
     {
         return $this->asMappedUnionType(static function (Type $type) use ($closure) : Type {
             if ($type instanceof ArrayShapeType) {
-                $field_types = array_map($closure, $type->getFieldTypes());
+                $field_types = \array_map($closure, $type->getFieldTypes());
                 $result = ArrayShapeType::fromFieldTypes($field_types, $type->getIsNullable());
                 return $result;
             } elseif ($type instanceof GenericArrayType) {

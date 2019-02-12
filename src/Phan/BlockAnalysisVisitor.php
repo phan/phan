@@ -31,6 +31,7 @@ use Phan\Plugin\ConfigPluginSet;
 
 use function array_map;
 use function count;
+use function end;
 use function explode;
 use function preg_match;
 use function rtrim;
@@ -260,7 +261,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $context,
                 Issue::NoopNumericLiteral,
                 $context->getLineNumberStart() ?: $this->getLineNumberOfParent() ?: $node->lineno,
-                var_export($child_node, true)
+                \var_export($child_node, true)
             );
         }
     }

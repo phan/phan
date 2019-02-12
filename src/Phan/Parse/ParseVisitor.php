@@ -450,7 +450,7 @@ class ParseVisitor extends ScopeVisitor
                 throw new AssertionError(
                     'Property name must be a string. '
                     . 'Got '
-                    . print_r($property_name, true)
+                    . \print_r($property_name, true)
                     . ' at '
                     . $context_for_property
                 );
@@ -731,7 +731,7 @@ class ParseVisitor extends ScopeVisitor
         do {
             // @phan-suppress-next-line PhanThrowTypeAbsentForCall this is valid
             $function_fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString(
-                rtrim($context->getNamespace(), '\\') . '\\' . $function_name
+                \rtrim($context->getNamespace(), '\\') . '\\' . $function_name
             )->withAlternateId($alternate_id++);
         } while ($code_base->hasFunctionWithFQSEN($function_fqsen));
 
@@ -1116,7 +1116,7 @@ class ParseVisitor extends ScopeVisitor
                 $temp = $temp->children['name'];
                 $depth++;
             }
-            $dollars = str_repeat('$', $depth);
+            $dollars = \str_repeat('$', $depth);
             $cache_entry = FileCache::getOrReadEntry($this->context->getFile());
             $line = $cache_entry->getLine($node->lineno);
             if (!\is_string($line)) {

@@ -34,6 +34,7 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
+use function strcasecmp;
 
 /**
  * Analyzes assignments.

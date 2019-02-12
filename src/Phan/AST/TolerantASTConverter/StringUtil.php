@@ -6,6 +6,7 @@ use function chr;
 use function hexdec;
 use function is_string;
 use function octdec;
+use function preg_replace;
 use function str_replace;
 use function strpos;
 use function strrpos;
