@@ -345,6 +345,7 @@ class Issue
     const AccessMethodProtectedWithCallMagicMethod = 'PhanAccessMethodProtectedWithCallMagicMethod';
     const AccessSignatureMismatch         = 'PhanAccessSignatureMismatch';
     const AccessSignatureMismatchInternal = 'PhanAccessSignatureMismatchInternal';
+    const ConstructAccessSignatureMismatch = 'PhanConstructAccessSignatureMismatch';
     const PropertyAccessSignatureMismatch = 'PhanPropertyAccessSignatureMismatch';
     const PropertyAccessSignatureMismatchInternal  = 'PhanPropertyAccessSignatureMismatchInternal';
     const ConstantAccessSignatureMismatch = 'PhanConstantAccessSignatureMismatch';
@@ -2990,6 +2991,14 @@ class Issue
                 "Access level to {METHOD} must be compatible with internal {METHOD}",
                 self::REMEDIATION_B,
                 1005
+            ),
+            new Issue(
+                self::ConstructAccessSignatureMismatch,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_NORMAL,
+                "Access level to {METHOD} must be compatible with {METHOD} defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1032
             ),
             new Issue(
                 self::PropertyAccessSignatureMismatch,

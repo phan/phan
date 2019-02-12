@@ -386,17 +386,21 @@ class ParameterTypesAnalyzer
             self::warnOverridingFinalMethod($code_base, $method, $class, $o_method);
         }
 
-        // Unless it is an abstract constructor,
-        // don't worry about signatures lining up on
-        // constructors. We just want to make sure that
-        // calling a method on a subclass won't cause
-        // a runtime error. We usually know what we're
-        // constructing at instantiation time, so there
-        // is less of a risk.
         if ($method->getName() === '__construct') {
-            if (!$o_method->isAbstract()) {
-                return;
+            if (Config::get_closest_target_php_version_id() < 70200 && $o_method->isStrictlyMoreVisibileThan($method)) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
+                    Issue::ConstructAccessSignatureMismatch,
+                    $method->getFileRef()->getLineNumberStart(),
+                    $method,
+                    $o_method,
+                    $o_method->getFileRef()->getFile(),
+                    $o_method->getFileRef()->getLineNumberStart()
+                );
             }
+
+            return;
         }
 
         // Don't bother warning about incompatible signatures for private methods.
