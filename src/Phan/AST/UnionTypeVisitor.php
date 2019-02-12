@@ -534,7 +534,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         $name = $node->children['name'];
         try {
             if ($node->flags & \ast\flags\NAME_NOT_FQ) {
-                if (strcasecmp('parent', $name) === 0) {
+                if (\strcasecmp('parent', $name) === 0) {
                     $parent_type = self::findParentType($this->context, $this->code_base);
                     return $parent_type ? $parent_type->asUnionType() : UnionType::empty();
                 }
@@ -2495,7 +2495,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
         } elseif ($node->flags & \ast\flags\NAME_RELATIVE) {
             // Relative to current namespace
-            if (0 !== strpos($class_name, '\\')) {
+            if (0 !== \strpos($class_name, '\\')) {
                 $class_name = '\\' . $class_name;
             }
 
@@ -2504,7 +2504,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
         } else {
             // Fully qualified
-            if (0 !== strpos($class_name, '\\')) {
+            if (0 !== \strpos($class_name, '\\')) {
                 $class_name = '\\' . $class_name;
             }
 

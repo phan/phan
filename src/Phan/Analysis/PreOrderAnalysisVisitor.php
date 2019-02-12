@@ -735,7 +735,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         );
 
         try {
-            $class_list = iterator_to_array($union_type->asClassList($this->code_base, $this->context));
+            $class_list = \iterator_to_array($union_type->asClassList($this->code_base, $this->context));
 
             if (Config::get_closest_target_php_version_id() < 70100 && \count($class_list) > 1) {
                 $this->emitIssue(

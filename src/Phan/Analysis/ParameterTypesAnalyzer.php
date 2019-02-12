@@ -22,6 +22,8 @@ use Phan\Language\Type\StaticOrSelfType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
+use function array_merge;
+use function strcasecmp;
 
 /**
  * Analyzer of the parameters of function/closure/method signatures.

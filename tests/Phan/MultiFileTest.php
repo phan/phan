@@ -2,6 +2,10 @@
 
 namespace Phan\Tests;
 
+use const DIRECTORY_SEPARATOR;
+use const MULTI_EXPECTED_DIR;
+use const MULTI_FILE_DIR;
+
 /**
  * Integration tests that require more than 1 files in a codebase to reproduce
  * (e.g. regression tests for bugs, tests of expected functionality for multiple files, etc)

@@ -7,6 +7,7 @@ use ast;
 use ast\flags;
 use ast\Node;
 use function array_map;
+use function array_merge;
 use function array_pop;
 use function count;
 use function in_array;
