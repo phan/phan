@@ -22,3 +22,4 @@
 %s:35 PhanUnusedVariable Unused definition of variable $definedStrVar
 %s:37 PhanContextNotObject Cannot access self when not in object context
 %s:38 PhanTypeMismatchArgument Argument 1 (x) is object but \expect_string_300() takes string defined at %s:3
+%s:40 PhanUndeclaredGlobalVariable Global variable $undefinedGlobarVar is undeclared

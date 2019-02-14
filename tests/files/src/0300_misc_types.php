@@ -36,3 +36,5 @@ function test300() {
 }
 self::missingAndNotInClassScope();
 expect_string_300((object)(new ArrayObject()));
+
+$_300_var = $undefinedGlobarVar;

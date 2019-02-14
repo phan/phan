@@ -67,6 +67,7 @@ class Issue
     const UndeclaredTypeProperty    = 'PhanUndeclaredTypeProperty';
     const UndeclaredTypeThrowsType  = 'PhanUndeclaredTypeThrowsType';
     const UndeclaredVariable        = 'PhanUndeclaredVariable';
+    const UndeclaredGlobalVariable  = 'PhanUndeclaredGlobalVariable';
     const UndeclaredVariableDim     = 'PhanUndeclaredVariableDim';
     const UndeclaredVariableAssignOp = 'PhanUndeclaredVariableAssignOp';
     const UndeclaredClassInCallable = 'PhanUndeclaredClassInCallable';
@@ -862,6 +863,14 @@ class Issue
                 "Variable \${VARIABLE} is undeclared",
                 self::REMEDIATION_B,
                 11018
+            ),
+            new Issue(
+                self::UndeclaredGlobalVariable,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Global variable \${VARIABLE} is undeclared",
+                self::REMEDIATION_B,
+                11046
             ),
             new Issue(
                 self::UndeclaredTypeParameter,
