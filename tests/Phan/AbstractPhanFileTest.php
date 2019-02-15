@@ -148,6 +148,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      * @param string $expected_file_path
      * @param ?string $config_file_path
      * @return void
+     * @suppress PhanThrowTypeAbsentForCall
      * @dataProvider getTestFiles
      */
     public function testFiles($test_file_list, $expected_file_path, $config_file_path = null)
@@ -178,7 +179,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
         Phan::setPrinter($printer);
         Phan::setIssueCollector(new BufferingCollector());
 
-        // @phan-suppress-next-line PhanThrowTypeAbsentForCall should not throw Exception for any passing tests
+        /** @return array<int,string> */
         Phan::analyzeFileList($this->code_base, static function () use ($test_file_list) : array {
             return $test_file_list;
         });

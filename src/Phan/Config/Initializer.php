@@ -487,7 +487,7 @@ EOT;
     }
 
     /**
-     * @return array
+     * @return array<int,string>
      */
     private static function getArrayOption(array $opts, string $key)
     {

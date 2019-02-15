@@ -1367,6 +1367,7 @@ class TolerantASTConverter
                     $start_line
                 );
             },
+            /** @return array{} */
             'Microsoft\PhpParser\Node\Statement\EmptyStatement' => static function (PhpParser\Node\Statement\EmptyStatement $unused_node, int $unused_start_line) : array {
                 // `;;`
                 return [];

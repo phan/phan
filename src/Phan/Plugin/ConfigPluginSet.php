@@ -1037,6 +1037,13 @@ final class ConfigPluginSet extends PluginV2 implements
         }
     }
 
+    /**
+     * @template T
+     * @param array<int,PluginV2> $plugin_set
+     * @param class-string<T> $interface_name
+     * @return array<int,T>
+     * @suppress PhanPartialTypeMismatchReturn unable to infer this
+     */
     private static function filterByClass(array $plugin_set, string $interface_name) : array
     {
         $result = [];

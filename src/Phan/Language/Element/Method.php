@@ -342,6 +342,8 @@ class Method extends ClassElement implements FunctionInterface
         $method->setRealReturnType($this->getRealReturnType());
         $method->setNumberOfRequiredParameters($this->getNumberOfRequiredParameters());
         $method->setNumberOfOptionalParameters($this->getNumberOfOptionalParameters());
+        // Copy the comment so that features such as templates will work
+        $method->comment = $this->comment;
 
         return $method;
     }

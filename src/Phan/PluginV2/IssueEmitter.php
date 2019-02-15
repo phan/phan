@@ -6,6 +6,11 @@ use Phan\CodeBase;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Language\Context;
+use Phan\Language\Element\TypedElement;
+use Phan\Language\Element\UnaddressableTypedElement;
+use Phan\Language\FQSEN;
+use Phan\Language\Type;
+use Phan\Language\UnionType;
 use Phan\Suggestion;
 
 /**
@@ -32,7 +37,7 @@ trait IssueEmitter
      * The list of placeholders for between braces can be found
      * in \Phan\Issue::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE.
      *
-     * @param array<int,string|int|float> $issue_message_args
+     * @param array<int,string|int|float|Type|UnionType|FQSEN|TypedElement|UnaddressableTypedElement> $issue_message_args
      * The arguments for this issue format.
      * If this array is empty, $issue_message_args is kept in place
      *

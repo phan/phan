@@ -13,7 +13,7 @@ class CapturerResponder implements Responder
     /** @var array<string,mixed> the data for getRequestData() */
     private $request_data;
 
-    /** @var ?array the data sent via sendAndClose */
+    /** @var ?array<string,mixed> the data sent via sendAndClose */
     private $response_data;
 
     /** @param array<string,mixed> $data the data for getRequestData() */
@@ -44,7 +44,7 @@ class CapturerResponder implements Responder
     }
 
     /**
-     * @return ?array the raw response data that the analysis would have sent back serialized if this was actually a fork.
+     * @return ?array<string,mixed> the raw response data that the analysis would have sent back serialized if this was actually a fork.
      */
     public function getResponseData()
     {

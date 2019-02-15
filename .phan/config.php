@@ -281,6 +281,10 @@ return [
         'PhanPluginDescriptionlessCommentOnProtectedMethod',
         'PhanPluginNoCommentOnPrivateMethod',
         'PhanPluginDescriptionlessCommentOnPrivateMethod',
+
+        // TODO: Fix these issues and add checks of parameters as well
+        'PhanPluginUnknownArrayMethodReturnType',
+        'PhanPluginUnknownArrayClosureReturnType',
     ],
 
     // If empty, no filter against issues types will be applied.

@@ -67,6 +67,9 @@ final class BlockExitStatusCheckerTest extends BaseTest
         $this->assertSame($expected_status_representation, $this->representStatus($status_code), sprintf("Unexpected status 0x%x\nCode:\n%s\n", $status_code, $code_snippet));
     }
 
+    /**
+     * @return array<int,array{0:string,1:string}>
+     */
     public function exitStatusProvider() : array
     {
         return [

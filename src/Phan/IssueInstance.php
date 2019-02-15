@@ -2,6 +2,8 @@
 
 namespace Phan;
 
+use Phan\Language\Element\TypedElementInterface;
+use Phan\Language\Element\UnaddressableTypedElement;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
@@ -40,7 +42,7 @@ class IssueInstance
      * @param Issue $issue
      * @param string $file
      * @param int $line
-     * @param array<int,string|int|float|FQSEN|Type|UnionType> $template_parameters
+     * @param array<int,string|int|float|FQSEN|Type|UnionType|TypedElementInterface|UnaddressableTypedElement> $template_parameters
      * @param ?Suggestion $suggestion
      */
     public function __construct(
@@ -64,7 +66,7 @@ class IssueInstance
         // Fixes #1754 : Some issue template parameters might not be serializable (for passing to ForkPool)
 
         /**
-         * @param string|float|int|FQSEN|Type|UnionType $parameter
+         * @param string|float|int|FQSEN|Type|UnionType|TypedElementInterface|UnaddressableTypedElement $parameter
          * @return string|float|int
          */
         $this->template_parameters = \array_map(static function ($parameter) {
@@ -100,7 +102,7 @@ class IssueInstance
     }
 
     /**
-     * @param array<int,string|int|float|FQSEN|Type|UnionType> $template_parameters
+     * @param array<int,string|int|float|FQSEN|Type|UnionType|TypedElementInterface|UnaddressableTypedElement> $template_parameters
      */
     private static function generateColorizedMessage(
         Issue $issue,
@@ -124,7 +126,7 @@ class IssueInstance
         return $this->suggestion;
     }
 
-    /** @var array<int,string|int|float|FQSEN|Type|UnionType> $template_parameters If this is non-null, this contains suggestions on how to resolve the error. */
+    /** @return array<int,string|int|float|FQSEN|Type|UnionType> $template_parameters If this is non-null, this contains suggestions on how to resolve the error. */
     public function getTemplateParameters() : array
     {
         return $this->template_parameters;

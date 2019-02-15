@@ -31,6 +31,9 @@ final class ASTReverterTest extends BaseTest
         $this->assertSame($expected, $reverter->toShortString($snippet_node));
     }
 
+    /**
+     * @return array<int,array{0:string}>
+     */
     public function revertShorthandProvider() : array
     {
         return [

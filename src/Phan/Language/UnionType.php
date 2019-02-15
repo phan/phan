@@ -2824,6 +2824,9 @@ class UnionType implements Serializable
         return $php56_map;
     }
 
+    /**
+     * @return array<string,string[]>
+     */
     private static function computeLatestFunctionSignatureMap() : array
     {
         $map = [];

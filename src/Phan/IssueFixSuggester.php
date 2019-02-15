@@ -414,6 +414,9 @@ class IssueFixSuggester
         );
     }
 
+    /**
+     * @return array<int,string>
+     */
     private static function suggestSimilarFunctionsToConstant(CodeBase $code_base, Context $context, FullyQualifiedGlobalConstantName $fqsen) : array
     {
         $suggested_fqsens = $code_base->suggestSimilarGlobalFunctionInOtherNamespace(
