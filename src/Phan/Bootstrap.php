@@ -14,14 +14,19 @@ define('CLASS_DIR', __DIR__ . '/../');
 set_include_path(get_include_path() . PATH_SEPARATOR . CLASS_DIR);
 
 // Use the composer autoloader
+$found_autoloader = false;
 foreach ([
-    __DIR__ . '/../../vendor/autoload.php',          // autoloader is in this project
-    __DIR__ . '/../../../../../vendor/autoload.php', // autoloader is in parent project
+    dirname(__DIR__, 2) . '/vendor/autoload.php', // autoloader is in this project (we're in src/Phan and want vendor/autoload.php)
+    dirname(__DIR__, 5) . '/vendor/autoload.php', // autoloader is in parent project (we're in vendor/phan/phan/src/Phan/Bootstrap.php and want autoload.php
     ] as $file) {
     if (file_exists($file)) {
         require_once($file);
+        $found_autoloader = true;
         break;
     }
+}
+if (!$found_autoloader) {
+    fwrite(STDERR, "Could not locate the autoloader\n");
 }
 
 define('EXIT_SUCCESS', 0);

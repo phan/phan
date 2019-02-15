@@ -6,16 +6,6 @@ $internal_interface_name_list = get_declared_interfaces();
 $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
-
-// @phan-file-suppress PhanMissingRequireFile one of these will be missing
-if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
-    // This is the path to autoload.php when Phan is installed globally.
-    require_once __DIR__ . '/../vendor/autoload.php';
-} else {
-    // This is the normal path when Phan is installed only in the scope of a project.
-    require_once __DIR__ . '/../../../autoload.php';
-}
-
 use Composer\XdebugHandler\XdebugHandler;
 use Phan\CodeBase;
 use Phan\Library\StderrLogger;
@@ -38,6 +28,9 @@ EOT
 
     $handler->check();
 }
+
+// Load the autoloader, check if Phan will work, etc.
+require_once __DIR__ . '/Phan/Bootstrap.php';
 
 return new CodeBase(
     $internal_class_name_list,
