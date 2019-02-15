@@ -44,6 +44,9 @@ final class CLITest extends BaseTest
         $this->assertSame($expected_message, CLI::getFlagSuggestionString($flag));
     }
 
+    /**
+     * @return array<int,array{0:string,1:string}>
+     */
     public function getFlagSuggestionStringProvider() : array
     {
         $wrap_suggestion = static function (string $text) : string {
@@ -97,6 +100,9 @@ final class CLITest extends BaseTest
         $this->assertSame($extra, []);
     }
 
+    /**
+     * @return array<int,array{0:array,1:array,2?:array}>
+     */
     public function setsConfigOptionsProvider() : array
     {
         return [

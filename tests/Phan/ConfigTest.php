@@ -63,6 +63,9 @@ final class ConfigTest extends BaseTest
     }
 
 
+    /**
+     * @return array<int,array>
+     */
     public function warnsEnableCompletionProvider() : array
     {
         return [

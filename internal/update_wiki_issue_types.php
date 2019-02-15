@@ -233,6 +233,9 @@ e.g. [this issue]($expected_url#L$expected_file_lineno) is emitted when analyzin
 EOT;
     }
 
+    /**
+     * @return array<string,array>
+     */
     private static function findExamples() : array
     {
         return self::$examples ?? self::$examples = self::calculateExamples();

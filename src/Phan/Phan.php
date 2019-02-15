@@ -431,6 +431,9 @@ class Phan implements IgnoredFilesFilterInterface
                         self::getIssueCollector()->reset();
                     },
                     $analysis_worker,
+                    /**
+                     * @return array<int,IssueInstance> the list of collected issues from calls to collectIssue()
+                     */
                     static function () use ($code_base) : array {
                         // This closure is run once, after running analysis_worker on each input.
                         // If there are any plugins defining finalizeProcess(), run those.

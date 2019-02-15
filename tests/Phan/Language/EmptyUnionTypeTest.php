@@ -125,6 +125,7 @@ final class EmptyUnionTypeTest extends BaseTest
     /**
      * Helper method to determine what arguments to use
      * to brute force test this parameter of EmptyUnionType
+     * @return array<int,mixed>
      */
     public function getPossibleArgValues(ReflectionParameter $param) : array
     {

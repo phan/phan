@@ -3,9 +3,13 @@ Phan NEWS
 ?? ??? 2019, Phan 1.2.4 (dev)
 -----------------------
 
+Plugins:
++ Warn about unspecialized array types of elements in UnknownElementTypePlugin. `mixed[]` can be used when absolutely nothing is known about the array's key or value types.
+
 Bug fixes:
 + Fix a crash seen when parsing return typehint for `Closure` in a different case (e.g. `closure`) (#2438)
 + Fix an issue loading the autoloader multiple times when the `vendor` folder is not lowercase on case-sensitive filesystems (#2440)
++ Fix bug causing template types on methods to not work properly when inherited from a trait method.
 
 10 Feb 2019, Phan 1.2.3
 -----------------------

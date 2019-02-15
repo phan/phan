@@ -143,7 +143,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
     }
 
     /**
-     * @return ?array
+     * @return ?array<mixed,string>
      * @throws FQSENException if signature map is invalid
      */
     public function parseMethodSignature(string $class_name, string $method_name)
@@ -172,7 +172,7 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
     }
 
     /**
-     * @return ?array
+     * @return ?array<mixed,string>
      * @throws FQSENException if $function_name is invalid
      */
     public function parseFunctionSignature(string $function_name)
@@ -216,6 +216,9 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
      */
     protected function getAvailableMethodSignatures() : array
     {
+        /**
+         * @return array<string,array<int|string,string>>
+         */
         return $this->memoize(__METHOD__, function () : array {
             $code_base = $this->code_base;
             $function_name_map = [];

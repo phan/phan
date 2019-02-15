@@ -20,6 +20,7 @@ declare(strict_types=1);
  * for PHP 7.0-7.3
  *
  * @phan-file-suppress PhanUnreferencedConstant, UnusedPluginFileSuppression - Plugins may reference some of these constants
+ * @phan-file-suppress PhanPluginUnknownArrayPropertyType
  *
  * @author Tyson Andre
  */

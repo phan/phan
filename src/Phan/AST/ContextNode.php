@@ -2046,7 +2046,7 @@ class ContextNode
 
     /**
      * @param int $flags - See self::RESOLVE_*
-     * @return ?array - array if elements could be resolved.
+     * @return ?array<mixed,mixed> - returns an array if elements could be resolved.
      */
     private function getEquivalentPHPArrayElements(Node $node, int $flags)
     {

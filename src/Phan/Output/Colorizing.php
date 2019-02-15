@@ -5,6 +5,8 @@ namespace Phan\Output;
 
 use Phan\Config;
 use Phan\Issue;
+use Phan\Language\Element\TypedElementInterface;
+use Phan\Language\Element\UnaddressableTypedElement;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
@@ -98,7 +100,7 @@ class Colorizing
     ];
 
     /**
-     * @var array|null - Lazily initialized from Config
+     * @var array<string,string>|null - Lazily initialized from Config, if set
      */
     private static $color_scheme = null;
 
@@ -108,7 +110,7 @@ class Colorizing
      * and color control codes are inserted before/after those conversion specifiers.
      *
      * @param string $template
-     * @param array<int,int|string|float|FQSEN|Type|UnionType> $template_parameters
+     * @param array<int,int|string|float|FQSEN|Type|UnionType|TypedElementInterface|UnaddressableTypedElement> $template_parameters
      */
     public static function colorizeTemplate(
         string $template,

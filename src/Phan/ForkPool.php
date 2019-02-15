@@ -178,7 +178,7 @@ class ForkPool
      * The results are returned in an array, one for each worker. The order of the results
      * is not maintained.
      *
-     * @return array
+     * @return array[]
      */
     private function readResultsFromChildren()
     {
@@ -228,7 +228,7 @@ class ForkPool
         // Unmarshal the content into its original form.
         /**
          * @param string $data
-         * @return array
+         * @return mixed[]
          */
         return array_values(array_map(function ($data) {
             $result = unserialize($data);
@@ -242,7 +242,7 @@ class ForkPool
 
     /**
      * Wait for all child processes to complete
-     * @return array
+     * @return array[]
      */
     public function wait()
     {

@@ -2637,6 +2637,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * Fetch known classes for a place where a class name was provided as a string or string expression.
      * Warn if this is an invalid class name.
      * @param \ast\Node|string|int|float $node
+     * @return array<int,Clazz>
      */
     public static function classListFromClassNameNode(CodeBase $code_base, Context $context, $node) : array
     {
@@ -2941,6 +2942,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /**
      * @see ContextNode::getFunction() for a similar function
+     * @return array<int,FullyQualifiedFunctionName>
      */
     private function functionFQSENListFromFunctionName(string $function_name) : array
     {

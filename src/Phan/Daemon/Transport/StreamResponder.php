@@ -15,7 +15,7 @@ class StreamResponder implements Responder
     /** @var ?resource a stream */
     private $connection;
 
-    /** @var ?array the request data */
+    /** @var ?array<string,mixed> the request data */
     private $request_data;
 
     /** @var bool did this process already finish reading the data of the request? */
@@ -35,7 +35,7 @@ class StreamResponder implements Responder
     }
 
     /**
-     * @return ?array the request data(E.g. returns null if JSON is malformed)
+     * @return ?array<string,mixed> the request data(E.g. returns null if JSON is malformed)
      */
     public function getRequestData()
     {

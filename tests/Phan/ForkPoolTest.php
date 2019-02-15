@@ -38,6 +38,9 @@ final class ForkPoolTest extends BaseTest
             static function ($unused_i, $data) use (&$worker_data) {
                 $worker_data[] = $data;
             },
+            /**
+             * @return array<int,array>
+             */
             static function () use (&$worker_data) : array {
                 return $worker_data;
             }
@@ -67,6 +70,9 @@ final class ForkPoolTest extends BaseTest
              */
             static function ($unused_i, $unused_data) {
             },
+            /**
+             * @return array{0:bool}
+             */
             static function () use (&$did_startup) : array {
                 return [$did_startup];
             }

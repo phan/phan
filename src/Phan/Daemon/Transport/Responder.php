@@ -12,7 +12,7 @@ interface Responder
 {
 
     /**
-     * @return ?array the request data(E.g. returns null if JSON is malformed)
+     * @return ?array<string,mixed> the request data(E.g. returns null if JSON is malformed)
      */
     public function getRequestData();
 

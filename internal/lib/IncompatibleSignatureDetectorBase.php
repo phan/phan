@@ -81,7 +81,8 @@ EOT;
     }
 
     /**
-     * @return array
+     * @param array<mixed,string> $arguments_from_phan
+     * @return array<mixed,string>
      */
     private function updateSignature(string $function_like_name, array $arguments_from_phan)
     {
@@ -183,6 +184,7 @@ EOT;
 
     /**
      * @param array<string,array<int|string,string>> $phan_signatures
+     * @return array<string,array<int|string,string>>
      */
     protected static function getLowercaseSignatureMap(array $phan_signatures) : array
     {
@@ -193,7 +195,7 @@ EOT;
         return $phan_signatures_lc;
     }
     /**
-     * @return ?array
+     * @return ?array<mixed,string>
      * @throws InvalidArgumentException
      */
     public function parseFunctionLikeSignature(string $method_name)
@@ -212,10 +214,10 @@ EOT;
         return $this->parseFunctionSignature($method_name);
     }
 
-    /** @return ?array */
+    /** @return ?array<mixed,string> */
     abstract public function parseMethodSignature(string $class, string $method);
 
-    /** @return ?array */
+    /** @return ?array<mixed,string> */
     abstract public function parseFunctionSignature(string $function_name);
 
     /**

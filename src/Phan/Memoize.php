@@ -12,7 +12,7 @@ trait Memoize
     use Profile;
 
     /**
-     * @var array
+     * @var array<string,mixed>
      * A map from key to memoized values
      */
     private $memoized_data = [];
@@ -21,15 +21,17 @@ trait Memoize
      * Memoize the result of $fn(), saving the result
      * with key $key.
      *
+     * @template T
+     *
      * @param string $key
      * The key to use for storing the result of the
      * computation.
      *
-     * @param Closure():mixed $fn
+     * @param Closure():T $fn
      * A function to compute only once for the given
      * $key.
      *
-     * @return mixed
+     * @return T
      * The result of the given computation is returned
      */
     protected function memoize(string $key, Closure $fn)
@@ -63,15 +65,17 @@ trait Memoize
      * Memoize the result of $fn(), saving the result
      * with key $key.
      *
+     * @template T
+     *
      * @param string $key
      * The key to use for storing the result of the
      * computation.
      *
-     * @param Closure():mixed $fn
+     * @param Closure():T $fn
      * A function to compute only once for the given
      * $key.
      *
-     * @return mixed
+     * @return T
      * The result of the given computation is returned
      */
     protected static function memoizeStatic(string $key, Closure $fn)

@@ -56,6 +56,9 @@ final class FunctionSignatureMapTest extends BaseTest
         $this->assertSame('', implode("\n", $failures), "Saw one or more issues for the signature for PHP_VERSION_ID " . $php_version_id);
     }
 
+    /**
+     * @return array<int,array>
+     */
     public function phpVersionIdProvider() : array
     {
         return [
