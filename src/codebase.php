@@ -10,6 +10,9 @@ use Composer\XdebugHandler\XdebugHandler;
 use Phan\CodeBase;
 use Phan\Library\StderrLogger;
 
+// Load the autoloader, check if Phan will work, etc.
+require_once __DIR__ . '/Phan/Bootstrap.php';
+
 // Automatically restart if xdebug is loaded
 if (extension_loaded('xdebug')) {
     // Restart if xdebug is loading, unless the environment variable PHAN_ALLOW_XDEBUG is set.
@@ -28,9 +31,6 @@ EOT
 
     $handler->check();
 }
-
-// Load the autoloader, check if Phan will work, etc.
-require_once __DIR__ . '/Phan/Bootstrap.php';
 
 return new CodeBase(
     $internal_class_name_list,
