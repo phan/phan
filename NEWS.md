@@ -3,6 +3,13 @@ Phan NEWS
 ?? ??? 2019, Phan 1.2.4 (dev)
 -----------------------
 
+New features(Analysis):
++ Inherit more specific phpdoc template types even when there are real types in the signature. (#2447)
+  e.g. inherit `@param MyClass<T>` and `@return MyClass<U>` from the
+  ancestor class of `function someMethod(MyClass $x) : MyClass {}`.
+
+  This is only done when each phpdoc type is compatible with the real signature type.
+
 Plugins:
 + Warn about unspecialized array types of elements in UnknownElementTypePlugin. `mixed[]` can be used when absolutely nothing is known about the array's key or value types.
 

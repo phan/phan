@@ -1390,7 +1390,7 @@ class UnionType implements Serializable
             return false;
         }
         foreach ($this->type_set as $type) {
-            if (!$type->asExpandedTypes($code_base)->canStrictCastToUnionType($other)) {
+            if (!$type->asUnionType()->canStrictCastToUnionType($code_base, $other)) {
                 return false;
             }
         }
@@ -1676,7 +1676,7 @@ class UnionType implements Serializable
      *
      * @suppress PhanUnreferencedPublicMethod may be used elsewhere in the future
      */
-    public function canStrictCastToUnionType(UnionType $target) : bool
+    public function canStrictCastToUnionType(CodeBase $code_base, UnionType $target) : bool
     {
         // Fast-track most common cases first
         $type_set = $this->type_set;
@@ -1711,7 +1711,7 @@ class UnionType implements Serializable
         // any.
         $matches = true;
         foreach ($type_set as $source_type) {
-            if (!$source_type->canCastToAnyTypeInSet($target_type_set)) {
+            if (!$source_type->asExpandedTypes($code_base)->canCastToUnionType($target)) {
                 $matches = false;
                 break;
             }
@@ -1724,7 +1724,7 @@ class UnionType implements Serializable
         if (\in_array($null_type, $target_type_set, true)) {
             foreach ($type_set as $source_type) {
                 // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
-                if (!$source_type->withIsNullable(false)->canCastToAnyTypeInSet($target_type_set)) {
+                if (!$source_type->withIsNullable(false)->asExpandedTypes($code_base)->canCastToUnionType($target)) {
                     return false;
                 }
             }
