@@ -18,7 +18,8 @@ abstract class BaseTest extends TestCase
     public static function setUpBeforeClass()
     {
         parent::setUpBeforeClass();
-        ini_set('memory_limit', '1G');
+        // Need more than 1G to generate code coverage reports
+        ini_set('memory_limit', '2G');
         chdir(dirname(__DIR__, 2));
         Config::reset();
     }
@@ -35,6 +36,7 @@ abstract class BaseTest extends TestCase
         ],
         'Phan\AST\ASTReverter' => [
             'closure_map',
+            'noop',
         ],
         'Phan\Language\Type' => [
             'canonical_object_map',
@@ -50,6 +52,13 @@ abstract class BaseTest extends TestCase
         ],
         'Phan\Language\UnionType' => [
             'empty_instance',
+        ],
+        // Back this up because it takes 306 ms.
+        'Phan\Tests\Language\UnionTypeTest' => [
+            'code_base',
+        ],
+        'Phan\Tests\Plugin\Internal\MethodSearcherPluginTest' => [
+            'code_base',
         ],
     ];
 }

@@ -80,6 +80,9 @@
         <testsuite name="PHP73Test">
             <file>tests/Phan/PHP73Test.php</file>
         </testsuite>
+        <testsuite name="All">
+            <directory>tests/Phan</directory>
+        </testsuite>
     </testsuites>
     <filter>
         <whitelist>
@@ -89,6 +92,4 @@
             </exclude>
         </whitelist>
     </filter>
-    <!-- Just in case a bug is introduced causing infinite recursion, add a memory limit. -->
-    <ini name="memory_limit" value="1G" />
 </phpunit>

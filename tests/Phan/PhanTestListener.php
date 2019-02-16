@@ -13,8 +13,9 @@ $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
 use Phan\CodeBase;
-use PHPUnit\Framework\BaseTestListener;
 use PHPUnit\Framework\Test;
+use PHPUnit\Framework\TestListener;
+use PHPUnit\Framework\TestListenerDefaultImplementation;
 
 /**
  * Utilities for creating and cleaning up clones of CodeBase instances when running tests
@@ -22,8 +23,10 @@ use PHPUnit\Framework\Test;
  * @suppress PhanUnreferencedClass
  * This class is referenced in phpunit.xml
  */
-final class PhanTestListener extends BaseTestListener
+final class PhanTestListener implements TestListener
 {
+    use TestListenerDefaultImplementation;
+
     public function startTest(Test $test)
     {
         if ($test instanceof CodeBaseAwareTestInterface) {
