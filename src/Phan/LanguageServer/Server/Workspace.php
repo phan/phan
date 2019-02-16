@@ -83,7 +83,7 @@ class Workspace
      * TODO: Define this so that Phan can respond to changes in client configuration.
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      *
-     * @param array $settings @phan-unused-param
+     * @param array<string,mixed> $settings @phan-unused-param
      * @return void (unimplemented)
      */
     public function didChangeConfiguration($settings)

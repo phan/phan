@@ -95,6 +95,7 @@ final class VariableGraph
     }
 
     /**
+     * @param array<int,mixed> $loop_uses_of_own_variable any array that has node ids for uses of $def_id as keys
      * @return void
      */
     public function recordLoopSelfUsage(string $name, int $def_id, array $loop_uses_of_own_variable)

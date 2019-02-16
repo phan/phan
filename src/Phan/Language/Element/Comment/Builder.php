@@ -767,7 +767,7 @@ final class Builder
 
 
     /**
-     * @var array<int,int> $valid_types
+     * @param array<int,int> $valid_types
      */
     private function checkCompatible(string $param_name, array $valid_types, int $i)
     {

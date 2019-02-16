@@ -119,7 +119,11 @@ class UnionType implements Serializable
         }
     }
 
-    /** @return UnionType */
+    /**
+     * @param array<int,Type> $type_list
+     * @return UnionType
+     * @suppress PhanPossiblyNonClassMethodCall
+     */
     protected static function ofUniqueTypes(array $type_list)
     {
         $n = \count($type_list);

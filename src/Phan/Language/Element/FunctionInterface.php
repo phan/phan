@@ -252,6 +252,7 @@ interface FunctionInterface extends AddressableElementInterface
      * Analyze the node associated with this object
      * in the given context.
      * This function's parameter list may or may not have been modified.
+     * @param array<int,Parameter> $parameter_list
      */
     public function analyzeWithNewParams(Context $context, CodeBase $code_base, array $parameter_list) : Context;
 

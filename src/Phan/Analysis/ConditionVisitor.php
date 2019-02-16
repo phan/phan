@@ -585,7 +585,10 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             $asserted_union_type_set = $asserted_union_type->getTypeSet();
             $empty_type = UnionType::empty();
 
-            /** @return void */
+            /**
+             * @param array<int,Node|mixed> $args
+             * @return void
+             */
             return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($asserted_union_type, $asserted_union_type_set, $empty_type) {
                 $new_types = $empty_type;
                 foreach ($variable->getUnionType()->getTypeSet() as $type) {
@@ -604,7 +607,10 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             $asserted_union_type = UnionType::fromFullyQualifiedString(
                 $union_type_string
             );
-            /** @return void */
+            /**
+             * @param array<int,Node|mixed> $args
+             * @return void
+             */
             return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($asserted_union_type) {
                 // Otherwise, overwrite the type for any simple
                 // primitive types.
@@ -612,8 +618,11 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             };
         };
 
-        /** @return void */
         $array_type = ArrayType::instance(false);
+        /**
+         * @param array<int,Node|mixed> $args
+         * @return void
+         */
         $array_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($array_type) {
             // Change the type to match the is_a relationship
             // If we already have generic array types, then keep those
@@ -632,11 +641,17 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             $variable->setUnionType($new_type_builder->isEmpty() ? $array_type->asUnionType() : $new_type_builder->getUnionType());
         };
 
-        /** @return void */
+        /**
+         * @param array<int,Node|mixed> $args
+         * @return void
+         */
         $object_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) {
             self::analyzeIsObjectAssertion($variable);
         };
-        /** @return void */
+        /**
+         * @param array<int,Node|mixed> $args
+         * @return void
+         */
         $is_a_callback = static function (CodeBase $code_base, Context $context, Variable $variable, array $args) use ($object_callback) {
             $class_name = $args[1] ?? null;
             if ($class_name instanceof Node) {
@@ -661,7 +676,10 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             $variable->setUnionType(self::calculateNarrowedUnionType($code_base, $variable->getUnionType(), $class_type));
         };
 
-        /** @return void */
+        /**
+         * @param array<int,Node|mixed> $args
+         * @return void
+         */
         $scalar_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) {
             // Change the type to match the is_a relationship
             // If we already have possible scalar types, then keep those
@@ -685,7 +703,10 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
          */
         $make_callback = static function (string $extract_types, UnionType $default_if_empty) : Closure {
             $method = new ReflectionMethod(UnionType::class, $extract_types);
-            /** @return void */
+            /**
+             * @param array<int,Node|mixed> $args
+             * @return void
+             */
             return static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $args) use ($method, $default_if_empty) {
                 // Change the type to match the is_a relationship
                 // If we already have possible callable types, then keep those

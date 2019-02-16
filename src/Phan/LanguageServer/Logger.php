@@ -27,6 +27,7 @@ class Logger
 
     /**
      * Logs a request received from the client
+     * @param array<string,string> $headers
      * @return void
      */
     public static function logRequest(array $headers, string $buffer)
@@ -39,6 +40,7 @@ class Logger
 
     /**
      * Logs a response this is about to send back to the client
+     * @param array<string,mixed> $headers
      * @return void
      */
     public static function logResponse(array $headers, string $buffer)

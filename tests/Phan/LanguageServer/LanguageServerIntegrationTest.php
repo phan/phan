@@ -342,6 +342,7 @@ EOT;
 
     /**
      * Tests the completion provider for the given $position with pcntl enabled or disabled
+     * @param array<int,array> $expected_completions
      */
     public function runTestCompletionWithPcntlSetting(
         Position $position,
@@ -388,6 +389,9 @@ EOT;
         }
     }
 
+    /**
+     * @param array<int,array> $expected_completions
+     */
     private function runTestCompletionWithAndWithoutPcntl(Position $position, array $expected_completions, bool $for_vscode, string $file_contents)
     {
         if (function_exists('pcntl_fork')) {
@@ -397,6 +401,7 @@ EOT;
     }
 
     /**
+     * @param array<int,array> $expected_completions
      * @dataProvider completionBasicProvider
      */
     public function testCompletionBasic(Position $position, array $expected_completions, bool $for_vscode = false)
@@ -593,6 +598,7 @@ EOT;
     }
 
     /**
+     * @param array<int,array> $expected_completions
      * @dataProvider completionVariableProvider
      */
     public function testCompletionVariable(Position $position, array $expected_completions, bool $for_vscode = false)
@@ -1599,6 +1605,7 @@ EOT;
     }
 
     /**
+     * @param array<string,mixed> $diagnostic
      * @return void
      */
     private function assertSameDiagnostic(array $diagnostic, string $issue_type, int $expected_lineno, string $message)

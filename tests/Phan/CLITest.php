@@ -71,6 +71,7 @@ final class CLITest extends BaseTest
     /**
      * @param array<string,mixed> $expected_changed_options
      * @param array<string,mixed> $opts
+     * @param array<string,mixed> $extra
      * @throws ExitException
      * @dataProvider setsConfigOptionsProvider
      */
@@ -179,6 +180,7 @@ final class CLITest extends BaseTest
     }
 
     /**
+     * @param array<string,mixed> $opts
      * @dataProvider versionOptProvider
      */
     public function testVersionOpt(array $opts)

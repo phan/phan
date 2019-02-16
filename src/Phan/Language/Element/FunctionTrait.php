@@ -893,6 +893,7 @@ trait FunctionTrait
     /**
      * Returns true if the param list has an instance of PassByReferenceVariable
      * If it does, the method has to be analyzed even if the same parameter types were analyzed already
+     * @param array<int,Variable> $parameter_list
      */
     private function hasPassByReferenceVariable(array $parameter_list) : bool
     {

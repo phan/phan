@@ -97,6 +97,7 @@ class CompletionItem
 
     /**
      * Create a CompletionItem from a serialized array $data
+     * @param array<string,mixed> $data
      */
     public static function fromArray(array $data) : CompletionItem
     {

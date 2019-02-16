@@ -74,6 +74,7 @@ class Position
 
     /**
      * Creates a Position from a serialized array $data
+     * @param array{line:int,character?:?int} $data
      */
     public static function fromArray(array $data) : Position
     {

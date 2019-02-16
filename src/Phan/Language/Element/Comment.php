@@ -193,6 +193,9 @@ class Comment
      * to which a closure will be bound.
      *
      * @param UnionType $throw_union_type
+     *
+     * @param array<string,Assertion> $param_assertion_map
+     *
      * @internal
      */
     public function __construct(
@@ -335,7 +338,7 @@ class Comment
     }
 
     /**
-     * @var array<int,CommentParameter>
+     * @param array<int,CommentParameter> $override_comment_vars
      * A list of CommentParameters from var declarations
      */
     private function mergeVariableList(array $override_comment_vars)

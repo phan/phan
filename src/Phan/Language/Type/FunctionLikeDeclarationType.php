@@ -740,7 +740,10 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     {
     }
 
-    public function setSuppressIssueList(array $issues)
+    /**
+     * @param array<int,string> $suppress_issue_list
+     */
+    public function setSuppressIssueList(array $suppress_issue_list)
     {
         throw new \AssertionError('should not call ' . __METHOD__);
     }
@@ -891,6 +894,9 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         };
     }
 
+    /**
+     * @param array<string,UnionType> $template_parameter_type_map
+     */
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
     ) : UnionType {
