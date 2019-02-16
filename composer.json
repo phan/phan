@@ -26,14 +26,14 @@
         "ext-filter": "*",
         "ext-json": "*",
         "composer/semver": "^1.4",
-        "composer/xdebug-handler": "^1.3",
+        "composer/xdebug-handler": "^1.3.2",
         "felixfbecker/advanced-json-rpc": "^3.0.3",
         "microsoft/tolerant-php-parser": "0.0.16",
         "sabre/event": "^5.0",
         "symfony/console": "^2.3|^3.0|~4.0"
     },
     "suggest": {
-        "ext-ast": "Needed for parsing ASTs (unless --use-fallback-parser is used). php-ast ^0.1.5|^1.0.0 is needed.",
+        "ext-ast": "Needed for parsing ASTs (unless --use-fallback-parser is used). 1.0.1+ is recommended, php-ast ^0.1.5|^1.0.0 is needed.",
         "ext-tokenizer": "Needed for non-AST support and file/line-based suppressions."
     },
     "require-dev": {
