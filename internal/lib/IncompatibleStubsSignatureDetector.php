@@ -65,6 +65,9 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
         }
     }
 
+    /**
+     * @param array<int|string,string> $expected the Phan signature information in the stubs
+     */
     private function expectFunctionLikeSignaturesMatch(string $function_name, array $expected) : int
     {
         $actual = $this->parseFunctionLikeSignature($function_name);
@@ -216,10 +219,8 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
      */
     protected function getAvailableMethodSignatures() : array
     {
-        /**
-         * @return array<string,array<int|string,string>>
-         */
-        return $this->memoize(__METHOD__, function () : array {
+
+        return $this->memoize(__METHOD__, /** @return array<string,array<int|string,string>> */ function () : array {
             $code_base = $this->code_base;
             $function_name_map = [];
             foreach ($code_base->getMethodSet() as $method) {

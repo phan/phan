@@ -457,6 +457,7 @@ final class TypeTest extends BaseTest
         $this->assertTrue($from_type->canCastToType($to_type), "expected $from_type_string to be able to cast to $to_type_string");
     }
 
+    /** @return array<int,array> */
     public function canCastToTypeProvider() : array
     {
         return [
@@ -493,6 +494,7 @@ final class TypeTest extends BaseTest
         $this->assertFalse($from_type->canCastToType($to_type), "expected $from_type_string to be unable to cast to $to_type_string");
     }
 
+    /** @return array<int,array> */
     public function cannotCastToTypeProvider() : array
     {
         return [
@@ -538,6 +540,7 @@ final class TypeTest extends BaseTest
         $this->assertTrue($expected_flattened_type->isEqualTo($actual_flattened_type), "expected $actual_flattened_type to equal $expected_flattened_type");
     }
 
+    /** @return array<int,array> */
     public function arrayShapeProvider() : array
     {
         return [
@@ -603,6 +606,7 @@ final class TypeTest extends BaseTest
         $this->assertNotRegExp('@^' . Type::type_regex_or_this . '$@', $type_string, "Failed to parse '$type_string' with type_regex_or_this");
     }
 
+    /** @return array<int,array> */
     public function unparsableTypeProvider() : array
     {
         return [

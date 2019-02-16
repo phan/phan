@@ -96,6 +96,7 @@ class Frame
 
     /**
      * Utility to show more information about an unexpected error
+     * @param array<string,mixed> $frame the frame from debug_backtrace()
      */
     public static function frameToString(array $frame) : string
     {

@@ -233,7 +233,7 @@ final class ArgumentType
 
     /**
      * Figure out if any of the arguments are a call to unpack()
-     * @param array $children
+     * @param array<mixed,Node|int|string|float> $children
      */
     private static function isUnpack(array $children) : bool
     {

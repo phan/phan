@@ -59,7 +59,7 @@ class PhanAnnotationAdder
     ];
 
     /**
-     * @param array $children
+     * @param array<mixed,Node|string|float|int|null> $children (should all be Nodes or null)
      * @param int $bit_set
      */
     private static function markArrayElements($children, $bit_set)
@@ -73,7 +73,7 @@ class PhanAnnotationAdder
 
     /**
      * @param Node $node
-     * @param int $bit_set
+     * @param int $bit_set the bits to add to the flags
      */
     private static function markNode($node, $bit_set)
     {

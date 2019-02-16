@@ -190,6 +190,8 @@ function getUnionTypeStringForReflectionType(ReflectionType $reflection_type = n
  * may be backwards incompatible for classes that subclass a class,
  * and would have to wait for the next PHP major version (8.0))
  *
+ * @param array<int|string,string> $fields the signature from Phan being checked for contradictions
+ * @param array<string,array<int|string,string>> $signatures the set of all signatures (to check for existence of alternates)
  * @return void
  * @throws InvalidArgumentException for invalid return types
  */

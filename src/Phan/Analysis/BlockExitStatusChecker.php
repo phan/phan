@@ -280,6 +280,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         return $status;
     }
 
+    /**
+     * @param array<mixed,Node|int|string|float> $siblings
+     */
     private function computeStatusOfSwitchCase(Node $case_node, int $index, array $siblings) : int
     {
         $status = $this->visitStmtList($case_node->children['stmts']);

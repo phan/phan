@@ -23,8 +23,8 @@ use function count;
 use function get_class;
 use function implode;
 use function is_array;
-use function substr;
 use function sprintf;
+use function substr;
 use function var_export;
 use const FILTER_FLAG_ALLOW_HEX;
 use const FILTER_FLAG_ALLOW_OCTAL;
@@ -197,6 +197,7 @@ class TolerantASTConverter
     }
 
     /**
+     * @param null|Diagnostic[] &$errors @phan-output-reference (TODO: param-out)
      * @return PhpParser\Node
      */
     public static function phpParserParse(string $file_contents, array &$errors = null) : PhpParser\Node
@@ -206,7 +207,6 @@ class TolerantASTConverter
         $errors = DiagnosticsProvider::getDiagnostics($result);
         return $result;
     }
-
 
     /**
      * Visible for testing
@@ -1628,6 +1628,9 @@ class TolerantASTConverter
         return new ast\Node(ast\AST_CATCH_LIST, 0, $children, $children[0]->lineno ?? $lineno);
     }
 
+    /**
+     * @param array<int,Token|PhpParser\Node> $types
+     */
     private static function phpParserNameListToAstNameList(array $types, int $line) : ast\Node
     {
         $ast_types = [];
@@ -2201,6 +2204,7 @@ class TolerantASTConverter
     /**
      * @param ?int $type
      * @param ?string $prefix
+     * @param array<int,ast\Node> $uses
      */
     private static function astStmtGroupUse($type, $prefix, array $uses, int $line) : ast\Node
     {
@@ -2828,8 +2832,7 @@ class TolerantASTConverter
     }
 
     /**
-     * NOTE: this may be removed in the future.
-     *
+     * @param array<mixed,ast\Node|string|int|float|null> $children
      * @return ast\Node
      */
     private static function newAstDecl(int $kind, int $flags, array $children, int $lineno, string $doc_comment = null, string $name = null, int $end_lineno = 0, int $decl_id = -1) : ast\Node

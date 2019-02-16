@@ -222,6 +222,7 @@ class Request
      * When a user types :: or -> and requests code completion at the end of a line,
      * then add __INCOMPLETE_PROPERTY__ or __INCOMPLETE_CLASS_CONST__ so that this
      * can get parsed and completed.
+     * @param array<string,string> $file_mapping_contents old map from relative file paths to contents.
      * @return array<string,string>
      */
     private static function adjustFileMappingContentsForCompletionRequest(
@@ -636,7 +637,8 @@ class Request
 
     /**
      * Reloads the file path list.
-     * @param ?array $file_names
+     * @param array<string,string> $file_mapping_contents maps relative paths to file contents
+     * @param ?array<int,string> $file_names
      * @return void
      */
     public static function reloadFilePathListForDaemon(CodeBase $code_base, \Closure $file_path_lister, array $file_mapping_contents, array $file_names = null)

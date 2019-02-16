@@ -742,6 +742,9 @@ trait ConditionVisitorUtil
         );
     }
 
+    /**
+     * @param array<mixed,Node|mixed> $args
+     */
     final protected static function isArgumentListWithVarAsFirstArgument(array $args) : bool
     {
         if (\count($args) >= 1) {
