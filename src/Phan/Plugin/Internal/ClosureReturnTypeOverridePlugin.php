@@ -146,6 +146,9 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $closure_types;
         };
+        /**
+         * @param array<int,Node|int|float|string> $args
+         */
         $from_closure_callback = static function (
             CodeBase $code_base,
             Context $context,

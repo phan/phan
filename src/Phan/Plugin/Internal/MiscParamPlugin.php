@@ -47,6 +47,7 @@ final class MiscParamPlugin extends PluginV2 implements
         $stop_exception = new StopParamAnalysisException();
 
         /**
+         * @param array<int,Node|int|float|string> $args
          * @return void
          */
         $min_max_callback = static function (
@@ -80,6 +81,7 @@ final class MiscParamPlugin extends PluginV2 implements
             );
         };
         /**
+         * @param array<int,Node|int|float|string> $args
          * @return void
          */
         $array_udiff_callback = static function (
@@ -134,6 +136,7 @@ final class MiscParamPlugin extends PluginV2 implements
         };
 
         /**
+         * @param array<int,Node|int|float|string> $args
          * @return void
          * @throws StopParamAnalysisException
          * to prevent Phan's default incorrect analysis of a call to join()
@@ -250,6 +253,7 @@ final class MiscParamPlugin extends PluginV2 implements
             }
         };
         /**
+         * @param array<int,Node|int|float|string> $args
          * @return void
          */
         $array_uintersect_uassoc_callback = static function (
@@ -355,6 +359,7 @@ final class MiscParamPlugin extends PluginV2 implements
         };
 
         /**
+         * @param array<int,Node|int|float|string> $args
          * @return void
          */
         $array_add_callback = static function (
@@ -386,6 +391,7 @@ final class MiscParamPlugin extends PluginV2 implements
         };
 
         /**
+         * @param array<int,Node|int|float|string> $args
          * @return void
          */
         $array_remove_single_callback = static function (
@@ -406,6 +412,9 @@ final class MiscParamPlugin extends PluginV2 implements
             $variable->setUnionType($variable->getUnionType()->withFlattenedArrayShapeOrLiteralTypeInstances());
         };
 
+        /**
+         * @param array<int,Node|int|float|string> $args
+         */
         $array_splice_callback = static function (
             CodeBase $code_base,
             Context $context,
@@ -432,6 +441,9 @@ final class MiscParamPlugin extends PluginV2 implements
             $variable->setUnionType($old_types->withUnionType($added_types));
         };
 
+        /**
+         * @param array<int,Node|int|float|string> $args
+         */
         $extract_callback = static function (
             CodeBase $code_base,
             Context $context,
@@ -540,6 +552,7 @@ final class MiscParamPlugin extends PluginV2 implements
 
         /**
          * Most of the work was already done in ParseVisitor
+         * @param array<int,Node|int|float|string> $args
          * @see \Phan\Parse\ParseVisitor::analyzeDefine()
          */
         $define_callback = static function (
@@ -594,6 +607,9 @@ final class MiscParamPlugin extends PluginV2 implements
             );
         };
 
+        /**
+         * @param array<int,Node|int|float|string> $args
+         */
         $class_alias_callback = static function (
             CodeBase $code_base,
             Context $context,

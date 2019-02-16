@@ -43,9 +43,11 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
 
     // A plugin's visitors should NOT implement visit(), unless they need to.
 
+    // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     const NotFullyQualifiedFunctionCall = 'PhanPluginNotFullyQualifiedFunctionCall';
     const NotFullyQualifiedOptimizableFunctionCall = 'PhanPluginNotFullyQualifiedOptimizableFunctionCall';
     const NotFullyQualifiedGlobalConstant = 'PhanPluginNotFullyQualifiedGlobalConstant';
+    // phpcs:enable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
 
     /**
      * Source of functions: `zend_try_compile_special_func` from https://github.com/php/php-src/blob/master/Zend/zend_compile.c
@@ -124,7 +126,8 @@ class NotFullyQualifiedUsageVisitor extends PluginAwarePostAnalysisVisitor
     {
         if (array_key_exists(strtolower($function_name), self::OPTIMIZABLE_FUNCTIONS)) {
             $issue_type = self::NotFullyQualifiedOptimizableFunctionCall;
-            $issue_msg = 'Expected function call to {FUNCTION}() to be fully qualified or have a use statement but none were found in namespace {NAMESPACE} (opcache can optimize fully qualified calls to this function in recent php versions)';
+            $issue_msg = 'Expected function call to {FUNCTION}() to be fully qualified or have a use statement but none were found in namespace {NAMESPACE}'
+               . ' (opcache can optimize fully qualified calls to this function in recent php versions)';
         } else {
             $issue_type = self::NotFullyQualifiedFunctionCall;
             $issue_msg = 'Expected function call to {FUNCTION}() to be fully qualified or have a use statement but none were found in namespace {NAMESPACE}';

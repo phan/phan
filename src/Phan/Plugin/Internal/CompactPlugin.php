@@ -38,6 +38,7 @@ final class CompactPlugin extends PluginV2 implements
     private static function getAnalyzeFunctionCallClosuresStatic() : array
     {
         /**
+         * @param array<int,Node|int|float|string> $args
          * @return void
          */
         $compact_callback = static function (

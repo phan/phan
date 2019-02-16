@@ -281,8 +281,6 @@ return [
         'PhanPluginDescriptionlessCommentOnProtectedMethod',
         'PhanPluginNoCommentOnPrivateMethod',
         'PhanPluginDescriptionlessCommentOnPrivateMethod',
-        // TODO: fix remaining issue instances and remove these suppressions.
-        'PhanPluginUnknownArrayClosureParamType',
     ],
 
     // If empty, no filter against issues types will be applied.

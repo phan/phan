@@ -649,7 +649,10 @@ class TolerantASTConverter
                     static::getEndLine($n) ?: $start_line
                 );
             },
-            'Microsoft\PhpParser\Node\Expression\AnonymousFunctionCreationExpression' => static function (PhpParser\Node\Expression\AnonymousFunctionCreationExpression $n, int $start_line) : ast\Node {
+            'Microsoft\PhpParser\Node\Expression\AnonymousFunctionCreationExpression' => static function (
+                PhpParser\Node\Expression\AnonymousFunctionCreationExpression $n,
+                int $start_line
+            ) : ast\Node {
                 $ast_return_type = static::phpParserTypeToAstNode($n->returnType, static::getEndLine($n->returnType) ?: $start_line);
                 if (($ast_return_type->children['name'] ?? null) === '') {
                     $ast_return_type = null;

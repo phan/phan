@@ -2,6 +2,7 @@
 
 namespace Phan\Plugin\Internal;
 
+use ast\Node;
 use Closure;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
@@ -55,6 +56,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
         $make_dependent_type_method = static function (int $expected_bool_pos, UnionType $type_if_true, UnionType $type_if_false, UnionType $type_if_unknown) : Closure {
             /**
              * @param Func $function @phan-unused-param
+             * @param array<int,Node|int|float|string> $args
              * @return UnionType
              */
             return static function (
@@ -91,6 +93,9 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
         $make_arg_existence_dependent_type_method = static function (int $arg_pos, string $type_if_exists_string, string $type_if_missing_string) : Closure {
             $type_if_exists = UnionType::fromFullyQualifiedString($type_if_exists_string);
             $type_if_missing = UnionType::fromFullyQualifiedString($type_if_missing_string);
+            /**
+             * @param array<int,Node|int|float|string> $args
+             */
             return static function (
                 CodeBase $unused_code_base,
                 Context $unused_context,
@@ -115,6 +120,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
         /**
          * @return UnionType
          * @param Func $function @phan-unused-param
+         * @param array<int,Node|int|float|string> $args
          */
         $json_decode_return_type_handler = static function (
             CodeBase $code_base,
@@ -157,6 +163,9 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
         $str_replace_types = UnionType::fromFullyQualifiedString('string|string[]');
         $str_array_type = UnionType::fromFullyQualifiedString('string[]');
 
+        /**
+         * @param array<int,Node|int|float|string> $args
+         */
         $third_argument_string_or_array_handler = static function (
             CodeBase $code_base,
             Context $context,
@@ -181,6 +190,9 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             return $has_array ? $str_array_type : $str_replace_types;
         };
         $string_or_false = UnionType::fromFullyQualifiedString('string|false');
+        /**
+         * @param array<int,Node|int|float|string> $args
+         */
         $getenv_handler = static function (
             CodeBase $unused_code_base,
             Context $unused_context,
@@ -192,6 +204,9 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $string_or_false;
         };
+        /**
+         * @param array<int,Node|int|float|string> $args
+         */
         $substr_handler = static function (
             CodeBase $unused_code_base,
             Context $unused_context,
@@ -214,6 +229,9 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
             'array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|false'
         );
 
+        /**
+         * @param array<int,Node|int|float|string> $args
+         */
         $dirname_handler = static function (
             CodeBase $code_base,
             Context $context,
@@ -276,6 +294,9 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
     private static function makeStringFunctionHandler(callable $callable) : Closure
     {
         $string_union_type = StringType::instance(false)->asUnionType();
+        /**
+         * @param array<int,Node|int|float|string> $args
+         */
         return static function (
             CodeBase $code_base,
             Context $context,

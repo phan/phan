@@ -1436,7 +1436,11 @@ EOB;
                 if ($config_file_name !== false) {
                     throw new UsageException("Could not find a config file at '$config_file_name', but --require-config-exists was set", EXIT_FAILURE, true);
                 } else {
-                    throw new UsageException(sprintf("Could not figure out the path for config file %s, but --require-config-exists was set", StringUtil::encodeValue($this->config_file)), EXIT_FAILURE, true);
+                    $msg = sprintf(
+                        "Could not figure out the path for config file %s, but --require-config-exists was set",
+                        StringUtil::encodeValue($this->config_file)
+                    );
+                    throw new UsageException($msg, EXIT_FAILURE, true);
                 }
             }
             return;

@@ -163,7 +163,8 @@ if (extension_loaded('ast')) {
         if (version_compare($ast_version, '1.0.1') < 0) {
             fwrite(STDERR, "Phan is being run with php-ast version $ast_version.\n");
             fwrite(STDERR, "However, when run with PHP 7.4+, Phan requires php-ast 1.0.1 or newer. Older versions of php-ast will crash Phan.\n");
-            fwrite(STDERR, "Alternately, to run this version of Phan with PHP 7.4 without upgrading php-ast, uninstall/disable php-ast in php.ini, then add the CLI option --allow-polyfill-parser (which is noticeably slower)\n");
+            fwrite(STDERR, "Alternately, to run this version of Phan with PHP 7.4 without upgrading php-ast, uninstall/disable php-ast in php.ini,"
+               . " then add the CLI option --allow-polyfill-parser (which is noticeably slower)\n");
             exit(EXIT_FAILURE);
         }
     }

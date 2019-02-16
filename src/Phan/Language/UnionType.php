@@ -655,7 +655,10 @@ class UnionType implements Serializable
 
         return \array_reduce(
             $this->type_set,
-            /** @return array<string,UnionType> */
+            /**
+             * @param array<string,UnionType> $map
+             * @return array<string,UnionType>
+             */
             static function (array $map, Type $type) use ($code_base) {
                 return \array_merge(
                     $type->getTemplateParameterTypeMap($code_base),
