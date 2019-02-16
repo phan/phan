@@ -1,0 +1,4 @@
+%s:34 PhanParamSignatureMismatch Declaration of function example(\ArrayAccess<\stdClass> $x) : \ArrayAccess|\ArrayAccess<int> should be compatible with function example(\ArrayAccess<int> $x) : \ArrayAccess<int> defined in %s:17
+%s:35 PhanTypeMismatchReturn Returning type \ArrayAccess<\stdClass> but example() is declared to return \ArrayAccess<int>
+%s:45 PhanParamSignatureMismatch Declaration of function example(\ArrayAccess<int> $x) : \ArrayAccess|\ArrayAccess<\stdClass> should be compatible with function example(\ArrayAccess<int> $x) : \ArrayAccess<int> defined in %s:17
+%s:46 PhanTypeMismatchReturn Returning type \ArrayAccess<int> but example() is declared to return \ArrayAccess<\stdClass>
