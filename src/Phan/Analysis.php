@@ -253,6 +253,7 @@ class Analysis
     /**
      * Take a pass over all functions verifying various states.
      *
+     * @param ?array<string,mixed> $file_filter if non-null, limit analysis to functions and methods declared in this array
      * @return void
      */
     public static function analyzeFunctions(CodeBase $code_base, array $file_filter = null)
@@ -419,6 +420,7 @@ class Analysis
      * Take a pass over all classes/traits/interfaces
      * verifying various states.
      *
+     * @param ?array<string,mixed> $path_filter if non-null, limit analysis to classes in this array
      * @return void
      */
     public static function analyzeClasses(CodeBase $code_base, array $path_filter = null)

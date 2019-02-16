@@ -2605,6 +2605,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * @param array<int,Node> $parent_node_list
      * @return bool true if the union type should skip analysis due to being the left-hand side expression of an assignment
      * We skip checks for $x['key'] being valid in expressions such as `$x['key']['key2']['key3'] = 'value';`
      * because those expressions will create $x['key'] as a side effect.
@@ -3060,6 +3061,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * @param array<int,Node|string|int|float> $argument_list the arguments of the invocation, containing the pass by reference argument
+     *
      * @param Parameter $parameter the parameter types inferred from combination of real and union type
      *
      * @param ?Parameter $real_parameter the real parameter type from the type signature
@@ -3161,6 +3164,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Property|Variable $variable
+     * @param array<int,Node|string|int|float> $argument_list
      */
     private function analyzeWriteOnlyReference(
         CodeBase $code_base,

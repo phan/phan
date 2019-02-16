@@ -180,6 +180,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
     {
         /**
+         * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
          * @return void
          */
         $preg_pattern_callback = function (
@@ -247,6 +248,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
         };
 
         /**
+         * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
          * @return void
          */
         $preg_replace_callback_array_callback = function (

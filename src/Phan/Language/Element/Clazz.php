@@ -2989,10 +2989,8 @@ class Clazz extends AddressableElement
      */
     public function getPropertyMapExcludingDynamicAndMagicProperties(CodeBase $code_base) : array
     {
-        /**
-         * @return array<string,Property>
-         */
-        return $this->memoize(__METHOD__, function () use ($code_base) : array {
+
+        return $this->memoize(__METHOD__, /** @return array<string,Property> */ function () use ($code_base) : array {
             // TODO: This won't work if a class declares both a real property and a magic property of the same name.
             // Low priority because that is uncommon
             return array_filter(

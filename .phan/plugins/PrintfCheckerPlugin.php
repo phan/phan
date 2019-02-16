@@ -178,6 +178,9 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
     public function getReturnTypeOverrides(CodeBase $unused_code_base) : array
     {
         $string_union_type = StringType::instance(false)->asUnionType();
+        /**
+         * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
+         */
         $sprintf_handler = static function (
             CodeBase $code_base,
             Context $context,
@@ -230,6 +233,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
     {
         /**
          * Analyzes a printf-like function with a format directive in the first position.
+         * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
          * @return void
          */
         $printf_callback = function (
@@ -252,6 +256,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         };
         /**
          * Analyzes a printf-like function with a format directive in the first position.
+         * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
          * @return void
          */
         $fprintf_callback = function (
@@ -298,6 +303,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         };
         /**
          * Analyzes a printf-like function with a format directive in the first position.
+         * @param array<int,Node|string|int|float> $args the nodes for the arguments to the invocation
          * @return void
          */
         $vfprintf_callback = function (
@@ -613,6 +619,9 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         }, $specs)));
     }
 
+    /**
+     * @param array<string,true> $expected_set the types being checked for the ability to weakly cast to
+     */
     private function canWeakCast(UnionType $actual_union_type, array $expected_set) : bool
     {
         if (isset($expected_set['string'])) {

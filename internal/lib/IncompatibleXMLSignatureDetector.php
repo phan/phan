@@ -327,6 +327,9 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         $this->expectFunctionLikeSignaturesMatch('mb_chr', ['string', 'cp' => 'int', 'encoding=' => 'string']);
     }
 
+    /**
+     * @param array<int|string,string> $expected
+     */
     private function expectFunctionLikeSignaturesMatch(string $function_name, array $expected)
     {
         $actual = $this->parseFunctionLikeSignature($function_name);
@@ -647,10 +650,8 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
      */
     protected function getAvailableGlobalFunctionSignatures() : array
     {
-        /**
-         * @return array<string,array<int|string,string>>
-         */
-        return $this->memoize(__METHOD__, function () : array {
+
+        return $this->memoize(__METHOD__, /** @return array<string,array<int|string,string>> */ function () : array {
             $function_name_map = [];
             foreach ($this->getFilesForFunctionNameList() as $function_name => $unused_files) {
                 $signature_from_doc = $this->parseFunctionSignature($function_name);
@@ -669,10 +670,8 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
      */
     protected function getAvailableMethodSignatures() : array
     {
-        /**
-         * @return array<string,array<int|string,string>>
-         */
-        return $this->memoize(__METHOD__, function () : array {
+
+        return $this->memoize(__METHOD__, /** @return array<string,array<int|string,string>> */ function () : array {
             $method_name_map = [];
             foreach ($this->getFoldersForClassNameList() as $class_name => $unused_folder) {
                 foreach ($this->getMethodsForClassName($class_name) ?? [] as $method_name => $xml) {

@@ -416,6 +416,7 @@ EOT;
     }
 
     /**
+     * @param array<string,mixed> $composer_settings parsed from composer.json
      * @return array{0:?string,1:array<int,string>}
      */
     public static function determineTargetPHPVersion(array $composer_settings) : array
@@ -447,6 +448,7 @@ EOT;
     }
 
     /**
+     * @param array<string,mixed> $composer_settings settings parsed from composer.json
      * @return array<int,array<int,string>> [$directory_list, $file_list]
      */
     private static function extractAutoloadFilesAndDirectories(string $relative_dir, array $composer_settings)
@@ -487,6 +489,7 @@ EOT;
     }
 
     /**
+     * @param array<string,mixed> $opts
      * @return array<int,string>
      */
     private static function getArrayOption(array $opts, string $key)

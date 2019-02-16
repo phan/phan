@@ -130,7 +130,9 @@ class ReflectionCompletenessCheck
         return $signature;
     }
 
-    // TODO: Deduplicate this code.
+    /**
+     * @param array<int|string,string> $stub Phan's internal signature info
+     */
     private static function stubSignatureToString(array $stub) : string
     {
         $result = "['$stub[0]'";

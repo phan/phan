@@ -75,6 +75,9 @@ final class MethodSearcherPluginTest extends BaseTest
         $this->assertSame($expected_score, MethodSearcherPlugin::getTypeMatchingBonus(self::$code_base, $actual_signature_type, $desired_signature_type));
     }
 
+    /**
+     * @return array<int,array>
+     */
     public function getTypeMatchingBonusProvider() : array
     {
         return [
@@ -100,6 +103,9 @@ final class MethodSearcherPluginTest extends BaseTest
         $this->assertSame($expected_score, MethodSearcherPlugin::matchesParamTypes(self::$code_base, $actual_signature_types, $desired_signature_types));
     }
 
+    /**
+     * @return array<int,array>
+     */
     public function matchesParamTypesProvider() : array
     {
         return [

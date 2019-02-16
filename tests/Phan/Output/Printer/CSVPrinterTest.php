@@ -54,6 +54,7 @@ final class CSVPrinterTest extends BaseTest
         $this->assertEquals($expected, $actual);
     }
 
+    /** @return array<int,array> */
     public function specialCharacterCasesProvider() : array
     {
         return [

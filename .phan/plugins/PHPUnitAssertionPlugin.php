@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use ast\Node;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
@@ -100,6 +101,9 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
                 // (at)param mixed $actual
                 // (at)phan-assert T $actual
                 return $method->createClosureForUnionTypeExtractorAndAssertionType(
+                    /**
+                     * @param array<int,Node|string|int|float> $args
+                     */
                     static function (CodeBase $code_base, Context $context, array $args) : UnionType {
                         if (\count($args) < 2) {
                             return UnionType::empty();
@@ -111,6 +115,9 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
                 );
             case 'assertinternaltype':
                 return $method->createClosureForUnionTypeExtractorAndAssertionType(
+                    /**
+                     * @param array<int,Node|string|int|float> $args
+                     */
                     function (CodeBase $code_base, Context $context, array $args) : UnionType {
                         if (\count($args) < 2) {
                             return UnionType::empty();
@@ -198,6 +205,9 @@ class PHPUnitAssertionPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
                 // (at)param mixed $actual
                 // (at)phan-assert T $actual
                 return $method->createClosureForUnionTypeExtractorAndAssertionType(
+                    /**
+                     * @param array<int,Node|string|int|float> $args
+                     */
                     static function (CodeBase $code_base, Context $context, array $args) : UnionType {
                         if (\count($args) < 2) {
                             return UnionType::empty();

@@ -72,6 +72,14 @@ class UnknownElementTypePlugin extends PluginV2 implements
                     'Method {METHOD} has no declared or inferred parameter type for ${PARAMETER}',
                     [(string)$method->getFQSEN(), $parameter->getName()]
                 );
+            } elseif (self::isRegularArray($parameter->getUnionType())) {
+                $this->emitIssue(
+                    $code_base,
+                    $parameter->createContext($method),
+                    'PhanPluginUnknownArrayMethodParamType',
+                    'Method {METHOD} has a parameter type of array for ${PARAMETER}, but does not specify any key types or value types',
+                    [(string)$method->getFQSEN(), $parameter->getName()]
+                );
             }
         }
     }
@@ -152,14 +160,29 @@ class UnknownElementTypePlugin extends PluginV2 implements
             );
         }
         foreach ($function->getParameterList() as $parameter) {
-            if ($function->getFQSEN()->isClosure()) {
-                $issue = 'PhanPluginUnknownClosureParamType';
-                $message = 'Closure {FUNCTION} has no declared or inferred return type for ${PARAMETER}';
-            } else {
-                $issue = 'PhanPluginUnknownFunctionParamType';
-                $message = 'Function {FUNCTION} has no declared or inferred return type for ${PARAMETER}';
-            }
             if ($parameter->getUnionType()->isEmpty()) {
+                if ($function->getFQSEN()->isClosure()) {
+                    $issue = 'PhanPluginUnknownClosureParamType';
+                    $message = 'Closure {FUNCTION} has no declared or inferred return type for ${PARAMETER}';
+                } else {
+                    $issue = 'PhanPluginUnknownFunctionParamType';
+                    $message = 'Function {FUNCTION} has no declared or inferred return type for ${PARAMETER}';
+                }
+                $this->emitIssue(
+                    $code_base,
+                    $parameter->createContext($function),
+                    $issue,
+                    $message,
+                    [(string)$function->getFQSEN(), $parameter->getName()]
+                );
+            } elseif (self::isRegularArray($parameter->getUnionType())) {
+                if ($function->getFQSEN()->isClosure()) {
+                    $issue = 'PhanPluginUnknownArrayClosureParamType';
+                    $message = 'Closure {FUNCTION} has a parameter type of array for ${PARAMETER}, but does not specify any key types or value types';
+                } else {
+                    $issue = 'PhanPluginUnknownArrayFunctionParamType';
+                    $message = 'Function {FUNCTION} has a parameter type of array for ${PARAMETER}, but does not specify any key types or value types';
+                }
                 $this->emitIssue(
                     $code_base,
                     $parameter->createContext($function),

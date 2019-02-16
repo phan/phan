@@ -37,6 +37,9 @@ final class CheckstylePrinterTest extends BaseTest
         $this->assertTrue(strpos($issue_messages_text, 'PhanSyntaxError') !== false, "output should contain PhanSyntaxError");
     }
 
+    /**
+     * @return array<int,array{0:string}>
+     */
     public function invalidUTF8StringsProvider() : array
     {
         return [

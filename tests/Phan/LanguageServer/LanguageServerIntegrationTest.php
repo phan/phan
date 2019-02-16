@@ -154,6 +154,9 @@ final class LanguageServerIntegrationTest extends BaseTest
         ];
     }
 
+    /**
+     * @return array<int,array{0:bool,1:bool}>
+     */
     public function initializeProvider() : array
     {
         $results = [
@@ -1120,7 +1123,7 @@ EOT
 
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
             // NOTE: Line numbers are 0-based for Position
-            $perform_definition_request = /** @return array */ function () use ($proc_in, $proc_out, $position, $requested_uri) {
+            $perform_definition_request = /** @return array<string,mixed> */ function () use ($proc_in, $proc_out, $position, $requested_uri) {
                 return $this->writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, $position, $requested_uri);
             };
             $definition_response = $perform_definition_request();
@@ -1197,7 +1200,7 @@ EOT
 
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
             // NOTE: Line numbers are 0-based for Position
-            $perform_definition_request = /** @return array */ function () use ($proc_in, $proc_out, $position, $requested_uri) {
+            $perform_definition_request = /** @return array<string,mixed> */ function () use ($proc_in, $proc_out, $position, $requested_uri) {
                 return $this->writeTypeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, $position, $requested_uri);
             };
             $definition_response = $perform_definition_request();
@@ -1279,7 +1282,7 @@ EOT
 
             // Request the definition of the class "MyExample" with the cursor in the middle of that word
             // NOTE: Line numbers are 0-based for Position
-            $perform_hover_request = /** @return array */ function () use ($proc_in, $proc_out, $position, $requested_uri) {
+            $perform_hover_request = /** @return array<string,mixed> */ function () use ($proc_in, $proc_out, $position, $requested_uri) {
                 return $this->writeHoverRequestAndAwaitResponse($proc_in, $proc_out, $position, $requested_uri);
             };
             $hover_response = $perform_hover_request();
@@ -1586,6 +1589,7 @@ EOT;
         $this->assertNotSame([], $diagnostics);
     }
 
+    /** @return array<int,array> */
     public function pcntlEnabledProvider() : array
     {
         return [
@@ -1671,7 +1675,7 @@ EOT;
     /**
      * @param resource $proc_in
      * @param resource $proc_out
-     * @return array the response
+     * @return array<string,mixed> the response
      * @throws InvalidArgumentException
      */
     private function writeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null)
@@ -1698,7 +1702,7 @@ EOT;
     /**
      * @param resource $proc_in
      * @param resource $proc_out
-     * @return array the response
+     * @return array<string,mixed> the response
      * @throws InvalidArgumentException
      */
     private function writeCompletionRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null)
@@ -1729,7 +1733,7 @@ EOT;
     /**
      * @param resource $proc_in
      * @param resource $proc_out
-     * @return array the response
+     * @return array<string,mixed> the response
      * @throws InvalidArgumentException
      */
     private function writeTypeDefinitionRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null)
@@ -1756,7 +1760,7 @@ EOT;
     /**
      * @param resource $proc_in
      * @param resource $proc_out
-     * @return array the response
+     * @return array<string,mixed> the response
      * @throws InvalidArgumentException
      */
     private function writeHoverRequestAndAwaitResponse($proc_in, $proc_out, Position $position, string $requested_uri = null)
@@ -1861,7 +1865,7 @@ EOT;
      * @param resource $proc_out
      * Based on ProtocolStreamReader::readMessages()
      * TODO: Add timeout logic, etc.
-     * @return array
+     * @return array<string,mixed>
      */
     private function awaitResponse($proc_out) : array
     {

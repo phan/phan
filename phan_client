@@ -233,8 +233,9 @@ class PhanPHPLinter
     }
 
     /**
-     * @param array[] $response
+     * @param array<string,mixed> $response
      * @param string[] $file_mapping
+     * @param array<string,mixed> $request
      * @return void
      */
     private static function dumpJSONIssues(array $response, array $file_mapping, array $request)

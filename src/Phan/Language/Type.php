@@ -2104,10 +2104,8 @@ class Type
      */
     public function getTemplateParameterTypeMap(CodeBase $code_base)
     {
-        /**
-         * @return array<string,UnionType>
-         */
-        return $this->memoize(__METHOD__, function () use ($code_base) : array {
+
+        return $this->memoize(__METHOD__, /** @return array<string,UnionType> */ function () use ($code_base) : array {
             $fqsen = FullyQualifiedClassName::fromType($this);
 
             if (!($fqsen instanceof FullyQualifiedClassName)) {

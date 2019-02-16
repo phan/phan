@@ -234,6 +234,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
         return $this->combineScopeList($scope_list);
     }
 
+    /**
+     * @param array<mixed,Node|mixed> $children children of a Node of kind AST_IF
+     */
     private function hasElse(array $children) : bool
     {
         foreach ($children as $child_node) {

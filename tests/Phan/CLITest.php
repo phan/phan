@@ -196,6 +196,7 @@ final class CLITest extends BaseTest
         $this->assertSame(sprintf("Phan %s\n", CLI::PHAN_VERSION), $stdout);
     }
 
+    /** @return array<int,array> */
     public function versionOptProvider() : array
     {
         return [
