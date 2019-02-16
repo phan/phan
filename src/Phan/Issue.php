@@ -3550,10 +3550,13 @@ class Issue
         return $error_map;
     }
 
-    private static function getNextTypeId(array $error_list, int $invalid_type_id) : int
+    /**
+     * @param array<int,Issue> $issue_list the declared Issue types
+     */
+    private static function getNextTypeId(array $issue_list, int $invalid_type_id) : int
     {
         for ($id = $invalid_type_id + 1; true; $id++) {
-            foreach ($error_list as $error) {
+            foreach ($issue_list as $error) {
                 if ($error->getTypeId() === $id) {
                     continue 2;
                 }
@@ -3926,6 +3929,9 @@ class Issue
         );
     }
 
+    /**
+     * @param array<int,mixed> $parameters
+     */
     private static function shouldSuppressIssue(
         CodeBase $code_base,
         Context $context,

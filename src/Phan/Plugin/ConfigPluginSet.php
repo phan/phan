@@ -842,9 +842,9 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
-     * @return array<int,Closure>
+     * @param array<int,PluginV2> $plugin_set
+     * @return array<int,Closure(CodeBase,Context,Node,array<int,Node>=):void>
      *         Returned value maps ast\Node->kind to [function(CodeBase $code_base, Context $context, Node $node, array<int,Node> $parent_node_list = []): void]
-     * @phan-return array<int,Closure(CodeBase,Context,Node,array<int,Node>=):void>
      */
     private static function filterPreAnalysisPlugins(array $plugin_set) : array
     {
@@ -939,6 +939,7 @@ final class ConfigPluginSet extends PluginV2 implements
 
 
     /**
+     * @param array<int,PluginV2> $plugin_set
      * @return array<int,\Closure> - [function(CodeBase $code_base, Context $context, Node $node, array<int,Node> $parent_node_list = []): void]
      */
     private static function filterPostAnalysisPlugins(array $plugin_set) : array

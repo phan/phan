@@ -2524,6 +2524,9 @@ class Type
         return false;
     }
 
+    /**
+     * @param array<int,UnionType> $other_template_parameter_type_list
+     */
     private function canTemplateTypesCast(array $other_template_parameter_type_list, CodeBase $code_base) : bool
     {
         foreach ($this->template_parameter_type_list as $i => $param) {

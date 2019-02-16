@@ -41,6 +41,7 @@ final class RegexKeyExtractorTest extends BaseTest
     }
 
     /**
+     * @param array<int,int|string> $list
      * @return array<int|string,true>
      */
     private static function toArraySet(array $list) : array

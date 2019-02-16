@@ -35,6 +35,9 @@ class GenericArrayTemplateKeyType extends GenericArrayType
         return new self($type, $is_nullable, $key_type);
     }
 
+    /**
+     * @param array<string,UnionType> $template_parameter_type_map
+     */
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
     ) : UnionType {

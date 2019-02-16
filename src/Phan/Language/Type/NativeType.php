@@ -258,6 +258,7 @@ abstract class NativeType extends Type
     }
 
     /**
+     * @param array<string,UnionType> $unused_template_parameter_type_map
      * @override
      */
     public function withTemplateParameterTypeMap(

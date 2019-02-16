@@ -2464,8 +2464,11 @@ class Clazz extends AddressableElement
     ) : int {
         $count = parent::getReferenceCount($code_base);
 
-        // A function that maps a list of elements to the
-        // total reference count for all elements
+        /**
+         * A function that maps a list of elements to the
+         * total reference count for all elements
+         * @param array<string,AddressableElement> $list
+         */
         $list_count = static function (array $list) use ($code_base) : int {
             return \array_reduce($list, static function (
                 int $count,
@@ -3067,6 +3070,7 @@ class Clazz extends AddressableElement
                                 $this->getFQSEN()
                             );
                         }
+                        /** @param array<int,\ast\Node|mixed> $unused_arg_list */
                         $template_type_resolver = static function (array $unused_arg_list) : UnionType {
                             return MixedType::instance(false)->asUnionType();
                         };
