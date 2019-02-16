@@ -2,6 +2,7 @@
 
 namespace Phan\Plugin\Internal;
 
+use ast\Node;
 use Closure;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -38,6 +39,9 @@ final class CallableParamPlugin extends PluginV2 implements
         if ($closure !== null) {
             return $closure;
         }
+        /**
+         * @param array<int,Node|int|float|string> $args
+         */
         $closure = static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args) use ($callable_params, $class_params) {
             // TODO: Implement support for variadic callable arguments.
             foreach ($callable_params as $i) {

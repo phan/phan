@@ -1455,7 +1455,10 @@ trait FunctionTrait
         if (!$has_all_templates) {
             return;
         }
-        // Resolve the template types based on the parameters passed to the function
+        /**
+         * Resolve the template types based on the parameters passed to the function
+         * @param array<int,Node|mixed> $args
+         */
         $analyzer = static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args) use ($parameter_extracter_map) : UnionType {
             $args_types = array_map(
                 /**
@@ -1493,6 +1496,9 @@ trait FunctionTrait
             }
             $closure = TemplateType::combineParameterClosures(
                 $closure,
+                /**
+                 * @param array<int,Node|UnionType|mixed> $parameters
+                 */
                 static function (array $parameters, Context $context) use ($code_base, $i, $closure_for_type) : UnionType {
                     $param_value = $parameters[$i] ?? null;
                     if ($param_value !== null) {
@@ -1573,6 +1579,9 @@ trait FunctionTrait
                 return;
             }
         } else {
+            /**
+             * @param array<int,Node|mixed> $unused_args
+             */
             $union_type_extractor = static function (CodeBase $unused_code_base, Context $unused_context, array $unused_args) use ($union_type) : UnionType {
                 return $union_type;
             };
@@ -1590,6 +1599,9 @@ trait FunctionTrait
     {
         switch ($assertion_type) {
             case Assertion::IS_OF_TYPE:
+                /**
+                 * @param array<int,Node|mixed> $args
+                 */
                 return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i, $union_type_extractor) {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
@@ -1601,6 +1613,9 @@ trait FunctionTrait
                     $context->setScope($new_context->getScope());
                 };
             case Assertion::IS_NOT_OF_TYPE:
+                /**
+                 * @param array<int,Node|mixed> $args
+                 */
                 return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i, $union_type_extractor) {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
@@ -1612,6 +1627,9 @@ trait FunctionTrait
                     $context->setScope($new_context->getScope());
                 };
             case Assertion::IS_TRUE:
+                /**
+                 * @param array<int,Node|mixed> $args
+                 */
                 return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i) {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
@@ -1622,6 +1640,9 @@ trait FunctionTrait
                     $context->setScope($new_context->getScope());
                 };
             case Assertion::IS_FALSE:
+                /**
+                 * @param array<int,Node|mixed> $args
+                 */
                 return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args) use ($i) {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
@@ -1662,6 +1683,9 @@ trait FunctionTrait
         if (!$parameter_extractor_map) {
             return null;
         }
+        /**
+         * @param array<int,Node|mixed> $args
+         */
         return static function (CodeBase $unused_code_base, Context $context, array $args) use ($type, $parameter_extractor_map) : UnionType {
             $template_type_map = [];
             foreach ($parameter_extractor_map as $template_type_name => $closure) {

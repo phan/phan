@@ -32,7 +32,7 @@ final class ForkPoolTest extends BaseTest
             },
             /**
              * @param int $unused_i
-             * @param array $data
+             * @param array<int,mixed> $data
              * @return void
              */
             static function ($unused_i, $data) use (&$worker_data) {
