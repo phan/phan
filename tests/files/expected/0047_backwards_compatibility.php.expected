@@ -10,4 +10,5 @@
 %s:5 PhanUndeclaredVariable Variable $bar is undeclared
 %s:5 PhanUndeclaredVariable Variable $foo is undeclared
 %s:15 PhanCompatiblePHP7 Expression may not be PHP 7 compatible
+%s:15 PhanTypeInvalidPropertyName Saw a dynamic usage of an instance property with a name of type array<int,string> but expected the name to be a string
 %s:28 PhanAccessPropertyStaticAsNonStatic Accessing static property \Test::$vals as non static

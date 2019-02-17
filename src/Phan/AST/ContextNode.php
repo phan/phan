@@ -1280,10 +1280,7 @@ class ContextNode
                 $property_name = (string)$property_name;
             }
             if (!\is_string($property_name)) {
-                throw new NodeException(
-                    $node,
-                    "Cannot figure out non-string property name"
-                );
+                throw $this->createExceptionForInvalidPropertyName($node, $is_static);
             }
         }
 
@@ -1459,6 +1456,28 @@ class ContextNode
         throw new NodeException(
             $node,
             "Cannot figure out property from {$this->context}"
+        );
+    }
+
+    /**
+     * @return NodeException|IssueException
+     */
+    private function createExceptionForInvalidPropertyName(Node $node, bool $is_static) : Exception
+    {
+        $property_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['prop']);
+        if ($property_type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+            // If we know it can be a string, throw a NodeException instead of a specific issue
+            return new NodeException(
+                $node,
+                "Cannot figure out property name"
+            );
+        }
+        return new IssueException(
+            Issue::fromType($is_static ? Issue::TypeInvalidStaticPropertyName : Issue::TypeInvalidPropertyName)(
+                $this->context->getFile(),
+                $node->lineno,
+                [$property_type]
+            )
         );
     }
 
