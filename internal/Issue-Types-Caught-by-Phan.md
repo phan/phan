@@ -2144,6 +2144,14 @@ Instance method name must be a string, got {TYPE}
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0540_invalid_method_name.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0540_invalid_method_name.php#L4).
 
+## PhanTypeInvalidPropertyName
+
+```
+Saw a dynamic usage of an instance property with a name of type {TYPE} but expected the name to be a string
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0636_invalid_property_name_type.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0636_invalid_property_name_type.php#L8).
+
 ## PhanTypeInvalidRequire
 
 ```
@@ -2191,6 +2199,14 @@ Static method name must be a string, got {TYPE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0540_invalid_method_name.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0540_invalid_method_name.php#L6).
+
+## PhanTypeInvalidStaticPropertyName
+
+```
+Saw a dynamic usage of a static property with a name of type {TYPE} but expected the name to be a string
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0636_invalid_property_name_type.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0636_invalid_property_name_type.php#L5).
 
 ## PhanTypeInvalidThrowsIsInterface
 

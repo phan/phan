@@ -184,6 +184,8 @@ class Issue
     const InfiniteRecursion               = 'PhanInfiniteRecursion';
     const TypeComparisonToInvalidClass    = 'PhanTypeComparisonToInvalidClass';
     const TypeComparisonToInvalidClassType = 'PhanTypeComparisonToInvalidClassType';
+    const TypeInvalidPropertyName = 'PhanTypeInvalidPropertyName';
+    const TypeInvalidStaticPropertyName = 'PhanTypeInvalidStaticPropertyName';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -1898,6 +1900,22 @@ class Issue
                 "Invalid operator: unary operand of {STRING_LITERAL} is {TYPE} (expected int or string or float)",
                 self::REMEDIATION_B,
                 10099
+            ),
+            new Issue(
+                self::TypeInvalidPropertyName,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,  // Not a runtime Error for an instance property
+                "Saw a dynamic usage of an instance property with a name of type {TYPE} but expected the name to be a string",
+                self::REMEDIATION_B,
+                10102
+            ),
+            new Issue(
+                self::TypeInvalidStaticPropertyName,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,  // Likely to be an Error for a static property
+                "Saw a dynamic usage of a static property with a name of type {TYPE} but expected the name to be a string",
+                self::REMEDIATION_B,
+                10103
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
