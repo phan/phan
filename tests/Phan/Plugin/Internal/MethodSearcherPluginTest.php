@@ -15,37 +15,6 @@ final class MethodSearcherPluginTest extends BaseTest
     /** @var CodeBase|null The code base within which this unit test is operating */
     protected static $code_base = null;
 
-    /**
-     * Based on BaseTest
-     * TODO: Investigate instantiating CodeBase in a cheaper way (lazily?)
-     * @suppress PhanReadOnlyProtectedProperty read by phpunit framework
-     */
-    // phpcs:ignore
-    protected $backupStaticAttributesBlacklist = [
-        'Phan\AST\PhanAnnotationAdder' => [
-            'closures_for_kind',
-        ],
-        'Phan\Language\Type' => [
-            'canonical_object_map',
-            'internal_fn_cache',
-        ],
-        'Phan\Language\Type\LiteralIntType' => [
-            'nullable_int_type',
-            'non_nullable_int_type',
-        ],
-        'Phan\Language\Type\LiteralStringType' => [
-            'nullable_string_type',
-            'non_nullable_string_type',
-        ],
-        'Phan\Language\UnionType' => [
-            'empty_instance',
-        ],
-        // Back this up because it takes 306 ms.
-        'Phan\Tests\Language\UnionTypeTest' => [
-            'code_base',
-        ],
-    ];
-
     protected function setUp()
     {
         // Deliberately not calling parent::setUp()
@@ -62,6 +31,13 @@ final class MethodSearcherPluginTest extends BaseTest
                 $internal_function_name_list
             );
         }
+    }
+
+    public static function tearDownAfterClass()
+    {
+        parent::tearDownAfterClass();
+        // @phan-suppress-next-line PhanTypeMismatchProperty
+        self::$code_base = null;
     }
 
     /**
