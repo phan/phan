@@ -2,6 +2,7 @@
 
 namespace Phan\Analysis;
 
+use ast;
 use ast\Node;
 use Closure;
 use Phan\AST\ContextNode;
@@ -144,7 +145,7 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
         $left = $node->children['var'];
         // The left can be a non-Node for an invalid AST
         $kind = $left->kind ?? null;
-        if ($kind === \ast\AST_VAR) {
+        if ($kind === ast\AST_VAR) {
             return $this->updateTargetVariableWithType($node, $get_type);
         }
         // TODO: Could check types of other expressions, such as properties
@@ -263,6 +264,30 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
 
             return $int_or_float_union_type;
         });
+    }
+
+    /**
+     * @return Context
+     */
+    public function visitBinaryCoalesce(Node $node)
+    {
+        $var_node = $node->children['var'];
+        $new_node = new ast\Node(ast\AST_BINARY_OP, $node->lineno, [
+            'left' => $var_node,
+            'right' => $node->children['expr'],
+        ], ast\flags\BINARY_COALESCE);
+
+        $new_type = (new BinaryOperatorFlagVisitor(
+            $this->code_base,
+            $this->context,
+            true
+        ))->visitBinaryCoalesce($new_node);
+        return (new AssignmentVisitor(
+            $this->code_base,
+            $this->context,
+            $var_node,
+            $new_type
+        ))->__invoke($var_node);
     }
 
     private function analyzeNumericArithmeticOp(Node $node, bool $combination_is_int) : Context

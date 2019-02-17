@@ -15,6 +15,7 @@ Plugins:
 
 Maintenance
 + Limit frames of stack traces in crash reports to 1000 bytes of encoded data. (#2444)
++ Support analysis of the upcoming php 7.4 `??=` operator (#2369)
 
 Bug fixes:
 + Fix a crash seen when parsing return typehint for `Closure` in a different case (e.g. `closure`) (#2438)
