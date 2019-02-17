@@ -270,12 +270,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         );
 
         // Parse the comment above the function to get
-        // extra meta information about the method.
+        // extra meta information about the function.
         // TODO: Investigate caching information from Comment::fromStringInContext?
         $comment = $function->getComment();
 
-        // For any @var references in the method declaration,
-        // add them as variables to the method's scope
+        // For any @var references in the function declaration,
+        // add them as variables to the function's scope
         if ($comment !== null) {
             foreach ($comment->getVariableList() as $parameter) {
                 $context->addScopeVariable(

@@ -182,6 +182,7 @@ class UnionType implements Serializable
         $union_type = $memoize_map[$fully_qualified_string] ?? null;
 
         if (\is_null($union_type)) {
+            /** Convert the `|` separated types in the union type to a list of types */
             $types = \array_map(static function (string $type_name) : Type {
                 // @phan-suppress-next-line PhanThrowTypeAbsentForCall FIXME: Standardize on InvalidArgumentException
                 return Type::fromFullyQualifiedString($type_name);

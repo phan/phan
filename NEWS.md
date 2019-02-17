@@ -9,6 +9,7 @@ New features(Analysis):
   ancestor class of `function someMethod(MyClass $x) : MyClass {}`.
 
   This is only done when each phpdoc type is compatible with the real signature type.
++ Warn about `@var Type` without a variable name in doc comments of function-likes (#2445)
 
 Plugins:
 + Warn about unspecialized array types of elements in UnknownElementTypePlugin. `mixed[]` can be used when absolutely nothing is known about the array's key or value types.

@@ -431,7 +431,17 @@ final class Builder
     {
         $this->checkCompatible('@var', Comment::HAS_VAR_ANNOTATION, $i);
         $comment_var = self::parameterFromCommentLine($line, true, $i);
-        if ($comment_var->getName() !== '' || !\in_array($this->comment_type, Comment::FUNCTION_LIKE)) {
+        if (\in_array($this->comment_type, Comment::FUNCTION_LIKE)) {
+            if ($comment_var->getName() !== '') {
+                $this->variable_list[] = $comment_var;
+            } else {
+                $this->emitIssue(
+                    Issue::UnextractableAnnotation,
+                    $this->guessActualLineLocation($i),
+                    trim($line)
+                );
+            }
+        } else {
             $this->variable_list[] = $comment_var;
         }
     }
@@ -617,7 +627,17 @@ final class Builder
             case 'phan-var':
                 $this->checkCompatible('@phan-var', Comment::HAS_VAR_ANNOTATION, $i);
                 $comment_var = $this->parameterFromCommentLine($line, true, $i);
-                if ($comment_var->getName() !== '' || !\in_array($this->comment_type, Comment::FUNCTION_LIKE)) {
+                if (\in_array($this->comment_type, Comment::FUNCTION_LIKE)) {
+                    if ($comment_var->getName() !== '') {
+                        $this->phan_overrides['var'][] = $comment_var;
+                    } else {
+                        $this->emitIssue(
+                            Issue::UnextractableAnnotation,
+                            $this->guessActualLineLocation($i),
+                            trim($line)
+                        );
+                    }
+                } else {
                     $this->phan_overrides['var'][] = $comment_var;
                 }
                 return;
