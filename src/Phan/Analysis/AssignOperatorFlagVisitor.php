@@ -2,6 +2,7 @@
 
 namespace Phan\Analysis;
 
+use ast;
 use ast\Node;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
@@ -112,6 +113,23 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         ]));
     }
 
+    /**
+     * @return UnionType
+     */
+    public function visitBinaryCoalesce(Node $node)
+    {
+        $var_node = $node->children['var'];
+        $new_node = new ast\Node(ast\AST_BINARY_OP, $node->lineno, [
+            'left' => $var_node,
+            'right' => $node->children['expr'],
+        ], ast\flags\BINARY_COALESCE);
+
+        return (new BinaryOperatorFlagVisitor(
+            $this->code_base,
+            $this->context,
+            true
+        ))->visitBinaryCoalesce($new_node);
+    }
     /**
      * @return UnionType for the `&` operator
      */

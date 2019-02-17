@@ -1,0 +1,6 @@
+%s:5 PhanTypeMismatchArgumentInternal Argument 1 (var) is int|string but \count() takes \Countable|array
+%s:6 PhanTypeMismatchArgumentInternal Argument 1 (var) is int|string but \count() takes \Countable|array
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 (var) is int|string but \count() takes \Countable|array
+%s:8 PhanUndeclaredVariable Variable $missing is undeclared
+%s:9 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{0:2} but \strlen() takes string
+%s:12 PhanTypeMismatchArgumentInternal Argument 1 (string) is array{0:int,1:2} but \strlen() takes string
