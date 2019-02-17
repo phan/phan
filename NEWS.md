@@ -13,6 +13,9 @@ New features(Analysis):
 Plugins:
 + Warn about unspecialized array types of elements in UnknownElementTypePlugin. `mixed[]` can be used when absolutely nothing is known about the array's key or value types.
 
+Maintenance
++ Limit frames of stack traces in crash reports to 1000 bytes of encoded data. (#2444)
+
 Bug fixes:
 + Fix a crash seen when parsing return typehint for `Closure` in a different case (e.g. `closure`) (#2438)
 + Fix an issue loading the autoloader multiple times when the `vendor` folder is not lowercase on case-sensitive filesystems (#2440)

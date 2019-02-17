@@ -96,6 +96,7 @@ class ConfigEntry
         'dump_ast' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'dump_signatures_file' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'dump_parsed_file_list' => self::CATEGORY_HIDDEN_CLI_ONLY,
+        'debug_max_frame_length' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'progress_bar' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'progress_bar_sample_interval' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'processes' => self::CATEGORY_ANALYSIS,
