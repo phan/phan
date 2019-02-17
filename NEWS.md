@@ -10,6 +10,7 @@ New features(Analysis):
 
   This is only done when each phpdoc type is compatible with the real signature type.
 + Warn about `@var Type` without a variable name in doc comments of function-likes (#2445)
++ Infer side effects of `array_push` and `array_unshift` on complex expressions such as properties. (#2365)
 
 Plugins:
 + Warn about unspecialized array types of elements in UnknownElementTypePlugin. `mixed[]` can be used when absolutely nothing is known about the array's key or value types.
