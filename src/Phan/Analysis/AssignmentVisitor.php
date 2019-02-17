@@ -708,7 +708,8 @@ class AssignmentVisitor extends AnalysisVisitor
                     $this->code_base,
                     $property_name,
                     $this->context,
-                    false
+                    false,
+                    $node
                 );
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(

@@ -1353,7 +1353,8 @@ class ContextNode
                 $this->code_base,
                 $property_name,
                 $this->context,
-                $is_static
+                $is_static,
+                $node
             );
 
             if ($property->isDeprecated()) {
@@ -1398,7 +1399,8 @@ class ContextNode
                         $this->code_base,
                         $property_name,
                         $this->context,
-                        $is_static
+                        $is_static,
+                        $node
                     );
                 }
             }
@@ -1419,7 +1421,8 @@ class ContextNode
                     $this->code_base,
                     $property_name,
                     $this->context,
-                    $is_static
+                    $is_static,
+                    $node
                 );
             }
         }
