@@ -79,6 +79,9 @@ final class CLITest extends BaseTest
     {
         $opts = array_merge(['project-root-directory' => dirname(__DIR__) . '/misc/config/'], $opts);
         $expected_changed_options = array_merge(['directory_list' => ['src']], $expected_changed_options);
+        if (!extension_loaded('pcntl')) {
+            $expected_changed_options = array_merge(['language_server_use_pcntl_fallback' => true], $expected_changed_options);
+        }
         $cli = CLI::fromRawValues($opts, []);
         $changed = [];
         foreach (Config::DEFAULT_CONFIGURATION as $key => $value) {
