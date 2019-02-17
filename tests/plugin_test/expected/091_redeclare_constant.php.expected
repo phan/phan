@@ -1,0 +1,5 @@
+src/091_redeclare_constant.php:2 PhanNativePHPSyntaxCheckPlugin Saw error or notice for php --syntax-check: "Fatal error: Cannot redeclare constant 'true'"
+src/091_redeclare_constant.php:2 PhanReservedConstantName 'true' has a reserved keyword in the constant name
+src/091_redeclare_constant.php:3 PhanReservedConstantName 'foo\false' has a reserved keyword in the constant name
+src/091_redeclare_constant.php:4 PhanReservedConstantName 'NULL' has a reserved keyword in the constant name
+src/091_redeclare_constant.php:6 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value(1) detected in array - the earlier entry will be ignored.
