@@ -2,6 +2,7 @@
 
 use Phan\CLI;
 use Phan\CodeBase;
+use Phan\Config;
 
 // Listen for all errors
 error_reporting(E_ALL);
@@ -128,11 +129,29 @@ function phan_error_handler($errno, $errstr, $errfile, $errline)
     $frames = debug_backtrace();
     if (isset($frames[1])) {
         fwrite(STDERR, 'More details:' . PHP_EOL);
+        if (class_exists(Config::class, false)) {
+            $max_frame_length = max(100, Config::getValue('debug_max_frame_length'));
+        } else {
+            $max_frame_length = 1000;
+        }
+        $truncated = false;
         foreach ($frames as $i => $frame) {
             if ($i == 0) {
                 continue;
             }
-            fprintf(STDERR, '#%d: %s' . PHP_EOL, $i, \Phan\Debug\Frame::frameToString($frame));
+            $frame_details = \Phan\Debug\Frame::frameToString($frame);
+            if (strlen($frame_details) > $max_frame_length) {
+                $truncated = true;
+                if (function_exists('mb_substr')) {
+                    $frame_details = mb_substr($frame_details, 0, $max_frame_length) . '...';
+                } else {
+                    $frame_details = substr($frame_details, 0, $max_frame_length) . '...';
+                }
+            }
+            fprintf(STDERR, '#%d: %s' . PHP_EOL, $i, $frame_details);
+        }
+        if ($truncated) {
+            fwrite(STDERR, "(Some long strings (usually JSON of AST Nodes) were truncated. To print more details for some stack frames of this crash, increase the Phan config setting debug_max_frame_length)" . PHP_EOL);
         }
     }
 

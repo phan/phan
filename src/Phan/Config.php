@@ -645,6 +645,9 @@ class Config
         // By default, Phan will warn if the 'tokenizer' module isn't installed and enabled.
         'skip_missing_tokenizer_warning' => false,
 
+        // This is the maximum frame length for crash reports
+        'debug_max_frame_length' => 1000,
+
         // You can put paths to stubs of internal extensions in this config option.
         // If the corresponding extension is **not** loaded, then Phan will use the stubs instead.
         // Phan will continue using its detailed type annotations,
