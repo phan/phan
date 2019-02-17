@@ -2887,6 +2887,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 (string)$method->getFileRef()->getLineNumberStart()
             );
         } else {
+            if (Clazz::isAccessToElementOfThis($node)) {
+                return;
+            }
             $has_call_magic_method = !$method->isStatic()
                 && $method->getDefiningClass($this->code_base)->hasMethodWithName($this->code_base, '__call');
 
