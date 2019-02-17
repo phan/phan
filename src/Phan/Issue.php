@@ -191,6 +191,7 @@ class Issue
     const Unanalyzable              = 'PhanUnanalyzable';
     const UnanalyzableInheritance   = 'PhanUnanalyzableInheritance';
     const InvalidConstantFQSEN      = 'PhanInvalidConstantFQSEN';
+    const ReservedConstantName      = 'PhanReservedConstantName';
 
     // Issue::CATEGORY_VARIABLE
     const VariableUseClause         = 'PhanVariableUseClause';
@@ -1081,6 +1082,14 @@ class Issue
                 "'{CONST}' is an invalid FQSEN for a constant",
                 self::REMEDIATION_B,
                 2002
+            ),
+            new Issue(
+                self::ReservedConstantName,
+                self::CATEGORY_ANALYSIS,
+                self::SEVERITY_NORMAL,
+                "'{CONST}' has a reserved keyword in the constant name",
+                self::REMEDIATION_B,
+                2003
             ),
 
             // Issue::CATEGORY_TYPE

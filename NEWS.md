@@ -25,6 +25,7 @@ Bug fixes:
 + Fix a crash seen when parsing return typehint for `Closure` in a different case (e.g. `closure`) (#2438)
 + Fix an issue loading the autoloader multiple times when the `vendor` folder is not lowercase on case-sensitive filesystems (#2440)
 + Fix bug causing template types on methods to not work properly when inherited from a trait method.
++ Catch and warn when declaring a constant that would conflict with built in keywords (true/false/null) and prevent it from affecting inferences. (#1642)
 
 10 Feb 2019, Phan 1.2.3
 -----------------------
