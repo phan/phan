@@ -2,8 +2,10 @@
 
 namespace Phan\Plugin\Internal;
 
+use ast;
 use ast\Node;
 use Closure;
+use Phan\Analysis\AssignmentVisitor;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -367,27 +369,41 @@ final class MiscParamPlugin extends PluginV2 implements
             Context $context,
             FunctionInterface $unused_function,
             array $args
-        ) use ($get_variable) {
+        ) {
             // TODO: support nested adds, like AssignmentVisitor
             // TODO: support properties, like AssignmentVisitor
             if (count($args) < 2) {
                 return;
             }
-            $variable = $get_variable($code_base, $context, $args[0]);
-            // Don't analyze variables when we can't determine their names.
-            if (!$variable) {
+            $modified_array_node = $args[0];
+            if (!($modified_array_node instanceof Node)) {
                 return;
             }
-            $element_types = UnionType::empty();
+            $lineno = $modified_array_node->lineno;
+            $dim_node = new ast\Node(
+                ast\AST_DIM,
+                $lineno,
+                ['expr' => $modified_array_node, 'dim' => null],
+                0
+            );
+            $new_context = $context;
             for ($i = 1; $i < \count($args); $i++) {
                 // TODO: check for variadic here and in other plugins
                 // E.g. unfold_args(args)
-                $node = $args[$i];
-                $element_types = $element_types->withUnionType(UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node));
+                $expr_node = $args[$i];
+                $right_inner_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr_node);
+                $right_type = $right_inner_type->asGenericArrayTypes(GenericArrayType::KEY_INT);
+
+                $new_context = (new AssignmentVisitor(
+                    $code_base,
+                    $new_context,
+                    $dim_node,
+                    $right_type,
+                    1
+                ))->__invoke($modified_array_node);
             }
-            $variable->setUnionType($variable->getUnionType()->nonNullableClone()->withUnionType(
-                $element_types->elementTypesToGenericArray(GenericArrayType::KEY_INT)
-            ));
+            // Hackish: copy properties from this
+            $context->setScope($new_context->getScope());
         };
 
         /**
