@@ -14,6 +14,7 @@ New features(Analysis):
 
 Plugins:
 + Warn about unspecialized array types of elements in UnknownElementTypePlugin. `mixed[]` can be used when absolutely nothing is known about the array's key or value types.
++ Warn about failing to use the return value of `var_export($value, true)` (and `print_r`) in `UseReturnValuePlugin` (#2391)
 
 Maintenance
 + Limit frames of stack traces in crash reports to 1000 bytes of encoded data. (#2444)

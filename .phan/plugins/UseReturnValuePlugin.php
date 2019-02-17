@@ -823,15 +823,17 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
         'next' => false,  // move array cursor
         'preg_match' => false,  // useful if known
         'prev' => false,  // move array cursor
-        'print_r' => false,  // has mode to return string
+        'print_r' => self::USE_IF_SECOND_ARGUMENT_TRUE,  // returns a string if second arg is true
         'reflectionmethod::invokeargs' => false,  // may be a void
         'rename' => false,  // some code is optimistic
         'reset' => false,  // move array cursor
         'session_id' => false,  // Triggers regeneration
         'strtok' => false,  // advances a cursor if called with 1 argument
         'trait_exists' => false,  // triggers class autoloader to load the trait
-        'var_export' => false,  // can also dump to stdout
+        'var_export' => self::USE_IF_SECOND_ARGUMENT_TRUE,  // returns a string if second arg is true
     ];
+
+    const USE_IF_SECOND_ARGUMENT_TRUE = 'if2ndtrue';
 }
 
 /**
@@ -919,7 +921,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 }
                 $fqsen = $function->getFQSEN()->__toString();
                 if (!UseReturnValuePlugin::$use_dynamic) {
-                    $this->quickWarn($fqsen, $node->lineno);
+                    $this->quickWarn($fqsen, $node);
                     continue;
                 }
                 $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
@@ -971,7 +973,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         }
         $fqsen = $method->getDefiningFQSEN()->__toString();
         if (!UseReturnValuePlugin::$use_dynamic) {
-            $this->quickWarn($fqsen, $node->lineno);
+            $this->quickWarn($fqsen, $node);
             return;
         }
         $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
@@ -1020,7 +1022,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         }
         $fqsen = $method->getDefiningFQSEN()->__toString();
         if (!UseReturnValuePlugin::$use_dynamic) {
-            $this->quickWarn($fqsen, $node->lineno);
+            $this->quickWarn($fqsen, $node);
             return;
         }
         $counter = UseReturnValuePlugin::$stats[$fqsen] ?? null;
@@ -1034,18 +1036,40 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         }
     }
 
-    private function quickWarn(string $fqsen, int $lineno)
+    private static function isSecondArgumentTrue(Node $node) : bool
+    {
+        $args = $node->children['args']->children;
+        $bool_node = $args[1] ?? null;
+        if (!$bool_node) {
+            return false;
+        }
+        if ($bool_node->kind !== ast\AST_CONST) {
+            return false;
+        }
+        $name = $bool_node->children['name']->children['name'] ?? null;
+        return is_string($name) && strcasecmp($name, 'true') === 0;
+    }
+
+    private function quickWarn(string $fqsen, Node $node)
     {
         $fqsen_key = strtolower(ltrim($fqsen, "\\"));
-        if (UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? false) {
-            $this->emitPluginIssue(
-                $this->code_base,
-                clone($this->context)->withLineNumberStart($lineno),
-                UseReturnValuePlugin::UseReturnValueInternalKnown,
-                'Expected to use the return value of the internal function/method {FUNCTION}',
-                [$fqsen]
-            );
+        $result = UseReturnValuePlugin::HARDCODED_FQSENS[$fqsen_key] ?? false;
+        if (!$result) {
+            return;
         }
+        if ($result !== true) {
+            // var_export and print_r take a second bool argument
+            if (!self::isSecondArgumentTrue($node)) {
+                return;
+            }
+        }
+        $this->emitPluginIssue(
+            $this->code_base,
+            clone($this->context)->withLineNumberStart($node->lineno),
+            UseReturnValuePlugin::UseReturnValueInternalKnown,
+            'Expected to use the return value of the internal function/method {FUNCTION}',
+            [$fqsen]
+        );
     }
 }
 
