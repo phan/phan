@@ -370,7 +370,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/misc/fallback_te
 '{CONST}' has a reserved keyword in the constant name
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/091_redeclare_constant.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/091_redeclare_constant.php#L2).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.4/tests/plugin_test/expected/091_redeclare_constant.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.4/tests/plugin_test/src/091_redeclare_constant.php#L2).
 
 ## PhanUnanalyzable
 
@@ -2158,7 +2158,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 Saw a dynamic usage of an instance property with a name of type {TYPE} but expected the name to be a string
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0636_invalid_property_name_type.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0636_invalid_property_name_type.php#L8).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.4/tests/files/expected/0636_invalid_property_name_type.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.4/tests/files/src/0636_invalid_property_name_type.php#L8).
 
 ## PhanTypeInvalidRequire
 
@@ -2214,7 +2214,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 Saw a dynamic usage of a static property with a name of type {TYPE} but expected the name to be a string
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0636_invalid_property_name_type.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0636_invalid_property_name_type.php#L5).
+e.g. [this issue](https://github.com/phan/phan/tree/1.2.4/tests/files/expected/0636_invalid_property_name_type.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.2.4/tests/files/src/0636_invalid_property_name_type.php#L5).
 
 ## PhanTypeInvalidThrowsIsInterface
 
