@@ -364,6 +364,14 @@ Please do file an issue or otherwise get in touch if you get one of these (or an
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/misc/fallback_test/expected/047_invalid_define.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/misc/fallback_test/src/047_invalid_define.php#L3).
 
+## PhanReservedConstantName
+
+```
+'{CONST}' has a reserved keyword in the constant name
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/091_redeclare_constant.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/091_redeclare_constant.php#L2).
+
 ## PhanUnanalyzable
 
 This issue will be emitted when we hit a structure that Phan doesn't know how to parse. More commonly this will be expressed by Phan having an uncaught exception or behaving poorly.
