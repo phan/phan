@@ -206,7 +206,7 @@ class CLI
         $pruneargv = [];
         foreach ($opts as $opt => $value) {
             foreach ($argv as $key => $chunk) {
-                $regex = '/^' . (isset($opt[1]) ? '--' : '-') . preg_quote($opt, '/') . '/';
+                $regex = '/^' . (isset($opt[1]) ? '--' : '-') . preg_quote((string) $opt, '/') . '/';
 
                 if (in_array($chunk, is_array($value) ? $value : [$value])
                     && $argv[$key - 1][0] == '-'
