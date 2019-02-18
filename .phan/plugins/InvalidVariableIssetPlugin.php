@@ -61,6 +61,8 @@ class InvalidVariableIssetVisitor extends PluginAwarePostAnalysisVisitor
                 $variable = $variable->children['expr'];
             } elseif (in_array($variable->kind, self::CLASSES, true)) {
                 $variable = $variable->children['class'];
+            } else {
+                return $this->context;
             }
         }
         $name = $variable->children['name'];
