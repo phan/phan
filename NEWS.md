@@ -1,6 +1,6 @@
 Phan NEWS
 
-?? ??? 2019, Phan 1.2.4 (dev)
+18 Feb 2019, Phan 1.2.4
 -----------------------
 
 New features(Analysis):
