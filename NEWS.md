@@ -12,12 +12,13 @@ New features(Analysis):
 + Warn about `@var Type` without a variable name in doc comments of function-likes (#2445)
 + Infer side effects of `array_push` and `array_unshift` on complex expressions such as properties. (#2365)
 + Warn when a non-string is used as a property name for a dynamic property access (#1402)
-+ Don't warn about `if ($this instanceof OtherClasslike) { $this->protectedMethod(); }` being inaccessible (e.g. in closures) (#2462)
-  (This only applies to uses of the variable `$this`)
++ Don't emit `PhanAccessMethodProtected` for `if ($this instanceof OtherClasslike) { $this->protectedMethod(); }` (#2372)
+  (This only applies to uses of the variable `$this`, e.g. in closures or when checking interfaces)
 
 Plugins:
 + Warn about unspecialized array types of elements in UnknownElementTypePlugin. `mixed[]` can be used when absolutely nothing is known about the array's key or value types.
 + Warn about failing to use the return value of `var_export($value, true)` (and `print_r`) in `UseReturnValuePlugin` (#2391)
++ Fix plugin causing `InvalidVariableIssetPlugin` to go into an infinite loop for `isset(self::CONST['offset'])` (#2446)
 
 Maintenance
 + Limit frames of stack traces in crash reports to 1000 bytes of encoded data. (#2444)
