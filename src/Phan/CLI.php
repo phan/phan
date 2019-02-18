@@ -353,6 +353,7 @@ class CLI
         $mask = -1;
 
         foreach ($opts as $key => $value) {
+            $key = (string)$key;
             switch ($key) {
                 case 'r':
                 case 'file-list-only':
