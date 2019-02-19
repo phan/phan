@@ -26,6 +26,8 @@ Plugins:
 Maintenance
 + Limit frames of stack traces in crash reports to 1000 bytes of encoded data. (#2444)
 + Support analysis of the upcoming php 7.4 `??=` operator (#2369)
++ Add a `target_php_version` option for PHP 7.4.
+  This only affects inferred function signatures, and does not allow parsing newer syntax.
 
 Bug fixes:
 + Fix a crash seen when parsing return typehint for `Closure` in a different case (e.g. `closure`) (#2438)

@@ -1,0 +1,1 @@
+%s:3 PhanTypeMismatchArgumentInternal Argument 2 (key) is \stdClass but \ReflectionReference::fromArrayElement() takes int|string
