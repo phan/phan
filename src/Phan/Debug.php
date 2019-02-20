@@ -126,7 +126,7 @@ class Debug
             return $string . $node . "\n";
         }
 
-        if (!$node) {
+        if ($node === null) {
             return $string . 'null' . "\n";
         }
 

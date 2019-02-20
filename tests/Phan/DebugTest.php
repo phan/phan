@@ -39,7 +39,7 @@ AST_STMT_LIST [] #1
 \t\t\t\tuses => null
 \t\t\t\tstmts => AST_STMT_LIST [] #3
 \t\t\t\treturnType => null
-\t\t\t\t__declId => null
+\t\t\t\t__declId => 0
 \t\t__declId => 1
 
 EOT;
