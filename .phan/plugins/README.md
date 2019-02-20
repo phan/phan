@@ -279,6 +279,17 @@ that are likely to be a bug. (e.g. `expr1 == expr`)
 - **PhanPluginDuplicateConditionalNullCoalescing**: `"isset(X) ? X : Y" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was {CODE}`
 - **PhanPluginBothLiteralsBinaryOp**: `Suspicious usage of a binary operator where both operands are literals. Expression: {CODE} {OPERATOR} {CODE} (result is {CODE})` (e.g. warns about `null == 'a literal` in `$x ?? null == 'a literal'`)
 
+#### SuspiciousParamOrderPlugin.php
+
+This plugin guesses if arguments to a function call are out of order, based on heuristics on the name in the expression (e.g. variable name).
+This will only warn if the argument types are compatible with the alternate parameters being suggested.
+This may be useful when analyzing methods with long parameter lists.
+
+E.g. warns about invoking `function example($first, $second, $third)` as `example($mySecond, $myThird, $myFirst)`
+
+- **PhanPluginSuspiciousParamOrder**: `Suspicious order for arguments named {DETAILS} - These are being passed to parameters {DETAILS}`
+- **PhanPluginSuspiciousParamOrderInternal**: `Suspicious order for arguments named {DETAILS} - These are being passed to parameters {DETAILS}`
+
 ### 4. Demo plugins:
 
 These files demonstrate plugins for Phan.
