@@ -190,35 +190,45 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             if (count($args) < 1) {
                 return FalseType::instance(false)->asUnionType();
             }
-            $format_string = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0])->asSingleScalarValueOrNullOrSelf();
-            if (!is_string($format_string)) {
-                // Give up
-                return $string_union_type;
-            }
-            $min_width = 0;
-            foreach (ConversionSpec::extractAll($format_string) as $spec_group) {
-                foreach ($spec_group as $spec) {
-                    $min_width += ($spec->width ?: 0);
-                }
-            }
-            if (!LiteralStringType::canRepresentStringOfLength($min_width)) {
-                return $string_union_type;
-            }
-            $sprintf_args = [];
-            for ($i = 1; $i < count($args); $i++) {
-                $arg = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[$i])->asSingleScalarValueOrNullOrSelf();
-                if (is_object($arg)) {
+            $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+            $format_strings = [];
+            foreach ($union_type->getTypeSet() as $type) {
+                if (!$type instanceof LiteralStringType) {
                     return $string_union_type;
                 }
-                $sprintf_args[] = $arg;
+                $format_strings[] = $type->getValue();
             }
-            $result = with_disabled_phan_error_handler(
-                /** @return string */
-                static function () use ($format_string, $sprintf_args) {
-                    return @vsprintf($format_string, $sprintf_args);
+            if (count($format_strings) === 0) {
+                return $string_union_type;
+            }
+            $result_union_type = UnionType::empty();
+            foreach ($format_strings as $format_string) {
+                $min_width = 0;
+                foreach (ConversionSpec::extractAll($format_string) as $spec_group) {
+                    foreach ($spec_group as $spec) {
+                        $min_width += ($spec->width ?: 0);
+                    }
                 }
-            );
-            return Type::fromObject($result)->asUnionType();
+                if (!LiteralStringType::canRepresentStringOfLength($min_width)) {
+                    return $string_union_type;
+                }
+                $sprintf_args = [];
+                for ($i = 1; $i < count($args); $i++) {
+                    $arg = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[$i])->asSingleScalarValueOrNullOrSelf();
+                    if (is_object($arg)) {
+                        return $string_union_type;
+                    }
+                    $sprintf_args[] = $arg;
+                }
+                $result = with_disabled_phan_error_handler(
+                    /** @return string */
+                    static function () use ($format_string, $sprintf_args) {
+                        return @vsprintf($format_string, $sprintf_args);
+                    }
+                );
+                $result_union_type = $result_union_type->withType(Type::fromObject($result));
+            }
+            return $result_union_type;
         };
         return [
             'sprintf'                     => $sprintf_handler,
