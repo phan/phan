@@ -1,0 +1,3 @@
+src/094_combination_regex.php:4 PhanTypeInvalidDimOffset Invalid offset 2 of array type array{0:string,1:string}
+src/094_combination_regex.php:6 PhanTypeInvalidDimOffset Invalid offset 2 of array type array{0:string,1:string}
+src/094_combination_regex.php:8 PhanTypeInvalidDimOffset Invalid offset 3 of array type array{0:string,1:string,2:string}
