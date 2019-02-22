@@ -164,11 +164,18 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
                 if (Config::getValue('disable_line_based_suppression')) {
                     continue;
                 }
-                $is_next_line = $comment_name === 'suppress-next-line';
                 // TODO: Why isn't the type of $comment_start_line inferred?
                 $line = (int)$comment_start_line;
-                if ($is_next_line) {
-                    $line++;
+                switch ($comment_name) {
+                    case 'suppress-previous-line':
+                        $line--;
+                        break;
+                    case 'suppress-next-line':
+                        $line++;
+                        break;
+                    case 'suppress-next-next-line':
+                        $line += 2;
+                        break;
                 }
                 $line += substr_count($comment_text, "\n", 0, $comment_start_offset);  // How many lines until that comment?
                 foreach ($kind_list as $issue_kind) {
@@ -181,7 +188,7 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
         return $suggestion_list;
     }
 
-    const SUPPRESS_ISSUE_REGEX = '/@phan-(suppress-(next|current)-line|file-suppress)\s+(' . Comment::WORD_REGEX . '(,\s*' . Comment::WORD_REGEX . ')*)/';
+    const SUPPRESS_ISSUE_REGEX = '/@phan-(suppress-(next(?:-next)?|current|previous)-line|file-suppress)\s+(' . Comment::WORD_REGEX . '(,\s*' . Comment::WORD_REGEX . ')*)/';
 
     /**
      * @return Generator<array{0:string,1:int,2:int,3:string,4:string}>

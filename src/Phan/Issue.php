@@ -3415,7 +3415,7 @@ class Issue
                 self::MisspelledAnnotation,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "Saw misspelled annotation {COMMENT}, should be one of {COMMENT}",
+                "Saw misspelled annotation {COMMENT}. {SUGGESTION}",
                 self::REMEDIATION_B,
                 16001
             ),

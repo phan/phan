@@ -7,6 +7,7 @@ use InvalidArgumentException;
 use Phan\Config\Initializer;
 use Phan\Daemon\ExitException;
 use Phan\Exception\UsageException;
+use Phan\Language\Element\Comment\Builder;
 use Phan\Library\StringUtil;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\Filter\CategoryIssueFilter;
@@ -89,6 +90,7 @@ class CLI
         'file-list-only:',
         'force-polyfill-parser',
         'help',
+        'help-annotations',
         'ignore-undeclared',
         'include-analysis-file-list:',
         'init',
@@ -287,6 +289,16 @@ class CLI
         }
         if (\array_key_exists('h', $opts) || \array_key_exists('help', $opts)) {
             throw new UsageException();  // --help prints help and calls exit(0)
+        }
+        if (\array_key_exists('help-annotations', $opts)) {
+            $result = "See https://github.com/phan/phan/wiki/Annotating-Your-Source-Code for more details." . PHP_EOL . PHP_EOL;
+
+            $result .= "Annotations specific to Phan:" . PHP_EOL;
+            // @phan-suppress-next-line PhanAccessClassConstantInternal
+            foreach (Builder::SUPPORTED_ANNOTATIONS as $key => $_) {
+                $result .= "- " . $key . PHP_EOL;
+            }
+            throw new ExitException($result, EXIT_SUCCESS);
         }
         if (\array_key_exists('v', $opts ?? []) || \array_key_exists('version', $opts ?? [])) {
             printf("Phan %s\n", self::PHAN_VERSION);
@@ -1137,6 +1149,8 @@ Extended help:
  --require-config-exists
   Exit immediately with an error code if `.phan/config.php` does not exist.
 
+ --help-annotations
+  Print details on annotations supported by Phan
 EOB;
         }
         exit($exit_code);

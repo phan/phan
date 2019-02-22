@@ -375,7 +375,7 @@ final class Builder
                     Issue::MisspelledAnnotation,
                     $this->guessActualLineLocation($i),
                     '@returns',
-                    '@return'
+                    'Did you mean @return?'
                 );
             } elseif ($type === 'throws') {
                 $this->maybeParseThrows($i, $line);
@@ -384,7 +384,7 @@ final class Builder
                     Issue::MisspelledAnnotation,
                     $this->guessActualLineLocation($i),
                     '@throw',
-                    '@throws'
+                    'Did you mean @throws?'
                 );
             } elseif ($type === 'suppress') {
                 $this->maybeParseSuppress($i, $line);
@@ -656,7 +656,9 @@ final class Builder
                 $this->parsePhanMethod($i, $line);
                 return;
             case 'phan-suppress-next-line':
+            case 'phan-suppress-next-next-line':
             case 'phan-suppress-current-line':
+            case 'phan-suppress-previous-line':
                 // Do nothing, see BuiltinSuppressionPlugin
                 return;
             case 'phan-template':
@@ -685,35 +687,42 @@ final class Builder
                     Issue::MisspelledAnnotation,
                     $this->guessActualLineLocation($i),
                     '@' . $case_sensitive_type,
-                    implode(' ', [
-                        '@phan-assert',
-                        '@phan-assert-true-condition',
-                        '@phan-assert-false-condition',
-                        '@phan-closure-scope',
-                        '@phan-extends',
-                        '@phan-file-suppress',
-                        '@phan-forbid-undeclared-magic-methods',
-                        '@phan-forbid-undeclared-magic-properties',
-                        '@phan-inherits',
-                        '@phan-method',
-                        '@phan-override',
-                        '@phan-param',
-                        '@phan-property',
-                        '@phan-property-read',
-                        '@phan-property-write',
-                        '@phan-read-only',
-                        '@phan-return',
-                        '@phan-suppress',
-                        '@phan-suppress-current-line',
-                        '@phan-suppress-next-line',
-                        '@phan-template',
-                        '@phan-var',
-                        '@phan-write-only',
-                    ])
+                    "The annotations that this version of Phan supports can be seen by running 'phan --help-annotations' or by visiting https://github.com/phan/phan/wiki/Annotating-Your-Source-Code"
                 );
                 return;
         }
     }
+
+    /**
+     * Maps supported annotations starting with phan- to the empty string or a description
+     */
+    const SUPPORTED_ANNOTATIONS = [
+        '@phan-assert' => '',
+        '@phan-assert-true-condition' => '',
+        '@phan-assert-false-condition' => '',
+        '@phan-closure-scope' => '',
+        '@phan-extends' => '',
+        '@phan-file-suppress' => '',
+        '@phan-forbid-undeclared-magic-methods' => '',
+        '@phan-forbid-undeclared-magic-properties' => '',
+        '@phan-inherits' => '',
+        '@phan-method' => '',
+        '@phan-override' => '',
+        '@phan-param' => '',
+        '@phan-property' => '',
+        '@phan-property-read' => '',
+        '@phan-property-write' => '',
+        '@phan-read-only' => '',
+        '@phan-return' => '',
+        '@phan-suppress' => '',
+        '@phan-suppress-current-line' => '',
+        '@phan-suppress-next-line' => '',
+        '@phan-suppress-next-next-line' => '',
+        '@phan-suppress-previous-line' => '',
+        '@phan-template' => '',
+        '@phan-var' => '',
+        '@phan-write-only' => '',
+    ];
 
     private function parsePhanSuppress(int $i, string $line)
     {
