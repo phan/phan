@@ -340,10 +340,17 @@ interface FunctionInterface extends AddressableElementInterface
     public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args);
 
     /**
-     * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures.
+     * Make additional analysis logic of this function/method use $closure
+     * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures or use addFunctionCallAnalyzer.
      * @return void
      */
     public function setFunctionCallAnalyzer(\Closure $closure);
+
+    /**
+     * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures.
+     * @return void
+     */
+    public function addFunctionCallAnalyzer(\Closure $closure);
 
     /**
      * Initialize the inner scope of this method with variables created from the parameters.

@@ -50,6 +50,7 @@ use Phan\PluginV2\AnalyzePropertyCapability;
 use Phan\PluginV2\BeforeAnalyzeCapability;
 use Phan\PluginV2\BeforeAnalyzeFileCapability;
 use Phan\PluginV2\FinalizeProcessCapability;
+use Phan\PluginV2\HandleLazyLoadInternalFunctionCapability;
 use Phan\PluginV2\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV2\PluginAwarePreAnalysisVisitor;
 use Phan\PluginV2\PostAnalyzeNodeCapability;
@@ -136,6 +137,9 @@ final class ConfigPluginSet extends PluginV2 implements
     /** @var array<int,AnalyzeMethodCapability>|null - plugins to analyze method declarations.*/
     private $analyze_method_plugin_set;
 
+    /** @var array<int,HandleLazyLoadInternalFunctionCapability>|null - plugins to modify Phan's information about internal Funcs when loaded for the first time */
+    private $handle_lazy_load_internal_function_plugin_set;
+
     /** @var array<int,FinalizeProcessCapability>|null - plugins to call finalize() on after analysis is finished. */
     private $finalize_process_plugin_set;
 
@@ -147,6 +151,11 @@ final class ConfigPluginSet extends PluginV2 implements
 
     /** @var ?UnusedSuppressionPlugin - TODO: Refactor*/
     private $unused_suppression_plugin = null;
+
+    /**
+     * @var bool
+     */
+    private $did_analyze_phase_start = false;
 
     /**
      * Call `ConfigPluginSet::instance()` instead.
@@ -311,6 +320,7 @@ final class ConfigPluginSet extends PluginV2 implements
      */
     public function beforeAnalyze(CodeBase $code_base)
     {
+        $this->did_analyze_phase_start = true;
         foreach ($this->before_analyze_plugin_set as $plugin) {
             $plugin->beforeAnalyze($code_base);
         }
@@ -834,6 +844,7 @@ final class ConfigPluginSet extends PluginV2 implements
         $this->return_type_override_plugin_set  = self::filterByClass($plugin_set, ReturnTypeOverrideCapability::class);
         $this->suppression_plugin_set           = self::filterByClass($plugin_set, SuppressionCapability::class);
         $this->analyze_function_call_plugin_set = self::filterByClass($plugin_set, AnalyzeFunctionCallCapability::class);
+        $this->handle_lazy_load_internal_function_plugin_set = self::filterByClass($plugin_set, HandleLazyLoadInternalFunctionCapability::class);
         $this->unused_suppression_plugin        = self::findUnusedSuppressionPlugin($plugin_set);
     }
 
@@ -1083,5 +1094,19 @@ final class ConfigPluginSet extends PluginV2 implements
             }
         }
         return null;
+    }
+
+    /**
+     * If an internal function is loaded after the start of the analysis phase,
+     * notify plugins in case they need to make modifications to the Func information or the way that Func is handled.
+     */
+    public function handleLazyLoadInternalFunction(CodeBase $code_base, Func $function)
+    {
+        if (!$this->did_analyze_phase_start) {
+            return;
+        }
+        foreach ($this->handle_lazy_load_internal_function_plugin_set as $plugin) {
+            $plugin->handleLazyLoadInternalFunction($code_base, $function);
+        }
     }
 }
