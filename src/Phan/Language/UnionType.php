@@ -2511,7 +2511,7 @@ class UnionType implements Serializable
     }
 
     /**
-     * @param Closure $closure
+     * @param Closure(Type):Type $closure
      * A closure mapping `Type` to `Type`
      *
      * @return UnionType

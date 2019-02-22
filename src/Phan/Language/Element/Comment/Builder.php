@@ -134,21 +134,21 @@ final class Builder
         // Parse https://docs.phpdoc.org/references/phpdoc/tags/param.html
         // Exceptions: Deliberately allow "&" in "@param int &$x" when documenting references.
         // Warn if there is neither a union type nor a variable
-        if ($matched && (isset($match[2]) || isset($match[21]))) {
+        if ($matched && (isset($match[2]) || isset($match[17]))) {
             if (!isset($match[2])) {
                 return new Parameter('', UnionType::empty(), $this->guessActualLineLocation($i));
             }
-            if (!$is_var && !isset($match[21])) {
+            if (!$is_var && !isset($match[17])) {
                 $this->checkParamWithoutVarName($line, $match[0], $match[2], $i);
             }
             $original_type = $match[2];
 
-            $is_variadic = ($match[20] ?? '') === '...';
+            $is_variadic = ($match[16] ?? '') === '...';
 
             if ($is_var && $is_variadic) {
                 $variable_name = '';  // "@var int ...$x" is nonsense and invalid phpdoc.
             } else {
-                $variable_name = $match[21] ?? '';
+                $variable_name = $match[17] ?? '';
             }
             // Fix typos or non-standard phpdoc tags, according to the user's configuration.
             // Does nothing by default.
@@ -502,7 +502,7 @@ final class Builder
                 $this->code_base
             );
         }
-        $param_name = $match[21];
+        $param_name = $match[17];
 
         return new Assertion($union_type, $param_name, $assertion_type);
     }
@@ -925,8 +925,8 @@ final class Builder
                 Type::FROM_PHPDOC,
                 $this->code_base
             );
-            $is_variadic = $param_match[19] === '...';
-            $default_str = $param_match[21];
+            $is_variadic = $param_match[15] === '...';
+            $default_str = $param_match[17];
             $has_default_value = $default_str !== '';
             if ($has_default_value) {
                 $default_value_repr = trim(explode('=', $default_str, 2)[1]);
@@ -934,7 +934,7 @@ final class Builder
                     $union_type = $union_type->nullableClone();
                 }
             }
-            $var_name = $param_match[20];
+            $var_name = $param_match[16];
             if ($var_name === '') {
                 // placeholder names are p1, p2, ...
                 $var_name = 'p' . ($param_index + 1);
@@ -980,9 +980,9 @@ final class Builder
                 // > When the intended method does not have a return value then the return type MAY be omitted; in which case 'void' is implied.
                 $return_union_type = VoidType::instance(false)->asUnionType();
             }
-            $method_name = $match[26];
+            $method_name = $match[22];
 
-            $arg_list = trim($match[27]);
+            $arg_list = trim($match[23]);
             $comment_params = [];
             // Special check if param list has 0 params.
             if ($arg_list !== '') {
@@ -1053,7 +1053,7 @@ final class Builder
             }
             $type = $match[2] ?? '';
 
-            $property_name = $match[20] ?? '';
+            $property_name = $match[16] ?? '';
             if ($property_name === '') {
                 return null;
             }

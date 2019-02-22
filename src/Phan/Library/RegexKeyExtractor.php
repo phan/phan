@@ -115,6 +115,9 @@ class RegexKeyExtractor
                 case '#':
                     $this->consumeUntil(')');
                     return;
+                case '|':
+                    $this->extractCombinationGroup();
+                    return;
                 default:
                     throw new InvalidArgumentException('Support for complex patterns is not implemented');
             }
@@ -141,6 +144,38 @@ class RegexKeyExtractor
             }
         }
         throw new InvalidArgumentException('Reached the end of the pattern before extracting the group');
+    }
+
+    private function extractCombinationGroup()
+    {
+        $original_matches = $this->matches;
+        $possible_matches = $original_matches;
+        $pattern = $this->pattern;
+        $len = strlen($pattern);
+        while ($this->offset < $len) {
+            $c = $pattern[$this->offset++];
+            if ($c === '\\') {
+                // Skip over escaped characters
+                $this->offset++;
+                continue;
+            }
+            if ($c === '|') {
+                $possible_matches += $this->matches;
+                $this->matches = $original_matches;
+                continue;
+            }
+            if ($c === ')') {
+                $possible_matches += $this->matches;
+                $this->matches = $possible_matches;
+                // We have reached the end of this group
+                return;
+            }
+            if ($c === '(') {
+                // TODO: Handle ?: and the general case
+
+                $this->extractGroup();
+            }
+        }
     }
 
     /** @return array<int|string,true> */

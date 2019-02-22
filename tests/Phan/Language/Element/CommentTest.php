@@ -9,6 +9,8 @@ use Phan\Language\Element\Comment;
 use Phan\Language\Type;
 use Phan\Language\Type\StaticType;
 use Phan\Library\None;
+use Phan\Output\Collector\BufferingCollector;
+use Phan\Phan;
 use Phan\Tests\BaseTest;
 
 /**
@@ -31,6 +33,7 @@ final class CommentTest extends BaseTest
 
     protected function setUp()
     {
+        Phan::setIssueCollector(new BufferingCollector());
         $this->code_base = new CodeBase([], [], [], [], []);
         foreach (self::OVERRIDES as $key => $value) {
             $this->old_values[$key] = Config::getValue($key);
