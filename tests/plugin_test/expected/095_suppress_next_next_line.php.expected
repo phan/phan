@@ -1,0 +1,6 @@
+src/095_suppress_next_next_line.php:3 PhanUndeclaredFunction Call to undeclared function \missing_func1()
+src/095_suppress_next_next_line.php:5 PhanUndeclaredFunction Call to undeclared function \missing_func3()
+src/095_suppress_next_next_line.php:11 PhanUndeclaredFunction Call to undeclared function \missing_func5()
+src/095_suppress_next_next_line.php:13 PhanUndeclaredFunction Call to undeclared function \missing_func6()
+src/095_suppress_next_next_line.php:20 UnusedPluginSuppression Plugin BuiltinSuppressionPlugin suppresses issue PhanTypeMismatchArgument on this line but this suppression is unused or suppressed elsewhere
+src/095_suppress_next_next_line.php:21 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \test_missing_class() takes \MissingClass defined at src/095_suppress_next_next_line.php:17

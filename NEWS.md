@@ -5,6 +5,8 @@ Phan NEWS
 
 New features(Analysis):
 + Be more consistent warning about invalid callables passed to internal functions such as `register_shutdown_function` (#2046)
++ Add `@phan-suppress-next-next-line` to suppress issues on the line 2 lines below the comment. This is useful in block comments/doc comments. (#2470)
++ Add `@phan-suppress-previous-line` to suppress issues on the line above the comment. (#2470)
 
 Plugins:
 + Add `HandleLazyLoadInternalFunctionCapability` so that plugins can modify Phan's information about internal global functions when those functions are loaded after analysis starts.
