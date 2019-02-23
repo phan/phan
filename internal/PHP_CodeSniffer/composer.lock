@@ -58,12 +58,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/slevomat/coding-standard.git",
-                "reference": "fdab228c1800db9e65a62dde306bfa856d98fcc3"
+                "reference": "165c96a374c4bfa4c2da543a8893671223dd8fde"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/fdab228c1800db9e65a62dde306bfa856d98fcc3",
-                "reference": "fdab228c1800db9e65a62dde306bfa856d98fcc3",
+                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/165c96a374c4bfa4c2da543a8893671223dd8fde",
+                "reference": "165c96a374c4bfa4c2da543a8893671223dd8fde",
                 "shasum": ""
             },
             "require": {
@@ -90,7 +90,7 @@
                 "MIT"
             ],
             "description": "Slevomat Coding Standard for PHP_CodeSniffer complements Consistence Coding Standard by providing sniffs with additional checks.",
-            "time": "2019-02-03T20:31:35+00:00"
+            "time": "2019-02-12T20:53:21+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
@@ -98,12 +98,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "0b44f1c3fc42501af7de2ae8d12426866faef554"
+                "reference": "e4da24f399d71d1077f93114a72e305286020415"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/0b44f1c3fc42501af7de2ae8d12426866faef554",
-                "reference": "0b44f1c3fc42501af7de2ae8d12426866faef554",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/e4da24f399d71d1077f93114a72e305286020415",
+                "reference": "e4da24f399d71d1077f93114a72e305286020415",
                 "shasum": ""
             },
             "require": {
@@ -136,12 +136,12 @@
                 }
             ],
             "description": "PHP_CodeSniffer tokenizes PHP, JavaScript and CSS files and detects violations of a defined set of coding standards.",
-            "homepage": "http://www.squizlabs.com/php-codesniffer",
+            "homepage": "https://github.com/squizlabs/PHP_CodeSniffer",
             "keywords": [
                 "phpcs",
                 "standards"
             ],
-            "time": "2019-02-05T23:59:59+00:00"
+            "time": "2019-02-15T05:33:10+00:00"
         }
     ],
     "packages-dev": [],
