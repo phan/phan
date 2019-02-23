@@ -287,7 +287,7 @@ This may be useful when analyzing methods with long parameter lists.
 
 E.g. warns about invoking `function example($first, $second, $third)` as `example($mySecond, $myThird, $myFirst)`
 
-- **PhanPluginSuspiciousParamOrder**: `Suspicious order for arguments named {DETAILS} - These are being passed to parameters {DETAILS}`
+- **PhanPluginSuspiciousParamOrder**: `Suspicious order for arguments named {DETAILS} - These are being passed to parameters {DETAILS} of {FUNCTION} defined at {FILE}:{LINE}`
 - **PhanPluginSuspiciousParamOrderInternal**: `Suspicious order for arguments named {DETAILS} - These are being passed to parameters {DETAILS}`
 
 ### 4. Demo plugins:

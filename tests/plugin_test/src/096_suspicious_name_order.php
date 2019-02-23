@@ -38,3 +38,9 @@ function test_no_false_positive() {
     some_check($secondValue, $objFirst);
     some_check_chain($secondValue, $third, $objFirst);
 }
+
+function my_strpos(string $message, string $needle, string $haystack) {
+    fwrite(STDERR, "$message: Looking for $needle\n");
+    return strpos($needle, $haystack);  // this is wrong, the haystack should go first
+}
+var_export(my_strpos('debug msg', '.', 'foo.bar'));
