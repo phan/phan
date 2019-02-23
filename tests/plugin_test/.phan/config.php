@@ -122,5 +122,6 @@ return [
         'UseReturnValuePlugin',
         'SleepCheckerPlugin',
         'DuplicateExpressionPlugin',
+        'SuspiciousParamOrderPlugin',
     ],
 ];

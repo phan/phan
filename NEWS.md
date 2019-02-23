@@ -10,6 +10,9 @@ New features(Analysis):
 
 Plugins:
 + Add `HandleLazyLoadInternalFunctionCapability` so that plugins can modify Phan's information about internal global functions when those functions are loaded after analysis starts.
++ Add `SuspiciousParamOrderPlugin` which guesses if arguments to functions are out of order based on the names used in the argument expressions.
+
+  E.g. warns about invoking `function example($first, $second, $third)` as `example($mySecond, $myThird, $myFirst)`
 
 18 Feb 2019, Phan 1.2.4
 -----------------------
