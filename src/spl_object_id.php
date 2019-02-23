@@ -11,9 +11,7 @@ if (function_exists('spl_object_id')) {
 if (function_exists('runkit_object_id') &&
     !(new ReflectionFunction('runkit_object_id'))->isUserDefined()) {  // @phan-suppress-current-line PhanUndeclaredFunctionInCallable
     /**
-     * See https://github.com/runkit7/runkit_object_id for a faster native version (Improves Phan's speed by 10% or so).
-     * runkit_object_id 1.1.0+ provides a fast native implementation spl_object_id() for php <= 7.1,
-     * in which case this file wouldn't be included.
+     * See https://github.com/runkit7/runkit_object_id for a faster native version for php <= 7.1
      *
      * @param object $object
      * @return int The object id
@@ -27,9 +25,7 @@ if (function_exists('runkit_object_id') &&
     }
 } elseif (PHP_INT_SIZE === 8) {
     /**
-     * See https://github.com/runkit7/runkit_object_id for a faster native version (Improves Phan's speed by 10% or so).
-     * spl_object_hash() exists, but spl_object_id() is only available in php 7.2+.
-     * Also, we currently get an object from var_dump(), but that isn't nicely exposed.
+     * See https://github.com/runkit7/runkit_object_id for a faster native version for php <= 7.1
      *
      * @param object $object
      * @return int (The object id, XORed with a random number)
@@ -46,9 +42,7 @@ if (function_exists('runkit_object_id') &&
     }
 } else {
     /**
-     * See https://github.com/runkit7/runkit_object_id for a faster native version (Improves Phan's speed by 10% or so).
-     * spl_object_hash() exists, but spl_object_id() is only available in php 7.2+.
-     * Also, we currently get an object from var_dump(), but that isn't nicely exposed.
+     * See https://github.com/runkit7/runkit_object_id for a faster native version for php <= 7.1
      *
      * @param object $object
      * @return int (The object id, XORed with a random number)
