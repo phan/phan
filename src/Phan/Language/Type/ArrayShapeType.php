@@ -691,6 +691,27 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     }
 
     /**
+     * If all types in this array shape can be converted to a single PHP value,
+     * and all fields are required, return the array shape represented by that.
+     *
+     * Otherwise, return null
+     *
+     * @return ?array<mixed,?string|?int|?float|?bool|?array>
+     */
+    public function asArrayLiteralOrNull()
+    {
+        $result = [];
+        foreach ($this->field_types as $key => $field_type) {
+            $field_value = $field_type->asValueOrNullOrSelf();
+            if (is_object($field_value)) {
+                return null;
+            }
+            $result[$key] = $field_value;
+        }
+        return $result;
+    }
+
+    /**
      * Returns the function interface this references
      * @return ?FunctionInterface
      */

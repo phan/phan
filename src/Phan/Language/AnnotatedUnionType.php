@@ -36,6 +36,29 @@ class AnnotatedUnionType extends UnionType
         return $result;
     }
 
+    public function asSingleScalarValueOrNull()
+    {
+        if ($this->is_possibly_undefined) {
+            return null;
+        }
+        return parent::asSingleScalarValueOrNull();
+    }
+
+    public function asSingleScalarValueOrNullOrSelf()
+    {
+        if ($this->is_possibly_undefined) {
+            return $this;
+        }
+        return parent::asSingleScalarValueOrNullOrSelf();
+    }
+
+    public function asValueOrNullOrSelf()
+    {
+        if ($this->is_possibly_undefined) {
+            return $this;
+        }
+        return parent::asValueOrNullOrSelf();
+    }
     public function getIsPossiblyUndefined() : bool
     {
         return $this->is_possibly_undefined;

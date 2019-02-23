@@ -2214,7 +2214,7 @@ class ContextNode
             $this->context,
             $node
         );
-        $value = $node_type->asSingleScalarValueOrNullOrSelf();
+        $value = $node_type->asValueOrNullOrSelf();
         if (\is_object($value)) {
             return $node;
         }

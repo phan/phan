@@ -3544,12 +3544,50 @@ class UnionType implements Serializable
             return $this;
         }
         $type = \reset($type_set);
+        // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+        if ($type->getIsNullable()) {
+            return $type instanceof NullType ? null : $this;
+        }
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
         switch (\get_class($type)) {
             case LiteralIntType::class:
-                return $type->getIsNullable() ? null : $type->getValue();
             case LiteralStringType::class:
-                return $type->getIsNullable() ? null : $type->getValue();
+                return $type->getValue();
+            case FalseType::class:
+                return false;
+            case TrueType::class:
+                return true;
+            default:
+                return $this;
+        }
+    }
+
+    /**
+     * @return ?array|?string|?float|?int|bool|null|?UnionType
+     * If this union type can be represented by a single scalar value or null,
+     * then this returns that scalar value.
+     *
+     * Otherwise, this returns $this.
+     */
+    public function asValueOrNullOrSelf()
+    {
+        $type_set = $this->type_set;
+        if (\count($type_set) !== 1) {
+            return $this;
+        }
+        $type = \reset($type_set);
+        // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
+        if ($type->getIsNullable()) {
+            return $type instanceof NullType ? null : $this;
+        }
+        // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
+        switch (\get_class($type)) {
+            case ArrayShapeType::class:
+                return $type->asArrayLiteralOrNull() ?? $this;
+            case LiteralIntType::class:
+                return $type->getIsNullable() ? $this : $type->getValue();
+            case LiteralStringType::class:
+                return $type->getIsNullable() ? $this : $type->getValue();
             case FalseType::class:
                 return false;
             case TrueType::class:
