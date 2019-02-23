@@ -186,16 +186,33 @@ class SuspiciousParamOrderVisitor extends PluginAwarePostAnalysisVisitor
                 $param = $parameters[$i];
                 return '#' . ($i + 1) . ' (' . trim($param->getUnionType() . ' $' . $param->getName()) . ')';
             }, $cycle));
-            $this->emitPluginIssue(
-                $this->code_base,
-                clone($this->context)->withLineNumberStart($node->lineno),
-                $function->isPHPInternal() ? self::SuspiciousParamOrderInternal : self::SuspiciousParamOrder,
-                'Suspicious order for arguments named {DETAILS} - These are being passed to parameters {DETAILS}',
-                [
-                    $arg_details,
-                    $param_details,
-                ]
-            );
+            if ($function->isPHPInternal()) {
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    clone($this->context)->withLineNumberStart($node->lineno),
+                    self::SuspiciousParamOrderInternal,
+                    'Suspicious order for arguments named {DETAILS} - These are being passed to parameters {DETAILS} of {FUNCTION}',
+                    [
+                        $arg_details,
+                        $param_details,
+                        $function->getRepresentationForIssue(),
+                    ]
+                );
+            } else {
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    clone($this->context)->withLineNumberStart($node->lineno),
+                    self::SuspiciousParamOrder,
+                    'Suspicious order for arguments named {DETAILS} - These are being passed to parameters {DETAILS} of {FUNCTION} defined at {FILE}:{LINE}',
+                    [
+                        $arg_details,
+                        $param_details,
+                        $function->getRepresentationForIssue(),
+                        $function->getContext()->getFile(),
+                        $function->getContext()->getLineNumberStart(),
+                    ]
+                );
+            }
         }
     }
 
