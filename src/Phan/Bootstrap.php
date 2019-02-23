@@ -154,7 +154,8 @@ function phan_error_handler($errno, $errstr, $errfile, $errline)
             fprintf(STDERR, '#%d: %s' . PHP_EOL, $i, $frame_details);
         }
         if ($truncated) {
-            fwrite(STDERR, "(Some long strings (usually JSON of AST Nodes) were truncated. To print more details for some stack frames of this crash, increase the Phan config setting debug_max_frame_length)" . PHP_EOL);
+            fwrite(STDERR, "(Some long strings (usually JSON of AST Nodes) were truncated. To print more details for some stack frames of this crash, " .
+               "increase the Phan config setting debug_max_frame_length)" . PHP_EOL);
         }
     }
 

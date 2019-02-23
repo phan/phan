@@ -59,7 +59,7 @@ New features(Analysis):
   This is only done when each phpdoc type is compatible with the real signature type.
 + Detect more expressions without side effects: `PhanNoopEmpty` and `PhanNoopIsset` (for `isset(expr)` and `empty(expr)`) (#2389)
 + Also emit `PhanNoopBinaryOperator` for the `??`, `||`, and `&&` operators,
-  but only when the result is unused and the right hand side has no obvious side effects. (#2389)
+  but only when the result is unused and the right-hand side has no obvious side effects. (#2389)
 + Properly analyze effects of a property/field access expression as the key of a `foreach` statement. (#1601)
 + Emit `PhanTypeInstantiateTrait` when calling `new TraitName()` (#2379)
 + Emit `PhanTemplateTypeConstant` when using `@var T` on a class constant's doc comment. (#2402)
@@ -190,7 +190,7 @@ New features(Analysis):
 
 Plugins:
 - Add `PHPUnitAssertionPlugin`.
-  This plugin will make Phan infer side effects from some of the uses of the helper methods PHPUnit provides within test cases.
+  This plugin will make Phan infer side effects of some of the helper methods PHPUnit provides within test cases.
 
   - Infer that a condition is truthy from `assertTrue()` and `assertNotFalse()` (e.g. `assertTrue($x instanceof MyClass)`)
   - Infer that a condition is null/not null from `assertNull()` and `assertNotNull()`
@@ -1474,7 +1474,7 @@ New Features(Analysis)
   (See https://secure.php.net/manual/en/migration56.new-features.php#migration56.new-features.splat)
 + When determining the union type of an array literal,
   base it on the union types of **all** of the values (and all of the keys) instead of just the first 5 array elements.
-+ When determining the union type of the possible value types of a array literal,
++ When determining the union type of the possible value types of an array literal,
   combine the generic types into a union type instead of simplifying the types to `array`.
   In practical terms, this means that `[1,2,'a']` is seen as `array<int,int|string>`,
   which Phan represents as `array<int,int>|array<int,string>`.

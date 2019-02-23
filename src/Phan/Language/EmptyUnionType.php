@@ -1219,6 +1219,11 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
+    public function asValueOrNullOrSelf()
+    {
+        return $this;
+    }
+
     public function asStringScalarValues() : array
     {
         return [];
