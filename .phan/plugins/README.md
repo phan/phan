@@ -235,7 +235,7 @@ Encourages the usage of fully qualified global functions and constants (slightly
 
 Enforces that loose equality is used for numeric operands (e.g. `2 == 2.0`), and that strict equality is used for non-numeric operands (e.g. `"2" === "2e0"` is false).
 
-- **PhanPluginNumericalComparison**: non numerical values compared by the operators '==' or '!=='; numerical values compared by the operators '===' or '!=='
+- **PhanPluginNumericalComparison**: nonnumerical values compared by the operators '==' or '!=='; numerical values compared by the operators '===' or '!=='
 
 #### PHPUnitNotDeadCodePlugin
 
@@ -310,3 +310,12 @@ Generates the following issue types under the types:
 Checks for complex variable access expressions `$$x`, which may be hard to read, and make the variable accesses hard/impossible to analyze.
 
 - **PhanPluginDollarDollar**: Warns about the use of $$x, ${(expr)}, etc.
+
+### 5. Third party plugins
+
+- https://github.com/Drenso/PhanExtensions is a third party project with several plugins to do the following:
+
+  - Analyze Symfony doc comment annotations.
+  - Mark elements in inline doc comments (which Phan doesn't parse) as referencing types from `use statements` as not dead code.
+
+- https://github.com/TysonAndre/PhanTypoCheckPlugin checks of calls to `gettext()` by default, and can optionally check all strings.

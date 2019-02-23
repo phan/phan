@@ -127,8 +127,6 @@ final class StringUtil
     }
 
     /**
-     * @internal
-     *
      * Parses escape sequences in strings (all string types apart from single quoted).
      *
      * @param string|false $str  String without quotes
