@@ -320,8 +320,6 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 $detector->selfTest();
                 $detector->addMissingFunctionLikeSignatures();
                 $detector->updateFunctionSignatures();
-                // TODO: Sort .php.extra_signatures and .php.new
-
                 break;
             case 'update-descriptions-svn':
                 if (count($argv) !== 3) {
@@ -330,6 +328,15 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 }
                 // TODO: Add a way to exclude /tests/
                 $detector = new IncompatibleXMLSignatureDetector($argv[2]);
+                $detector->selfTest();
+                $detector->updatePHPDocSummaries();
+                break;
+            case 'update-descriptions-stubs':
+                if (count($argv) !== 3) {
+                    fwrite(STDERR, "Invalid argument count, update-descriptions-stubs expects 1 argument\n");
+                    static::printUsageAndExit();
+                }
+                $detector = new IncompatibleStubsSignatureDetector($argv[2]);
                 $detector->selfTest();
                 $detector->updatePHPDocSummaries();
                 break;
@@ -342,42 +349,6 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 fwrite(STDERR, "Invalid command '$command'\n");
                 static::printUsageAndExit(1);
         }
-    }
-
-    /**
-     * Update phpdoc summaries of elements with the docs from php.net
-     *
-     * @return void
-     */
-    private function updatePHPDocSummaries()
-    {
-        $this->updatePHPDocFunctionSummaries();
-        $this->updatePHPDocConstantSummaries();
-        $this->updatePHPDocClassSummaries();
-    }
-
-    private function updatePHPDocFunctionSummaries()
-    {
-        $new_function_documentation = $this->getAvailableMethodPHPDocSummaries();
-        $new_function_documentation_path = ORIGINAL_FUNCTION_DOCUMENTATION_PATH . '.new';
-        static::info("Saving modified function descriptions to $new_function_documentation_path\n");
-        static::saveFunctionDocumentationMap($new_function_documentation_path, $new_function_documentation);
-    }
-
-    private function updatePHPDocConstantSummaries()
-    {
-        $new_constant_documentation = $this->getAvailableConstantPHPDocSummaries();
-        $new_constant_documentation_path = ORIGINAL_CONSTANT_DOCUMENTATION_PATH . '.new';
-        static::info("Saving modified constant descriptions to $new_constant_documentation_path\n");
-        static::saveConstantDocumentationMap($new_constant_documentation_path, $new_constant_documentation);
-    }
-
-    private function updatePHPDocClassSummaries()
-    {
-        $new_class_documentation = $this->getAvailableClassPHPDocSummaries();
-        $new_class_documentation_path = ORIGINAL_CLASS_DOCUMENTATION_PATH . '.new';
-        static::info("Saving modified class descriptions to $new_class_documentation_path\n");
-        static::saveClassDocumentationMap($new_class_documentation_path, $new_class_documentation);
     }
 
     /**
@@ -812,9 +783,10 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     }
 
     /**
-     * Returns short phpdoc summaries of method signatures
+     * Returns short phpdoc summaries of function and method signatures
      *
      * @return array<string,string>
+     * @override
      */
     protected function getAvailableMethodPHPDocSummaries() : array
     {
@@ -860,6 +832,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
 
     /**
      * @return array<string,string>
+     * @override
      */
     protected function getAvailableConstantPHPDocSummaries() : array
     {
@@ -885,6 +858,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
 
     /**
      * @return array<string,string>
+     * @override
      */
     protected function getAvailableClassPHPDocSummaries() : array
     {

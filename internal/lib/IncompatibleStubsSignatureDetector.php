@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 use Phan\Analysis;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Exception\FQSENException;
+use Phan\Language\Element\ClassConstant;
+use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
+use Phan\Language\Element\GlobalConstant;
+use Phan\Language\Element\MarkupDescription;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -34,6 +39,8 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
             static::printUsageAndExit();
         }
         Phan::setIssueCollector(new BufferingCollector());
+        // Disable Phan's own internal stubs, they interfere with loading stubs in the provided directories.
+        Config::setValue('autoload_internal_extension_signatures', []);
 
         $realpath = realpath($dir);
         if (!is_string($realpath)) {
@@ -219,7 +226,6 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
      */
     protected function getAvailableMethodSignatures() : array
     {
-
         return $this->memoize(__METHOD__, /** @return array<string,array<int|string,string>> */ function () : array {
             $code_base = $this->code_base;
             $function_name_map = [];
@@ -230,6 +236,142 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
                 $function_name = $method->getClassFQSEN()->getNamespacedName() . '::' . $method->getName();
                 $method->ensureScopeInitialized($code_base);
                 $function_name_map[$function_name] = $method->toFunctionSignatureArray();
+            }
+            return $function_name_map;
+        });
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    protected function getAvailableClassPHPDocSummaries() : array
+    {
+        return $this->memoize(__METHOD__, /** @return array<string,string> */ function () : array {
+            $code_base = $this->code_base;
+            $map = [];
+            $classes = array_merge(
+                iterator_to_array($code_base->getInternalClassMap(), false),
+                iterator_to_array($code_base->getUserDefinedClassMap(), false)
+            );
+            foreach ($classes as $class) {
+                echo "Looking at {$class->getFQSEN()}\n";
+                if (!($class instanceof Clazz)) {
+                    throw new AssertionError('expected $class to be a Clazz');
+                }
+                $description = (string)MarkupDescription::extractDescriptionFromDocComment($class, null);
+                $description = self::removeBoilerplateFromDescription($description);
+                if (!$description) {
+                    continue;
+                }
+                $class_name = ltrim((string)$class->getFQSEN(), "\\");
+                if (preg_match(self::FUNCTIONLIKE_BLACKLIST, $class_name)) {
+                    continue;
+                }
+                echo "$class_name: $description\n";
+                $map[$class_name] = $description;
+            }
+            return $map;
+        });
+    }
+
+    /**
+     * Removes boilerplate such as minimum PHP versions from summary text
+     */
+    public static function removeBoilerplateFromDescription(string $description) : string
+    {
+        return preg_replace('@\((PECL|PHP|No version information)[^)]*\)\s*<br/>\s*@im', '', $description);
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    protected function getAvailableConstantPHPDocSummaries() : array
+    {
+        return $this->memoize(__METHOD__, /** @return array<string,string> */ function () : array {
+            $code_base = $this->code_base;
+            $map = [];
+            foreach ($code_base->getGlobalConstantMap() as $const) {
+                if (!($const instanceof GlobalConstant)) {
+                    throw new AssertionError('expected $const to be a GlobalConstant');
+                }
+                $description = (string)MarkupDescription::extractDescriptionFromDocComment($const, null);
+                $description = self::removeBoilerplateFromDescription($description);
+                if (!$description) {
+                    continue;
+                }
+                $const_name = ltrim((string)$const->getFQSEN(), "\\");
+                if (preg_match(self::FUNCTIONLIKE_BLACKLIST, $const_name)) {
+                    continue;
+                }
+                echo "$const_name: $description\n";
+                $map[$const_name] = $description;
+            }
+            foreach ($code_base->getClassMapMap() as $class_map) {
+                foreach ($class_map->getClassConstantMap() as $const) {
+                    if (!($const instanceof ClassConstant)) {
+                        throw new AssertionError('expected $const to be a ClassConstant');
+                    }
+                    $description = (string)MarkupDescription::extractDescriptionFromDocComment($const, null);
+                    // Remove the markup added by MarkdupDescription
+                    $description = preg_replace('(^`@var [^`]*`\s*)', '', $description);
+
+                    $description = self::removeBoilerplateFromDescription($description);
+                    if (!$description) {
+                        continue;
+                    }
+
+                    $const_name = ltrim((string)$const->getFQSEN(), "\\");
+                    if (preg_match(self::FUNCTIONLIKE_BLACKLIST, $const_name)) {
+                        continue;
+                    }
+                    echo "$const_name: $description\n";
+                    $map[$const_name] = $description;
+                }
+            }
+            return $map;
+        });
+    }
+
+    /**
+     * Get available function and method summaries from the stubs directory.
+     *
+     * @return array<string,string>
+     */
+    protected function getAvailableMethodPHPDocSummaries() : array
+    {
+        return $this->memoize(__METHOD__, /** @return array<string,string> */ function () : array {
+            $code_base = $this->code_base;
+            $function_name_map = [];
+            foreach ($code_base->getMethodSet() as $method) {
+                if (!($method instanceof Method)) {
+                    throw new AssertionError('expected $method to be a Method');
+                }
+                $description = (string)MarkupDescription::extractDescriptionFromDocComment($method, null);
+                $description = self::removeBoilerplateFromDescription($description);
+                if (!$description) {
+                    continue;
+                }
+                $function_name = $method->getClassFQSEN()->getNamespacedName() . '::' . $method->getName();
+                if (preg_match(self::FUNCTIONLIKE_BLACKLIST, $function_name)) {
+                    continue;
+                }
+                echo "$function_name: $description\n";
+                $function_name_map[$function_name] = $description;
+            }
+            foreach ($code_base->getFunctionMap() as $function) {
+                if (!($function instanceof Func)) {
+                    throw new AssertionError('expected $function to be a Func');
+                }
+                $description = MarkupDescription::extractDescriptionFromDocComment($function, null);
+                if (!$description) {
+                    continue;
+                }
+                $function_name = ltrim((string)$function->getFQSEN(), "\\");
+                if (preg_match(self::FUNCTIONLIKE_BLACKLIST, $function_name)) {
+                    continue;
+                }
+                echo "$function_name: $description\n";
+                $function_name_map[$function_name] = $description;
             }
             return $function_name_map;
         });

@@ -19,9 +19,10 @@ namespace Phan\Language\Internal;
  *    The PHP manual text and comments are covered by the [Creative Commons Attribution 3.0 License](http://creativecommons.org/licenses/by/3.0/legalcode),
  *    copyright (c) the PHP Documentation Group
  * 2. Various websites documenting individual extensions (e.g. php-ast)
- * 3. PHPStorm stubs (Planned, for anything missing from the above sources)
+ * 3. PHPStorm stubs (for anything missing from the above sources)
  *    See internal/internalsignatures.php
  *
+ *    Available from https://github.com/JetBrains/phpstorm-stubs under the [Apache 2 license](https://www.apache.org/licenses/LICENSE-2.0)
  *
  * CONTRIBUTING:
  *
@@ -42,6 +43,283 @@ return [
 'acosh' => 'Inverse hyperbolic cosine',
 'addcslashes' => 'Quote string with slashes in a C style',
 'addslashes' => 'Quote string with slashes',
+'AMQPBasicProperties::getAppId' => 'Get the application id of the message.',
+'AMQPBasicProperties::getClusterId' => 'Get the cluster id of the message.',
+'AMQPBasicProperties::getContentEncoding' => 'Get the content encoding of the message.',
+'AMQPBasicProperties::getContentType' => 'Get the message content type.',
+'AMQPBasicProperties::getCorrelationId' => 'Get the message correlation id.',
+'AMQPBasicProperties::getDeliveryMode' => 'Get the delivery mode of the message.',
+'AMQPBasicProperties::getExpiration' => 'Get the expiration of the message.',
+'AMQPBasicProperties::getHeaders' => 'Get the headers of the message.',
+'AMQPBasicProperties::getMessageId' => 'Get the message id of the message.',
+'AMQPBasicProperties::getPriority' => 'Get the priority of the message.',
+'AMQPBasicProperties::getReplyTo' => 'Get the reply-to address of the message.',
+'AMQPBasicProperties::getTimestamp' => 'Get the timestamp of the message.',
+'AMQPBasicProperties::getType' => 'Get the message type.',
+'AMQPBasicProperties::getUserId' => 'Get the message user id.',
+'AMQPChannel::__construct' => 'Create an instance of an AMQPChannel object.',
+'AMQPChannel::basicRecover' => 'Redeliver unacknowledged messages.',
+'AMQPChannel::close' => 'Closes the channel.',
+'AMQPChannel::commitTransaction' => 'Commit a pending transaction.',
+'AMQPChannel::confirmSelect' => 'Set the channel to use publisher acknowledgements. This can only used on a non-transactional channel.',
+'AMQPChannel::getChannelId' => 'Return internal channel ID',
+'AMQPChannel::getConnection' => 'Get the AMQPConnection object in use',
+'AMQPChannel::getConsumers' => 'Return array of current consumers where key is consumer and value is AMQPQueue consumer is running on',
+'AMQPChannel::getPrefetchCount' => 'Get the number of messages to prefetch from the broker.',
+'AMQPChannel::getPrefetchSize' => 'Get the window size to prefetch from the broker.',
+'AMQPChannel::isConnected' => 'Check the channel connection.',
+'AMQPChannel::qos' => 'Set the Quality Of Service settings for the given channel.
+
+Specify the amount of data to prefetch in terms of window size (octets)
+or number of messages from a queue during a AMQPQueue::consume() or
+AMQPQueue::get() method call. The client will prefetch data up to size
+octets or count messages from the server, whichever limit is hit first.
+Setting either value to 0 will instruct the client to ignore that
+particular setting. A call to AMQPChannel::qos() will overwrite any
+values set by calling AMQPChannel::setPrefetchSize() and
+AMQPChannel::setPrefetchCount(). If the call to either
+AMQPQueue::consume() or AMQPQueue::get() is done with the AMQP_AUTOACK
+flag set, the client will not do any prefetching of data, regardless of
+the QOS settings.',
+'AMQPChannel::rollbackTransaction' => 'Rollback a transaction.
+
+Rollback an existing transaction. AMQPChannel::startTransaction() must
+be called prior to this.',
+'AMQPChannel::setConfirmCallback' => 'Set callback to process basic.ack and basic.nac AMQP server methods (applicable when channel in confirm mode).',
+'AMQPChannel::setPrefetchCount' => 'Set the number of messages to prefetch from the broker.
+
+Set the number of messages to prefetch from the broker during a call to
+AMQPQueue::consume() or AMQPQueue::get(). Any call to this method will
+automatically set the prefetch window size to 0, meaning that the
+prefetch window size setting will be ignored.',
+'AMQPChannel::setPrefetchSize' => 'Set the window size to prefetch from the broker.
+
+Set the prefetch window size, in octets, during a call to
+AMQPQueue::consume() or AMQPQueue::get(). Any call to this method will
+automatically set the prefetch message count to 0, meaning that the
+prefetch message count setting will be ignored. If the call to either
+AMQPQueue::consume() or AMQPQueue::get() is done with the AMQP_AUTOACK
+flag set, this setting will be ignored.',
+'AMQPChannel::setReturnCallback' => 'Set callback to process basic.return AMQP server method',
+'AMQPChannel::startTransaction' => 'Start a transaction.
+
+This method must be called on the given channel prior to calling
+AMQPChannel::commitTransaction() or AMQPChannel::rollbackTransaction().',
+'AMQPChannel::waitForBasicReturn' => 'Start wait loop for basic.return AMQP server methods',
+'AMQPChannel::waitForConfirm' => 'Wait until all messages published since the last call have been either ack\'d or nack\'d by the broker.
+
+Note, this method also catch all basic.return message from server.',
+'AMQPConnection::__construct' => 'Create an instance of AMQPConnection.
+
+Creates an AMQPConnection instance representing a connection to an AMQP
+broker. A connection will not be established until
+AMQPConnection::connect() is called.
+
+ $credentials = array(
+     \'host\'  => amqp.host The host to connect too. Note: Max 1024 characters.
+     \'port\'  => amqp.port Port on the host.
+     \'vhost\' => amqp.vhost The virtual host on the host. Note: Max 128 characters.
+     \'login\' => amqp.login The login name to use. Note: Max 128 characters.
+     \'password\' => amqp.password Password. Note: Max 128 characters.
+     \'read_timeout\'  => Timeout in for income activity. Note: 0 or greater seconds. May be fractional.
+     \'write_timeout\' => Timeout in for outcome activity. Note: 0 or greater seconds. May be fractional.
+     \'connect_timeout\' => Connection timeout. Note: 0 or greater seconds. May be fractional.
+
+     Connection tuning options (see https://www.rabbitmq.com/amqp-0-9-1-reference.html#connection.tune for details):
+     \'channel_max\' => Specifies highest channel number that the server permits. 0 means standard extension limit
+                      (see PHP_AMQP_MAX_CHANNELS constant)
+     \'frame_max\'   => The largest frame size that the server proposes for the connection, including frame header
+                      and end-byte. 0 means standard extension limit (depends on librabbimq default frame size limit)
+     \'heartbeat\'   => The delay, in seconds, of the connection heartbeat that the server wants.
+                      0 means the server does not want a heartbeat. Note, librabbitmq has limited heartbeat support,
+                      which means heartbeats checked only during blocking calls.
+
+     TLS support (see https://www.rabbitmq.com/ssl.html for details):
+     \'cacert\' => Path to the CA cert file in PEM format..
+     \'cert\'   => Path to the client certificate in PEM foramt.
+     \'key\'    => Path to the client key in PEM format.
+     \'verify\' => Enable or disable peer verification. If peer verification is enabled then the common name in the
+                 server certificate must match the server name. Peer verification is enabled by default.
+)',
+'AMQPConnection::connect' => 'Establish a transient connection with the AMQP broker.
+
+This method will initiate a connection with the AMQP broker.',
+'AMQPConnection::disconnect' => 'Closes the transient connection with the AMQP broker.
+
+This method will close an open connection with the AMQP broker.',
+'AMQPConnection::getCACert' => 'Get path to the CA cert file in PEM format',
+'AMQPConnection::getCert' => 'Get path to the client certificate in PEM format',
+'AMQPConnection::getHeartbeatInterval' => 'Get number of seconds between heartbeats of the connection in seconds.
+
+When connection is connected, effective connection value returned, which is normally the same as original
+correspondent value passed to constructor, otherwise original value passed to constructor returned.',
+'AMQPConnection::getHost' => 'Get the configured host.',
+'AMQPConnection::getKey' => 'Get path to the client key in PEM format',
+'AMQPConnection::getLogin' => 'Get the configured login.',
+'AMQPConnection::getMaxChannels' => 'Get the maximum number of channels the connection can handle.
+
+When connection is connected, effective connection value returned, which is normally the same as original
+correspondent value passed to constructor, otherwise original value passed to constructor returned.',
+'AMQPConnection::getMaxFrameSize' => 'Get max supported frame size per connection in bytes.
+
+When connection is connected, effective connection value returned, which is normally the same as original
+correspondent value passed to constructor, otherwise original value passed to constructor returned.',
+'AMQPConnection::getPassword' => 'Get the configured password.',
+'AMQPConnection::getPort' => 'Get the configured port.',
+'AMQPConnection::getReadTimeout' => 'Get the configured interval of time to wait for income activity
+from AMQP broker',
+'AMQPConnection::getTimeout' => 'Get the configured interval of time to wait for income activity
+from AMQP broker',
+'AMQPConnection::getUsedChannels' => 'Return last used channel id during current connection session.',
+'AMQPConnection::getVerify' => 'Get whether peer verification enabled or disabled',
+'AMQPConnection::getVhost' => 'Get the configured vhost.',
+'AMQPConnection::getWriteTimeout' => 'Get the configured interval of time to wait for outcome activity
+to AMQP broker',
+'AMQPConnection::isConnected' => 'Check whether the connection to the AMQP broker is still valid.
+
+It does so by checking the return status of the last connect-command.',
+'AMQPConnection::isPersistent' => 'Whether connection persistent.
+
+When connection is not connected, boolean false always returned',
+'AMQPConnection::pconnect' => 'Establish a persistent connection with the AMQP broker.
+
+This method will initiate a connection with the AMQP broker
+or reuse an existing one if present.',
+'AMQPConnection::pdisconnect' => 'Closes a persistent connection with the AMQP broker.
+
+This method will close an open persistent connection with the AMQP
+broker.',
+'AMQPConnection::preconnect' => 'Close any open persistent connections and initiate a new one with the AMQP broker.',
+'AMQPConnection::reconnect' => 'Close any open transient connections and initiate a new one with the AMQP broker.',
+'AMQPConnection::setCACert' => 'Set path to the CA cert file in PEM format',
+'AMQPConnection::setCert' => 'Set path to the client certificate in PEM format',
+'AMQPConnection::setHost' => 'Set the hostname used to connect to the AMQP broker.',
+'AMQPConnection::setKey' => 'Set path to the client key in PEM format',
+'AMQPConnection::setLogin' => 'Set the login string used to connect to the AMQP broker.',
+'AMQPConnection::setPassword' => 'Set the password string used to connect to the AMQP broker.',
+'AMQPConnection::setPort' => 'Set the port used to connect to the AMQP broker.',
+'AMQPConnection::setReadTimeout' => 'Sets the interval of time to wait for income activity from AMQP broker',
+'AMQPConnection::setTimeout' => 'Sets the interval of time to wait for income activity from AMQP broker',
+'AMQPConnection::setVerify' => 'Enable or disable peer verification',
+'AMQPConnection::setVhost' => 'Sets the virtual host to which to connect on the AMQP broker.',
+'AMQPConnection::setWriteTimeout' => 'Sets the interval of time to wait for outcome activity to AMQP broker',
+'AMQPEnvelope::getAppId' => 'Get the application id of the message.',
+'AMQPEnvelope::getBody' => 'Get the body of the message.',
+'AMQPEnvelope::getClusterId' => 'Get the cluster id of the message.',
+'AMQPEnvelope::getConsumerTag' => 'Get the consumer tag of the message.',
+'AMQPEnvelope::getContentEncoding' => 'Get the content encoding of the message.',
+'AMQPEnvelope::getContentType' => 'Get the message content type.',
+'AMQPEnvelope::getCorrelationId' => 'Get the message correlation id.',
+'AMQPEnvelope::getDeliveryMode' => 'Get the delivery mode of the message.',
+'AMQPEnvelope::getDeliveryTag' => 'Get the delivery tag of the message.',
+'AMQPEnvelope::getExchangeName' => 'Get the exchange name on which the message was published.',
+'AMQPEnvelope::getExpiration' => 'Get the expiration of the message.',
+'AMQPEnvelope::getHeader' => 'Get a specific message header.',
+'AMQPEnvelope::getHeaders' => 'Get the headers of the message.',
+'AMQPEnvelope::getMessageId' => 'Get the message id of the message.',
+'AMQPEnvelope::getPriority' => 'Get the priority of the message.',
+'AMQPEnvelope::getReplyTo' => 'Get the reply-to address of the message.',
+'AMQPEnvelope::getRoutingKey' => 'Get the routing key of the message.',
+'AMQPEnvelope::getTimestamp' => 'Get the timestamp of the message.',
+'AMQPEnvelope::getType' => 'Get the message type.',
+'AMQPEnvelope::getUserId' => 'Get the message user id.',
+'AMQPEnvelope::hasHeader' => 'Check whether specific message header exists.',
+'AMQPEnvelope::isRedelivery' => 'Whether this is a redelivery of the message.
+
+Whether this is a redelivery of a message. If this message has been
+delivered and AMQPEnvelope::nack() was called, the message will be put
+back on the queue to be redelivered, at which point the message will
+always return TRUE when this method is called.',
+'AMQPExchange::__construct' => 'Create an instance of AMQPExchange.
+
+Returns a new instance of an AMQPExchange object, associated with the
+given AMQPChannel object.',
+'AMQPExchange::bind' => 'Bind to another exchange.
+
+Bind an exchange to another exchange using the specified routing key.',
+'AMQPExchange::declareExchange' => 'Declare a new exchange on the broker.',
+'AMQPExchange::delete' => 'Delete the exchange from the broker.',
+'AMQPExchange::getArgument' => 'Get the argument associated with the given key.',
+'AMQPExchange::getArguments' => 'Get all arguments set on the given exchange.',
+'AMQPExchange::getChannel' => 'Get the AMQPChannel object in use',
+'AMQPExchange::getConnection' => 'Get the AMQPConnection object in use',
+'AMQPExchange::getFlags' => 'Get all the flags currently set on the given exchange.',
+'AMQPExchange::getName' => 'Get the configured name.',
+'AMQPExchange::getType' => 'Get the configured type.',
+'AMQPExchange::hasArgument' => 'Check whether argument associated with the given key exists.',
+'AMQPExchange::publish' => 'Publish a message to an exchange.
+
+Publish a message to the exchange represented by the AMQPExchange object.',
+'AMQPExchange::setArgument' => 'Set the value for the given key.',
+'AMQPExchange::setArguments' => 'Set all arguments on the exchange.',
+'AMQPExchange::setFlags' => 'Set the flags on an exchange.',
+'AMQPExchange::setName' => 'Set the name of the exchange.',
+'AMQPExchange::setType' => 'Set the type of the exchange.
+
+Set the type of the exchange. This can be any of AMQP_EX_TYPE_DIRECT,
+AMQP_EX_TYPE_FANOUT, AMQP_EX_TYPE_HEADERS or AMQP_EX_TYPE_TOPIC.',
+'AMQPExchange::unbind' => 'Remove binding to another exchange.
+
+Remove a routing key binding on an another exchange from the given exchange.',
+'AMQPQueue::__construct' => 'Create an instance of an AMQPQueue object.',
+'AMQPQueue::ack' => 'Acknowledge the receipt of a message.
+
+This method allows the acknowledgement of a message that is retrieved
+without the AMQP_AUTOACK flag through AMQPQueue::get() or
+AMQPQueue::consume()',
+'AMQPQueue::bind' => 'Bind the given queue to a routing key on an exchange.',
+'AMQPQueue::cancel' => 'Cancel a queue that is already bound to an exchange and routing key.',
+'AMQPQueue::consume' => 'Consume messages from a queue.
+
+Blocking function that will retrieve the next message from the queue as
+it becomes available and will pass it off to the callback.',
+'AMQPQueue::declareQueue' => 'Declare a new queue on the broker.',
+'AMQPQueue::delete' => 'Delete a queue from the broker.
+
+This includes its entire contents of unread or unacknowledged messages.',
+'AMQPQueue::get' => 'Retrieve the next message from the queue.
+
+Retrieve the next available message from the queue. If no messages are
+present in the queue, this function will return FALSE immediately. This
+is a non blocking alternative to the AMQPQueue::consume() method.
+Currently, the only supported flag for the flags parameter is
+AMQP_AUTOACK. If this flag is passed in, then the message returned will
+automatically be marked as acknowledged by the broker as soon as the
+frames are sent to the client.',
+'AMQPQueue::getArgument' => 'Get the argument associated with the given key.',
+'AMQPQueue::getArguments' => 'Get all set arguments as an array of key/value pairs.',
+'AMQPQueue::getChannel' => 'Get the AMQPChannel object in use',
+'AMQPQueue::getConnection' => 'Get the AMQPConnection object in use',
+'AMQPQueue::getConsumerTag' => 'Get latest consumer tag. If no consumer available or the latest on was canceled null will be returned.',
+'AMQPQueue::getFlags' => 'Get all the flags currently set on the given queue.',
+'AMQPQueue::getName' => 'Get the configured name.',
+'AMQPQueue::hasArgument' => 'Check whether a queue has specific argument.',
+'AMQPQueue::nack' => 'Mark a message as explicitly not acknowledged.
+
+Mark the message identified by delivery_tag as explicitly not
+acknowledged. This method can only be called on messages that have not
+yet been acknowledged, meaning that messages retrieved with by
+AMQPQueue::consume() and AMQPQueue::get() and using the AMQP_AUTOACK
+flag are not eligible. When called, the broker will immediately put the
+message back onto the queue, instead of waiting until the connection is
+closed. This method is only supported by the RabbitMQ broker. The
+behavior of calling this method while connected to any other broker is
+undefined.',
+'AMQPQueue::purge' => 'Purge the contents of a queue.',
+'AMQPQueue::reject' => 'Mark one message as explicitly not acknowledged.
+
+Mark the message identified by delivery_tag as explicitly not
+acknowledged. This method can only be called on messages that have not
+yet been acknowledged, meaning that messages retrieved with by
+AMQPQueue::consume() and AMQPQueue::get() and using the AMQP_AUTOACK
+flag are not eligible.',
+'AMQPQueue::setArgument' => 'Set a queue argument.',
+'AMQPQueue::setArguments' => 'Set all arguments on the given queue.
+
+All other argument settings will be wiped.',
+'AMQPQueue::setFlags' => 'Set the flags on the queue.',
+'AMQPQueue::setName' => 'Set the queue name.',
+'AMQPQueue::unbind' => 'Remove a routing key binding on an exchange from the given queue.',
 'apache_child_terminate' => 'Terminate apache process after this request',
 'apache_get_modules' => 'Get a list of loaded Apache modules',
 'apache_get_version' => 'Fetch Apache version',
@@ -177,6 +455,10 @@ return [
 'array_values' => 'Return all the values of an array',
 'array_walk' => 'Apply a user supplied function to every member of an array',
 'array_walk_recursive' => 'Apply a user function recursively to every member of an array',
+'ArrayAccess::offsetExists' => 'Whether a offset exists',
+'ArrayAccess::offsetGet' => 'Offset to retrieve',
+'ArrayAccess::offsetSet' => 'Offset to set',
+'ArrayAccess::offsetUnset' => 'Offset to unset',
 'arrayiterator::__construct' => 'Construct an ArrayIterator',
 'arrayiterator::append' => 'Append an element',
 'arrayiterator::asort' => 'Sort array by values',
@@ -550,11 +832,80 @@ return [
 'classkit_method_redefine' => 'Dynamically changes the code of the given method',
 'classkit_method_remove' => 'Dynamically removes the given method',
 'classkit_method_rename' => 'Dynamically changes the name of the given method',
+'classObj::__construct' => 'The second argument class is optional. If given, the new class
+created will be a copy of this class.',
+'classObj::addLabel' => 'Add a labelObj to the classObj and return its index in the labels
+array.
+.. versionadded:: 6.2',
+'classObj::convertToString' => 'Saves the object to a string.  Provides the inverse option for
+updateFromString.',
+'classObj::createLegendIcon' => 'Draw the legend icon and return a new imageObj.',
+'classObj::deletestyle' => 'Delete the style specified by the style index. If there are any
+style that follow the deleted style, their index will decrease by 1.',
+'classObj::drawLegendIcon' => 'Draw the legend icon on im object at dstX, dstY.
+Returns MS_SUCCESS/MS_FAILURE.',
+'classObj::free' => 'Free the object properties and break the internal references.
+Note that you have to unset the php variable to free totally the
+resources.',
+'classObj::getExpressionString' => 'Returns the :ref:`expression <expressions>` string for the class
+object.',
+'classObj::getLabel' => 'Return a reference to the labelObj at *index* in the labels array.
+See the labelObj_ section for more details on multiple class
+labels.
+.. versionadded:: 6.2',
+'classObj::getMetaData' => 'Fetch class metadata entry by name.  Returns "" if no entry
+matches the name.  Note that the search is case sensitive.
+.. note::
+getMetaData\'s query is case sensitive.',
+'classObj::getStyle' => 'Return the style object using an index. index >= 0 &&
+index < class->numstyles.',
+'classObj::getTextString' => 'Returns the text string for the class object.',
+'classObj::movestyledown' => 'The style specified by the style index will be moved down into
+the array of classes. Returns MS_SUCCESS or MS_FAILURE.
+ex class->movestyledown(0) will have the effect of moving style 0
+up to position 1, and the style at position 1 will be moved
+to position 0.',
+'classObj::movestyleup' => 'The style specified by the style index will be moved up into
+the array of classes. Returns MS_SUCCESS or MS_FAILURE.
+ex class->movestyleup(1) will have the effect of moving style 1
+up to position 0, and the style at position 0 will be moved
+to position 1.',
+'classObj::ms_newClassObj' => 'Old style constructor',
+'classObj::removeLabel' => 'Remove the labelObj at *index* from the labels array and return a
+reference to the labelObj.  numlabels is decremented, and the
+array is updated.
+.. versionadded:: 6.2',
+'classObj::removeMetaData' => 'Remove a metadata entry for the class.  Returns MS_SUCCESS/MS_FAILURE.',
+'classObj::set' => 'Set object property to a new value.',
+'classObj::setExpression' => 'Set the :ref:`expression <expressions>` string for the class
+object.',
+'classObj::setMetaData' => 'Set a metadata entry for the class.  Returns MS_SUCCESS/MS_FAILURE.',
+'classObj::settext' => 'Set the text string for the class object.',
+'classObj::updateFromString' => 'Update a class from a string snippet. Returns MS_SUCCESS/MS_FAILURE.
+.. code-block:: php
+set the color
+$oClass->updateFromString(\'CLASS STYLE COLOR 255 0 255 END END\');',
 'clearstatcache' => 'Clears file status cache',
 'cli_get_process_title' => 'Returns the current process title',
 'cli_set_process_title' => 'Sets the process title',
 'closedir' => 'Close directory handle',
 'closelog' => 'Close connection to system logger',
+'Closure::__construct' => 'This method exists only to disallow instantiation of the Closure class.
+Objects of this class are created in the fashion described on the anonymous functions page.',
+'Closure::__invoke' => 'This is for consistency with other classes that implement calling magic,
+as this method is not used for calling the function.',
+'Closure::bind' => 'This method is a static version of Closure::bindTo().
+See the documentation of that method for more information.',
+'Closure::bindTo' => 'Duplicates the closure with a new bound object and class scope',
+'Closure::call' => 'Temporarily binds the closure to newthis, and calls it with any given parameters.',
+'clusterObj::convertToString' => 'Saves the object to a string.  Provides the inverse option for
+updateFromString.',
+'clusterObj::getFilterString' => 'Returns the :ref:`expression <expressions>` for this cluster
+filter or NULL on error.',
+'clusterObj::getGroupString' => 'Returns the :ref:`expression <expressions>` for this cluster group
+or NULL on error.',
+'clusterObj::setFilter' => 'Set layer filter :ref:`expression <expressions>`.',
+'clusterObj::setGroup' => 'Set layer group :ref:`expression <expressions>`.',
 'collator::__construct' => 'Create a collator',
 'collator::asort' => 'Sort array maintaining index association',
 'collator::compare' => 'Compare two Unicode strings',
@@ -571,6 +922,11 @@ return [
 'collator::sortWithSortKeys' => 'Sort array using specified collator and sort keys',
 'collectable::isGarbage' => 'Determine whether an object has been marked as garbage',
 'collectable::setGarbage' => 'Mark an object as garbage',
+'colorObj::setHex' => 'Set red, green, blue and alpha values. The hex string should have the form
+"#rrggbb" (alpha will be set to 255) or "#rrggbbaa". Returns MS_SUCCESS.',
+'colorObj::toHex' => 'Get the color as a hex string "#rrggbb" or (if alpha is not 255)
+"#rrggbbaa".',
+'COM::__construct' => 'COM class constructor.',
 'com_create_guid' => 'Generate a globally unique identifier (GUID)',
 'com_event_sink' => 'Connect events from a COM object to a PHP object',
 'com_get_active_object' => 'Returns a handle to an already running instance of a COM object',
@@ -653,6 +1009,353 @@ return [
 'copy' => 'Copies file',
 'cos' => 'Cosine',
 'cosh' => 'Hyperbolic cosine',
+'Couchbase\AnalyticsQuery::fromString' => 'Creates new AnalyticsQuery instance directly from the string.',
+'Couchbase\basicDecoderV1' => 'Decodes value according to Common Flags (RFC-20)',
+'Couchbase\basicEncoderV1' => 'Encodes value according to Common Flags (RFC-20)',
+'Couchbase\Bucket::append' => 'Appends content to a document.
+
+On the server side it just contatenate passed value to the existing one.
+Note that this might make the value un-decodable. Consider sub-document API
+for partial updates of the JSON documents.',
+'Couchbase\Bucket::counter' => 'Increments or decrements a key (based on $delta)',
+'Couchbase\Bucket::decryptFields' => 'Decrypt fields inside specified document.',
+'Couchbase\Bucket::diag' => 'Collect and return information about state of internal network connections.',
+'Couchbase\Bucket::encryptFields' => 'Encrypt fields inside specified document.',
+'Couchbase\Bucket::get' => 'Retrieves a document',
+'Couchbase\Bucket::getAndLock' => 'Retrieves a document and locks it.
+
+After the document has been locked on the server, its CAS would be masked,
+and all mutations of it will be rejected until the server unlocks the document
+automatically or it will be done manually with \Couchbase\Bucket::unlock() operation.',
+'Couchbase\Bucket::getAndTouch' => 'Retrieves a document and updates its expiration time.',
+'Couchbase\Bucket::getFromReplica' => 'Retrieves a document from a replica.',
+'Couchbase\Bucket::getName' => 'Returns the name of the bucket for current connection',
+'Couchbase\Bucket::insert' => 'Inserts a document. This operation will fail if the document already exists on the cluster.',
+'Couchbase\Bucket::listExists' => 'Check if the list contains specified value',
+'Couchbase\Bucket::listGet' => 'Get an element at the given position',
+'Couchbase\Bucket::listPush' => 'Add an element to the end of the list',
+'Couchbase\Bucket::listRemove' => 'Remove an element at the given position',
+'Couchbase\Bucket::listSet' => 'Set an element at the given position',
+'Couchbase\Bucket::listShift' => 'Add an element to the beginning of the list',
+'Couchbase\Bucket::listSize' => 'Returns size of the list',
+'Couchbase\Bucket::lookupIn' => 'Returns a builder for reading subdocument API.',
+'Couchbase\Bucket::manager' => 'Returns an instance of a CouchbaseBucketManager for performing management operations against a bucket.',
+'Couchbase\Bucket::mapAdd' => 'Add key to the map',
+'Couchbase\Bucket::mapGet' => 'Get an item from a map',
+'Couchbase\Bucket::mapRemove' => 'Removes key from the map',
+'Couchbase\Bucket::mapSize' => 'Returns size of the map',
+'Couchbase\Bucket::mutateIn' => 'Returns a builder for writing subdocument API.',
+'Couchbase\Bucket::ping' => 'Try to reach specified services, and measure network latency.',
+'Couchbase\Bucket::prepend' => 'Prepends content to a document.
+
+On the server side it just contatenate existing value to the passed one.
+Note that this might make the value un-decodable. Consider sub-document API
+for partial updates of the JSON documents.',
+'Couchbase\Bucket::query' => 'Performs a query to Couchbase Server',
+'Couchbase\Bucket::queueAdd' => 'Add an element to the beginning of the queue',
+'Couchbase\Bucket::queueExists' => 'Checks if the queue contains specified value',
+'Couchbase\Bucket::queueRemove' => 'Remove the element at the end of the queue and return it',
+'Couchbase\Bucket::queueSize' => 'Returns size of the queue',
+'Couchbase\Bucket::remove' => 'Removes the document.',
+'Couchbase\Bucket::replace' => 'Replaces a document. This operation will fail if the document does not exists on the cluster.',
+'Couchbase\Bucket::retrieveIn' => 'Retrieves specified paths in JSON document
+
+This is essentially a shortcut for `lookupIn($id)->get($paths)->execute()`.',
+'Couchbase\Bucket::setAdd' => 'Add value to the set
+
+Note, that currently only primitive values could be stored in the set (strings, integers and booleans).',
+'Couchbase\Bucket::setExists' => 'Check if the value exists in the set',
+'Couchbase\Bucket::setRemove' => 'Remove value from the set',
+'Couchbase\Bucket::setSize' => 'Returns size of the set',
+'Couchbase\Bucket::setTranscoder' => 'Sets custom encoder and decoder functions for handling serialization.',
+'Couchbase\Bucket::touch' => 'Updates document\'s expiration time.',
+'Couchbase\Bucket::unlock' => 'Unlocks previously locked document',
+'Couchbase\Bucket::upsert' => 'Inserts or updates a document, depending on whether the document already exists on the cluster.',
+'Couchbase\BucketManager::createN1qlIndex' => 'Create secondary N1QL index.',
+'Couchbase\BucketManager::createN1qlPrimaryIndex' => 'Create a primary N1QL index.',
+'Couchbase\BucketManager::dropN1qlIndex' => 'Drop the given secondary index',
+'Couchbase\BucketManager::dropN1qlPrimaryIndex' => 'Drop the given primary index',
+'Couchbase\BucketManager::flush' => 'Flushes the bucket (clears all data)',
+'Couchbase\BucketManager::getDesignDocument' => 'Get design document by its name',
+'Couchbase\BucketManager::info' => 'Returns information about the bucket
+
+Returns an associative array of status information as seen by the cluster for
+this bucket. The exact structure of the returned data can be seen in the Couchbase
+Manual by looking at the bucket /info endpoint.',
+'Couchbase\BucketManager::insertDesignDocument' => 'Inserts design document and fails if it is exist already.',
+'Couchbase\BucketManager::listDesignDocuments' => 'Returns all design documents of the bucket.',
+'Couchbase\BucketManager::listN1qlIndexes' => 'List all N1QL indexes that are registered for the current bucket.',
+'Couchbase\BucketManager::removeDesignDocument' => 'Removes design document by its name',
+'Couchbase\BucketManager::upsertDesignDocument' => 'Creates or replaces design document.',
+'Couchbase\ClassicAuthenticator::bucket' => 'Registers bucket credentials in the container',
+'Couchbase\ClassicAuthenticator::cluster' => 'Registers cluster management credentials in the container',
+'Couchbase\Cluster::__construct' => 'Create cluster object',
+'Couchbase\Cluster::authenticate' => 'Associate authenticator with Cluster',
+'Couchbase\Cluster::authenticateAs' => 'Create \Couchbase\PasswordAuthenticator from given credentials and associate it with Cluster',
+'Couchbase\Cluster::manager' => 'Open management connection to the Couchbase cluster.',
+'Couchbase\Cluster::openBucket' => 'Open connection to the Couchbase bucket',
+'Couchbase\ClusterManager::createBucket' => 'Creates new bucket',
+'Couchbase\ClusterManager::getUser' => 'Fetch single user by its name',
+'Couchbase\ClusterManager::info' => 'Provides information about the cluster.
+
+Returns an associative array of status information as seen on the cluster.  The exact structure of the returned
+data can be seen in the Couchbase Manual by looking at the cluster /info endpoint.',
+'Couchbase\ClusterManager::listBuckets' => 'Lists all buckets on this cluster.',
+'Couchbase\ClusterManager::listUsers' => 'Lists all users on this cluster.',
+'Couchbase\ClusterManager::removeBucket' => 'Removes a bucket identified by its name.',
+'Couchbase\ClusterManager::removeUser' => 'Removes a user identified by its name.',
+'Couchbase\ClusterManager::upsertUser' => 'Creates new user',
+'Couchbase\defaultDecoder' => 'Decodes value using \Couchbase\basicDecoderV1.
+
+It passes `couchbase.decoder.*` INI properties as $options.',
+'Couchbase\defaultEncoder' => 'Encodes value using \Couchbase\basicDecoderV1.
+
+It passes `couchbase.encoder.*` INI properties as $options.',
+'Couchbase\fastlzCompress' => 'Compress input using FastLZ algorithm.',
+'Couchbase\fastlzDecompress' => 'Decompress input using FastLZ algorithm.',
+'Couchbase\LookupInBuilder::execute' => 'Perform several lookup operations inside a single existing JSON document, using a specific timeout',
+'Couchbase\LookupInBuilder::exists' => 'Check if a value exists inside the document.
+
+This doesn\'t transmit the value on the wire if it exists, saving the corresponding byte overhead.',
+'Couchbase\LookupInBuilder::get' => 'Get a value inside the JSON document.',
+'Couchbase\LookupInBuilder::getCount' => 'Get a count of values inside the JSON document.
+
+This method is only available with Couchbase Server 5.0 and later.',
+'Couchbase\MutateInBuilder::arrayAddUnique' => 'Insert a value in an existing array only if the value
+isn\'t already contained in the array (by way of string comparison).',
+'Couchbase\MutateInBuilder::arrayAppend' => 'Append to an existing array, pushing the value to the back/last position in the array.',
+'Couchbase\MutateInBuilder::arrayAppendAll' => 'Append multiple values at once in an existing array.
+
+Push all values in the collection\'s iteration order to the back/end of the array.
+For example given an array [A, B, C], appending the values X and Y yields [A, B, C, X, Y]
+and not [A, B, C, [X, Y]].',
+'Couchbase\MutateInBuilder::arrayInsert' => 'Insert into an existing array at a specific position
+
+Position denoted in the path, eg. "sub.array[2]".',
+'Couchbase\MutateInBuilder::arrayInsertAll' => 'Insert multiple values at once in an existing array at a specified position.
+
+Position denoted in the path, eg. "sub.array[2]"), inserting all values in the collection\'s iteration order
+at the given position and shifting existing values beyond the position by the number of elements in the
+collection.
+
+For example given an array [A, B, C], inserting the values X and Y at position 1 yields [A, B, X, Y, C]
+and not [A, B, [X, Y], C].',
+'Couchbase\MutateInBuilder::arrayPrepend' => 'Prepend to an existing array, pushing the value to the front/first position in the array.',
+'Couchbase\MutateInBuilder::arrayPrependAll' => 'Prepend multiple values at once in an existing array.
+
+Push all values in the collection\'s iteration order to the front/start of the array.
+For example given an array [A, B, C], prepending the values X and Y yields [X, Y, A, B, C]
+and not [[X, Y], A, B, C].',
+'Couchbase\MutateInBuilder::counter' => 'Increment/decrement a numerical fragment in a JSON document.
+
+If the value (last element of the path) doesn\'t exist the counter
+is created and takes the value of the delta.',
+'Couchbase\MutateInBuilder::execute' => 'Perform several mutation operations inside a single existing JSON document.',
+'Couchbase\MutateInBuilder::insert' => 'Insert a fragment provided the last element of the path doesn\'t exists.',
+'Couchbase\MutateInBuilder::modeDocument' => 'Select mode for new full-document operations.
+
+It defines behaviour of MutateInBuilder#upsert() method. The $mode
+could take one of three modes:
+ * FULLDOC_REPLACE: complain when document does not exist
+ * FULLDOC_INSERT: complain when document does exist
+ * FULLDOC_UPSERT: unconditionally set value for the document',
+'Couchbase\MutateInBuilder::remove' => 'Remove an entry in a JSON document.
+
+Scalar, array element, dictionary entry, whole array or dictionary, depending on the path.',
+'Couchbase\MutateInBuilder::replace' => 'Replace an existing value by the given fragment',
+'Couchbase\MutateInBuilder::upsert' => 'Insert a fragment, replacing the old value if the path exists.
+
+When only one argument supplied, the library will handle it as full-document
+upsert, and treat this argument as value. See MutateInBuilder#modeDocument()',
+'Couchbase\MutateInBuilder::withExpiry' => 'Change the expiry of the enclosing document as part of the mutation.',
+'Couchbase\MutationState::add' => 'Update container with the given mutation token holders.',
+'Couchbase\MutationState::from' => 'Create container from the given mutation token holders.',
+'Couchbase\MutationToken::bucketName' => 'Returns bucket name',
+'Couchbase\MutationToken::from' => 'Creates new mutation token',
+'Couchbase\MutationToken::sequenceNumber' => 'Returns the sequence number inside partition',
+'Couchbase\MutationToken::vbucketId' => 'Returns partition number',
+'Couchbase\MutationToken::vbucketUuid' => 'Returns UUID of the partition',
+'Couchbase\N1qlQuery::adhoc' => 'Allows to specify if this query is adhoc or not.
+
+If it is not adhoc (so performed often), the client will try to perform optimizations
+transparently based on the server capabilities, like preparing the statement and
+then executing a query plan instead of the raw query.',
+'Couchbase\N1qlQuery::consistency' => 'Specifies the consistency level for this query',
+'Couchbase\N1qlQuery::consistentWith' => 'Sets mutation state the query should be consistent with',
+'Couchbase\N1qlQuery::crossBucket' => 'Allows to pull credentials from the Authenticator',
+'Couchbase\N1qlQuery::fromString' => 'Creates new N1qlQuery instance directly from the N1QL string.',
+'Couchbase\N1qlQuery::maxParallelism' => 'Allows to override the default maximum parallelism for the query execution on the server side.',
+'Couchbase\N1qlQuery::namedParams' => 'Specify associative array of named parameters
+
+The supplied array of key/value pairs will be merged with already existing named parameters.
+Note: carefully choose type of quotes for the query string, because PHP also uses `$`
+(dollar sign) for variable interpolation. If you are using double quotes, make sure
+that N1QL parameters properly escaped.',
+'Couchbase\N1qlQuery::pipelineBatch' => 'Advanced: Controls the number of items execution operators can batch for Fetch from the KV.',
+'Couchbase\N1qlQuery::pipelineCap' => 'Advanced: Maximum number of items each execution operator can buffer between various operators.',
+'Couchbase\N1qlQuery::positionalParams' => 'Specify array of positional parameters
+
+Previously specified positional parameters will be replaced.
+Note: carefully choose type of quotes for the query string, because PHP also uses `$`
+(dollar sign) for variable interpolation. If you are using double quotes, make sure
+that N1QL parameters properly escaped.',
+'Couchbase\N1qlQuery::profile' => 'Controls the profiling mode used during query execution',
+'Couchbase\N1qlQuery::readonly' => 'If set to true, it will signal the query engine on the server that only non-data modifying requests
+are allowed. Note that this rule is enforced on the server and not the SDK side.
+
+Controls whether a query can change a resulting record set.
+
+If readonly is true, then the following statements are not allowed:
+ - CREATE INDEX
+ - DROP INDEX
+ - INSERT
+ - MERGE
+ - UPDATE
+ - UPSERT
+ - DELETE',
+'Couchbase\N1qlQuery::scanCap' => 'Advanced: Maximum buffered channel size between the indexer client and the query service for index scans.
+
+This parameter controls when to use scan backfill. Use 0 or a negative number to disable.',
+'Couchbase\passthruDecoder' => 'Returns value as it received from the server without any transformations.
+
+It is useful for debug purpose to inspect bare value.',
+'Couchbase\passthruEncoder' => 'Returns the value, which has been passed and zero as flags and datatype.
+
+It is useful for debug purposes, or when the value known to be a string, otherwise behavior is not defined (most
+likely it will generate error).',
+'Couchbase\PasswordAuthenticator::password' => 'Sets password',
+'Couchbase\PasswordAuthenticator::username' => 'Sets username',
+'Couchbase\SearchQuery::__construct' => 'Prepare an FTS SearchQuery on an index.
+
+Top level query parameters can be set after that by using the fluent API.',
+'Couchbase\SearchQuery::addFacet' => 'Adds one SearchFacet to the query
+
+This is an additive operation (the given facets are added to any facet previously requested),
+but if an existing facet has the same name it will be replaced.
+
+Note that to be faceted, a field\'s value must be stored in the FTS index.',
+'Couchbase\SearchQuery::boolean' => 'Prepare boolean search query',
+'Couchbase\SearchQuery::booleanField' => 'Prepare boolean field search query',
+'Couchbase\SearchQuery::conjuncts' => 'Prepare compound conjunction search query',
+'Couchbase\SearchQuery::consistentWith' => 'Sets the consistency to consider for this FTS query to AT_PLUS and
+uses the MutationState to parameterize the consistency.
+
+This replaces any consistency tuning previously set.',
+'Couchbase\SearchQuery::dateRange' => 'Prepare date range search query',
+'Couchbase\SearchQuery::dateRangeFacet' => 'Prepare date range search facet',
+'Couchbase\SearchQuery::disjuncts' => 'Prepare compound disjunction search query',
+'Couchbase\SearchQuery::docId' => 'Prepare document ID search query',
+'Couchbase\SearchQuery::explain' => 'Activates the explanation of each result hit in the response',
+'Couchbase\SearchQuery::fields' => 'Configures the list of fields for which the whole value should be included in the response.
+
+If empty, no field values are included. This drives the inclusion of the fields in each hit.
+Note that to be highlighted, the fields must be stored in the FTS index.',
+'Couchbase\SearchQuery::geoBoundingBox' => 'Prepare geo bounding box search query',
+'Couchbase\SearchQuery::geoDistance' => 'Prepare geo distance search query',
+'Couchbase\SearchQuery::highlight' => 'Configures the highlighting of matches in the response',
+'Couchbase\SearchQuery::limit' => 'Add a limit to the query on the number of hits it can return',
+'Couchbase\SearchQuery::match' => 'Prepare match search query',
+'Couchbase\SearchQuery::matchAll' => 'Prepare match all search query',
+'Couchbase\SearchQuery::matchNone' => 'Prepare match non search query',
+'Couchbase\SearchQuery::matchPhrase' => 'Prepare phrase search query',
+'Couchbase\SearchQuery::numericRange' => 'Prepare numeric range search query',
+'Couchbase\SearchQuery::numericRangeFacet' => 'Prepare numeric range search facet',
+'Couchbase\SearchQuery::prefix' => 'Prepare prefix search query',
+'Couchbase\SearchQuery::queryString' => 'Prepare query string search query',
+'Couchbase\SearchQuery::regexp' => 'Prepare regexp search query',
+'Couchbase\SearchQuery::serverSideTimeout' => 'Sets the server side timeout in milliseconds',
+'Couchbase\SearchQuery::skip' => 'Set the number of hits to skip (eg. for pagination).',
+'Couchbase\SearchQuery::sort' => 'Configures the list of fields (including special fields) which are used for sorting purposes.
+If empty, the default sorting (descending by score) is used by the server.
+
+The list of sort fields can include actual fields (like "firstname" but then they must be stored in the
+index, configured in the server side mapping). Fields provided first are considered first and in a "tie" case
+the next sort field is considered. So sorting by "firstname" and then "lastname" will first sort ascending by
+the firstname and if the names are equal then sort ascending by lastname. Special fields like "_id" and
+"_score" can also be used. If prefixed with "-" the sort order is set to descending.
+
+If no sort is provided, it is equal to sort("-_score"), since the server will sort it by score in descending
+order.',
+'Couchbase\SearchQuery::term' => 'Prepare term search query',
+'Couchbase\SearchQuery::termFacet' => 'Prepare term search facet',
+'Couchbase\SearchQuery::termRange' => 'Prepare term range search query',
+'Couchbase\SearchQuery::wildcard' => 'Prepare wildcard search query',
+'Couchbase\SearchSort::field' => 'Sort by a field in the hits.',
+'Couchbase\SearchSort::geoDistance' => 'Sort by geo location.',
+'Couchbase\SearchSort::id' => 'Sort by the document identifier.',
+'Couchbase\SearchSort::score' => 'Sort by the hit score.',
+'Couchbase\SearchSortField::descending' => 'Direction of the sort',
+'Couchbase\SearchSortField::field' => 'Sort by a field in the hits.',
+'Couchbase\SearchSortField::geoDistance' => 'Sort by geo location.',
+'Couchbase\SearchSortField::id' => 'Sort by the document identifier.',
+'Couchbase\SearchSortField::missing' => 'Set where the hits with missing field will be inserted',
+'Couchbase\SearchSortField::mode' => 'Set mode of the sort',
+'Couchbase\SearchSortField::score' => 'Sort by the hit score.',
+'Couchbase\SearchSortField::type' => 'Set type of the field',
+'Couchbase\SearchSortGeoDistance::descending' => 'Direction of the sort',
+'Couchbase\SearchSortGeoDistance::field' => 'Sort by a field in the hits.',
+'Couchbase\SearchSortGeoDistance::geoDistance' => 'Sort by geo location.',
+'Couchbase\SearchSortGeoDistance::id' => 'Sort by the document identifier.',
+'Couchbase\SearchSortGeoDistance::score' => 'Sort by the hit score.',
+'Couchbase\SearchSortGeoDistance::unit' => 'Name of the units',
+'Couchbase\SearchSortId::descending' => 'Direction of the sort',
+'Couchbase\SearchSortId::field' => 'Sort by a field in the hits.',
+'Couchbase\SearchSortId::geoDistance' => 'Sort by geo location.',
+'Couchbase\SearchSortId::id' => 'Sort by the document identifier.',
+'Couchbase\SearchSortId::score' => 'Sort by the hit score.',
+'Couchbase\SearchSortScore::descending' => 'Direction of the sort',
+'Couchbase\SearchSortScore::field' => 'Sort by a field in the hits.',
+'Couchbase\SearchSortScore::geoDistance' => 'Sort by geo location.',
+'Couchbase\SearchSortScore::id' => 'Sort by the document identifier.',
+'Couchbase\SearchSortScore::score' => 'Sort by the hit score.',
+'Couchbase\SpatialViewQuery::bbox' => 'Specifies the bounding box to search within.
+
+Note, using bbox() is discouraged, startRange/endRange is more flexible and should be preferred.',
+'Couchbase\SpatialViewQuery::consistency' => 'Specifies the mode of updating to perorm before and after executing the query',
+'Couchbase\SpatialViewQuery::custom' => 'Specifies custom options to pass to the server.
+
+Note that these options are expected to be already encoded.',
+'Couchbase\SpatialViewQuery::encode' => 'Returns associative array, representing the View query.',
+'Couchbase\SpatialViewQuery::endRange' => 'Specify end range for query',
+'Couchbase\SpatialViewQuery::limit' => 'Limits the result set to a specified number rows.',
+'Couchbase\SpatialViewQuery::order' => 'Orders the results by key as specified',
+'Couchbase\SpatialViewQuery::skip' => 'Skips a number o records rom the beginning of the result set',
+'Couchbase\SpatialViewQuery::startRange' => 'Specify start range for query',
+'Couchbase\UserSettings::fullName' => 'Sets full name of the user (optional).',
+'Couchbase\UserSettings::password' => 'Sets password of the user.',
+'Couchbase\UserSettings::role' => 'Adds role to the list of the accessible roles of the user.',
+'Couchbase\ViewQuery::consistency' => 'Specifies the mode of updating to perorm before and after executing the query',
+'Couchbase\ViewQuery::custom' => 'Specifies custom options to pass to the server.
+
+Note that these options are expected to be already encoded.',
+'Couchbase\ViewQuery::encode' => 'Returns associative array, representing the View query.',
+'Couchbase\ViewQuery::from' => 'Creates a new Couchbase ViewQuery instance for performing a view query.',
+'Couchbase\ViewQuery::fromSpatial' => 'Creates a new Couchbase ViewQuery instance for performing a spatial query.',
+'Couchbase\ViewQuery::group' => 'Group the results using the reduce function to a group or single row.
+
+Important: this setter and groupLevel should not be used together in the
+same ViewQuery. It is sufficient to only set the grouping level only and
+use this setter in cases where you always want the highest group level
+implictly.',
+'Couchbase\ViewQuery::groupLevel' => 'Specify the group level to be used.
+
+Important: group() and this setter should not be used together in the
+same ViewQuery. It is sufficient to only use this setter and use group()
+in cases where you always want the highest group level implictly.',
+'Couchbase\ViewQuery::idRange' => 'Specifies start and end document IDs in addition to range limits.
+
+This might be needed for more precise pagination with a lot of documents
+with the same key selected into the same page.',
+'Couchbase\ViewQuery::key' => 'Restict results of the query to the specified key',
+'Couchbase\ViewQuery::keys' => 'Restict results of the query to the specified set of keys',
+'Couchbase\ViewQuery::limit' => 'Limits the result set to a specified number rows.',
+'Couchbase\ViewQuery::order' => 'Orders the results by key as specified',
+'Couchbase\ViewQuery::range' => 'Specifies a range of the keys to return from the index.',
+'Couchbase\ViewQuery::reduce' => 'Specifies whether the reduction function should be applied to results of the query.',
+'Couchbase\ViewQuery::skip' => 'Skips a number o records rom the beginning of the result set',
+'Couchbase\ViewQueryEncodable::encode' => 'Returns associative array, representing the View query.',
+'Couchbase\zlibCompress' => 'Compress input using zlib. Raises Exception when extension compiled without zlib support.',
+'Couchbase\zlibDecompress' => 'Compress input using zlib. Raises Exception when extension compiled without zlib support.',
 'count' => 'Count all elements in an array, or something in an object',
 'count_chars' => 'Return information about characters used in a string',
 'countable::count' => 'Count elements of an object',
@@ -827,7 +1530,12 @@ return [
 'datetime::__set_state' => 'The __set_state handler',
 'datetime::add' => 'Adds an amount of days, months, years, hours, minutes and seconds to a DateTime object',
 'datetime::createFromFormat' => 'Parses a time string according to a specified format',
+'DateTime::diff' => 'Returns the difference between two DateTime objects represented as a DateInterval.',
+'DateTime::format' => 'Returns date formatted according to given format.',
 'datetime::getLastErrors' => 'Returns the warnings and errors',
+'DateTime::getOffset' => 'Returns the timezone offset',
+'DateTime::getTimestamp' => 'Gets the Unix timestamp.',
+'DateTime::getTimezone' => 'Get the TimeZone associated with the DateTime',
 'datetime::modify' => 'Alters the timestamp',
 'datetime::setDate' => 'Sets the date',
 'datetime::setISODate' => 'Sets the ISO date',
@@ -837,10 +1545,16 @@ return [
 'datetime::sub' => 'Subtracts an amount of days, months, years, hours, minutes and seconds from a DateTime object',
 'datetimeimmutable::__construct' => 'Returns new DateTimeImmutable object',
 'datetimeimmutable::__set_state' => 'The __set_state handler',
+'DateTimeImmutable::__wakeup' => 'The __wakeup handler',
 'datetimeimmutable::add' => 'Adds an amount of days, months, years, hours, minutes and seconds',
 'datetimeimmutable::createFromFormat' => 'Parses a time string according to a specified format',
 'datetimeimmutable::createFromMutable' => 'Returns new DateTimeImmutable object encapsulating the given DateTime object',
+'DateTimeImmutable::diff' => 'Returns the difference between two DateTime objects',
+'DateTimeImmutable::format' => 'Returns date formatted according to given format',
 'datetimeimmutable::getLastErrors' => 'Returns the warnings and errors',
+'DateTimeImmutable::getOffset' => 'Returns the timezone offset',
+'DateTimeImmutable::getTimestamp' => 'Gets the Unix timestamp',
+'DateTimeImmutable::getTimezone' => 'Return time zone relative to given DateTime',
 'datetimeimmutable::modify' => 'Creates a new object with modified timestamp',
 'datetimeimmutable::setDate' => 'Sets the date',
 'datetimeimmutable::setISODate' => 'Sets the ISO date',
@@ -848,6 +1562,12 @@ return [
 'datetimeimmutable::setTimestamp' => 'Sets the date and time based on a Unix timestamp',
 'datetimeimmutable::setTimezone' => 'Sets the time zone',
 'datetimeimmutable::sub' => 'Subtracts an amount of days, months, years, hours, minutes and seconds',
+'DateTimeInterface::__wakeup' => 'The __wakeup handler',
+'DateTimeInterface::diff' => 'Returns the difference between two DateTime objects',
+'DateTimeInterface::format' => 'Returns date formatted according to given format',
+'DateTimeInterface::getOffset' => 'Returns the timezone offset',
+'DateTimeInterface::getTimestamp' => 'Gets the Unix timestamp',
+'DateTimeInterface::getTimezone' => 'Return time zone relative to given DateTime',
 'datetimezone::__construct' => 'Creates new DateTimeZone object',
 'datetimezone::getLocation' => 'Returns location information for a timezone',
 'datetimezone::getName' => 'Returns the name of the timezone',
@@ -1107,9 +1827,12 @@ return [
 'domelement::getElementsByTagNameNS' => 'Get elements by namespaceURI and localName',
 'domelement::hasAttribute' => 'Checks to see if attribute exists',
 'domelement::hasAttributeNS' => 'Checks to see if attribute exists',
+'DOMElement::insertBefore' => 'Adds a new child before a reference node',
 'domelement::removeAttribute' => 'Removes attribute',
 'domelement::removeAttributeNode' => 'Removes attribute',
 'domelement::removeAttributeNS' => 'Removes attribute',
+'DOMElement::removeChild' => 'Removes child from list of children',
+'DOMElement::replaceChild' => 'Replaces a child',
 'domelement::setAttribute' => 'Adds new attribute',
 'domelement::setAttributeNode' => 'Adds new attribute node to element',
 'domelement::setAttributeNodeNS' => 'Adds new attribute node to element',
@@ -1155,6 +1878,7 @@ return [
 'domxpath::query' => 'Evaluates the given XPath expression',
 'domxpath::registerNamespace' => 'Registers the namespace with the DOMXPath object',
 'domxpath::registerPhpFunctions' => 'Register PHP functions as XPath functions',
+'DOTNET::__construct' => 'COM class constructor.',
 'doubleval' => 'Alias of floatval',
 'ds\collection::clear' => 'Removes all values',
 'ds\collection::copy' => 'Returns a shallow copy of the collection',
@@ -1461,10 +2185,22 @@ return [
 'ereg_replace' => 'Replace regular expression',
 'eregi' => 'Case insensitive regular expression match',
 'eregi_replace' => 'Replace regular expression case insensitive',
+'Error::__clone' => 'Clone the error
+Error can not be clone, so this method results in fatal error.',
+'Error::__construct' => 'Construct the error object.',
+'Error::__toString' => 'Gets a string representation of the thrown object',
+'Error::getCode' => 'Gets the exception code',
+'Error::getFile' => 'Gets the file in which the exception occurred',
+'Error::getLine' => 'Gets the line on which the object was instantiated',
+'Error::getPrevious' => 'Returns the previous Throwable',
+'Error::getTrace' => 'Gets the stack trace',
+'Error::getTraceAsString' => 'Gets the stack trace as a string',
 'error_clear_last' => 'Clear the most recent error',
 'error_get_last' => 'Get the last occurred error',
 'error_log' => 'Send an error message to the defined error handling routines',
 'error_reporting' => 'Sets which PHP errors are reported',
+'ErrorException::__construct' => 'Constructs the exception',
+'ErrorException::getSeverity' => 'Gets the exception severity',
 'escapeshellarg' => 'Escape a string to be used as a shell argument',
 'escapeshellcmd' => 'Escape shell metacharacters',
 'ev::backend' => 'Returns an integer describing the backend used by libev',
@@ -1486,13 +2222,97 @@ return [
 'ev::verify' => 'Performs internal consistency checks(for debugging)',
 'eval' => 'Evaluate a string as PHP code',
 'evcheck::__construct' => 'Constructs the EvCheck watcher object',
+'EvCheck::clear' => 'Clear watcher pending status.
+
+If the watcher is pending, this method clears its pending status and returns its revents bitset (as if its
+callback was invoked). If the watcher isn\'t pending it does nothing and returns 0.
+
+Sometimes it can be useful to "poll" a watcher instead of waiting for its callback to be invoked, which can be
+accomplished with this function.',
 'evcheck::createStopped' => 'Create instance of a stopped EvCheck watcher',
+'EvCheck::feed' => 'Feeds the given revents set into the event loop.
+
+Feeds the given revents set into the event loop, as if the specified event had happened for the watcher.',
+'EvCheck::getLoop' => 'Returns the loop responsible for the watcher.',
+'EvCheck::invoke' => 'Invokes the watcher callback with the given received events bit mask.',
+'EvCheck::keepAlive' => 'Configures whether to keep the loop from returning.
+
+Configures whether to keep the loop from returning. With keepalive value set to FALSE the watcher won\'t keep
+Ev::run() / EvLoop::run() from returning even though the watcher is active.
+
+Watchers have keepalive value TRUE by default.
+
+Clearing keepalive status is useful when returning from Ev::run() / EvLoop::run() just because of the watcher
+is undesirable. It could be a long running UDP socket watcher or so.',
+'EvCheck::setCallback' => 'Sets new callback for the watcher.',
+'EvCheck::start' => 'Starts the watcher.
+
+Marks the watcher as active. Note that only active watchers will receive events.',
+'EvCheck::stop' => 'Stops the watcher.
+
+Marks the watcher as inactive. Note that only active watchers will receive events.',
 'evchild::__construct' => 'Constructs the EvChild watcher object',
+'EvChild::clear' => 'Clear watcher pending status.
+
+If the watcher is pending, this method clears its pending status and returns its revents bitset (as if its
+callback was invoked). If the watcher isn\'t pending it does nothing and returns 0.
+
+Sometimes it can be useful to "poll" a watcher instead of waiting for its callback to be invoked, which can be
+accomplished with this function.',
 'evchild::createStopped' => 'Create instance of a stopped EvCheck watcher',
+'EvChild::feed' => 'Feeds the given revents set into the event loop.
+
+Feeds the given revents set into the event loop, as if the specified event had happened for the watcher.',
+'EvChild::getLoop' => 'Returns the loop responsible for the watcher.',
+'EvChild::invoke' => 'Invokes the watcher callback with the given received events bit mask.',
+'EvChild::keepAlive' => 'Configures whether to keep the loop from returning.
+
+Configures whether to keep the loop from returning. With keepalive value set to FALSE the watcher won\'t keep
+Ev::run() / EvLoop::run() from returning even though the watcher is active.
+
+Watchers have keepalive value TRUE by default.
+
+Clearing keepalive status is useful when returning from Ev::run() / EvLoop::run() just because of the watcher
+is undesirable. It could be a long running UDP socket watcher or so.',
 'evchild::set' => 'Configures the watcher',
+'EvChild::setCallback' => 'Sets new callback for the watcher.',
+'EvChild::start' => 'Starts the watcher.
+
+Marks the watcher as active. Note that only active watchers will receive events.',
+'EvChild::stop' => 'Stops the watcher.
+
+Marks the watcher as inactive. Note that only active watchers will receive events.',
 'evembed::__construct' => 'Constructs the EvEmbed object',
+'EvEmbed::clear' => 'Clear watcher pending status.
+
+If the watcher is pending, this method clears its pending status and returns its revents bitset (as if its
+callback was invoked). If the watcher isn\'t pending it does nothing and returns 0.
+
+Sometimes it can be useful to "poll" a watcher instead of waiting for its callback to be invoked, which can be
+accomplished with this function.',
 'evembed::createStopped' => 'Create stopped EvEmbed watcher object',
+'EvEmbed::feed' => 'Feeds the given revents set into the event loop.
+
+Feeds the given revents set into the event loop, as if the specified event had happened for the watcher.',
+'EvEmbed::getLoop' => 'Returns the loop responsible for the watcher.',
+'EvEmbed::invoke' => 'Invokes the watcher callback with the given received events bit mask.',
+'EvEmbed::keepAlive' => 'Configures whether to keep the loop from returning.
+
+Configures whether to keep the loop from returning. With keepalive value set to FALSE the watcher won\'t keep
+Ev::run() / EvLoop::run() from returning even though the watcher is active.
+
+Watchers have keepalive value TRUE by default.
+
+Clearing keepalive status is useful when returning from Ev::run() / EvLoop::run() just because of the watcher
+is undesirable. It could be a long running UDP socket watcher or so.',
 'evembed::set' => 'Configures the watcher',
+'EvEmbed::setCallback' => 'Sets new callback for the watcher.',
+'EvEmbed::start' => 'Starts the watcher.
+
+Marks the watcher as active. Note that only active watchers will receive events.',
+'EvEmbed::stop' => 'Stops the watcher.
+
+Marks the watcher as inactive. Note that only active watchers will receive events.',
 'evembed::sweep' => 'Make a single, non-blocking sweep over the embedded loop',
 'event::__construct' => 'Constructs Event object',
 'event::add' => 'Makes event pending',
@@ -1558,6 +2378,7 @@ return [
 'eventbuffer::appendFrom' => 'Moves the specified number of bytes from a source buffer to the end of the current buffer',
 'eventbuffer::copyout' => 'Copies out specified number of bytes from the front of the buffer',
 'eventbuffer::drain' => 'Removes specified number of bytes from the front of the buffer without copying it anywhere',
+'EventBuffer::enableLocking' => 'enableLocking.',
 'eventbuffer::expand' => 'Reserves space in buffer',
 'eventbuffer::freeze' => 'Prevent calls that modify an event buffer from succeeding',
 'eventbuffer::lock' => 'Acquires a lock on buffer',
@@ -1675,12 +2496,96 @@ return [
 'eventutil::setSocketOption' => 'Sets socket options',
 'eventutil::sslRandPoll' => 'Generates entropy by means of OpenSSL\'s RAND_poll()',
 'evfork::__construct' => 'Constructs the EvFork watcher object',
+'EvFork::clear' => 'Clear watcher pending status.
+
+If the watcher is pending, this method clears its pending status and returns its revents bitset (as if its
+callback was invoked). If the watcher isn\'t pending it does nothing and returns 0.
+
+Sometimes it can be useful to "poll" a watcher instead of waiting for its callback to be invoked, which can be
+accomplished with this function.',
 'evfork::createStopped' => 'Creates a stopped instance of EvFork watcher class',
+'EvFork::feed' => 'Feeds the given revents set into the event loop.
+
+Feeds the given revents set into the event loop, as if the specified event had happened for the watcher.',
+'EvFork::getLoop' => 'Returns the loop responsible for the watcher.',
+'EvFork::invoke' => 'Invokes the watcher callback with the given received events bit mask.',
+'EvFork::keepAlive' => 'Configures whether to keep the loop from returning.
+
+Configures whether to keep the loop from returning. With keepalive value set to FALSE the watcher won\'t keep
+Ev::run() / EvLoop::run() from returning even though the watcher is active.
+
+Watchers have keepalive value TRUE by default.
+
+Clearing keepalive status is useful when returning from Ev::run() / EvLoop::run() just because of the watcher
+is undesirable. It could be a long running UDP socket watcher or so.',
+'EvFork::setCallback' => 'Sets new callback for the watcher.',
+'EvFork::start' => 'Starts the watcher.
+
+Marks the watcher as active. Note that only active watchers will receive events.',
+'EvFork::stop' => 'Stops the watcher.
+
+Marks the watcher as inactive. Note that only active watchers will receive events.',
 'evidle::__construct' => 'Constructs the EvIdle watcher object',
+'EvIdle::clear' => 'Clear watcher pending status.
+
+If the watcher is pending, this method clears its pending status and returns its revents bitset (as if its
+callback was invoked). If the watcher isn\'t pending it does nothing and returns 0.
+
+Sometimes it can be useful to "poll" a watcher instead of waiting for its callback to be invoked, which can be
+accomplished with this function.',
 'evidle::createStopped' => 'Creates instance of a stopped EvIdle watcher object',
+'EvIdle::feed' => 'Feeds the given revents set into the event loop.
+
+Feeds the given revents set into the event loop, as if the specified event had happened for the watcher.',
+'EvIdle::getLoop' => 'Returns the loop responsible for the watcher.',
+'EvIdle::invoke' => 'Invokes the watcher callback with the given received events bit mask.',
+'EvIdle::keepAlive' => 'Configures whether to keep the loop from returning.
+
+Configures whether to keep the loop from returning. With keepalive value set to FALSE the watcher won\'t keep
+Ev::run() / EvLoop::run() from returning even though the watcher is active.
+
+Watchers have keepalive value TRUE by default.
+
+Clearing keepalive status is useful when returning from Ev::run() / EvLoop::run() just because of the watcher
+is undesirable. It could be a long running UDP socket watcher or so.',
+'EvIdle::setCallback' => 'Sets new callback for the watcher.',
+'EvIdle::start' => 'Starts the watcher.
+
+Marks the watcher as active. Note that only active watchers will receive events.',
+'EvIdle::stop' => 'Stops the watcher.
+
+Marks the watcher as inactive. Note that only active watchers will receive events.',
 'evio::__construct' => 'Constructs EvIo watcher object',
+'EvIo::clear' => 'Clear watcher pending status.
+
+If the watcher is pending, this method clears its pending status and returns its revents bitset (as if its
+callback was invoked). If the watcher isn\'t pending it does nothing and returns 0.
+
+Sometimes it can be useful to "poll" a watcher instead of waiting for its callback to be invoked, which can be
+accomplished with this function.',
 'evio::createStopped' => 'Create stopped EvIo watcher object',
+'EvIo::feed' => 'Feeds the given revents set into the event loop.
+
+Feeds the given revents set into the event loop, as if the specified event had happened for the watcher.',
+'EvIo::getLoop' => 'Returns the loop responsible for the watcher.',
+'EvIo::invoke' => 'Invokes the watcher callback with the given received events bit mask.',
+'EvIo::keepAlive' => 'Configures whether to keep the loop from returning.
+
+Configures whether to keep the loop from returning. With keepalive value set to FALSE the watcher won\'t keep
+Ev::run() / EvLoop::run() from returning even though the watcher is active.
+
+Watchers have keepalive value TRUE by default.
+
+Clearing keepalive status is useful when returning from Ev::run() / EvLoop::run() just because of the watcher
+is undesirable. It could be a long running UDP socket watcher or so.',
 'evio::set' => 'Configures the watcher',
+'EvIo::setCallback' => 'Sets new callback for the watcher.',
+'EvIo::start' => 'Starts the watcher.
+
+Marks the watcher as active. Note that only active watchers will receive events.',
+'EvIo::stop' => 'Stops the watcher.
+
+Marks the watcher as inactive. Note that only active watchers will receive events.',
 'evloop::__construct' => 'Constructs the event loop object',
 'evloop::backend' => 'Returns an integer describing the backend used by libev',
 'evloop::check' => 'Creates EvCheck object associated with the current event loop instance',
@@ -1707,23 +2612,163 @@ return [
 'evperiodic::__construct' => 'Constructs EvPeriodic watcher object',
 'evperiodic::again' => 'Simply stops and restarts the periodic watcher again',
 'evperiodic::at' => 'Returns the absolute time that this watcher is supposed to trigger next',
+'EvPeriodic::clear' => 'Clear watcher pending status.
+
+If the watcher is pending, this method clears its pending status and returns its revents bitset (as if its
+callback was invoked). If the watcher isn\'t pending it does nothing and returns 0.
+
+Sometimes it can be useful to "poll" a watcher instead of waiting for its callback to be invoked, which can be
+accomplished with this function.',
 'evperiodic::createStopped' => 'Create a stopped EvPeriodic watcher',
+'EvPeriodic::feed' => 'Feeds the given revents set into the event loop.
+
+Feeds the given revents set into the event loop, as if the specified event had happened for the watcher.',
+'EvPeriodic::getLoop' => 'Returns the loop responsible for the watcher.',
+'EvPeriodic::invoke' => 'Invokes the watcher callback with the given received events bit mask.',
+'EvPeriodic::keepAlive' => 'Configures whether to keep the loop from returning.
+
+Configures whether to keep the loop from returning. With keepalive value set to FALSE the watcher won\'t keep
+Ev::run() / EvLoop::run() from returning even though the watcher is active.
+
+Watchers have keepalive value TRUE by default.
+
+Clearing keepalive status is useful when returning from Ev::run() / EvLoop::run() just because of the watcher
+is undesirable. It could be a long running UDP socket watcher or so.',
 'evperiodic::set' => 'Configures the watcher',
+'EvPeriodic::setCallback' => 'Sets new callback for the watcher.',
+'EvPeriodic::start' => 'Starts the watcher.
+
+Marks the watcher as active. Note that only active watchers will receive events.',
+'EvPeriodic::stop' => 'Stops the watcher.
+
+Marks the watcher as inactive. Note that only active watchers will receive events.',
 'evprepare::__construct' => 'Constructs EvPrepare watcher object',
+'EvPrepare::clear' => 'Clear watcher pending status.
+
+If the watcher is pending, this method clears its pending status and returns its revents bitset (as if its
+callback was invoked). If the watcher isn\'t pending it does nothing and returns 0.
+
+Sometimes it can be useful to "poll" a watcher instead of waiting for its callback to be invoked, which can be
+accomplished with this function.',
 'evprepare::createStopped' => 'Creates a stopped instance of EvPrepare watcher',
+'EvPrepare::feed' => 'Feeds the given revents set into the event loop.
+
+Feeds the given revents set into the event loop, as if the specified event had happened for the watcher.',
+'EvPrepare::getLoop' => 'Returns the loop responsible for the watcher.',
+'EvPrepare::invoke' => 'Invokes the watcher callback with the given received events bit mask.',
+'EvPrepare::keepAlive' => 'Configures whether to keep the loop from returning.
+
+Configures whether to keep the loop from returning. With keepalive value set to FALSE the watcher won\'t keep
+Ev::run() / EvLoop::run() from returning even though the watcher is active.
+
+Watchers have keepalive value TRUE by default.
+
+Clearing keepalive status is useful when returning from Ev::run() / EvLoop::run() just because of the watcher
+is undesirable. It could be a long running UDP socket watcher or so.',
+'EvPrepare::setCallback' => 'Sets new callback for the watcher.',
+'EvPrepare::start' => 'Starts the watcher.
+
+Marks the watcher as active. Note that only active watchers will receive events.',
+'EvPrepare::stop' => 'Stops the watcher.
+
+Marks the watcher as inactive. Note that only active watchers will receive events.',
 'evsignal::__construct' => 'Constructs EvSignal watcher object',
+'EvSignal::clear' => 'Clear watcher pending status.
+
+If the watcher is pending, this method clears its pending status and returns its revents bitset (as if its
+callback was invoked). If the watcher isn\'t pending it does nothing and returns 0.
+
+Sometimes it can be useful to "poll" a watcher instead of waiting for its callback to be invoked, which can be
+accomplished with this function.',
 'evsignal::createStopped' => 'Create stopped EvSignal watcher object',
+'EvSignal::feed' => 'Feeds the given revents set into the event loop.
+
+Feeds the given revents set into the event loop, as if the specified event had happened for the watcher.',
+'EvSignal::getLoop' => 'Returns the loop responsible for the watcher.',
+'EvSignal::invoke' => 'Invokes the watcher callback with the given received events bit mask.',
+'EvSignal::keepAlive' => 'Configures whether to keep the loop from returning.
+
+Configures whether to keep the loop from returning. With keepalive value set to FALSE the watcher won\'t keep
+Ev::run() / EvLoop::run() from returning even though the watcher is active.
+
+Watchers have keepalive value TRUE by default.
+
+Clearing keepalive status is useful when returning from Ev::run() / EvLoop::run() just because of the watcher
+is undesirable. It could be a long running UDP socket watcher or so.',
 'evsignal::set' => 'Configures the watcher',
+'EvSignal::setCallback' => 'Sets new callback for the watcher.',
+'EvSignal::start' => 'Starts the watcher.
+
+Marks the watcher as active. Note that only active watchers will receive events.',
+'EvSignal::stop' => 'Stops the watcher.
+
+Marks the watcher as inactive. Note that only active watchers will receive events.',
 'evstat::__construct' => 'Constructs EvStat watcher object',
 'evstat::attr' => 'Returns the values most recently detected by Ev',
+'EvStat::clear' => 'Clear watcher pending status.
+
+If the watcher is pending, this method clears its pending status and returns its revents bitset (as if its
+callback was invoked). If the watcher isn\'t pending it does nothing and returns 0.
+
+Sometimes it can be useful to "poll" a watcher instead of waiting for its callback to be invoked, which can be
+accomplished with this function.',
 'evstat::createStopped' => 'Create a stopped EvStat watcher object',
+'EvStat::feed' => 'Feeds the given revents set into the event loop.
+
+Feeds the given revents set into the event loop, as if the specified event had happened for the watcher.',
+'EvStat::getLoop' => 'Returns the loop responsible for the watcher.',
+'EvStat::invoke' => 'Invokes the watcher callback with the given received events bit mask.',
+'EvStat::keepAlive' => 'Configures whether to keep the loop from returning.
+
+Configures whether to keep the loop from returning. With keepalive value set to FALSE the watcher won\'t keep
+Ev::run() / EvLoop::run() from returning even though the watcher is active.
+
+Watchers have keepalive value TRUE by default.
+
+Clearing keepalive status is useful when returning from Ev::run() / EvLoop::run() just because of the watcher
+is undesirable. It could be a long running UDP socket watcher or so.',
 'evstat::prev' => 'Returns the previous set of values returned by EvStat::attr',
 'evstat::set' => 'Configures the watcher',
+'EvStat::setCallback' => 'Sets new callback for the watcher.',
+'EvStat::start' => 'Starts the watcher.
+
+Marks the watcher as active. Note that only active watchers will receive events.',
 'evstat::stat' => 'Initiates the stat call',
+'EvStat::stop' => 'Stops the watcher.
+
+Marks the watcher as inactive. Note that only active watchers will receive events.',
 'evtimer::__construct' => 'Constructs an EvTimer watcher object',
 'evtimer::again' => 'Restarts the timer watcher',
+'EvTimer::clear' => 'Clear watcher pending status.
+
+If the watcher is pending, this method clears its pending status and returns its revents bitset (as if its
+callback was invoked). If the watcher isn\'t pending it does nothing and returns 0.
+
+Sometimes it can be useful to "poll" a watcher instead of waiting for its callback to be invoked, which can be
+accomplished with this function.',
 'evtimer::createStopped' => 'Creates EvTimer stopped watcher object',
+'EvTimer::feed' => 'Feeds the given revents set into the event loop.
+
+Feeds the given revents set into the event loop, as if the specified event had happened for the watcher.',
+'EvTimer::getLoop' => 'Returns the loop responsible for the watcher.',
+'EvTimer::invoke' => 'Invokes the watcher callback with the given received events bit mask.',
+'EvTimer::keepAlive' => 'Configures whether to keep the loop from returning.
+
+Configures whether to keep the loop from returning. With keepalive value set to FALSE the watcher won\'t keep
+Ev::run() / EvLoop::run() from returning even though the watcher is active.
+
+Watchers have keepalive value TRUE by default.
+
+Clearing keepalive status is useful when returning from Ev::run() / EvLoop::run() just because of the watcher
+is undesirable. It could be a long running UDP socket watcher or so.',
 'evtimer::set' => 'Configures the watcher',
+'EvTimer::setCallback' => 'Sets new callback for the watcher.',
+'EvTimer::start' => 'Starts the watcher.
+
+Marks the watcher as active. Note that only active watchers will receive events.',
+'EvTimer::stop' => 'Stops the watcher.
+
+Marks the watcher as inactive. Note that only active watchers will receive events.',
 'evwatcher::__construct' => 'Abstract constructor of a watcher object',
 'evwatcher::clear' => 'Clear watcher pending status',
 'evwatcher::feed' => 'Feeds the given revents set into the event loop',
@@ -1733,6 +2778,17 @@ return [
 'evwatcher::setCallback' => 'Sets new callback for the watcher',
 'evwatcher::start' => 'Starts the watcher',
 'evwatcher::stop' => 'Stops the watcher',
+'Exception::__clone' => 'Clone the exception
+Tries to clone the Exception, which results in Fatal error.',
+'Exception::__construct' => 'Construct the exception. Note: The message is NOT binary safe.',
+'Exception::__toString' => 'String representation of the exception',
+'Exception::getCode' => 'Gets the Exception code',
+'Exception::getFile' => 'Gets the file in which the exception occurred',
+'Exception::getLine' => 'Gets the line in which the exception occurred',
+'Exception::getMessage' => 'Gets the Exception message',
+'Exception::getPrevious' => 'Returns previous Exception',
+'Exception::getTrace' => 'Gets the stack trace',
+'Exception::getTraceAsString' => 'Gets the stack trace as a string',
 'exec' => 'Execute an external program',
 'exif_imagetype' => 'Determine the type of an image',
 'exif_read_data' => 'Reads the EXIF headers from an image file',
@@ -2002,6 +3058,45 @@ return [
 'fdf_set_version' => 'Sets version number for a FDF file',
 'feof' => 'Tests for end-of-file on a file pointer',
 'fflush' => 'Flushes the output to a file',
+'ffmpeg_animated_gif::addFrame' => 'Add a frame to the end of the animated gif.',
+'ffmpeg_frame::__construct' => 'NOTE: This function will not be available if GD is not enabled.',
+'ffmpeg_frame::crop' => 'Crop the frame.',
+'ffmpeg_frame::getHeight' => 'Return the height of the frame.',
+'ffmpeg_frame::getPresentationTimestamp' => 'Return the presentation time stamp of the frame.',
+'ffmpeg_frame::getPTS' => 'Return the presentation time stamp of the frame.',
+'ffmpeg_frame::getWidth' => 'Return the width of the frame.',
+'ffmpeg_frame::resize' => 'Resize and optionally crop the frame. (Cropping is built into ffmpeg resizing so I\'m providing it here for completeness.)',
+'ffmpeg_frame::toGDImage' => 'Returns a truecolor GD image of the frame.
+NOTE: This function will not be available if GD is not enabled.',
+'ffmpeg_movie::__construct' => 'Open a video or audio file and return it as an object.',
+'ffmpeg_movie::getArtist' => 'Return the author field from the movie or the artist ID3 field from an mp3 file.',
+'ffmpeg_movie::getAudioBitRate' => 'Return the audio bit rate of the media file in bits per second.',
+'ffmpeg_movie::getAudioChannels' => 'Return the number of audio channels in this movie as an integer.',
+'ffmpeg_movie::getAudioCodec' => 'Return the name of the audio codec used to encode this movie as a string.',
+'ffmpeg_movie::getAudioSampleRate' => 'Return the audio sample rate of the media file in bits per second.',
+'ffmpeg_movie::getAuthor' => 'Return the author field from the movie or the artist ID3 field from an mp3 file.',
+'ffmpeg_movie::getBitRate' => 'Return the bit rate of the movie or audio file in bits per second.',
+'ffmpeg_movie::getComment' => 'Return the comment field from the movie or audio file.',
+'ffmpeg_movie::getCopyright' => 'Return the copyright field from the movie or audio file.',
+'ffmpeg_movie::getDuration' => 'Return the duration of a movie or audio file in seconds.',
+'ffmpeg_movie::getFilename' => 'Return the path and name of the movie file or audio file.',
+'ffmpeg_movie::getFrame' => 'Returns a frame from the movie as an ffmpeg_frame object. Returns false if the frame was not found.',
+'ffmpeg_movie::getFrameCount' => 'Return the number of frames in a movie or audio file.',
+'ffmpeg_movie::getFrameHeight' => 'Return the height of the movie in pixels.',
+'ffmpeg_movie::getFrameNumber' => 'Return the current frame index.',
+'ffmpeg_movie::getFrameRate' => 'Return the frame rate of a movie in fps.',
+'ffmpeg_movie::getFrameWidth' => 'Return the width of the movie in pixels.',
+'ffmpeg_movie::getGenre' => 'Return the genre ID3 field from an mp3 file.',
+'ffmpeg_movie::getNextKeyFrame' => 'Returns the next key frame from the movie as an ffmpeg_frame object. Returns false if the frame was not found.',
+'ffmpeg_movie::getPixelFormat' => 'Return the pixel format of the movie.',
+'ffmpeg_movie::getTitle' => 'Return the title field from the movie or audio file.',
+'ffmpeg_movie::getTrackNumber' => 'Return the track ID3 field from an mp3 file.',
+'ffmpeg_movie::getVideoBitRate' => 'Return the bit rate of the video in bits per second.
+NOTE: This only works for files with constant bit rate.',
+'ffmpeg_movie::getVideoCodec' => 'Return the name of the video codec used to encode this movie as a string.',
+'ffmpeg_movie::getYear' => 'Return the year ID3 field from an mp3 file.',
+'ffmpeg_movie::hasAudio' => 'Return boolean value indicating whether the movie has an audio stream.',
+'ffmpeg_movie::hasVideo' => 'Return boolean value indicating whether the movie has a video stream.',
 'fgetc' => 'Gets character from file pointer',
 'fgetcsv' => 'Gets line from file pointer and parse for CSV fields',
 'fgets' => 'Gets line from file pointer',
@@ -2234,6 +3329,16 @@ return [
 'gender\gender::get' => 'Get gender of a name',
 'gender\gender::isNick' => 'Check if the name0 is an alias of the name1',
 'gender\gender::similarNames' => 'Get similar names',
+'Generator::__wakeup' => 'Serialize callback
+Throws an exception as generators can\'t be serialized.',
+'Generator::current' => 'Returns whatever was passed to yield or null if nothing was passed or the generator is already closed.',
+'Generator::getReturn' => 'Returns whatever was passed to return or null if nothing.
+Throws an exception if the generator is still valid.',
+'Generator::key' => 'Returns the yielded key or, if none was specified, an auto-incrementing key or null if the generator is already closed.',
+'Generator::next' => 'Resumes the generator (unless the generator is already closed).',
+'Generator::rewind' => 'Throws an exception if the generator is currently after the first yield.',
+'Generator::send' => 'Sets the return value of the yield expression and resumes the generator (unless the generator is already closed).',
+'Generator::valid' => 'Returns false if the generator has been closed, true otherwise.',
 'geoip_asnum_by_name' => 'Get the Autonomous System Numbers (ASN)',
 'geoip_continent_code_by_name' => 'Get the two letter continent code',
 'geoip_country_code3_by_name' => 'Get the three letter country code',
@@ -2493,6 +3598,8 @@ return [
 'gmagickpixel::setcolorvalue' => 'Sets the normalized value of one of the channels',
 'gmdate' => 'Format a GMT/UTC date/time',
 'gmmktime' => 'Get Unix timestamp for a GMT date',
+'GMP::serialize' => 'String representation of object',
+'GMP::unserialize' => 'Constructs the object',
 'gmp_abs' => 'Absolute value',
 'gmp_add' => 'Add numbers',
 'gmp_and' => 'Bitwise AND',
@@ -2546,6 +3653,27 @@ return [
 'gmp_testbit' => 'Tests if a bit is set',
 'gmp_xor' => 'Bitwise XOR',
 'gmstrftime' => 'Format a GMT/UTC time/date according to locale settings',
+'gnupg::adddecryptkey' => 'Add a key for decryption',
+'gnupg::addencryptkey' => 'Add a key for encryption',
+'gnupg::addsignkey' => 'Add a key for signing',
+'gnupg::cleardecryptkeys' => 'Removes all keys which were set for decryption before',
+'gnupg::clearencryptkeys' => 'Removes all keys which were set for encryption before',
+'gnupg::clearsignkeys' => 'Removes all keys which were set for signing before',
+'gnupg::decrypt' => 'Decrypts a given text',
+'gnupg::decryptverify' => 'Decrypts and verifies a given text',
+'gnupg::encrypt' => 'Encrypts a given text',
+'gnupg::encryptsign' => 'Encrypts and signs a given text',
+'gnupg::export' => 'Exports a key',
+'gnupg::geterror' => 'Returns the errortext, if a function fails',
+'gnupg::getprotocol' => 'Returns the currently active protocol for all operations',
+'gnupg::import' => 'Imports a key',
+'gnupg::init' => 'Initialize a connection',
+'gnupg::keyinfo' => 'Returns an array with information about all keys that matches the given pattern',
+'gnupg::setarmor' => 'Toggle armored output',
+'gnupg::seterrormode' => 'Sets the mode for error_reporting',
+'gnupg::setsignmode' => 'Sets the mode for signing',
+'gnupg::sign' => 'Signs a given text',
+'gnupg::verify' => 'Verifies a signed text',
 'gnupg_adddecryptkey' => 'Add a key for decryption',
 'gnupg_addencryptkey' => 'Add a key for encryption',
 'gnupg_addsignkey' => 'Add a key for signing',
@@ -2569,6 +3697,46 @@ return [
 'gnupg_verify' => 'Verifies a signed text',
 'gopher_parsedir' => 'Translate a gopher formatted directory entry into an associative array',
 'gregoriantojd' => 'Converts a Gregorian date to Julian Day Count',
+'gridObj::set' => 'Set object property to a new value.',
+'Grpc\Call::__construct' => 'Constructs a new instance of the Call class.',
+'Grpc\Call::cancel' => 'Cancel the call. This will cause the call to end with STATUS_CANCELLED if it
+has not already ended with another status.',
+'Grpc\Call::getPeer' => 'Get the endpoint this call/stream is connected to',
+'Grpc\Call::setCredentials' => 'Set the CallCredentials for this call.',
+'Grpc\Call::startBatch' => 'Start a batch of RPC actions.',
+'Grpc\CallCredentials::createComposite' => 'Create composite credentials from two existing credentials.',
+'Grpc\CallCredentials::createFromPlugin' => 'Create a call credentials object from the plugin API',
+'Grpc\Channel::__construct' => 'Construct an instance of the Channel class. If the $args array contains a
+"credentials" key mapping to a ChannelCredentials object, a secure channel
+will be created with those credentials.',
+'Grpc\Channel::close' => 'Close the channel',
+'Grpc\Channel::getConnectivityState' => 'Get the connectivity state of the channel',
+'Grpc\Channel::getTarget' => 'Get the endpoint this call/stream is connected to',
+'Grpc\Channel::watchConnectivityState' => 'Watch the connectivity state of the channel until it changed',
+'Grpc\ChannelCredentials::createComposite' => 'Create composite credentials from two existing credentials.',
+'Grpc\ChannelCredentials::createDefault' => 'Create a default channel credentials object.',
+'Grpc\ChannelCredentials::createInsecure' => 'Create insecure channel credentials',
+'Grpc\ChannelCredentials::createSsl' => 'Create SSL credentials.',
+'Grpc\ChannelCredentials::setDefaultRootsPem' => 'Set default roots pem.',
+'Grpc\Server::__construct' => 'Constructs a new instance of the Server class',
+'Grpc\Server::addHttp2Port' => 'Add a http2 over tcp listener.',
+'Grpc\Server::addSecureHttp2Port' => 'Add a secure http2 over tcp listener.',
+'Grpc\Server::requestCall' => 'Request a call on a server. Creates a single GRPC_SERVER_RPC_NEW event.',
+'Grpc\Server::start' => 'Start a server - tells all listeners to start listening',
+'Grpc\ServerCredentials::createSsl' => 'Create SSL credentials.',
+'Grpc\Timeval::__construct' => 'Constructs a new instance of the Timeval class',
+'Grpc\Timeval::add' => 'Adds another Timeval to this one and returns the sum. Calculations saturate
+at infinities.',
+'Grpc\Timeval::compare' => 'Return negative, 0, or positive according to whether a < b, a == b, or a > b
+respectively.',
+'Grpc\Timeval::infFuture' => 'Returns the infinite future time value as a timeval object',
+'Grpc\Timeval::infPast' => 'Returns the infinite past time value as a timeval object',
+'Grpc\Timeval::now' => 'Returns the current time as a timeval object',
+'Grpc\Timeval::similar' => 'Checks whether the two times are within $threshold of each other',
+'Grpc\Timeval::sleepUntil' => 'Sleep until this time, interpreted as an absolute timeout',
+'Grpc\Timeval::subtract' => 'Subtracts another Timeval from this one and returns the difference.
+Calculations saturate at infinities.',
+'Grpc\Timeval::zero' => 'Returns the zero time interval as a timeval object',
 'gupnp_context_get_host_ip' => 'Get the IP address',
 'gupnp_context_get_port' => 'Get the port',
 'gupnp_context_get_subscription_timeout' => 'Get the event subscription timeout',
@@ -2808,6 +3976,14 @@ return [
 'hash_update_file' => 'Pump data into an active hashing context from a file',
 'hash_update_stream' => 'Pump data into an active hashing context from an open stream',
 'hashcontext::__construct' => 'Private constructor to disallow direct instantiation',
+'hashTableObj::clear' => 'Clear all items in the hashTable (To NULL).',
+'hashTableObj::get' => 'Fetch class metadata entry by name.  Returns "" if no entry
+matches the name.  Note that the search is case sensitive.',
+'hashTableObj::nextkey' => 'Return the next key or first key if previousKey = NULL.
+Return NULL if no item is in the hashTable or end of hashTable is
+reached',
+'hashTableObj::remove' => 'Remove a metadata entry in the hashTable.  Returns MS_SUCCESS/MS_FAILURE.',
+'hashTableObj::set' => 'Set a metadata entry in the hashTable. Returns MS_SUCCESS/MS_FAILURE.',
 'header' => 'Send a raw HTTP header',
 'header_register_callback' => 'Call a header function',
 'header_remove' => 'Remove previously set headers',
@@ -2834,8 +4010,195 @@ return [
 'htmlentities' => 'Convert all applicable characters to HTML entities',
 'htmlspecialchars' => 'Convert special characters to HTML entities',
 'htmlspecialchars_decode' => 'Convert special HTML entities back to characters',
+'http\Client::__construct' => 'Create a new HTTP client.',
+'http\Cookie::__construct' => 'Create a new cookie list.',
+'http\Env\Request::getCookie' => 'Retrieve an URL query value ($_GET)',
+'http\Env\Request::getFiles' => 'Retrieve the uploaded files list ($_FILES)',
+'http\Env\Request::getForm' => 'Retrieve a form value ($_POST)',
+'http\Env\Request::getQuery' => 'Retrieve an URL query value ($_GET)',
+'http\Env\Response::__invoke' => 'Output buffer handler',
+'http\Env\Response::send' => 'Send the response through the SAPI or $stream',
+'http\Env\Response::setCacheControl' => 'Make suggestions to the client how it should cache the response',
+'http\Env\Response::setContentDisposition' => 'Set the reponse’s content disposition parameters',
+'http\Env\Response::setContentEncoding' => 'Enable support for “Accept-Encoding” requests with deflate or gzip',
+'http\Env\Response::setContentType' => 'Set the MIME content type of the response',
+'http\Env\Response::setCookie' => 'Add cookies to the response to send',
+'http\Env\Response::setEnvRequest' => 'Override the environment’s request',
+'http\Env\Response::setEtag' => 'Override the environment’s request',
+'http\Env\Response::setLastModified' => 'Override the environment’s request',
+'http\Env\Response::setThrottleRate' => 'Override the environment’s request',
+'http\Message::__construct' => 'Create a new HTTP message.',
+'http\Message\Body::__construct' => 'Create a new message body, optionally referencing $stream.',
+'http\QueryString::__construct' => 'QueryString constructor.',
+'http\QueryString::get' => 'Retrieve an querystring value',
+'http\QueryString::getArray' => 'Retrieve an array value at offset $name',
+'http\QueryString::getBool' => 'Retrieve an array value at offset $name',
+'http\QueryString::getFloat' => 'Retrieve an array value at offset $name',
+'http\QueryString::getGlobalInstance' => 'Retrieve the global querystring instance referencing $_GET',
+'http\QueryString::getInt' => 'Retrieve an array value at offset $name',
+'http\QueryString::getObject' => 'Retrieve an array value at offset $name',
+'http\QueryString::getString' => 'Retrieve an array value at offset $name',
+'http\QueryString::mod' => 'Set additional $params to a clone of this instance',
+'http\QueryString::set' => 'Set additional querystring entries',
+'http\QueryString::toArray' => 'Returns http\QueryString::$queryArray',
+'http\QueryString::toString' => 'Get the string represenation of the querystring (x-www-form-urlencoded)',
+'http\QueryString::xlate' => 'Translate character encodings of the querystring with ext/iconv',
+'http\Url::__construct' => 'Url constructor.',
+'http\Url::__toString' => 'Alias of Url::toString()',
+'http\Url::mod' => 'Clone this URL and apply $parts to the cloned URL',
+'http\Url::toArray' => 'Retrieve the URL parts as array',
+'http\Url::toString' => 'Get the string prepresentation of the URL',
 'http_build_query' => 'Generate URL-encoded query string',
 'http_response_code' => 'Get or Set the HTTP response code',
+'HttpDeflateStream::__construct' => 'HttpDeflateStream class constructor',
+'HttpDeflateStream::factory' => 'HttpDeflateStream class factory',
+'HttpDeflateStream::finish' => 'Finalize deflate stream',
+'HttpDeflateStream::flush' => 'Flush deflate stream',
+'HttpDeflateStream::update' => 'Update deflate stream',
+'HttpInflateStream::__construct' => 'HttpInflateStream class constructor',
+'HttpInflateStream::factory' => 'HttpInflateStream class factory',
+'HttpInflateStream::finish' => 'Finalize inflate stream',
+'HttpInflateStream::flush' => 'Flush inflate stream',
+'HttpInflateStream::update' => 'Update inflate stream',
+'HttpMessage::__construct' => 'HttpMessage constructor',
+'HttpMessage::addHeaders' => 'Add headers',
+'HttpMessage::detach' => 'Detach HttpMessage',
+'HttpMessage::factory' => 'Create HttpMessage from string',
+'HttpMessage::fromEnv' => 'Create HttpMessage from environment',
+'HttpMessage::fromString' => 'Create HttpMessage from string',
+'HttpMessage::getBody' => 'Get message body',
+'HttpMessage::getHeader' => 'Get header',
+'HttpMessage::getHeaders' => 'Get message headers',
+'HttpMessage::getHttpVersion' => 'Get HTTP version',
+'HttpMessage::getParentMessage' => 'Get parent message',
+'HttpMessage::getRequestMethod' => 'Get request method',
+'HttpMessage::getRequestUrl' => 'Get request URL',
+'HttpMessage::getResponseCode' => 'Get response code',
+'HttpMessage::getResponseStatus' => 'Get response status',
+'HttpMessage::getType' => 'Get message type',
+'HttpMessage::guessContentType' => 'Guess content type',
+'HttpMessage::prepend' => 'Prepend message(s)',
+'HttpMessage::reverse' => 'Reverse message chain',
+'HttpMessage::send' => 'Send message',
+'HttpMessage::setBody' => 'Set message body',
+'HttpMessage::setHeaders' => 'Set headers',
+'HttpMessage::setHttpVersion' => 'Set HTTP version',
+'HttpMessage::setRequestMethod' => 'Set request method',
+'HttpMessage::setRequestUrl' => 'Set request URL',
+'HttpMessage::setResponseCode' => 'Set response code',
+'HttpMessage::setResponseStatus' => 'Set response status',
+'HttpMessage::setType' => 'Set message type',
+'HttpMessage::toMessageTypeObject' => 'Create HTTP object regarding message type',
+'HttpMessage::toString' => 'Get string representation',
+'HttpQueryString::__construct' => 'HttpQueryString constructor',
+'HttpQueryString::get' => 'Get (part of) query string',
+'HttpQueryString::mod' => 'Modifiy query string copy',
+'HttpQueryString::offsetExists' => 'Whether a offset exists',
+'HttpQueryString::offsetGet' => 'Offset to retrieve',
+'HttpQueryString::offsetSet' => 'Offset to set',
+'HttpQueryString::offsetUnset' => 'Offset to unset',
+'HttpQueryString::serialize' => 'String representation of object',
+'HttpQueryString::set' => 'Set query string params',
+'HttpQueryString::singleton' => 'HttpQueryString singleton',
+'HttpQueryString::toArray' => 'Get query string as array',
+'HttpQueryString::toString' => 'Get query string',
+'HttpQueryString::unserialize' => 'Constructs the object',
+'HttpQueryString::xlate' => 'Change query strings charset',
+'HttpRequest::__construct' => 'HttpRequest constructor',
+'HttpRequest::addCookies' => 'Add cookies',
+'HttpRequest::addHeaders' => 'Add headers',
+'HttpRequest::addPostFields' => 'Add post fields',
+'HttpRequest::addPostFile' => 'Add post file',
+'HttpRequest::addPutData' => 'Add put data',
+'HttpRequest::addQueryData' => 'Add query data',
+'HttpRequest::addRawPostData' => 'Add raw post data',
+'HttpRequest::addSslOptions' => 'Add ssl options',
+'HttpRequest::clearHistory' => 'Clear history',
+'HttpRequest::enableCookies' => 'Enable cookies',
+'HttpRequest::getContentType' => 'Get content type',
+'HttpRequest::getCookies' => 'Get cookies',
+'HttpRequest::getHeaders' => 'Get headers',
+'HttpRequest::getHistory' => 'Get history',
+'HttpRequest::getMethod' => 'Get method',
+'HttpRequest::getOptions' => 'Get options',
+'HttpRequest::getPostFields' => 'Get post fields',
+'HttpRequest::getPostFiles' => 'Get post files',
+'HttpRequest::getPutData' => 'Get put data',
+'HttpRequest::getPutFile' => 'Get put file',
+'HttpRequest::getQueryData' => 'Get query data',
+'HttpRequest::getRawPostData' => 'Get raw post data',
+'HttpRequest::getRawRequestMessage' => 'Get raw request message',
+'HttpRequest::getRawResponseMessage' => 'Get raw response message',
+'HttpRequest::getRequestMessage' => 'Get request message',
+'HttpRequest::getResponseBody' => 'Get response body',
+'HttpRequest::getResponseCode' => 'Get response code',
+'HttpRequest::getResponseCookies' => 'Get response cookie(s)',
+'HttpRequest::getResponseData' => 'Get response data',
+'HttpRequest::getResponseHeader' => 'Get response header(s)',
+'HttpRequest::getResponseInfo' => 'Get response info',
+'HttpRequest::getResponseMessage' => 'Get response message',
+'HttpRequest::getResponseStatus' => 'Get response status',
+'HttpRequest::getSslOptions' => 'Get ssl options',
+'HttpRequest::getUrl' => 'Get url',
+'HttpRequest::resetCookies' => 'Reset cookies',
+'HttpRequest::send' => 'Send request',
+'HttpRequest::setContentType' => 'Set content type',
+'HttpRequest::setCookies' => 'Set cookies',
+'HttpRequest::setHeaders' => 'Set headers',
+'HttpRequest::setMethod' => 'Set method',
+'HttpRequest::setOptions' => 'Set options',
+'HttpRequest::setPostFields' => 'Set post fields',
+'HttpRequest::setPostFiles' => 'Set post files',
+'HttpRequest::setPutData' => 'Set put data',
+'HttpRequest::setPutFile' => 'Set put file',
+'HttpRequest::setQueryData' => 'Set query data',
+'HttpRequest::setRawPostData' => 'Set raw post data',
+'HttpRequest::setSslOptions' => 'Set ssl options',
+'HttpRequest::setUrl' => 'Set URL',
+'HttpRequestPool::__construct' => 'HttpRequestPool constructor',
+'HttpRequestPool::__destruct' => 'HttpRequestPool destructor',
+'HttpRequestPool::attach' => 'Attach HttpRequest',
+'HttpRequestPool::detach' => 'Detach HttpRequest',
+'HttpRequestPool::getAttachedRequests' => 'Get attached requests',
+'HttpRequestPool::getFinishedRequests' => 'Get finished requests',
+'HttpRequestPool::reset' => 'Reset request pool',
+'HttpRequestPool::send' => 'Send all requests',
+'HttpRequestPool::socketPerform' => 'Perform socket actions',
+'HttpRequestPool::socketSelect' => 'Perform socket select',
+'HttpResponse::capture' => 'Capture script output',
+'HttpResponse::getBufferSize' => 'Get buffer size',
+'HttpResponse::getCache' => 'Get cache',
+'HttpResponse::getCacheControl' => 'Get cache control',
+'HttpResponse::getContentDisposition' => 'Get content disposition',
+'HttpResponse::getContentType' => 'Get content type',
+'HttpResponse::getData' => 'Get data',
+'HttpResponse::getETag' => 'Get ETag',
+'HttpResponse::getFile' => 'Get file',
+'HttpResponse::getGzip' => 'Get gzip',
+'HttpResponse::getHeader' => 'Get header',
+'HttpResponse::getLastModified' => 'Get last modified',
+'HttpResponse::getRequestBody' => 'Get request body',
+'HttpResponse::getRequestBodyStream' => 'Get request body stream',
+'HttpResponse::getRequestHeaders' => 'Get request headers',
+'HttpResponse::getStream' => 'Get Stream',
+'HttpResponse::getThrottleDelay' => 'Get throttle delay',
+'HttpResponse::guessContentType' => 'Guess content type',
+'HttpResponse::redirect' => 'Redirect',
+'HttpResponse::send' => 'Send response',
+'HttpResponse::setBufferSize' => 'Set buffer size',
+'HttpResponse::setCache' => 'Set cache',
+'HttpResponse::setCacheControl' => 'Set cache control',
+'HttpResponse::setContentDisposition' => 'Set content disposition',
+'HttpResponse::setContentType' => 'Set content type',
+'HttpResponse::setData' => 'Set data',
+'HttpResponse::setETag' => 'Set ETag',
+'HttpResponse::setFile' => 'Set file',
+'HttpResponse::setGzip' => 'Set gzip',
+'HttpResponse::setHeader' => 'Set header',
+'HttpResponse::setLastModified' => 'Set last modified',
+'HttpResponse::setStream' => 'Set stream',
+'HttpResponse::setThrottleDelay' => 'Set throttle delay',
+'HttpResponse::status' => 'Send HTTP response status',
 'hw_api::checkin' => 'Checks in an object',
 'hw_api::checkout' => 'Checks out an object',
 'hw_api::children' => 'Returns children of an object',
@@ -3091,6 +4454,31 @@ return [
 'imagelayereffect' => 'Set the alpha blending flag to use layering effects',
 'imageline' => 'Draw a line',
 'imageloadfont' => 'Load a new font',
+'imageObj::pasteImage' => 'Copy srcImg on top of the current imageObj.
+transparentColorHex is the color (in 0xrrggbb format) from srcImg
+that should be considered transparent (i.e. those pixels won\'t
+be copied).  Pass -1 if you don\'t want any transparent color.
+If optional dstx,dsty are provided then it defines the position
+where the image should be copied (dstx,dsty = top-left corner
+position).
+The optional angle is a value between 0 and 360 degrees to rotate
+the source image counterclockwise.  Note that if an angle is specified
+(even if its value is zero) then the dstx and dsty coordinates
+specify the CENTER of the destination area.
+Note: this function works only with 8 bits GD images (PNG or GIF).',
+'imageObj::saveImage' => 'Writes image object to specified filename.
+Passing no filename or an empty filename sends output to stdout.  In
+this case, the PHP header() function should be used to set the
+document\'s content-type prior to calling saveImage().  The output
+format is the one that is currently selected in the map file.  The
+second argument oMap is not manadatory. It is usful when saving to
+formats like GTIFF that needs georeference information contained in
+the map file. On success, it returns either MS_SUCCESS if writing to an
+external file, or the number of bytes written if output is sent to
+stdout.',
+'imageObj::saveWebImage' => 'Writes image to temp directory.  Returns image URL.
+The output format is the one that is currently selected in the
+map file.',
 'imageopenpolygon' => 'Draws an open polygon',
 'imagepalettecopy' => 'Copy the palette from one image to another',
 'imagepalettetotruecolor' => 'Converts a palette based image to true color',
@@ -3138,10 +4526,13 @@ return [
 'imagick::animateImages' => 'Animates an image or images',
 'imagick::annotateImage' => 'Annotates an image with text',
 'imagick::appendImages' => 'Append a set of images',
+'Imagick::autoGammaImage' => 'Extracts the \'mean\' from the image and adjust the image to try make set its gamma appropriately.',
+'Imagick::autoOrient' => 'Adjusts an image so that its orientation is suitable $ for viewing (i.e. top-left orientation).',
 'imagick::averageImages' => 'Average a set of images',
 'imagick::blackThresholdImage' => 'Forces all pixels below the threshold into black',
 'imagick::blurImage' => 'Adds blur filter to image',
 'imagick::borderImage' => 'Surrounds the image with a border',
+'Imagick::brightnessContrastImage' => 'Change the brightness and/or contrast of an image. It converts the brightness and contrast parameters into slope and intercept and calls a polynomical function to apply to the image.',
 'imagick::charcoalImage' => 'Simulates a charcoal drawing',
 'imagick::chopImage' => 'Removes a region of an image and trims',
 'imagick::clear' => 'Clears all resources associated to Imagick object',
@@ -3152,12 +4543,15 @@ return [
 'imagick::coalesceImages' => 'Composites a set of images',
 'imagick::colorFloodfillImage' => 'Changes the color value of any pixel that matches target',
 'imagick::colorizeImage' => 'Blends the fill color with the image',
+'Imagick::colorMatrixImage' => 'Apply color transformation to an image. The method permits saturation changes, hue rotation, luminance to alpha, and various other effects. Although variable-sized transformation matrices can be used, typically one uses a 5x5 matrix for an RGBA image and a 6x6 for CMYKA (or RGBA with offsets).
+The matrix is similar to those used by Adobe Flash except offsets are in column 6 rather than 5 (in support of CMYKA images) and offsets are normalized (divide Flash offset by 255)',
 'imagick::combineImages' => 'Combines one or more images into a single image',
 'imagick::commentImage' => 'Adds a comment to your image',
 'imagick::compareImageChannels' => 'Returns the difference in one or more images',
 'imagick::compareImageLayers' => 'Returns the maximum bounding region between images',
 'imagick::compareImages' => 'Compares an image to a reconstructed image',
 'imagick::compositeImage' => 'Composite one image onto another',
+'Imagick::compositeImageGravity' => 'Composite one image onto another using the specified gravity.',
 'imagick::contrastImage' => 'Change the contrast of the image',
 'imagick::contrastStretchImage' => 'Enhances the contrast of a color image',
 'imagick::convolveImage' => 'Applies a custom convolution kernel to the image',
@@ -3169,6 +4563,7 @@ return [
 'imagick::decipherImage' => 'Deciphers an image',
 'imagick::deconstructImages' => 'Returns certain pixel differences between images',
 'imagick::deleteImageArtifact' => 'Delete image artifact',
+'Imagick::deleteImageProperty' => 'Deletes an image property.',
 'imagick::deskewImage' => 'Removes skew from the image',
 'imagick::despeckleImage' => 'Reduces the speckle noise in an image',
 'imagick::destroy' => 'Destroys the Imagick object',
@@ -3182,12 +4577,15 @@ return [
 'imagick::enhanceImage' => 'Improves the quality of a noisy image',
 'imagick::equalizeImage' => 'Equalizes the image histogram',
 'imagick::evaluateImage' => 'Applies an expression to an image',
+'Imagick::evaluateImages' => 'Merge multiple images of the same size together with the selected operator. https://www.imagemagick.org/Usage/layers/#evaluate-sequence',
 'imagick::exportImagePixels' => 'Exports raw image pixels',
 'imagick::extentImage' => 'Set image size',
+'Imagick::filter' => 'Applies a custom convolution kernel to the image.',
 'imagick::flattenImages' => 'Merges a sequence of images',
 'imagick::flipImage' => 'Creates a vertical mirror image',
 'imagick::floodFillPaintImage' => 'Changes the color value of any pixel that matches target',
 'imagick::flopImage' => 'Creates a horizontal mirror image',
+'Imagick::forwardFourierTransformimage' => 'Implements the discrete Fourier transform (DFT) of the image either as a magnitude / phase or real / imaginary image pair.',
 'imagick::frameImage' => 'Adds a simulated three-dimensional border',
 'imagick::functionImage' => 'Applies a function on the image',
 'imagick::fxImage' => 'Evaluate expression for each pixel in the image',
@@ -3196,7 +4594,9 @@ return [
 'imagick::getColorspace' => 'Gets the colorspace',
 'imagick::getCompression' => 'Gets the object compression type',
 'imagick::getCompressionQuality' => 'Gets the object compression quality',
+'Imagick::getConfigureOptions' => 'Returns any ImageMagick  configure options that match the specified pattern (e.g. "*" for all). Options include NAME, VERSION, LIB_VERSION, etc.',
 'imagick::getCopyright' => 'Returns the ImageMagick API copyright as a string',
+'Imagick::getFeatures' => 'GetFeatures() returns the ImageMagick features that have been compiled into the runtime.',
 'imagick::getFilename' => 'The filename associated with an image sequence',
 'imagick::getFont' => 'Gets font',
 'imagick::getFormat' => 'Returns the format of the Imagick object',
@@ -3245,6 +4645,7 @@ return [
 'imagick::getImageMagickLicense' => 'Returns a string containing the ImageMagick license',
 'imagick::getImageMatte' => 'Return if the image has a matte channel',
 'imagick::getImageMatteColor' => 'Returns the image matte color',
+'Imagick::getImageMimeType' => '`@return string` Returns the image mime-type.',
 'imagick::getImageOrientation' => 'Gets the image orientation',
 'imagick::getImagePage' => 'Returns the page geometry',
 'imagick::getImagePixelColor' => 'Returns the color of the specified pixel',
@@ -3276,8 +4677,10 @@ return [
 'imagick::getPixelIterator' => 'Returns a MagickPixelIterator',
 'imagick::getPixelRegionIterator' => 'Get an ImagickPixelIterator for an image section',
 'imagick::getPointSize' => 'Gets point size',
+'Imagick::getQuantum' => 'Returns the ImageMagick quantum range as an integer.',
 'imagick::getQuantumDepth' => 'Gets the quantum depth',
 'imagick::getQuantumRange' => 'Returns the Imagick quantum range',
+'Imagick::getRegistry' => 'Get the StringRegistry entry for the named key or false if not set.',
 'imagick::getReleaseDate' => 'Returns the ImageMagick release date',
 'imagick::getResource' => 'Returns the specified resource\'s memory usage',
 'imagick::getResourceLimit' => 'Returns the specified resource limit',
@@ -3288,13 +4691,18 @@ return [
 'imagick::haldClutImage' => 'Replaces colors in the image',
 'imagick::hasNextImage' => 'Checks if the object has more images',
 'imagick::hasPreviousImage' => 'Checks if the object has a previous image',
+'Imagick::identifyFormat' => 'Replaces any embedded formatting characters with the appropriate image property and returns the interpreted text. See https://www.imagemagick.org/script/escape.php for escape sequences.',
 'imagick::identifyImage' => 'Identifies an image and fetches attributes',
+'Imagick::identifyImageType' => 'Identifies the potential image type, returns one of the Imagick::IMGTYPE_* constants',
 'imagick::implodeImage' => 'Creates a new image as a copy',
 'imagick::importImagePixels' => 'Imports image pixels',
+'Imagick::inverseFourierTransformImage' => 'Implements the inverse discrete Fourier transform (DFT) of the image either as a magnitude / phase or real / imaginary image pair.',
 'imagick::labelImage' => 'Adds a label to an image',
 'imagick::levelImage' => 'Adjusts the levels of an image',
 'imagick::linearStretchImage' => 'Stretches with saturation the image intensity',
 'imagick::liquidRescaleImage' => 'Animates an image or images',
+'Imagick::listRegistry' => 'List all the registry settings. Returns an array of all the key/value pairs in the registry',
+'Imagick::localContrastImage' => 'Attempts to increase the appearance of large-scale light-dark transitions.',
 'imagick::magnifyImage' => 'Scales an image proportionally 2x',
 'imagick::mapImage' => 'Replaces the colors of an image with the closest color from a reference image',
 'imagick::matteFloodfillImage' => 'Changes the transparency value of a color',
@@ -3304,6 +4712,7 @@ return [
 'imagick::modulateImage' => 'Control the brightness, saturation, and hue',
 'imagick::montageImage' => 'Creates a composite image',
 'imagick::morphImages' => 'Method morphs a set of images',
+'Imagick::morphology' => 'Applies a user supplied kernel to the image according to the given morphology method.',
 'imagick::mosaicImages' => 'Forms a mosaic from images',
 'imagick::motionBlurImage' => 'Simulates motion blur',
 'imagick::negateImage' => 'Negates the colors in the reference image',
@@ -3348,12 +4757,15 @@ return [
 'imagick::resizeImage' => 'Scales an image',
 'imagick::rollImage' => 'Offsets an image',
 'imagick::rotateImage' => 'Rotates an image',
+'Imagick::rotationalBlurImage' => 'Rotational blurs an image.',
 'imagick::roundCorners' => 'Rounds image corners',
 'imagick::sampleImage' => 'Scales an image with pixel sampling',
 'imagick::scaleImage' => 'Scales the size of an image',
 'imagick::segmentImage' => 'Segments an image',
+'Imagick::selectiveBlurImage' => 'Selectively blur an image within a contrast threshold. It is similar to the unsharpen mask that sharpens everything with contrast above a certain threshold.',
 'imagick::separateImageChannel' => 'Separates a channel from the image',
 'imagick::sepiaToneImage' => 'Sepia tones an image',
+'Imagick::setAntiAlias' => 'Set whether antialiasing should be used for operations. On by default.',
 'imagick::setBackgroundColor' => 'Sets the object\'s default background color',
 'imagick::setColorspace' => 'Set colorspace',
 'imagick::setCompression' => 'Sets the object\'s default compression type',
@@ -3364,6 +4776,7 @@ return [
 'imagick::setFormat' => 'Sets the format of the Imagick object',
 'imagick::setGravity' => 'Sets the gravity',
 'imagick::setImage' => 'Replaces image in the object',
+'Imagick::setImageAlpha' => 'Sets the image to the specified alpha level. Will replace ImagickDraw::setOpacity()',
 'imagick::setImageAlphaChannel' => 'Sets image alpha channel',
 'imagick::setImageArtifact' => 'Set image artifact',
 'imagick::setImageBackgroundColor' => 'Sets the image background color',
@@ -3371,6 +4784,8 @@ return [
 'imagick::setImageBluePrimary' => 'Sets the image chromaticity blue primary point',
 'imagick::setImageBorderColor' => 'Sets the image border color',
 'imagick::setImageChannelDepth' => 'Sets the depth of a particular image channel',
+'Imagick::setImageChannelMask' => 'Sets the image channel mask. Returns the previous set channel mask.
+Only works with Imagick >=7',
 'imagick::setImageClipMask' => 'Sets image clip mask',
 'imagick::setImageColormapColor' => 'Sets the color of the specified colormap index',
 'imagick::setImageColorspace' => 'Sets the image colorspace',
@@ -3412,6 +4827,8 @@ return [
 'imagick::setOption' => 'Set an option',
 'imagick::setPage' => 'Sets the page geometry of the Imagick object',
 'imagick::setPointSize' => 'Sets point size',
+'Imagick::setProgressMonitor' => 'Set a callback that will be called during the processing of the Imagick image.',
+'Imagick::setRegistry' => 'Sets the ImageMagick registry entry named key to value. This is most useful for setting "temporary-path" which controls where ImageMagick creates temporary images e.g. while processing PDFs.',
 'imagick::setResolution' => 'Sets the image resolution',
 'imagick::setResourceLimit' => 'Sets the limit for a particular resource',
 'imagick::setSamplingFactors' => 'Sets the image sampling factors',
@@ -3424,14 +4841,21 @@ return [
 'imagick::shaveImage' => 'Shaves pixels from the image edges',
 'imagick::shearImage' => 'Creating a parallelogram',
 'imagick::sigmoidalContrastImage' => 'Adjusts the contrast of an image',
+'Imagick::similarityImage' => 'Is an alias of Imagick::subImageMatch',
 'imagick::sketchImage' => 'Simulates a pencil sketch',
 'imagick::solarizeImage' => 'Applies a solarizing effect to the image',
 'imagick::sparseColorImage' => 'Interpolates colors',
 'imagick::spliceImage' => 'Splices a solid color into the image',
 'imagick::spreadImage' => 'Randomly displaces each pixel in a block',
+'Imagick::statisticImage' => 'Replace each pixel with corresponding statistic from the neighborhood of the specified width and height.',
 'imagick::steganoImage' => 'Hides a digital watermark within the image',
 'imagick::stereoImage' => 'Composites two images',
 'imagick::stripImage' => 'Strips an image of all profiles and comments',
+'Imagick::subImageMatch' => 'Searches for a subimage in the current image and returns a similarity image such that an exact match location is
+completely white and if none of the pixels match, black, otherwise some gray level in-between.
+You can also pass in the optional parameters bestMatch and similarity. After calling the function similarity will
+be set to the \'score\' of the similarity between the subimage and the matching position in the larger image,
+bestMatch will contain an associative array with elements x, y, width, height that describe the matching region.',
 'imagick::swirlImage' => 'Swirls the pixels about the center of the image',
 'imagick::textureImage' => 'Repeatedly tiles the texture image',
 'imagick::thresholdImage' => 'Changes the value of individual pixels based on a threshold',
@@ -3466,18 +4890,22 @@ return [
 'imagickdraw::composite' => 'Composites an image onto the current image',
 'imagickdraw::destroy' => 'Frees all associated resources',
 'imagickdraw::ellipse' => 'Draws an ellipse on the image',
+'ImagickDraw::getBorderColor' => 'Returns the border color used for drawing bordered objects.',
 'imagickdraw::getClipPath' => 'Obtains the current clipping path ID',
 'imagickdraw::getClipRule' => 'Returns the current polygon fill rule',
 'imagickdraw::getClipUnits' => 'Returns the interpretation of clip path units',
+'ImagickDraw::getDensity' => 'Obtains the vertical and horizontal resolution.',
 'imagickdraw::getFillColor' => 'Returns the fill color',
 'imagickdraw::getFillOpacity' => 'Returns the opacity used when drawing',
 'imagickdraw::getFillRule' => 'Returns the fill rule',
 'imagickdraw::getFont' => 'Returns the font',
 'imagickdraw::getFontFamily' => 'Returns the font family',
+'ImagickDraw::getFontResolution' => 'Gets the image X and Y resolution.',
 'imagickdraw::getFontSize' => 'Returns the font pointsize',
 'imagickdraw::getFontStyle' => 'Returns the font style',
 'imagickdraw::getFontWeight' => 'Returns the font weight',
 'imagickdraw::getGravity' => 'Returns the text placement gravity',
+'ImagickDraw::getOpacity' => 'Returns the opacity used when drawing with the fill or stroke color or texture. Fully opaque is 1.0.',
 'imagickdraw::getStrokeAntialias' => 'Returns the current stroke antialias setting',
 'imagickdraw::getStrokeColor' => 'Returns the color used for stroking object outlines',
 'imagickdraw::getStrokeDashArray' => 'Returns an array representing the pattern of dashes and gaps used to stroke paths',
@@ -3490,6 +4918,7 @@ return [
 'imagickdraw::getTextAlignment' => 'Returns the text alignment',
 'imagickdraw::getTextAntialias' => 'Returns the current text antialias setting',
 'imagickdraw::getTextDecoration' => 'Returns the text decoration',
+'ImagickDraw::getTextDirection' => 'Returns the direction that will be used when annotating with text.',
 'imagickdraw::getTextEncoding' => 'Returns the code set used for text annotations',
 'imagickdraw::getTextUnderColor' => 'Returns the text under color',
 'imagickdraw::getVectorGraphics' => 'Returns a string containing vector graphics',
@@ -3532,9 +4961,11 @@ return [
 'imagickdraw::rotate' => 'Applies the specified rotation to the current coordinate space',
 'imagickdraw::roundRectangle' => 'Draws a rounded rectangle',
 'imagickdraw::scale' => 'Adjusts the scaling factor',
+'ImagickDraw::setBorderColor' => 'Sets the border color to be used for drawing bordered objects.',
 'imagickdraw::setClipPath' => 'Associates a named clipping path with the image',
 'imagickdraw::setClipRule' => 'Set the polygon fill rule to be used by the clipping path',
 'imagickdraw::setClipUnits' => 'Sets the interpretation of clip path units',
+'ImagickDraw::setDensity' => 'Sets the vertical and horizontal resolution.',
 'imagickdraw::setFillAlpha' => 'Sets the opacity to use when drawing using the fill color or fill texture',
 'imagickdraw::setFillColor' => 'Sets the fill color to be used for drawing filled objects',
 'imagickdraw::setFillOpacity' => 'Sets the opacity to use when drawing using the fill color or fill texture',
@@ -3542,11 +4973,13 @@ return [
 'imagickdraw::setFillRule' => 'Sets the fill rule to use while drawing polygons',
 'imagickdraw::setFont' => 'Sets the fully-specified font to use when annotating with text',
 'imagickdraw::setFontFamily' => 'Sets the font family to use when annotating with text',
+'ImagickDraw::setFontResolution' => 'Sets the image font resolution.',
 'imagickdraw::setFontSize' => 'Sets the font pointsize to use when annotating with text',
 'imagickdraw::setFontStretch' => 'Sets the font stretch to use when annotating with text',
 'imagickdraw::setFontStyle' => 'Sets the font style to use when annotating with text',
 'imagickdraw::setFontWeight' => 'Sets the font weight',
 'imagickdraw::setGravity' => 'Sets the text placement gravity',
+'ImagickDraw::setOpacity' => 'Sets the opacity to use when drawing using the fill or stroke color or texture. Fully opaque is 1.0.',
 'imagickdraw::setStrokeAlpha' => 'Specifies the opacity of stroked object outlines',
 'imagickdraw::setStrokeAntialias' => 'Controls whether stroked outlines are antialiased',
 'imagickdraw::setStrokeColor' => 'Sets the color used for stroking object outlines',
@@ -3561,6 +4994,7 @@ return [
 'imagickdraw::setTextAlignment' => 'Specifies a text alignment',
 'imagickdraw::setTextAntialias' => 'Controls whether text is antialiased',
 'imagickdraw::setTextDecoration' => 'Specifies a decoration',
+'ImagickDraw::setTextDirection' => 'Sets the font style to use when annotating with text. The AnyStyle enumeration acts as a wild-card "don\'t care" option.',
 'imagickdraw::setTextEncoding' => 'Specifies the text code set',
 'imagickdraw::setTextUnderColor' => 'Specifies the color of a background rectangle',
 'imagickdraw::setVectorGraphics' => 'Sets the vector graphics',
@@ -3568,17 +5002,32 @@ return [
 'imagickdraw::skewX' => 'Skews the current coordinate system in the horizontal direction',
 'imagickdraw::skewY' => 'Skews the current coordinate system in the vertical direction',
 'imagickdraw::translate' => 'Applies a translation to the current coordinate system',
+'ImagickKernel::addKernel' => 'Attach another kernel to this kernel to allow them to both be applied in a single morphology or filter function. Returns the new combined kernel.',
+'ImagickKernel::addUnityKernel' => 'Adds a given amount of the \'Unity\' Convolution Kernel to the given pre-scaled and normalized Kernel. This in effect adds that amount of the original image into the resulting convolution kernel. The resulting effect is to convert the defined kernels into blended soft-blurs, unsharp kernels or into sharpening kernels.',
+'ImagickKernel::fromBuiltin' => 'Create a kernel from a builtin in kernel. See https://www.imagemagick.org/Usage/morphology/#kernel for examples.<br>
+Currently the \'rotation\' symbols are not supported. Example: $diamondKernel = ImagickKernel::fromBuiltIn(\Imagick::KERNEL_DIAMOND, "2");',
+'ImagickKernel::fromMatrix' => 'Create a kernel from a builtin in kernel. See https://www.imagemagick.org/Usage/morphology/#kernel for examples.<br>
+Currently the \'rotation\' symbols are not supported. Example: $diamondKernel = ImagickKernel::fromBuiltIn(\Imagick::KERNEL_DIAMOND, "2");',
+'ImagickKernel::getMatrix' => 'Get the 2d matrix of values used in this kernel. The elements are either float for elements that are used or \'false\' if the element should be skipped.',
+'ImagickKernel::scale' => 'ScaleKernelInfo() scales the given kernel list by the given amount, with or without normalization of the sum of the kernel values (as per given flags).<br>
+The exact behaviour of this function depends on the normalization type being used please see https://www.imagemagick.org/api/morphology.php#ScaleKernelInfo for details.<br>
+Flag should be one of Imagick::NORMALIZE_KERNEL_VALUE, Imagick::NORMALIZE_KERNEL_CORRELATE, Imagick::NORMALIZE_KERNEL_PERCENT or not set.',
+'ImagickKernel::seperate' => 'Separates a linked set of kernels and returns an array of ImagickKernels.',
 'imagickpixel::__construct' => 'The ImagickPixel constructor',
 'imagickpixel::clear' => 'Clears resources associated with this object',
 'imagickpixel::destroy' => 'Deallocates resources associated with this object',
 'imagickpixel::getColor' => 'Returns the color',
 'imagickpixel::getColorAsString' => 'Returns the color as a string',
 'imagickpixel::getColorCount' => 'Returns the color count associated with this color',
+'ImagickPixel::getColorQuantum' => 'Returns the color of the pixel in an array as Quantum values. If ImageMagick was compiled as HDRI these will be floats, otherwise they will be integers.',
 'imagickpixel::getColorValue' => 'Gets the normalized value of the provided color channel',
 'imagickpixel::getHSL' => 'Returns the normalized HSL color of the ImagickPixel object',
 'imagickpixel::isPixelSimilar' => 'Check the distance between this color and another',
+'ImagickPixel::isPixelSimilarQuantum' => 'Returns true if the distance between two colors is less than the specified distance. The fuzz value should be in the range 0-QuantumRange.<br>
+The maximum value represents the longest possible distance in the colorspace. e.g. from RGB(0, 0, 0) to RGB(255, 255, 255) for the RGB colorspace',
 'imagickpixel::isSimilar' => 'Check the distance between this color and another',
 'imagickpixel::setColor' => 'Sets the color',
+'ImagickPixel::setColorFromPixel' => 'Sets the color count associated with this color from another ImagickPixel object.',
 'imagickpixel::setColorValue' => 'Sets the normalized value of one of the channels',
 'imagickpixel::setHSL' => 'Sets the normalized HSL color',
 'imagickpixeliterator::__construct' => 'The ImagickPixelIterator constructor',
@@ -3726,8 +5175,12 @@ return [
 'inotify_queue_len' => 'Return a number upper than zero if there are pending events',
 'inotify_read' => 'Read events from an inotify instance',
 'inotify_rm_watch' => 'Remove an existing watch from an inotify instance',
+'intcal_get_maximum' => '(PHP 5 &gt;=5.5.0 PECL intl &gt;= 3.0.0a1)<br/>
+Get the global maximum value for a field',
 'intdiv' => 'Integer division',
 'interface_exists' => 'Checks if the interface has been defined',
+'intl_get' => '(PHP 5 &gt;=5.5.0 PECL intl &gt;= 3.0.0a1)<br/>
+Get the value for a field',
 'intlbreakiterator::__construct' => 'Private constructor for disallowing instantiation',
 'intlbreakiterator::createCharacterInstance' => 'Create break iterator for boundaries of combining character sequences',
 'intlbreakiterator::createCodePointInstance' => 'Create break iterator for boundaries of code points',
@@ -3749,6 +5202,8 @@ return [
 'intlbreakiterator::preceding' => 'Set the iterator position to the first boundary before an offset',
 'intlbreakiterator::previous' => 'Set the iterator position to the boundary immediately before the current',
 'intlbreakiterator::setText' => 'Set the text being scanned',
+'intlcal_greates_minimum' => '(PHP 5 &gt;=5.5.0 PECL intl &gt;= 3.0.0a1)<br/>
+Get the largest local minimum value for a field',
 'intlcalendar::__construct' => 'Private constructor for disallowing instantiation',
 'intlcalendar::add' => 'Add a (signed) amount of time to a field',
 'intlcalendar::after' => 'Whether this objectʼs time is after that of the passed object',
@@ -3855,6 +5310,7 @@ return [
 'intlchar::totitle' => 'Make Unicode character titlecase',
 'intlchar::toupper' => 'Make Unicode character uppercase',
 'intlcodepointbreakiterator::getLastCodePoint' => 'Get last code point passed over after advancing or receding the iterator',
+'IntlDateFormatter::create' => 'Create a date formatter',
 'intldateformatter::format' => 'Format the date/time value as a string',
 'intldateformatter::formatObject' => 'Formats an object',
 'intldateformatter::getCalendar' => 'Get the calendar type used for the IntlDateFormatter',
@@ -3886,6 +5342,11 @@ return [
 'intliterator::valid' => 'Check if current position is valid',
 'intlpartsiterator::getBreakIterator' => 'Get IntlBreakIterator backing this parts iterator',
 'intlrulebasedbreakiterator::__construct' => 'Create iterator from ruleset',
+'IntlRuleBasedBreakIterator::createCharacterInstance' => 'Create break iterator for boundaries of combining character sequences',
+'IntlRuleBasedBreakIterator::createLineInstance' => 'Create break iterator for logically possible line breaks',
+'IntlRuleBasedBreakIterator::createSentenceInstance' => 'Create break iterator for sentence breaks',
+'IntlRuleBasedBreakIterator::createTitleInstance' => 'Create break iterator for title-casing breaks',
+'IntlRuleBasedBreakIterator::createWordInstance' => 'Create break iterator for word breaks',
 'intlrulebasedbreakiterator::getBinaryRules' => 'Get the binary form of compiled rules',
 'intlrulebasedbreakiterator::getRules' => 'Get the rule set used to create this object',
 'intlrulebasedbreakiterator::getRuleStatus' => 'Get the largest status value from the break rules that determined the current break position',
@@ -3914,6 +5375,8 @@ return [
 'intltimezone::hasSameRules' => 'Check if this zone has the same rules and offset as another zone',
 'intltimezone::toDateTimeZone' => 'Convert to DateTimeZone object',
 'intltimezone::useDaylightTime' => 'Check if this time zone uses daylight savings time',
+'intltz_getGMT' => '(PHP 5 &gt;=5.5.0 PECL intl &gt;= 3.0.0a1)<br/>
+Create GMT (UTC) timezone',
 'intval' => 'Get the integer value of a variable',
 'ip2long' => 'Converts a string containing an (IPv4) Internet Protocol dotted address into a long integer',
 'iptcembed' => 'Embeds binary IPTC data into a JPEG image',
@@ -3951,9 +5414,15 @@ return [
 'is_writable' => 'Tells whether the filename is writable',
 'is_writeable' => 'Alias of is_writable',
 'isset' => 'Determine if a variable is set and is not `null`',
+'Iterator::current' => 'Return the current element',
+'Iterator::key' => 'Return the key of the current element',
+'Iterator::next' => 'Move forward to next element',
+'Iterator::rewind' => 'Rewind the Iterator to the first element',
+'Iterator::valid' => 'Checks if current position is valid',
 'iterator_apply' => 'Call a function for every element in an iterator',
 'iterator_count' => 'Count the elements in an iterator',
 'iterator_to_array' => 'Copy the iterator into an array',
+'IteratorAggregate::getIterator' => 'Retrieve an external iterator',
 'iteratoriterator::__construct' => 'Create an iterator from anything that is traversable',
 'iteratoriterator::current' => 'Get the current value',
 'iteratoriterator::getInnerIterator' => 'Get the inner iterator',
@@ -3961,6 +5430,9 @@ return [
 'iteratoriterator::next' => 'Forward to the next element',
 'iteratoriterator::rewind' => 'Rewind to the first element',
 'iteratoriterator::valid' => 'Checks if the iterator is valid',
+'java' => 'Create Java object',
+'java::java' => 'Create Java object',
+'JavaException::getCause' => 'Get Java exception that led to this exception',
 'jddayofweek' => 'Returns the day of the week',
 'jdmonthname' => 'Returns a month name',
 'jdtofrench' => 'Converts a Julian Day Count to the French Republican Calendar',
@@ -4033,6 +5505,49 @@ return [
 'ktaglib_mpeg_file::getAudioProperties' => 'Returns an object that provides access to the audio properties',
 'ktaglib_mpeg_file::getID3v1Tag' => 'Returns an object representing an ID3v1 tag',
 'ktaglib_mpeg_file::getID3v2Tag' => 'Returns a ID3v2 object',
+'labelcacheObj::freeCache' => 'Free the label cache. Always returns MS_SUCCESS.
+Ex : map->labelcache->freeCache();',
+'labelObj::convertToString' => 'Saves the object to a string.  Provides the inverse option for
+updateFromString.',
+'labelObj::deleteStyle' => 'Delete the style specified by the style index. If there are any
+style that follow the deleted style, their index will decrease by 1.',
+'labelObj::free' => 'Free the object properties and break the internal references.
+Note that you have to unset the php variable to free totally the
+resources.',
+'labelObj::getBinding' => 'Get the attribute binding for a specified label property. Returns
+NULL if there is no binding for this property.
+Example:
+.. code-block:: php
+$oLabel->setbinding(MS_LABEL_BINDING_COLOR, "FIELD_NAME_COLOR");
+echo $oLabel->getbinding(MS_LABEL_BINDING_COLOR); // FIELD_NAME_COLOR',
+'labelObj::getExpressionString' => 'Returns the label expression string.',
+'labelObj::getStyle' => 'Return the style object using an index. index >= 0 &&
+index < label->numstyles.',
+'labelObj::getTextString' => 'Returns the label text string.',
+'labelObj::moveStyleDown' => 'The style specified by the style index will be moved down into
+the array of classes. Returns MS_SUCCESS or MS_FAILURE.
+ex label->movestyledown(0) will have the effect of moving style 0
+up to position 1, and the style at position 1 will be moved
+to position 0.',
+'labelObj::moveStyleUp' => 'The style specified by the style index will be moved up into
+the array of classes. Returns MS_SUCCESS or MS_FAILURE.
+ex label->movestyleup(1) will have the effect of moving style 1
+up to position 0, and the style at position 0 will be moved
+to position 1.',
+'labelObj::removeBinding' => 'Remove the attribute binding for a specfiled style property.
+Example:
+.. code-block:: php
+$oStyle->removebinding(MS_LABEL_BINDING_COLOR);',
+'labelObj::set' => 'Set object property to a new value.',
+'labelObj::setBinding' => 'Set the attribute binding for a specified label property.
+Example:
+.. code-block:: php
+$oLabel->setbinding(MS_LABEL_BINDING_COLOR, "FIELD_NAME_COLOR");
+This would bind the color parameter with the data (ie will extract
+the value of the color from the field called "FIELD_NAME_COLOR"',
+'labelObj::setExpression' => 'Set the label expression.',
+'labelObj::setText' => 'Set the label text.',
+'labelObj::updateFromString' => 'Update a label from a string snippet. Returns MS_SUCCESS/MS_FAILURE.',
 'lapack::eigenValues' => 'This function returns the eigenvalues for a given square matrix',
 'lapack::identity' => 'Return an identity matrix',
 'lapack::leastSquaresByFactorisation' => 'Calculate the linear least squares solution of a matrix using QR factorisation',
@@ -4040,6 +5555,208 @@ return [
 'lapack::pseudoInverse' => 'Calculate the inverse of a matrix',
 'lapack::singularValues' => 'Calculated the singular values of a matrix',
 'lapack::solveLinearEquation' => 'Solve a system of linear equations',
+'layerObj::addFeature' => 'Add a new feature in a layer. Returns MS_SUCCESS or MS_FAILURE on
+error.',
+'layerObj::applySLD' => 'Apply the :ref:`SLD <sld>` document to the layer object.
+The matching between the sld document and the layer will be done
+using the layer\'s name.
+If a namedlayer argument is passed (argument is optional),
+the NamedLayer in the sld that matchs it will be used to style
+the layer.
+See :ref:`SLD HowTo <sld>` for more information on the SLD support.',
+'layerObj::applySLDURL' => 'Apply the :ref:`SLD <sld>` document pointed by the URL to the
+layer object. The matching between the sld document and the layer
+will be done using the layer\'s name.  If a namedlayer argument is
+passed (argument is optional), the NamedLayer in the sld that
+matchs it will be used to style the layer.  See :ref:`SLD HowTo
+<sld>` for more information on the SLD support.',
+'layerObj::clearProcessing' => 'Clears all the processing strings.',
+'layerObj::close' => 'Close layer previously opened with open().',
+'layerObj::convertToString' => 'Saves the object to a string.  Provides the inverse option for
+updateFromString.',
+'layerObj::draw' => 'Draw a single layer, add labels to cache if required.
+Returns MS_SUCCESS or MS_FAILURE on error.',
+'layerObj::drawQuery' => 'Draw query map for a single layer.
+string   executeWFSGetfeature()
+Executes a GetFeature request on a WFS layer and returns the
+name of the temporary GML file created. Returns an empty
+string on error.',
+'layerObj::free' => 'Free the object properties and break the internal references.
+Note that you have to unset the php variable to free totally the
+resources.',
+'layerObj::generateSLD' => 'Returns an SLD XML string based on all the classes found in the
+layer (the layer must have `STATUS` `on`).',
+'layerObj::getClass' => 'Returns a classObj from the layer given an index value (0=first class)',
+'layerObj::getClassIndex' => 'Get the class index of a shape for a given scale. Returns -1 if no
+class matches. classgroup is an array of class ids to check
+(Optional). numclasses is the number of classes that the classgroup
+array contains. By default, all the layer classes will be checked.',
+'layerObj::getExtent' => 'Returns the layer\'s data extents or NULL on error.
+If the layer\'s EXTENT member is set then this value is used,
+otherwise this call opens/closes the layer to read the
+extents. This is quick on shapefiles, but can be
+an expensive operation on some file formats or data sources.
+This function is safe to use on both opened or closed layers: it
+is not necessary to call open()/close() before/after calling it.',
+'layerObj::getFilterString' => 'Returns the :ref:`expression <expressions>` for this layer or NULL
+on error.',
+'layerObj::getGridIntersectionCoordinates' => 'Returns an array containing the grid intersection coordinates. If
+there are no coordinates, it returns an empty array.',
+'layerObj::getItems' => 'Returns an array containing the items. Must call open function first.
+If there are no items, it returns an empty array.',
+'layerObj::getMetaData' => 'Fetch layer metadata entry by name.  Returns "" if no entry
+matches the name.  Note that the search is case sensitive.
+.. note::
+getMetaData\'s query is case sensitive.',
+'layerObj::getNumResults' => 'Returns the number of results in the last query.',
+'layerObj::getProcessing' => 'Returns an array containing the processing strings.
+If there are no processing strings, it returns an empty array.',
+'layerObj::getProjection' => 'Returns a string representation of the :ref:`projection <projection>`.
+Returns NULL on error or if no projection is set.',
+'layerObj::getResult' => 'Returns a resultObj by index from a layer object with
+index in the range 0 to numresults-1.
+Returns a valid object or FALSE(0) if index is invalid.',
+'layerObj::getResultsBounds' => 'Returns the bounding box of the latest result.',
+'layerObj::getShape' => 'If the resultObj passed has a valid resultindex, retrieve shapeObj from
+a layer\'s resultset. (You get it from the resultObj returned by
+getResult() for instance). Otherwise, it will do a single query on
+the layer to fetch the shapeindex
+.. code-block:: php
+$map = new mapObj("gmap75.map");
+$l = $map->getLayerByName("popplace");
+$l->queryByRect($map->extent);
+for ($i=0; $i<$l->getNumResults();$i++){
+$s = $l->getShape($l->getResult($i));
+echo $s->getValue($l,"Name");
+echo "\n";
+}',
+'layerObj::getWMSFeatureInfoURL' => 'Returns a WMS GetFeatureInfo URL (works only for WMS layers)
+clickX, clickY is the location of to query in pixel coordinates
+with (0,0) at the top left of the image.
+featureCount is the number of results to return.
+infoFormat is the format the format in which the result should be
+requested.  Depends on remote server\'s capabilities.  MapServer
+WMS servers support only "MIME" (and should support "GML.1" soon).
+Returns "" and outputs a warning if layer is not a WMS layer
+or if it is not queriable.',
+'layerObj::isVisible' => 'Returns MS_TRUE/MS_FALSE depending on whether the layer is
+currently visible in the map (i.e. turned on, in scale, etc.).',
+'layerObj::moveclassdown' => 'The class specified by the class index will be moved down into
+the array of layers. Returns MS_SUCCESS or MS_FAILURE.
+ex layer->moveclassdown(0) will have the effect of moving class 0
+up to position 1, and the class at position 1 will be moved
+to position 0.',
+'layerObj::moveclassup' => 'The class specified by the class index will be moved up into
+the array of layers. Returns MS_SUCCESS or MS_FAILURE.
+ex layer->moveclassup(1) will have the effect of moving class 1
+up to position 0, and the class at position 0 will be moved
+to position 1.',
+'layerObj::ms_newLayerObj' => 'Old style constructor',
+'layerObj::nextShape' => 'Called after msWhichShapes has been called to actually retrieve
+shapes within a given area. Returns a shape object or NULL on
+error.
+.. code-block:: php
+$map = ms_newmapobj("d:/msapps/gmap-ms40/htdocs/gmap75.map");
+$layer = $map->getLayerByName(\'road\');
+$status = $layer->open();
+$status = $layer->whichShapes($map->extent);
+while ($shape = $layer->nextShape())
+{
+echo $shape->index ."<br>\n";
+}
+$layer->close();',
+'layerObj::open' => 'Open the layer for use with getShape().
+Returns MS_SUCCESS/MS_FAILURE.',
+'layerObj::queryByAttributes' => 'Query layer for shapes that intersect current map extents.  qitem
+is the item (attribute) on which the query is performed, and
+qstring is the expression to match.  The query is performed on all
+the shapes that are part of a :ref:`CLASS` that contains a
+:ref:`TEMPLATE <template>` value or that match any class in a
+layer that contains a :ref:`LAYER` :ref:`TEMPLATE <template>`
+value.  Note that the layer\'s FILTER/FILTERITEM are ignored by
+this function.  Mode is MS_SINGLE or MS_MULTIPLE depending on
+number of results you want.  Returns MS_SUCCESS if shapes were
+found or MS_FAILURE if nothing was found or if some other error
+happened (note that the error message in case nothing was found
+can be avoided in PHP using the \'@\' control operator).',
+'layerObj::queryByFeatures' => 'Perform a query set based on a previous set of results from
+another layer. At present the results MUST be based on a polygon
+layer.
+Returns MS_SUCCESS if shapes were found or MS_FAILURE if nothing
+was found or if some other error happened (note that the error
+message in case nothing was found can be avoided in PHP using
+the \'@\' control operator).',
+'layerObj::queryByPoint' => 'Query layer at point location specified in georeferenced map
+coordinates (i.e. not pixels).
+The query is performed on all the shapes that are part of a CLASS
+that contains a TEMPLATE value or that match any class in a
+layer that contains a LAYER TEMPLATE value.
+Mode is MS_SINGLE or MS_MULTIPLE depending on number of results
+you want.
+Passing buffer -1 defaults to tolerances set in the map file
+(in pixels) but you can use a constant buffer (specified in
+ground units) instead.
+Returns MS_SUCCESS if shapes were found or MS_FAILURE if nothing
+was found or if some other error happened (note that the error
+message in case nothing was found can be avoided in PHP using
+the \'@\' control operator).',
+'layerObj::queryByRect' => 'Query layer using a rectangle specified in georeferenced map
+coordinates (i.e. not pixels).
+The query is performed on all the shapes that are part of a CLASS
+that contains a TEMPLATE value or that match any class in a
+layer that contains a LAYER TEMPLATE value.
+Returns MS_SUCCESS if shapes were found or MS_FAILURE if nothing
+was found or if some other error happened (note that the error
+message in case nothing was found can be avoided in PHP using
+the \'@\' control operator).',
+'layerObj::queryByShape' => 'Query layer based on a single shape, the shape has to be a polygon
+at this point.
+Returns MS_SUCCESS if shapes were found or MS_FAILURE if nothing
+was found or if some other error happened (note that the error
+message in case nothing was found can be avoided in PHP using
+the \'@\' control operator).',
+'layerObj::removeClass' => 'Removes the class indicated and returns a copy, or NULL in the case
+of a failure.  Note that subsequent classes will be renumbered by
+this operation. The numclasses field contains the number of classes
+available.',
+'layerObj::removeMetaData' => 'Remove a metadata entry for the layer.  Returns MS_SUCCESS/MS_FAILURE.',
+'layerObj::set' => 'Set object property to a new value.',
+'layerObj::setConnectionType' => 'Changes the connectiontype of the layer and recreates the vtable
+according to the new connection type. This method should be used
+instead of setting the connectiontype parameter directly.
+In the case when the layer.connectiontype = MS_PLUGIN the plugin_library
+parameter should also be specified so as to select the library to
+load by MapServer. For the other connection types this parameter
+is not used.',
+'layerObj::setFilter' => 'Set layer filter :ref:`expression <expressions>`.',
+'layerObj::setMetaData' => 'Set a metadata entry for the layer.  Returns MS_SUCCESS/MS_FAILURE.
+int setProcessing(string)
+Add the string to the processing string list for the layer.
+The layer->num_processing is incremented by 1.
+Returns MS_SUCCESS or MS_FAILURE on error.
+.. code-block:: php
+$oLayer->setprocessing("SCALE_1=AUTO");
+$oLayer->setprocessing("SCALE_2=AUTO");',
+'layerObj::setProjection' => 'Set layer :ref:`projection <projection>` and coordinate system.
+Parameters are given as a single string of comma-delimited PROJ.4
+parameters. Returns MS_SUCCESS or MS_FAILURE on error.',
+'layerObj::setWKTProjection' => 'Same as setProjection(), but takes an OGC WKT projection
+definition string as input.
+.. note::
+setWKTProjection requires GDAL support',
+'layerObj::updateFromString' => 'Update a layer from a string snippet. Returns MS_SUCCESS/MS_FAILURE.
+.. code-block:: php
+modify the name
+$oLayer->updateFromString(\'LAYER NAME land_fn2 END\');
+add a new class
+$oLayer->updateFromString(\'LAYER CLASS STYLE COLOR 255 255 0 END END END\');
+int whichshapes(rectobj)
+Performs a spatial, and optionally an attribute based feature
+search.  The function basically prepares things so that candidate
+features can be accessed by query or drawing functions (eg using
+nextshape function).  Returns MS_SUCCESS, MS_FAILURE or MS_DONE.
+MS_DONE is returned if the layer extent does not overlap the
+rectObj.',
 'lcfirst' => 'Make a string\'s first character lowercase',
 'lcg_value' => 'Combined linear congruential generator',
 'lchgrp' => 'Changes group ownership of symlink',
@@ -4103,6 +5820,19 @@ return [
 'ldap_start_tls' => 'Start TLS',
 'ldap_t61_to_8859' => 'Translate t61 characters to 8859 characters',
 'ldap_unbind' => 'Unbind from LDAP directory',
+'legendObj::convertToString' => 'Saves the object to a string.  Provides the inverse option for
+updateFromString.',
+'legendObj::free' => 'Free the object properties and break the internal references.
+Note that you have to unset the php variable to free totally the
+resources.',
+'legendObj::set' => 'Set object property to a new value.',
+'legendObj::updateFromString' => 'Update a legend from a string snippet. Returns MS_SUCCESS/MS_FAILURE.',
+'LevelDB::getProperty' => 'Valid properties:
+- leveldb.stats: returns the status of the entire db
+- leveldb.num-files-at-level: returns the number of files for each level. For example, you can use leveldb.num-files-at-level0 the number of files for zero level.
+- leveldb.sstables: returns current status of sstables',
+'LevelDB::set' => 'Alias of LevelDB::put()',
+'LevelDB::write' => 'Executes all of the operations added in the write batch.',
 'levenshtein' => 'Calculate Levenshtein distance between two strings',
 'libxml_clear_errors' => 'Clear libxml error buffer',
 'libxml_disable_entity_loader' => 'Disable the ability to load external entities',
@@ -4120,6 +5850,19 @@ return [
 'limititerator::rewind' => 'Rewind the iterator to the specified starting offset',
 'limititerator::seek' => 'Seek to the given position',
 'limititerator::valid' => 'Check whether the current element is valid',
+'lineObj::add' => 'Add a point to the end of line. Returns MS_SUCCESS/MS_FAILURE.',
+'lineObj::addXY' => 'Add a point to the end of line. Returns MS_SUCCESS/MS_FAILURE.
+.. note::
+the 3rd parameter m is used for measured shape files only.
+It is not mandatory.',
+'lineObj::addXYZ' => 'Add a point to the end of line. Returns MS_SUCCESS/MS_FAILURE.
+.. note::
+the 4th parameter m is used for measured shape files only.
+It is not mandatory.',
+'lineObj::ms_newLineObj' => 'Old style constructor',
+'lineObj::point' => 'Returns a reference to point number i.',
+'lineObj::project' => 'Project the line from "in" projection (1st argument) to "out"
+projection (2nd argument).  Returns MS_SUCCESS/MS_FAILURE.',
 'link' => 'Create a hard link',
 'linkinfo' => 'Gets information about a link',
 'locale::acceptFromHttp' => 'Tries to find out best available locale based on HTTP "Accept-Language" header',
@@ -4150,6 +5893,7 @@ return [
 'ltrim' => 'Strip whitespace (or other characters) from the beginning of a string',
 'lua::__construct' => 'Lua constructor',
 'lua::assign' => 'Assign a PHP variable to Lua',
+'Lua::call' => '`@return mixed` Returns result of the called function, null for wrong arguments or FALSE on other failure.',
 'lua::eval' => 'Evaluate a string as Lua code',
 'lua::getVersion' => 'The getversion purpose',
 'lua::include' => 'Parse a Lua script file',
@@ -4214,6 +5958,288 @@ return [
 'mailparse_stream_encode' => 'Streams data from source file pointer, apply encoding and write to destfp',
 'mailparse_uudecode_all' => 'Scans the data from fp and extract each embedded uuencoded file',
 'main' => 'Dummy for main',
+'mapObj::__construct' => 'Returns a new object to deal with a MapServer map file.
+Construct a new mapObj from a mapfile string. Returns a new object to deal
+with a MapServer map file.
+.. note::
+By default, the SYMBOLSET, FONTSET, and other paths in the mapfile
+are relative to the mapfile location.  If new_map_path is provided
+then this directory will be used as the base path for all the
+rewlative paths inside the mapfile.',
+'mapObj::appendOutputFormat' => 'Appends outputformat object in the map object.
+Returns the new numoutputformats value.',
+'mapObj::applyconfigoptions' => 'Applies the config options set in the map file. For example
+setting the PROJ_LIB using the setconfigoption only modifies
+the value in the map object. applyconfigoptions will actually
+change the PROJ_LIB value that will be used when dealing with
+projection.',
+'mapObj::applySLD' => 'Apply the :ref:`SLD` document to the map file. The matching between the
+sld document and the map file will be done using the layer\'s name.
+See :ref:`SLD HowTo <sld>` for more information on the SLD support.',
+'mapObj::applySLDURL' => 'Apply the SLD document pointed by the URL to the map file. The
+matching between the sld document and the map file will be done
+using the layer\'s name.
+See :ref:`SLD HowTo <sld>` for more information on the SLD support.',
+'mapObj::convertToString' => 'Saves the object to a string.
+.. note::
+The inverse method updateFromString does not exist for the mapObj
+.. versionadded:: 6.4',
+'mapObj::draw' => 'Render map and return an image object or NULL on error.',
+'mapObj::drawLabelCache' => 'Renders the labels for a map. Returns MS_SUCCESS or MS_FAILURE on error.',
+'mapObj::drawLegend' => 'Render legend and return an image object.',
+'mapObj::drawQuery' => 'Render a query map and return an image object or NULL on error.',
+'mapObj::drawReferenceMap' => 'Render reference map and return an image object.',
+'mapObj::drawScaleBar' => 'Render scale bar and return an image object.',
+'mapObj::embedLegend' => 'embeds a legend. Actually the legend is just added to the label
+cache so you must invoke drawLabelCache() to actually do the
+rendering (unless postlabelcache is set in which case it is
+drawn right away). Returns MS_SUCCESS or MS_FAILURE on error.',
+'mapObj::embedScalebar' => 'embeds a scalebar. Actually the scalebar is just added to the label
+cache so you must invoke drawLabelCache() to actually do the rendering
+(unless postlabelcache is set in which case it is drawn right away).
+Returns MS_SUCCESS or MS_FAILURE on error.',
+'mapObj::free' => 'Free the object properties and break the internal references.
+Note that you have to unset the php variable to free totally the
+resources.
+void freeQuery(layerindex)
+Frees the query result on a specified layer. If the layerindex is -1,
+all queries on layers will be freed.',
+'mapObj::generateSLD' => 'Returns an SLD XML string based on all the classes found in all
+the layers that have `STATUS` `on`.',
+'mapObj::getAllGroupNames' => 'Return an array containing all the group names used in the
+layers. If there are no groups, it returns an empty array.',
+'mapObj::getAllLayerNames' => 'Return an array containing all the layer names.
+If there are no layers, it returns an empty array.',
+'mapObj::getColorbyIndex' => 'Returns a colorObj corresponding to the color index in the
+palette.',
+'mapObj::getConfigOption' => 'Returns the config value associated with the key.
+Returns an empty sting if key not found.',
+'mapObj::getLabel' => 'Returns a labelcacheMemberObj from the map given an index value
+(0=first label).  Labelcache has to be enabled.
+.. code-block:: php
+while ($oLabelCacheMember = $oMap->getLabel($i)) {
+ do something with the labelcachemember
+++$i;
+}',
+'mapObj::getLayer' => 'Returns a layerObj from the map given an index value (0=first layer)',
+'mapObj::getLayerByName' => 'Returns a layerObj from the map given a layer name.
+Returns NULL if layer doesn\'t exist.',
+'mapObj::getLayersDrawingOrder' => 'Return an array containing layer\'s index in the order which they
+are drawn. If there are no layers, it returns an empty array.',
+'mapObj::getLayersIndexByGroup' => 'Return an array containing all the layer\'s indexes given
+a group name. If there are no layers, it returns an empty array.',
+'mapObj::getMetaData' => 'Fetch metadata entry by name (stored in the :ref:`WEB` object in
+the map file).  Returns "" if no entry matches the name.
+.. note::
+getMetaData\'s query is case sensitive.',
+'mapObj::getNumSymbols' => 'Return the number of symbols in map.',
+'mapObj::getOutputFormat' => 'Returns the outputformat at index position.',
+'mapObj::getProjection' => 'Returns a string representation of the projection.
+Returns NULL on error or if no projection is set.',
+'mapObj::getSymbolByName' => 'Returns the symbol index using the name.',
+'mapObj::getSymbolObjectById' => 'Returns the symbol object using a symbol id. Refer to
+the symbol object reference section for more details.
+int insertLayer( layerObj layer [, int nIndex=-1 ] )
+Insert a copy of *layer* into the Map at index *nIndex*.  The
+default value of *nIndex* is -1, which means the last possible
+index.  Returns the index of the new Layer, or -1 in the case of a
+failure.',
+'mapObj::loadMapContext' => 'Available only if WMS support is enabled.  Load a :ref:`WMS Map
+Context <map_context>` XML file into the current mapObj.  If the
+map already contains some layers then the layers defined in the
+WMS Map context document are added to the current map.  The 2nd
+argument unique_layer_name is optional and if set to MS_TRUE
+layers created will have a unique name (unique prefix added to the
+name). If set to MS_FALSE the layer name will be the the same name
+as in the context. The default value is MS_FALSE.  Returns
+MS_SUCCESS/MS_FAILURE.',
+'mapObj::loadOWSParameters' => 'Load OWS request parameters (BBOX, LAYERS, &c.) into map.  Returns
+MS_SUCCESS or MS_FAILURE.  2nd argument version is not mandatory.
+If not given, the version will be set to 1.1.1
+int loadQuery(filename)
+Loads a query from a file. Returns MS_SUCCESS or MS_FAILURE.
+To be used with savequery.',
+'mapObj::moveLayerDown' => 'Move layer down in the hierarchy of drawing.
+Returns MS_SUCCESS or MS_FAILURE on error.',
+'mapObj::moveLayerUp' => 'Move layer up in the hierarchy of drawing.
+Returns MS_SUCCESS or MS_FAILURE on error.',
+'mapObj::ms_newMapObjFromString' => 'Old style constructor',
+'mapObj::offsetExtent' => 'Offset the map extent based on the given distances in map coordinates.
+Returns MS_SUCCESS or MS_FAILURE.',
+'mapObj::owsDispatch' => 'Processes and executes the passed OpenGIS Web Services request on
+the map.  Returns MS_DONE (2) if there is no valid OWS request in
+the req object, MS_SUCCESS (0) if an OWS request was successfully
+processed and MS_FAILURE (1) if an OWS request was not
+successfully processed.  OWS requests include :ref:`WMS
+<wms_server>`, :ref:`WFS <wfs_server>`, :ref:`WCS <wcs_server>`
+and :ref:`SOS <sos_server>` requests supported by MapServer.
+Results of a dispatched request are written to stdout and can be
+captured using the msIO services (ie. ms_ioinstallstdouttobuffer()
+and ms_iogetstdoutbufferstring())',
+'mapObj::prepareImage' => 'Return a blank image object.',
+'mapObj::prepareQuery' => 'Calculate the scale of the map and set map->scaledenom.',
+'mapObj::processLegendTemplate' => 'Process legend template files and return the result in a buffer.
+.. seealso::
+:ref:`processtemplate <processtemplate>`',
+'mapObj::processQueryTemplate' => 'Process query template files and return the result in a buffer.
+Second argument generateimages is not mandatory. If not given
+it will be set to TRUE.
+.. seealso::
+:ref:`processtemplate <processtemplate>`
+.. _processtemplate:',
+'mapObj::processTemplate' => 'Process the template file specified in the web object and return the
+result in a buffer. The processing consists of opening the template
+file and replace all the tags found in it. Only tags that have an
+equivalent element in the map object are replaced (ex [scaledenom]).
+The are two exceptions to the previous statement :
+- [img], [scalebar], [ref], [legend] would be replaced with the
+appropriate url if the parameter generateimages is set to
+MS_TRUE. (Note :  the images corresponding to the different objects
+are generated if the object is set to MS_ON in the map file)
+- the user can use the params parameter to specify tags and
+their values. For example if the user have a specific tag call
+[my_tag] and would like it to be replaced by "value_of_my_tag"
+he would do
+.. code-block:: php
+$tmparray["my_tag"] = "value_of_my_tag";
+$map->processtemplate($tmparray, MS_FALSE);',
+'mapObj::queryByFeatures' => 'Perform a query based on a previous set of results from
+a layer. At present the results MUST be based on a polygon layer.
+Returns MS_SUCCESS if shapes were found or MS_FAILURE if nothing
+was found or if some other error happened (note that the error
+message in case nothing was found can be avoided in PHP using
+the \'@\' control operator).',
+'mapObj::queryByIndex' => 'Add a specific shape on a given layer to the query result.
+If addtoquery (which is a non mandatory argument) is set to MS_TRUE,
+the shape will be added to the existing query list. Default behavior
+is to free the existing query list and add only the new shape.',
+'mapObj::queryByPoint' => 'Query all selected layers in map at point location specified in
+georeferenced map coordinates (i.e. not pixels).
+The query is performed on all the shapes that are part of a :ref:`CLASS`
+that contains a :ref:`TEMPLATE` value or that match any class in a
+layer that contains a :ref:`LAYER` :ref:`TEMPLATE <template>` value.
+Mode is MS_SINGLE or MS_MULTIPLE depending on number of results
+you want.
+Passing buffer -1 defaults to tolerances set in the map file
+(in pixels) but you can use a constant buffer (specified in
+ground units) instead.
+Returns MS_SUCCESS if shapes were found or MS_FAILURE if nothing
+was found or if some other error happened (note that the error
+message in case nothing was found can be avoided in PHP using
+the \'@\' control operator).',
+'mapObj::queryByRect' => 'Query all selected layers in map using a rectangle specified in
+georeferenced map coordinates (i.e. not pixels).  The query is
+performed on all the shapes that are part of a :ref:`CLASS` that
+contains a :ref:`TEMPLATE` value or that match any class in a
+layer that contains a :ref:`LAYER` :ref:`TEMPLATE <template>`
+value.  Returns MS_SUCCESS if shapes were found or MS_FAILURE if
+nothing was found or if some other error happened (note that the
+error message in case nothing was found can be avoided in PHP
+using the \'@\' control operator).',
+'mapObj::queryByShape' => 'Query all selected layers in map based on a single shape, the
+shape has to be a polygon at this point.
+Returns MS_SUCCESS if shapes were found or MS_FAILURE if nothing
+was found or if some other error happened (note that the error
+message in case nothing was found can be avoided in PHP using
+the \'@\' control operator).',
+'mapObj::removeLayer' => 'Remove a layer from the mapObj. The argument is the index of the
+layer to be removed. Returns the removed layerObj on success, else
+null.',
+'mapObj::removeMetaData' => 'Remove a metadata entry for the map (stored in the WEB object in the map
+file).  Returns MS_SUCCESS/MS_FAILURE.',
+'mapObj::removeOutputFormat' => 'Remove outputformat from the map.
+Returns MS_SUCCESS/MS_FAILURE.',
+'mapObj::save' => 'Save current map object state to a file. Returns -1 on error.
+Use absolute path. If a relative path is used, then it will be
+relative to the mapfile location.',
+'mapObj::saveMapContext' => 'Available only if WMS support is enabled.  Save current map object
+state in :ref:`WMS Map Context <map_context>` format.  Only WMS
+layers are saved in the WMS Map Context XML file.  Returns
+MS_SUCCESS/MS_FAILURE.',
+'mapObj::saveQuery' => 'Save the current query in a file. Results determines the save format -
+MS_TRUE (or 1/true) saves the query results (tile index and shape index),
+MS_FALSE (or 0/false) the query parameters (and the query will be re-run
+in loadquery). Returns MS_SUCCESS or MS_FAILURE. Either save format can be
+used with loadquery. See RFC 65 and ticket #3647 for details of different
+save formats.',
+'mapObj::scaleExtent' => 'Scale the map extent using the zoomfactor and ensure the extent
+within the minscaledenom and maxscaledenom domain.  If
+minscaledenom and/or maxscaledenom is 0 then the parameter is not
+taken into account.  Returns MS_SUCCESS or MS_FAILURE.',
+'mapObj::selectOutputFormat' => 'Selects the output format to be used in the map.
+Returns MS_SUCCESS/MS_FAILURE.
+.. note::
+the type used should correspond to one of the output formats
+declared in the map file.  The type argument passed is compared
+with the mimetype parameter in the output format structure and
+then to the name parameter in the structure.',
+'mapObj::set' => 'Set map object property to new value.',
+'mapObj::setCenter' => 'Set the map center to the given map point.
+Returns MS_SUCCESS or MS_FAILURE.',
+'mapObj::setConfigOption' => 'Sets a config parameter using the key and the value passed',
+'mapObj::setExtent' => 'Set the map extents using the georef extents passed in argument.
+Returns MS_SUCCESS or MS_FAILURE on error.',
+'mapObj::setFontSet' => 'Load and set a new :ref:`fontset`.
+boolean  setLayersDrawingOrder(array layeryindex)
+Set the layer\'s order array. The argument passed must be a valid
+array with all the layer\'s index.
+Returns MS_SUCCESS or MS_FAILURE on error.',
+'mapObj::setMetaData' => 'Set a metadata entry for the map (stored in the WEB object in the map
+file).  Returns MS_SUCCESS/MS_FAILURE.',
+'mapObj::setProjection' => 'Set map projection and coordinate system. Returns MS_SUCCESS or
+MS_FAILURE on error.
+Parameters are given as a single string of comma-delimited PROJ.4
+parameters.  The argument : bSetUnitsAndExtents is used to
+automatically update the map units and extents based on the new
+projection. Possible values are MS_TRUE and MS_FALSE. By default it is
+set at MS_FALSE.',
+'mapObj::setRotation' => 'Set map rotation angle. The map view rectangle (specified in
+EXTENTS) will be rotated by the indicated angle in the counter-
+clockwise direction. Note that this implies the rendered map
+will be rotated by the angle in the clockwise direction.
+Returns MS_SUCCESS or MS_FAILURE.',
+'mapObj::setSize' => 'Set the map width and height. This method updates the internal
+geotransform and other data structures required for map rotation
+so it should be used instead of setting the width and height members
+directly.
+Returns MS_SUCCESS or MS_FAILURE.',
+'mapObj::setSymbolSet' => 'Load and set a symbol file dynamically.',
+'mapObj::setWKTProjection' => 'Same as setProjection(), but takes an OGC WKT projection
+definition string as input. Returns MS_SUCCESS or MS_FAILURE on error.
+.. note::
+setWKTProjection requires GDAL support',
+'mapObj::zoomPoint' => 'Zoom to a given XY position. Returns MS_SUCCESS or MS_FAILURE on error.
+Parameters are
+- Zoom factor : positive values do zoom in, negative values
+zoom out. Factor of 1 will recenter.
+- Pixel position (pointObj) : x, y coordinates of the click,
+with (0,0) at the top-left
+- Width : width in pixel of the current image.
+- Height : Height in pixel of the current image.
+- Georef extent (rectObj) : current georef extents.
+- MaxGeoref extent (rectObj) : (optional) maximum georef extents.
+If provided then it will be impossible to zoom/pan outside of
+those extents.',
+'mapObj::zoomRectangle' => 'Set the map extents to a given extents. Returns MS_SUCCESS or
+MS_FAILURE on error.
+Parameters are :
+- oPixelExt (rect object) : Pixel Extents
+- Width : width in pixel of the current image.
+- Height : Height in pixel of the current image.
+- Georef extent (rectObj) : current georef extents.',
+'mapObj::zoomScale' => 'Zoom in or out to a given XY position so that the map is
+displayed at specified scale. Returns MS_SUCCESS or MS_FAILURE on error.
+Parameters are :
+- ScaleDenom : Scale denominator of the scale at which the map
+should be displayed.
+- Pixel position (pointObj) : x, y coordinates of the click,
+with (0,0) at the top-left
+- Width : width in pixel of the current image.
+- Height : Height in pixel of the current image.
+- Georef extent (rectObj) : current georef extents.
+- MaxGeoref extent (rectObj) : (optional) maximum georef extents.
+If provided then it will be impossible to zoom/pan outside of
+those extents.',
 'max' => 'Find highest value',
 'maxdb_bind_param' => 'Alias of maxdb_stmt_bind_param',
 'maxdb_bind_result' => 'Alias of maxdb_stmt_bind_result',
@@ -4410,8 +6436,31 @@ return [
 'memcached::setSaslAuthData' => 'Set the credentials to use for authentication',
 'memcached::touch' => 'Set a new expiration on an item',
 'memcached::touchByKey' => 'Set a new expiration on an item on a specific server',
+'MemcachePool::add' => 'Add an item to the server. If the key already exists, the value will not be added and <b>FALSE</b> will be returned.',
+'MemcachePool::addServer' => 'Add a memcached server to connection pool',
+'MemcachePool::close' => 'Close memcached server connection',
+'MemcachePool::connect' => 'Open memcached server connection',
+'MemcachePool::decrement' => 'Decrement item\'s value',
+'MemcachePool::delete' => 'Delete item from the server
+https://secure.php.net/manual/ru/memcache.delete.php',
+'MemcachePool::flush' => 'Flush all existing items at the server',
+'MemcachePool::get' => 'Retrieve item from the server',
+'MemcachePool::getExtendedStats' => 'Get statistics from all servers in pool',
+'MemcachePool::getServerStatus' => 'Returns server status',
+'MemcachePool::getStats' => 'Get statistics of the server',
+'MemcachePool::getVersion' => 'Return version of the server',
+'MemcachePool::increment' => 'Increment item\'s value',
+'MemcachePool::replace' => 'Replace value of the existing item',
+'MemcachePool::set' => 'Stores an item var with key on the memcached server. Parameter expire is expiration time in seconds.
+If it\'s 0, the item never expires (but memcached server doesn\'t guarantee this item to be stored all the time,
+it could be deleted from the cache to make place for other items).
+You can use MEMCACHE_COMPRESSED constant as flag value if you want to use on-the-fly compression (uses zlib).',
+'MemcachePool::setCompressThreshold' => 'Enable automatic compression of large values',
+'MemcachePool::setServerParams' => 'Changes server parameters and status at runtime',
 'memory_get_peak_usage' => 'Returns the peak of memory allocated by PHP',
 'memory_get_usage' => 'Returns the amount of memory allocated to PHP',
+'MessageFormatter::__construct' => 'Constructs a new Message Formatter',
+'MessageFormatter::create' => 'Constructs a new Message Formatter',
 'messageformatter::format' => 'Format the message',
 'messageformatter::formatMessage' => 'Quick format message',
 'messageformatter::getErrorCode' => 'Get the error code from last operation',
@@ -4441,12 +6490,40 @@ return [
 'mktime' => 'Get Unix timestamp for a date',
 'money_format' => 'Formats a number as a currency string',
 'mongo::__construct' => 'The __construct purpose',
+'Mongo::__get' => 'Gets a database',
+'Mongo::__toString' => 'String representation of this connection',
+'Mongo::close' => 'Closes this database connection
+This method does not need to be called, except in unusual circumstances.
+The driver will cleanly close the database connection when the Mongo object goes out of scope.',
+'Mongo::connect' => 'Connects to a database server',
 'mongo::connectUtil' => 'Connects with a database server',
+'Mongo::dropDB' => '`@return array` The database response.',
+'Mongo::forceError' => 'Creates a database error on the database.',
+'Mongo::getConnections' => 'Get connections
+Returns an array of all open connections, and information about each of the servers',
+'Mongo::getHosts' => 'Get hosts
+This method is only useful with a connection to a replica set. It returns the status of all of the hosts in the
+set. Without a replica set, it will just return an array with one element containing the host that you are
+connected to.',
 'mongo::getPoolSize' => 'Get pool size for connection pools',
+'Mongo::getReadPreference' => 'Get read preference
+Get the read preference for this connection',
 'mongo::getSlave' => 'Returns the address being used by this for slaveOkay reads',
 'mongo::getSlaveOkay' => 'Get slaveOkay setting for this connection',
+'Mongo::getWriteConcern' => 'Get the write concern for this connection',
+'Mongo::killCursor' => 'Kills a specific cursor on the server',
+'Mongo::lastError' => 'Check if there was an error on the most recent db operation performed',
+'Mongo::listDBs' => 'Lists all of the databases available',
+'Mongo::pairConnect' => 'Connects to paired database server',
+'Mongo::pairPersistConnect' => 'Creates a persistent connection with paired database servers',
+'Mongo::persistConnect' => 'Creates a persistent connection with a database server',
 'mongo::poolDebug' => 'Returns information about all connection pools',
+'Mongo::prevError' => 'Checks for the last error thrown during a database operation',
+'Mongo::resetError' => 'Clears any flagged errors on the connection',
+'Mongo::selectCollection' => 'Gets a database collection',
+'Mongo::selectDB' => 'Gets a database',
 'mongo::setPoolSize' => 'Set the size for future connection pools',
+'Mongo::setReadPreference' => 'Set read preference',
 'mongo::setSlaveOkay' => 'Change slaveOkay setting for this connection',
 'mongo::switchSlave' => 'Choose a new secondary for slaveOkay reads',
 'mongobindata::__construct' => 'Creates a new binary data object',
@@ -4467,8 +6544,62 @@ return [
 'mongoclient::selectDB' => 'Gets a database',
 'mongoclient::setReadPreference' => 'Set the read preference for this connection',
 'mongoclient::setWriteConcern' => 'Set the write concern for this connection',
+'MongoClient::switchSlave' => 'Choose a new secondary for slaveOkay reads',
 'mongocode::__construct' => 'Creates a new code object',
 'mongocode::__toString' => 'Returns this code as a string',
+'MongoCollection::__construct' => 'Creates a new collection',
+'MongoCollection::__get' => 'Gets a collection',
+'MongoCollection::__toString' => 'String representation of this collection',
+'MongoCollection::aggregate' => '<p>
+The MongoDB
+{@link https://docs.mongodb.org/manual/applications/aggregation/ aggregation framework}
+provides a means to calculate aggregated values without having to use
+MapReduce. While MapReduce is powerful, it is often more difficult than
+necessary for many simple aggregation tasks, such as totaling or averaging
+field values.
+</p>
+<p>
+This method accepts either a variable amount of pipeline operators, or a
+single array of operators constituting the pipeline.
+</p>',
+'MongoCollection::aggregateCursor' => '<p>
+With this method you can execute Aggregation Framework pipelines and retrieve the results
+through a cursor, instead of getting just one document back as you would with
+{@link https://php.net/manual/en/mongocollection.aggregate.php MongoCollection::aggregate()}.
+This method returns a {@link https://php.net/manual/en/class.mongocommandcursor.php MongoCommandCursor} object.
+This cursor object implements the {@link https://php.net/manual/en/class.iterator.php Iterator} interface
+just like the {@link https://php.net/manual/en/class.mongocursor.php MongoCursor} objects that are returned
+by the {@link https://php.net/manual/en/mongocollection.find.php MongoCollection::find()} method
+</p>',
+'MongoCollection::batchInsert' => 'Inserts multiple documents into this collection',
+'MongoCollection::count' => 'Counts the number of documents in this collection',
+'MongoCollection::createDBRef' => 'Creates a database reference',
+'MongoCollection::createIndex' => 'Creates an index on the given field(s), or does nothing if the index already exists',
+'MongoCollection::deleteIndex' => 'Deletes an index from this collection',
+'MongoCollection::deleteIndexes' => 'Delete all indexes for this collection',
+'MongoCollection::distinct' => 'Retrieve a list of distinct values for the given key across a collection',
+'MongoCollection::drop' => 'Drops this collection',
+'MongoCollection::ensureIndex' => '`@return boolean` always true',
+'MongoCollection::find' => 'Querys this collection',
+'MongoCollection::findAndModify' => 'Update a document and return it',
+'MongoCollection::findOne' => 'Querys this collection, returning a single element',
+'MongoCollection::getDBRef' => 'Fetches the document pointed to by a database reference',
+'MongoCollection::getIndexInfo' => 'Returns an array of index names for this collection',
+'MongoCollection::getName' => 'Returns this collection\'s name',
+'MongoCollection::getSlaveOkay' => '<p>
+See {@link https://secure.php.net/manual/en/mongo.queries.php the query section} of this manual for
+information on distributing reads to secondaries.
+</p>',
+'MongoCollection::group' => 'Performs an operation similar to SQL\'s GROUP BY command',
+'MongoCollection::insert' => 'Inserts an array into the collection',
+'MongoCollection::remove' => 'Remove records from this collection',
+'MongoCollection::save' => 'Saves an object to this collection',
+'MongoCollection::setSlaveOkay' => '<p>
+See {@link https://secure.php.net/manual/en/mongo.queries.php the query section} of this manual for
+information on distributing reads to secondaries.
+</p>',
+'MongoCollection::update' => 'Update records based on a given criteria',
+'MongoCollection::validate' => 'Validates this collection',
 'mongocommandcursor::__construct' => 'Create a new command cursor',
 'mongocommandcursor::batchSize' => 'Limits the number of elements returned in one batch',
 'mongocommandcursor::createFromDocument' => 'Create a new command cursor from an existing command response document',
@@ -4482,6 +6613,40 @@ return [
 'mongocommandcursor::setReadPreference' => 'Set the read preference for this command',
 'mongocommandcursor::timeout' => 'Sets a client-side timeout for this command',
 'mongocommandcursor::valid' => 'Checks if the cursor is reading a valid result',
+'MongoCursor::__construct' => 'Create a new cursor',
+'MongoCursor::addOption' => 'Adds a top-level key/value pair to a query',
+'MongoCursor::awaitData' => 'Sets whether this cursor will wait for a while for a tailable cursor to return more data',
+'MongoCursor::batchSize' => 'PECL mongo >=1.0.11
+Limits the number of elements returned in one batch.
+<p>A cursor typically fetches a batch of result objects and store them locally.
+This method sets the batchSize value to configure the amount of documents retrieved from the server in one data packet.
+However, it will never return more documents than fit in the max batch size limit (usually 4MB).',
+'MongoCursor::count' => 'Counts the number of results for this query',
+'MongoCursor::current' => 'Returns the current element',
+'MongoCursor::dead' => 'Checks if there are documents that have not been sent yet from the database for this cursor',
+'MongoCursor::doQuery' => 'Execute the query',
+'MongoCursor::explain' => 'Return an explanation of the query, often useful for optimization and debugging',
+'MongoCursor::fields' => 'Sets the fields for a query',
+'MongoCursor::getNext' => 'Return the next object to which this cursor points, and advance the cursor',
+'MongoCursor::hasNext' => 'Checks if there are any more elements in this cursor',
+'MongoCursor::hint' => 'Gives the database a hint about the query',
+'MongoCursor::immortal' => 'Sets whether this cursor will timeout',
+'MongoCursor::info' => 'Gets the query, fields, limit, and skip for this cursor',
+'MongoCursor::key' => 'Returns the current result\'s _id',
+'MongoCursor::limit' => 'Limits the number of results returned',
+'MongoCursor::maxTimeMS' => '(PECL mongo >=1.5.0)
+Sets a server-side timeout for this query',
+'MongoCursor::next' => 'Advances the cursor to the next result',
+'MongoCursor::reset' => 'Clears the cursor',
+'MongoCursor::rewind' => 'Returns the cursor to the beginning of the result set',
+'MongoCursor::skip' => 'Skips a number of results',
+'MongoCursor::slaveOkay' => 'Sets whether this query can be done on a slave
+This method will override the static class variable slaveOkay.',
+'MongoCursor::snapshot' => 'Use snapshot mode for the query',
+'MongoCursor::sort' => 'Sorts the results by given fields',
+'MongoCursor::tailable' => 'Sets whether this cursor will be left open after fetching the last results',
+'MongoCursor::timeout' => 'Sets a client-side timeout for this query',
+'MongoCursor::valid' => 'Checks if the cursor is reading a valid result.',
 'mongocursorexception::getHost' => 'The hostname of the server that encountered the error',
 'mongocursorinterface::batchSize' => 'Limits the number of elements returned in one batch',
 'mongocursorinterface::dead' => 'Checks if there are results that have not yet been sent from the database',
@@ -4492,6 +6657,32 @@ return [
 'mongodate::__construct' => 'Creates a new date',
 'mongodate::__toString' => 'Returns a string representation of this date',
 'mongodate::toDateTime' => 'Returns a DateTime object representing this date',
+'MongoDB::__construct' => 'Creates a new database
+This method is not meant to be called directly. The preferred way to create an instance of MongoDB is through {@see Mongo::__get()} or {@see Mongo::selectDB()}.',
+'MongoDB::__get' => 'Gets a collection',
+'MongoDB::__toString' => 'The name of this database',
+'MongoDB::authenticate' => 'Log in to this database',
+'MongoDB::command' => 'Execute a database command',
+'MongoDB::createCollection' => 'Creates a collection',
+'MongoDB::createDBRef' => 'Creates a database reference',
+'MongoDB::drop' => 'Drops this database',
+'MongoDB::execute' => 'Runs JavaScript code on the database server.',
+'MongoDB::forceError' => 'Creates a database error',
+'MongoDB::getDBRef' => 'Fetches the document pointed to by a database reference',
+'MongoDB::getGridFS' => 'Fetches toolkit for dealing with files stored in this database',
+'MongoDB::getProfilingLevel' => 'Gets this database\'s profiling level',
+'MongoDB::getReadPreference' => 'Get the read preference for this database',
+'MongoDB::getSlaveOkay' => 'Get slaveOkay setting for this database',
+'MongoDB::getWriteConcern' => 'Get the write concern for this database',
+'MongoDB::lastError' => 'Check if there was an error on the most recent db operation performed',
+'MongoDB::listCollections' => 'Get a list of collections in this database',
+'MongoDB::prevError' => 'Checks for the last error thrown during a database operation',
+'MongoDB::repair' => 'Repairs and compacts this database',
+'MongoDB::resetError' => 'Clears any flagged errors on the database',
+'MongoDB::selectCollection' => 'Gets a collection',
+'MongoDB::setProfilingLevel' => 'Sets this database\'s profiling level',
+'MongoDB::setReadPreference' => 'Set the read preference for this database',
+'MongoDB::setSlaveOkay' => 'Change slaveOkay setting for this database',
 'mongodb\bson\binary::__construct' => 'Construct a new Binary',
 'mongodb\bson\binary::__toString' => 'Returns the Binary\'s data',
 'mongodb\bson\binary::getData' => 'Returns the Binary\'s data',
@@ -4513,6 +6704,10 @@ return [
 'mongodb\bson\decimal128::serialize' => 'Serialize a Decimal128',
 'mongodb\bson\decimal128::unserialize' => 'Unserialize a Decimal128',
 'mongodb\bson\decimal128interface::__toString' => 'Returns the string representation of this Decimal128Interface',
+'MongoDB\BSON\fromJSON' => 'Returns the BSON representation of a JSON value
+Converts an extended JSON string to its BSON representation.',
+'MongoDB\BSON\fromPHP' => 'Returns the BSON representation of a PHP value
+Serializes a PHP array or object (e.g. document) to its BSON representation. The returned binary string will describe a BSON document.',
 'mongodb\bson\int64::__construct' => 'Construct a new Int64 (unused)',
 'mongodb\bson\int64::__toString' => 'Returns the string representation of this Int64',
 'mongodb\bson\int64::jsonSerialize' => 'Returns a representation that can be converted to JSON',
@@ -4570,6 +6765,11 @@ return [
 'mongodb\bson\timestampinterface::__toString' => 'Returns the string representation of this TimestampInterface',
 'mongodb\bson\timestampinterface::getIncrement' => 'Returns the increment component of this TimestampInterface',
 'mongodb\bson\timestampinterface::getTimestamp' => 'Returns the timestamp component of this TimestampInterface',
+'MongoDB\BSON\toJSON' => 'Returns the JSON representation of a BSON value
+Converts a BSON string to its extended JSON representation.',
+'MongoDB\BSON\toPHP' => 'Returns the PHP representation of a BSON value
+Unserializes a BSON document (i.e. binary string) to its PHP representation.
+The typeMap paramater may be used to control the PHP types used for converting BSON arrays and documents (both root and embedded).',
 'mongodb\bson\undefined::__construct' => 'Construct a new Undefined (unused)',
 'mongodb\bson\undefined::__toString' => 'Returns an empty string',
 'mongodb\bson\undefined::jsonSerialize' => 'Returns a representation that can be converted to JSON',
@@ -4578,6 +6778,8 @@ return [
 'mongodb\bson\unserializable::bsonUnserialize' => 'Constructs the object from a BSON array or document',
 'mongodb\bson\utcdatetime::__construct' => 'Construct a new UTCDateTime',
 'mongodb\bson\utcdatetime::__toString' => 'Returns the string representation of this UTCDateTime',
+'MongoDB\BSON\UTCDateTime::getIncrement' => 'Returns the increment component of this TimestampInterface',
+'MongoDB\BSON\UTCDateTime::getTimestamp' => 'Returns the timestamp component of this TimestampInterface',
 'mongodb\bson\utcdatetime::jsonSerialize' => 'Returns a representation that can be converted to JSON',
 'mongodb\bson\utcdatetime::serialize' => 'Serialize a UTCDateTime',
 'mongodb\bson\utcdatetime::toDateTime' => 'Returns the DateTime representation of this UTCDateTime',
@@ -4599,8 +6801,11 @@ return [
 'mongodb\driver\cursorid::__construct' => 'Create a new CursorId (not used)',
 'mongodb\driver\cursorid::__toString' => 'String representation of the cursor ID',
 'mongodb\driver\exception\commandexception::getResultDocument' => 'Returns the result document for the failed command',
+'MongoDB\Driver\Exception\CommandException::hasErrorLabel' => 'Whether the given errorLabel is associated with this exception',
 'mongodb\driver\exception\runtimeexception::hasErrorLabel' => 'Returns whether an error label is associated with an exception',
+'MongoDB\Driver\Exception\ServerException::hasErrorLabel' => 'Whether the given errorLabel is associated with this exception',
 'mongodb\driver\exception\writeexception::getWriteResult' => 'Returns the WriteResult for the failed write operation',
+'MongoDB\Driver\Exception\WriteException::hasErrorLabel' => 'Whether the given errorLabel is associated with this exception',
 'mongodb\driver\manager::__construct' => 'Create new MongoDB Manager',
 'mongodb\driver\manager::executeBulkWrite' => 'Execute one or more write operations',
 'mongodb\driver\manager::executeCommand' => 'Execute a database command',
@@ -4614,6 +6819,9 @@ return [
 'mongodb\driver\manager::getWriteConcern' => 'Return the WriteConcern for the Manager',
 'mongodb\driver\manager::selectServer' => 'Select a server matching a read preference',
 'mongodb\driver\manager::startSession' => 'Start a new client session for use with this client',
+'MongoDB\Driver\Monitoring\addSubscriber' => 'Registers a new monitoring event subscriber with the driver.
+Registered subscribers will be notified of monitoring events through specific methods.
+Note: If the object is already registered, this function is a no-op.',
 'mongodb\driver\monitoring\commandfailedevent::getCommandName' => 'Returns the command name',
 'mongodb\driver\monitoring\commandfailedevent::getDurationMicros' => 'Returns the command\'s duration in microseconds',
 'mongodb\driver\monitoring\commandfailedevent::getError' => 'Returns the Exception associated with the failed command',
@@ -4636,6 +6844,9 @@ return [
 'mongodb\driver\monitoring\commandsucceededevent::getReply' => 'Returns the command reply document',
 'mongodb\driver\monitoring\commandsucceededevent::getRequestId' => 'Returns the command\'s request ID',
 'mongodb\driver\monitoring\commandsucceededevent::getServer' => 'Returns the Server on which the command was executed',
+'MongoDB\Driver\Monitoring\removeSubscriber' => 'Unregisters an existing monitoring event subscriber from the driver.
+Unregistered subscribers will no longer be notified of monitoring events.
+Note: If the object is not registered, this function is a no-op.',
 'mongodb\driver\query::__construct' => 'Create a new Query',
 'mongodb\driver\readconcern::__construct' => 'Create a new ReadConcern',
 'mongodb\driver\readconcern::bsonSerialize' => 'Returns an object for BSON serialization',
@@ -4700,6 +6911,101 @@ return [
 'mongodbref::create' => 'Creates a new database reference',
 'mongodbref::get' => 'Fetches the object pointed to by a reference',
 'mongodbref::isRef' => 'Checks if an array is a database reference',
+'MongoGridFS::__construct' => 'Files as stored across two collections, the first containing file meta
+information, the second containing chunks of the actual file. By default,
+fs.files and fs.chunks are the collection names used.',
+'MongoGridFS::__get' => 'Gets a collection',
+'MongoGridFS::__toString' => 'String representation of this collection',
+'MongoGridFS::aggregate' => '<p>
+The MongoDB
+{@link https://docs.mongodb.org/manual/applications/aggregation/ aggregation framework}
+provides a means to calculate aggregated values without having to use
+MapReduce. While MapReduce is powerful, it is often more difficult than
+necessary for many simple aggregation tasks, such as totaling or averaging
+field values.
+</p>
+<p>
+This method accepts either a variable amount of pipeline operators, or a
+single array of operators constituting the pipeline.
+</p>',
+'MongoGridFS::aggregateCursor' => '<p>
+With this method you can execute Aggregation Framework pipelines and retrieve the results
+through a cursor, instead of getting just one document back as you would with
+{@link https://php.net/manual/en/mongocollection.aggregate.php MongoCollection::aggregate()}.
+This method returns a {@link https://php.net/manual/en/class.mongocommandcursor.php MongoCommandCursor} object.
+This cursor object implements the {@link https://php.net/manual/en/class.iterator.php Iterator} interface
+just like the {@link https://php.net/manual/en/class.mongocursor.php MongoCursor} objects that are returned
+by the {@link https://php.net/manual/en/mongocollection.find.php MongoCollection::find()} method
+</p>',
+'MongoGridFS::batchInsert' => 'Inserts multiple documents into this collection',
+'MongoGridFS::count' => 'Counts the number of documents in this collection',
+'MongoGridFS::createDBRef' => 'Creates a database reference',
+'MongoGridFS::createIndex' => 'Creates an index on the given field(s), or does nothing if the index already exists',
+'MongoGridFS::delete' => 'Delete a file from the database',
+'MongoGridFS::deleteIndex' => 'Deletes an index from this collection',
+'MongoGridFS::deleteIndexes' => 'Delete all indexes for this collection',
+'MongoGridFS::distinct' => 'Retrieve a list of distinct values for the given key across a collection',
+'MongoGridFS::drop' => 'Drops the files and chunks collections',
+'MongoGridFS::ensureIndex' => '`@return boolean` always true',
+'MongoGridFS::find' => '`@return MongoGridFSCursor` A MongoGridFSCursor',
+'MongoGridFS::findAndModify' => 'Update a document and return it',
+'MongoGridFS::findOne' => 'Returns a single file matching the criteria',
+'MongoGridFS::get' => 'Retrieve a file from the database',
+'MongoGridFS::getDBRef' => 'Fetches the document pointed to by a database reference',
+'MongoGridFS::getIndexInfo' => 'Returns an array of index names for this collection',
+'MongoGridFS::getName' => 'Returns this collection\'s name',
+'MongoGridFS::getSlaveOkay' => '<p>
+See {@link https://secure.php.net/manual/en/mongo.queries.php the query section} of this manual for
+information on distributing reads to secondaries.
+</p>',
+'MongoGridFS::group' => 'Performs an operation similar to SQL\'s GROUP BY command',
+'MongoGridFS::insert' => 'Inserts an array into the collection',
+'MongoGridFS::put' => 'Stores a file in the database',
+'MongoGridFS::remove' => 'Removes files from the collections',
+'MongoGridFS::save' => 'Saves an object to this collection',
+'MongoGridFS::setSlaveOkay' => '<p>
+See {@link https://secure.php.net/manual/en/mongo.queries.php the query section} of this manual for
+information on distributing reads to secondaries.
+</p>',
+'MongoGridFS::storeBytes' => 'Chunkifies and stores bytes in the database',
+'MongoGridFS::storeFile' => 'Stores a file in the database',
+'MongoGridFS::storeUpload' => 'Saves an uploaded file directly from a POST to the database',
+'MongoGridFS::update' => 'Update records based on a given criteria',
+'MongoGridFS::validate' => 'Validates this collection',
+'MongoGridFSCursor::__construct' => 'Create a new cursor',
+'MongoGridFSCursor::addOption' => 'Adds a top-level key/value pair to a query',
+'MongoGridFSCursor::awaitData' => 'Sets whether this cursor will wait for a while for a tailable cursor to return more data',
+'MongoGridFSCursor::batchSize' => 'PECL mongo >=1.0.11
+Limits the number of elements returned in one batch.
+<p>A cursor typically fetches a batch of result objects and store them locally.
+This method sets the batchSize value to configure the amount of documents retrieved from the server in one data packet.
+However, it will never return more documents than fit in the max batch size limit (usually 4MB).',
+'MongoGridFSCursor::count' => 'Counts the number of results for this query',
+'MongoGridFSCursor::current' => 'Returns the current file',
+'MongoGridFSCursor::dead' => 'Checks if there are documents that have not been sent yet from the database for this cursor',
+'MongoGridFSCursor::doQuery' => 'Execute the query',
+'MongoGridFSCursor::explain' => 'Return an explanation of the query, often useful for optimization and debugging',
+'MongoGridFSCursor::fields' => 'Sets the fields for a query',
+'MongoGridFSCursor::getNext' => 'Return the next file to which this cursor points, and advance the cursor',
+'MongoGridFSCursor::hasNext' => 'Checks if there are any more elements in this cursor',
+'MongoGridFSCursor::hint' => 'Gives the database a hint about the query',
+'MongoGridFSCursor::immortal' => 'Sets whether this cursor will timeout',
+'MongoGridFSCursor::info' => 'Gets the query, fields, limit, and skip for this cursor',
+'MongoGridFSCursor::key' => 'Returns the current result\'s filename',
+'MongoGridFSCursor::limit' => 'Limits the number of results returned',
+'MongoGridFSCursor::maxTimeMS' => '(PECL mongo >=1.5.0)
+Sets a server-side timeout for this query',
+'MongoGridFSCursor::next' => 'Advances the cursor to the next result',
+'MongoGridFSCursor::reset' => 'Clears the cursor',
+'MongoGridFSCursor::rewind' => 'Returns the cursor to the beginning of the result set',
+'MongoGridFSCursor::skip' => 'Skips a number of results',
+'MongoGridFSCursor::slaveOkay' => 'Sets whether this query can be done on a slave
+This method will override the static class variable slaveOkay.',
+'MongoGridFSCursor::snapshot' => 'Use snapshot mode for the query',
+'MongoGridFSCursor::sort' => 'Sorts the results by given fields',
+'MongoGridFSCursor::tailable' => 'Sets whether this cursor will be left open after fetching the last results',
+'MongoGridFSCursor::timeout' => 'Sets a client-side timeout for this query',
+'MongoGridFSCursor::valid' => 'Checks if the cursor is reading a valid result.',
 'mongogridfsfile::__construct' => 'Create a new GridFS file',
 'mongogridfsfile::getBytes' => 'Returns this file\'s contents as a string of bytes',
 'mongogridfsfile::getFilename' => 'Returns this file\'s filename',
@@ -4732,6 +7038,12 @@ return [
 'mongoresultexception::getDocument' => 'Retrieve the full result document',
 'mongotimestamp::__construct' => 'Creates a new timestamp',
 'mongotimestamp::__toString' => 'Returns a string representation of this timestamp',
+'MongoUpdateBatch::__construct' => '<p>(PECL mongo &gt;= 1.5.0)</p>
+MongoUpdateBatch constructor.',
+'MongoUpdateBatch::add' => '<p>(PECL mongo &gt;= 1.5.0)</p>
+Adds a write operation to a batch',
+'MongoUpdateBatch::execute' => '<p>(PECL mongo &gt;= 1.5.0)</p>
+Executes a batch of write operations',
 'mongowritebatch::__construct' => 'Creates a new batch of write operations',
 'mongowritebatch::add' => 'Adds a write operation to a batch',
 'mongowritebatch::execute' => 'Executes a batch of write operations',
@@ -4751,6 +7063,24 @@ return [
 'mqseries_put1' => 'MQSeries MQPUT1',
 'mqseries_set' => 'MQSeries MQSET',
 'mqseries_strerror' => 'Returns the error message corresponding to a result code (MQRC)',
+'ms_GetErrorObj' => 'Returns a reference to the head of the list of errorObj.',
+'ms_GetVersion' => 'Returns the MapServer version and options in a string.  This
+string can be parsed to find out which modules were compiled in,
+etc.',
+'ms_GetVersionInt' => 'Returns the MapServer version number (x.y.z) as an integer
+(x*10000 + y*100 + z). (New in v5.0) e.g. V5.4.3 would return
+50403.',
+'ms_iogetStdoutBufferBytes' => 'Writes the current buffer to stdout.  The PHP header() function
+should be used to set the documents\'s content-type prior to
+calling the function.  Returns the number of bytes written if
+output is sent to stdout.  See :ref:`mapscript_ows` for more info.',
+'ms_ResetErrorList' => 'Clear the current error list.
+Note that clearing the list invalidates any errorObj handles obtained
+via the $error->next() method.',
+'ms_TokenizeMap' => 'Preparses a mapfile through the MapServer parser and return an
+array with one item for each token from the mapfile.  Strings,
+logical expressions, regex expressions and comments are returned
+as individual tokens.',
 'msession_connect' => 'Connect to msession server',
 'msession_count' => 'Get session count',
 'msession_create' => 'Create a session',
@@ -4779,6 +7109,10 @@ return [
 'msg_send' => 'Send a message to a message queue',
 'msg_set_queue' => 'Set information in the message queue data structure',
 'msg_stat_queue' => 'Returns information from the message queue data structure',
+'msgpack_pack' => 'Alias of msgpack_serialize',
+'msgpack_serialize' => 'Serialize a variable into msgpack format',
+'msgpack_unpack' => 'Alias of msgpack_unserialize',
+'msgpack_unserialize' => 'Unserialize $str',
 'msql' => 'Alias of msql_db_query',
 'msql_affected_rows' => 'Returns number of affected rows',
 'msql_close' => 'Close mSQL connection',
@@ -5104,6 +7438,8 @@ return [
 'mysql_xdevapi\tableupdate::where' => 'Set search filter',
 'mysql_xdevapi\warning::__construct' => 'Warning constructor',
 'mysql_xdevapi\xsession::__construct' => 'Description constructor',
+'mysqli::__construct' => 'Open a new connection to the MySQL server
+</p>',
 'mysqli::autocommit' => 'Turns on or off auto-committing database modifications',
 'mysqli::begin_transaction' => 'Starts a transaction',
 'mysqli::change_user' => 'Changes the user of the specified database connection',
@@ -5112,6 +7448,7 @@ return [
 'mysqli::commit' => 'Commits the current transaction',
 'mysqli::debug' => 'Performs debugging operations',
 'mysqli::dump_debug_info' => 'Dump debugging information into the log',
+'mysqli::escape_string' => 'Escapes special characters in a string for use in an SQL statement, taking into account the current charset of the connection',
 'mysqli::get_charset' => 'Returns a character set object',
 'mysqli::get_client_info' => 'Get MySQL client info',
 'mysqli::get_connection_stats' => 'Returns statistics about the client connection',
@@ -5128,6 +7465,7 @@ return [
 'mysqli::prepare' => 'Prepare an SQL statement for execution',
 'mysqli::query' => 'Performs a query on the database',
 'mysqli::real_connect' => 'Opens a connection to a mysql server',
+'mysqli::real_escape_string' => 'Escapes special characters in a string for use in an SQL statement, taking into account the current charset of the connection',
 'mysqli::real_query' => 'Execute an SQL query',
 'mysqli::reap_async_query' => 'Get result from async query',
 'mysqli::refresh' => 'Refreshes',
@@ -5165,6 +7503,8 @@ return [
 'mysqli_master_query' => 'Enforce execution of a query on the master in a master/slave setup',
 'mysqli_param_count' => 'Alias for mysqli_stmt_param_count',
 'mysqli_report' => 'Alias of mysqli_driver-&gt;report_mode',
+'mysqli_result::__construct' => 'Constructor (no docs available)',
+'mysqli_result::close' => 'Frees the memory associated with a result',
 'mysqli_result::data_seek' => 'Adjusts the result pointer to an arbitrary row in the result',
 'mysqli_result::fetch_all' => 'Fetches all result rows as an associative array, a numeric array, or both',
 'mysqli_result::fetch_array' => 'Fetch a result row as an associative, a numeric array, or both',
@@ -5175,6 +7515,8 @@ return [
 'mysqli_result::fetch_object' => 'Returns the current row of a result set as an object',
 'mysqli_result::fetch_row' => 'Get a result row as an enumerated array',
 'mysqli_result::field_seek' => 'Set result pointer to a specified field offset',
+'mysqli_result::free' => 'Frees the memory associated with a result',
+'mysqli_result::free_result' => 'Frees the memory associated with a result',
 'mysqli_rpl_parse_enabled' => 'Check if RPL parse is enabled',
 'mysqli_rpl_probe' => 'RPL probe',
 'mysqli_send_long_data' => 'Alias for mysqli_stmt_send_long_data',
@@ -5198,6 +7540,7 @@ return [
 'mysqli_stmt::reset' => 'Resets a prepared statement',
 'mysqli_stmt::result_metadata' => 'Returns result set metadata from a prepared statement',
 'mysqli_stmt::send_long_data' => 'Send data in blocks',
+'mysqli_stmt::stmt' => 'No documentation available',
 'mysqli_stmt::store_result' => 'Transfers a result set from a prepared statement',
 'mysqli_warning::__construct' => 'The __construct purpose',
 'mysqli_warning::next' => 'The next purpose',
@@ -5494,6 +7837,7 @@ return [
 'nsapi_response_headers' => 'Fetch all HTTP response headers',
 'nsapi_virtual' => 'Perform an NSAPI sub-request',
 'number_format' => 'Format a number with grouped thousands',
+'NumberFormatter::create' => 'Create a number formatter',
 'numberformatter::format' => 'Format a number',
 'numberformatter::formatCurrency' => 'Format a currency value',
 'numberformatter::getAttribute' => 'Get an attribute',
@@ -5532,6 +7876,7 @@ return [
 'oauth::setRequestEngine' => 'The setRequestEngine purpose',
 'oauth::setRSACertificate' => 'Set the RSA certificate',
 'oauth::setSSLChecks' => 'Tweak specific SSL checks for requests',
+'OAuth::setTimeout' => 'Set the timeout',
 'oauth::setTimestamp' => 'Set the timestamp',
 'oauth::setToken' => 'Sets the token and secret',
 'oauth::setVersion' => 'Set the OAuth version',
@@ -5651,6 +7996,124 @@ return [
 'oci_set_prefetch' => 'Sets number of rows to be prefetched by queries',
 'oci_statement_type' => 'Returns the type of a statement',
 'oci_unregister_taf_callback' => 'Unregister a user-defined callback function for Oracle Database TAF',
+'ocibindbyname' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_bind_by_name}',
+'ocicancel' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_cancel}',
+'ocicloselob' => '(PHP 4 &gt;= 4.0.6, PECL OCI8 1.0)
+Alias of {@see OCI-Lob::close()}',
+'ocicollappend' => '(PHP 4 &gt;= 4.0.6, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of
+(@see OCI_Collection::append)',
+'ocicollassign' => '(PHP 4 >= 4.0.6, PECL OCI8 1.0)
+Alias of {@see OCI-Collection::assign()}
+Assigns a value to the collection from another existing collection',
+'ocicollassignelem' => '(PHP 4 &gt;= 4.0.6, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see OCI_Collection::assignElem}',
+'ocicollgetelem' => '(PHP 4 &gt;= 4.0.6, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of
+{@see OCI_COLLection::getElem}',
+'ocicollmax' => '(PHP 4 &gt;= 4.0.6, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of
+{@see OCI_COLLection::max}',
+'ocicollsize' => '(PHP 4 &gt;= 4.0.6, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of
+{@see OCI_COLLection::size}',
+'ocicolltrim' => '(PHP 4 &gt;= 4.0.6, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of
+{@see OCI_Collection::trim}',
+'ocicolumnisnull' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_field_is_null}',
+'ocicolumnname' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_field_name}',
+'ocicolumnprecision' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_field_precision}',
+'ocicolumnscale' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_field_scale}',
+'ocicolumnsize' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_field_size}',
+'ocicolumntype' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_field_type}',
+'ocicolumntyperaw' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_field_type_raw}',
+'ocicommit' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of
+{@see oci_commit}',
+'ocidefinebyname' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_define_by_name}',
+'ocierror' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of
+{@see oci_error}',
+'ociexecute' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_execute}',
+'ocifetch' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_fetch}',
+'ocifetchstatement' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_fetch_all}',
+'ocifreecollection' => '(PHP 4 &gt;= 4.0.7, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see OCI_Collection::free}',
+'ocifreecursor' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of
+{@see oci_free_statement}',
+'ocifreedesc' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of
+{@see OCI-Lob::free}',
+'ocifreestatement' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_free_statement}',
+'ociinternaldebug' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_internal_debug}',
+'ociloadlob' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of
+{@see OCI_Lob::load}',
+'ocilogoff' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_close}',
+'ocilogon' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_connect}',
+'ocinewcollection' => '(PHP 4 &gt;= 4.0.6, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of
+{@see oci_new_collection}',
+'ocinewcursor' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_new_cursor}',
+'ocinewdescriptor' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of
+{@see oci_new_descriptor}',
+'ocinlogon' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of
+{@see oci_new_connect}',
+'ocinumcols' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_num_fields}',
+'ociparse' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_parse}',
+'ocipasswordchange' => '(PHP 5, PECL OCI8 &gt;= 1.1.0)<br/>
+Changes password of Oracle\'s user',
+'ociplogon' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of
+{@see oci_pconnect}',
+'ociresult' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_result}',
+'ocirollback' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of
+{@see oci_rollback}',
+'ocirowcount' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_num_rows}',
+'ocisavelob' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of
+{@see OCI-Lob::save}',
+'ocisavelobfile' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of
+{@see OCI_Lob::import}',
+'ociserverversion' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_server_version}',
+'ocisetprefetch' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_set_prefetch}',
+'ocistatementtype' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of {@see oci_statement_type}',
+'ociwritelobtofile' => '(PHP 4, PHP 5, PECL OCI8 &gt;= 1.0.0)<br/>
+Alias of
+{@see OCI_Lob::export}',
+'ociwritetemporarylob' => '(PHP 4 &gt;= 4.0.6, PECL OCI8 1.0)
+Writes a temporary large object
+Alias of {@see OCI-Lob::writeTemporary()}',
 'octdec' => 'Octal to decimal',
 'odbc_autocommit' => 'Toggle autocommit behaviour',
 'odbc_binmode' => 'Handling of binary column data',
@@ -5788,7 +8251,35 @@ return [
 'outeriterator::getInnerIterator' => 'Returns the inner iterator for the current entry',
 'output_add_rewrite_var' => 'Add URL rewriter values',
 'output_reset_rewrite_vars' => 'Reset URL rewriter values',
+'outputformatObj::getOption' => 'Returns the associated value for the format option property passed
+as argument. Returns an empty string if property not found.',
+'outputformatObj::set' => 'Set object property to a new value.',
+'outputformatObj::setOption' => 'Add or Modify the format option list. return true on success.
+.. code-block:: php
+$oMap->outputformat->setOption("OUTPUT_TYPE", "RASTER");',
+'outputformatObj::validate' => 'Checks some internal consistency issues, Returns MS_SUCCESS or
+MS_FAILURE. Some problems are fixed up internally. May produce debug
+output if issues encountered.',
 'override_function' => 'Overrides built-in functions',
+'OwsrequestObj::__construct' => 'request = ms_newOwsrequestObj();
+Create a new ows request object.',
+'OwsrequestObj::addParameter' => 'Add a request parameter, even if the parameter key was previousely set.
+This is useful when multiple parameters with the same key are required.
+For example :
+.. code-block:: php
+$request->addparameter(\'SIZE\', \'x(100)\');
+$request->addparameter(\'SIZE\', \'y(100)\');',
+'OwsrequestObj::getName' => 'Return the name of the parameter at *index* in the request\'s array
+of parameter names.',
+'OwsrequestObj::getValue' => 'Return the value of the parameter at *index* in the request\'s array
+of parameter values.',
+'OwsrequestObj::getValueByName' => 'Return the value associated with the parameter *name*.',
+'OwsrequestObj::loadParams' => 'Initializes the OWSRequest object from the cgi environment variables
+REQUEST_METHOD, QUERY_STRING and HTTP_COOKIE.  Returns the number of
+name/value pairs collected.',
+'OwsrequestObj::setParameter' => 'Set a request parameter.  For example :
+.. code-block:: php
+$request->setparameter(\'REQUEST\', \'GetMap\');',
 'pack' => 'Pack data into binary string',
 'parallel\future::done' => 'State Detection',
 'parallel\future::select' => 'Resolution',
@@ -6072,6 +8563,59 @@ return [
 'pdf_utf16_to_utf8' => 'Convert string from UTF-16 to UTF-8',
 'pdf_utf32_to_utf16' => 'Convert string from UTF-32 to UTF-16',
 'pdf_utf8_to_utf16' => 'Convert string from UTF-8 to UTF-16',
+'PDFlib::activate_item' => 'Activates a previously created structure element or other content item.',
+'PDFlib::add_launchlink' => 'Adds a link to a web resource.',
+'PDFlib::add_locallink' => 'Add a link annotation to a target within the current PDF file.',
+'PDFlib::add_nameddest' => 'Creates a named destination on an arbitrary page in the current document.',
+'PDFlib::add_note' => 'Sets an annotation for the current page.',
+'PDFlib::add_pdflink' => 'Add a file link annotation to a PDF target.',
+'PDFlib::add_table_cell' => 'Adds a cell to a new or existing table.',
+'PDFlib::add_textflow' => 'Creates a Textflow object, or adds text and explicit options to an existing Textflow.',
+'PDFlib::add_thumbnail' => 'Adds an existing image as thumbnail for the current page.',
+'PDFlib::add_weblink' => 'Adds a weblink annotation to a target url on the Web.',
+'PDFlib::arc' => 'Adds a counterclockwise circular arc',
+'PDFlib::arcn' => 'Except for the drawing direction, this function behaves exactly like PDF_arc().',
+'PDFlib::attach_file' => 'Adds a file attachment annotation.',
+'PDFlib::begin_document' => 'Creates a new PDF file subject to various options.',
+'PDFlib::begin_font' => 'Starts a Type 3 font definition.',
+'PDFlib::begin_glyph' => 'Starts a glyph definition for a Type 3 font.',
+'PDFlib::begin_item' => 'Opens a structure element or other content item with attributes supplied as options.',
+'PDFlib::begin_layer' => 'Starts a layer for subsequent output on the page.',
+'PDFlib::begin_page' => 'Adds a new page to the document.',
+'PDFlib::begin_page_ext' => 'Adds a new page to the document, and specifies various options. The parameters width and height are the dimensions of the new page in points.',
+'PDFlib::begin_pattern' => 'Starts a new pattern definition.',
+'PDFlib::begin_template_ext' => 'Starts a new template definition.',
+'PDFlib::close_pdi_page' => 'Closes the page handle, and frees all page-related resources',
+'PDO::__construct' => 'Creates a PDO instance representing a connection to a database',
+'PDO::beginTransaction' => 'Initiates a transaction
+<p>
+Turns off autocommit mode. While autocommit mode is turned off,
+changes made to the database via the PDO object instance are not committed
+until you end the transaction by calling {@link PDO::commit()}.
+Calling {@link PDO::rollBack()} will roll back all changes to the database and
+return the connection to autocommit mode.
+</p>
+<p>
+Some databases, including MySQL, automatically issue an implicit COMMIT
+when a database definition language (DDL) statement
+such as DROP TABLE or CREATE TABLE is issued within a transaction.
+The implicit COMMIT will prevent you from rolling back any other changes
+within the transaction boundary.
+</p>',
+'PDO::commit' => 'Commits a transaction',
+'PDO::errorCode' => 'Fetch the SQLSTATE associated with the last operation on the database handle',
+'PDO::errorInfo' => 'Fetch extended error information associated with the last operation on the database handle',
+'PDO::exec' => 'Execute an SQL statement and return the number of affected rows',
+'PDO::getAttribute' => 'Retrieve a database connection attribute',
+'PDO::getAvailableDrivers' => 'Return an array of available PDO drivers',
+'PDO::inTransaction' => 'Checks if inside a transaction',
+'PDO::lastInsertId' => 'Returns the ID of the last inserted row or sequence value',
+'PDO::prepare' => 'Prepares a statement for execution and returns a statement object',
+'PDO::query' => 'Executes an SQL statement, returning a result set as a PDOStatement object',
+'PDO::quote' => 'Quotes a string for use in a query.',
+'PDO::rollBack' => 'Rolls back a transaction',
+'PDO::setAttribute' => 'Set an attribute',
+'PDO::sqliteCreateFunction' => 'Registers a User Defined Function for use in SQL statements',
 'pdostatement::bindColumn' => 'Bind a column to a PHP variable',
 'pdostatement::bindParam' => 'Binds a parameter to the specified variable name',
 'pdostatement::bindValue' => 'Binds a value to a parameter',
@@ -6199,12 +8743,14 @@ return [
 'phar::copy' => 'Copy a file internal to the phar archive to another new file within the phar',
 'phar::count' => 'Returns the number of entries (files) in the Phar archive',
 'phar::createDefaultStub' => 'Create a phar-file format specific stub',
+'Phar::current' => 'The current file',
 'phar::decompress' => 'Decompresses the entire Phar archive',
 'phar::decompressFiles' => 'Decompresses all files in the current Phar archive',
 'phar::delete' => 'Delete a file within a phar archive',
 'phar::delMetadata' => 'Deletes the global metadata of the phar',
 'phar::extractTo' => 'Extract the contents of a phar archive to a directory',
 'phar::getAlias' => 'Get the alias for Phar',
+'Phar::getChildren' => 'Returns an iterator for the current entry if it is a directory',
 'phar::getMetadata' => 'Returns phar archive meta-data',
 'phar::getModified' => 'Return whether phar was modified',
 'phar::getPath' => 'Get the real path to the Phar archive on disk',
@@ -6213,6 +8759,7 @@ return [
 'phar::getSupportedCompression' => 'Return array of supported compression algorithms',
 'phar::getSupportedSignatures' => 'Return array of supported signature types',
 'phar::getVersion' => 'Return version info of Phar archive',
+'Phar::hasChildren' => 'Returns whether current entry is a directory and not \'.\' or \'..\'',
 'phar::hasMetadata' => 'Returns whether phar has global meta-data',
 'phar::interceptFileFuncs' => 'Instructs phar to intercept fopen, file_get_contents, opendir, and all of the stat-related functions',
 'phar::isBuffering' => 'Used to determine whether Phar write operations are being buffered, or are flushing directly to disk',
@@ -6220,15 +8767,19 @@ return [
 'phar::isFileFormat' => 'Returns true if the phar archive is based on the tar/phar/zip file format depending on the parameter',
 'phar::isValidPharFilename' => 'Returns whether the given filename is a valid phar filename',
 'phar::isWritable' => 'Returns true if the phar archive can be modified',
+'Phar::key' => 'Retrieve the key for the current file',
 'phar::loadPhar' => 'Loads any phar archive with an alias',
 'phar::mapPhar' => 'Reads the currently executed file (a phar) and registers its manifest',
 'phar::mount' => 'Mount an external path or file to a virtual location within the phar archive',
 'phar::mungServer' => 'Defines a list of up to 4 $_SERVER variables that should be modified for execution',
+'Phar::next' => 'Move to the next file',
 'phar::offsetExists' => 'Determines whether a file exists in the phar',
 'phar::offsetGet' => 'Gets a PharFileInfo object for a specific file',
 'phar::offsetSet' => 'Set the contents of an internal file to those of an external file',
 'phar::offsetUnset' => 'Remove a file from a phar',
+'Phar::rewind' => 'Rewinds back to the beginning',
 'phar::running' => 'Returns the full path on disk or full phar URL to the currently executing Phar archive',
+'Phar::seek' => 'Seek to a DirectoryIterator item',
 'phar::setAlias' => 'Set the alias for the Phar archive',
 'phar::setDefaultStub' => 'Used to set the PHP loader or bootstrap stub of a Phar archive to the default loader',
 'phar::setMetadata' => 'Sets phar archive meta-data',
@@ -6238,6 +8789,7 @@ return [
 'phar::stopBuffering' => 'Stop buffering write requests to the Phar archive, and save changes to disk',
 'phar::uncompressAllFiles' => 'Uncompresses all files in the current Phar archive',
 'phar::unlinkArchive' => 'Completely remove a phar archive from disk and from memory',
+'Phar::valid' => 'Check whether current DirectoryIterator position is a valid file',
 'phar::webPhar' => 'mapPhar for web-based phars. front controller for web applications',
 'phardata::__construct' => 'Construct a non-executable tar or zip archive object',
 'phardata::addEmptyDir' => 'Add an empty directory to the tar/zip archive',
@@ -6250,19 +8802,27 @@ return [
 'phardata::convertToData' => 'Convert a phar archive to a non-executable tar or zip file',
 'phardata::convertToExecutable' => 'Convert a non-executable tar/zip archive to an executable phar archive',
 'phardata::copy' => 'Copy a file internal to the phar archive to another new file within the phar',
+'PharData::current' => 'The current file',
 'phardata::decompress' => 'Decompresses the entire Phar archive',
 'phardata::decompressFiles' => 'Decompresses all files in the current zip archive',
 'phardata::delete' => 'Delete a file within a tar/zip archive',
 'phardata::delMetadata' => 'Deletes the global metadata of a zip archive',
 'phardata::extractTo' => 'Extract the contents of a tar/zip archive to a directory',
+'PharData::getChildren' => 'Returns an iterator for the current entry if it is a directory',
+'PharData::hasChildren' => 'Returns whether current entry is a directory and not \'.\' or \'..\'',
 'phardata::isWritable' => 'Returns true if the tar/zip archive can be modified',
+'PharData::key' => 'Retrieve the key for the current file',
+'PharData::next' => 'Move to the next file',
 'phardata::offsetSet' => 'Set the contents of a file within the tar/zip to those of an external file or string',
 'phardata::offsetUnset' => 'Remove a file from a tar/zip archive',
+'PharData::rewind' => 'Rewinds back to the beginning',
+'PharData::seek' => 'Seek to a DirectoryIterator item',
 'phardata::setAlias' => 'Dummy function (Phar::setAlias is not valid for PharData)',
 'phardata::setDefaultStub' => 'Dummy function (Phar::setDefaultStub is not valid for PharData)',
 'phardata::setMetadata' => 'Sets phar archive meta-data',
 'phardata::setSignatureAlgorithm' => 'Set the signature algorithm for a phar and apply it',
 'phardata::setStub' => 'Dummy function (Phar::setStub is not valid for PharData)',
+'PharData::valid' => 'Check whether current DirectoryIterator position is a valid file',
 'pharfileinfo::__construct' => 'Construct a Phar entry object',
 'pharfileinfo::chmod' => 'Sets file-specific permission bits',
 'pharfileinfo::compress' => 'Compresses the current Phar entry with either zlib or bzip2 compression',
@@ -6342,6 +8902,25 @@ return [
 'pht\vector::updateAt' => 'Updates a value in the vector',
 'pi' => 'Get value of pi',
 'png2wbmp' => 'Convert PNG image file to WBMP image file',
+'pointObj::distanceToLine' => 'Calculates distance between a point ad a lined defined by the
+two points passed in argument.',
+'pointObj::distanceToPoint' => 'Calculates distance between two points.',
+'pointObj::distanceToShape' => 'Calculates the minimum distance between a point and a shape.',
+'pointObj::draw' => 'Draws the individual point using layer.  The class_index is used
+to classify the point based on the classes defined for the layer.
+The text string is used to annotate the point. (Optional)
+Returns MS_SUCCESS/MS_FAILURE.',
+'pointObj::ms_newPointObj' => 'Old style constructor',
+'pointObj::project' => 'Project the point from "in" projection (1st argument) to "out"
+projection (2nd argument).  Returns MS_SUCCESS/MS_FAILURE.',
+'pointObj::setXY' => 'Set X,Y coordinate values.
+.. note::
+the 3rd parameter m is used for measured shape files only.
+It is not mandatory.',
+'pointObj::setXYZ' => 'Set X,Y,Z coordinate values.
+.. note::
+the 4th parameter m is used for measured shape files only.
+It is not mandatory.',
 'pool::__construct' => 'Creates a new Pool of Workers',
 'pool::collect' => 'Collect references to completed tasks',
 'pool::resize' => 'Resize the Pool',
@@ -6407,6 +8986,20 @@ return [
 'proc_nice' => 'Change the priority of the current process',
 'proc_open' => 'Execute a command and open file pointers for input/output',
 'proc_terminate' => 'Kills a process opened by proc_open',
+'projectionObj::__construct' => 'Creates a projection object based on the projection string passed
+as argument.
+$projInObj = ms_newprojectionobj("proj=latlong")
+will create a geographic projection class.
+The following example will convert a lat/long point to an LCC
+projection:
+$projInObj = ms_newprojectionobj("proj=latlong");
+$projOutObj = ms_newprojectionobj("proj=lcc,ellps=GRS80,lat_0=49,".
+"lon_0=-95,lat_1=49,lat_2=77");
+$poPoint = ms_newpointobj();
+$poPoint->setXY(-92.0, 62.0);
+$poPoint->project($projInObj, $projOutObj);',
+'projectionObj::getUnits' => 'Returns the units of a projection object. Returns -1 on error.',
+'projectionObj::ms_newProjectionObj' => 'Old style constructor',
 'property_exists' => 'Checks if the object or class has a property',
 'ps_add_bookmark' => 'Add bookmark to current page',
 'ps_add_launchlink' => 'Adds link which launches file',
@@ -6531,6 +9124,13 @@ return [
 'px_set_value' => 'Sets a value',
 'px_timestamp2string' => 'Converts the timestamp into a string',
 'px_update_record' => 'Updates record in paradox database',
+'querymapObj::convertToString' => 'Saves the object to a string.  Provides the inverse option for
+updateFromString.',
+'querymapObj::free' => 'Free the object properties and break the internal references.
+Note that you have to unset the php variable to free totally the resources.',
+'querymapObj::set' => 'Set object property to a new value.',
+'querymapObj::updateFromString' => 'Update a queryMap object from a string snippet. Returns
+MS_SUCCESS/MS_FAILURE.',
 'quickhashinthash::__construct' => 'Creates a new QuickHashIntHash object',
 'quickhashinthash::add' => 'This method adds a new entry to the hash',
 'quickhashinthash::delete' => 'This method deletes am entry from the hash',
@@ -6664,6 +9264,17 @@ return [
 'recode' => 'Alias of recode_string',
 'recode_file' => 'Recode from file to file according to recode request',
 'recode_string' => 'Recode a string according to a recode request',
+'rectObj::__construct' => '.. note:: the members (minx, miny, maxx ,maxy) are initialized to -1;',
+'rectObj::draw' => 'Draws the individual rectangle using layer.  The class_index is used
+to classify the rectangle based on the classes defined for the layer.
+The text string is used to annotate the rectangle. (Optional)
+Returns MS_SUCCESS/MS_FAILURE.',
+'rectObj::fit' => 'Adjust extents of the rectangle to fit the width/height specified.',
+'rectObj::ms_newRectObj' => 'Old style constructor',
+'rectObj::project' => 'Project the rectangle from "in" projection (1st argument) to "out"
+projection (2nd argument).  Returns MS_SUCCESS/MS_FAILURE.',
+'rectObj::set' => 'Set object property to a new value.',
+'rectObj::setextent' => 'Set the rectangle extents.',
 'recursivearrayiterator::getChildren' => 'Returns an iterator for the current entry if it is an array or an object',
 'recursivearrayiterator::hasChildren' => 'Returns whether current entry is an array or an object',
 'recursivecachingiterator::__construct' => 'Construct',
@@ -6673,6 +9284,7 @@ return [
 'recursivecallbackfilteriterator::getChildren' => 'Return the inner iterator\'s children contained in a RecursiveCallbackFilterIterator',
 'recursivecallbackfilteriterator::hasChildren' => 'Check whether the inner iterator\'s current element has children',
 'recursivedirectoryiterator::__construct' => 'Constructs a RecursiveDirectoryIterator',
+'RecursiveDirectoryIterator::current' => 'The current file',
 'recursivedirectoryiterator::getChildren' => 'Returns an iterator for the current entry if it is a directory',
 'recursivedirectoryiterator::getSubPath' => 'Get sub path',
 'recursivedirectoryiterator::getSubPathname' => 'Get sub path and name',
@@ -6724,8 +9336,536 @@ return [
 'recursivetreeiterator::setPostfix' => 'Set postfix',
 'recursivetreeiterator::setPrefixPart' => 'Set a part of the prefix',
 'recursivetreeiterator::valid' => 'Check validity',
+'Redis::__construct' => 'Creates a Redis client',
+'Redis::_prefix' => 'A utility method to prefix the value with the prefix setting for phpredis.',
+'Redis::_serialize' => 'A utility method to serialize values manually. This method allows you to serialize a value with whatever
+serializer is configured, manually. This can be useful for serialization/unserialization of data going in
+and out of EVAL commands as phpredis can\'t automatically do this itself.  Note that if no serializer is
+set, phpredis will change Array values to \'Array\', and Objects to \'Object\'.',
+'Redis::_unserialize' => 'A utility method to unserialize data with whatever serializer is set up.  If there is no serializer set, the
+value will be returned unchanged.  If there is a serializer set up, and the data passed in is malformed, an
+exception will be thrown. This can be useful if phpredis is serializing values, and you return something from
+redis in a LUA script that is serialized.',
+'Redis::append' => 'Append specified string to the string stored in specified key.',
+'Redis::auth' => 'Authenticate the connection using a password.
+Warning: The password is sent in plain-text over the network.',
+'Redis::bgrewriteaof' => 'Starts the background rewrite of AOF (Append-Only File)',
+'Redis::bgsave' => 'Performs a background save.',
+'Redis::bitCount' => 'Count bits in a string.',
+'Redis::bitOp' => 'Bitwise operation on multiple keys.',
+'Redis::bitpos' => 'Return the position of the first bit set to 1 or 0 in a string. The position is returned, thinking of the
+string as an array of bits from left to right, where the first byte\'s most significant bit is at position 0,
+the second byte\'s most significant bit is at position 8, and so forth.',
+'Redis::blPop' => 'Is a blocking lPop primitive. If at least one of the lists contains at least one element,
+the element will be popped from the head of the list and returned to the caller.
+Il all the list identified by the keys passed in arguments are empty, blPop will block
+during the specified timeout until an element is pushed to one of those lists. This element will be popped.',
+'Redis::brPop' => 'Is a blocking rPop primitive. If at least one of the lists contains at least one element,
+the element will be popped from the head of the list and returned to the caller.
+Il all the list identified by the keys passed in arguments are empty, brPop will
+block during the specified timeout until an element is pushed to one of those lists. T
+his element will be popped.',
+'Redis::brpoplpush' => 'A blocking version of rpoplpush, with an integral timeout in the third parameter.',
+'Redis::clearLastError' => 'Clear the last error message',
+'Redis::client' => 'Issue the CLIENT command with various arguments.',
+'Redis::close' => 'Disconnects from the Redis instance, except when pconnect is used.',
+'Redis::config' => 'Get or Set the redis config keys.',
+'Redis::connect' => 'Connects to a Redis instance.',
+'Redis::dbSize' => 'Returns the current database\'s size.',
+'Redis::decr' => 'Decrement the number stored at key by one.',
+'Redis::decrBy' => 'Decrement the number stored at key by one. If the second argument is filled, it will be used as the integer
+value of the decrement.',
+'Redis::del' => 'Remove specified keys.',
+'Redis::delete' => '`@return  int`             Number of keys deleted.',
+'Redis::dump' => 'Dump a key out of a redis database, the value of which can later be passed into redis using the RESTORE command.
+The data that comes out of DUMP is a binary representation of the key as Redis stores it.',
+'Redis::echo' => 'Echo the given string',
+'Redis::evalSha' => 'Evaluate a LUA script serverside, from the SHA1 hash of the script instead of the script itself.
+In order to run this command Redis will have to have already loaded the script, either by running it or via
+the SCRIPT LOAD command.',
+'Redis::evaluate' => '`@return mixed` @see eval()',
+'Redis::exists' => 'Verify if the specified key/keys exists.',
+'Redis::expire' => 'Sets an expiration date (a timeout) on an item.',
+'Redis::expireAt' => 'Sets an expiration date (a timestamp) on an item.',
+'Redis::flushAll' => 'Removes all entries from all databases.',
+'Redis::flushDB' => 'Removes all entries from the current database.',
+'Redis::get' => 'Get the value related to the specified key',
+'Redis::getBit' => 'Return a single bit out of a larger string',
+'Redis::getLastError' => 'The last error message (if any)',
+'Redis::getMode' => 'Detect whether we\'re in ATOMIC/MULTI/PIPELINE mode.',
+'Redis::getMultiple' => 'Get the values of all the specified keys. If one or more keys dont exist, the array will contain FALSE at the
+position of the key.',
+'Redis::getOption' => 'Get client option',
+'Redis::getRange' => 'Return a substring of a larger string',
+'Redis::getSet' => 'Sets a value and returns the previous entry at that key.',
+'Redis::hDel' => 'Removes a values from the hash stored at key.
+If the hash table doesn\'t exist, or the key doesn\'t exist, FALSE is returned.',
+'Redis::hExists' => 'Verify if the specified member exists in a key.',
+'Redis::hGet' => 'Gets a value from the hash stored at key.
+If the hash table doesn\'t exist, or the key doesn\'t exist, FALSE is returned.',
+'Redis::hGetAll' => 'Returns the whole hash, as an array of strings indexed by strings.',
+'Redis::hIncrBy' => 'Increments the value of a member from a hash by a given amount.',
+'Redis::hIncrByFloat' => 'Increment the float value of a hash field by the given amount',
+'Redis::hKeys' => 'Returns the keys in a hash, as an array of strings.',
+'Redis::hLen' => 'Returns the length of a hash, in number of items',
+'Redis::hMGet' => 'Retirieve the values associated to the specified fields in the hash.',
+'Redis::hMSet' => 'Fills in a whole hash. Non-string values are converted to string, using the standard (string) cast.
+NULL values are stored as empty strings',
+'Redis::hScan' => 'Scan a HASH value for members, with an optional pattern and count.',
+'Redis::hSet' => 'Adds a value to the hash stored at key. If this value is already in the hash, FALSE is returned.',
+'Redis::hSetNx' => 'Adds a value to the hash stored at key only if this field isn\'t already in the hash.',
+'Redis::hVals' => 'Returns the values in a hash, as an array of strings.',
+'Redis::incr' => 'Increment the number stored at key by one.',
+'Redis::incrBy' => 'Increment the number stored at key by one. If the second argument is filled, it will be used as the integer
+value of the increment.',
+'Redis::incrByFloat' => 'Increment the float value of a key by the given amount',
+'Redis::info' => 'Returns an associative array of strings and integers',
+'Redis::keys' => 'Returns the keys that match a certain pattern.',
+'Redis::lastSave' => 'Returns the timestamp of the last disk save.',
+'Redis::lIndex' => 'Return the specified element of the list stored at the specified key.
+0 the first element, 1 the second ... -1 the last element, -2 the penultimate ...
+Return FALSE in case of a bad index or a key that doesn\'t point to a list.',
+'Redis::lInsert' => 'Insert value in the list before or after the pivot value. the parameter options
+specify the position of the insert (before or after). If the list didn\'t exists,
+or the pivot didn\'t exists, the value is not inserted.',
+'Redis::lLen' => 'Returns the size of a list identified by Key. If the list didn\'t exist or is empty,
+the command returns 0. If the data type identified by Key is not a list, the command return FALSE.',
+'Redis::lPop' => 'Returns and removes the first element of the list.',
+'Redis::lPush' => 'Adds the string values to the head (left) of the list. Creates the list if the key didn\'t exist.
+If the key exists and is not a list, FALSE is returned.',
+'Redis::lPushx' => 'Adds the string value to the head (left) of the list if the list exists.',
+'Redis::lRange' => 'Returns the specified elements of the list stored at the specified key in
+the range [start, end]. start and stop are interpretated as indices: 0 the first element,
+1 the second ... -1 the last element, -2 the penultimate ...',
+'Redis::lRem' => 'Removes the first count occurences of the value element from the list.
+If count is zero, all the matching elements are removed. If count is negative,
+elements are removed from tail to head.',
+'Redis::lSet' => 'Set the list at index with the new value.',
+'Redis::lSize' => '`@return  int`       The size of the list identified by Key exists.',
+'Redis::lTrim' => 'Trims an existing list so that it will contain only a specified range of elements.',
+'Redis::mget' => 'Returns the values of all specified keys.
+
+For every key that does not hold a string value or does not exist,
+the special value false is returned. Because of this, the operation never fails.',
+'Redis::migrate' => 'Migrates a key to a different Redis instance.',
+'Redis::move' => 'Moves a key to a different database.',
+'Redis::mset' => 'Sets multiple key-value pairs in one atomic command.
+MSETNX only returns TRUE if all the keys were set (see SETNX).',
+'Redis::msetnx' => '`@return  int` 1 (if the keys were set) or 0 (no key was set)',
+'Redis::multi' => 'Enter and exit transactional mode.',
+'Redis::object' => 'Describes the object pointed to by a key.
+The information to retrieve (string) and the key (string).
+Info can be one of the following:
+- "encoding"
+- "refcount"
+- "idletime"',
+'Redis::pconnect' => 'Connects to a Redis instance or reuse a connection already established with pconnect/popen.
+
+The connection will not be closed on close or end of request until the php process ends.
+So be patient on to many open FD\'s (specially on redis server side) when using persistent connections on
+many servers connecting to one redis server.
+
+Also more than one persistent connection can be made identified by either host + port + timeout
+or host + persistent_id or unix socket + timeout.
+
+This feature is not available in threaded versions. pconnect and popen then working like their non persistent
+equivalents.',
+'Redis::persist' => 'Remove the expiration timer from a key.',
+'Redis::pExpire' => 'Sets an expiration date (a timeout in milliseconds) on an item.',
+'Redis::pExpireAt' => 'Sets an expiration date (a timestamp) on an item. Requires a timestamp in milliseconds',
+'Redis::pfAdd' => 'Adds all the element arguments to the HyperLogLog data structure stored at the key.',
+'Redis::pfCount' => 'When called with a single key, returns the approximated cardinality computed by the HyperLogLog data
+structure stored at the specified variable, which is 0 if the variable does not exist.',
+'Redis::pfMerge' => 'Merge multiple HyperLogLog values into an unique value that will approximate the cardinality
+of the union of the observed Sets of the source HyperLogLog structures.',
+'Redis::ping' => 'Check the current connection status',
+'Redis::psetex' => 'Set the string value in argument as value of the key, with a time to live.',
+'Redis::psubscribe' => 'Subscribe to channels by pattern',
+'Redis::pttl' => 'Returns a time to live left for a given key, in milliseconds.
+
+If the key doesn\'t exist, FALSE is returned.',
+'Redis::publish' => 'Publish messages to channels. Warning: this function will probably change in the future.',
+'Redis::pubsub' => 'A command allowing you to get information on the Redis pub/sub system.',
+'Redis::randomKey' => 'Returns a random key.',
+'Redis::rawCommand' => 'Send arbitrary things to the redis server.',
+'Redis::rename' => 'Renames a key.',
+'Redis::renameNx' => 'Renames a key.
+
+Same as rename, but will not replace a key if the destination already exists.
+This is the same behaviour as setNx.',
+'Redis::resetStat' => 'Resets the statistics reported by Redis using the INFO command (`info()` function).
+These are the counters that are reset:
+     - Keyspace hits
+     - Keyspace misses
+     - Number of commands processed
+     - Number of connections received
+     - Number of expired keys',
+'Redis::restore' => 'Restore a key from the result of a DUMP operation.',
+'Redis::rPop' => 'Returns and removes the last element of the list.',
+'Redis::rpoplpush' => 'Pops a value from the tail of a list, and pushes it to the front of another list.
+Also return this value.',
+'Redis::rPush' => 'Adds the string values to the tail (right) of the list. Creates the list if the key didn\'t exist.
+If the key exists and is not a list, FALSE is returned.',
+'Redis::rPushx' => 'Adds the string value to the tail (right) of the list if the ist exists. FALSE in case of Failure.',
+'Redis::sAdd' => 'Adds a values to the set value stored at key.
+If this value is already in the set, FALSE is returned.',
+'Redis::sAddArray' => 'Adds a values to the set value stored at key.',
+'Redis::save' => 'Performs a synchronous save.',
+'Redis::scan' => 'Scan the keyspace for keys.',
+'Redis::sCard' => 'Returns the cardinality of the set identified by key.',
+'Redis::script' => 'Execute the Redis SCRIPT command to perform various operations on the scripting subsystem.',
+'Redis::sDiff' => 'Performs the difference between N sets and returns it.',
+'Redis::sDiffStore' => 'Performs the same action as sDiff, but stores the result in the first key',
+'Redis::select' => 'Switches to a given database.',
+'Redis::set' => 'Set the string value in argument as value of the key.',
+'Redis::setBit' => 'Changes a single bit of a string.',
+'Redis::setex' => 'Set the string value in argument as value of the key, with a time to live.',
+'Redis::setnx' => 'Set the string value in argument as value of the key if the key doesn\'t already exist in the database.',
+'Redis::setOption' => 'Set client option.',
+'Redis::setRange' => 'Changes a substring of a larger string.',
+'Redis::sInter' => 'Returns the members of a set resulting from the intersection of all the sets
+held at the specified keys. If just a single key is specified, then this command
+produces the members of this set. If one of the keys is missing, FALSE is returned.',
+'Redis::sInterStore' => 'Performs a sInter command and stores the result in a new set.',
+'Redis::sIsMember' => 'Checks if value is a member of the set stored at the key key.',
+'Redis::slaveof' => 'Changes the slave status
+Either host and port, or no parameter to stop being a slave.',
+'Redis::slowlog' => 'Access the Redis slow log.',
+'Redis::sMembers' => 'Returns the contents of a set.',
+'Redis::sMove' => 'Moves the specified member from the set at srcKey to the set at dstKey.',
+'Redis::sort' => 'Sort',
+'Redis::sPop' => 'Removes and returns a random element from the set value at Key.',
+'Redis::sRandMember' => 'Returns a random element(s) from the set value at Key, without removing it.',
+'Redis::sRem' => 'Removes the specified members from the set value stored at key.',
+'Redis::sScan' => 'Scan a set for members.',
+'Redis::strlen' => 'Get the length of a string value.',
+'Redis::subscribe' => 'Subscribe to channels. Warning: this function will probably change in the future.',
+'Redis::substr' => 'Return a substring of a larger string',
+'Redis::sUnion' => 'Performs the union between N sets and returns it.',
+'Redis::sUnionStore' => 'Performs the same action as sUnion, but stores the result in the first key',
+'Redis::time' => 'Return the current Redis server time.',
+'Redis::ttl' => 'Returns the time to live left for a given key, in seconds. If the key doesn\'t exist, FALSE is returned.',
+'Redis::type' => 'Returns the type of data pointed by a given key.',
+'Redis::wait' => 'Blocks the current client until all the previous write commands are successfully transferred and
+acknowledged by at least the specified number of slaves.',
+'Redis::watch' => 'Watches a key for modifications by another client. If the key is modified between WATCH and EXEC,
+the MULTI/EXEC transaction will fail (return FALSE). unwatch cancels all the watching of all keys by this client.',
+'Redis::xAck' => 'Acknowledge one or more messages on behalf of a consumer group.',
+'Redis::xAdd' => 'Add a message to a stream.',
+'Redis::xClaim' => 'Claim ownership of one or more pending messages.',
+'Redis::xDel' => 'Delete one or more messages from a stream.',
+'Redis::xGroup' => '`@return  mixed`   This command returns different types depending on the specific XGROUP command executed.',
+'Redis::xInfo' => 'Get information about a stream or consumer groups.',
+'Redis::xLen' => 'Get the length of a given stream.',
+'Redis::xPending' => 'Get information about pending messages in a given stream.',
+'Redis::xRange' => 'Get a range of messages from a given stream.',
+'Redis::xRead' => 'Read data from one or more streams and only return IDs greater than sent in the command.',
+'Redis::xReadGroup' => 'This method is similar to xRead except that it supports reading messages for a specific consumer group.',
+'Redis::xRevRange' => 'This is identical to xRange except the results come back in reverse order. Also note that Redis reverses the order of "start" and "end".',
+'Redis::xTrim' => 'Trim the stream length to a given maximum. If the "approximate" flag is pasesed, Redis will use your size as a hint but only trim trees in whole nodes (this is more efficient)..',
+'Redis::zAdd' => 'Adds the specified member with a given score to the sorted set stored at key.',
+'Redis::zCard' => 'Returns the cardinality of an ordered set.',
+'Redis::zCount' => 'Returns the number of elements of the sorted set stored at the specified key which have
+scores in the range [start,end]. Adding a parenthesis before start or end excludes it
+from the range. +inf and -inf are also valid limits.',
+'Redis::zDelete' => '`@return  int`     Number of deleted values',
+'Redis::zIncrBy' => 'Increments the score of a member from a sorted set by a given amount.',
+'Redis::zInter' => 'Creates an intersection of sorted sets given in second argument.
+The result of the union will be stored in the sorted set defined by the first argument.
+The third optional argument defines weights to apply to the sorted sets in input.
+In this case, the weights will be multiplied by the score of each element in the sorted set
+before applying the aggregation. The forth argument defines the AGGREGATE option which
+specify how the results of the union are aggregated.',
+'Redis::zRange' => 'Returns a range of elements from the ordered set stored at the specified key,
+with values in the range [start, end]. start and stop are interpreted as zero-based indices:
+0 the first element,
+1 the second ...
+-1 the last element,
+-2 the penultimate ...',
+'Redis::zRangeByLex' => 'Returns a lexigraphical range of members in a sorted set, assuming the members have the same score. The
+min and max values are required to start with \'(\' (exclusive), \'[\' (inclusive), or be exactly the values
+\'-\' (negative inf) or \'+\' (positive inf).  The command must be called with either three *or* five
+arguments or will return FALSE.',
+'Redis::zRangeByScore' => 'Returns the elements of the sorted set stored at the specified key which have scores in the
+range [start,end]. Adding a parenthesis before start or end excludes it from the range.
++inf and -inf are also valid limits.
+
+zRevRangeByScore returns the same items in reverse order, when the start and end parameters are swapped.',
+'Redis::zRank' => 'Returns the rank of a given member in the specified sorted set, starting at 0 for the item
+with the smallest score. zRevRank starts at 0 for the item with the largest score.',
+'Redis::zRem' => 'Deletes a specified member from the ordered set.',
+'Redis::zRemRangeByRank' => 'Deletes the elements of the sorted set stored at the specified key which have rank in the range [start,end].',
+'Redis::zRemRangeByScore' => 'Deletes the elements of the sorted set stored at the specified key which have scores in the range [start,end].',
+'Redis::zRevRange' => 'Returns the elements of the sorted set stored at the specified key in the range [start, end]
+in reverse order. start and stop are interpretated as zero-based indices:
+0 the first element,
+1 the second ...
+-1 the last element,
+-2 the penultimate ...',
+'Redis::zRevRank' => '`@return int`    the item\'s score',
+'Redis::zScan' => 'Scan a sorted set for members, with optional pattern and count.',
+'Redis::zScore' => 'Returns the score of a given member in the specified sorted set.',
+'Redis::zUnion' => 'Creates an union of sorted sets given in second argument.
+The result of the union will be stored in the sorted set defined by the first argument.
+The third optionnel argument defines weights to apply to the sorted sets in input.
+In this case, the weights will be multiplied by the score of each element in the sorted set
+before applying the aggregation. The forth argument defines the AGGREGATE option which
+specify how the results of the union are aggregated.',
+'RedisArray::__construct' => 'Constructor',
+'RedisArray::_function' => '`@return  string`  the name of the function used to extract key parts during consistent hashing',
+'RedisArray::_hosts' => '`@return  array`   list of hosts for the selected array',
+'RedisArray::_rehash' => 'Use this function when a new node is added and keys need to be rehashed.',
+'RedisArray::_target' => '`@return  string`  the host to be used for a certain key',
+'RedisCluster::__construct' => 'Creates a Redis Cluster client',
+'RedisCluster::_masters' => 'Return all redis master nodes',
+'RedisCluster::_prefix' => 'A utility method to prefix the value with the prefix setting for phpredis.',
+'RedisCluster::_serialize' => 'A utility method to serialize values manually. This method allows you to serialize a value with whatever
+serializer is configured, manually. This can be useful for serialization/unserialization of data going in
+and out of EVAL commands as phpredis can\'t automatically do this itself.  Note that if no serializer is
+set, phpredis will change Array values to \'Array\', and Objects to \'Object\'.',
+'RedisCluster::_unserialize' => 'A utility method to unserialize data with whatever serializer is set up.  If there is no serializer set, the
+value will be returned unchanged.  If there is a serializer set up, and the data passed in is malformed, an
+exception will be thrown. This can be useful if phpredis is serializing values, and you return something from
+redis in a LUA script that is serialized.',
+'RedisCluster::append' => 'Append specified string to the string stored in specified key.',
+'RedisCluster::bgrewriteaof' => 'Starts the background rewrite of AOF (Append-Only File) at a specific node.',
+'RedisCluster::bgsave' => 'Performs a background save at a specific node.',
+'RedisCluster::bitCount' => 'Count bits in a string.',
+'RedisCluster::bitOp' => 'Bitwise operation on multiple keys.',
+'RedisCluster::bitpos' => 'Return the position of the first bit set to 1 or 0 in a string. The position is returned, thinking of the
+string as an array of bits from left to right, where the first byte\'s most significant bit is at position 0,
+the second byte\'s most significant bit is at position 8, and so forth.',
+'RedisCluster::blPop' => 'BLPOP is a blocking list pop primitive.
+It is the blocking version of LPOP because it blocks the connection when
+there are no elements to pop from any of the given lists.
+An element is popped from the head of the first list that is non-empty,
+with the given keys being checked in the order that they are given.',
+'RedisCluster::brPop' => 'BRPOP is a blocking list pop primitive.
+It is the blocking version of RPOP because it blocks the connection when
+there are no elements to pop from any of the given lists.
+An element is popped from the tail of the first list that is non-empty,
+with the given keys being checked in the order that they are given.
+See the BLPOP documentation(https://redis.io/commands/blpop) for the exact semantics,
+since BRPOP is identical to BLPOP with the only difference being that
+it pops elements from the tail of a list instead of popping from the head.',
+'RedisCluster::brpoplpush' => 'A blocking version of rpoplpush, with an integral timeout in the third parameter.',
+'RedisCluster::clearLastError' => 'Clear the last error message',
+'RedisCluster::client' => 'Allows you to get information of the cluster client',
+'RedisCluster::close' => 'Disconnects from the Redis instance, except when pconnect is used.',
+'RedisCluster::command' => 'Returns Array reply of details about all Redis Cluster commands.',
+'RedisCluster::config' => 'Get or Set the redis config keys.',
+'RedisCluster::dbSize' => 'Returns the current database\'s size at a specific node.',
+'RedisCluster::decr' => 'Decrement the number stored at key by one.',
+'RedisCluster::decrBy' => 'Decrement the number stored at key by one. If the second argument is filled, it will be used as the integer
+value of the decrement.',
+'RedisCluster::del' => 'Remove specified keys.',
+'RedisCluster::dump' => 'Dump a key out of a redis database, the value of which can later be passed into redis using the RESTORE command.
+The data that comes out of DUMP is a binary representation of the key as Redis stores it.',
+'RedisCluster::echo' => 'Returns message.',
+'RedisCluster::evalSha' => 'Evaluate a LUA script serverside, from the SHA1 hash of the script instead of the script itself.
+In order to run this command Redis will have to have already loaded the script, either by running it or via
+the SCRIPT LOAD command.',
+'RedisCluster::exists' => 'Verify if the specified key exists.',
+'RedisCluster::expire' => 'Sets an expiration date (a timeout) on an item.',
+'RedisCluster::expireAt' => 'Sets an expiration date (a timestamp) on an item.',
+'RedisCluster::flushAll' => 'Removes all entries from all databases at a specific node.',
+'RedisCluster::flushDB' => 'Removes all entries from the current database at a specific node.',
+'RedisCluster::geoAdd' => 'Add one or more geospatial items in the geospatial index represented using a sorted set',
+'RedisCluster::geoDist' => 'Returns the distance between two members of a geospatial index',
+'RedisCluster::geohash' => 'Returns members of a geospatial index as standard geohash strings',
+'RedisCluster::geopos' => 'Returns longitude and latitude of members of a geospatial index',
+'RedisCluster::geoRadius' => 'Query a sorted set representing a geospatial index to fetch members matching a given maximum distance from a point',
+'RedisCluster::geoRadiusByMember' => 'Query a sorted set representing a geospatial index to fetch members matching a given maximum distance from a member',
+'RedisCluster::get' => 'Get the value related to the specified key',
+'RedisCluster::getBit' => 'Return a single bit out of a larger string',
+'RedisCluster::getLastError' => 'The last error message (if any)',
+'RedisCluster::getMode' => 'Detect whether we\'re in ATOMIC/MULTI/PIPELINE mode.',
+'RedisCluster::getOption' => 'Get client option',
+'RedisCluster::getRange' => 'Return a substring of a larger string',
+'RedisCluster::getSet' => 'Sets a value and returns the previous entry at that key.',
+'RedisCluster::hDel' => 'Removes a values from the hash stored at key.
+If the hash table doesn\'t exist, or the key doesn\'t exist, FALSE is returned.',
+'RedisCluster::hExists' => 'Verify if the specified member exists in a key.',
+'RedisCluster::hGet' => 'Gets a value from the hash stored at key.
+If the hash table doesn\'t exist, or the key doesn\'t exist, FALSE is returned.',
+'RedisCluster::hGetAll' => 'Returns the whole hash, as an array of strings indexed by strings.',
+'RedisCluster::hIncrBy' => 'Increments the value of a member from a hash by a given amount.',
+'RedisCluster::hIncrByFloat' => 'Increment the float value of a hash field by the given amount',
+'RedisCluster::hKeys' => 'Returns the keys in a hash, as an array of strings.',
+'RedisCluster::hLen' => 'Returns the length of a hash, in number of items',
+'RedisCluster::hMGet' => 'Retirieve the values associated to the specified fields in the hash.',
+'RedisCluster::hMSet' => 'Fills in a whole hash. Non-string values are converted to string, using the standard (string) cast.
+NULL values are stored as empty strings',
+'RedisCluster::hScan' => 'Scan a HASH value for members, with an optional pattern and count.',
+'RedisCluster::hSet' => 'Adds a value to the hash stored at key. If this value is already in the hash, FALSE is returned.',
+'RedisCluster::hSetNx' => 'Adds a value to the hash stored at key only if this field isn\'t already in the hash.',
+'RedisCluster::hVals' => 'Returns the values in a hash, as an array of strings.',
+'RedisCluster::incr' => 'Increment the number stored at key by one.',
+'RedisCluster::incrBy' => 'Increment the number stored at key by one. If the second argument is filled, it will be used as the integer
+value of the increment.',
+'RedisCluster::incrByFloat' => 'Increment the float value of a key by the given amount',
+'RedisCluster::info' => 'Returns an associative array of strings and integers',
+'RedisCluster::keys' => 'Returns the keys that match a certain pattern.',
+'RedisCluster::lastSave' => 'Returns the timestamp of the last disk save at a specific node.',
+'RedisCluster::lIndex' => 'Return the specified element of the list stored at the specified key.
+0 the first element, 1 the second ... -1 the last element, -2 the penultimate ...
+Return FALSE in case of a bad index or a key that doesn\'t point to a list.',
+'RedisCluster::lInsert' => 'Insert value in the list before or after the pivot value. the parameter options
+specify the position of the insert (before or after). If the list didn\'t exists,
+or the pivot didn\'t exists, the value is not inserted.',
+'RedisCluster::lLen' => 'Returns the size of a list identified by Key. If the list didn\'t exist or is empty,
+the command returns 0. If the data type identified by Key is not a list, the command return FALSE.',
+'RedisCluster::lPop' => 'Returns and removes the first element of the list.',
+'RedisCluster::lPush' => 'Adds the string values to the head (left) of the list. Creates the list if the key didn\'t exist.
+If the key exists and is not a list, FALSE is returned.',
+'RedisCluster::lPushx' => 'Adds the string value to the head (left) of the list if the list exists.',
+'RedisCluster::lRange' => 'Returns the specified elements of the list stored at the specified key in
+the range [start, end]. start and stop are interpretated as indices: 0 the first element,
+1 the second ... -1 the last element, -2 the penultimate ...',
+'RedisCluster::lRem' => 'Removes the first count occurences of the value element from the list.
+If count is zero, all the matching elements are removed. If count is negative,
+elements are removed from tail to head.',
+'RedisCluster::lSet' => 'Set the list at index with the new value.',
+'RedisCluster::lTrim' => 'Trims an existing list so that it will contain only a specified range of elements.',
+'RedisCluster::mget' => 'Returns the values of all specified keys.
+
+For every key that does not hold a string value or does not exist,
+the special value false is returned. Because of this, the operation never fails.',
+'RedisCluster::mset' => 'Sets multiple key-value pairs in one atomic command.
+MSETNX only returns TRUE if all the keys were set (see SETNX).',
+'RedisCluster::msetnx' => '`@return  int` 1 (if the keys were set) or 0 (no key was set)',
+'RedisCluster::multi' => 'Enter and exit transactional mode.',
+'RedisCluster::object' => 'Describes the object pointed to by a key.
+The information to retrieve (string) and the key (string).
+Info can be one of the following:
+- "encoding"
+- "refcount"
+- "idletime"',
+'RedisCluster::persist' => 'Remove the expiration timer from a key.',
+'RedisCluster::pExpire' => 'Sets an expiration date (a timeout in milliseconds) on an item.',
+'RedisCluster::pExpireAt' => 'Sets an expiration date (a timestamp) on an item. Requires a timestamp in milliseconds',
+'RedisCluster::pfAdd' => 'Adds all the element arguments to the HyperLogLog data structure stored at the key.',
+'RedisCluster::pfCount' => 'When called with a single key, returns the approximated cardinality computed by the HyperLogLog data
+structure stored at the specified variable, which is 0 if the variable does not exist.',
+'RedisCluster::pfMerge' => 'Merge multiple HyperLogLog values into an unique value that will approximate the cardinality
+of the union of the observed Sets of the source HyperLogLog structures.',
+'RedisCluster::ping' => 'Check the specified node status',
+'RedisCluster::psetex' => 'PSETEX works exactly like SETEX with the sole difference that the expire time is specified in milliseconds
+instead of seconds.',
+'RedisCluster::psubscribe' => 'Subscribe to channels by pattern',
+'RedisCluster::pttl' => 'Returns the remaining time to live of a key that has an expire set,
+with the sole difference that TTL returns the amount of remaining time in seconds while PTTL returns it in
+milliseconds. In Redis 2.6 or older the command returns -1 if the key does not exist or if the key exist but has
+no associated expire. Starting with Redis 2.8 the return value in case of error changed: Returns -2 if the key
+does not exist. Returns -1 if the key exists but has no associated expire.',
+'RedisCluster::publish' => 'Publish messages to channels. Warning: this function will probably change in the future.',
+'RedisCluster::pubsub' => 'A command allowing you to get information on the Redis pub/sub system.',
+'RedisCluster::punSubscribe' => 'Unsubscribes the client from the given patterns, or from all of them if none is given.',
+'RedisCluster::randomKey' => 'Returns a random key at the specified node',
+'RedisCluster::rawCommand' => 'Send arbitrary things to the redis server at the specified node',
+'RedisCluster::rename' => 'Renames a key.',
+'RedisCluster::renameNx' => 'Renames a key.
+
+Same as rename, but will not replace a key if the destination already exists.
+This is the same behaviour as setNx.',
+'RedisCluster::restore' => 'Restore a key from the result of a DUMP operation.',
+'RedisCluster::rPop' => 'Returns and removes the last element of the list.',
+'RedisCluster::rpoplpush' => 'Pops a value from the tail of a list, and pushes it to the front of another list.
+Also return this value.',
+'RedisCluster::rPush' => 'Adds the string values to the tail (right) of the list. Creates the list if the key didn\'t exist.
+If the key exists and is not a list, FALSE is returned.',
+'RedisCluster::rPushx' => 'Adds the string value to the tail (right) of the list if the ist exists. FALSE in case of Failure.',
+'RedisCluster::sAdd' => 'Adds a values to the set value stored at key.
+If this value is already in the set, FALSE is returned.',
+'RedisCluster::sAddArray' => 'Adds a values to the set value stored at key.
+If this value is already in the set, FALSE is returned.',
+'RedisCluster::save' => 'Performs a synchronous save at a specific node.',
+'RedisCluster::scan' => 'Scan the keyspace for keys.',
+'RedisCluster::sCard' => 'Returns the set cardinality (number of elements) of the set stored at key.',
+'RedisCluster::script' => 'Execute the Redis SCRIPT command to perform various operations on the scripting subsystem.',
+'RedisCluster::sDiff' => 'Performs the difference between N sets and returns it.',
+'RedisCluster::sDiffStore' => 'Performs the same action as sDiff, but stores the result in the first key',
+'RedisCluster::set' => 'Set the string value in argument as value of the key.',
+'RedisCluster::setBit' => 'Changes a single bit of a string.',
+'RedisCluster::setex' => 'Set the string value in argument as value of the key, with a time to live.',
+'RedisCluster::setnx' => 'Set the string value in argument as value of the key if the key doesn\'t already exist in the database.',
+'RedisCluster::setOption' => 'Set client option.',
+'RedisCluster::setRange' => 'Changes a substring of a larger string.',
+'RedisCluster::sInter' => 'Returns the members of a set resulting from the intersection of all the sets
+held at the specified keys. If just a single key is specified, then this command
+produces the members of this set. If one of the keys is missing, FALSE is returned.',
+'RedisCluster::sInterStore' => 'Performs a sInter command and stores the result in a new set.',
+'RedisCluster::sIsMember' => 'Returns if member is a member of the set stored at key.',
+'RedisCluster::slowLog' => 'This function is used in order to read and reset the Redis slow queries log.',
+'RedisCluster::sMembers' => 'Returns all the members of the set value stored at key.
+This has the same effect as running SINTER with one argument key.',
+'RedisCluster::sMove' => 'Moves the specified member from the set at srcKey to the set at dstKey.',
+'RedisCluster::sort' => 'Sort',
+'RedisCluster::sPop' => 'Removes and returns a random element from the set value at Key.',
+'RedisCluster::sRandMember' => 'Returns a random element(s) from the set value at Key, without removing it.',
+'RedisCluster::sRem' => 'Removes the specified members from the set value stored at key.',
+'RedisCluster::sScan' => 'Scan a set for members.',
+'RedisCluster::strlen' => 'Get the length of a string value.',
+'RedisCluster::subscribe' => 'Subscribe to channels. Warning: this function will probably change in the future.',
+'RedisCluster::sUnion' => 'Performs the union between N sets and returns it.',
+'RedisCluster::sUnionStore' => 'Performs the same action as sUnion, but stores the result in the first key',
+'RedisCluster::time' => 'Return the specified node server time.',
+'RedisCluster::ttl' => 'Returns the remaining time to live of a key that has a timeout.
+This introspection capability allows a Redis client to check how many seconds a given key will continue to be
+part of the dataset. In Redis 2.6 or older the command returns -1 if the key does not exist or if the key exist
+but has no associated expire. Starting with Redis 2.8 the return value in case of error changed: Returns -2 if
+the key does not exist. Returns -1 if the key exists but has no associated expire.',
+'RedisCluster::type' => 'Returns the type of data pointed by a given key.',
+'RedisCluster::unSubscribe' => 'Unsubscribes the client from the given channels, or from all of them if none is given.',
+'RedisCluster::watch' => 'Watches a key for modifications by another client. If the key is modified between WATCH and EXEC,
+the MULTI/EXEC transaction will fail (return FALSE). unwatch cancels all the watching of all keys by this client.',
+'RedisCluster::zAdd' => 'Adds the specified member with a given score to the sorted set stored at key.',
+'RedisCluster::zCard' => 'Returns the cardinality of an ordered set.',
+'RedisCluster::zCount' => 'Returns the number of elements of the sorted set stored at the specified key which have
+scores in the range [start,end]. Adding a parenthesis before start or end excludes it
+from the range. +inf and -inf are also valid limits.',
+'RedisCluster::zIncrBy' => 'Increments the score of a member from a sorted set by a given amount.',
+'RedisCluster::zInterStore' => 'Intersect multiple sorted sets and store the resulting sorted set in a new key',
+'RedisCluster::zLexCount' => 'Count the number of members in a sorted set between a given lexicographical range.',
+'RedisCluster::zRange' => 'Returns a range of elements from the ordered set stored at the specified key,
+with values in the range [start, end]. start and stop are interpreted as zero-based indices:
+0 the first element,
+1 the second ...
+-1 the last element,
+-2 the penultimate ...',
+'RedisCluster::zRangeByLex' => 'Returns a range of members in a sorted set, by lexicographical range',
+'RedisCluster::zRangeByScore' => 'Returns the elements of the sorted set stored at the specified key which have scores in the
+range [start,end]. Adding a parenthesis before start or end excludes it from the range.
++inf and -inf are also valid limits.
+
+zRevRangeByScore returns the same items in reverse order, when the start and end parameters are swapped.',
+'RedisCluster::zRank' => 'Returns the rank of a given member in the specified sorted set, starting at 0 for the item
+with the smallest score. zRevRank starts at 0 for the item with the largest score.',
+'RedisCluster::zRem' => 'Deletes a specified member from the ordered set.',
+'RedisCluster::zRemRangeByLex' => 'Remove all members in a sorted set between the given lexicographical range.',
+'RedisCluster::zRemRangeByRank' => 'Deletes the elements of the sorted set stored at the specified key which have rank in the range [start,end].',
+'RedisCluster::zRemRangeByScore' => 'Deletes the elements of the sorted set stored at the specified key which have scores in the range [start,end].',
+'RedisCluster::zRevRange' => 'Returns the elements of the sorted set stored at the specified key in the range [start, end]
+in reverse order. start and stop are interpretated as zero-based indices:
+0 the first element,
+1 the second ...
+-1 the last element,
+-2 the penultimate ...',
+'RedisCluster::zRevRank' => '`@return int`    the item\'s score',
+'RedisCluster::zScan' => 'Scan a sorted set for members, with optional pattern and count.',
+'RedisCluster::zScore' => 'Returns the score of a given member in the specified sorted set.',
+'RedisCluster::zUnionStore' => 'Add multiple sorted sets and store the resulting sorted set in a new key',
+'referenceMapObj::convertToString' => 'Saves the object to a string.  Provides the inverse option for
+updateFromString.',
+'referenceMapObj::free' => 'Free the object properties and break the internal references.
+Note that you have to unset the php variable to free totally the
+resources.',
+'referenceMapObj::set' => 'Set object property to a new value.',
+'referenceMapObj::updateFromString' => 'Update a referenceMap object from a string snippet.
+Returns MS_SUCCESS/MS_FAILURE.',
 'reflection::export' => 'Exports',
 'reflection::getModifierNames' => 'Gets modifier names',
+'ReflectionClass::__clone' => 'Clones object',
 'reflectionclass::__construct' => 'Constructs a ReflectionClass',
 'reflectionclass::__toString' => 'Returns the string representation of the ReflectionClass object',
 'reflectionclass::export' => 'Exports a class',
@@ -6907,6 +10047,7 @@ return [
 'reflectionproperty::setValue' => 'Set property value',
 'reflectiontype::__toString' => 'To string',
 'reflectiontype::allowsNull' => 'Checks if null is allowed',
+'ReflectionType::getName' => 'Get type of the parameter.',
 'reflectiontype::isBuiltin' => 'Checks if it is a built-in type',
 'reflectionzendextension::__clone' => 'Clone handler',
 'reflectionzendextension::__construct' => 'Constructor',
@@ -6934,6 +10075,7 @@ return [
 'rename_function' => 'Renames orig_name to new_name in the global function table',
 'reset' => 'Set the internal pointer of an array to its first element',
 'resourcebundle::count' => 'Get number of elements in the bundle',
+'ResourceBundle::create' => 'Create a resource bundle',
 'resourcebundle::get' => 'Get data from the bundle',
 'resourcebundle::getErrorCode' => 'Get bundle\'s last error code',
 'resourcebundle::getErrorMessage' => 'Get bundle\'s last error message',
@@ -6941,6 +10083,7 @@ return [
 'restore_error_handler' => 'Restores the previous error handler function',
 'restore_exception_handler' => 'Restores the previously defined exception handler function',
 'restore_include_path' => 'Restores the value of the include_path configuration option',
+'resultObj::__construct' => 'or using the `layerObj`_\'s getResult() method.',
 'rewind' => 'Rewind the position of a file pointer',
 'rewinddir' => 'Rewind directory handle',
 'rmdir' => 'Removes directory',
@@ -7021,10 +10164,141 @@ return [
 'sapi_windows_cp_is_utf8' => 'Indicates whether the codepage is UTF-8 compatible',
 'sapi_windows_cp_set' => 'Set process codepage',
 'sapi_windows_vt100_support' => 'Get or set VT100 support for the specified stream associated to an output buffer of a Windows console.',
+'Saxon\SaxonProcessor::__construct' => 'Constructor',
+'Saxon\SaxonProcessor::createAtomicValue' => 'Create an Xdm Atomic value from any of the main primitive types (i.e. bool, int, float, double, string)',
+'Saxon\SaxonProcessor::newSchemaValidator' => 'Create a {@link SchemaValidator} in the PHP environment. A {@link SchemaValidator} provides capabilities to load and cache XML schema definitions. You can also validate source documents with registered XML schema definitions',
+'Saxon\SaxonProcessor::newXPathProcessor' => 'Create an {@link XPathProcessor} in the PHP environment. An {@link XPathProcessor} is used to compile and execute XPath queries',
+'Saxon\SaxonProcessor::newXQueryProcessor' => 'Create an {@link XQueryProcessor} in the PHP environment. An {@link XQueryProcessor} is used to compile and execute XQuery queries',
+'Saxon\SaxonProcessor::newXsltProcessor' => 'Create an {@link XsltProcessor} in the PHP environment. An {@link XsltProcessor} is used to compile and execute XSLT sytlesheets',
+'Saxon\SaxonProcessor::parseXmlFromFile' => 'Create an {@link XdmNode} object.',
+'Saxon\SaxonProcessor::parseXmlFromString' => 'Create an {@link XdmNode} object.',
+'Saxon\SaxonProcessor::registerPHPFunctions' => 'Enables the ability to use PHP functions as XSLT functions. Accepts as parameter the full path of the Saxon/C PHP Extension library. This is needed to do the callbacks.',
+'Saxon\SaxonProcessor::setConfigurationProperty' => 'Set a configuration property specific to the processor in use. Properties specified here are common across all the processors.',
+'Saxon\SaxonProcessor::setcwd' => 'Set the current working directory used to resolve against files',
+'Saxon\SaxonProcessor::setResourceDirectory' => 'Set the resources directory of where Saxon can locate data folder',
+'Saxon\SaxonProcessor::version' => 'Report the Java Saxon version',
+'Saxon\SchemaValidator::clearParameters' => 'Clear parameter values set',
+'Saxon\SchemaValidator::clearProperties' => 'Clear property values set',
+'Saxon\SchemaValidator::exceptionClear' => 'Clear any exception thrown',
+'Saxon\SchemaValidator::getErrorCode' => 'Get the $i\'th error code if there are any errors',
+'Saxon\SchemaValidator::getErrorMessage' => 'Get the $i\'th error message if there are any errors',
+'Saxon\SchemaValidator::getExceptionCount' => 'Get number of error during execution of the validator',
+'Saxon\SchemaValidator::getValidationReport' => 'Get the validation report produced after validating the source document. The reporting feature is switched on via setting the property on the {@link SchemaValidator): $validator->setProperty(\'report\', \'true\').',
+'Saxon\SchemaValidator::registerSchemaFromFile' => 'Register the Schema which is given as file name.',
+'Saxon\SchemaValidator::registerSchemaFromString' => 'Register the Schema which is given as a string representation.',
+'Saxon\SchemaValidator::setOutputFile' => 'The instance document to be validated. Supplied file name is resolved and accessed',
+'Saxon\SchemaValidator::setParameter' => 'Set the parameters required for XQuery Processor',
+'Saxon\SchemaValidator::setProperty' => 'Set properties for Schema Validator.',
+'Saxon\SchemaValidator::setSourceNode' => 'The instance document to be validated. Supplied as an Xdm Node',
+'Saxon\SchemaValidator::validate' => 'Validate an instance document supplied as a Source object. Assume source document has already been supplied through accessor methods',
+'Saxon\SchemaValidator::validateToNode' => 'Validate an instance document supplied as a Source object with the validated document returned to the calling program.',
+'Saxon\XdmAtomicValue::addXdmItem' => 'Add item to the sequence at the end.',
+'Saxon\XdmAtomicValue::getAtomicValue' => 'Provided the item is an atomic value we return the {@link XdmAtomicValue} otherwise return null',
+'Saxon\XdmAtomicValue::getBooleanValue' => 'Get the value converted to a boolean using the XPath casting rules',
+'Saxon\XdmAtomicValue::getDoubleValue' => 'Get the value converted to a double using the XPath casting rules. If the value is a string, the XSD 1.1 rules are used, which means that the string "+INF" is recognised',
+'Saxon\XdmAtomicValue::getHead' => 'Get the first item in the sequence',
+'Saxon\XdmAtomicValue::getLongValue' => 'Get the value converted to an integer using the XPath casting rules',
+'Saxon\XdmAtomicValue::getNodeValue' => 'Provided the item is a node value we return the {@link XdmNode} otherwise return null',
+'Saxon\XdmAtomicValue::getStringValue' => 'Get the string value of the item. For an atomic value, it has the same effect as casting the value to a string. In all cases the result is the same as applying the XPath string() function.',
+'Saxon\XdmAtomicValue::isAtomic' => 'Determine whether the item is an atomic value or a node. Return TRUE if the item is an atomic value',
+'Saxon\XdmAtomicValue::isNode' => 'Determine whether the item is a node value or not.',
+'Saxon\XdmAtomicValue::itemAt' => 'Get the n\'th item in the value, counting from zero',
+'Saxon\XdmAtomicValue::size' => 'Get the number of items in the sequence',
+'Saxon\XdmItem::addXdmItem' => 'Add item to the sequence at the end.',
+'Saxon\XdmItem::getAtomicValue' => 'Provided the item is an atomic value we return the {@link XdmAtomicValue} otherwise return null',
+'Saxon\XdmItem::getHead' => 'Get the first item in the sequence',
+'Saxon\XdmItem::getNodeValue' => 'Provided the item is a node value we return the {@link XdmNode} otherwise return null',
+'Saxon\XdmItem::getStringValue' => 'Get the string value of the item. For a node, this gets the string value of the node. For an atomic value, it has the same effect as casting the value to a string. In all cases the result is the same as applying the XPath string() function.',
+'Saxon\XdmItem::isAtomic' => 'Determine whether the item is an atomic value or not.',
+'Saxon\XdmItem::isNode' => 'Determine whether the item is a node value or not.',
+'Saxon\XdmItem::itemAt' => 'Get the n\'th item in the value, counting from zero',
+'Saxon\XdmItem::size' => 'Get the number of items in the sequence',
+'Saxon\XdmNode::addXdmItem' => 'Add item to the sequence at the end.',
+'Saxon\XdmNode::getAtomicValue' => 'Provided the item is an atomic value we return the {@link XdmAtomicValue} otherwise return null',
+'Saxon\XdmNode::getAttributeCount' => 'Get the count of attribute nodes at this node',
+'Saxon\XdmNode::getAttributeNode' => 'Get the n\'th attribute node at this node. If the attribute node selected does not exist then return null',
+'Saxon\XdmNode::getAttributeValue' => 'Get the n\'th attribute node value at this node. If the attribute node selected does not exist then return null',
+'Saxon\XdmNode::getChildCount' => 'Get the count of child node at this current node',
+'Saxon\XdmNode::getChildNode' => 'Get the n\'th child node at this node. If the child node selected does not exist then return null',
+'Saxon\XdmNode::getHead' => 'Get the first item in the sequence',
+'Saxon\XdmNode::getNodeKind' => 'Get the kind of node',
+'Saxon\XdmNode::getNodeName' => 'Get the name of the node, as a EQName',
+'Saxon\XdmNode::getNodeValue' => 'Provided the item is a node value we return the {@link XdmNode} otherwise return null',
+'Saxon\XdmNode::getParent' => 'Get the parent of this node. If parent node does not exist then return null',
+'Saxon\XdmNode::getStringValue' => 'Get the string value of the item. For a node, this gets the string value of the node.',
+'Saxon\XdmNode::isAtomic' => 'Determine whether the item is an atomic value or a node. This method will return FALSE as the item is not atomic',
+'Saxon\XdmNode::isNode' => 'Determine whether the item is a node value or not.',
+'Saxon\XdmNode::itemAt' => 'Get the n\'th item in the value, counting from zero',
+'Saxon\XdmNode::size' => 'Get the number of items in the sequence',
+'Saxon\XdmValue::addXdmItem' => 'Add item to the sequence at the end.',
+'Saxon\XdmValue::getHead' => 'Get the first item in the sequence',
+'Saxon\XdmValue::itemAt' => 'Get the n\'th item in the value, counting from zero',
+'Saxon\XdmValue::size' => 'Get the number of items in the sequence',
+'Saxon\XPathProcessor::clearParameters' => 'Clear parameter values set',
+'Saxon\XPathProcessor::clearProperties' => 'Clear property values set',
+'Saxon\XPathProcessor::declareNamespace' => 'Declare a namespace binding as part of the static context for XPath expressions compiled using this {@link XPathProcessor}',
+'Saxon\XPathProcessor::effectiveBooleanValue' => 'Evaluate the XPath expression, returning the effective boolean value of the result.',
+'Saxon\XPathProcessor::evaluate' => 'Compile and evaluate an XPath expression, supplied as a character string. Result is an {@link XdmValue}',
+'Saxon\XPathProcessor::evaluateSingle' => 'Compile and evaluate an XPath expression whose result is expected to be a single item, with a given context item. The expression is supplied as a character string.',
+'Saxon\XPathProcessor::exceptionClear' => 'Clear any exception thrown',
+'Saxon\XPathProcessor::getErrorCode' => 'Get the $i\'th error code if there are any errors',
+'Saxon\XPathProcessor::getErrorMessage' => 'Get the $i\'th error message if there are any errors',
+'Saxon\XPathProcessor::getExceptionCount' => 'Get number of error during execution or evaluate of stylesheet and query, respectively',
+'Saxon\XPathProcessor::setBaseURI' => 'Set the static base URI for XPath expressions compiled using this XQuery Processor. The base URI is part of the static context, and is used to resolve any relative URIS appearing within a query',
+'Saxon\XPathProcessor::setContextFile' => 'Set the context item from file',
+'Saxon\XPathProcessor::setContextItem' => 'Set the context item from a {@link XdmItem}',
+'Saxon\XPathProcessor::setParameter' => 'Set the parameters required for XQuery Processor',
+'Saxon\XPathProcessor::setProperty' => 'Set properties for Query.',
+'Saxon\XQueryProcessor::clearParameters' => 'Clear parameter values set',
+'Saxon\XQueryProcessor::clearProperties' => 'Clear property values set',
+'Saxon\XQueryProcessor::declareNamespace' => 'Declare a namespace binding as part of the static context for XPath expressions compiled using this XQuery processor',
+'Saxon\XQueryProcessor::exceptionClear' => 'Clear any exception thrown',
+'Saxon\XQueryProcessor::getErrorCode' => 'Get the $i\'th error code if there are any errors',
+'Saxon\XQueryProcessor::getErrorMessage' => 'Get the $i\'th error message if there are any errors',
+'Saxon\XQueryProcessor::getExceptionCount' => 'Get number of error during execution or evaluate of query',
+'Saxon\XQueryProcessor::runQueryToFile' => 'Compile and evaluate the query. Save the result to file',
+'Saxon\XQueryProcessor::runQueryToString' => 'Compile and evaluate the query. Result returned as string. If there are failures then a null is returned',
+'Saxon\XQueryProcessor::runQueryToValue' => 'Compile and evaluate the query. Result returned as an XdmValue object. If there are failures then a null is returned',
+'Saxon\XQueryProcessor::setContextItem' => 'Set the initial context item for the query.
+Any one of the objects are accepted: {@link XdmValue}, {@link XdmItem}, {@link XdmNode} and {@link XdmAtomicValue}.',
+'Saxon\XQueryProcessor::setContextItemFromFile' => 'Set the initial context item for the query. Supplied as filename',
+'Saxon\XQueryProcessor::setParameter' => 'Set the parameters required for XQuery Processor',
+'Saxon\XQueryProcessor::setProperty' => 'Set properties for Query.',
+'Saxon\XQueryProcessor::setQueryBaseURI' => 'Set the static base URI for a query expressions compiled using this XQuery Processor. The base URI is part of the static context, and is used to resolve any relative URIS appearing within a query',
+'Saxon\XQueryProcessor::setQueryContent' => 'query supplied as a string',
+'Saxon\XQueryProcessor::setQueryFile' => 'query supplied as a file',
+'Saxon\XsltProcessor::clearParameters' => 'Clear parameter values set',
+'Saxon\XsltProcessor::clearProperties' => 'Clear property values set',
+'Saxon\XsltProcessor::compileFromFile' => 'Compile a stylesheet supplied by file name',
+'Saxon\XsltProcessor::compileFromString' => 'Compile a stylesheet received as a string.',
+'Saxon\XsltProcessor::compileFromValue' => 'Compile a stylesheet received as an {@link XdmNode}.',
+'Saxon\XsltProcessor::exceptionClear' => 'Clear any exception thrown',
+'Saxon\XsltProcessor::getErrorCode' => 'Get the $i\'th error code if there are any errors',
+'Saxon\XsltProcessor::getErrorMessage' => 'Get the $i\'th error message if there are any errors',
+'Saxon\XsltProcessor::getExceptionCount' => 'Get number of error during execution or evaluate of stylesheet',
+'Saxon\XsltProcessor::setOutputFile' => 'Set the output file name of where the transformation result is sent',
+'Saxon\XsltProcessor::setParameter' => 'Set the parameters required for XSLT stylesheet',
+'Saxon\XsltProcessor::setProperty' => 'Set properties for the stylesheet.',
+'Saxon\XsltProcessor::setSourceFromFile' => 'The source used for a query or stylesheet. Requires a file name as string',
+'Saxon\XsltProcessor::setSourceFromXdmValue' => 'The source used for a query or stylesheet. Requires an {@link XdmValue} object',
+'Saxon\XsltProcessor::transformFileToFile' => 'Perform a one shot transformation. The result is stored in the supplied outputfile name.',
+'Saxon\XsltProcessor::transformFileToString' => 'Perform a one shot transformation. The result is returned as a string. If there are failures then a null is returned.',
+'Saxon\XsltProcessor::transformFileToValue' => 'Perform a one shot transformation. The result is returned as an {@link XdmValue}.',
+'Saxon\XsltProcessor::transformToFile' => 'Perform the transformation based upon cached stylesheet and source document.',
+'Saxon\XsltProcessor::transformToValue' => 'Perform the transformation based upon cached stylesheet and any source document. Result returned as an {@link XdmValue} object. If there are failures then a null is returned',
 'sca::createDataObject' => 'Create an SDO',
 'sca::getService' => 'Obtain a proxy for a service',
 'sca_localproxy::createDataObject' => 'Create an SDO',
 'sca_soapproxy::createDataObject' => 'Create an SDO',
+'scalebarObj::convertToString' => 'Saves the object to a string.  Provides the inverse option for
+updateFromString.',
+'scalebarObj::free' => 'Free the object properties and break the internal references.
+Note that you have to unset the php variable to free totally the
+resources.',
+'scalebarObj::set' => 'Set object property to a new value.',
+'scalebarObj::setImageColor' => 'Sets the imagecolor property (baclground) of the object.
+Returns MS_SUCCESS or MS_FAILURE on error.',
+'scalebarObj::updateFromString' => 'Update a scalebar from a string snippet. Returns MS_SUCCESS/MS_FAILURE.',
 'scandir' => 'List files and directories inside the specified path',
 'sdo_das_changesummary::beginLogging' => 'Begin change logging',
 'sdo_das_changesummary::endLogging' => 'End change logging',
@@ -7126,6 +10400,8 @@ return [
 'sem_get' => 'Get a semaphore id',
 'sem_release' => 'Release a semaphore',
 'sem_remove' => 'Remove a semaphore',
+'Serializable::serialize' => 'String representation of object',
+'Serializable::unserialize' => 'Constructs the object',
 'serialize' => 'Generates a storable representation of a value',
 'session_abort' => 'Discard session array changes and finish session',
 'session_cache_expire' => 'Return current cache expire',
@@ -7165,6 +10441,8 @@ return [
 'sessionhandler::gc' => 'Cleanup old sessions',
 'sessionhandler::open' => 'Initialize session',
 'sessionhandler::read' => 'Read session data',
+'SessionHandler::updateTimestamp' => 'Update timestamp of a session',
+'SessionHandler::validateId' => 'Validate session id',
 'sessionhandler::write' => 'Write session data',
 'sessionhandlerinterface::close' => 'Close the session',
 'sessionhandlerinterface::destroy' => 'Destroy a session',
@@ -7179,6 +10457,8 @@ return [
 'set_exception_handler' => 'Sets a user-defined exception handler function',
 'set_file_buffer' => 'Alias of stream_set_write_buffer',
 'set_include_path' => 'Sets the include_path configuration option',
+'set_job_failed' => 'causes a job to fail logically
+can be used to indicate an error in the script logic (e.g. database connection problem)',
 'set_magic_quotes_runtime' => 'Sets the current active configuration setting of magic_quotes_runtime',
 'set_socket_blocking' => 'Alias of stream_set_blocking',
 'set_time_limit' => 'Limits the maximum execution time',
@@ -7192,6 +10472,112 @@ return [
 'sha1_file' => 'Calculate the sha1 hash of a file',
 'sha256' => 'Calculate the sha256 hash of a string',
 'sha256_file' => 'Calculate the sha256 hash of given filename',
+'shapefileObj::__construct' => 'Opens a shapefile and returns a new object to deal with it. Filename
+should be passed with no extension.  To create a new file (or
+overwrite an existing one), type should be one of MS_SHP_POINT,
+MS_SHP_ARC, MS_SHP_POLYGON or MS_SHP_MULTIPOINT. Pass type as -1 to
+open an existing file for read-only access, and type=-2 to open an
+existing file for update (append).',
+'shapefileObj::addPoint' => 'Appends a point to an open shapefile.',
+'shapefileObj::addShape' => 'Appends a shape to an open shapefile.',
+'shapefileObj::free' => 'Free the object properties and break the internal references.
+Note that you have to unset the php variable to free totally the
+resources.
+.. note::
+The shape file is closed (and changes committed) when
+the object is destroyed. You can explicitly close and save
+the changes by calling $shapefile->free();
+unset($shapefile), which will also free the php object.',
+'shapefileObj::getExtent' => 'Retrieve a shape\'s bounding box by index.',
+'shapefileObj::getPoint' => 'Retrieve point by index.',
+'shapefileObj::getShape' => 'Retrieve shape by index.',
+'shapefileObj::getTransformed' => 'Retrieve shape by index.',
+'shapefileObj::ms_newShapefileObj' => 'Old style constructor',
+'shapeObj::__construct' => '\'type\' is one of MS_SHAPE_POINT, MS_SHAPE_LINE, MS_SHAPE_POLYGON or
+MS_SHAPE_NULL
+Creates new shape object from WKT string.',
+'shapeObj::add' => 'Add a line (i.e. a part) to the shape.',
+'shapeObj::boundary' => 'Returns the boundary of the shape.
+Only available if php/mapscript is built with GEOS library.
+shapeObj buffer(width)
+Returns a new buffered shapeObj based on the supplied distance (given
+in the coordinates of the existing shapeObj).
+Only available if php/mapscript is built with GEOS library.',
+'shapeObj::contains' => 'Returns MS_TRUE if the point is inside the shape, MS_FALSE otherwise.',
+'shapeObj::containsShape' => 'Returns true if shape2 passed as argument is entirely within the shape.
+Else return false.
+Only available if php/mapscript is built with GEOS
+library.',
+'shapeObj::convexhull' => 'Returns a shape object representing the convex hull of shape.
+Only available if php/mapscript is built with GEOS
+library.',
+'shapeObj::crosses' => 'Returns true if the shape passed as argument crosses the shape.
+Else return false.
+Only available if php/mapscript is built with GEOS library.',
+'shapeObj::difference' => 'Returns a shape object representing the difference of the
+shape object with the one passed as parameter.
+Only available if php/mapscript is built with GEOS library.',
+'shapeObj::disjoint' => 'Returns true if the shape passed as argument is disjoint to the
+shape. Else return false.
+Only available if php/mapscript is built with GEOS library.',
+'shapeObj::draw' => 'Draws the individual shape using layer.
+Returns MS_SUCCESS/MS_FAILURE.',
+'shapeObj::equals' => 'Returns true if the shape passed as argument is equal to the
+shape (geometry only). Else return false.
+Only available if php/mapscript is built with GEOS library.',
+'shapeObj::free' => 'Free the object properties and break the internal references.
+Note that you have to unset the php variable to free totally the resources.',
+'shapeObj::getArea' => 'Returns the area of the shape (if applicable).
+Only available if php/mapscript is built with GEOS library.',
+'shapeObj::getCentroid' => 'Returns a point object representing the centroid of the shape.
+Only available if php/mapscript is built with GEOS library.',
+'shapeObj::getLabelPoint' => 'Returns a point object with coordinates suitable for labelling
+the shape.',
+'shapeObj::getLength' => 'Returns the length (or perimeter) of the shape.
+Only available if php/mapscript is built with GEOS library.
+pointObj  getMeasureUsingPoint(pointObj point)
+Apply only on Measured shape files. Given an XY Location, find the
+nearest point on the shape object. Return a point object
+of this point with the m value set.',
+'shapeObj::getPointUsingMeasure' => 'Apply only on Measured shape files. Given a measure m, retun the
+corresponding XY location on the shapeobject.',
+'shapeObj::getValue' => 'Returns the value for a given field name.',
+'shapeObj::intersection' => 'Returns a shape object representing the intersection of the shape
+object with the one passed as parameter.
+Only available if php/mapscript is built with GEOS library.',
+'shapeObj::intersects' => 'Returns MS_TRUE if the two shapes intersect, MS_FALSE otherwise.',
+'shapeObj::line' => 'Returns a reference to line number i.',
+'shapeObj::ms_shapeObjFromWkt' => 'Old style constructor',
+'shapeObj::overlaps' => 'Returns true if the shape passed as argument overlaps the shape.
+Else returns false.
+Only available if php/mapscript is built with GEOS library.',
+'shapeObj::project' => 'Project the shape from "in" projection (1st argument) to "out"
+projection (2nd argument).  Returns MS_SUCCESS/MS_FAILURE.',
+'shapeObj::set' => 'Set object property to a new value.',
+'shapeObj::setBounds' => 'Updates the bounds property of the shape.
+Must be called to calculate new bounding box after new parts have been
+added.',
+'shapeObj::simplify' => 'Given a tolerance, returns a simplified shape object or NULL on
+error.  Only available if php/mapscript is built with GEOS library
+(>=3.0).',
+'shapeObj::symdifference' => 'Returns the computed symmetric difference of the supplied and
+existing shape.
+Only available if php/mapscript is built with GEOS library.',
+'shapeObj::topologyPreservingSimplify' => 'Given a tolerance, returns a simplified shape object or NULL on
+error.  Only available if php/mapscript is built with GEOS library
+(>=3.0).',
+'shapeObj::touches' => 'Returns true if the shape passed as argument touches the shape.
+Else return false.
+Only available if php/mapscript is built with GEOS library.',
+'shapeObj::toWkt' => 'Returns WKT representation of the shape\'s geometry.',
+'shapeObj::union' => 'Returns a shape object representing the union of the shape object
+with the one passed as parameter.
+Only available if php/mapscript is built with GEOS
+library',
+'shapeObj::within' => 'Returns true if the shape is entirely within the shape2 passed as
+argument.
+Else returns false.
+Only available if php/mapscript is built with GEOS library.',
 'shell_exec' => 'Execute command via shell and return the complete output as a string',
 'shm_attach' => 'Creates or open a shared memory segment',
 'shm_detach' => 'Disconnects from shared memory segment',
@@ -7213,6 +10599,7 @@ return [
 'simplexml_load_file' => 'Interprets an XML file into an object',
 'simplexml_load_string' => 'Interprets a string of XML into an object',
 'simplexmlelement::__construct' => 'Creates a new SimpleXMLElement object',
+'SimpleXMLElement::__get' => 'Provides access to element\'s children',
 'simplexmlelement::__toString' => 'Returns the string content',
 'simplexmlelement::addAttribute' => 'Adds an attribute to the SimpleXML element',
 'simplexmlelement::addChild' => 'Adds a child element to the XML node',
@@ -7223,9 +10610,15 @@ return [
 'simplexmlelement::getDocNamespaces' => 'Returns namespaces declared in document',
 'simplexmlelement::getName' => 'Gets the name of the XML element',
 'simplexmlelement::getNamespaces' => 'Returns namespaces used in document',
+'SimpleXMLElement::offsetExists' => 'Class provides access to children by position, and attributes by name',
+'SimpleXMLElement::offsetGet' => 'Class provides access to children by position, and attributes by name',
+'SimpleXMLElement::offsetSet' => 'Class provides access to children by position, and attributes by name',
+'SimpleXMLElement::offsetUnset' => 'Class provides access to children by position, and attributes by name',
 'simplexmlelement::registerXPathNamespace' => 'Creates a prefix/ns context for the next XPath query',
 'simplexmlelement::saveXML' => 'Alias of SimpleXMLElement::asXML',
 'simplexmlelement::xpath' => 'Runs XPath query on XML data',
+'SimpleXMLIterator::__toString' => 'Returns the string content',
+'SimpleXMLIterator::count' => 'Counts the children of an element',
 'simplexmliterator::current' => 'Returns the current element',
 'simplexmliterator::getChildren' => 'Returns the sub-elements of the current element',
 'simplexmliterator::hasChildren' => 'Checks whether the current element has sub elements',
@@ -7343,6 +10736,98 @@ return [
 'socket_shutdown' => 'Shuts down a socket for receiving, sending, or both',
 'socket_strerror' => 'Return a string describing a socket error',
 'socket_write' => 'Write to a socket',
+'Sodium\add' => 'Add the right operand to the left',
+'Sodium\bin2hex' => 'Convert to hex without side-chanels',
+'Sodium\compare' => 'Compare two strings in constant time',
+'Sodium\crypto_aead_aes256gcm_decrypt' => 'Authenticated Encryption with Associated Data (decrypt)
+AES-256-GCM',
+'Sodium\crypto_aead_aes256gcm_encrypt' => 'Authenticated Encryption with Associated Data (encrypt)
+AES-256-GCM',
+'Sodium\crypto_aead_aes256gcm_is_available' => 'Can you access AES-256-GCM? This is only available if you have supported
+hardware.',
+'Sodium\crypto_aead_chacha20poly1305_decrypt' => 'Authenticated Encryption with Associated Data (decrypt)
+ChaCha20 + Poly1305',
+'Sodium\crypto_aead_chacha20poly1305_encrypt' => 'Authenticated Encryption with Associated Data (encrypt)
+ChaCha20 + Poly1305',
+'Sodium\crypto_auth' => 'Secret-key message authentication
+HMAC SHA-512/256',
+'Sodium\crypto_auth_verify' => 'Secret-key message verification
+HMAC SHA-512/256',
+'Sodium\crypto_box' => 'Public-key authenticated encryption (encrypt)
+X25519 + Xsalsa20 + Poly1305',
+'Sodium\crypto_box_keypair' => 'Generate an X25519 keypair for use with the crypto_box API',
+'Sodium\crypto_box_keypair_from_secretkey_and_publickey' => 'Create an X25519 keypair from an X25519 secret key and X25519 public key',
+'Sodium\crypto_box_open' => 'Public-key authenticated encryption (decrypt)
+X25519 + Xsalsa20 + Poly1305',
+'Sodium\crypto_box_publickey' => 'Get an X25519 public key from an X25519 keypair',
+'Sodium\crypto_box_publickey_from_secretkey' => 'Derive an X25519 public key from an X25519 secret key',
+'Sodium\crypto_box_seal' => 'Anonymous public-key encryption (encrypt)
+X25519 + Xsalsa20 + Poly1305 + BLAKE2b',
+'Sodium\crypto_box_seal_open' => 'Anonymous public-key encryption (decrypt)
+X25519 + Xsalsa20 + Poly1305 + BLAKE2b',
+'Sodium\crypto_box_secretkey' => 'Extract the X25519 secret key from an X25519 keypair',
+'Sodium\crypto_box_seed_keypair' => 'Derive an X25519 keypair for use with the crypto_box API from a seed',
+'Sodium\crypto_generichash' => 'Fast and secure cryptographic hash',
+'Sodium\crypto_generichash_final' => 'Get the final hash
+BLAKE2b',
+'Sodium\crypto_generichash_init' => 'Create a new hash state (e.g. to use for streams)
+BLAKE2b',
+'Sodium\crypto_generichash_update' => 'Update the hash state with some data
+BLAKE2b',
+'Sodium\crypto_kx' => 'Elliptic Curve Diffie Hellman Key Exchange
+X25519',
+'Sodium\crypto_pwhash' => 'Secure password-based key derivation function
+Argon2i',
+'Sodium\crypto_pwhash_scryptsalsa208sha256' => 'Secure password-based key derivation function
+Scrypt',
+'Sodium\crypto_pwhash_scryptsalsa208sha256_str' => 'Get a formatted password hash (for storage)
+Scrypt',
+'Sodium\crypto_pwhash_scryptsalsa208sha256_str_verify' => 'Verify a password against a hash
+Scrypt',
+'Sodium\crypto_pwhash_str' => 'Get a formatted password hash (for storage)
+Argon2i',
+'Sodium\crypto_pwhash_str_verify' => 'Verify a password against a hash
+Argon2i',
+'Sodium\crypto_scalarmult' => 'Elliptic Curve Diffie Hellman over Curve25519
+X25519',
+'Sodium\crypto_scalarmult_base' => 'Scalar multiplication of the base point and your key',
+'Sodium\crypto_secretbox' => 'Authenticated secret-key encryption (encrypt)
+Xsals20 + Poly1305',
+'Sodium\crypto_secretbox_open' => 'Authenticated secret-key encryption (decrypt)
+Xsals20 + Poly1305',
+'Sodium\crypto_shorthash' => 'A short keyed hash suitable for data structures
+SipHash-2-4',
+'Sodium\crypto_sign' => 'Digital Signature
+Ed25519',
+'Sodium\crypto_sign_detached' => 'Digital Signature (detached)
+Ed25519',
+'Sodium\crypto_sign_ed25519_pk_to_curve25519' => 'Convert an Ed25519 public key to an X25519 public key',
+'Sodium\crypto_sign_ed25519_sk_to_curve25519' => 'Convert an Ed25519 secret key to an X25519 secret key',
+'Sodium\crypto_sign_keypair' => 'Generate an Ed25519 keypair for use with the crypto_sign API',
+'Sodium\crypto_sign_keypair_from_secretkey_and_publickey' => 'Create an Ed25519 keypair from an Ed25519 secret key + Ed25519 public key',
+'Sodium\crypto_sign_open' => 'Verify a signed message and return the plaintext',
+'Sodium\crypto_sign_publickey' => 'Get the public key from an Ed25519 keypair',
+'Sodium\crypto_sign_publickey_from_secretkey' => 'Derive an Ed25519 public key from an Ed25519 secret key',
+'Sodium\crypto_sign_secretkey' => 'Get the secret key from an Ed25519 keypair',
+'Sodium\crypto_sign_seed_keypair' => 'Derive an Ed25519 keypair for use with the crypto_sign API from a seed',
+'Sodium\crypto_sign_verify_detached' => 'Verify a detached signature',
+'Sodium\crypto_stream' => 'Create a keystream from a key and nonce
+Xsalsa20',
+'Sodium\crypto_stream_xor' => 'Encrypt a message using a stream cipher
+Xsalsa20',
+'Sodium\hex2bin' => 'Convert from hex without side-chanels',
+'Sodium\increment' => 'Increment a string in little-endian',
+'Sodium\library_version_major' => 'Get the true major version of libsodium',
+'Sodium\library_version_minor' => 'Get the true minor version of libsodium',
+'Sodium\memcmp' => 'Compare two strings in constant time',
+'Sodium\memzero' => 'Wipe a buffer',
+'Sodium\randombytes_buf' => 'Generate a string of random bytes
+/dev/urandom',
+'Sodium\randombytes_random16' => 'Generate a 16-bit integer
+/dev/urandom',
+'Sodium\randombytes_uniform' => 'Generate an unbiased random integer between 0 and a specified value
+/dev/urandom',
+'Sodium\version_string' => 'Get the version string',
 'sodium_add' => 'Add large numbers',
 'sodium_bin2hex' => 'Encode to hexadecimal',
 'sodium_compare' => 'Compare large numbers',
@@ -7443,31 +10928,236 @@ return [
 'solrcollapsefunction::setNullPolicy' => 'Sets the NULL Policy',
 'solrcollapsefunction::setSize' => 'Sets the initial size of the collapse data structures when collapsing on a numeric field only',
 'solrdismaxquery::__construct' => 'Class Constructor',
+'SolrDisMaxQuery::__destruct' => 'Destructor',
+'SolrDisMaxQuery::add' => 'This is an alias for SolrParams::addParam',
 'solrdismaxquery::addBigramPhraseField' => 'Adds a Phrase Bigram Field (pf2 parameter)',
 'solrdismaxquery::addBoostQuery' => 'Adds a boost query field with value and optional boost (bq parameter)',
+'SolrDisMaxQuery::addExpandFilterQuery' => 'Overrides main filter query, determines which documents to include in the main group.',
+'SolrDisMaxQuery::addExpandSortField' => 'Orders the documents within the expanded groups (expand.sort parameter).',
+'SolrDisMaxQuery::addFacetDateField' => 'Maps to facet.date',
+'SolrDisMaxQuery::addFacetDateOther' => 'Adds another facet.date.other parameter',
+'SolrDisMaxQuery::addFacetField' => 'Adds another field to the facet',
+'SolrDisMaxQuery::addFacetQuery' => 'Adds a facet query',
+'SolrDisMaxQuery::addField' => 'Specifies which fields to return in the result',
+'SolrDisMaxQuery::addFilterQuery' => 'Specifies a filter query',
+'SolrDisMaxQuery::addGroupField' => 'Add a field to be used to group results.',
+'SolrDisMaxQuery::addGroupFunction' => 'Allows grouping results based on the unique values of a function query (group.func parameter).',
+'SolrDisMaxQuery::addGroupQuery' => 'Allows grouping of documents that match the given query.',
+'SolrDisMaxQuery::addGroupSortField' => 'Add a group sort field (group.sort parameter).',
+'SolrDisMaxQuery::addHighlightField' => 'Maps to hl.fl',
+'SolrDisMaxQuery::addMltField' => 'Sets a field to use for similarity',
+'SolrDisMaxQuery::addMltQueryField' => 'Maps to mlt.qf',
+'SolrDisMaxQuery::addParam' => 'Adds a parameter to the object',
 'solrdismaxquery::addPhraseField' => 'Adds a Phrase Field (pf parameter)',
 'solrdismaxquery::addQueryField' => 'Add a query field with optional boost (qf parameter)',
+'SolrDisMaxQuery::addSortField' => 'Used to control how the results should be sorted',
+'SolrDisMaxQuery::addStatsFacet' => 'Requests a return of sub results for values within the given facet',
+'SolrDisMaxQuery::addStatsField' => 'Maps to stats.field parameter',
 'solrdismaxquery::addTrigramPhraseField' => 'Adds a Trigram Phrase Field (pf3 parameter)',
 'solrdismaxquery::addUserField' => 'Adds a field to User Fields Parameter (uf)',
+'SolrDisMaxQuery::collapse' => 'Collapses the result set to a single document per group',
+'SolrDisMaxQuery::get' => 'This is an alias for SolrParams::getParam',
+'SolrDisMaxQuery::getExpand' => 'Returns true if group expanding is enabled',
+'SolrDisMaxQuery::getExpandFilterQueries' => 'Returns the expand filter queries',
+'SolrDisMaxQuery::getExpandQuery' => 'Returns the expand query expand.q parameter',
+'SolrDisMaxQuery::getExpandRows' => 'Returns The number of rows to display in each group (expand.rows)',
+'SolrDisMaxQuery::getExpandSortFields' => 'Returns an array of fields',
+'SolrDisMaxQuery::getFacet' => 'Returns the value of the facet parameter',
+'SolrDisMaxQuery::getFacetDateEnd' => 'Returns the value for the facet.date.end parameter',
+'SolrDisMaxQuery::getFacetDateFields' => 'Returns all the facet.date fields',
+'SolrDisMaxQuery::getFacetDateGap' => 'Returns the value of the facet.date.gap parameter',
+'SolrDisMaxQuery::getFacetDateHardEnd' => 'Returns the value of the facet.date.hardend parameter',
+'SolrDisMaxQuery::getFacetDateOther' => 'Returns the value for the facet.date.other parameter',
+'SolrDisMaxQuery::getFacetDateStart' => 'Returns the lower bound for the first date range for all date faceting on this field',
+'SolrDisMaxQuery::getFacetFields' => 'Returns all the facet fields',
+'SolrDisMaxQuery::getFacetLimit' => 'Returns the maximum number of constraint counts that should be returned for the facet fields',
+'SolrDisMaxQuery::getFacetMethod' => 'Returns the value of the facet.method parameter',
+'SolrDisMaxQuery::getFacetMinCount' => 'Returns the minimum counts for facet fields should be included in the response',
+'SolrDisMaxQuery::getFacetMissing' => 'Returns the current state of the facet.missing parameter',
+'SolrDisMaxQuery::getFacetOffset' => 'Returns an offset into the list of constraints to be used for pagination',
+'SolrDisMaxQuery::getFacetPrefix' => 'Returns the facet prefix',
+'SolrDisMaxQuery::getFacetQueries' => 'Returns all the facet queries',
+'SolrDisMaxQuery::getFacetSort' => 'Returns the facet sort type',
+'SolrDisMaxQuery::getFields' => 'Returns the list of fields that will be returned in the response',
+'SolrDisMaxQuery::getFilterQueries' => 'Returns an array of filter queries',
+'SolrDisMaxQuery::getGroup' => 'Returns true if grouping is enabled
+https://secure.php.net/manual/en/solrquery.getgroup.php',
+'SolrDisMaxQuery::getGroupCachePercent' => 'Returns group cache percent value',
+'SolrDisMaxQuery::getGroupFacet' => 'Returns the group.facet parameter value',
+'SolrDisMaxQuery::getGroupFields' => 'Returns group fields (group.field parameter values)',
+'SolrDisMaxQuery::getGroupFormat' => 'Returns the group.format value',
+'SolrDisMaxQuery::getGroupFunctions' => 'Returns group functions (group.func parameter values)',
+'SolrDisMaxQuery::getGroupLimit' => 'Returns the group.limit value',
+'SolrDisMaxQuery::getGroupMain' => 'Returns the group.main value',
+'SolrDisMaxQuery::getGroupNGroups' => 'Returns the group.ngroups value',
+'SolrDisMaxQuery::getGroupOffset' => 'Returns the group.offset value',
+'SolrDisMaxQuery::getGroupQueries' => 'Returns all the group.query parameter values',
+'SolrDisMaxQuery::getGroupSortFields' => 'Returns the group.sort value',
+'SolrDisMaxQuery::getGroupTruncate' => 'Returns the group.truncate value',
+'SolrDisMaxQuery::getHighlight' => 'Returns the state of the hl parameter',
+'SolrDisMaxQuery::getHighlightAlternateField' => 'Returns the highlight field to use as backup or default',
+'SolrDisMaxQuery::getHighlightFields' => 'Returns all the fields that Solr should generate highlighted snippets for',
+'SolrDisMaxQuery::getHighlightFormatter' => 'Returns the formatter for the highlighted output',
+'SolrDisMaxQuery::getHighlightFragmenter' => 'Returns the text snippet generator for highlighted text',
+'SolrDisMaxQuery::getHighlightFragsize' => 'Returns the number of characters of fragments to consider for highlighting',
+'SolrDisMaxQuery::getHighlightHighlightMultiTerm' => 'Returns whether or not to enable highlighting for range/wildcard/fuzzy/prefix queries',
+'SolrDisMaxQuery::getHighlightMaxAlternateFieldLength' => 'Returns the maximum number of characters of the field to return',
+'SolrDisMaxQuery::getHighlightMaxAnalyzedChars' => 'Returns the maximum number of characters into a document to look for suitable snippets',
+'SolrDisMaxQuery::getHighlightMergeContiguous' => 'Returns whether or not the collapse contiguous fragments into a single fragment',
+'SolrDisMaxQuery::getHighlightRegexMaxAnalyzedChars' => 'Returns the maximum number of characters from a field when using the regex fragmenter',
+'SolrDisMaxQuery::getHighlightRegexPattern' => 'Returns the regular expression for fragmenting',
+'SolrDisMaxQuery::getHighlightRegexSlop' => 'Returns the deviation factor from the ideal fragment size',
+'SolrDisMaxQuery::getHighlightRequireFieldMatch' => 'Returns if a field will only be highlighted if the query matched in this particular field',
+'SolrDisMaxQuery::getHighlightSimplePost' => 'Returns the text which appears after a highlighted term',
+'SolrDisMaxQuery::getHighlightSimplePre' => 'Returns the text which appears before a highlighted term',
+'SolrDisMaxQuery::getHighlightSnippets' => 'Returns the maximum number of highlighted snippets to generate per field',
+'SolrDisMaxQuery::getHighlightUsePhraseHighlighter' => 'Returns the state of the hl.usePhraseHighlighter parameter',
+'SolrDisMaxQuery::getMlt' => 'Returns whether or not MoreLikeThis results should be enabled',
+'SolrDisMaxQuery::getMltBoost' => 'Returns whether or not the query will be boosted by the interesting term relevance',
+'SolrDisMaxQuery::getMltCount' => 'Returns the number of similar documents to return for each result',
+'SolrDisMaxQuery::getMltFields' => 'Returns all the fields to use for similarity',
+'SolrDisMaxQuery::getMltMaxNumQueryTerms' => 'Returns the maximum number of query terms that will be included in any generated query',
+'SolrDisMaxQuery::getMltMaxNumTokens' => 'Returns the maximum number of tokens to parse in each document field that is not stored with TermVector support',
+'SolrDisMaxQuery::getMltMaxWordLength' => 'Returns the maximum word length above which words will be ignored',
+'SolrDisMaxQuery::getMltMinDocFrequency' => 'Returns the treshold frequency at which words will be ignored which do not occur in at least this many docs',
+'SolrDisMaxQuery::getMltMinTermFrequency' => 'Returns the frequency below which terms will be ignored in the source document',
+'SolrDisMaxQuery::getMltMinWordLength' => 'Returns the minimum word length below which words will be ignored',
+'SolrDisMaxQuery::getMltQueryFields' => 'Returns the query fields and their boosts',
+'SolrDisMaxQuery::getParam' => 'Returns a parameter value',
+'SolrDisMaxQuery::getParams' => 'Returns an array of non URL-encoded parameters',
+'SolrDisMaxQuery::getPreparedParams' => 'Returns an array of URL-encoded parameters',
+'SolrDisMaxQuery::getQuery' => 'Returns the main query',
+'SolrDisMaxQuery::getRows' => 'Returns the maximum number of documents',
+'SolrDisMaxQuery::getSortFields' => 'Returns all the sort fields',
+'SolrDisMaxQuery::getStart' => 'Returns the offset in the complete result set',
+'SolrDisMaxQuery::getStats' => 'Returns whether or not stats is enabled',
+'SolrDisMaxQuery::getStatsFacets' => 'Returns all the stats facets that were set',
+'SolrDisMaxQuery::getStatsFields' => 'Returns all the statistics fields',
+'SolrDisMaxQuery::getTerms' => 'Returns whether or not the TermsComponent is enabled',
+'SolrDisMaxQuery::getTermsField' => 'Returns the field from which the terms are retrieved',
+'SolrDisMaxQuery::getTermsIncludeLowerBound' => 'Returns whether or not to include the lower bound in the result set',
+'SolrDisMaxQuery::getTermsIncludeUpperBound' => 'Returns whether or not to include the upper bound term in the result set',
+'SolrDisMaxQuery::getTermsLimit' => 'Returns the maximum number of terms Solr should return',
+'SolrDisMaxQuery::getTermsLowerBound' => 'Returns the term to start at',
+'SolrDisMaxQuery::getTermsMaxCount' => 'Returns the maximum document frequency',
+'SolrDisMaxQuery::getTermsMinCount' => 'Returns the minimum document frequency to return in order to be included',
+'SolrDisMaxQuery::getTermsPrefix' => 'Returns the term prefix',
+'SolrDisMaxQuery::getTermsReturnRaw' => 'Whether or not to return raw characters',
+'SolrDisMaxQuery::getTermsSort' => 'Returns an integer indicating how terms are sorted',
+'SolrDisMaxQuery::getTermsUpperBound' => 'Returns the term to stop at',
+'SolrDisMaxQuery::getTimeAllowed' => 'Returns the time in milliseconds allowed for the query to finish',
 'solrdismaxquery::removeBigramPhraseField' => 'Removes phrase bigram field (pf2 parameter)',
 'solrdismaxquery::removeBoostQuery' => 'Removes a boost query partial by field name (bq)',
+'SolrDisMaxQuery::removeExpandFilterQuery' => 'Removes an expand filter query',
+'SolrDisMaxQuery::removeExpandSortField' => 'Removes an expand sort field from the expand.sort parameter.',
+'SolrDisMaxQuery::removeFacetDateField' => 'Removes one of the facet date fields',
+'SolrDisMaxQuery::removeFacetDateOther' => 'Removes one of the facet.date.other parameters',
+'SolrDisMaxQuery::removeFacetField' => 'Removes one of the facet.date parameters',
+'SolrDisMaxQuery::removeFacetQuery' => 'Removes one of the facet.query parameters',
+'SolrDisMaxQuery::removeField' => 'Removes a field from the list of fields',
+'SolrDisMaxQuery::removeFilterQuery' => 'Removes a filter query',
+'SolrDisMaxQuery::removeHighlightField' => 'Removes one of the fields used for highlighting',
+'SolrDisMaxQuery::removeMltField' => 'Removes one of the moreLikeThis fields',
+'SolrDisMaxQuery::removeMltQueryField' => 'Removes one of the moreLikeThis query fields',
 'solrdismaxquery::removePhraseField' => 'Removes a Phrase Field (pf parameter)',
 'solrdismaxquery::removeQueryField' => 'Removes a Query Field (qf parameter)',
+'SolrDisMaxQuery::removeSortField' => 'Removes one of the sort fields',
+'SolrDisMaxQuery::removeStatsFacet' => 'Removes one of the stats.facet parameters',
+'SolrDisMaxQuery::removeStatsField' => 'Removes one of the stats.field parameters',
 'solrdismaxquery::removeTrigramPhraseField' => 'Removes a Trigram Phrase Field (pf3 parameter)',
 'solrdismaxquery::removeUserField' => 'Removes a field from The User Fields Parameter (uf)',
+'SolrDisMaxQuery::serialize' => 'Used for custom serialization',
+'SolrDisMaxQuery::set' => 'An alias of SolrParams::setParam',
 'solrdismaxquery::setBigramPhraseFields' => 'Sets Bigram Phrase Fields and their boosts (and slops) using pf2 parameter',
 'solrdismaxquery::setBigramPhraseSlop' => 'Sets Bigram Phrase Slop (ps2 parameter)',
 'solrdismaxquery::setBoostFunction' => 'Sets a Boost Function (bf parameter)',
 'solrdismaxquery::setBoostQuery' => 'Directly Sets Boost Query Parameter (bq)',
+'SolrDisMaxQuery::setEchoHandler' => 'Toggles the echoHandler parameter',
+'SolrDisMaxQuery::setEchoParams' => 'Determines what kind of parameters to include in the response',
+'SolrDisMaxQuery::setExpand' => 'Enables/Disables the Expand Component',
+'SolrDisMaxQuery::setExpandQuery' => 'Sets the expand.q parameter',
+'SolrDisMaxQuery::setExpandRows' => 'Sets the number of rows to display in each group (expand.rows). Server Default 5',
+'SolrDisMaxQuery::setExplainOther' => 'Sets the explainOther common query parameter',
+'SolrDisMaxQuery::setFacet' => 'Maps to the facet parameter. Enables or disables facetting',
+'SolrDisMaxQuery::setFacetDateEnd' => 'Maps to facet.date.end',
+'SolrDisMaxQuery::setFacetDateGap' => 'Maps to facet.date.gap',
+'SolrDisMaxQuery::setFacetDateHardEnd' => 'Maps to facet.date.hardend',
+'SolrDisMaxQuery::setFacetDateStart' => 'Maps to facet.date.start',
+'SolrDisMaxQuery::setFacetEnumCacheMinDefaultFrequency' => 'Sets the minimum document frequency used for determining term count',
+'SolrDisMaxQuery::setFacetLimit' => 'Maps to facet.limit',
+'SolrDisMaxQuery::setFacetMethod' => 'Specifies the type of algorithm to use when faceting a field',
+'SolrDisMaxQuery::setFacetMinCount' => 'Maps to facet.mincount',
+'SolrDisMaxQuery::setFacetMissing' => 'Maps to facet.missing',
+'SolrDisMaxQuery::setFacetOffset' => 'Sets the offset into the list of constraints to allow for pagination',
+'SolrDisMaxQuery::setFacetPrefix' => 'Specifies a string prefix with which to limits the terms on which to facet',
+'SolrDisMaxQuery::setFacetSort' => 'Determines the ordering of the facet field constraints',
+'SolrDisMaxQuery::setGroup' => 'Enable/Disable result grouping (group parameter)',
+'SolrDisMaxQuery::setGroupCachePercent' => 'Enables caching for result grouping',
+'SolrDisMaxQuery::setGroupFacet' => 'Sets group.facet parameter',
+'SolrDisMaxQuery::setGroupFormat' => 'Sets the group format, result structure (group.format parameter).',
+'SolrDisMaxQuery::setGroupLimit' => 'Specifies the number of results to return for each group. The server default value is 1.',
+'SolrDisMaxQuery::setGroupMain' => 'If true, the result of the first field grouping command is used as the main result list in the response, using
+group.format=simple.',
+'SolrDisMaxQuery::setGroupNGroups' => 'If true, Solr includes the number of groups that have matched the query in the results.',
+'SolrDisMaxQuery::setGroupOffset' => 'Sets the group.offset parameter.',
+'SolrDisMaxQuery::setGroupTruncate' => 'If true, facet counts are based on the most relevant document of each group matching the query.',
+'SolrDisMaxQuery::setHighlight' => 'Enables or disables highlighting',
+'SolrDisMaxQuery::setHighlightAlternateField' => 'Specifies the backup field to use',
+'SolrDisMaxQuery::setHighlightFormatter' => 'Specify a formatter for the highlight output',
+'SolrDisMaxQuery::setHighlightFragmenter' => 'Sets a text snippet generator for highlighted text',
+'SolrDisMaxQuery::setHighlightFragsize' => 'The size of fragments to consider for highlighting',
+'SolrDisMaxQuery::setHighlightHighlightMultiTerm' => 'Use SpanScorer to highlight phrase terms',
+'SolrDisMaxQuery::setHighlightMaxAlternateFieldLength' => 'Sets the maximum number of characters of the field to return',
+'SolrDisMaxQuery::setHighlightMaxAnalyzedChars' => 'Specifies the number of characters into a document to look for suitable snippets',
+'SolrDisMaxQuery::setHighlightMergeContiguous' => 'Whether or not to collapse contiguous fragments into a single fragment',
+'SolrDisMaxQuery::setHighlightRegexMaxAnalyzedChars' => 'Specify the maximum number of characters to analyze',
+'SolrDisMaxQuery::setHighlightRegexPattern' => 'Specify the regular expression for fragmenting',
+'SolrDisMaxQuery::setHighlightRegexSlop' => 'Sets the factor by which the regex fragmenter can stray from the ideal fragment size',
+'SolrDisMaxQuery::setHighlightRequireFieldMatch' => 'Require field matching during highlighting',
+'SolrDisMaxQuery::setHighlightSimplePost' => 'Sets the text which appears after a highlighted term',
+'SolrDisMaxQuery::setHighlightSimplePre' => 'Sets the text which appears before a highlighted term',
+'SolrDisMaxQuery::setHighlightSnippets' => 'Sets the maximum number of highlighted snippets to generate per field',
+'SolrDisMaxQuery::setHighlightUsePhraseHighlighter' => 'Whether to highlight phrase terms only when they appear within the query phrase',
 'solrdismaxquery::setMinimumMatch' => 'Set Minimum "Should" Match (mm)',
+'SolrDisMaxQuery::setMlt' => 'Enables or disables moreLikeThis',
+'SolrDisMaxQuery::setMltBoost' => 'Set if the query will be boosted by the interesting term relevance',
+'SolrDisMaxQuery::setMltCount' => 'Set the number of similar documents to return for each result',
+'SolrDisMaxQuery::setMltMaxNumQueryTerms' => 'Sets the maximum number of query terms included',
+'SolrDisMaxQuery::setMltMaxNumTokens' => 'Specifies the maximum number of tokens to parse',
+'SolrDisMaxQuery::setMltMaxWordLength' => 'Sets the maximum word length',
+'SolrDisMaxQuery::setMltMinDocFrequency' => 'Sets the mltMinDoc frequency',
+'SolrDisMaxQuery::setMltMinTermFrequency' => 'Sets the frequency below which terms will be ignored in the source docs',
+'SolrDisMaxQuery::setMltMinWordLength' => 'Sets the minimum word length',
+'SolrDisMaxQuery::setOmitHeader' => 'Exclude the header from the returned results',
+'SolrDisMaxQuery::setParam' => 'Sets the parameter to the specified value',
 'solrdismaxquery::setPhraseFields' => 'Sets Phrase Fields and their boosts (and slops) using pf2 parameter',
 'solrdismaxquery::setPhraseSlop' => 'Sets the default slop on phrase queries (ps parameter)',
+'SolrDisMaxQuery::setQuery' => 'Sets the search query',
 'solrdismaxquery::setQueryAlt' => 'Set Query Alternate (q.alt parameter)',
 'solrdismaxquery::setQueryPhraseSlop' => 'Specifies the amount of slop permitted on phrase queries explicitly included in the user\'s query string (qf parameter)',
+'SolrDisMaxQuery::setRows' => 'Specifies the maximum number of rows to return in the result',
+'SolrDisMaxQuery::setShowDebugInfo' => 'Flag to show debug information',
+'SolrDisMaxQuery::setStart' => 'Specifies the number of rows to skip',
+'SolrDisMaxQuery::setStats' => 'Enables or disables the Stats component',
+'SolrDisMaxQuery::setTerms' => 'Enables or disables the TermsComponent',
+'SolrDisMaxQuery::setTermsField' => 'Sets the name of the field to get the Terms from',
+'SolrDisMaxQuery::setTermsIncludeLowerBound' => 'Include the lower bound term in the result set',
+'SolrDisMaxQuery::setTermsIncludeUpperBound' => 'Include the upper bound term in the result set',
+'SolrDisMaxQuery::setTermsLimit' => 'Sets the maximum number of terms to return',
+'SolrDisMaxQuery::setTermsLowerBound' => 'Specifies the Term to start from',
+'SolrDisMaxQuery::setTermsMaxCount' => 'Sets the maximum document frequency',
+'SolrDisMaxQuery::setTermsMinCount' => 'Sets the minimum document frequency',
+'SolrDisMaxQuery::setTermsPrefix' => 'Restrict matches to terms that start with the prefix',
+'SolrDisMaxQuery::setTermsReturnRaw' => 'Return the raw characters of the indexed term',
+'SolrDisMaxQuery::setTermsSort' => 'Specifies how to sort the returned terms',
+'SolrDisMaxQuery::setTermsUpperBound' => 'Sets the term to stop at',
 'solrdismaxquery::setTieBreaker' => 'Sets Tie Breaker parameter (tie parameter)',
+'SolrDisMaxQuery::setTimeAllowed' => 'The time allowed for search to finish',
 'solrdismaxquery::setTrigramPhraseFields' => 'Directly Sets Trigram Phrase Fields (pf3 parameter)',
 'solrdismaxquery::setTrigramPhraseSlop' => 'Sets Trigram Phrase Slop (ps3 parameter)',
 'solrdismaxquery::setUserFields' => 'Sets User Fields parameter (uf)',
+'SolrDisMaxQuery::toString' => 'Returns all the name-value pair parameters in the object',
+'SolrDisMaxQuery::unserialize' => 'Used for custom serialization',
 'solrdismaxquery::useDisMaxQueryParser' => 'Switch QueryParser to be DisMax Query Parser',
 'solrdismaxquery::useEDisMaxQueryParser' => 'Switch QueryParser to be EDisMax',
 'solrdocument::__clone' => 'Creates a copy of a SolrDocument object',
@@ -7508,6 +11198,17 @@ return [
 'solrexception::getInternalInfo' => 'Returns internal information where the Exception was thrown',
 'solrgenericresponse::__construct' => 'Constructor',
 'solrgenericresponse::__destruct' => 'Destructor',
+'SolrGenericResponse::getDigestedResponse' => 'Returns the XML response as serialized PHP data',
+'SolrGenericResponse::getHttpStatus' => 'Returns the HTTP status of the response',
+'SolrGenericResponse::getHttpStatusMessage' => 'Returns more details on the HTTP status',
+'SolrGenericResponse::getRawRequest' => 'Returns the raw request sent to the Solr server',
+'SolrGenericResponse::getRawRequestHeaders' => 'Returns the raw request headers sent to the Solr server',
+'SolrGenericResponse::getRawResponse' => 'Returns the raw response from the server',
+'SolrGenericResponse::getRawResponseHeaders' => 'Returns the raw response headers from the server',
+'SolrGenericResponse::getRequestUrl' => 'Returns the full URL the request was sent to',
+'SolrGenericResponse::getResponse' => 'Returns a SolrObject representing the XML response from the server',
+'SolrGenericResponse::setParseMode' => 'Sets the parse mode',
+'SolrGenericResponse::success' => 'Was the request a success',
 'solrillegalargumentexception::getInternalInfo' => 'Returns internal information where the Exception was thrown',
 'solrillegaloperationexception::getInternalInfo' => 'Returns internal information where the Exception was thrown',
 'solrinputdocument::__clone' => 'Creates a copy of a SolrDocument',
@@ -7535,6 +11236,17 @@ return [
 'solrinputdocument::toArray' => 'Returns an array representation of the input document',
 'solrmodifiableparams::__construct' => 'Constructor',
 'solrmodifiableparams::__destruct' => 'Destructor',
+'SolrModifiableParams::add' => 'This is an alias for SolrParams::addParam',
+'SolrModifiableParams::addParam' => 'Adds a parameter to the object',
+'SolrModifiableParams::get' => 'This is an alias for SolrParams::getParam',
+'SolrModifiableParams::getParam' => 'Returns a parameter value',
+'SolrModifiableParams::getParams' => 'Returns an array of non URL-encoded parameters',
+'SolrModifiableParams::getPreparedParams' => 'Returns an array of URL-encoded parameters',
+'SolrModifiableParams::serialize' => 'Used for custom serialization',
+'SolrModifiableParams::set' => 'An alias of SolrParams::setParam',
+'SolrModifiableParams::setParam' => 'Sets the parameter to the specified value',
+'SolrModifiableParams::toString' => 'Returns all the name-value pair parameters in the object',
+'SolrModifiableParams::unserialize' => 'Used for custom serialization',
 'solrobject::__construct' => 'Creates Solr object',
 'solrobject::__destruct' => 'Destructor',
 'solrobject::getPropertyNames' => 'Returns an array of all the names of the properties',
@@ -7555,9 +11267,20 @@ return [
 'solrparams::unserialize' => 'Used for custom serialization',
 'solrpingresponse::__construct' => 'Constructor',
 'solrpingresponse::__destruct' => 'Destructor',
+'SolrPingResponse::getDigestedResponse' => 'Returns the XML response as serialized PHP data',
+'SolrPingResponse::getHttpStatus' => 'Returns the HTTP status of the response',
+'SolrPingResponse::getHttpStatusMessage' => 'Returns more details on the HTTP status',
+'SolrPingResponse::getRawRequest' => 'Returns the raw request sent to the Solr server',
+'SolrPingResponse::getRawRequestHeaders' => 'Returns the raw request headers sent to the Solr server',
+'SolrPingResponse::getRawResponse' => 'Returns the raw response from the server',
+'SolrPingResponse::getRawResponseHeaders' => 'Returns the raw response headers from the server',
+'SolrPingResponse::getRequestUrl' => 'Returns the full URL the request was sent to',
 'solrpingresponse::getResponse' => 'Returns the response from the server',
+'SolrPingResponse::setParseMode' => 'Sets the parse mode',
+'SolrPingResponse::success' => 'Was the request a success',
 'solrquery::__construct' => 'Constructor',
 'solrquery::__destruct' => 'Destructor',
+'SolrQuery::add' => 'This is an alias for SolrParams::addParam',
 'solrquery::addExpandFilterQuery' => 'Overrides main filter query, determines which documents to include in the main group',
 'solrquery::addExpandSortField' => 'Orders the documents within the expanded groups (expand.sort parameter)',
 'solrquery::addFacetDateField' => 'Maps to facet.date',
@@ -7573,10 +11296,12 @@ return [
 'solrquery::addHighlightField' => 'Maps to hl.fl',
 'solrquery::addMltField' => 'Sets a field to use for similarity',
 'solrquery::addMltQueryField' => 'Maps to mlt.qf',
+'SolrQuery::addParam' => 'Adds a parameter to the object',
 'solrquery::addSortField' => 'Used to control how the results should be sorted',
 'solrquery::addStatsFacet' => 'Requests a return of sub results for values within the given facet',
 'solrquery::addStatsField' => 'Maps to stats.field parameter',
 'solrquery::collapse' => 'Collapses the result set to a single document per group',
+'SolrQuery::get' => 'This is an alias for SolrParams::getParam',
 'solrquery::getExpand' => 'Returns true if group expanding is enabled',
 'solrquery::getExpandFilterQueries' => 'Returns the expand filter queries',
 'solrquery::getExpandQuery' => 'Returns the expand query expand.q parameter',
@@ -7642,6 +11367,9 @@ return [
 'solrquery::getMltMinTermFrequency' => 'Returns the frequency below which terms will be ignored in the source document',
 'solrquery::getMltMinWordLength' => 'Returns the minimum word length below which words will be ignored',
 'solrquery::getMltQueryFields' => 'Returns the query fields and their boosts',
+'SolrQuery::getParam' => 'Returns a parameter value',
+'SolrQuery::getParams' => 'Returns an array of non URL-encoded parameters',
+'SolrQuery::getPreparedParams' => 'Returns an array of URL-encoded parameters',
 'solrquery::getQuery' => 'Returns the main query',
 'solrquery::getRows' => 'Returns the maximum number of documents',
 'solrquery::getSortFields' => 'Returns all the sort fields',
@@ -7676,6 +11404,8 @@ return [
 'solrquery::removeSortField' => 'Removes one of the sort fields',
 'solrquery::removeStatsFacet' => 'Removes one of the stats.facet parameters',
 'solrquery::removeStatsField' => 'Removes one of the stats.field parameters',
+'SolrQuery::serialize' => 'Used for custom serialization',
+'SolrQuery::set' => 'An alias of SolrParams::setParam',
 'solrquery::setEchoHandler' => 'Toggles the echoHandler parameter',
 'solrquery::setEchoParams' => 'Determines what kind of parameters to include in the response',
 'solrquery::setExpand' => 'Enables/Disables the Expand Component',
@@ -7731,6 +11461,7 @@ return [
 'solrquery::setMltMinTermFrequency' => 'Sets the frequency below which terms will be ignored in the source docs',
 'solrquery::setMltMinWordLength' => 'Sets the minimum word length',
 'solrquery::setOmitHeader' => 'Exclude the header from the returned results',
+'SolrQuery::setParam' => 'Sets the parameter to the specified value',
 'solrquery::setQuery' => 'Sets the search query',
 'solrquery::setRows' => 'Specifies the maximum number of rows to return in the result',
 'solrquery::setShowDebugInfo' => 'Flag to show debug information',
@@ -7749,8 +11480,21 @@ return [
 'solrquery::setTermsSort' => 'Specifies how to sort the returned terms',
 'solrquery::setTermsUpperBound' => 'Sets the term to stop at',
 'solrquery::setTimeAllowed' => 'The time allowed for search to finish',
+'SolrQuery::toString' => 'Returns all the name-value pair parameters in the object',
+'SolrQuery::unserialize' => 'Used for custom serialization',
 'solrqueryresponse::__construct' => 'Constructor',
 'solrqueryresponse::__destruct' => 'Destructor',
+'SolrQueryResponse::getDigestedResponse' => 'Returns the XML response as serialized PHP data',
+'SolrQueryResponse::getHttpStatus' => 'Returns the HTTP status of the response',
+'SolrQueryResponse::getHttpStatusMessage' => 'Returns more details on the HTTP status',
+'SolrQueryResponse::getRawRequest' => 'Returns the raw request sent to the Solr server',
+'SolrQueryResponse::getRawRequestHeaders' => 'Returns the raw request headers sent to the Solr server',
+'SolrQueryResponse::getRawResponse' => 'Returns the raw response from the server',
+'SolrQueryResponse::getRawResponseHeaders' => 'Returns the raw response headers from the server',
+'SolrQueryResponse::getRequestUrl' => 'Returns the full URL the request was sent to',
+'SolrQueryResponse::getResponse' => 'Returns a SolrObject representing the XML response from the server',
+'SolrQueryResponse::setParseMode' => 'Sets the parse mode',
+'SolrQueryResponse::success' => 'Was the request a success',
 'solrresponse::getDigestedResponse' => 'Returns the XML response as serialized PHP data',
 'solrresponse::getHttpStatus' => 'Returns the HTTP status of the response',
 'solrresponse::getHttpStatusMessage' => 'Returns more details on the HTTP status',
@@ -7765,6 +11509,17 @@ return [
 'solrserverexception::getInternalInfo' => 'Returns internal information where the Exception was thrown',
 'solrupdateresponse::__construct' => 'Constructor',
 'solrupdateresponse::__destruct' => 'Destructor',
+'SolrUpdateResponse::getDigestedResponse' => 'Returns the XML response as serialized PHP data',
+'SolrUpdateResponse::getHttpStatus' => 'Returns the HTTP status of the response',
+'SolrUpdateResponse::getHttpStatusMessage' => 'Returns more details on the HTTP status',
+'SolrUpdateResponse::getRawRequest' => 'Returns the raw request sent to the Solr server',
+'SolrUpdateResponse::getRawRequestHeaders' => 'Returns the raw request headers sent to the Solr server',
+'SolrUpdateResponse::getRawResponse' => 'Returns the raw response from the server',
+'SolrUpdateResponse::getRawResponseHeaders' => 'Returns the raw response headers from the server',
+'SolrUpdateResponse::getRequestUrl' => 'Returns the full URL the request was sent to',
+'SolrUpdateResponse::getResponse' => 'Returns a SolrObject representing the XML response from the server',
+'SolrUpdateResponse::setParseMode' => 'Sets the parse mode',
+'SolrUpdateResponse::success' => 'Was the request a success',
 'solrutils::digestXmlResponse' => 'Parses an response XML string into a SolrObject',
 'solrutils::escapeQueryChars' => 'Escapes a lucene query string',
 'solrutils::getSolrVersion' => 'Returns the current version of the Solr extension',
@@ -7839,6 +11594,7 @@ return [
 'spldoublylinkedlist::unserialize' => 'Unserializes the storage',
 'spldoublylinkedlist::unshift' => 'Prepends the doubly linked list with an element',
 'spldoublylinkedlist::valid' => 'Check whether the doubly linked list contains more nodes',
+'SplEnum::__construct' => 'Creates a new value of some type',
 'splenum::getConstList' => 'Returns all consts (possible values) as an array',
 'splfileinfo::__construct' => 'Construct a new SplFileInfo object',
 'splfileinfo::__toString' => 'Returns the path to the file as a string',
@@ -7936,6 +11692,17 @@ return [
 'spliti' => 'Split string into array by regular expression case insensitive',
 'splmaxheap::compare' => 'Compare elements in order to place them correctly in the heap while sifting up',
 'splminheap::compare' => 'Compare elements in order to place them correctly in the heap while sifting up',
+'SplMinHeap::count' => 'Counts the number of elements in the heap.',
+'SplMinHeap::current' => 'Return current node pointed by the iterator',
+'SplMinHeap::extract' => 'Extracts a node from top of the heap and sift up.',
+'SplMinHeap::insert' => 'Inserts an element in the heap by sifting it up.',
+'SplMinHeap::isEmpty' => 'Checks whether the heap is empty.',
+'SplMinHeap::key' => 'Return current node index',
+'SplMinHeap::next' => 'Move to the next node',
+'SplMinHeap::recoverFromCorruption' => 'Recover from the corrupted state and allow further actions on the heap.',
+'SplMinHeap::rewind' => 'Rewind iterator back to the start (no-op)',
+'SplMinHeap::top' => 'Peeks at the node from the top of the heap',
+'SplMinHeap::valid' => 'Check whether the heap contains more nodes',
 'splobjectstorage::addAll' => 'Adds all objects from another storage',
 'splobjectstorage::attach' => 'Adds an object in the storage',
 'splobjectstorage::contains' => 'Checks if the storage contains a specific object',
@@ -8039,6 +11806,62 @@ return [
 'sqlite_popen' => 'Opens a persistent handle to an SQLite database and create the database if it does not exist',
 'sqlite_udf_decode_binary' => 'Decode binary data passed as parameters to an UDF',
 'sqlite_udf_encode_binary' => 'Encode binary data before returning it from an UDF',
+'SQLiteDatabase::__construct' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.0)',
+'SQLiteDatabase::arrayQuery' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.0)
+Execute a query against a given database and returns an array',
+'SQLiteDatabase::busyTimeout' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.0)
+Set busy timeout duration, or disable busy handlers',
+'SQLiteDatabase::changes' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.0)
+Returns the number of rows that were changed by the most recent SQL statement',
+'SQLiteDatabase::createAggregate' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.0)
+Register an aggregating UDF for use in SQL statements',
+'SQLiteDatabase::createFunction' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.0)
+Registers a "regular" User Defined Function for use in SQL statements',
+'SQLiteDatabase::fetchColumnTypes' => '(PHP 5 &lt; 5.4.0)
+Return an array of column types from a particular table',
+'SQLiteDatabase::lastError' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.0)
+Returns the error code of the last error for a database',
+'SQLiteDatabase::lastInsertRowid' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.0)
+Returns the rowid of the most recently inserted row',
+'SQLiteDatabase::query' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.0)',
+'SQLiteDatabase::queryExec' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.0)',
+'SQLiteDatabase::singleQuery' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.1)
+Executes a query and returns either an array for one single column or the value of the first row',
+'SQLiteDatabase::unbufferedQuery' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.0)
+Execute a query that does not prefetch and buffer all data',
+'SQLiteException::__clone' => 'Clone the exception',
+'SQLiteException::__construct' => 'Construct the exception',
+'SQLiteException::__toString' => 'String representation of the exception',
+'SQLiteResult::column' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.0)
+Fetches a column from the current row of a result set',
+'SQLiteResult::count' => 'Count elements of an object',
+'SQLiteResult::current' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.0)
+Fetches the current row from a result set as an array',
+'SQLiteResult::fetch' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.0)
+Fetches the next row from a result set as an array',
+'SQLiteResult::fetchAll' => '(PHP 5 &lt; 5.4.0)
+Fetches the next row from a result set as an object',
+'SQLiteResult::fetchObject' => '(PHP 5 &lt; 5.4.0)
+Fetches the next row from a result set as an object',
+'SQLiteResult::fetchSingle' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.1)
+Fetches the first column of a result set as a string',
+'SQLiteResult::fieldName' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.0)
+Returns the name of a particular field',
+'SQLiteResult::hasPrev' => '`@return bool` <p>
+Returns <b>TRUE</b> if there are more previous rows available from the
+<i>result</i> handle, or <b>FALSE</b> otherwise.
+</p>',
+'SQLiteResult::key' => 'Return the key of the current element',
+'SQLiteResult::next' => 'Seek to the next row number',
+'SQLiteResult::numFields' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.0)
+Returns the number of fields in a result set',
+'SQLiteResult::numRows' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.0)
+Returns the number of rows in a buffered result set',
+'SQLiteResult::prev' => 'Seek to the previous row number of a result set',
+'SQLiteResult::rewind' => 'Rewind the Iterator to the first element',
+'SQLiteResult::seek' => '(PHP 5 &lt; 5.4.0, PECL sqlite &gt;= 1.0.0)
+Seek to a particular row number of a buffered result set',
+'SQLiteResult::valid' => 'Checks if current position is valid',
 'sqlsrv_begin_transaction' => 'Begins a database transaction',
 'sqlsrv_cancel' => 'Cancels a statement',
 'sqlsrv_client_info' => 'Returns information about the client and specified connection',
@@ -8059,12 +11882,84 @@ return [
 'sqlsrv_next_result' => 'Makes the next result of the specified statement active',
 'sqlsrv_num_fields' => 'Retrieves the number of fields (columns) on a statement',
 'sqlsrv_num_rows' => 'Retrieves the number of rows in a result set',
+'SQLSRV_PHPTYPE_STREAM' => 'Specifies the encoding of a stream of data from the server.
+
+<br />When specifying the PHP data type of a value being returned from the server, this allows you to specify the encoding
+used to process the value if the value is a stream.<br />
+
+In the documentation this is presented as a constant that accepts an arguement.<br />
+
+When you use SQLSRV_PHPTYPE_STREAM, the encoding must be specified. If no parameter is supplied, an error will be
+returned.<br />
+
+Additional Information at:
+<ul>
+<li>{@link http://msdn.microsoft.com/en-us/library/cc296208.aspx How to: Specify PHP Data Types}</li></li>
+<li>{@link http://msdn.microsoft.com/en-us/library/cc296163.aspx How to: Retrieve Character Data as a Stream Using the SQLSRV Driver.}</li>
+<li>{@link http://msdn.microsoft.com/en-us/library/cc626307.aspx How to: Send and Retrieve UTF-8 Data Using Built-In UTF-8 Support.}</li>
+<li>{@link http://msdn.microsoft.com/en-us/library/cc296152.aspx SQLSRV Driver API Reference}</li></ui>',
+'SQLSRV_PHPTYPE_STRING' => 'Specifies the encoding of a string being received form the server.
+
+<br />When specifying the PHP data type of a value being returned from the server, this allows you to specify the
+encoding used to process the value if the value is a string.<br />
+
+In the documentation this is presented as a constant that accepts an arguement.<br />
+
+When you use SQLSRV_PHPTYPE_STRING, the encoding must be specified. If no parameter is supplied, an error will be
+returned.<br />
+
+Additional Information at:
+<ul>
+<li>{@link http://msdn.microsoft.com/en-us/library/cc296208.aspx How to: Specify PHP Data Types}</li></li>
+<li>{@link http://msdn.microsoft.com/en-us/library/cc296163.aspx How to: Retrieve Character Data as a Stream Using the SQLSRV Driver.}</li>
+<li>{@link http://msdn.microsoft.com/en-us/library/cc626307.aspx How to: Send and Retrieve UTF-8 Data Using Built-In UTF-8 Support.}</li>
+<li>{@link http://msdn.microsoft.com/en-us/library/cc296152.aspx SQLSRV Driver API Reference}</li></ui>',
 'sqlsrv_prepare' => 'Prepares a query for execution',
 'sqlsrv_query' => 'Prepares and executes a query',
 'sqlsrv_rollback' => 'Rolls back a transaction that was begun with sqlsrv_begin_transaction',
 'sqlsrv_rows_affected' => 'Returns the number of rows modified by the last INSERT, UPDATE, or DELETE query executed',
 'sqlsrv_send_stream_data' => 'Sends data from parameter streams to the server',
 'sqlsrv_server_info' => 'Returns information about the server',
+'SQLSRV_SQLTYPE_BINARY' => 'Specifies a SQL Server binary field.
+
+<br />In the documentation this is presented as a constant that accepts an arguement.<br />
+
+Additional Information at {@link http://msdn.microsoft.com/en-us/library/cc296152.aspx SQLSRV Driver API Reference}<br />',
+'SQLSRV_SQLTYPE_CHAR' => 'Specifies a SQL Server char field.
+
+<br />In the documentation this is presented as a constant that accepts an arguement.<br />
+
+Additional Information at {@link http://msdn.microsoft.com/en-us/library/cc296152.aspx SQLSRV Driver API Reference}<br />',
+'SQLSRV_SQLTYPE_DECIMAL' => 'Specifies a SQL Server decimal field.
+
+<br />In the documentation this is presented as a constant that accepts an arguement.<br />
+
+Additional Information at {@link http://msdn.microsoft.com/en-us/library/cc296152.aspx SQLSRV Driver API Reference}<br />',
+'SQLSRV_SQLTYPE_NCHAR' => 'Specifies a SQL Server nchar field.
+
+<br />In the documentation this is presented as a constant that accepts an arguement.<br />
+
+Additional Information at {@link http://msdn.microsoft.com/en-us/library/cc296152.aspx SQLSRV Driver API Reference}<br />',
+'SQLSRV_SQLTYPE_NUMERIC' => 'Specifies a SQL Server numeric field.
+
+<br />In the documentation this is presented as a constant that accepts an arguement.<br />
+
+Additional Information at {@link http://msdn.microsoft.com/en-us/library/cc296152.aspx SQLSRV Driver API Reference}<br />',
+'SQLSRV_SQLTYPE_NVARCHAR' => 'Specifies a SQL Server nvarchar field.
+
+<br />In the documentation this is presented as a constant that accepts an arguement.<br />
+
+Additional Information at {@link http://msdn.microsoft.com/en-us/library/cc296152.aspx SQLSRV Driver API Reference}<br />',
+'SQLSRV_SQLTYPE_VARBINARY' => 'Specifies a SQL Server varbinary field.
+
+<br />In the documentation this is presented as a constant that accepts an arguement.<br />
+
+Additional Information at {@link http://msdn.microsoft.com/en-us/library/cc296152.aspx SQLSRV Driver API Reference}<br />',
+'SQLSRV_SQLTYPE_VARCHAR' => 'Specifies a SQL Server varchar filed.
+
+<br />In the documentation this is presented as a constant that accepts an arguement.<br />
+
+Additional Information at {@link http://msdn.microsoft.com/en-us/library/cc296152.aspx SQLSRV Driver API Reference}<br />',
 'sqrt' => 'Square root',
 'srand' => 'Seed the random number generator',
 'sscanf' => 'Parses input from a string according to a format',
@@ -8302,6 +12197,35 @@ return [
 'strtoupper' => 'Make a string uppercase',
 'strtr' => 'Translate characters or replace substrings',
 'strval' => 'Get string value of a variable',
+'StubTests\Model\StubsContainer::getClass' => '`@return PHPClass | null`',
+'StubTests\Model\StubsContainer::getInterface' => '`@return PHPInterface | null`',
+'StubTests\Parsers\ExpectedFunctionArgumentsInfo::__construct' => 'ExpectedFunctionArgumentsInfo constructor.',
+'StubTests\Parsers\StubsParserErrorHandler::handleError' => 'Handle an error generated during lexing, parsing or some other operation.',
+'styleObj::__construct' => 'The second argument \'style\' is optional. If given, the new style
+created will be a copy of the style passed as argument.',
+'styleObj::convertToString' => 'Saves the object to a string.  Provides the inverse option for
+updateFromString.',
+'styleObj::free' => 'Free the object properties and break the internal references.
+Note that you have to unset the php variable to free totally the
+resources.',
+'styleObj::getBinding' => 'Get the attribute binding for a specfiled style property. Returns
+NULL if there is no binding for this property.
+.. code-block:: php
+$oStyle->setbinding(MS_STYLE_BINDING_COLOR, "FIELD_NAME_COLOR");
+echo $oStyle->getbinding(MS_STYLE_BINDING_COLOR); // FIELD_NAME_COLOR',
+'styleObj::ms_newStyleObj' => 'Old style constructor',
+'styleObj::removeBinding' => 'Remove the attribute binding for a specfiled style property.
+Added in MapServer 5.0.
+.. code-block:: php
+$oStyle->removebinding(MS_STYLE_BINDING_COLOR);',
+'styleObj::set' => 'Set object property to a new value.',
+'styleObj::setBinding' => 'Set the attribute binding for a specfiled style property.
+Added in MapServer 5.0.
+.. code-block:: php
+$oStyle->setbinding(MS_STYLE_BINDING_COLOR, "FIELD_NAME_COLOR");
+This would bind the color parameter with the data (ie will extract
+the value of the color from the field called "FIELD_NAME_COLOR"',
+'styleObj::updateFromString' => 'Update a style from a string snippet. Returns MS_SUCCESS/MS_FAILURE.',
 'substr' => 'Return part of a string',
 'substr_compare' => 'Binary safe comparison of two strings from an offset, up to length characters',
 'substr_count' => 'Count the number of substring occurrences',
@@ -8753,6 +12677,35 @@ return [
 'sybase_select_db' => 'Selects a Sybase database',
 'sybase_set_message_handler' => 'Sets the handler called when a server message is raised',
 'sybase_unbuffered_query' => 'Send a Sybase query and do not block',
+'symbolObj::__construct' => 'Creates a new symbol with default values in the symbolist.
+.. note::
+Using the new constructor, the symbol is automatically returned. The
+If a symbol with the same name exists, it (or its id) will be returned.
+$nId = ms_newSymbolObj($map, "symbol-test");
+$oSymbol = $map->getSymbolObjectById($nId);',
+'symbolObj::free' => 'Free the object properties and break the internal references.
+Note that you have to unset the php variable to free totally the
+resources.',
+'symbolObj::getPatternArray' => 'Returns an array containing the pattern. If there is no pattern, it
+returns an empty array.',
+'symbolObj::getPointsArray' => 'Returns an array containing the points of the symbol. Refer to
+setpoints to see how the array should be interpreted. If there are no
+points, it returns an empty array.',
+'symbolObj::ms_newSymbolObj' => 'Old style constructor',
+'symbolObj::set' => 'Set object property to a new value.',
+'symbolObj::setImagePath' => 'Loads a pixmap symbol specified by the filename.
+The file should be of either  Gif or Png format.',
+'symbolObj::setPattern' => 'Set the pattern of the symbol (used for dash patterns).
+Returns MS_SUCCESS/MS_FAILURE.',
+'symbolObj::setPoints' => 'Set the points of the symbol. Note that the values passed is an
+array containing the x and y values of the points. Returns
+MS_SUCCESS/MS_FAILURE.
+Example:
+.. code-block:: php
+$array[0] = 1 # x value of the first point
+$array[1] = 0 # y values of the first point
+$array[2] = 1 # x value of the 2nd point
+....',
 'symlink' => 'Creates a symbolic link',
 'syncevent::__construct' => 'Constructs a new SyncEvent object',
 'syncevent::fire' => 'Fires/sets the event',
@@ -8784,21 +12737,51 @@ return [
 'tcpwrap_check' => 'Performs a tcpwrap check',
 'tempnam' => 'Create file with unique file name',
 'textdomain' => 'Sets the default domain',
+'Thread::addRef' => 'Increments the internal number of references to a Threaded object',
+'Thread::chunk' => 'Fetches a chunk of the objects property table of the given size,
+optionally preserving keys',
+'Thread::count' => 'Returns the number of properties for this object',
+'Thread::delRef' => 'Decrements the internal number of references to a Threaded object',
 'thread::detach' => 'Execution',
+'Thread::extend' => 'Makes thread safe standard class at runtime',
 'thread::getCreatorId' => 'Identification',
 'thread::getCurrentThread' => 'Identification',
 'thread::getCurrentThreadId' => 'Identification',
+'Thread::getRefCount' => 'Retrieves the internal number of references to a Threaded object',
+'Thread::getTerminationInfo' => 'Retrieves terminal error information from the referenced object',
 'thread::getThreadId' => 'Identification',
 'thread::globally' => 'Execution',
 'thread::isJoined' => 'State Detection',
+'Thread::isRunning' => 'Tell if the referenced object is executing',
 'thread::isStarted' => 'State Detection',
+'Thread::isTerminated' => 'Tell if the referenced object was terminated during execution; suffered
+fatal errors, or threw uncaught exceptions',
+'Thread::isWaiting' => 'Tell if the referenced object is waiting for notification',
 'thread::join' => 'Synchronization',
 'thread::kill' => 'Execution',
+'Thread::lock' => 'Lock the referenced objects property table',
+'Thread::merge' => 'Merges data into the current object',
+'Thread::notify' => 'Send notification to the referenced object',
+'Thread::notifyOne' => 'Send notification to the referenced object. This unblocks at least one
+of the blocked threads (as opposed to unblocking all of them, as seen with
+Threaded::notify()).',
+'Thread::pop' => 'Pops an item from the objects property table',
+'Thread::run' => 'The programmer should always implement the run method for objects
+that are intended for execution.',
+'Thread::shift' => 'Shifts an item from the objects property table',
 'thread::start' => 'Execution',
+'Thread::synchronized' => 'Executes the block while retaining the referenced objects
+synchronization lock for the calling context',
+'Thread::unlock' => 'Unlock the referenced objects storage for the calling context',
+'Thread::wait' => 'Will cause the calling context to wait for notification from the
+referenced object',
+'Threaded::addRef' => 'Increments the internal number of references to a Threaded object',
 'threaded::chunk' => 'Manipulation',
 'threaded::count' => 'Manipulation',
+'Threaded::delRef' => 'Decrements the internal number of references to a Threaded object',
 'threaded::extend' => 'Runtime Manipulation',
 'threaded::from' => 'Creation',
+'Threaded::getRefCount' => 'Retrieves the internal number of references to a Threaded object',
 'threaded::getTerminationInfo' => 'Error Detection',
 'threaded::isRunning' => 'State Detection',
 'threaded::isTerminated' => 'State Detection',
@@ -8813,6 +12796,14 @@ return [
 'threaded::synchronized' => 'Synchronization',
 'threaded::unlock' => 'Synchronization',
 'threaded::wait' => 'Synchronization',
+'Throwable::__toString' => 'Gets a string representation of the thrown object',
+'Throwable::getCode' => 'Gets the exception code',
+'Throwable::getFile' => 'Gets the file in which the exception occurred',
+'Throwable::getLine' => 'Gets the line on which the object was instantiated',
+'Throwable::getMessage' => 'Gets the message',
+'Throwable::getPrevious' => 'Returns the previous Throwable',
+'Throwable::getTrace' => 'Gets the stack trace',
+'Throwable::getTraceAsString' => 'Gets the stack trace as a string',
 'tidy::__construct' => 'Constructs a new tidy object',
 'tidy::body' => 'Returns a tidyNode object starting from the &lt;body&gt; tag of the tidy parse tree',
 'tidy::cleanRepair' => 'Execute configured cleanup and repair operations on parsed markup',
@@ -9341,6 +13332,7 @@ return [
 'unixtojd' => 'Convert Unix timestamp to Julian Day',
 'unlink' => 'Deletes a file',
 'unpack' => 'Unpack data from binary string',
+'unregister_event_handler' => 'Allow you to unregister an event handler.',
 'unregister_tick_function' => 'De-register a function for execution on each tick',
 'unserialize' => 'Creates a PHP value from a stored representation',
 'unset' => 'Unset a given variable',
@@ -9384,16 +13376,38 @@ return [
 'utf8_decode' => 'Converts a string with ISO-8859-1 characters encoded with UTF-8 to single-byte ISO-8859-1',
 'utf8_encode' => 'Encodes an ISO-8859-1 string to UTF-8',
 'v8js::__construct' => 'Construct a new V8Js object',
+'V8Js::clearPendingException' => 'Clears the uncaught pending exception',
+'V8Js::compileString' => 'Compiles a script in object\'s context with optional identifier string.',
+'V8Js::createSnapshot' => 'Creates a custom V8 heap snapshot with the provided JavaScript source embedded.
+Snapshots are supported by V8 4.3.7 and higher.  For older versions of V8 this
+extension doesn\'t provide this method.',
+'V8Js::executeScript' => 'Executes a precompiled script in object\'s context.
+A time limit (milliseconds) and/or memory limit (bytes) can be provided to restrict execution. These options will throw a V8JsTimeLimitException or V8JsMemoryLimitException.',
 'v8js::executeString' => 'Execute a string as Javascript code',
 'v8js::getExtensions' => 'Return an array of registered extensions',
 'v8js::getPendingException' => 'Return pending uncaught Javascript exception',
 'v8js::registerExtension' => 'Register Javascript extensions for V8Js',
+'V8Js::setAverageObjectSize' => 'Set the average object size (in bytes) for this V8Js object.
+V8\'s "amount of external memory" is adjusted by this value for every exported object.  V8 triggers a garbage collection once this totals to 192 MB.',
+'V8Js::setMemoryLimit' => 'Set the memory limit (in bytes) for this V8Js object',
+'V8Js::setModuleLoader' => 'Provide a function or method to be used to load required modules. This can be any valid PHP callable.
+The loader function will receive the normalised module path and should return Javascript code to be executed.',
+'V8Js::setModuleNormaliser' => 'Provide a function or method to be used to normalise module paths. This can be any valid PHP callable.
+This can be used in combination with setModuleLoader to influence normalisation of the module path (which
+is normally done by V8Js itself but can be overriden this way).
+The normaliser function will receive the base path of the current module (if any; otherwise an empty string)
+and the literate string provided to the require method and should return an array of two strings (the new
+module base path as well as the normalised name).  Both are joined by a \'/\' and then passed on to the
+module loader (unless the module was cached before).',
+'V8Js::setTimeLimit' => 'Set the time limit (in milliseconds) for this V8Js object
+works similar to the set_time_limit php',
 'v8jsexception::getJsFileName' => 'The getJsFileName purpose',
 'v8jsexception::getJsLineNumber' => 'The getJsLineNumber purpose',
 'v8jsexception::getJsSourceLine' => 'The getJsSourceLine purpose',
 'v8jsexception::getJsTrace' => 'The getJsTrace purpose',
 'var_dump' => 'Dumps information about a variable',
 'var_export' => 'Outputs or returns a parsable string representation of a variable',
+'VARIANT::__construct' => 'COM class constructor.',
 'variant_abs' => 'Returns the absolute value of a variant',
 'variant_add' => '"Adds" two variant values together and returns the result',
 'variant_and' => 'Performs a bitwise AND operation between two variants',
@@ -9507,6 +13521,14 @@ return [
 'weakref::get' => 'Returns the object pointed to by the weak reference',
 'weakref::release' => 'Releases a previously acquired reference',
 'weakref::valid' => 'Checks whether the object referenced still exists',
+'webObj::convertToString' => 'Saves the object to a string.  Provides the inverse option for
+updateFromString.',
+'webObj::free' => 'Free the object properties and break the internal references.
+Note that you have to unset the php variable to free totally the
+resources.',
+'webObj::set' => 'Set object property to a new value.',
+'webObj::updateFromString' => 'Update a web object from a string snippet. Returns
+MS_SUCCESS/MS_FAILURE.',
 'win32_continue_service' => 'Resumes a paused service',
 'win32_create_service' => 'Creates a new service entry in the SCM database',
 'win32_delete_service' => 'Deletes a service entry from the SCM database',
@@ -9554,13 +13576,51 @@ return [
 'wkhtmltox\pdf\converter::getVersion' => 'Determine version of Converter',
 'wkhtmltox\pdf\object::__construct' => 'Create a new PDF Object',
 'wordwrap' => 'Wraps a string to a given number of characters',
+'Worker::addRef' => 'Increments the internal number of references to a Threaded object',
+'Worker::chunk' => 'Fetches a chunk of the objects property table of the given size,
+optionally preserving keys',
 'worker::collect' => 'Collect references to completed tasks',
+'Worker::count' => 'Returns the number of properties for this object',
+'Worker::delRef' => 'Decrements the internal number of references to a Threaded object',
+'Worker::detach' => 'Detaches the referenced Thread from the calling context, dangerous!',
+'Worker::extend' => 'Makes thread safe standard class at runtime',
+'Worker::getCreatorId' => 'Will return the identity of the Thread that created the referenced Thread',
+'Worker::getCurrentThread' => 'Return a reference to the currently executing Thread',
+'Worker::getCurrentThreadId' => 'Will return the identity of the currently executing Thread',
+'Worker::getRefCount' => 'Retrieves the internal number of references to a Threaded object',
 'worker::getStacked' => 'Gets the remaining stack size',
+'Worker::getTerminationInfo' => 'Retrieves terminal error information from the referenced object',
+'Worker::getThreadId' => 'Will return the identity of the referenced Thread',
+'Worker::globally' => 'Will execute a Callable in the global scope',
+'Worker::isJoined' => 'Tell if the referenced Thread has been joined',
+'Worker::isRunning' => 'Tell if the referenced object is executing',
 'worker::isShutdown' => 'State Detection',
+'Worker::isStarted' => 'Tell if the referenced Thread was started',
+'Worker::isTerminated' => 'Tell if the referenced object was terminated during execution; suffered
+fatal errors, or threw uncaught exceptions',
+'Worker::isWaiting' => 'Tell if the referenced object is waiting for notification',
 'worker::isWorking' => 'State Detection',
+'Worker::join' => 'Causes the calling context to wait for the referenced Thread to finish executing',
+'Worker::kill' => 'Forces the referenced Thread to terminate',
+'Worker::lock' => 'Lock the referenced objects property table',
+'Worker::merge' => 'Merges data into the current object',
+'Worker::notify' => 'Send notification to the referenced object',
+'Worker::notifyOne' => 'Send notification to the referenced object. This unblocks at least one
+of the blocked threads (as opposed to unblocking all of them, as seen with
+Threaded::notify()).',
+'Worker::pop' => 'Pops an item from the objects property table',
+'Worker::run' => 'The programmer should always implement the run method for objects
+that are intended for execution.',
+'Worker::shift' => 'Shifts an item from the objects property table',
 'worker::shutdown' => 'Shutdown the worker',
 'worker::stack' => 'Stacking work',
+'Worker::start' => 'Will start a new Thread to execute the implemented run method',
+'Worker::synchronized' => 'Executes the block while retaining the referenced objects
+synchronization lock for the calling context',
+'Worker::unlock' => 'Unlock the referenced objects storage for the calling context',
 'worker::unstack' => 'Unstacking work',
+'Worker::wait' => 'Will cause the calling context to wait for notification from the
+referenced object',
 'xattr_get' => 'Get an extended attribute',
 'xattr_list' => 'Get a list of extended attributes',
 'xattr_remove' => 'Remove an extended attribute',
@@ -9658,6 +13718,48 @@ return [
 'xmlrpc_server_register_introspection_callback' => 'Register a PHP function to generate documentation',
 'xmlrpc_server_register_method' => 'Register a PHP function to resource method matching method_name',
 'xmlrpc_set_type' => 'Sets xmlrpc type, base64 or datetime, for a PHP string value',
+'XMLWriter::endAttribute' => 'End attribute',
+'XMLWriter::endCdata' => 'End current CDATA',
+'XMLWriter::endComment' => 'Create end comment',
+'XMLWriter::endDocument' => 'End current document',
+'XMLWriter::endDtd' => 'End current DTD',
+'XMLWriter::endDtdAttlist' => 'End current DTD AttList',
+'XMLWriter::endDtdElement' => 'End current DTD element',
+'XMLWriter::endDtdEntity' => 'End current DTD Entity',
+'XMLWriter::endElement' => 'End current element',
+'XMLWriter::endPi' => 'End current PI',
+'XMLWriter::flush' => 'Flush current buffer',
+'XMLWriter::fullEndElement' => 'End current element',
+'XMLWriter::openMemory' => 'Create new xmlwriter using memory for string output',
+'XMLWriter::openUri' => 'Create new xmlwriter using source uri for output',
+'XMLWriter::outputMemory' => 'Returns current buffer',
+'XMLWriter::setIndent' => 'Toggle indentation on/off',
+'XMLWriter::setIndentString' => 'Set string used for indenting',
+'XMLWriter::startAttribute' => 'Create start attribute',
+'XMLWriter::startAttributeNs' => 'Create start namespaced attribute',
+'XMLWriter::startCdata' => 'Create start CDATA tag',
+'XMLWriter::startComment' => 'Create start comment',
+'XMLWriter::startDocument' => 'Create document tag',
+'XMLWriter::startDtd' => 'Create start DTD tag',
+'XMLWriter::startDtdAttlist' => 'Create start DTD AttList',
+'XMLWriter::startDtdElement' => 'Create start DTD element',
+'XMLWriter::startDtdEntity' => 'Create start DTD Entity',
+'XMLWriter::startElement' => 'Create start element tag',
+'XMLWriter::startElementNs' => 'Create start namespaced element tag',
+'XMLWriter::startPi' => 'Create start PI tag',
+'XMLWriter::text' => 'Write text',
+'XMLWriter::writeAttribute' => 'Write full attribute',
+'XMLWriter::writeAttributeNs' => 'Write full namespaced attribute',
+'XMLWriter::writeCdata' => 'Write full CDATA tag',
+'XMLWriter::writeComment' => 'Write full comment tag',
+'XMLWriter::writeDtd' => 'Write full DTD tag',
+'XMLWriter::writeDtdAttlist' => 'Write full DTD AttList tag',
+'XMLWriter::writeDtdElement' => 'Write full DTD element tag',
+'XMLWriter::writeDtdEntity' => 'Write full DTD Entity tag',
+'XMLWriter::writeElement' => 'Write full element tag',
+'XMLWriter::writeElementNs' => 'Write full namespaced element tag',
+'XMLWriter::writePi' => 'Writes a PI',
+'XMLWriter::writeRaw' => 'Write a raw XML text',
 'xsltprocessor::__construct' => 'Creates a new XSLTProcessor object',
 'xsltprocessor::getParameter' => 'Get value of a parameter',
 'xsltprocessor::getSecurityPrefs' => 'Get security preferences',
@@ -9673,8 +13775,242 @@ return [
 'xsltprocessor::transformToXml' => 'Transform to XML',
 'yaconf::get' => 'Retrieve a item',
 'yaconf::has' => 'Determine if a item exists',
+'Yaf\Action_Abstract::__construct' => '<b>\Yaf\Controller_Abstract</b>::__construct() is final, which means it can not be overridden. You may want to see \Yaf\Controller_Abstract::init() instead.',
+'Yaf\Action_Abstract::execute' => '<p>user should always define this method for a action, this is the entry point of an action. <b>\Yaf\Action_Abstract::execute()</b> may have arguments.</p>
+<br/>
+<b>Note:</b>
+<p>The value retrieved from the request is not safe. you should do some filtering work before you use it.</p>',
+'Yaf\Action_Abstract::forward' => '<p>forward current execution process to other action.</p>
+<br/>
+<b>Note:</b>
+<p>this method doesn\'t switch to the destination action immediately, it will take place after current flow finish.</p>
+<br/>
+<b>Notice, there are 3 available method signatures:</b>
+<p>\Yaf\Controller_Abstract::forward ( string $module , string $controller , string $action [, array $parameters ] )</p>
+<p>\Yaf\Controller_Abstract::forward ( string $controller , string $action [, array $parameters ] )</p>
+<p>\Yaf\Controller_Abstract::forward ( string $action [, array $parameters ] )</p>',
+'Yaf\Action_Abstract::getController' => 'retrieve current controller object.',
+'Yaf\Action_Abstract::getModuleName' => 'get the controller\'s module name',
+'Yaf\Action_Abstract::getRequest' => 'retrieve current request object',
+'Yaf\Action_Abstract::getResponse' => 'retrieve current response object',
+'Yaf\Action_Abstract::getView' => 'retrieve view engine',
+'Yaf\Action_Abstract::init' => '<p>\Yaf\Controller_Abstract::__construct() is final, which means users can not override it. but users can define <b>\Yaf\Controller_Abstract::init()</b>, which will be called after controller object is instantiated.</p>',
+'Yaf\Action_Abstract::redirect' => 'redirect to a URL by sending a 302 header',
+'Yaf\Application::app' => 'Retrieve the \Yaf\Application instance, alternatively, we also could use \Yaf\Dispatcher::getApplication().',
+'Yaf\Application::bootstrap' => 'Run a Bootstrap, all the methods defined in the Bootstrap and named with prefix "_init" will be called according to their declaration order, if the parameter bootstrap is not supplied, Yaf will look for a Bootstrap under application.directory.',
+'Yaf\Application::environ' => 'Retrieve environ which was defined in yaf.environ which has a default value "product".',
+'Yaf\Application::execute' => 'This method is typically used to run \Yaf\Application in a crontab work.
+Make the crontab work can also use the autoloader and Bootstrap mechanism.',
+'Yaf\Application::getModules' => 'Get the modules list defined in config, if no one defined, there will always be a module named "Index".',
+'Yaf\Application::run' => 'Run a \Yaf\Application, let the \Yaf\Application accept a request, and route the request, dispatch to controller/action, and render response.
+return response to client finally.',
+'Yaf\Application::setAppDirectory' => 'Change the application directory',
+'Yaf\Controller_Abstract::__construct' => '<b>\Yaf\Controller_Abstract</b>::__construct() is final, which means it can not be overridden. You may want to see \Yaf\Controller_Abstract::init() instead.',
+'Yaf\Controller_Abstract::forward' => '<p>forward current execution process to other action.</p>
+<br/>
+<b>Note:</b>
+<p>this method doesn\'t switch to the destination action immediately, it will take place after current flow finish.</p>
+<br/>
+<b>Notice, there are 3 available method signatures:</b>
+<p>\Yaf\Controller_Abstract::forward ( string $module , string $controller , string $action [, array $parameters ] )</p>
+<p>\Yaf\Controller_Abstract::forward ( string $controller , string $action [, array $parameters ] )</p>
+<p>\Yaf\Controller_Abstract::forward ( string $action [, array $parameters ] )</p>',
+'Yaf\Controller_Abstract::getModuleName' => 'get the controller\'s module name',
+'Yaf\Controller_Abstract::getRequest' => 'retrieve current request object',
+'Yaf\Controller_Abstract::getResponse' => 'retrieve current response object',
+'Yaf\Controller_Abstract::getView' => 'retrieve view engine',
+'Yaf\Controller_Abstract::init' => '<p>\Yaf\Controller_Abstract::__construct() is final, which means users can not override it. but users can define <b>\Yaf\Controller_Abstract::init()</b>, which will be called after controller object is instantiated.</p>',
+'Yaf\Controller_Abstract::redirect' => 'redirect to a URL by sending a 302 header',
+'Yaf\Dispatcher::autoRender' => '<p>\Yaf\Dispatcher will render automatically after dispatches an incoming request, you can prevent the rendering by calling this method with $flag TRUE</p><br/>
+<b>Note:</b>
+<p>you can simply return FALSE in a action to prevent the auto-rendering of that action</p>',
+'Yaf\Dispatcher::catchException' => '<p>While the application.dispatcher.throwException is On(you can also calling to <b>\Yaf\Dispatcher::throwException(TRUE)</b> to enable it), Yaf will throw \Exception whe error occurs instead of trigger error.</p><br/>
+<p>then if you enable <b>\Yaf\Dispatcher::catchException()</b>(also can enabled by set application.dispatcher.catchException), all uncaught \Exceptions will be caught by ErrorController::error if you have defined one.</p>',
+'Yaf\Dispatcher::disableView' => '<p>disable view engine, used in some app that user will output by himself</p><br/>
+<b>Note:</b>
+<p>you can simply return FALSE in a action to prevent the auto-rendering of that action</p>',
+'Yaf\Dispatcher::dispatch' => '<p>This method does the heavy work of the \Yaf\Dispatcher. It take a request object.</p><br/>
+<p>The dispatch process has three distinct events:</p>
+<ul>
+<li>Routing</li>
+<li>Dispatching</li>
+<li>Response</li>
+</ul>
+<p>Routing takes place exactly once, using the values in the request object when dispatch() is called. Dispatching takes place in a loop; a request may either indicate multiple actions to dispatch, or the controller or a plugin may reset the request object to force additional actions to dispatch(see \Yaf\Plugin_Abstract. When all is done, the \Yaf\Dispatcher returns a response.</p>',
+'Yaf\Dispatcher::enableView' => 'enable view rendering',
+'Yaf\Dispatcher::flushInstantly' => 'Switch on/off the instant flushing',
+'Yaf\Dispatcher::getApplication' => 'Retrieve the \Yaf\Application instance. same as \Yaf\Application::app().',
+'Yaf\Dispatcher::initView' => 'Initialize view and return it',
+'Yaf\Dispatcher::registerPlugin' => 'Register a plugin(see \Yaf\Plugin_Abstract). Generally, we register plugins in Bootstrap(see \Yaf\Bootstrap_Abstract).',
+'Yaf\Dispatcher::setDefaultAction' => 'Change default action name',
+'Yaf\Dispatcher::setDefaultController' => 'Change default controller name',
+'Yaf\Dispatcher::setDefaultModule' => 'Change default module name',
+'Yaf\Dispatcher::setErrorHandler' => '<p>Set error handler for Yaf. when application.dispatcher.throwException is off, Yaf will trigger catch-able error while unexpected errors occurred.</p><br/>
+<p>Thus, this error handler will be called while the error raise.</p>',
+'Yaf\Dispatcher::setView' => 'This method provides a solution for that if you want use a custom view engine instead of \Yaf\View\Simple',
+'Yaf\Dispatcher::throwException' => '<p>Switch on/off exception throwing while unexpected error occurring. When this is on, Yaf will throwing exceptions instead of triggering catchable errors.</p><br/>
+<p>You can also use application.dispatcher.throwException to achieve the same purpose.</p>',
+'Yaf\Loader::registerLocalNamespace' => '<p>Register local class prefix name, \Yaf\Loader search classes in two library directories, the one is configured via application.library.directory(in application.ini) which is called local library directory; the other is configured via yaf.library (in php.ini) which is called global library directory, since it can be shared by many applications in the same server.</p>
+<br/>
+<p>When an autoloading is triggered, \Yaf\Loader will determine which library directory should be searched in by examining the prefix name of the missed classname. If the prefix name is registered as a local namespace then look for it in local library directory, otherwise look for it in global library directory.</p>
+<br/>
+<b>Note:</b>
+<p>If yaf.library is not configured, then the global library directory is assumed to be the local library directory. in that case, all autoloading will look for local library directory. But if you want your Yaf application be strong, then always register your own classes as local classes.</p>',
+'Yaf\Plugin_Abstract::dispatchLoopShutdown' => 'This is the latest hook in Yaf plugin hook system, if a custom plugin implement this method, then it will be called after the dispatch loop finished.',
+'Yaf\Plugin_Abstract::dispatchLoopStartup' => '`@return bool` true',
+'Yaf\Plugin_Abstract::postDispatch' => '`@return bool` true',
+'Yaf\Plugin_Abstract::preDispatch' => '`@return bool` true',
+'Yaf\Plugin_Abstract::preResponse' => '`@return bool` true',
+'Yaf\Plugin_Abstract::routerShutdown' => 'This hook will be trigged after the route process finished, this hook is usually used for login check.',
+'Yaf\Plugin_Abstract::routerStartup' => 'This is the earliest hook in Yaf plugin hook system, if a custom plugin implement this method, then it will be called before routing a request.',
+'Yaf\Registry::get' => 'Retrieve an item from registry',
+'Yaf\Registry::has' => 'Check whether an item exists',
+'Yaf\Request\Http::get' => 'Retrieve variable from client, this method will search the name in $_REQUEST params, if the name is not found, then will search in $_POST, $_GET, $_COOKIE, $_SERVER',
+'Yaf\Request\Http::getCookie' => 'Retrieve $_COOKIE variable',
+'Yaf\Request\Http::getEnv' => 'Retrieve $_ENV variable',
+'Yaf\Request\Http::getFiles' => 'Retrieve $_FILES variable',
+'Yaf\Request\Http::getPost' => 'Retrieve $_POST variable',
+'Yaf\Request\Http::getQuery' => 'Retrieve $_GET variable',
+'Yaf\Request\Http::getRequest' => 'Retrieve $_REQUEST variable',
+'Yaf\Request\Http::getServer' => 'Retrieve $_SERVER variable',
+'Yaf\Request\Http::isXmlHttpRequest' => 'Check the request whether it is a Ajax Request
+
+<br/>
+<b>Note:</b>
+<p>
+This method depends on the request header: HTTP_X_REQUESTED_WITH, some Javascript library doesn\'t set this header while doing Ajax request
+</p>',
+'Yaf\Request\Http::setBaseUri' => '<p>Set base URI, base URI is used when doing routing, in routing phase request URI is used to route a request, while base URI is used to skip the leading part(base URI) of request URI. That is, if comes a request with request URI a/b/c, then if you set base URI to "a/b", only "/c" will be used in routing phase.</p>
+<br/>
+<b>Note:</b>
+<p>generally, you don\'t need to set this, Yaf will determine it automatically.</p>',
+'Yaf\Request\Http::setDispatched' => 'Set request as dispatched',
+'Yaf\Request\Http::setRouted' => 'Set request as routed',
+'Yaf\Request\Simple::get' => 'Retrieve variable from client, this method will search the name in $_REQUEST params, if the name is not found, then will search in $_POST, $_GET, $_COOKIE, $_SERVER',
+'Yaf\Request\Simple::getCookie' => 'Retrieve $_Cookie variable',
+'Yaf\Request\Simple::getEnv' => 'Retrieve $_ENV variable',
+'Yaf\Request\Simple::getPost' => 'Retrieve $_POST variable',
+'Yaf\Request\Simple::getQuery' => 'Retrieve $_GET variable',
+'Yaf\Request\Simple::getRequest' => 'Retrieve $_REQUEST variable',
+'Yaf\Request\Simple::getServer' => 'Retrieve $_SERVER variable',
+'Yaf\Request\Simple::isXmlHttpRequest' => 'Check the request whether it is a Ajax Request
+
+<br/>
+<b>Note:</b>
+<p>
+This method depends on the request header: HTTP_X_REQUESTED_WITH, some Javascript library doesn\'t set this header while doing Ajax request
+</p>',
+'Yaf\Request\Simple::setBaseUri' => '<p>Set base URI, base URI is used when doing routing, in routing phase request URI is used to route a request, while base URI is used to skip the leading part(base URI) of request URI. That is, if comes a request with request URI a/b/c, then if you set base URI to "a/b", only "/c" will be used in routing phase.</p>
+<br/>
+<b>Note:</b>
+<p>generally, you don\'t need to set this, Yaf will determine it automatically.</p>',
+'Yaf\Request\Simple::setDispatched' => 'Set request as dispatched',
+'Yaf\Request\Simple::setRouted' => 'Set request as routed',
+'Yaf\Request_Abstract::getEnv' => 'Retrieve $_ENV variable',
+'Yaf\Request_Abstract::getServer' => 'Retrieve $_SERVER variable',
+'Yaf\Request_Abstract::isXmlHttpRequest' => '`@return bool` false',
+'Yaf\Request_Abstract::setBaseUri' => '<p>Set base URI, base URI is used when doing routing, in routing phase request URI is used to route a request, while base URI is used to skip the leading part(base URI) of request URI. That is, if comes a request with request URI a/b/c, then if you set base URI to "a/b", only "/c" will be used in routing phase.</p>
+<br/>
+<b>Note:</b>
+<p>generally, you don\'t need to set this, Yaf will determine it automatically.</p>',
+'Yaf\Request_Abstract::setDispatched' => 'Set request as dispatched',
+'Yaf\Request_Abstract::setRouted' => 'Set request as routed',
+'Yaf\Response\Cli::appendBody' => 'append a content to a exists content block',
+'Yaf\Response\Cli::clearBody' => 'Clear existing content',
+'Yaf\Response\Cli::getBody' => 'Retrieve an existing content',
+'Yaf\Response\Cli::prependBody' => 'prepend a content to a exists content block',
+'Yaf\Response\Cli::setBody' => 'Set content to response',
+'Yaf\Response\Http::appendBody' => 'append a content to a exists content block',
+'Yaf\Response\Http::clearBody' => 'Clear existing content',
+'Yaf\Response\Http::getBody' => 'Retrieve an existing content',
+'Yaf\Response\Http::prependBody' => 'prepend a content to a exists content block',
+'Yaf\Response\Http::response' => 'send response',
+'Yaf\Response\Http::setBody' => 'Set content to response',
+'Yaf\Response_Abstract::appendBody' => 'append a content to a exists content block',
+'Yaf\Response_Abstract::clearBody' => 'Clear existing content',
+'Yaf\Response_Abstract::getBody' => 'Retrieve an existing content',
+'Yaf\Response_Abstract::prependBody' => 'prepend a content to a exists content block',
+'Yaf\Response_Abstract::setBody' => 'Set content to response',
+'Yaf\Route\Map::assemble' => '<p><b>\Yaf\Route\Map::assemble()</b> - Assemble a url',
+'Yaf\Route\Regex::addConfig' => '<p>Add routes defined by configs into \Yaf\Router\'s route stack</p>',
+'Yaf\Route\Regex::addRoute' => '<p>by default, \Yaf\Router using a \Yaf\Route_Static as its default route. you can add new routes into router\'s route stack by calling this method.</p>
+<br/>
+<p>the newer route will be called before the older(route stack), and if the newer router return TRUE, the router process will be end. otherwise, the older one will be called.</p>',
+'Yaf\Route\Regex::assemble' => '<p><b>\Yaf\Route\Regex::assemble()</b> - Assemble a url',
+'Yaf\Route\Regex::getCurrentRoute' => '<p>Get the name of the route which is effective in the route process.</p>
+<br/>
+<b>Note:</b>
+<p>You should call this method after the route process finished, since before that, this method will always return NULL.</p>',
+'Yaf\Route\Regex::getRoute' => '<p>Retrieve a route by name, see also \Yaf\Router::getCurrentRoute()</p>',
+'Yaf\Route\Regex::route' => 'Route a incoming request.',
+'Yaf\Route\Rewrite::addConfig' => '<p>Add routes defined by configs into \Yaf\Router\'s route stack</p>',
+'Yaf\Route\Rewrite::addRoute' => '<p>by default, \Yaf\Router using a \Yaf\Route_Static as its default route. you can add new routes into router\'s route stack by calling this method.</p>
+<br/>
+<p>the newer route will be called before the older(route stack), and if the newer router return TRUE, the router process will be end. otherwise, the older one will be called.</p>',
+'Yaf\Route\Rewrite::assemble' => '<p><b>\Yaf\Route\Rewrite::assemble()</b> - Assemble a url',
+'Yaf\Route\Rewrite::getCurrentRoute' => '<p>Get the name of the route which is effective in the route process.</p>
+<br/>
+<b>Note:</b>
+<p>You should call this method after the route process finished, since before that, this method will always return NULL.</p>',
+'Yaf\Route\Rewrite::getRoute' => '<p>Retrieve a route by name, see also \Yaf\Router::getCurrentRoute()</p>',
+'Yaf\Route\Simple::__construct' => '<p>\Yaf\Route\Simple will get route info from query string. and the parameters of this constructor will used as keys while searching for the route info in $_GET.</p>',
+'Yaf\Route\Simple::assemble' => '<p><b>\Yaf\Route\Simple::assemble()</b> - Assemble a url',
+'Yaf\Route\Simple::route' => '<p>see \Yaf\Route\Simple::__construct()</p>',
+'Yaf\Route\Supervar::__construct' => '<p>\Yaf\Route\Supervar is similar to \Yaf\Route_Static, the difference is that \Yaf\Route\Supervar will look for path info in query string, and the parameter supervar_name is the key.</p>',
+'Yaf\Route\Supervar::assemble' => '<p><b>\Yaf\Route\Supervar::assemble()</b> - Assemble a url',
+'Yaf\Route\Supervar::route' => '`@return bool` If there is a key(which was defined in \Yaf\Route\Supervar::__construct()) in $_GET, return TRUE. otherwise return FALSE.',
+'Yaf\Route_Interface::assemble' => '<p><b>\Yaf\Route_Interface::assemble()</b> - assemble a request<br/>
+<p>this method returns a url according to the argument info, and append query strings to the url according to the argument query.</p>
+<p>a route should implement this method according to its own route rules, and do a reverse progress.</p>',
+'Yaf\Route_Interface::route' => '<p><b>\Yaf\Route_Interface::route()</b> is the only method that a custom route should implement.</p><br/>
+<p>if this method return TRUE, then the route process will be end. otherwise, \Yaf\Router will call next route in the route stack to route request.</p><br/>
+<p>This method would set the route result to the parameter request, by calling \Yaf\Request_Abstract::setControllerName(), \Yaf\Request_Abstract::setActionName() and \Yaf\Request_Abstract::setModuleName().</p><br/>
+<p>This method should also call \Yaf\Request_Abstract::setRouted() to make the request routed at last.</p>',
+'Yaf\Route_Static::assemble' => '<p><b>\Yaf\Route_Static::assemble()</b> - Assemble a url',
+'Yaf\Route_Static::route' => '`@return bool` always TRUE',
+'Yaf\Router::addConfig' => '<p>Add routes defined by configs into \Yaf\Router\'s route stack</p>',
+'Yaf\Router::addRoute' => '<p>by default, \Yaf\Router using a \Yaf\Route_Static as its default route. you can add new routes into router\'s route stack by calling this method.</p>
+<br/>
+<p>the newer route will be called before the older(route stack), and if the newer router return TRUE, the router process will be end. otherwise, the older one will be called.</p>',
+'Yaf\Router::getCurrentRoute' => '<p>Get the name of the route which is effective in the route process.</p>
+<br/>
+<b>Note:</b>
+<p>You should call this method after the route process finished, since before that, this method will always return NULL.</p>',
+'Yaf\Router::getRoute' => '<p>Retrieve a route by name, see also \Yaf\Router::getCurrentRoute()</p>',
+'Yaf\Router::route' => '`@return bool|\Yaf\Router` return FALSE on failure',
+'Yaf\Session::del' => '`@return bool|\Yaf\Session` return FALSE on failure',
+'Yaf\Session::set' => '`@return bool|\Yaf\Session` return FALSE on failure',
+'Yaf\View\Simple::__get' => '<p>Retrieve assigned variable</p>
+<br/>
+<b>Note:</b>
+<p>$name parameter can be empty since 2.1.11</p>',
+'Yaf\View\Simple::__set' => '<p>This is a alternative and easier way to \Yaf\View\Simple::assign().</p>',
+'Yaf\View\Simple::assign' => 'assign variable to view engine',
+'Yaf\View\Simple::assignRef' => '<p>unlike \Yaf\View\Simple::assign(), this method assign a ref value to engine.</p>',
+'Yaf\View\Simple::clear' => 'clear assigned variable',
+'Yaf\View\Simple::display' => '<p>Render a template and display the result instantly.</p>',
+'Yaf\View_Interface::assign' => 'Assign values to View engine, then the value can access directly by name in template.',
+'Yaf\View_Interface::display' => 'Render a template and output the result immediately.',
+'Yaf\View_Interface::render' => 'Render a template and return the result.',
+'Yaf\View_Interface::setScriptPath' => 'Set the templates base directory, this is usually called by \Yaf\Dispatcher',
+'Yaf_Action_Abstract::__construct' => '<b>Yaf_Controller_Abstract</b>::__construct() is final, which means it can not be overridden. You may want to see Yaf_Controller_Abstract::init() instead.',
 'yaf_action_abstract::execute' => 'Action entry point',
+'Yaf_Action_Abstract::forward' => '<p>forward current execution process to other action.</p>
+<br/>
+<b>Note:</b>
+<p>this method doesn\'t switch to the destination action immediately, it will take place after current flow finish.</p>
+<br/>
+<b>Notice, there are 3 available method signatures:</b>
+<p>Yaf_Controller_Abstract::forward ( string $module , string $controller , string $action [, array $parameters ] )</p>
+<p>Yaf_Controller_Abstract::forward ( string $controller , string $action [, array $parameters ] )</p>
+<p>Yaf_Controller_Abstract::forward ( string $action [, array $parameters ] )</p>',
 'yaf_action_abstract::getController' => 'Retrieve controller object',
+'Yaf_Action_Abstract::getModuleName' => 'get the controller\'s module name',
+'Yaf_Action_Abstract::getRequest' => 'retrieve current request object',
+'Yaf_Action_Abstract::getResponse' => 'retrieve current response object',
+'Yaf_Action_Abstract::getView' => 'retrieve view engine',
+'Yaf_Action_Abstract::init' => '<p>Yaf_Controller_Abstract::__construct() is final, which means users can not override it. but users can define <b>Yaf_Controller_Abstract::init()</b>, which will be called after controller object is instantiated.</p>',
+'Yaf_Action_Abstract::redirect' => 'redirect to a URL by sending a 302 header',
 'yaf_application::__clone' => 'Yaf_Application can not be cloned',
 'yaf_application::__construct' => 'Yaf_Application constructor',
 'yaf_application::__destruct' => 'The __destruct purpose',
@@ -9830,21 +14166,37 @@ return [
 'yaf_request_http::__construct' => 'Constructor of Yaf_Request_Http',
 'yaf_request_http::get' => 'Retrieve variable from client',
 'yaf_request_http::getCookie' => 'Retrieve Cookie variable',
+'Yaf_Request_Http::getEnv' => 'Retrieve $_ENV variable',
 'yaf_request_http::getFiles' => 'The getFiles purpose',
 'yaf_request_http::getPost' => 'Retrieve POST variable',
 'yaf_request_http::getQuery' => 'Fetch a query parameter',
 'yaf_request_http::getRaw' => 'Retrieve Raw request body',
 'yaf_request_http::getRequest' => 'The getRequest purpose',
+'Yaf_Request_Http::getServer' => 'Retrieve $_SERVER variable',
 'yaf_request_http::isXmlHttpRequest' => 'Determin if request is Ajax Request',
+'Yaf_Request_Http::setBaseUri' => '<p>Set base URI, base URI is used when doing routing, in routing phase request URI is used to route a request, while base URI is used to skip the leading part(base URI) of request URI. That is, if comes a request with request URI a/b/c, then if you set base URI to "a/b", only "/c" will be used in routing phase.</p>
+<br/>
+<b>Note:</b>
+<p>generally, you don\'t need to set this, Yaf will determine it automatically.</p>',
+'Yaf_Request_Http::setDispatched' => 'Set request as dispatched',
+'Yaf_Request_Http::setRouted' => 'Set request as routed',
 'yaf_request_simple::__clone' => 'The __clone purpose',
 'yaf_request_simple::__construct' => 'Constructor of Yaf_Request_Simple',
 'yaf_request_simple::get' => 'The get purpose',
 'yaf_request_simple::getCookie' => 'The getCookie purpose',
+'Yaf_Request_Simple::getEnv' => 'Retrieve $_ENV variable',
 'yaf_request_simple::getFiles' => 'The getFiles purpose',
 'yaf_request_simple::getPost' => 'The getPost purpose',
 'yaf_request_simple::getQuery' => 'The getQuery purpose',
 'yaf_request_simple::getRequest' => 'The getRequest purpose',
+'Yaf_Request_Simple::getServer' => 'Retrieve $_SERVER variable',
 'yaf_request_simple::isXmlHttpRequest' => 'Determin if request is AJAX request',
+'Yaf_Request_Simple::setBaseUri' => '<p>Set base URI, base URI is used when doing routing, in routing phase request URI is used to route a request, while base URI is used to skip the leading part(base URI) of request URI. That is, if comes a request with request URI a/b/c, then if you set base URI to "a/b", only "/c" will be used in routing phase.</p>
+<br/>
+<b>Note:</b>
+<p>generally, you don\'t need to set this, Yaf will determine it automatically.</p>',
+'Yaf_Request_Simple::setDispatched' => 'Set request as dispatched',
+'Yaf_Request_Simple::setRouted' => 'Set request as routed',
 'yaf_response_abstract::__clone' => 'The __clone purpose',
 'yaf_response_abstract::__construct' => 'The __construct purpose',
 'yaf_response_abstract::__destruct' => 'The __destruct purpose',
@@ -9860,16 +14212,45 @@ return [
 'yaf_response_abstract::setBody' => 'Set content to response',
 'yaf_response_abstract::setHeader' => 'Set reponse header',
 'yaf_response_abstract::setRedirect' => 'The setRedirect purpose',
+'Yaf_Response_Cli::appendBody' => 'append a content to a exists content block',
+'Yaf_Response_Cli::clearBody' => 'Clear existing content',
+'Yaf_Response_Cli::getBody' => 'Retrieve an existing content',
+'Yaf_Response_Cli::prependBody' => 'prepend a content to a exists content block',
+'Yaf_Response_Cli::setBody' => 'Set content to response',
+'Yaf_Response_Http::appendBody' => 'append a content to a exists content block',
+'Yaf_Response_Http::clearBody' => 'Clear existing content',
+'Yaf_Response_Http::getBody' => 'Retrieve an existing content',
+'Yaf_Response_Http::prependBody' => 'prepend a content to a exists content block',
+'Yaf_Response_Http::response' => 'send response',
+'Yaf_Response_Http::setBody' => 'Set content to response',
 'yaf_route_interface::assemble' => 'Assemble a request',
 'yaf_route_interface::route' => 'Route a request',
 'yaf_route_map::__construct' => 'The __construct purpose',
 'yaf_route_map::assemble' => 'Assemble a url',
 'yaf_route_map::route' => 'The route purpose',
 'yaf_route_regex::__construct' => 'Yaf_Route_Regex constructor',
+'Yaf_Route_Regex::addConfig' => '<p>Add routes defined by configs into Yaf_Router\'s route stack</p>',
+'Yaf_Route_Regex::addRoute' => '<p>by default, Yaf_Router using a Yaf_Route_Static as its default route. you can add new routes into router\'s route stack by calling this method.</p>
+<br/>
+<p>the newer route will be called before the older(route stack), and if the newer router return TRUE, the router process will be end. otherwise, the older one will be called.</p>',
 'yaf_route_regex::assemble' => 'Assemble a url',
+'Yaf_Route_Regex::getCurrentRoute' => '<p>Get the name of the route which is effective in the route process.</p>
+<br/>
+<b>Note:</b>
+<p>You should call this method after the route process finished, since before that, this method will always return NULL.</p>',
+'Yaf_Route_Regex::getRoute' => '<p>Retrieve a route by name, see also Yaf_Router::getCurrentRoute()</p>',
 'yaf_route_regex::route' => 'The route purpose',
 'yaf_route_rewrite::__construct' => 'Yaf_Route_Rewrite constructor',
+'Yaf_Route_Rewrite::addConfig' => '<p>Add routes defined by configs into Yaf_Router\'s route stack</p>',
+'Yaf_Route_Rewrite::addRoute' => '<p>by default, Yaf_Router using a Yaf_Route_Static as its default route. you can add new routes into router\'s route stack by calling this method.</p>
+<br/>
+<p>the newer route will be called before the older(route stack), and if the newer router return TRUE, the router process will be end. otherwise, the older one will be called.</p>',
 'yaf_route_rewrite::assemble' => 'Assemble a url',
+'Yaf_Route_Rewrite::getCurrentRoute' => '<p>Get the name of the route which is effective in the route process.</p>
+<br/>
+<b>Note:</b>
+<p>You should call this method after the route process finished, since before that, this method will always return NULL.</p>',
+'Yaf_Route_Rewrite::getRoute' => '<p>Retrieve a route by name, see also Yaf_Router::getCurrentRoute()</p>',
 'yaf_route_rewrite::route' => 'The route purpose',
 'yaf_route_simple::__construct' => 'Yaf_Route_Simple constructor',
 'yaf_route_simple::assemble' => 'Assemble a url',
@@ -9907,6 +14288,7 @@ return [
 'yaf_session::offsetSet' => 'The offsetSet purpose',
 'yaf_session::offsetUnset' => 'The offsetUnset purpose',
 'yaf_session::rewind' => 'The rewind purpose',
+'Yaf_Session::set' => '`@return bool|Yaf_Session` return FALSE on failure',
 'yaf_session::start' => 'The start purpose',
 'yaf_session::valid' => 'The valid purpose',
 'yaf_view_interface::assign' => 'Assign value to View engine',
@@ -9978,6 +14360,53 @@ return [
 'yp_order' => 'Returns the order number for a map',
 'zend_logo_guid' => 'Gets the Zend guid',
 'zend_version' => 'Gets the version of the current Zend engine',
+'ZendAPI_Job::addJobToQueue' => ' Add the job the the specified queue (without instantiating a JobQueue object)
+ This function should be used for extreme simplicity of the user when adding a single job,
+when the user want to insert more than one job and/or manipulating other jobs (or job tasks)
+he should create and use the JobQueue object
+ Actually what this function do is to create a new JobQueue, login to it (with the given parameters),
+add this job to it and logout',
+'ZendAPI_Job::getJobStatus' => 'Get the current status of the job
+If this job was created and not returned from a queue (using the JobQueue::GetJob() function),
+ the function will return false
+The status is one of the constants with the "JOB_QUEUE_STATUS_" prefix.
+E.g. job was performed and failed, job is waiting etc.',
+'ZendAPI_Job::getLastPerformedStatus' => 'For recurring job get the status of the last execution. For simple job,
+getLastPerformedStatus is equivalent to getJobStatus.
+jobs that haven\'t been executed yet will return STATUS_WAITING',
+'ZendAPI_Job::getOutput' => 'Get the job output',
+'ZendAPI_Job::getProperties' => 'Get the job properties',
+'ZendAPI_Job::getTimeToNextRepeat' => 'Get how much seconds there are until the next time the job will run.
+If the job is not recurrence or it past its end time, then return 0.',
+'ZendAPI_Job::setJobPriority' => 'Set a new priority to the job',
+'ZendAPI_Job::ZendAPI_Job' => 'Instantiate a Job object, describe all the information and properties of a job',
+'ZendAPI_Queue::addJob' => ' Insert a new job to the queue, the Job is passed by reference because
+its new job ID and status will be set in the Job object
+ If the returned job id is 0 it means the job could be added to the queue',
+'ZendAPI_Queue::getAllApplicationIDs' => 'Return all the application ids exists in queue.',
+'ZendAPI_Queue::getAllhosts' => 'Return all the hosts that jobs were submitted from.',
+'ZendAPI_Queue::getHistoricJobs' => 'Return finished jobs (either failed or successed) between time range allowing paging.
+Jobs are sorted by job id descending.',
+'ZendAPI_Queue::getJob' => 'Return a Job object that describing a job in the queue',
+'ZendAPI_Queue::getJobsInQueue' => 'Return a list of jobs in the queue according to the options given in the filter_options parameter, doesn\'t return jobs in "final states" (failed, complete)
+If application id is set for this queue, only jobs with this application id will be returned',
+'ZendAPI_Queue::getLastError' => 'Return description of the last error occured in the queue object. After every
+   method invoked an error string describing the error is store in the queue object.',
+'ZendAPI_Queue::getNumOfJobsInQueue' => 'Return the number of jobs in the queue according to the options given in the filter_options parameter',
+'ZendAPI_Queue::getStatistics' => 'returns job statistics',
+'ZendAPI_Queue::isScriptExists' => 'Returns whether a script exists in the document root',
+'ZendAPI_Queue::isSuspend' => 'Returns whether the queue is suspended',
+'ZendAPI_Queue::login' => 'Open a connection to a job queue',
+'ZendAPI_Queue::removeJob' => 'Remove a job from the queue',
+'ZendAPI_Queue::requeueJob' => 'Requeue failed job back to the queue.',
+'ZendAPI_Queue::resumeJob' => 'Resume a suspended job in the queue',
+'ZendAPI_Queue::resumeQueue' => 'Resumes queue operation',
+'ZendAPI_Queue::setMaxHistoryTime' => 'Sets a new maximum time for keeping historic jobs',
+'ZendAPI_Queue::suspendJob' => 'Suspend a job in the queue (without removing it)',
+'ZendAPI_Queue::suspendQueue' => 'Suspends queue operation',
+'ZendAPI_Queue::updateJob' => ' Update an existing job in the queue with it\'s new properties. If job doesn\'t exists,
+a new job will be added. Job is passed by reference and it\'s updated from the queue.',
+'ZendAPI_Queue::zendapi_queue' => 'Constructor for a job queue connection',
 'zip_close' => 'Close a ZIP file archive',
 'zip_entry_close' => 'Close a directory entry',
 'zip_entry_compressedsize' => 'Retrieve the compressed size of a directory entry',

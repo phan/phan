@@ -65,9 +65,17 @@ namespace Phan\Language\Internal;
  *
  * 1. Reflection
  * 2. docs.php.net's SVN repo or website, and examples (See internal/internalsignatures.php)
+ *
+ *    See https://secure.php.net/manual/en/copyright.php
+ *
+ *    The PHP manual text and comments are covered by the [Creative Commons Attribution 3.0 License](http://creativecommons.org/licenses/by/3.0/legalcode),
+ *    copyright (c) the PHP Documentation Group
  * 3. Various websites documenting individual extensions
  * 4. PHPStorm stubs (For anything missing from the above sources)
  *    See internal/internalsignatures.php
+ *
+ *    Available from https://github.com/JetBrains/phpstorm-stubs under the [Apache 2 license](https://www.apache.org/licenses/LICENSE-2.0)
+ *
  * @phan-file-suppress PhanPluginMixedKeyNoKey (read by Phan when analyzing this file)
  *
  * Note: Some of Phan's inferences about return types are written as plugins for functions/methods where the return type depends on the parameter types.

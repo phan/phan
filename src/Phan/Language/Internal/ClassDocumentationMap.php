@@ -19,8 +19,9 @@ namespace Phan\Language\Internal;
  *    The PHP manual text and comments are covered by the [Creative Commons Attribution 3.0 License](http://creativecommons.org/licenses/by/3.0/legalcode),
  *    copyright (c) the PHP Documentation Group
  * 2. Various websites documenting individual extensions (e.g. php-ast)
- * 3. PHPStorm stubs (Planned, for anything missing from the above sources)
- *    See internal/internalsignatures.php
+ * 3. PHPStorm stubs (for anything missing from the above sources)
+ *
+ *    Available from https://github.com/JetBrains/phpstorm-stubs under the [Apache 2 license](https://www.apache.org/licenses/LICENSE-2.0)
  *
  *
  * CONTRIBUTING:
@@ -37,6 +38,21 @@ namespace Phan\Language\Internal;
  *   and what makes sense for Phan may not make sense for those projects, and vice versa.
  */
 return [
+'AMQPBasicProperties' => 'stub class representing AMQPBasicProperties from pecl-amqp',
+'AMQPChannel' => 'stub class representing AMQPChannel from pecl-amqp',
+'AMQPChannelException' => 'stub class representing AMQPChannelException from pecl-amqp',
+'AMQPConnection' => 'stub class representing AMQPConnection from pecl-amqp',
+'AMQPConnectionException' => 'stub class representing AMQPConnectionException from pecl-amqp',
+'AMQPDecimal' => 'stub class representing AMQPDecimal from pecl-amqp',
+'AMQPEnvelope' => 'stub class representing AMQPEnvelope from pecl-amqp',
+'AMQPEnvelopeException' => 'stub class representing AMQPEnvelopeException from pecl-amqp',
+'AMQPException' => 'stub class representing AMQPException from pecl-amqp',
+'AMQPExchange' => 'stub class representing AMQPExchange from pecl-amqp',
+'AMQPExchangeException' => 'stub class representing AMQPExchangeException from pecl-amqp',
+'AMQPExchangeValue' => 'stub class representing AMQPExchangeValue from pecl-amqp',
+'AMQPQueue' => 'stub class representing AMQPQueue from pecl-amqp',
+'AMQPQueueException' => 'stub class representing AMQPQueueException from pecl-amqp',
+'AMQPTimestamp' => 'stub class representing AMQPTimestamp from pecl-amqp',
 'APCIterator' => 'The `APCIterator` class makes it easier to iterate over large APC caches. This is helpful as it allows iterating over large caches in steps, while grabbing a defined number of entries per lock instance, so it frees the cache locks for other activities rather than hold up the entire cache to grab 100 (the default) entries. Also, using regular expression matching is more efficient as it\'s been moved to the C level.',
 'APCUIterator' => 'The `APCUIterator` class makes it easier to iterate over large APCu caches. This is helpful as it allows iterating over large caches in steps, while grabbing a defined number of entries per lock instance, so it frees the cache locks for other activities rather than hold up the entire cache to grab 100 (the default) entries. Also, using regular expression matching is more efficient as it\'s been moved to the C level.',
 'AppendIterator' => 'An Iterator that iterates over several iterators one after the other.',
@@ -109,8 +125,13 @@ Use `Cairo::statusToString` or `cairo_status_to_string` to get a human-readable 
 'CairoSvgSurface' => 'Svg specific surface class, uses the SVG (standard vector graphics) surface backend.',
 'CairoToyFontFace' => 'The `CairoToyFontFace` class can be used instead of `CairoContext::selectFontFace` to create a toy font independently of a context.',
 'chdb' => 'Represents a loaded chdb file.',
+'classObj' => 'Class Objects can be returned by the `layerObj`_ class, or can be
+created using:',
+'clusterObj' => 'Instance of clusterObj is always embedded inside the `layerObj`_.',
 'Collator' => 'Provides string comparison capability with support for appropriate locale-sensitive sort orderings.',
 'Collectable' => 'Represents a garbage-collectable object.',
+'colorObj' => 'Instances of colorObj are always embedded inside other classes.',
+'COM' => 'The COM class allows you to instantiate an OLE compatible COM object and call its methods and access its properties.',
 'CommonMark\CQL' => 'CommonMark Query Language is a DSL for describing how to travel through a CommonMark Node tree implemented as a parser and compiler for a small set of instructions, and a virtual machine for executing those instructions.',
 'CommonMark\Node' => 'Represents an Abstract Node, this final abstract is not for direct use by the programmer.',
 'CommonMark\Parser' => 'Provides an incremental parser as an alternative to the simple Parsing API function',
@@ -125,6 +146,85 @@ Should a Definition replace an existing class, the existing class will be restor
 When a Patch is destroyed it is reverted, so that instances that were patched during the lifetime of the Patch are restored to their formal type.',
 'Componere\Value' => 'A Value represents a PHP variable of all types, including undefined',
 'Cond' => 'The static methods contained in the Cond class provide direct access to Posix Condition Variables.',
+'Couchbase\AnalyticsQuery' => 'Represents a Analytics query (currently experimental support).',
+'Couchbase\Authenticator' => 'Interface of authentication containers.',
+'Couchbase\BooleanFieldSearchQuery' => 'A FTS query that queries fields explicitly indexed as boolean.',
+'Couchbase\BooleanSearchQuery' => 'A compound FTS query that allows various combinations of sub-queries.',
+'Couchbase\Bucket' => 'Represents connection to the Couchbase Server',
+'Couchbase\BucketManager' => 'Provides management capabilities for the Couchbase Bucket',
+'Couchbase\ClassicAuthenticator' => 'Authenticator based on login/password credentials.
+
+This authenticator uses separate credentials for Cluster management interface
+as well as for each bucket.',
+'Couchbase\Cluster' => 'Represents a Couchbase Server Cluster.
+
+It is an entry point to the library, and in charge of opening connections to the Buckets.
+In addition it can instantiate \Couchbase\ClusterManager to peform cluster-wide operations.',
+'Couchbase\ClusterManager' => 'Provides management capabilities for a Couchbase Server Cluster',
+'Couchbase\ConjunctionSearchQuery' => 'A compound FTS query that performs a logical AND between all its sub-queries (conjunction).',
+'Couchbase\DateRangeSearchFacet' => 'A facet that categorizes hits inside date ranges (or buckets) provided by the user.',
+'Couchbase\DateRangeSearchQuery' => 'A FTS query that matches documents on a range of values. At least one bound is required, and the
+inclusiveness of each bound can be configured.',
+'Couchbase\DisjunctionSearchQuery' => 'A compound FTS query that performs a logical OR between all its sub-queries (disjunction). It requires that a
+minimum of the queries match. The minimum is configurable (default 1).',
+'Couchbase\DocIdSearchQuery' => 'A FTS query that matches on Couchbase document IDs. Useful to restrict the search space to a list of keys (by using
+this in a compound query).',
+'Couchbase\Document' => 'Represents Couchbase Document, which stores metadata and the value.
+
+The instances of this class returned by K/V commands of the \Couchbase\Bucket',
+'Couchbase\DocumentFragment' => 'A fragment of a JSON Document returned by the sub-document API.',
+'Couchbase\Exception' => 'Exception represeting all errors generated by the extension',
+'Couchbase\GeoBoundingBoxSearchQuery' => 'A FTS query which allows to match geo bounding boxes.',
+'Couchbase\GeoDistanceSearchQuery' => 'A FTS query that finds all matches from a given location (point) within the given distance.
+
+Both the point and the distance are required.',
+'Couchbase\LookupInBuilder' => 'A builder for subdocument lookups. In order to perform the final set of operations, use the
+execute() method.
+
+Instances of this builder should be obtained through \Couchbase\Bucket->lookupIn()',
+'Couchbase\MatchAllSearchQuery' => 'A FTS query that matches all indexed documents (usually for debugging purposes).',
+'Couchbase\MatchNoneSearchQuery' => 'A FTS query that matches 0 document (usually for debugging purposes).',
+'Couchbase\MatchPhraseSearchQuery' => 'A FTS query that matches several given terms (a "phrase"), applying further processing
+like analyzers to them.',
+'Couchbase\MatchSearchQuery' => 'A FTS query that matches a given term, applying further processing to it
+like analyzers, stemming and even #fuzziness(int).',
+'Couchbase\MutateInBuilder' => 'A builder for subdocument mutations. In order to perform the final set of operations, use the
+execute() method.
+
+Instances of this builder should be obtained through \Couchbase\Bucket->mutateIn()',
+'Couchbase\MutationState' => 'Container for mutation tokens.',
+'Couchbase\MutationToken' => 'An object which contains meta information of the document needed to enforce query consistency.',
+'Couchbase\N1qlIndex' => 'Represents N1QL index definition',
+'Couchbase\N1qlQuery' => 'Represents a N1QL query',
+'Couchbase\NumericRangeSearchFacet' => 'A facet that categorizes hits into numerical ranges (or buckets) provided by the user.',
+'Couchbase\NumericRangeSearchQuery' => 'A FTS query that matches documents on a range of values. At least one bound is required, and the
+inclusiveness of each bound can be configured.',
+'Couchbase\PasswordAuthenticator' => 'Authenticator based on RBAC feature of Couchbase Server 5+.
+
+This authenticator uses single credentials for all operations (data and management).',
+'Couchbase\PhraseSearchQuery' => 'A FTS query that matches several terms (a "phrase") as is. The order of the terms mater and no further processing is
+applied to them, so they must appear in the index exactly as provided.  Usually for debugging purposes, prefer
+MatchPhraseQuery.',
+'Couchbase\PrefixSearchQuery' => 'A FTS query that allows for simple matching on a given prefix.',
+'Couchbase\QueryStringSearchQuery' => 'A FTS query that performs a search according to the "string query" syntax.',
+'Couchbase\RegexpSearchQuery' => 'A FTS query that allows for simple matching of regular expressions.',
+'Couchbase\SearchFacet' => 'Common interface for all search facets',
+'Couchbase\SearchQuery' => 'Represents full text search query',
+'Couchbase\SearchQueryPart' => 'Common interface for all classes, which could be used as a body of SearchQuery',
+'Couchbase\SearchSort' => 'Base class for all FTS sort options in querying.',
+'Couchbase\SearchSortField' => 'Sort by a field in the hits.',
+'Couchbase\SearchSortGeoDistance' => 'Sort by a location and unit in the hits.',
+'Couchbase\SearchSortId' => 'Sort by the document identifier.',
+'Couchbase\SearchSortScore' => 'Sort by the hit score.',
+'Couchbase\SpatialViewQuery' => 'Represents spatial Couchbase Map/Reduce View query',
+'Couchbase\TermRangeSearchQuery' => 'A FTS query that matches documents on a range of values. At least one bound is required, and the
+inclusiveness of each bound can be configured.',
+'Couchbase\TermSearchFacet' => 'A facet that gives the number of occurrences of the most recurring terms in all hits.',
+'Couchbase\TermSearchQuery' => 'A facet that gives the number of occurrences of the most recurring terms in all hits.',
+'Couchbase\UserSettings' => 'Represents settings for new/updated user.',
+'Couchbase\ViewQuery' => 'Represents regular Couchbase Map/Reduce View query',
+'Couchbase\ViewQueryEncodable' => 'Common interface for all View queries',
+'Couchbase\WildcardSearchQuery' => 'A FTS query that allows for simple matching using wildcard characters (* and ?).',
 'Countable' => 'Classes implementing `Countable` can be used with the `count` function.',
 'CURLFile' => '`CURLFile` should be used to upload a file with `CURLOPT_POSTFIELDS`.',
 'DateInterval' => 'Represents a date interval.
@@ -154,6 +254,7 @@ See also the PHP manual\'s section on language.exceptions.',
 'DOMImplementation' => 'The `DOMImplementation` interface provides a number of methods for performing operations that are independent of any particular instance of the document object model.',
 'DOMText' => 'The `DOMText` class inherits from `DOMCharacterData` and represents the textual content of a `DOMElement` or `DOMAttr`.',
 'DOMXPath' => 'Supports XPath 1.0',
+'DOTNET' => 'The DOTNET class allows you to instantiate a class from a .Net assembly and call its methods and access its properties.',
 'Ds\Collection' => '`Collection` is the base interface which covers functionality common to all the data structures in this library. It guarantees that all structures are traversable, countable, and can be converted to json using `json_encode`.',
 'Ds\Deque' => 'A Deque (pronounced “deck”) is a sequence of values in a contiguous buffer that grows and shrinks automatically. The name is a common abbreviation of “double-ended queue” and is used internally by `Ds\Queue`.
 
@@ -247,6 +348,25 @@ Unlike `EvTimer` , `EvPeriodic` watchers are not based on real time(or relative 
 `EvPeriodic` watcher can be configured to trigger after some specific point in time. For example, if an `EvPeriodic` watcher is configured to trigger *"in 10 seconds"* (e.g. `EvLoop::now` + `10.0` , i.e. an absolute time, not a delay), and the system clock is reset to *January of the previous year* , then it will take a year or more to trigger the event (unlike an `EvTimer` , which would still trigger roughly `10` seconds after starting it as it uses a relative timeout).
 
 As with timers, the callback is guaranteed to be invoked only when the point in time where it is supposed to trigger has passed. If multiple timers become ready during the same loop iteration then the ones with earlier time-out values are invoked before ones with later time-out values (but this is no longer true when a callback calls `EvLoop::run` recursively).',
+'EvPrepare' => 'Class EvPrepare
+
+EvPrepare and EvCheck watchers are usually used in pairs. EvPrepare watchers get invoked before the process blocks,
+EvCheck afterwards.
+
+It is not allowed to call EvLoop::run() or similar methods or functions that enter the current event loop from either
+EvPrepare or EvCheck watchers. Other loops than the current one are fine, however. The rationale behind this is that
+one don\'t need to check for recursion in those watchers, i.e. the sequence will always be: EvPrepare -> blocking ->
+EvCheck, so having a watcher of each kind they will always be called in pairs bracketing the blocking call.
+
+The main purpose is to integrate other event mechanisms into libev and their use is somewhat advanced. They could be
+used, for example, to track variable changes, implement custom watchers, integrate net-snmp or a coroutine library
+and lots more. They are also occasionally useful to cache some data and want to flush it before blocking.
+
+It is recommended to give EvCheck watchers highest (Ev::MAXPRI) priority, to ensure that they are being run before
+any other watchers after the poll (this doesn’t matter for EvPrepare watchers).
+
+Also, EvCheck watchers should not activate/feed events. While libev fully supports this, they might get executed
+before other EvCheck watchers did their job.',
 'EvSignal' => '`EvSignal` watchers will trigger an event when the process receives a specific signal one or more times. Even though signals are very asynchronous, *libev* will try its best to deliver signals synchronously, i.e. as part of the normal event processing, like any other event.
 
 There is no limit for the number of watchers for the same signal, but only within the same loop, i.e. one can watch for `SIGINT` in the default loop and for `SIGIO` in another loop, but it is not allowed to watch for `SIGINT` in both the default loop and another loop at the same time. At the moment, `SIGCHLD` is permanently tied to the default loop.
@@ -274,9 +394,30 @@ The timer itself will do a best-effort at avoiding drift, that is, if a timer is
 'FilterIterator' => 'This abstract iterator filters out unwanted values. This class should be extended to implement custom iterator filters. The `FilterIterator::accept` must be implemented in the subclass.',
 'finfo' => 'This class provides an object oriented interface into the fileinfo functions.',
 'GearmanClient' => 'Represents a class for connecting to a Gearman job server and making requests to perform some function on provided data. The function performed must be one registered by a Gearman worker and the data passed is opaque to the job server.',
+'GearmanException' => 'Class: GearmanException',
+'GearmanJob' => 'Class: GearmanJob',
+'GearmanTask' => 'Class: GearmanTask',
+'GearmanWorker' => 'Class: GearmanWorker',
 'GlobIterator' => 'Iterates through a file system in a similar fashion to `glob`.',
 'GmagickException' => 'GmagickException class',
 'GMP' => 'A GMP number. These objects support overloaded arithmetic, bitwise and comparison operators.',
+'gnupg' => 'GNUPG Encryption Class',
+'gridObj' => 'The grid is always embedded inside a layer object defined as
+a grid (layer->connectiontype = MS_GRATICULE)
+(for more docs : https://github.com/mapserver/mapserver/wiki/MapServerGrid)
+A layer can become a grid layer by adding a grid object to it using :
+ms_newGridObj(layerObj layer)
+$oLayer = ms_newlayerobj($oMap);
+$oLayer->set("name", "GRID");
+ms_newgridobj($oLayer);
+$oLayer->grid->set("labelformat", "DDMMSS");',
+'Grpc\Call' => 'Class Call',
+'Grpc\CallCredentials' => 'Class CallCredentials',
+'Grpc\Channel' => 'Class Channel',
+'Grpc\ChannelCredentials' => 'Class ChannelCredentials',
+'Grpc\Server' => 'Class Server',
+'Grpc\ServerCredentials' => 'Class ServerCredentials',
+'Grpc\Timeval' => 'Class Timeval',
 'HaruAnnotation' => 'Haru PDF Annotation Class.',
 'HaruDestination' => 'Haru PDF Destination Class.',
 'HaruDoc' => 'Haru PDF Document Class.',
@@ -286,6 +427,33 @@ The timer itself will do a best-effort at avoiding drift, that is, if a timer is
 'HaruImage' => 'Haru PDF Image Class.',
 'HaruOutline' => 'Haru PDF Outline Class.',
 'HaruPage' => 'Haru PDF Page Class.',
+'hashTableObj' => 'Instance of hashTableObj is always embedded inside the `classObj`_,
+`layerObj`_, `mapObj`_ and `webObj`_. It is uses a read only.
+$hashTable = $oLayer->metadata;
+$key = null;
+while ($key = $hashTable->nextkey($key))
+echo "Key: ".$key." value: ".$hashTable->get($key)."<br/>";',
+'http\Client' => 'The HTTP client. See http\Client\Curl’s options which is the only driver currently supported.',
+'http\Cookie' => 'A class representing a list of cookies with specific attributes.',
+'http\Env' => 'The http\Env class provides static methods to manipulate and inspect the server’s current request’s HTTP environment',
+'http\Env\Request' => 'The http\Env\Request class\' instances represent the server’s current HTTP request.
+
+See http\Message for inherited members.',
+'http\Env\Response' => 'Class Response
+
+The http\Env\Response class\' instances represent the server’s current HTTP response.
+
+See http\Message for inherited members.',
+'http\Header' => 'The http\Header class provides methods to manipulate, match, negotiate and serialize HTTP headers.',
+'http\Message' => 'The message class builds the foundation for any request and response message.
+
+See http\Client\Request and http\Client\Response, as well as http\Env\Request and http\Env\Response.',
+'http\Message\Body' => 'The message body, represented as a PHP (temporary) stream.',
+'http\Message\Parser' => 'The parser which is underlying http\Message.',
+'http\Params' => 'Parse, interpret and compose HTTP (header) parameters.',
+'http\QueryString' => 'The http\QueryString class provides versatile facilities to retrieve, use and manipulate query strings and form data.',
+'http\Url' => 'The http\Url class provides versatile means to parse, construct and manipulate URLs.',
+'imageObj' => 'Instances of imageObj are always created by the `mapObj`_ class methods.',
 'InfiniteIterator' => 'The `InfiniteIterator` allows one to infinitely iterate over an iterator without having to manually rewind the iterator upon reaching its end.',
 'IntlBreakIterator' => 'A “break iterator” is an ICU object that exposes methods for locating boundaries in text (e.g. word or sentence boundaries). The PHP `IntlBreakIterator` serves as the base class for all types of ICU break iterators. Where extra functionality is available, the intl extension may expose the ICU break iterator with suitable subclasses, such as `IntlRuleBasedBreakIterator` or `IntlCodePointBreakIterator`.
 
@@ -319,10 +487,18 @@ Judy array example ]]>',
 'KTaglib_MPEG_Audioproperties' => 'Represents the audio properties of a MPEG file, like length, bitrate or samplerate.',
 'KTaglib_MPEG_File' => 'Represents an MPEG file. MPEG files can have ID3v1, ID3v2 tags and audio properties.',
 'KTaglib_Tag' => 'Base class for ID3v1 or ID3v2 tags',
+'labelObj' => 'labelObj are always embedded inside other classes.',
 'Lapack' => 'LAPACK is written in Fortran 90 and provides routines for solving systems of simultaneous linear equations, least-squares solutions of linear systems of equations, eigenvalue problems, and singular value problems. This extension wraps the LAPACKE C bindings to allow access to several processes exposed by the library. Most functions work with arrays of arrays, representing rectangular matrices in row major order - so a two by two matrix [1 2; 3 4] would be array(array(1, 2), array(3, 4)).
 
 All of the functions are called statically, for example $eig = Lapack::eigenvalues($a);',
 'lapackexception' => 'Exception thrown when an error is caught in the LAPACK functions',
+'layerObj' => 'Layer Objects can be returned by the `mapObj`_ class, or can be
+created using:
+A second optional argument can be given to ms_newLayerObj() to create
+the new layer as a copy of an existing layer. If a layer is given as
+argument then all members of a this layer will be copied in the new
+layer created.',
+'legendObj' => 'Instances of legendObj are always are always embedded inside the `mapObj`_.',
 'LengthException' => 'Exception thrown if a length is invalid.',
 'libXMLError' => 'Contains various information about errors thrown by libxml. The error codes are described within the official xmlError API documentation.',
 'LimitIterator' => 'The `LimitIterator` class allows iteration over a limited subset of items in an `Iterator`.',
@@ -460,6 +636,7 @@ Any write or query can throw connection exceptions as connections are created la
 'MongoDB\Driver\Monitoring\Subscriber' => 'Base interface for event subscribers. This is used for type-hinting `MongoDB\Driver\Monitoring\addSubscriber` and `MongoDB\Driver\Monitoring\removeSubscriber` and should not be implemented directly.',
 'MongoDB\Driver\Query' => 'The `MongoDB\Driver\Query` class is a value object that represents a database query.',
 'MongoDB\Driver\ReadConcern' => '`MongoDB\Driver\ReadConcern` controls the level of isolation for read operations for replica sets and replica set shards. This option requires MongoDB 3.2 or later.',
+'MongoDB\Driver\ReadPreference' => 'Class ReadPreference',
 'MongoDB\Driver\Session' => 'The `MongoDB\Driver\Session` class represents a client session and is returned by `MongoDB\Driver\Manager::startSession`. Commands, queries, and write operations may then be associated the session.',
 'MongoDB\Driver\WriteConcern' => '`MongoDB\Driver\WriteConcern` describes the level of acknowledgement requested from MongoDB for write operations to a standalone `mongod` or to replica sets or to sharded clusters. In sharded clusters, `mongos` instances will pass the write concern on to the shards.',
 'MongoDB\Driver\WriteConcernError' => 'The `MongoDB\Driver\WriteConcernError` class encapsulates information about a write concern error and may be returned by `MongoDB\Driver\WriteResult::getWriteConcernError`.',
@@ -561,9 +738,14 @@ Prior to MongoDB 2.6.0, the getLastError command would determine whether a write
 See also an external in-depth tutorial titled Writing an OAuth Provider Service, which takes a hands-on approach to providing this service. There are also OAuth provider examples within the OAuth extensions sources.',
 'OCI-Collection' => 'OCI8 Collection functionality.',
 'OCI-Lob' => 'OCI8 LOB functionality for large binary (BLOB) and character (CLOB) objects.',
+'OCI_Collection' => 'OCI8 Collection functionality.',
+'OCI_Lob' => 'OCI8 LOB functionality for large binary (BLOB) and character (CLOB) objects.',
 'OuterIterator' => 'Classes implementing `OuterIterator` can be used to iterate over iterators.',
 'OutOfBoundsException' => 'Exception thrown if a value is not a valid key. This represents errors that cannot be detected at compile time.',
 'OutOfRangeException' => 'Exception thrown when an illegal index was requested. This represents errors that should be detected at compile time.',
+'outputformatObj' => 'Instance of outputformatObj is always embedded inside the `mapObj`_.
+It is uses a read only.
+No constructor available (coming soon, see ticket 979)',
 'OverflowException' => 'Exception thrown when adding an element to a full container.',
 'ParentIterator' => 'This extended `FilterIterator` allows a recursive iteration using `RecursiveIteratorIterator` that only shows those elements which have children.',
 'Parle\ErrorInfo' => 'The class represents detailed error information as supplied by `Parle\Parser::errorInfo`',
@@ -598,6 +780,8 @@ The `pht\Vector` class enables for array access upon its objects (along with the
 'Pool' => 'A Pool is a container for, and controller of, an adjustable number of Workers.
 
 Pooling provides a higher level abstraction of the Worker functionality, including the management of references in the way required by pthreads.',
+'querymapObj' => 'Instances of querymapObj are always are always embedded inside the
+`mapObj`_.',
 'QuickHashIntHash' => 'This class wraps around a hash containing integer numbers, where the values are also integer numbers. Hashes are also available as implementation of the ArrayAccess interface.
 
 Hashes can also be iterated over with foreach as the Iterator interface is implemented as well. The order of which elements are returned in is not guaranteed.',
@@ -618,6 +802,10 @@ Objects of this class can be traversed, yielding the entries stored in the respe
 'RarException' => 'This class serves two purposes: it is the type of the exceptions thrown by the RAR extension functions and methods and it allows, through static methods to query and define the error behaviour of the extension, i.e., whether exceptions are thrown or only warnings are emitted.
 
 The following error codes are used:',
+'RdKafka\Conf' => 'Configuration reference: https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md',
+'RdKafka\TopicConf' => 'Configuration reference: https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md',
+'rectObj' => 'rectObj are sometimes embedded inside other objects.  New ones can
+also be created with:',
 'RecursiveArrayIterator' => 'This iterator allows to unset and modify values and keys while iterating over Arrays and Objects in the same way as the `ArrayIterator`. Additionally it is possible to iterate over the current iterator entry.',
 'RecursiveCachingIterator' => '...',
 'RecursiveDirectoryIterator' => 'The `RecursiveDirectoryIterator` provides an interface for iterating recursively over filesystem directories.',
@@ -626,6 +814,7 @@ The following error codes are used:',
 'RecursiveIteratorIterator' => 'Can be used to iterate through recursive iterators.',
 'RecursiveRegexIterator' => 'This recursive iterator can filter another recursive iterator via a regular expression.',
 'RecursiveTreeIterator' => 'Allows iterating over a `RecursiveIterator` to generate an ASCII graphic tree.',
+'referenceMapObj' => 'Instances of referenceMapObj are always embedded inside the `mapObj`_.',
 'Reflection' => 'The reflection class.',
 'ReflectionClass' => 'The `ReflectionClass` class reports information about a class.',
 'ReflectionClassConstant' => 'The `ReflectionClassConstant` class reports information about a class constant.',
@@ -647,6 +836,7 @@ To introspect function parameters, first create an instance of the `ReflectionFu
 'RRDGraph' => 'Class for exporting data from RRD database to image file.',
 'RRDUpdater' => 'Class for updating RDD database file.',
 'RuntimeException' => 'Exception thrown if an error which can only be found on runtime occurs.',
+'scalebarObj' => 'Instances of scalebarObj are always embedded inside the `mapObj`_.',
 'SeekableIterator' => 'The Seekable iterator.',
 'SessionHandler' => '`SessionHandler` is a special class that can be used to expose the current internal PHP session save handler by inheritance. There are seven methods which wrap the seven internal session save handler callbacks (open, close, read, write, destroy, gc and create_sid). By default, this class will wrap whatever internal save handler is set as defined by the session.save_handler configuration directive which is usually files by default. Other internal session save handlers are provided by PHP extensions such as SQLite (as sqlite), Memcache (as memcache), and Memcached (as memcached).
 
@@ -674,6 +864,10 @@ Please note the callback methods of this class are designed to be called interna
 'SoapVar' => 'A class representing a variable or object for use with SOAP services.',
 'SolrClient' => 'Used to send requests to a Solr server. Currently, cloning and serialization of SolrClient instances is not supported.',
 'SolrClientException' => 'An exception thrown when there is an error while making a request to the server from the client.',
+'SolrCollapseFunction' => 'Class SolrCollapseFunction',
+'SolrDisMaxQuery' => 'Version not present on php.net documentation, determined here by using PECL solr changelog:
+https://pecl.php.net/package-changelog.php?package=solr&release=2.1.0 <br/>
+Class SolrDisMaxQuery<br/>',
 'SolrDocument' => 'Represents a Solr document retrieved from a query response.',
 'SolrDocumentField' => 'This represents a field in a Solr document. All its properties are read-only.',
 'SolrException' => 'This is the base class for all exception thrown by the Solr extension classes.',
@@ -681,6 +875,7 @@ Please note the callback methods of this class are designed to be called interna
 'SolrIllegalArgumentException' => 'This object is thrown when an illegal or invalid argument is passed to a method.',
 'SolrIllegalOperationException' => 'This object is thrown when an illegal or unsupported operation is performed on an object.',
 'SolrInputDocument' => 'This class represents a Solr document that is about to be submitted to the Solr index.',
+'SolrMissingMandatoryParameterException' => 'Class SolrMissingMandatoryParameterException<br/>',
 'SolrModifiableParams' => 'Represents a collection of name-value pairs sent to the Solr server during a request.',
 'SolrObject' => 'This is an object whose properties can also by accessed using the array syntax. All its properties are read-only.',
 'SolrParams' => 'Represents a collection of name-value pairs sent to the Solr server during a request.',
@@ -720,12 +915,17 @@ Provided methods allow to check whether an individual string is likely an attemp
 'SQLite3' => 'A class that interfaces SQLite 3 databases.',
 'SQLite3Result' => 'A class that handles result sets for the SQLite 3 extension.',
 'SQLite3Stmt' => 'A class that handles prepared statements for the SQLite 3 extension.',
+'SQLiteUnbuffered' => 'Represents an unbuffered SQLite result set. Unbuffered results sets are sequential, forward-seeking only.',
+'Stackable' => 'Stackable is an alias of Threaded. This class name was used in pthreads until
+version 2.0.0',
 'Stomp' => 'Represents a connection between PHP and a Stomp compliant Message Broker.',
 'StompException' => 'Represents an error raised by the stomp extension. See Exceptions for more information about Exceptions in PHP.',
 'StompFrame' => 'Represents a message which was sent or received from a Stomp compliant Message Broker.',
 'streamWrapper' => 'Allows you to implement your own protocol handlers and streams for use with all the other filesystem functions (such as `fopen`, `fread` etc.).
 
 An instance of this class is initialized as soon as a stream function tries to access the protocol it is associated with.',
+'StubTests\Parsers\Visitors\ParentConnector' => 'The visitor is required to provide "parent" attribute to nodes',
+'styleObj' => 'Instances of styleObj are always embedded inside a `classObj`_ or `labelObj`_.',
 'SVMException' => 'The exception object thrown on errors from the SVM and SVMModel classes.',
 'SVMModel' => 'The SVMModel is the end result of the training process. It can be used to classify previously unseen data.',
 'SWFAction' => 'SWFAction.',
@@ -823,10 +1023,12 @@ Abstract base interface that cannot be implemented alone. Instead it must be imp
 'V8Js' => 'This is the core class for V8Js extension. Each instance created from this class has own context in which all JavaScript is compiled and executed.
 
 See `V8Js::__construct` for more information.',
+'VARIANT' => 'The VARIANT is COM\'s equivalent of the PHP zval; it is a structure that can contain a value with a range of different possible types. The VARIANT class provided by the COM extension allows you to have more control over the way that PHP passes values to and from COM.',
 'Volatile' => 'The `Volatile` class is new to pthreads v3. Its introduction is a consequence of the new immutability semantics of `Threaded` members of `Threaded` classes. The `Volatile` class enables for mutability of its `Threaded` members, and is also used to store PHP arrays in `Threaded` contexts.',
 'Vtiful\Kernel\Excel' => 'Create xlsx files and set cells and output xlsx files',
 'Vtiful\Kernel\Format' => 'Create a cell format object',
 'WeakRef' => 'The WeakRef class provides a gateway to objects without preventing the garbage collector from freeing those objects. It also provides a way to turn a weak reference into a strong one.',
+'webObj' => 'Instances of webObj are always are always embedded inside the `mapObj`_.',
 'wkhtmltox\Image\Converter' => 'Converts an HTML input into various image formats',
 'wkhtmltox\PDF\Converter' => 'Converts an HTML input, or set of HTML inputs, into PDF output',
 'wkhtmltox\PDF\Object' => 'Represents an HTML document, input to PDF converter',
@@ -838,6 +1040,82 @@ This means the programmer can reuse the context throughout execution; placing ob
 'XMLDiff\Base' => 'Base abstract class for all the comparsion classes in the extension.',
 'XMLReader' => 'The XMLReader extension is an XML Pull parser. The reader acts as a cursor going forward on the document stream and stopping at each node on the way.',
 'Yaconf' => 'Yaconf is a configurations container, it parses INIT files, stores the result in PHP when PHP is started, the result lives with the whole PHP lifecycle.',
+'Yaf\Action_Abstract' => '<p>A action can be defined in a separate file in Yaf(see \Yaf\Controller_Abstract). that is a action method can also be a <b>\Yaf\Action_Abstract</b> class.</P>
+<br/>
+<p>Since there should be a entry point which can be called by Yaf (as of PHP 5.3, there is a new magic method __invoke, but Yaf is not only works with PHP 5.3+, Yaf choose another magic method execute), you must implement the abstract method \Yaf\Action_Abstract::execute() in your custom action class.</p>',
+'Yaf\Application' => '\Yaf\Application provides a bootstrapping facility for applications which provides reusable resources, common- and module-based bootstrap classes and dependency checking.
+<br/>
+<b>Note:</b>
+<p>
+\Yaf\Application implements the singleton pattern, and \Yaf\Application can not be serialized or un-serialized which will cause problem when you try to use PHPUnit to write some test case for Yaf.<br/>
+You may use &#64;backupGlobals annotation of PHPUnit to control the backup and restore operations for global variables. thus can solve this problem.
+</p>',
+'Yaf\Bootstrap_Abstract' => '<p>Bootstrap is a mechanism used to do some initial config before a Application run.<br/><br/></p>
+<p>User may define their own Bootstrap class by inheriting <b>\Yaf\Bootstrap_Abstract</b><br/><br/></p>
+<p>Any method declared in Bootstrap class with leading "_init", will be called by \Yaf\Application::bootstrap() one by one according to their defined order<br/><br/></p>',
+'Yaf\Config\Ini' => '<p>\Yaf\Config\Ini enables developers to store configuration data in a familiar INI format and read them in the application by using nested object property syntax. The INI format is specialized to provide both the ability to have a hierarchy of configuration data keys and inheritance between configuration data sections. Configuration data hierarchies are supported by separating the keys with the dot or period character ("."). A section may extend or inherit from another section by following the section name with a colon character (":") and the name of the section from which data are to be inherited.</p><br/>
+<b>Note:</b>
+<p>\Yaf\Config\Ini utilizes the » parse_ini_file() PHP function. Please review this documentation to be aware of its specific behaviors, which propagate to \Yaf\Config\Ini, such as how the special values of "TRUE", "FALSE", "yes", "no", and "NULL" are handled.</p>',
+'Yaf\Controller_Abstract' => '<p><b>\Yaf\Controller_Abstract</b> is the heart of Yaf\'s system. MVC stands for Model-View-Controller and is a design pattern targeted at separating application logic from display logic.</p>
+<br/>
+<p>Every custom controller shall inherit <b>\Yaf\Controller_Abstract</b>.</p>
+<br/>
+<p>You will find that you can not define __construct function for your custom controller, thus, <b>\Yaf\Controller_Abstract</b> provides a magic method: \Yaf\Controller_Abstract::init().</p>
+<br/>
+<p>If you have defined a init() method in your custom controller, it will be called as long as the controller was instantiated.</p>
+<br/>
+<p>Action may have arguments, when a request coming, if there are the same name variable in the request parameters(see \Yaf\Request_Abstract::getParam()) after routed, Yaf will pass them to the action method (see \Yaf\Action_Abstract::execute()).</p>
+<br/>
+<b>Note:</b>
+<p>These arguments are directly fetched without filtering, it should be carefully processed before use them.</p>',
+'Yaf\Dispatcher' => '<p><b>\Yaf\Dispatcher</b> purpose is to initialize the request environment, route the incoming request, and then dispatch any discovered actions; it aggregates any responses and returns them when the process is complete.</p><br/>
+<p><b>\Yaf\Dispatcher</b> also implements the Singleton pattern, meaning only a single instance of it may be available at any given time. This allows it to also act as a registry on which the other objects in the dispatch process may draw.</p>',
+'Yaf\Loader' => '<p><b>\Yaf\Loader</b> introduces a comprehensive autoloading solution for Yaf.</p>
+<br/>
+<p>The first time an instance of \Yaf\Application is retrieved, <b>\Yaf\Loader</b> will instance a singleton, and registers itself with spl_autoload. You retrieve an instance using the \Yaf\Loader::getInstance()</p>
+<br/>
+<p><b>\Yaf\Loader</b> attempt to load a class only one shot, if failed, depend on yaf.use_spl_autoload, if this config is On \Yaf\Loader::autoload() will return FALSE, thus give the chance to other autoload function. if it is Off (by default), \Yaf\Loader::autoload() will return TRUE, and more important is that a very useful warning will be triggered (very useful to find out why a class could not be loaded).</p>
+<br/>
+<b>Note:</b>
+<p>Please keep yaf.use_spl_autoload Off unless there is some library have their own autoload mechanism and impossible to rewrite it.</p>
+<br/>
+<p>If you want <b>\Yaf\Loader</b> search some classes(libraries) in the local class directory(which is defined in application.ini, and by default, it is application.directory . "/library"), you should register the class prefix using the \Yaf\Loader::registerLocalNameSpace()</p>',
+'Yaf\Plugin_Abstract' => '<p>Plugins allow for easy extensibility and customization of the framework.</p>
+<br/>
+<p>Plugins are classes. The actual class definition will vary based on the component -- you may need to implement this interface, but the fact remains that the plugin is itself a class.</p>
+<br/>
+<p>A plugin could be loaded into Yaf by using \Yaf\Dispatcher::registerPlugin(), after registered, All the methods which the plugin implemented according to this interface, will be called at the proper time.</p>',
+'Yaf\Registry' => '<p>All methods of <b>\Yaf\Registry</b> declared as static, making it universally accessible. This provides the ability to get or set any custom data from anyway in your code as necessary.</p>',
+'Yaf\Request\Simple' => '<b>\Yaf\Request\Simple</b> is particularly used for test purpose. ie. simulate a spacial request under CLI mode.',
+'Yaf\Route\Map' => '<p><b>\Yaf\Route\Map</b> is a built-in route, it simply convert a URI endpoint (that part of the URI which comes after the base URI: see \Yaf\Request_Abstract::setBaseUri()) to a controller name or action name(depends on the parameter passed to \Yaf\Route\Map::__construct()) in following rule: A => controller A. A/B/C => controller A_B_C. A/B/C/D/E => controller A_B_C_D_E.</p>
+<br/>
+<p>If the second parameter of \Yaf\Route\Map::__construct() is specified, then only the part before delimiter of URI will used to routing, the part after it is used to routing request parameters (see the example section of \Yaf\Route\Map::__construct()).</p>',
+'Yaf\Route\Regex' => '<p><b>\Yaf\Route\Regex</b> is the most flexible route among the Yaf built-in routes.</p>',
+'Yaf\Route\Rewrite' => '<p>For usage, please see the example section of \Yaf\Route\Rewrite::__construct()</p>',
+'Yaf\Route\Simple' => '<p><b>\Yaf\Route\Simple</b> will match the query string, and find the route info.</p>
+<br/>
+<p>all you need to do is tell <b>\Yaf\Route\Simple</b> what key in the $_GET is module, what key is controller, and what key is action.</p>
+<br/>
+<p>\Yaf\Route\Simple::route() will always return TRUE, so it is important put <b>\Yaf\Route\Simple</b> in the front of the Route stack, otherwise all the other routes will not be called</p>',
+'Yaf\Route_Interface' => '<b>\Yaf\Route_Interface</b> used for developer defined their custom route.',
+'Yaf\Route_Static' => '<p>by default, \Yaf\Router only have a <b>\Yaf\Route_Static</b> as its default route.</p>
+<br/>
+<p><b>\Yaf\Route_Static</b> is designed to handle 80% of normal requirements.</p>
+<br/>
+<b>Note:</b>
+<p> it is unnecessary to instance a <b>\Yaf\Route_Static</b>, also unnecessary to add it into \Yaf\Router\'s routes stack, since there is always be one in \Yaf\Router\'s routes stack, and always be called at the last time.</p>',
+'Yaf\Router' => '<p><b>\Yaf\Router</b> is the standard framework router. Routing is the process of taking a URI endpoint (that part of the URI which comes after the base URI: see \Yaf\Request_Abstract::setBaseUri()) and decomposing it into parameters to determine which module, controller, and action of that controller should receive the request. This values of the module, controller, action and other parameters are packaged into a \Yaf\Request_Abstract object which is then processed by \Yaf\Dispatcher. Routing occurs only once: when the request is initially received and before the first controller is dispatched. \Yaf\Router is designed to allow for mod_rewrite-like functionality using pure PHP structures. It is very loosely based on Ruby on Rails routing and does not require any prior knowledge of webserver URL rewriting</p>
+<br/>
+<b>Default Route</b>
+<br/>
+<p><b>\Yaf\Router</b> comes pre-configured with a default route \Yaf\Route_Static, which will match URIs in the shape of controller/action. Additionally, a module name may be specified as the first path element, allowing URIs of the form module/controller/action. Finally, it will also match any additional parameters appended to the URI by default - controller/action/var1/value1/var2/value2.</p>
+<br/>
+<b>Note:</b>
+<p>Module name must be defined in config, considering application.module="Index,Foo,Bar", in this case, only index, foo and bar can be considered as a module name. if doesn\'t config, there is only one module named "Index".</p>
+<br/>
+<p>** See examples by opening the external documentation</p>',
+'Yaf\View\Simple' => '<b>\Yaf\View\Simple</b> is the built-in template engine in Yaf, it is a simple but fast template engine, and only support PHP script template.',
+'Yaf\View_Interface' => 'Yaf provides a ability for developers to use custom view engine instead of build-in engine which is \Yaf\View\Simple. There is a example to explain how to do this, please see \Yaf\Dispatcher::setView()',
 'Yaf_Action_Abstract' => 'A action can be defined in a separate file in Yaf(see `Yaf_Controller_Abstract`). that is a action method can also be a `Yaf_Action_Abstract` class.
 
 Since there should be a entry point which can be called by Yaf (as of PHP 5.3, there is a new magic method __invoke, but Yaf is not only works with PHP 5.3+, Yaf choose another magic method execute), you must implement the abstract method `Yaf_Action_Abstract::execute` in your custom action class.',
@@ -904,8 +1182,21 @@ please *NOTE* that it is unecessary to instance a `Yaf_Route_Static`, also unece
 'Yaf_Router' => '`Yaf_Router` is the standard framework router. Routing is the process of taking a URI endpoint (that part of the URI which comes after the base URI: see `Yaf_Request_Abstract::setBaseUri`) and decomposing it into parameters to determine which module, controller, and action of that controller should receive the request. This values of the module, controller, action and other parameters are packaged into a `Yaf_Request_Abstract` object which is then processed by `Yaf_Dispatcher`. Routing occurs only once: when the request is initially received and before the first controller is dispatched. `Yaf_Router` is designed to allow for mod_rewrite-like functionality using pure PHP structures. It is very loosely based on Ruby on Rails routing and does not require any prior knowledge of webserver URL rewriting. It is designed to work with a single Apache mod_rewrite rule (one of): Rewrite rule for Apache or (preferred): Rewrite rule for Apache If using Lighttpd, the following rewrite rule is valid: Rewrite rule for Lighttpd "/index.php?$1", ".*\.(js|ico|gif|jpg|png|css|html)$" => "$0", "" => "/index.php" ) ]]> If using Nginx, use the following rewrite rule: Rewrite rule for Nginx',
 'Yaf_View_Interface' => 'Yaf provides a ability for developers to use coustom view engine instead of build-in engine which is `Yaf_View_Simple`. There is a example to explain how to do this, please see `Yaf_Dispatcher::setView`.',
 'Yaf_View_Simple' => '`Yaf_View_Simple` is the built-in template engine in Yaf, it is a simple but fast template engine, and only support PHP script template.',
+'Yar_Client_Exception' => 'Class Yar_Client_Exception
+Date 2018/6/9 下午3:05',
+'Yar_Server' => 'Class Yar_Server
+Date 2018/6/9 下午3:02',
 'Yar_Server_Exception' => 'If service threw exceptions, A Yar_Server_Exception will be threw in client side.',
+'ZendAPI_Job' => 'Describing a job in a queue
+In order to add/modify a job in the queue, a Job class must be created/retrieved and than saved in a queue
+
+For simplicity, a job can be added directly to a queue and without creating an instant of a Queue object',
 'ZipArchive' => 'A file archive, compressed with Zip.',
+'ZMQ' => 'Class ZMQ',
+'ZMQContext' => 'Class ZMQContext',
+'ZMQDevice' => 'Class ZMQDevice',
+'ZMQPoll' => 'Class ZMQPoll',
+'ZMQSocket' => 'Class ZMQSocket',
 'Zookeeper' => 'Represents ZooKeeper session.',
 'ZookeeperAuthenticationException' => 'The ZooKeeper authentication exception handling class.',
 'ZookeeperConfig' => 'The ZooKeeper Config handling class.',
