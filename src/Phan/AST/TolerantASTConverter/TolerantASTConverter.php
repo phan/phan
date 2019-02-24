@@ -16,6 +16,8 @@ use Microsoft\PhpParser\MissingToken;
 use Microsoft\PhpParser\Parser;
 use Microsoft\PhpParser\Token;
 use Microsoft\PhpParser\TokenKind;
+use Phan\CLI;
+use Phan\Library\Cache;
 use RuntimeException;
 use function array_merge;
 use function class_exists;
@@ -57,7 +59,7 @@ if (!class_exists('ast\Node')) {
  * each time they are invoked,
  * so it's possible to have multiple callers use this without affecting each other.
  *
- * Compatibility: PHP 7.0-7.2
+ * Compatibility: PHP 7.0-7.3
  *
  * ----------------------------------------------------------------------------
  *
@@ -182,15 +184,44 @@ class TolerantASTConverter
     }
 
     /**
+     * Generates an ast\Node with this converter's current settings. (caching if $cache is non-null)
+     *
      * @param Diagnostic[] &$errors @phan-output-reference
+     * @param ?Cache<ParseResult> $cache
      * @return ast\Node
      * @throws InvalidArgumentException if the requested AST version is invalid.
      */
-    public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = [])
+    public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = [], Cache $cache = null)
     {
         if (!\in_array($version, self::SUPPORTED_AST_VERSIONS)) {
             throw new \InvalidArgumentException(sprintf("Unexpected version: want %s, got %d", \implode(', ', self::SUPPORTED_AST_VERSIONS), $version));
         }
+        $errors = [];
+        $cache_key = null;
+        if ($cache) {
+            $cache_key = $this->generateCacheKey($file_contents, $version);
+            $result = $cache_key ? $cache->getIfExists($cache_key) : null;
+            if ($result) {
+                $errors = $result->diagnostics;
+                return $result->node;
+            }
+        }
+        $result = $this->parseCodeAsPHPASTUncached($file_contents, $version, $errors);
+        if ($cache && $cache_key) {
+            $cache->save($cache_key, new ParseResult($result, $errors));
+        }
+        return $result;
+    }
+
+    /**
+     * Generates an ast\Node with this converter's current settings.
+     *
+     * @param Diagnostic[] &$errors @phan-output-reference
+     * @return ast\Node
+     * @throws InvalidArgumentException if the requested AST version is invalid.
+     */
+    public function parseCodeAsPHPASTUncached(string $file_contents, int $version, array &$errors = [])
+    {
         // Aside: this can be implemented as a stub.
         $parser_node = static::phpParserParse($file_contents, $errors);
         return $this->phpParserToPhpast($parser_node, $version, $file_contents);
@@ -2956,6 +2987,38 @@ class TolerantASTConverter
         }
 
         return new ast\Node(ast\AST_ENCAPS_LIST, 0, $inner_node_parts, self::getStartLine($children[0]));
+    }
+
+    /**
+     * Gets a string based on environment details that could affect parsing
+     */
+    private static function getEnvironmentDetails() : string
+    {
+        static $details = null;
+        if ($details === null) {
+            $details = sha1(var_export([
+                PHP_VERSION,
+                PHP_BINARY,
+                ini_get('short_open_tag'),
+                class_exists(CLI::class) ? CLI::getDevelopmentVersionId() : 'unknown'
+            ], true));
+        }
+        return $details;
+    }
+
+    /**
+     * @return ?string - null if this should not be cached
+     */
+    public function generateCacheKey(string $file_contents, int $version)
+    {
+        $details = var_export([
+            sha1($file_contents),
+            $version,
+            self::getEnvironmentDetails(),
+            $this->instance_should_add_placeholders,
+            $this->instance_parse_all_doc_comments,
+        ], true);
+        return sha1($details);
     }
 }
 class_exists(TolerantASTConverterWithNodeMapping::class);

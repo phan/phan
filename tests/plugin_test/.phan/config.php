@@ -98,6 +98,9 @@ return [
 
     'analyzed_file_extensions' => ['php'],
 
+    // This is a unit test of Phan itself, so don't cache it because the polyfill implementation may change before the next release.
+    'cache_polyfill_asts' => false,
+
     'plugin_config' => [
         'php_native_syntax_check_max_processes' => 4,
     ],

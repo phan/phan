@@ -7,6 +7,7 @@ use CompileError;
 use Error;
 use ParseError;
 use Phan\AST\TolerantASTConverter\ParseException;
+use Phan\AST\TolerantASTConverter\ParseResult;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\AST\TolerantASTConverter\TolerantASTConverterWithNodeMapping;
 use Phan\CodeBase;
@@ -14,6 +15,8 @@ use Phan\Config;
 use Phan\Daemon\Request;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Library\Cache;
+use Phan\Library\DiskCache;
 use Phan\Phan;
 use Phan\Plugin\ConfigPluginSet;
 
@@ -25,6 +28,50 @@ use Phan\Plugin\ConfigPluginSet;
  */
 class Parser
 {
+    /** @var ?Cache<ParseResult> */
+    private static $cache = null;
+
+    /**
+     * Creates a cache if Phan is configured to use caching in the current phase.
+     *
+     * @return ?Cache<ParseResult>
+     */
+    private static function maybeGetCache(CodeBase $code_base)
+    {
+        if ($code_base->getExpectChangesToFileContents()) {
+            return null;
+        }
+        if (!Config::getValue('cache_polyfill_asts')) {
+            return null;
+        }
+        return self::getCache();
+    }
+
+    /**
+     * @return Cache<ParseResult>
+     * @suppress PhanPartialTypeMismatchReturn
+     */
+    private static function getCache() : Cache
+    {
+        return self::$cache ?? self::$cache = self::makeNewCache();
+    }
+
+    /**
+     * @return DiskCache<ParseResult>
+     */
+    private static function makeNewCache() : DiskCache
+    {
+        $igbinary_version = phpversion('igbinary') ?: '';
+        $use_igbinary = version_compare($igbinary_version, '2.0.5') >= 0;
+
+        $user = getenv('USERNAME') ?: getenv('USER');
+        $directory = sys_get_temp_dir() . '/phan';
+        if ($user) {
+            $directory .= "-$user";
+        }
+        return new DiskCache($directory, '-ast', ParseResult::class, $use_igbinary);
+    }
+
     /**
      * Parses the code. If $suppress_parse_errors is false, this also emits SyntaxError.
      *
@@ -147,7 +194,7 @@ class Parser
         $converter->setParseAllDocComments(Config::getValue('polyfill_parse_all_element_doc_comments'));
         $errors = [];
         try {
-            $node = $converter->parseCodeAsPHPAST($file_contents, Config::AST_VERSION, $errors);
+            $node = $converter->parseCodeAsPHPAST($file_contents, Config::AST_VERSION, $errors, self::maybeGetCache($code_base));
         } catch (\Exception $e) {
             // Generic fallback. TODO: log.
             throw new ParseException('Unexpected Exception of type ' . \get_class($e) . ': ' . $e->getMessage(), 0);

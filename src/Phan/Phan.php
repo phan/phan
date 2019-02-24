@@ -228,6 +228,9 @@ class Phan implements IgnoredFilesFilterInterface
         }
         $code_base->setCurrentParsedFile(null);
         ConfigPluginSet::instance()->beforeAnalyze($code_base);
+        if ($is_undoable_request) {
+            $code_base->setExpectChangesToFileContents();
+        }
 
         // Don't continue on to analysis if the user has
         // chosen to just dump the AST
