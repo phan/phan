@@ -83,15 +83,16 @@ final class GoToDefinitionRequest extends NodeInfoRequest
                 return;
             }
         }
-        $this->recordFinalDefinitionElement($element);
+        $this->recordFinalDefinitionElement($code_base, $element);
     }
 
     private function recordFinalDefinitionElement(
+        CodeBase $code_base,
         AddressableElementInterface $element
     ) {
         if ($this->request_type === self::REQUEST_HOVER) {
             if ($this->hover_response === null) {
-                $this->setHoverMarkdown(MarkupDescription::buildForElement($element));
+                $this->setHoverMarkdown(MarkupDescription::buildForElement($element, $code_base));
                 // TODO: Support documenting more than one definition.
             }
             return;

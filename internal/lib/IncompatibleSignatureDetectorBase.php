@@ -6,6 +6,7 @@ use Phan\Memoize;
 define('ORIGINAL_SIGNATURE_PATH', dirname(dirname(__DIR__)) . '/src/Phan/Language/Internal/FunctionSignatureMap.php');
 define('ORIGINAL_FUNCTION_DOCUMENTATION_PATH', dirname(dirname(__DIR__)) . '/src/Phan/Language/Internal/FunctionDocumentationMap.php');
 define('ORIGINAL_CONSTANT_DOCUMENTATION_PATH', dirname(dirname(__DIR__)) . '/src/Phan/Language/Internal/ConstantDocumentationMap.php');
+define('ORIGINAL_CLASS_DOCUMENTATION_PATH', dirname(dirname(__DIR__)) . '/src/Phan/Language/Internal/ClassDocumentationMap.php');
 
 /**
  * Implementations of this can be used to check Phan's function signature map.
@@ -290,6 +291,14 @@ EOT;
     /**
      * @throws RuntimeException if the file could not be read
      */
+    public static function readClassDocumentationHeader() : string
+    {
+        return self::readArrayFileHeader(ORIGINAL_CLASS_DOCUMENTATION_PATH);
+    }
+
+    /**
+     * @throws RuntimeException if the file could not be read
+     */
     private static function readArrayFileHeader(string $path) : string
     {
         $fin = fopen($path, 'r');
@@ -326,6 +335,15 @@ EOT;
     public static function readConstantDocumentationMap() : array
     {
         return require(ORIGINAL_CONSTANT_DOCUMENTATION_PATH);
+    }
+
+    /**
+     * @suppress PhanUnreferencedPublicMethod
+     * @return array<string,string>
+     */
+    public static function readClassDocumentationMap() : array
+    {
+        return require(ORIGINAL_CLASS_DOCUMENTATION_PATH);
     }
 
     /**
@@ -377,6 +395,19 @@ EOT;
         $contents = static::serializeDocumentation($phan_documentation);
         if ($include_header) {
             $contents = static::readConstantDocumentationHeader() . $contents;
+        }
+        file_put_contents($new_documentation_path, $contents);
+    }
+
+    /**
+     * @param array<string,string> $phan_documentation
+     * @return void
+     */
+    public static function saveClassDocumentationMap(string $new_documentation_path, array $phan_documentation, bool $include_header = true)
+    {
+        $contents = static::serializeDocumentation($phan_documentation);
+        if ($include_header) {
+            $contents = static::readClassDocumentationHeader() . $contents;
         }
         file_put_contents($new_documentation_path, $contents);
     }
