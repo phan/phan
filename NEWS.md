@@ -9,7 +9,7 @@ New features(Analysis):
 + Add `@phan-suppress-previous-line` to suppress issues on the line above the comment. (#2470)
 
 Language Server/Daemon mode:
-+ Show plaintext summaries of internal functions, methods, and constants when hover text is requested.
++ Show plaintext summaries of internal classes, functions, methods, and constants when hover text is requested.
 
 Plugins:
 + Add `HandleLazyLoadInternalFunctionCapability` so that plugins can modify Phan's information about internal global functions when those functions are loaded after analysis starts.

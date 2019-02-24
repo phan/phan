@@ -888,6 +888,7 @@ function example2($strVal, array $arrVal) {
 function test(ExampleClass $c) {  // line 25
     var_export($c->propWithDefault);
     echo JSON_PRETTY_PRINT;
+    throw new AssertionError('some condition failed');
 }
 EOT;
         return [
@@ -1102,6 +1103,22 @@ const JSON_PRETTY_PRINT = 128
 ```
 
 Use whitespace in returned data to format it. Available since PHP 5.4.0.
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(28, 16),  // AssertionError
+                <<<'EOT'
+```php
+public function __construct()
+```
+
+Construct an instance of `\AssertionError`.
+
+`AssertionError` is thrown when an assertion made via `assert` fails.
 EOT
                 ,
                 null,

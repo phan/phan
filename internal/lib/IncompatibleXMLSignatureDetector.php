@@ -191,6 +191,50 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     }
 
     /**
+     * @return array<string,SimpleXMLElement>
+     */
+    private function getClassXMLFiles()
+    {
+        return $this->memoize(__METHOD__, /** @return array<string,SimpleXMLElement> */ function () : array {
+            $remaining_folders = [
+                $this->reference_directory,
+                $this->doc_base_directory . '/en/language/predefined'
+            ];
+            $result = [];
+            while (count($remaining_folders) > 0) {
+                $folder = array_pop($remaining_folders);
+                if (!$folder) {
+                    // impossible
+                    break;
+                }
+                foreach (static::scandir($folder) as $basename) {
+                    if ($basename === 'functions') {
+                        continue;
+                    }
+                    $path = "$folder/$basename";
+                    if (is_dir($path)) {
+                        $remaining_folders[] = $path;
+                        continue;
+                    }
+                    if (!preg_match('/\.xml$/', $basename)) {
+                        continue;
+                    }
+                    $contents = (string)$this->fileGetContents($path);
+                    if (!preg_match('/<phpdoc:classref|<classsynopsis/', $contents)) {
+                        continue;
+                    }
+                    $xml = $this->getSimpleXMLForFileContents($contents, $path);
+                    if (!$xml) {
+                        continue;
+                    }
+                    $result[$path] = $xml;
+                }
+            }
+            return $result;
+        });
+    }
+
+    /**
      * @return Generator<string>
      */
     private function getPossibleFilesInReferenceDirectory(string $folder_in_reference_directory)
@@ -213,9 +257,9 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     private function parseClassName(string $folder_in_reference_directory) : string
     {
         foreach ($this->getPossibleFilesInReferenceDirectory($folder_in_reference_directory) as $file_in_reference_directory) {
-            echo "Looking for $file_in_reference_directory\n";
+            //echo "Looking for $file_in_reference_directory\n";
             if (file_exists($file_in_reference_directory)) {
-                echo "Found $file_in_reference_directory\n";
+                //echo "Found $file_in_reference_directory\n";
                 $xml = $this->getSimpleXMLForFile($file_in_reference_directory);
                 if (!$xml) {
                     continue;
@@ -309,6 +353,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     {
         $this->updatePHPDocFunctionSummaries();
         $this->updatePHPDocConstantSummaries();
+        $this->updatePHPDocClassSummaries();
     }
 
     private function updatePHPDocFunctionSummaries()
@@ -325,6 +370,14 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         $new_constant_documentation_path = ORIGINAL_CONSTANT_DOCUMENTATION_PATH . '.new';
         static::info("Saving modified constant descriptions to $new_constant_documentation_path\n");
         static::saveConstantDocumentationMap($new_constant_documentation_path, $new_constant_documentation);
+    }
+
+    private function updatePHPDocClassSummaries()
+    {
+        $new_class_documentation = $this->getAvailableClassPHPDocSummaries();
+        $new_class_documentation_path = ORIGINAL_CLASS_DOCUMENTATION_PATH . '.new';
+        static::info("Saving modified class descriptions to $new_class_documentation_path\n");
+        static::saveClassDocumentationMap($new_class_documentation_path, $new_class_documentation);
     }
 
     /**
@@ -487,14 +540,30 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
         return $this->simple_xml_cache[$file_path] = $this->getSimpleXMLForFileUncached($file_path);
     }
 
+    /** @return string|false */
+    private function fileGetContents(string $file_path)
+    {
+        return $this->memoize(__METHOD__ . ':' . $file_path, /** @return string|false */ static function () use ($file_path) {
+            return file_get_contents($file_path);
+        });
+    }
+
     /** @return ?SimpleXMLElement */
     private function getSimpleXMLForFileUncached(string $file_path)
     {
-        $signature_file_contents = file_get_contents($file_path);
+        $signature_file_contents = $this->fileGetContents($file_path);
         if (!is_string($signature_file_contents)) {
             static::debug("Could not read '$file_path'\n");
             return null;
         }
+        return $this->getSimpleXMLForFileContents($signature_file_contents, $file_path);
+    }
+
+    /**
+     * @return ?SimpleXMLElement
+     */
+    private function getSimpleXMLForFileContents(string $signature_file_contents, string $file_path)
+    {
         // Not sure if there's a good way of using an external entity file in PHP.
         $signature_file_contents = $this->normalizeEntityFile($signature_file_contents);
         // echo $signature_file_contents . "\n";
@@ -719,6 +788,9 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
             case '':
                 return null;
         }
+
+        $result = preg_replace('@<code>([^<>`]+)</code>@', '`\1`', $result);
+
         return $result;
     }
 
@@ -748,7 +820,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     {
         return $this->memoize(__METHOD__, /** @return array<string,string> */ function () : array {
             $method_name_map = [];
-            $maybe_add_refpurpose = function (string $name, SimpleXMLElement $xml) use (&$method_name_map) {
+            $maybe_add_refpurpose = static function (string $name, SimpleXMLElement $xml) use (&$method_name_map) {
                 $refpurpose = $xml->xpath('//a:refentry/a:refnamediv/a:refpurpose');
                 if (is_array($refpurpose) && count($refpurpose) === 1) {
                     $refpurpose = $refpurpose[0];
@@ -804,7 +876,7 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 if (!is_array($constants_entries)) {
                     continue;
                 }
-                $constant_name_map += self::extractEntries($constants_entries);
+                $constant_name_map += self::extractConstantEntries($constants_entries);
             }
             self::sortSignatureMap($constant_name_map);
             return $constant_name_map;
@@ -812,22 +884,71 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     }
 
     /**
+     * @return array<string,string>
+     */
+    protected function getAvailableClassPHPDocSummaries() : array
+    {
+        return $this->memoize(__METHOD__, /** @return array<string,string> */ function () : array {
+            $class_name_map = [];
+            foreach ($this->getClassXMLFiles() as $xml) {
+                $class_name = $xml->xpath('//a:classsynopsis/a:ooclass/a:classname');
+                if (!is_array($class_name) || count($class_name) !== 1) {
+                    continue;
+                }
+                $class_name = (string)$class_name[0];
+                // $class_name = (string)$xml->titleabbrev;
+                if (!$class_name) {
+                    continue;
+                }
+                $class_description_entries = $xml->partintro->section[0];
+                if (count($class_description_entries) === 0) {
+                    continue;
+                }
+                $paragraphs = iterator_to_array($class_description_entries->para, false);
+                $text = self::extractDescriptionFromParagraphElements($paragraphs);
+                if (!$text) {
+                    continue;
+                }
+                $class_name_map[$class_name] = $text;
+                // echo "$class_name: $text\n";
+            }
+            self::sortSignatureMap($class_name_map);
+            return $class_name_map;
+        });
+    }
+
+    /**
      * @return ?string
      */
-    private static function convertXMLElementToMarkdown(SimpleXMLElement $element) {
-        // TODO: Do a better job than strip_tags(), convert <literal> to <code>
-        return self::convertXMLToMarkdown(preg_replace('/\s+/m', ' ', strip_tags((string)$element->asXML())));
+    private static function convertXMLElementToMarkdown(SimpleXMLElement $element)
+    {
+        $xml = (string)$element->asXML();
+        if (strpos($xml, '<xref') !== false) {
+            $xml = preg_replace('@<xref linkend="([^"]+)"\s*/>@', 'the PHP manual\'s section on \1', $xml);
+        }
+        // TODO: Change this to use tidy if adding the extra dependency won't cause issues.
+        //
+        // Convert <literal> to <code>, etc, to use regular HTML.
+        //
+        // TODO: Reuse more of the code from
+        $xml = preg_replace('@<(/?)(literal|classname|interfacename|property|methodname|constant|function|type)\s*>@i', '<\1code>', $xml);
+        $xml = preg_replace('@<(/?)(emphasis)\s*>@i', '*', $xml);
+        // echo $xml . "\n";
+
+        $xml = strip_tags($xml, '<code><em>');
+        $xml = preg_replace('/\s+/m', ' ', $xml);
+
+        return self::convertXMLToMarkdown($xml);
     }
 
     /**
      * @param array<int,SimpleXMLElement> $constants_entries
      * @return array<string,string>
      */
-    private static function extractEntries(array $constants_entries) : array
+    private static function extractConstantEntries(array $constants_entries) : array
     {
         $result = [];
-        foreach ($constants_entries as $entry)
-        {
+        foreach ($constants_entries as $entry) {
             $entry->registerXPathNamespace('a', 'http://docbook.org/ns/docbook');
             $name = $entry->term->constant;
             // var_export($entry);
@@ -843,23 +964,39 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
                 // fwrite(STDERR, "Failed to extract description for $entry\n");
                 continue;
             }
-            $lines = [];
-            foreach ($description_paragraphs as $element) {
-                // TODO: Do a better job than strip_tags
-                $line = self::convertXMLElementToMarkdown($element);
-                // fwrite(STDERR, "Extracted $line from $element\n");
-                if ($line) {
-                    $lines[] = preg_replace('/\s+/m', ' ', $line);
-                }
-            }
-            if (!$lines) {
+            $description_paragraphs = iterator_to_array($description_paragraphs, false);
+            $text = self::extractDescriptionFromParagraphElements($description_paragraphs);
+            if (!$text) {
                 continue;
             }
-            $result[$name] = implode("\n\n", $lines);
+            $result[$name] = $text;
             echo "$name: $result[$name]\n";
         }
         self::sortSignatureMap($result);
         return $result;
+    }
+
+    /**
+     * Returns a markdown/HTML description for $description_paragraphs
+     *
+     * @param array<int,SimpleXMLElement> $description_paragraphs
+     * @return ?string
+     */
+    private static function extractDescriptionFromParagraphElements(array $description_paragraphs)
+    {
+        $lines = [];
+        foreach ($description_paragraphs as $element) {
+            // TODO: Do a better job than strip_tags
+            $line = self::convertXMLElementToMarkdown($element);
+            // fwrite(STDERR, "Extracted $line from $element\n");
+            if ($line) {
+                $lines[] = preg_replace('/\s+/m', ' ', $line);
+            }
+        }
+        if (!$lines) {
+            return null;
+        }
+        return implode("\n\n", $lines);
     }
 
     /**
@@ -915,7 +1052,11 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
      */
     private static function scandir(string $directory) : array
     {
+        if (!is_dir($directory)) {
+            return [];
+        }
         $result = [];
+
         foreach (scandir($directory) as $subpath) {
             if ($subpath[0] !== '.') {
                 $result[] = $subpath;
