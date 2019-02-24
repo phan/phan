@@ -4,6 +4,8 @@ declare(strict_types=1);
 use Phan\Memoize;
 
 define('ORIGINAL_SIGNATURE_PATH', dirname(dirname(__DIR__)) . '/src/Phan/Language/Internal/FunctionSignatureMap.php');
+define('ORIGINAL_FUNCTION_DOCUMENTATION_PATH', dirname(dirname(__DIR__)) . '/src/Phan/Language/Internal/FunctionDocumentationMap.php');
+define('ORIGINAL_CONSTANT_DOCUMENTATION_PATH', dirname(dirname(__DIR__)) . '/src/Phan/Language/Internal/ConstantDocumentationMap.php');
 
 /**
  * Implementations of this can be used to check Phan's function signature map.
@@ -56,6 +58,9 @@ Usage: $program_name command [...args]
     phpdoc_svn_dir can be checked out via 'svn checkout https://svn.php.net/repository/phpdoc/modules/doc-en phpdoc-en' (subversion must be installed)
     (and updated via 'svn update')
     see http://doc.php.net/tutorial/structure.php
+
+  $program_name update-descriptions-svn path/to/phpdoc_svn_dir
+    Update Phan's descriptions for functions/methods based on the docs.php.net source repo.
 
 EOT;
         fwrite(STDERR, $msg);
@@ -240,7 +245,7 @@ EOT;
     }
 
     /**
-     * @param array<string,array> &$phan_signatures
+     * @param array<string,mixed> &$phan_signatures
      * @return void
      */
     public static function sortSignatureMap(array &$phan_signatures)
@@ -263,7 +268,31 @@ EOT;
      */
     public static function readSignatureHeader() : string
     {
-        $fin = fopen(ORIGINAL_SIGNATURE_PATH, 'r');
+        return self::readArrayFileHeader(ORIGINAL_SIGNATURE_PATH);
+    }
+
+    /**
+     * @throws RuntimeException if the file could not be read
+     */
+    public static function readFunctionDocumentationHeader() : string
+    {
+        return self::readArrayFileHeader(ORIGINAL_FUNCTION_DOCUMENTATION_PATH);
+    }
+
+    /**
+     * @throws RuntimeException if the file could not be read
+     */
+    public static function readConstantDocumentationHeader() : string
+    {
+        return self::readArrayFileHeader(ORIGINAL_CONSTANT_DOCUMENTATION_PATH);
+    }
+
+    /**
+     * @throws RuntimeException if the file could not be read
+     */
+    private static function readArrayFileHeader(string $path) : string
+    {
+        $fin = fopen($path, 'r');
         if (!$fin) {
             throw new RuntimeException("Failed to start reading header\n");
         }
@@ -279,6 +308,24 @@ EOT;
             fclose($fin);
         }
         return '';
+    }
+
+    /**
+     * @suppress PhanUnreferencedPublicMethod
+     * @return array<string,string>
+     */
+    public static function readFunctionDocumentationMap() : array
+    {
+        return require(ORIGINAL_FUNCTION_DOCUMENTATION_PATH);
+    }
+
+    /**
+     * @suppress PhanUnreferencedPublicMethod
+     * @return array<string,string>
+     */
+    public static function readConstantDocumentationMap() : array
+    {
+        return require(ORIGINAL_CONSTANT_DOCUMENTATION_PATH);
     }
 
     /**
@@ -308,8 +355,48 @@ EOT;
         return $parts;
     }
 
+    /**
+     * @param array<string,string> $phan_documentation
+     * @return void
+     */
+    public static function saveFunctionDocumentationMap(string $new_documentation_path, array $phan_documentation, bool $include_header = true)
+    {
+        $contents = static::serializeDocumentation($phan_documentation);
+        if ($include_header) {
+            $contents = static::readFunctionDocumentationHeader() . $contents;
+        }
+        file_put_contents($new_documentation_path, $contents);
+    }
+
+    /**
+     * @param array<string,string> $phan_documentation
+     * @return void
+     */
+    public static function saveConstantDocumentationMap(string $new_documentation_path, array $phan_documentation, bool $include_header = true)
+    {
+        $contents = static::serializeDocumentation($phan_documentation);
+        if ($include_header) {
+            $contents = static::readConstantDocumentationHeader() . $contents;
+        }
+        file_put_contents($new_documentation_path, $contents);
+    }
+
+    /**
+     * @param array<string,string> $signatures
+     * @return string
+     */
+    public static function serializeDocumentation(array $signatures) : string
+    {
+        $parts = "return [\n";
+        foreach ($signatures as $function_like_name => $arguments) {
+            $parts .= static::encodeSingleDocumentation($function_like_name, $arguments);
+        }
+        $parts .= "];\n";
+        return $parts;
+    }
+
     /** @param int|string|float $scalar */
-    private static function encodeScalar($scalar) : string
+    protected static function encodeScalar($scalar) : string
     {
         if (is_string($scalar)) {
             return "'" . addcslashes($scalar, "'") . "'";
@@ -325,6 +412,18 @@ EOT;
     {
         $result = static::encodeScalar($function_like_name) . ' => ';
         $result .= static::encodeSignatureArguments($arguments);
+        $result .= ",\n";
+        return $result;
+    }
+
+    /**
+     * Encodes a single line with documentation of internal functions/methods
+
+     */
+    public static function encodeSingleDocumentation(string $function_like_name, string $description) : string
+    {
+        $result = static::encodeScalar($function_like_name) . ' => ';
+        $result .= static::encodeScalar($description);
         $result .= ",\n";
         return $result;
     }

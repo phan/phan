@@ -887,6 +887,7 @@ function example2($strVal, array $arrVal) {
 }
 function test(ExampleClass $c) {  // line 25
     var_export($c->propWithDefault);
+    echo JSON_PRETTY_PRINT;
 }
 EOT;
         return [
@@ -1055,6 +1056,8 @@ EOT
 ```php
 function strlen(string $string) : int
 ```
+
+Get string length
 EOT
                 ,
                 null,
@@ -1069,6 +1072,8 @@ EOT
 namespace ast;
 function parse_code(string $code, int $version, string $filename = default) : \ast\Node
 ```
+
+Parses code string and returns AST root node.
 EOT
                 ,
                 null,
@@ -1083,6 +1088,20 @@ public $propWithDefault
 ```
 
 `@var array{0:2,1:3}` This has a default
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(27, 12),  // JSON_PRETTY_PRINT
+                <<<'EOT'
+```php
+const JSON_PRETTY_PRINT = 128
+```
+
+Use whitespace in returned data to format it. Available since PHP 5.4.0.
 EOT
                 ,
                 null,
