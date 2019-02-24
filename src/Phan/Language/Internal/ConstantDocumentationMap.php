@@ -19,8 +19,10 @@ namespace Phan\Language\Internal;
  *    The PHP manual text and comments are covered by the [Creative Commons Attribution 3.0 License](http://creativecommons.org/licenses/by/3.0/legalcode),
  *    copyright (c) the PHP Documentation Group
  * 2. Various websites documenting individual extensions (e.g. php-ast)
- * 3. PHPStorm stubs (Planned, for anything missing from the above sources)
+ * 3. PHPStorm stubs (for anything missing from the above sources)
  *    See internal/internalsignatures.php
+ *
+ *    Available from https://github.com/JetBrains/phpstorm-stubs under the [Apache 2 license](https://www.apache.org/licenses/LICENSE-2.0)
  *
  *
  * CONTRIBUTING:
@@ -139,6 +141,29 @@ return [
 'CLD_KILLED' => 'Available since PHP 5.3.0.',
 'CLD_STOPPED' => 'Available since PHP 5.3.0.',
 'CLD_TRAPPED' => 'Available since PHP 5.3.0.',
+'Couchbase\Bucket::PINGSVC_FTS' => 'Ping full text search (FTS) service.',
+'Couchbase\Bucket::PINGSVC_KV' => 'Ping data (Key/Value) service.',
+'Couchbase\Bucket::PINGSVC_N1QL' => 'Ping query (N1QL) service.',
+'Couchbase\Bucket::PINGSVC_VIEWS' => 'Ping views (Map/Reduce) service.',
+'Couchbase\ClusterManager::RBAC_DOMAIN_EXTERNAL' => 'The user account managed by external system (e.g. LDAP).',
+'Couchbase\ClusterManager::RBAC_DOMAIN_LOCAL' => 'The user account managed by Couchbase Cluster.',
+'Couchbase\N1qlQuery::NOT_BOUNDED' => 'This is the default (for single-statement requests).
+No timestamp vector is used in the index scan.
+This is also the fastest mode, because we avoid the cost of obtaining the vector,
+and we also avoid any wait for the index to catch up to the vector.',
+'Couchbase\N1qlQuery::PROFILE_NONE' => 'Disables profiling. This is the default',
+'Couchbase\N1qlQuery::PROFILE_PHASES' => 'Enables phase profiling.',
+'Couchbase\N1qlQuery::PROFILE_TIMINGS' => 'Enables general timing profiling.',
+'Couchbase\N1qlQuery::REQUEST_PLUS' => 'This implements strong consistency per request.
+Before processing the request, a current vector is obtained.
+The vector is used as a lower bound for the statements in the request.
+If there are DML statements in the request, RYOW is also applied within the request.',
+'Couchbase\N1qlQuery::STATEMENT_PLUS' => 'This implements strong consistency per statement.
+Before processing each statement, a current vector is obtained
+and used as a lower bound for that statement.',
+'Couchbase\ViewQuery::UPDATE_AFTER' => 'Allow stale view, update view after it has been accessed.',
+'Couchbase\ViewQuery::UPDATE_BEFORE' => 'Force a view update before returning data',
+'Couchbase\ViewQuery::UPDATE_NONE' => 'Allow stale views',
 'CP_MOVE' => 'Delete the messages from the current mailbox after copying with `imap_mail_copy`',
 'CP_UID' => 'the sequence numbers contain UIDS',
 'CURL_HTTP_VERSION_2' => 'Available since PHP 7.0.7 and cURL 7.43.0',
@@ -370,6 +395,69 @@ return [
 'ENCHANT_MYSPELL' => 'Dictionary type for MySpell. Used with `enchant_broker_get_dict_path` and `enchant_broker_set_dict_path`.',
 'ENCOTHER' => 'Body encoding: unknown',
 'ENCQUOTEDPRINTABLE' => 'Body encoding: human-readable 8-as-7 bit data',
+'Ev::BACKEND_ALL' => 'Try all backends(even currupted ones). It\'s not recommended to use it explicitly. Bitwise operators should be
+applied here(e.g. Ev::BACKEND_ALL & ~ Ev::BACKEND_KQUEUE ) Use Ev::recommendedBackends() , or don\'t specify any
+backends at all.',
+'Ev::BACKEND_DEVPOLL' => 'Solaris 8 backend. This is not implemented yet.',
+'Ev::BACKEND_EPOLL' => 'Linux-specific epoll(7) backend for both pre- and post-2.6.9 kernels',
+'Ev::BACKEND_KQUEUE' => 'kqueue backend used on most BSD systems. EvEmbed watcher could be used to embed one loop(with kqueue backend)
+into another. For instance, one can try to create an event loop with kqueue backend and use it for sockets only.',
+'Ev::BACKEND_MASK' => 'Not a backend, but a mask to select all backend bits from flags value to mask out any backends(e.g. when
+modifying the LIBEV_FLAGS environment variable).',
+'Ev::BACKEND_POLL' => 'poll(2) backend',
+'Ev::BACKEND_PORT' => 'Solaris 10 event port mechanism with a good scaling.',
+'Ev::BACKEND_SELECT' => 'select(2) backend',
+'Ev::BREAK_ALL' => 'Flag passed to Ev::stop() or EvLoop::stop(): Makes all nested Ev::run() or EvLoop::run() calls return.',
+'Ev::BREAK_CANCEL' => 'Flag passed to Ev::stop() or EvLoop::stop(): Cancel the break operation.',
+'Ev::BREAK_ONE' => 'Flag passed to Ev::stop() or EvLoop::stop(): Makes the innermost Ev::run() or EvLoop::run() call return.',
+'Ev::CHECK' => 'Event bitmask: All EvCheck watchers are queued just after Ev::run() has gathered the new events, but before it
+queues any callbacks for any received events. Thus, EvCheck watchers will be invoked before any other watchers
+of the same or lower priority within an event loop iteration.',
+'Ev::CHILD' => 'Event bitmask: The pid specified in EvChild::__construct() has received a status change.',
+'Ev::CUSTOM' => 'Event bitmask: Not ever sent(or otherwise used) by libev itself, but can be freely used by libev users to signal
+watchers (e.g. via EvWatcher::feed() ).',
+'Ev::EMBED' => 'Event bitmask: The embedded event loop specified in the EvEmbed watcher needs attention.',
+'Ev::ERROR' => 'Event bitmask: An unspecified error has occurred, the watcher has been stopped. This might happen because the
+watcher could not be properly started because libev ran out of memory, a file descriptor was found to be closed
+or any other problem. Libev considers these application bugs.',
+'Ev::FLAG_AUTO' => 'Flag passed to create a loop: The default flags value',
+'Ev::FLAG_FORKCHECK' => 'Flag passed to create a loop: Makes libev check for a fork in each iteration, instead of calling EvLoop::fork()
+manually. This works by calling getpid() on every iteration of the loop, and thus this might slow down the event
+loop with lots of loop iterations, but usually is not noticeable. This flag setting cannot be overridden or
+specified in the LIBEV_FLAGS environment variable.',
+'Ev::FLAG_NOENV' => 'Flag passed to create a loop: If this flag used(or the program runs setuid or setgid), libev won\'t look at the
+environment variable LIBEV_FLAGS. Otherwise(by default), LIBEV_FLAGS will override the flags completely if it is
+found. Useful for performance tests and searching for bugs.',
+'Ev::FLAG_NOINOTIFY' => 'Flag passed to create a loop: When this flag is specified, libev won\'t attempt to use the inotify API for its
+ev_stat watchers. The flag can be useful to conserve inotify file descriptors, as otherwise each loop using
+ev_stat watchers consumes one inotify handle.',
+'Ev::FLAG_NOSIGMASK' => 'Flag passed to create a loop: When this flag is specified, libev will avoid to modify the signal mask.
+Specifically, this means having to make sure signals are unblocked before receiving them.
+
+This behaviour is useful for custom signal handling, or handling signals only in specific threads.',
+'Ev::FLAG_SIGNALFD' => 'Flag passed to create a loop: When this flag is specified, libev will attempt to use the signalfd API for its
+ev_signal (and ev_child ) watchers. This API delivers signals synchronously, which makes it both faster and might
+make it possible to get the queued signal data. It can also simplify signal handling with threads, as long as
+signals are properly blocked in threads. Signalfd will not be used by default.',
+'Ev::IDLE' => 'Event bitmask: EvIdle watcher works when there is nothing to do with other watchers.',
+'Ev::MAXPRI' => 'Highest allowed watcher priority.',
+'Ev::MINPRI' => 'Lowest allowed watcher priority.',
+'Ev::PERIODIC' => 'Event bitmask: EvPeriodic watcher has been timed out.',
+'Ev::PREPARE' => 'Event bitmask: All EvPrepare watchers are invoked just before Ev::run() starts. Thus, EvPrepare watchers are the
+last watchers invoked before the event loop sleeps or polls for new events.',
+'Ev::READ' => 'Event bitmask: The file descriptor in the EvIo watcher has become readable.',
+'Ev::RUN_NOWAIT' => 'Flag passed to Ev::run() or EvLoop::run(): Means that event loop will look for new events, will handle those
+events and any already outstanding ones, but will not wait and block the process in case there are no events and
+will return after one iteration of the loop. This is sometimes useful to poll and handle new events while doing
+lengthy calculations, to keep the program responsive.',
+'Ev::RUN_ONCE' => 'Flag passed to Ev::run() or EvLoop::run(): Means that event loop will look for new events (waiting if necessary)
+and will handle those and any already outstanding ones. It will block the process until at least one new event
+arrives (which could be an event internal to libev itself, so there is no guarantee that a user-registered
+callback will be called), and will return after one iteration of the loop.',
+'Ev::SIGNAL' => 'Event bitmask: A signal specified in EvSignal::__construct() has been received.',
+'Ev::STAT' => 'Event bitmask: The path specified in EvStat watcher changed its attributes.',
+'Ev::TIMER' => 'Event bitmask: EvTimer watcher has been timed out.',
+'Ev::WRITE' => 'Event bitmask: The file descriptor in the EvIo watcher has become writable.',
 'EXIF_USE_MBSTRING' => 'This constant have a value of `1` if the mbstring is enabled, otherwise the value is `0`.',
 'EXP_EOF' => 'Value, returned by `expect_expectl`, when EOF is reached.',
 'EXP_EXACT' => 'Indicates that the pattern is an exact string.',
@@ -624,6 +712,144 @@ Available since PHP 5.3.0.',
 'Gmagick::COMPOSITE_UNDEFINED' => 'Undefined composite operator',
 'Gmagick::COMPOSITE_XOR' => 'The part of the source that lies outside of the destination is combined with the part of the destination that lies outside of the source',
 'GMP_VERSION' => 'The GMP library version',
+'Grpc\CALL_ERROR' => 'something failed, we don\'t know what',
+'Grpc\CALL_ERROR_ALREADY_ACCEPTED' => 'this method must be called before server_accept',
+'Grpc\CALL_ERROR_ALREADY_FINISHED' => 'this call is already finished
+(writes_done or write_status has already been called)',
+'Grpc\CALL_ERROR_ALREADY_INVOKED' => 'this method must be called before invoke',
+'Grpc\CALL_ERROR_BATCH_TOO_BIG' => 'this batch of operations leads to more operations than allowed',
+'Grpc\CALL_ERROR_INVALID_FLAGS' => 'the flags value was illegal for this call',
+'Grpc\CALL_ERROR_INVALID_MESSAGE' => 'invalid message was passed to this call',
+'Grpc\CALL_ERROR_INVALID_METADATA' => 'invalid metadata was passed to this call',
+'Grpc\CALL_ERROR_NOT_INVOKED' => 'this method must be called after invoke',
+'Grpc\CALL_ERROR_NOT_ON_CLIENT' => 'this method is not available on the client',
+'Grpc\CALL_ERROR_NOT_ON_SERVER' => 'this method is not available on the server',
+'Grpc\CALL_ERROR_NOT_SERVER_COMPLETION_QUEUE' => 'completion queue for notification has not been registered with the
+server',
+'Grpc\CALL_ERROR_PAYLOAD_TYPE_MISMATCH' => 'payload type requested is not the type registered',
+'Grpc\CALL_ERROR_TOO_MANY_OPERATIONS' => 'there is already an outstanding read/write operation on the call',
+'Grpc\CALL_OK' => 'everything went ok',
+'Grpc\CHANNEL_CONNECTING' => 'channel is connecting',
+'Grpc\CHANNEL_IDLE' => 'channel is idle',
+'Grpc\CHANNEL_READY' => 'channel is ready for work',
+'Grpc\CHANNEL_SHUTDOWN' => 'channel has seen a failure that it cannot recover from',
+'Grpc\CHANNEL_TRANSIENT_FAILURE' => 'channel has seen a failure but expects to recover',
+'Grpc\OP_RECV_CLOSE_ON_SERVER' => 'Receive close on the server: one and only one must be made on the
+server.
+This op completes after the close has been received by the server.
+This operation always succeeds, meaning ops paired with this operation
+will also appear to succeed, even though they may not have.',
+'Grpc\OP_RECV_INITIAL_METADATA' => 'Receive initial metadata: one and only one MUST be made on the client,
+must not be made on the server.
+This op completes after all initial metadata has been read from the
+peer.',
+'Grpc\OP_RECV_MESSAGE' => 'Receive a message: 0 or more of these operations can occur for each call.
+This op completes after all bytes of the received message have been
+read, or after a half-close has been received on this call.',
+'Grpc\OP_RECV_STATUS_ON_CLIENT' => 'Receive status on the client: one and only one must be made on the client.
+This operation always succeeds, meaning ops paired with this operation
+will also appear to succeed, even though they may not have. In that case
+the status will indicate some failure.
+This op completes after all activity on the call has completed.',
+'Grpc\OP_SEND_CLOSE_FROM_CLIENT' => 'Send a close from the client: one and only one instance MUST be sent from
+the client, unless the call was cancelled - in which case this can be
+skipped.
+This op completes after all bytes for the call (including the close)
+have passed outgoing flow control.',
+'Grpc\OP_SEND_INITIAL_METADATA' => 'Send initial metadata: one and only one instance MUST be sent for each
+call, unless the call was cancelled - in which case this can be skipped.
+This op completes after all bytes of metadata have been accepted by
+outgoing flow control.',
+'Grpc\OP_SEND_MESSAGE' => 'Send a message: 0 or more of these operations can occur for each call.
+This op completes after all bytes for the message have been accepted by
+outgoing flow control.',
+'Grpc\OP_SEND_STATUS_FROM_SERVER' => 'Send status from the server: one and only one instance MUST be sent from
+the server unless the call was cancelled - in which case this can be
+skipped.
+This op completes after all bytes for the call (including the status)
+have passed outgoing flow control.',
+'Grpc\STATUS_ABORTED' => 'The operation was aborted, typically due to a concurrency issue
+like sequencer check failures, transaction aborts, etc.
+
+See litmus test above for deciding between FAILED_PRECONDITION,
+ABORTED, and UNAVAILABLE.',
+'Grpc\STATUS_CANCELLED' => 'The operation was cancelled (typically by the caller).',
+'Grpc\STATUS_DATA_LOSS' => 'Unrecoverable data loss or corruption.',
+'Grpc\STATUS_DEADLINE_EXCEEDED' => 'Deadline expired before operation could complete.  For operations
+that change the state of the system, this error may be returned
+even if the operation has completed successfully.  For example, a
+successful response from a server could have been delayed long
+enough for the deadline to expire.',
+'Grpc\STATUS_FAILED_PRECONDITION' => 'Operation was rejected because the system is not in a state
+required for the operation\'s execution.  For example, directory
+to be deleted may be non-empty, an rmdir operation is applied to
+a non-directory, etc.
+
+A litmus test that may help a service implementor in deciding
+between FAILED_PRECONDITION, ABORTED, and UNAVAILABLE:
+ (a) Use UNAVAILABLE if the client can retry just the failing call.
+ (b) Use ABORTED if the client should retry at a higher-level
+     (e.g., restarting a read-modify-write sequence).
+ (c) Use FAILED_PRECONDITION if the client should not retry until
+     the system state has been explicitly fixed.  E.g., if an "rmdir"
+     fails because the directory is non-empty, FAILED_PRECONDITION
+     should be returned since the client should not retry unless
+     they have first fixed up the directory by deleting files from it.
+ (d) Use FAILED_PRECONDITION if the client performs conditional
+     REST Get/Update/Delete on a resource and the resource on the
+     server does not match the condition. E.g., conflicting
+     read-modify-write on the same resource.',
+'Grpc\STATUS_INTERNAL' => 'Internal errors.  Means some invariants expected by underlying
+ system has been broken.  If you see one of these errors,
+ something is very broken.',
+'Grpc\STATUS_INVALID_ARGUMENT' => 'Client specified an invalid argument.  Note that this differs
+from FAILED_PRECONDITION.  INVALID_ARGUMENT indicates arguments
+that are problematic regardless of the state of the system
+(e.g., a malformed file name).',
+'Grpc\STATUS_NOT_FOUND' => 'Some requested entity (e.g., file or directory) was not found.',
+'Grpc\STATUS_OK' => 'Not an error; returned on success',
+'Grpc\STATUS_OUT_OF_RANGE' => 'Operation was attempted past the valid range.  E.g., seeking or
+reading past end of file.
+
+Unlike INVALID_ARGUMENT, this error indicates a problem that may
+be fixed if the system state changes. For example, a 32-bit file
+system will generate INVALID_ARGUMENT if asked to read at an
+offset that is not in the range [0,2^32-1], but it will generate
+OUT_OF_RANGE if asked to read from an offset past the current
+file size.
+
+There is a fair bit of overlap between FAILED_PRECONDITION and
+OUT_OF_RANGE.  We recommend using OUT_OF_RANGE (the more specific
+error) when it applies so that callers who are iterating through
+a space can easily look for an OUT_OF_RANGE error to detect when
+they are done.',
+'Grpc\STATUS_PERMISSION_DENIED' => 'The caller does not have permission to execute the specified
+operation.  PERMISSION_DENIED must not be used for rejections
+caused by exhausting some resource (use RESOURCE_EXHAUSTED
+instead for those errors).  PERMISSION_DENIED must not be
+used if the caller can not be identified (use UNAUTHENTICATED
+instead for those errors).',
+'Grpc\STATUS_RESOURCE_EXHAUSTED' => 'Some resource has been exhausted, perhaps a per-user quota, or
+perhaps the entire file system is out of space.',
+'Grpc\STATUS_UNAUTHENTICATED' => 'The request does not have valid authentication credentials for the
+operation.',
+'Grpc\STATUS_UNAVAILABLE' => 'The service is currently unavailable.  This is a most likely a
+transient condition and may be corrected by retrying with
+a backoff.
+
+See litmus test above for deciding between FAILED_PRECONDITION,
+ABORTED, and UNAVAILABLE.',
+'Grpc\STATUS_UNIMPLEMENTED' => 'Operation is not implemented or not supported/enabled in this service.',
+'Grpc\STATUS_UNKNOWN' => 'Unknown error.  An example of where this error may be returned is
+if a Status value received from another address space belongs to
+an error-space that is not known in this address space.  Also
+errors raised by APIs that do not return enough error information
+may be converted to this error.',
+'Grpc\WRITE_BUFFER_HINT' => 'Hint that the write may be buffered and need not go out on the wire
+immediately. GRPC is free to buffer the message until the next non-buffered
+write, or until writes_done, but it need not buffer completely or at all.',
+'Grpc\WRITE_NO_COMPRESS' => 'Force compression to be disabled for a particular write
+(start_write/add_metadata). Illegal on invoke/accept.',
 'GSLC_SSL_NO_AUTH' => 'SSL Authentication Mode - No authentication required. (Only for Oracle LDAP)',
 'GSLC_SSL_ONEWAY_AUTH' => 'SSL Authentication Mode - Only server authentication required. (Only for Oracle LDAP)',
 'GSLC_SSL_TWOWAY_AUTH' => 'SSL Authentication Mode - Both server and client authentication required. (Only for Oracle LDAP)',
@@ -924,6 +1150,11 @@ Available since PHP 5.3.0.',
 'JSON_UNESCAPED_LINE_TERMINATORS' => 'The line terminators are kept unescaped when `JSON_UNESCAPED_UNICODE` is supplied. It uses the same behaviour as it was before PHP 7.1 without this constant. Available since PHP 7.1.0.',
 'JSON_UNESCAPED_SLASHES' => 'Don\'t escape `/`. Available since PHP 5.4.0.',
 'JSON_UNESCAPED_UNICODE' => 'Encode multibyte Unicode characters literally (default is to escape as \uXXXX). Available since PHP 5.4.0.',
+'Judy::BITSET' => 'Define the Judy Array as a Bitset with keys as Integer and Values as a Boolean.',
+'Judy::INT_TO_INT' => 'Define the Judy Array with key/values as Integer, and Integer only.',
+'Judy::INT_TO_MIXED' => 'Define the Judy Array with keys as Integer and Values of any type.',
+'Judy::STRING_TO_INT' => 'Define the Judy Array with keys as a String and Values as Integer, and Integer only.',
+'Judy::STRING_TO_MIXED' => 'Define the Judy Array with keys as a String and Values of any type.',
 'KTaglib_ID3v2_AttachedPictureFrame::Artist' => 'Picture type Artist',
 'KTaglib_ID3v2_AttachedPictureFrame::BackCover' => 'Picture type BackCover',
 'KTaglib_ID3v2_AttachedPictureFrame::Band' => 'Picture type Band',
@@ -1051,6 +1282,140 @@ Available since PHP 5.3.0.',
 'MB_CASE_FOLD_SIMPLE' => 'Used by case-insensitive operations. Available since PHP 7.3.',
 'MB_CASE_LOWER_SIMPLE' => 'Available since PHP 7.3.',
 'MB_CASE_TITLE_SIMPLE' => 'Available since PHP 7.3.',
+'Memcached::DISTRIBUTION_CONSISTENT' => '<p>Consistent hashing key distribution algorithm (based on libketama).</p>',
+'Memcached::DISTRIBUTION_MODULA' => '<p>Modulo-based key distribution algorithm.</p>',
+'Memcached::GET_PRESERVE_ORDER' => '<p>A flag for <b>Memcached::getMulti</b> and
+<b>Memcached::getMultiByKey</b> to ensure that the keys are
+returned in the same order as they were requested in. Non-existing keys
+get a default value of NULL.</p>',
+'Memcached::HASH_CRC' => '<p>CRC item key hashing algorithm.</p>',
+'Memcached::HASH_DEFAULT' => '<p>The default (Jenkins one-at-a-time) item key hashing algorithm.</p>',
+'Memcached::HASH_FNV1_32' => '<p>FNV1_32 item key hashing algorithm.</p>',
+'Memcached::HASH_FNV1_64' => '<p>FNV1_64 item key hashing algorithm.</p>',
+'Memcached::HASH_FNV1A_32' => '<p>FNV1_32A item key hashing algorithm.</p>',
+'Memcached::HASH_FNV1A_64' => '<p>FNV1_64A item key hashing algorithm.</p>',
+'Memcached::HASH_HSIEH' => '<p>Hsieh item key hashing algorithm.</p>',
+'Memcached::HASH_MD5' => '<p>MD5 item key hashing algorithm.</p>',
+'Memcached::HASH_MURMUR' => '<p>Murmur item key hashing algorithm.</p>',
+'Memcached::HAVE_IGBINARY' => '<p>Indicates whether igbinary serializer support is available.</p>
+<p>Type: boolean.</p>',
+'Memcached::HAVE_JSON' => '<p>Indicates whether JSON serializer support is available.</p>
+<p>Type: boolean.</p>',
+'Memcached::OPT_BINARY_PROTOCOL' => '<p>Enable the use of the binary protocol. Please note that you cannot
+toggle this option on an open connection.</p>
+<p>Type: boolean, default: <b>FALSE</b>.</p>',
+'Memcached::OPT_BUFFER_WRITES' => '<p>Enables or disables buffered I/O. Enabling buffered I/O causes
+storage commands to "buffer" instead of being sent. Any action that
+retrieves data causes this buffer to be sent to the remote connection.
+Quitting the connection or closing down the connection will also cause
+the buffered data to be pushed to the remote connection.</p>
+<p>Type: boolean, default: <b>FALSE</b>.</p>',
+'Memcached::OPT_CACHE_LOOKUPS' => '<p>Enables or disables caching of DNS lookups.</p>
+<p>Type: boolean, default: <b>FALSE</b>.</p>',
+'Memcached::OPT_COMPRESSION' => '<p>Enables or disables payload compression. When enabled,
+item values longer than a certain threshold (currently 100 bytes) will be
+compressed during storage and decompressed during retrieval
+transparently.</p>
+<p>Type: boolean, default: <b>TRUE</b>.</p>',
+'Memcached::OPT_CONNECT_TIMEOUT' => '<p>In non-blocking mode this set the value of the timeout during socket
+connection, in milliseconds.</p>
+<p>Type: integer, default: 1000.</p>',
+'Memcached::OPT_DISTRIBUTION' => '<p>Specifies the method of distributing item keys to the servers.
+Currently supported methods are modulo and consistent hashing. Consistent
+hashing delivers better distribution and allows servers to be added to
+the cluster with minimal cache losses.</p>
+<p>Type: integer, default: <b>Memcached::DISTRIBUTION_MODULA.</b></p>',
+'Memcached::OPT_HASH' => '<p>Specifies the hashing algorithm used for the item keys. The valid
+values are supplied via <b>Memcached::HASH_*</b> constants.
+Each hash algorithm has its advantages and its disadvantages. Go with the
+default if you don\'t know or don\'t care.</p>
+<p>Type: integer, default: <b>Memcached::HASH_DEFAULT</b></p>',
+'Memcached::OPT_LIBKETAMA_COMPATIBLE' => '<p>Enables or disables compatibility with libketama-like behavior. When
+enabled, the item key hashing algorithm is set to MD5 and distribution is
+set to be weighted consistent hashing distribution. This is useful
+because other libketama-based clients (Python, Ruby, etc.) with the same
+server configuration will be able to access the keys transparently.
+</p>
+<p>
+It is highly recommended to enable this option if you want to use
+consistent hashing, and it may be enabled by default in future
+releases.
+</p>
+<p>Type: boolean, default: <b>FALSE</b>.</p>',
+'Memcached::OPT_NO_BLOCK' => '<p>Enables or disables asynchronous I/O. This is the fastest transport
+available for storage functions.</p>
+<p>Type: boolean, default: <b>FALSE</b>.</p>',
+'Memcached::OPT_POLL_TIMEOUT' => '<p>Timeout for connection polling, in milliseconds.</p>
+<p>Type: integer, default: 1000.</p>',
+'Memcached::OPT_PREFIX_KEY' => '<p>This can be used to create a "domain" for your item keys. The value
+specified here will be prefixed to each of the keys. It cannot be
+longer than 128 characters and will reduce the
+maximum available key size. The prefix is applied only to the item keys,
+not to the server keys.</p>
+<p>Type: string, default: "".</p>',
+'Memcached::OPT_RECV_TIMEOUT' => '<p>Socket reading timeout, in microseconds. In cases where you cannot
+use non-blocking I/O this will allow you to still have timeouts on the
+reading of data.</p>
+<p>Type: integer, default: 0.</p>',
+'Memcached::OPT_RETRY_TIMEOUT' => '<p>The amount of time, in seconds, to wait until retrying a failed
+connection attempt.</p>
+<p>Type: integer, default: 0.</p>',
+'Memcached::OPT_SEND_TIMEOUT' => '<p>Socket sending timeout, in microseconds. In cases where you cannot
+use non-blocking I/O this will allow you to still have timeouts on the
+sending of data.</p>
+<p>Type: integer, default: 0.</p>',
+'Memcached::OPT_SERIALIZER' => '<p>
+Specifies the serializer to use for serializing non-scalar values.
+The valid serializers are <b>Memcached::SERIALIZER_PHP</b>
+or <b>Memcached::SERIALIZER_IGBINARY</b>. The latter is
+supported only when memcached is configured with
+--enable-memcached-igbinary option and the
+igbinary extension is loaded.
+</p>
+<p>Type: integer, default: <b>Memcached::SERIALIZER_PHP</b>.</p>',
+'Memcached::OPT_SERVER_FAILURE_LIMIT' => '<p>Specifies the failure limit for server connection attempts. The
+server will be removed after this many continuous connection
+failures.</p>
+<p>Type: integer, default: 0.</p>',
+'Memcached::OPT_SOCKET_RECV_SIZE' => '<p>The maximum socket receive buffer in bytes.</p>
+<p>Type: integer, default: varies by platform/kernel
+configuration.</p>',
+'Memcached::OPT_SOCKET_SEND_SIZE' => '<p>The maximum socket send buffer in bytes.</p>
+<p>Type: integer, default: varies by platform/kernel
+configuration.</p>',
+'Memcached::OPT_TCP_NODELAY' => '<p>Enables or disables the no-delay feature for connecting sockets (may
+be faster in some environments).</p>
+<p>Type: boolean, default: <b>FALSE</b>.</p>',
+'Memcached::RES_BAD_KEY_PROVIDED' => '<p>Bad key.</p>',
+'Memcached::RES_BUFFERED' => '<p>The operation was buffered.</p>',
+'Memcached::RES_CLIENT_ERROR' => '<p>Error on the client side.</p>',
+'Memcached::RES_CONNECTION_SOCKET_CREATE_FAILURE' => '<p>Failed to create network socket.</p>',
+'Memcached::RES_DATA_EXISTS' => '<p>Failed to do compare-and-swap: item you are trying to store has been
+modified since you last fetched it.</p>',
+'Memcached::RES_END' => '<p>End of result set.</p>',
+'Memcached::RES_ERRNO' => '<p>System error.</p>',
+'Memcached::RES_FAILURE' => '<p>The operation failed in some fashion.</p>',
+'Memcached::RES_HOST_LOOKUP_FAILURE' => '<p>DNS lookup failed.</p>',
+'Memcached::RES_NO_SERVERS' => '<p>Server list is empty.</p>',
+'Memcached::RES_NOTFOUND' => '<p>Item with this key was not found (with "get" operation or "cas"
+operations).</p>',
+'Memcached::RES_NOTSTORED' => '<p>Item was not stored: but not because of an error. This normally
+means that either the condition for an "add" or a "replace" command
+wasn\'t met, or that the item is in a delete queue.</p>',
+'Memcached::RES_PARTIAL_READ' => '<p>Partial network data read error.</p>',
+'Memcached::RES_PAYLOAD_FAILURE' => '<p>Payload failure: could not compress/decompress or serialize/unserialize the value.</p>',
+'Memcached::RES_PROTOCOL_ERROR' => '<p>Bad command in memcached protocol.</p>',
+'Memcached::RES_SERVER_ERROR' => '<p>Error on the server side.</p>',
+'Memcached::RES_SOME_ERRORS' => '<p>Some errors occurred during multi-get.</p>',
+'Memcached::RES_SUCCESS' => '<p>The operation was successful.</p>',
+'Memcached::RES_TIMEOUT' => '<p>The operation timed out.</p>',
+'Memcached::RES_UNKNOWN_READ_FAILURE' => '<p>Failed to read network data.</p>',
+'Memcached::RES_WRITE_FAILURE' => '<p>Failed to write network data.</p>',
+'Memcached::SERIALIZER_IGBINARY' => '<p>The igbinary serializer.
+Instead of textual representation it stores PHP data structures in a
+compact binary form, resulting in space and time gains.</p>',
+'Memcached::SERIALIZER_JSON' => '<p>The JSON serializer. Requires PHP 5.2.10+.</p>',
+'Memcached::SERIALIZER_PHP' => '<p>The default PHP serializer.</p>',
 'MONGO_STREAMS' => 'Alias of `MONGO_SUPPORTS_STREAMS`',
 'MONGO_SUPPORTS_AUTH_MECHANISM_GSSAPI' => '1 when GSSAPI authentication is compiled in.',
 'MONGO_SUPPORTS_AUTH_MECHANISM_MONGODB_CR' => '1 when MongoDB-Challenge/Reponse authentication is compiled in.',
@@ -1058,8 +1423,22 @@ Available since PHP 5.3.0.',
 'MONGO_SUPPORTS_AUTH_MECHANISM_PLAIN' => '1 when PLAIN authentication is compiled in.',
 'MONGO_SUPPORTS_SSL' => '1 when the PHP manual\'s section on book.openssl is enabled and available.',
 'MONGO_SUPPORTS_STREAMS' => '1 when compiled against PHP Streams (default since 1.4.0).',
+'MongoBinData::BYTE_ARRAY' => 'Generic binary data (deprecated in favor of MongoBinData::GENERIC)',
+'MongoBinData::CUSTOM' => 'User-defined type',
+'MongoBinData::FUNC' => 'Function',
+'MongoBinData::GENERIC' => 'Generic binary data.',
+'MongoBinData::MD5' => 'MD5',
+'MongoBinData::UUID' => 'Universally unique identifier (deprecated in favor of MongoBinData::UUID_RFC4122)',
+'MongoBinData::UUID_RFC4122' => 'Universally unique identifier (according to » RFC 4122)',
+'MongoDB::PROFILING_OFF' => 'Profiling is off.',
+'MongoDB::PROFILING_ON' => 'Profiling is on for all operations.',
+'MongoDB::PROFILING_SLOW' => 'Profiling is on for slow operations (>100 ms).',
+'MongoDB\Driver\WriteConcern::MAJORITY' => 'Majority of all the members in the set; arbiters, non-voting members, passive members, hidden members and delayed members are all included in the definition of majority write concern.',
 'MONGODB_STABILITY' => 'Current stability (alpha/beta/stable)',
 'MONGODB_VERSION' => 'x.y.z style version number of the extension',
+'MS_TRUE' => 'Mapscript extension (version 7.0.*)
+Parsed from documentation
+Generated at 2017-08-24 16:06:54',
 'MSG_EOF' => 'Not available on Windows platforms.',
 'MSG_EOR' => 'Not available on Windows platforms.',
 'MSSQL_ASSOC' => 'Return an associative array. Used on `mssql_fetch_array`\'s `result_type` parameter.',
@@ -1211,6 +1590,9 @@ Use of this feature outside of PECL/mysqlnd_ms is not recommended.',
 'OPENSSL_KEYTYPE_EC' => 'This constant is only available when PHP is compiled with OpenSSL 0.9.8+.',
 'OPENSSL_TLSEXT_SERVER_NAME' => 'Whether SNI support is available or not.',
 'Parle\INTERNAL_UTF32' => 'Flag whether the internal UTF-32 support is compiled in. Available since parle 0.7.2.',
+'Parle\Token::EOI' => 'End of input token id.',
+'Parle\Token::SKIP' => 'Skip token id.',
+'Parle\Token::UNKNOWN' => 'Unknown token id.',
 'PARSEKIT_EXTENDED_VALUE' => 'Opnode Flag',
 'PARSEKIT_IS_CONST' => 'Node Type',
 'PARSEKIT_IS_TMP_VAR' => 'Node Type',
@@ -1607,6 +1989,104 @@ See also `set_time_limit`.',
 'RAR_HOST_OS2' => 'Use `RarEntry::HOST_OS2` instead.',
 'RAR_HOST_UNIX' => 'Use `RarEntry::HOST_UNIX` instead.',
 'RAR_HOST_WIN32' => 'Use `RarEntry::HOST_WIN32` instead.',
+'RarEntry::ATTRIBUTE_UNIX_BLOCK_DEV' => 'Unix block devices will have attributes whose last four bits have this value. To be used with
+{@see RarEntry::getAttr()} on entries whose host OS is UNIX and with the constant
+{@see RarEntry::ATTRIBUTE_UNIX_FINAL_QUARTET}.',
+'RarEntry::ATTRIBUTE_UNIX_CHAR_DEV' => 'Unix character devices will have attributes whose last four bits have this value. To be used with
+{@see RarEntry::getAttr()} on entries whose host OS is UNIX and with the constant
+{@see RarEntry::ATTRIBUTE_UNIX_FINAL_QUARTET}.',
+'RarEntry::ATTRIBUTE_UNIX_DIRECTORY' => 'Unix directories will have attributes whose last four bits have this value. To be used with
+{@see RarEntry::getAttr()} on entries whose host OS is UNIX and with the constant
+{@see RarEntry::ATTRIBUTE_UNIX_FINAL_QUARTET}.
+
+See also {@see RarEntry::isDirectory()}, which also works with entries that were added in other operating
+systems.',
+'RarEntry::ATTRIBUTE_UNIX_FIFO' => 'Unix FIFOs will have attributes whose last four bits have this value. To be used with {@see RarEntry::getAttr()}
+on entries whose host OS is UNIX and with the constant {@see RarEntry::ATTRIBUTE_UNIX_FINAL_QUARTET}.',
+'RarEntry::ATTRIBUTE_UNIX_FINAL_QUARTET' => 'Mask to isolate the last four bits (nibble) of UNIX attributes (_S_IFMT, the type of file mask). To be used with
+{@see RarEntry::getAttr()} on entries whose host OS is UNIX and with the constants
+{@see RarEntry::ATTRIBUTE_UNIX_FIFO}, {@see RarEntry::ATTRIBUTE_UNIX_CHAR_DEV},
+{@see RarEntry::ATTRIBUTE_UNIX_DIRECTORY}, {@see RarEntry::ATTRIBUTE_UNIX_BLOCK_DEV},
+{@see RarEntry::ATTRIBUTE_UNIX_REGULAR_FILE},
+{@see RarEntry::ATTRIBUTE_UNIX_SYM_LINK} and {@see RarEntry::ATTRIBUTE_UNIX_SOCKET}.',
+'RarEntry::ATTRIBUTE_UNIX_GROUP_EXECUTE' => 'Bit that represents a UNIX entry that is group executable. To be used with {@see RarEntry::getAttr()} on entries
+whose host OS is UNIX.',
+'RarEntry::ATTRIBUTE_UNIX_GROUP_READ' => 'Bit that represents a UNIX entry that is group readable. To be used with {@see RarEntry::getAttr()} on entries
+whose host OS is UNIX.',
+'RarEntry::ATTRIBUTE_UNIX_GROUP_WRITE' => 'Bit that represents a UNIX entry that is group writable. To be used with {@see RarEntry::getAttr()} on entries
+whose host OS is UNIX.',
+'RarEntry::ATTRIBUTE_UNIX_OWNER_EXECUTE' => 'Bit that represents a UNIX entry that is owner executable. To be used with {@see RarEntry::getAttr()} on entries
+whose host OS is UNIX.',
+'RarEntry::ATTRIBUTE_UNIX_OWNER_READ' => 'Bit that represents a UNIX entry that is owner readable. To be used with {@see RarEntry::getAttr()} on entries
+whose host OS is UNIX.',
+'RarEntry::ATTRIBUTE_UNIX_OWNER_WRITE' => 'Bit that represents a UNIX entry that is owner writable. To be used with {@see RarEntry::getAttr()} on entries
+whose host OS is UNIX.',
+'RarEntry::ATTRIBUTE_UNIX_REGULAR_FILE' => 'Unix regular files (not directories) will have attributes whose last four bits have this value. To be used with
+{@see RarEntry::getAttr()} on entries whose host OS is UNIX and with the constant
+{@see RarEntry::ATTRIBUTE_UNIX_FINAL_QUARTET}. See also {@see RarEntry::isDirectory()}, which also works with
+entries that were added in other operating systems.',
+'RarEntry::ATTRIBUTE_UNIX_SETGID' => 'Bit that represents the UNIX setgid attribute. To be used with {@see RarEntry::getAttr()} on entries whose host
+OS is UNIX.',
+'RarEntry::ATTRIBUTE_UNIX_SETUID' => 'Bit that represents the UNIX setuid attribute. To be used with {@see RarEntry::getAttr()} on entries whose host
+OS is UNIX.',
+'RarEntry::ATTRIBUTE_UNIX_SOCKET' => 'Unix sockets will have attributes whose last four bits have this value. To be used with
+{@see RarEntry::getAttr()} on entries whose host OS is UNIX and with the constant
+{@see RarEntry::ATTRIBUTE_UNIX_FINAL_QUARTET}.',
+'RarEntry::ATTRIBUTE_UNIX_STICKY' => 'Bit that represents the UNIX sticky bit. To be used with {@see RarEntry::getAttr()} on entries whose host OS is
+UNIX.',
+'RarEntry::ATTRIBUTE_UNIX_SYM_LINK' => 'Unix symbolic links will have attributes whose last four bits have this value. To be used with
+{@see RarEntry::getAttr()} on entries whose host OS is UNIX and with the constant
+{@see RarEntry::ATTRIBUTE_UNIX_FINAL_QUARTET}.',
+'RarEntry::ATTRIBUTE_UNIX_WORLD_EXECUTE' => 'Bit that represents a UNIX entry that is world executable. To be used with {@see RarEntry::getAttr()} on entries
+whose host OS is UNIX.',
+'RarEntry::ATTRIBUTE_UNIX_WORLD_READ' => 'Bit that represents a UNIX entry that is world readable. To be used with {@see RarEntry::getAttr()} on entries
+whose host OS is UNIX.',
+'RarEntry::ATTRIBUTE_UNIX_WORLD_WRITE' => 'Bit that represents a UNIX entry that is world writable. To be used with {@see RarEntry::getAttr()} on entries
+whose host OS is UNIX.',
+'RarEntry::ATTRIBUTE_WIN_ARCHIVE' => 'Bit that represents a Windows entry with an archive attribute. To be used with {@see RarEntry::getAttr()} on
+entries whose host OS is Microsoft Windows.',
+'RarEntry::ATTRIBUTE_WIN_COMPRESSED' => 'Bit that represents a Windows entry with a compressed attribute (NTFS only). To be used with
+{@see RarEntry::getAttr()} on entries whose host OS is Microsoft Windows.',
+'RarEntry::ATTRIBUTE_WIN_DEVICE' => 'Bit that represents a Windows entry with a device attribute. To be used with {@see RarEntry::getAttr()} on
+entries whose host OS is Microsoft Windows.',
+'RarEntry::ATTRIBUTE_WIN_DIRECTORY' => 'Bit that represents a Windows entry with a directory attribute (entry is a directory). To be used with
+{@see RarEntry::getAttr()} on entries whose host OS is Microsoft Windows. See also
+{@see RarEntry::isDirectory()}, which also works with entries that were not added in WinRAR.',
+'RarEntry::ATTRIBUTE_WIN_ENCRYPTED' => 'Bit that represents a Windows entry with an encrypted attribute (NTFS only). To be used with
+{@see RarEntry::getAttr()} on entries whose host OS is Microsoft Windows.',
+'RarEntry::ATTRIBUTE_WIN_HIDDEN' => 'Bit that represents a Windows entry with a hidden attribute. To be used with {@see RarEntry::getAttr()} on
+entries whose host OS is Microsoft Windows.',
+'RarEntry::ATTRIBUTE_WIN_NORMAL' => 'Bit that represents a Windows entry with a normal file attribute (entry is NOT a directory). To be used with
+{@see RarEntry::getAttr()} on entries whose host OS is Microsoft Windows. See also
+{@see RarEntry::isDirectory()}, which also works with entries that were not added in WinRAR.',
+'RarEntry::ATTRIBUTE_WIN_NOT_CONTENT_INDEXED' => 'Bit that represents a Windows entry with a not content indexed attribute (entry is to be indexed). To be used
+with {@see RarEntry::getAttr()} on entries whose host OS is Microsoft Windows.',
+'RarEntry::ATTRIBUTE_WIN_OFFLINE' => 'Bit that represents a Windows entry with an offline attribute (entry is offline and not accessible). To be used
+with {@see RarEntry::getAttr()} on entries whose host OS is Microsoft Windows.',
+'RarEntry::ATTRIBUTE_WIN_READONLY' => 'Bit that represents a Windows entry with a read-only attribute. To be used with {@see RarEntry::getAttr()} on
+entries whose host OS is Microsoft Windows.',
+'RarEntry::ATTRIBUTE_WIN_REPARSE_POINT' => 'Bit that represents a Windows entry with a reparse point attribute (entry is an NTFS reparse point, e.g. a
+directory junction or a mount file system). To be used with {@see RarEntry::getAttr()} on entries whose host OS
+is Microsoft Windows.',
+'RarEntry::ATTRIBUTE_WIN_SPARSE_FILE' => 'Bit that represents a Windows entry with a sparse file attribute (file is an NTFS sparse file). To be used with
+{@see RarEntry::getAttr()} on entries whose host OS is Microsoft Windows.',
+'RarEntry::ATTRIBUTE_WIN_SYSTEM' => 'Bit that represents a Windows entry with a system attribute. To be used with {@see RarEntry::getAttr()} on
+entries whose host OS is Microsoft Windows.',
+'RarEntry::ATTRIBUTE_WIN_TEMPORARY' => 'Bit that represents a Windows entry with a temporary attribute. To be used with {@see RarEntry::getAttr()} on
+entries whose host OS is Microsoft Windows.',
+'RarEntry::ATTRIBUTE_WIN_VIRTUAL' => 'Bit that represents a Windows entry with a virtual attribute. To be used with {@see RarEntry::getAttr()}
+on entries whose host OS is Microsoft Windows.',
+'RarEntry::HOST_BEOS' => 'If the return value of {@see RarEntry::getHostOs()} equals this constant, BeOS was used to add this entry.
+Intended to replace {@see RAR_HOST_BEOS}.',
+'RarEntry::HOST_MACOS' => 'If the return value of {@see RarEntry::getHostOs()} equals this constant, Mac OS was used to add this entry.',
+'RarEntry::HOST_MSDOS' => 'If the return value of {@see RarEntry::getHostOs()} equals this constant, MS-DOS was used to add this entry.
+Use instead of {@see RAR_HOST_MSDOS}.',
+'RarEntry::HOST_OS2' => 'If the return value of {@see RarEntry::getHostOs()} equals this constant, OS/2 was used to add this entry.
+Intended to replace {@see RAR_HOST_OS2}.',
+'RarEntry::HOST_UNIX' => 'If the return value of {@see RarEntry::getHostOs()} equals this constant, an unspecified UNIX OS was used to add
+this entry. Intended to replace {@see RAR_HOST_UNIX}.',
+'RarEntry::HOST_WIN32' => 'If the return value of {@see RarEntry::getHostOs()} equals this constant, Microsoft Windows was used to add this entry.
+Intended to replace {@see RAR_HOST_WIN32}',
 'RPMREADER_BASENAMES' => 'The list of the names of files in the RPM package without path information. This tag is used in conjunction with RPMREADER_DIRINDEXES and RPMREADER_DIRNAMES to reconstruct filenames in the RPM package stored with the new "CompressedFileNames" method in RPM.',
 'RPMREADER_BUILDHOST' => 'The name of the host on which the RPM package was built.',
 'RPMREADER_BUILDTIME' => 'The date and time when the RPM package was built.',
@@ -1824,6 +2304,53 @@ See also `set_time_limit`.',
 'SOCKET_EWOULDBLOCK' => 'Operation would block.',
 'SOCKET_EXDEV' => 'Cross-device link.',
 'SOCKET_EXFULL' => 'Exchange full.',
+'Sodium\CRYPTO_AEAD_AES256GCM_KEYBYTES' => 'To silence the phpstorm "unknown namespace" errors.',
+'SolrClient::DEFAULT_PING_SERVLET' => 'This is the intial value for the ping servlet.',
+'SolrClient::DEFAULT_SEARCH_SERVLET' => 'This is the intial value for the search servlet.',
+'SolrClient::DEFAULT_SYSTEM_SERVLET' => 'This is the intial value for the system servlet used to obtain Solr Server information.',
+'SolrClient::DEFAULT_TERMS_SERVLET' => 'This is the intial value for the terms servlet used for the TermsComponent.',
+'SolrClient::DEFAULT_THREADS_SERVLET' => 'This is the intial value for the threads servlet.',
+'SolrClient::DEFAULT_UPDATE_SERVLET' => 'This is the intial value for the update servlet.',
+'SolrClient::PING_SERVLET_TYPE' => 'Used when updating the ping servlet.',
+'SolrClient::SEARCH_SERVLET_TYPE' => 'Used when updating the search servlet.',
+'SolrClient::SYSTEM_SERVLET_TYPE' => 'Used when retrieving system information from the system servlet.',
+'SolrClient::TERMS_SERVLET_TYPE' => 'Used when updating the terms servlet.',
+'SolrClient::THREADS_SERVLET_TYPE' => 'Used when updating the threads servlet.',
+'SolrClient::UPDATE_SERVLET_TYPE' => 'Used when updating the update servlet.',
+'SolrDisMaxQuery::FACET_SORT_COUNT' => 'Used to specify that the facet should sort by count',
+'SolrDisMaxQuery::FACET_SORT_INDEX' => 'Used to specify that the facet should sort by index',
+'SolrDisMaxQuery::ORDER_ASC' => 'Used to specify that the sorting should be in acending order',
+'SolrDisMaxQuery::ORDER_DESC' => 'Used to specify that the sorting should be in descending order',
+'SolrDisMaxQuery::TERMS_SORT_COUNT' => 'Used in the TermsComponent',
+'SolrDisMaxQuery::TERMS_SORT_INDEX' => 'Used in the TermsComponent',
+'SolrDocument::SORT_ASC' => 'Sorts the fields in ascending order.',
+'SolrDocument::SORT_DEFAULT' => 'Sorts the fields in ascending order.',
+'SolrDocument::SORT_DESC' => 'Sorts the fields in descending order.',
+'SolrDocument::SORT_FIELD_BOOST_VALUE' => 'Sorts the fields by boost value.',
+'SolrDocument::SORT_FIELD_NAME' => 'Sorts the fields by name',
+'SolrDocument::SORT_FIELD_VALUE_COUNT' => 'Sorts the fields by number of values.',
+'SolrGenericResponse::PARSE_SOLR_DOC' => 'Documents should be parsed as SolrDocument instances.',
+'SolrGenericResponse::PARSE_SOLR_OBJ' => 'Documents should be parsed as SolrObject instances',
+'SolrInputDocument::SORT_ASC' => 'Sorts the fields in ascending order.',
+'SolrInputDocument::SORT_DEFAULT' => 'Sorts the fields in ascending order.',
+'SolrInputDocument::SORT_DESC' => 'Sorts the fields in descending order.',
+'SolrInputDocument::SORT_FIELD_BOOST_VALUE' => 'Sorts the fields by boost value.',
+'SolrInputDocument::SORT_FIELD_NAME' => 'Sorts the fields by name',
+'SolrInputDocument::SORT_FIELD_VALUE_COUNT' => 'Sorts the fields by number of values.',
+'SolrPingResponse::PARSE_SOLR_DOC' => 'Documents should be parsed as SolrDocument instances.',
+'SolrPingResponse::PARSE_SOLR_OBJ' => 'Documents should be parsed as SolrObject instances',
+'SolrQuery::FACET_SORT_COUNT' => 'Used to specify that the facet should sort by count',
+'SolrQuery::FACET_SORT_INDEX' => 'Used to specify that the facet should sort by index',
+'SolrQuery::ORDER_ASC' => 'Used to specify that the sorting should be in acending order',
+'SolrQuery::ORDER_DESC' => 'Used to specify that the sorting should be in descending order',
+'SolrQuery::TERMS_SORT_COUNT' => 'Used in the TermsComponent',
+'SolrQuery::TERMS_SORT_INDEX' => 'Used in the TermsComponent',
+'SolrQueryResponse::PARSE_SOLR_DOC' => 'Documents should be parsed as SolrDocument instances.',
+'SolrQueryResponse::PARSE_SOLR_OBJ' => 'Documents should be parsed as SolrObject instances',
+'SolrResponse::PARSE_SOLR_DOC' => 'Documents should be parsed as SolrDocument instances.',
+'SolrResponse::PARSE_SOLR_OBJ' => 'Documents should be parsed as SolrObject instances',
+'SolrUpdateResponse::PARSE_SOLR_DOC' => 'Documents should be parsed as SolrDocument instances.',
+'SolrUpdateResponse::PARSE_SOLR_OBJ' => 'Documents should be parsed as SolrObject instances',
 'SORT_ASC' => '`SORT_ASC` is used with `array_multisort` to sort in ascending order.',
 'SORT_DESC' => '`SORT_DESC` is used with `array_multisort` to sort in descending order.',
 'SORT_FLAG_CASE' => '`SORT_FLAG_CASE` can be combined (bitwise OR) with `SORT_STRING` or `SORT_NATURAL` to sort strings case-insensitively. Added in PHP 5.4.0.',
@@ -1839,6 +2366,7 @@ See also `set_time_limit`.',
 'SORTSIZE' => 'Sort criteria for `imap_sort`: size of message in octets',
 'SORTSUBJECT' => 'Sort criteria for `imap_sort`: message subject',
 'SORTTO' => 'Sort criteria for `imap_sort`: mailbox in first To address',
+'SplType::__default' => 'Default value',
 'SQLBIT' => 'Indicates the \'`BIT`\' type in MSSQL, used by `mssql_bind`\'s `type` parameter.',
 'SQLCHAR' => 'Indicates the \'`CHAR`\' type in MSSQL, used by `mssql_bind`\'s `type` parameter.',
 'SQLFLT4' => 'Represents an four byte float.',
@@ -2165,4 +2693,88 @@ See also `set_time_limit`.',
 'ZLIB_PARTIAL_FLUSH' => 'Available as of PHP 7.0.0.',
 'ZLIB_RLE' => 'Available as of PHP 7.0.0.',
 'ZLIB_SYNC_FLUSH' => 'Available as of PHP 7.0.0.',
+'ZMQ::CTXOPT_MAX_SOCKETS' => 'The socket limit for this context.
+Available if compiled against ZeroMQ 3.x or higher',
+'ZMQ::DEVICE_FORWARDER' => 'Forwarder device',
+'ZMQ::DEVICE_QUEUE' => 'Queue device',
+'ZMQ::DEVICE_STREAMER' => 'Streamer device',
+'ZMQ::ERR_EAGAIN' => 'Implies that the operation would block when ZMQ::MODE_DONTWAIT is used',
+'ZMQ::ERR_EFSM' => 'The operation can not be executed because the socket is not in correct state',
+'ZMQ::ERR_ENOTSUP' => 'The operation is not supported by the socket type',
+'ZMQ::ERR_ETERM' => 'The context has been terminated',
+'ZMQ::ERR_INTERNAL' => 'ZMQ extension internal error',
+'ZMQ::MODE_DONTWAIT' => 'Non-blocking operation',
+'ZMQ::MODE_NOBLOCK' => 'Non-blocking operation.',
+'ZMQ::MODE_SNDMORE' => 'Send multi-part message',
+'ZMQ::POLL_IN' => 'Poll for incoming data',
+'ZMQ::POLL_OUT' => 'Poll for outgoing data',
+'ZMQ::SOCKET_DEALER' => 'Extended REQ socket that load balances to all connected peers',
+'ZMQ::SOCKET_PAIR' => 'Exclusive pair pattern',
+'ZMQ::SOCKET_PUB' => 'Publisher socket',
+'ZMQ::SOCKET_PULL' => 'Pipeline downstream pull socket',
+'ZMQ::SOCKET_PUSH' => 'Pipeline upstream push socket',
+'ZMQ::SOCKET_REP' => 'Reply socket',
+'ZMQ::SOCKET_REQ' => 'Request socket',
+'ZMQ::SOCKET_ROUTER' => 'Extended REP socket that can route replies to requesters',
+'ZMQ::SOCKET_STREAM' => 'Used to send and receive TCP data from a non-ØMQ peer.
+Available if compiled against ZeroMQ 4.x or higher.',
+'ZMQ::SOCKET_SUB' => 'Subscriber socket',
+'ZMQ::SOCKET_XPUB' => 'Similar to SOCKET_PUB, except you can receive subscriptions as messages.
+The subscription message is 0 (unsubscribe) or 1 (subscribe) followed by the topic.',
+'ZMQ::SOCKET_XREP' => 'Alias for SOCKET_ROUTER',
+'ZMQ::SOCKET_XREQ' => 'Alias for SOCKET_DEALER',
+'ZMQ::SOCKET_XSUB' => 'Similar to SOCKET_SUB, except you can send subscriptions as messages. See SOCKET_XPUB for format.',
+'ZMQ::SOCKOPT_AFFINITY' => 'Set I/O thread affinity',
+'ZMQ::SOCKOPT_BACKLOG' => 'The SOCKOPT_BACKLOG option shall set the maximum length of the queue of outstanding peer connections
+for the specified socket; this only applies to connection-oriented transports.',
+'ZMQ::SOCKOPT_DELAY_ATTACH_ON_CONNECT' => 'Set a CIDR string to match against incoming TCP connections.
+Available if compiled against ZeroMQ 3.x or higher',
+'ZMQ::SOCKOPT_HWM' => 'The high water mark for inbound and outbound messages is a hard
+limit on the maximum number of outstanding messages ØMQ shall queue in memory
+for any single peer that the specified socket is communicating with.
+Setting this option on a socket will only affect connections made after the option has been set.
+On ZeroMQ 3.x this is a wrapper for setting both SNDHWM and RCVHWM.',
+'ZMQ::SOCKOPT_IDENTITY' => 'Set socket identity',
+'ZMQ::SOCKOPT_IPV4ONLY' => 'Disable IPV6 support if 1.
+Available if compiled against ZeroMQ 3.x',
+'ZMQ::SOCKOPT_IPV6' => 'Enable IPV6.
+Available if compiled against ZeroMQ 4.0 or higher',
+'ZMQ::SOCKOPT_LAST_ENDPOINT' => 'Retrieve the last connected endpoint - for use with * wildcard ports.
+Available if compiled against ZeroMQ 3.x or higher',
+'ZMQ::SOCKOPT_LINGER' => 'The linger value of the socket.
+Specifies how long the socket blocks trying flush messages after it has been closed',
+'ZMQ::SOCKOPT_MAXMSGSIZE' => 'Limits the maximum size of the inbound message. Value -1 means no limit.
+Available if compiled against ZeroMQ 3.x or higher',
+'ZMQ::SOCKOPT_MCAST_LOOP' => 'Control multicast loopback (Value: int >= 0)',
+'ZMQ::SOCKOPT_RATE' => 'Set rate for multicast sockets (pgm) (Value: int >= 0)',
+'ZMQ::SOCKOPT_RCVBUF' => 'Set kernel receive buffer size (Value: int >= 0)',
+'ZMQ::SOCKOPT_RCVHWM' => 'The ZMQ_SNDHWM option shall set the high water mark for inbound messages on the specified socket.
+Available if compiled against ZeroMQ 3.x or higher.',
+'ZMQ::SOCKOPT_RCVMORE' => 'Receive multi-part messages',
+'ZMQ::SOCKOPT_RCVTIMEO' => 'Sets the timeout for receive operation on the socket. Value -1 means no limit.
+Available if compiled against ZeroMQ 3.x or higher',
+'ZMQ::SOCKOPT_RECONNECT_IVL' => 'Set the initial reconnection interval (Value: int >= 0)',
+'ZMQ::SOCKOPT_RECONNECT_IVL_MAX' => 'Set the max reconnection interval (Value: int >= 0)',
+'ZMQ::SOCKOPT_RECOVERY_IVL' => 'Set multicast recovery interval (Value: int >= 0)',
+'ZMQ::SOCKOPT_ROUTER_RAW' => 'Sets the raw mode on the ROUTER, when set to 1.
+In raw mode when using tcp:// transport the socket will read and write without ZeroMQ framing.
+Available if compiled against ZeroMQ 4.0 or higher',
+'ZMQ::SOCKOPT_SNDBUF' => 'Set kernel transmit buffer size (Value: int >= 0)',
+'ZMQ::SOCKOPT_SNDHWM' => 'The ZMQ_SNDHWM option shall set the high water mark for outbound messages on the specified socket.
+Available if compiled against ZeroMQ 3.x or higher.',
+'ZMQ::SOCKOPT_SNDTIMEO' => 'Sets the timeout for send operation on the socket. Value -1 means no limit.
+Available if compiled against ZeroMQ 3.x or higher',
+'ZMQ::SOCKOPT_SUBSCRIBE' => 'Establish message filter. Valid for subscriber socket',
+'ZMQ::SOCKOPT_TCP_ACCEPT_FILTER' => 'Set a CIDR string to match against incoming TCP connections.
+Available if compiled against ZeroMQ 3.x or higher',
+'ZMQ::SOCKOPT_TCP_KEEPALIVE_CNT' => 'Count time for TCP keepalive.
+Available if compiled against ZeroMQ 3.x or higher',
+'ZMQ::SOCKOPT_TCP_KEEPALIVE_IDLE' => 'Idle time for TCP keepalive.
+Available if compiled against ZeroMQ 3.x or higher',
+'ZMQ::SOCKOPT_TCP_KEEPALIVE_INTVL' => 'Interval for TCP keepalive.
+Available if compiled against ZeroMQ 3.x or higher',
+'ZMQ::SOCKOPT_TYPE' => 'Get the socket type. Valid for getSockOpt',
+'ZMQ::SOCKOPT_UNSUBSCRIBE' => 'Remove message filter. Valid for subscriber socket',
+'ZMQ::SOCKOPT_XPUB_VERBOSE' => 'Set the XPUB to receive an application message on each instance of a subscription.
+Available if compiled against ZeroMQ 3.x or higher',
 ];

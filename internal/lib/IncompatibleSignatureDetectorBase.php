@@ -25,15 +25,15 @@ abstract class IncompatibleSignatureDetectorBase
 {
     use Memoize;
 
-    /** @var array<string,string> maps aliases to originals - only set for xml parser */
-    protected $aliases = [];
-
     const FUNCTIONLIKE_BLACKLIST = '@' .
-        '(^___PHPSTORM_HELPERS)|PS_UNRESERVE_PREFIX|' .
+        '(^_*PHPSTORM)|PS_UNRESERVE_PREFIX|' .
         '(^(ereg|expression|getsession|hrtime_|imageps|mssql_|mysql_|split|sql_regcase|sybase|xmldiff_))|' .
         '(^closure_)|' .  // Phan's representation of a closure
-        '\.' .  // a literal `.`
+        '\.|,' .  // a literal `.` or `,`
         '@';
+
+    /** @var array<string,string> maps aliases to originals - only set for xml parser */
+    protected $aliases = [];
 
     /**
      * @return void (does not return)
@@ -67,6 +67,109 @@ EOT;
         fwrite(STDERR, $msg);
         exit($exit_code);
     }
+
+    /**
+     * Update phpdoc summaries of elements with the docs from php.net
+     *
+     * @return void
+     */
+    protected function updatePHPDocSummaries()
+    {
+        $this->updatePHPDocFunctionSummaries();
+        $this->updatePHPDocConstantSummaries();
+        $this->updatePHPDocClassSummaries();
+    }
+
+    /**
+     * Merge signatures from $new into $old if the case-insensitive signatures don't already exist in $old.
+     *
+     * Returns the resulting sorted signature map.
+     *
+     * @template T
+     * @param array<string,T> $old
+     * @param array<string,T> $new
+     * @return array<string,T>
+     */
+    public static function mergeSignatureMaps(array $old, array $new)
+    {
+        $normalized_old = [];
+        foreach ($old as $key => $_) {
+            // NOTE: This won't work for the name part of constants, but low importance.
+            $normalized_old[strtolower($key)] = true;
+        }
+        foreach ($new as $key => $value) {
+            if (isset($normalized_old[strtolower($key)])) {
+                continue;
+            }
+            $old[$key] = $value;
+        }
+        self::sortSignatureMap($old);
+        return $old;
+    }
+
+    /**
+     * @return void
+     */
+    protected function updatePHPDocFunctionSummaries()
+    {
+        $old_function_documentation = $this->readFunctionDocumentationMap();
+        $new_function_documentation = $this->getAvailableMethodPHPDocSummaries();
+        $new_function_documentation = self::mergeSignatureMaps($old_function_documentation, $new_function_documentation);
+
+        $new_function_documentation_path = ORIGINAL_FUNCTION_DOCUMENTATION_PATH . '.new';
+        static::info("Saving modified function descriptions to $new_function_documentation_path\n");
+        static::saveFunctionDocumentationMap($new_function_documentation_path, $new_function_documentation);
+    }
+
+    /**
+     * Returns short phpdoc summaries of function and method signatures
+     *
+     * @return array<string,string>
+     */
+    abstract protected function getAvailableMethodPHPDocSummaries() : array;
+
+    /**
+     * @return void
+     */
+    protected function updatePHPDocConstantSummaries()
+    {
+        $old_constant_documentation = $this->readConstantDocumentationMap();
+        $new_constant_documentation = $this->getAvailableConstantPHPDocSummaries();
+        $new_constant_documentation = self::mergeSignatureMaps($old_constant_documentation, $new_constant_documentation);
+
+        self::sortSignatureMap($new_constant_documentation);
+
+        $new_constant_documentation_path = ORIGINAL_CONSTANT_DOCUMENTATION_PATH . '.new';
+        static::info("Saving modified constant descriptions to $new_constant_documentation_path\n");
+        static::saveConstantDocumentationMap($new_constant_documentation_path, $new_constant_documentation);
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    abstract protected function getAvailableConstantPHPDocSummaries() : array;
+
+    /**
+     * @return void
+     */
+    protected function updatePHPDocClassSummaries()
+    {
+        $old_class_documentation = $this->readClassDocumentationMap();
+        $new_class_documentation = $this->getAvailableClassPHPDocSummaries();
+        $new_class_documentation = self::mergeSignatureMaps($old_class_documentation, $new_class_documentation);
+
+        self::sortSignatureMap($new_class_documentation);
+
+        $new_class_documentation_path = ORIGINAL_CLASS_DOCUMENTATION_PATH . '.new';
+        static::info("Saving modified class descriptions to $new_class_documentation_path\n");
+        static::saveClassDocumentationMap($new_class_documentation_path, $new_class_documentation);
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    abstract protected function getAvailableClassPHPDocSummaries() : array;
+
 
     /** @return void */
     public function updateFunctionSignatures()
