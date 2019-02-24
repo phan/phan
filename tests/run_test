@@ -33,6 +33,7 @@ case "$TEST_SUITE" in
 			--dead-code-detection \
 			--polyfill-parse-all-element-doc-comments \
 			--force-polyfill-parser \
+			--disable-cache \
 			--memory-limit 1G
 		exit $?
 		;;

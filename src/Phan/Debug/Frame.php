@@ -105,8 +105,12 @@ class Frame
             if (isset($frame['class'])) {
                 $invocation = $frame['class'] . ($frame['type'] ?? '::') . $invocation;
             }
-            $args = $frame['args'];
-            return $invocation . '(). Args: ' . self::encodeValue($args);
+            $result = $invocation . '()';
+            $args = $frame['args'] ?? null;
+            if ($args) {
+                $result .= ' Args: ' . self::encodeValue($args);
+            }
+            return $result;
         });
     }
 

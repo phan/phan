@@ -34,6 +34,7 @@
     },
     "suggest": {
         "ext-ast": "Needed for parsing ASTs (unless --use-fallback-parser is used). 1.0.1+ is recommended, php-ast ^0.1.5|^1.0.0 is needed.",
+        "ext-igbinary": "Improves performance of polyfill when ext-ast is unavailable",
         "ext-tokenizer": "Needed for non-AST support and file/line-based suppressions."
     },
     "require-dev": {

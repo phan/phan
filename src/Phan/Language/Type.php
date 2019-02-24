@@ -61,10 +61,12 @@ use Phan\Library\Tuple5;
 use function count;
 use function explode;
 use function in_array;
+use function ltrim;
 use function preg_match;
 use function strcasecmp;
 use function stripos;
 use function strtolower;
+use function substr;
 use function trim;
 
 /**
@@ -1145,10 +1147,11 @@ class Type
                 );
             }
         }
+
         // If our scope has a generic type identifier defined on it
         // that matches the type string, return that type.
-        if ($source === Type::FROM_PHPDOC && $context->getScope()->hasTemplateType($string)) {
-            return $context->getScope()->getTemplateType($string);
+        if ($source === Type::FROM_PHPDOC && $context->getScope()->hasTemplateType(ltrim($string, '?'))) {
+            return $context->getScope()->getTemplateType(ltrim($string, '?'))->withIsNullable(substr($string, 0, 1) === '?');
         }
 
         // Extract the namespace, type and parameter type name list
@@ -1159,6 +1162,7 @@ class Type
         $template_parameter_type_name_list = $tuple->_2;
         $is_nullable = $tuple->_3;
         $shape_components = $tuple->_4;
+
 
         if (\preg_match('/^(' . self::noncapturing_literal_regex . ')$/', $type_name)) {
             return self::fromEscapedLiteralScalar($type_name);

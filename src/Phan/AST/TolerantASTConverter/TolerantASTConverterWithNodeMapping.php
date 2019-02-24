@@ -10,8 +10,8 @@ use Microsoft\PhpParser;
 use Microsoft\PhpParser\Diagnostic;
 use Microsoft\PhpParser\Token;
 use Microsoft\PhpParser\TokenKind;
+use Phan\Library\Cache;
 use Throwable;
-
 use function is_string;
 use function preg_match;
 
@@ -94,7 +94,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
      * @throws InvalidArgumentException for invalid $version
      * @throws Throwable (after logging) if anything is thrown by the parser
      */
-    public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = [])
+    public function parseCodeAsPHPAST(string $file_contents, int $version, array &$errors = [], Cache $unused_cache = null)
     {
         // Force the byte offset to be within the
         $byte_offset = \max(0, \min(\strlen($file_contents), $this->instance_desired_byte_offset));
@@ -119,6 +119,14 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
             self::$closest_node_or_token = null;
             self::$closest_node_or_token_symbol = null;
         }
+    }
+
+    /**
+     * @return ?string - null if this should not be cached
+     */
+    public function generateCacheKey(string $unused_file_contents, int $unused_version)
+    {
+        return null;
     }
 
     /**

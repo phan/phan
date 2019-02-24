@@ -95,7 +95,7 @@ Usage: ./phan [options] [files...]
  -b, --backward-compatibility-checks
   Check for potential PHP 5 -> PHP 7 BC issues
 
- --target-php-version {7.0,7.1,7.2,7.3,native}
+ --target-php-version {7.0,7.1,7.2,7.3,7.4,native}
   The PHP version that the codebase will be checked for compatibility against.
   For best results, the PHP binary used to run Phan should have the same PHP version.
   (Phan relies on Reflection for some param counts
@@ -129,6 +129,13 @@ Usage: ./phan [options] [files...]
  -z, --signature-compatibility
   Analyze signatures for methods that are overrides to ensure
   compatibility with what they're overriding.
+
+ --disable-cache
+  Don't cache any ASTs from the polyfill/fallback.
+
+  ASTs from the native parser (php-ast) don't need to be cached.
+
+  This is useful if Phan will be run only once and php-ast is unavailable (e.g. in Travis)
 
  --disable-plugins
   Don't run any plugins. Slightly faster.
@@ -270,6 +277,13 @@ Extended help:
   Emit verbose logging messages related to the language server implementation to stderr.
   This is useful when developing or debugging language server clients.
 
+ --language-server-disable-output-filter
+  Emit all issues detected from the language server (e.g. invalid phpdoc in parsed files),
+  not just issues in files currently open in the editor/IDE.
+  This can be very verbose and has more false positives.
+
+  This is useful when developing or debugging language server clients.
+
  --language-server-allow-missing-pcntl
   No-op (This is the default behavior).
   Allow the fallback that doesn't use pcntl (New and experimental) to be used if the pcntl extension is not installed.
@@ -287,4 +301,7 @@ Extended help:
 
  --require-config-exists
   Exit immediately with an error code if `.phan/config.php` does not exist.
+
+ --help-annotations
+  Print details on annotations supported by Phan
 ```
