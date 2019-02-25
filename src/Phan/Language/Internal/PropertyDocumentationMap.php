@@ -38,6 +38,46 @@ namespace Phan\Language\Internal;
  *   Note that the summaries are used in a wide variety of contexts, and what makes sense for Phan may not make sense for those projects, and vice versa.
  */
 return [
+'classObj::label' => 'Removed (6.2) - use addLabel, getLabel, ...',
+'classObj::numlabels' => 'read-only (since 6.2)',
+'classObj::numstyles' => 'read-only',
+'classObj::status' => 'MS_ON, MS_OFF or MS_DELETE',
+'Couchbase\Document::cas' => 'The last known CAS value of the document',
+'Couchbase\Document::error' => 'exception object in case of error, or NULL',
+'Couchbase\Document::flags' => 'Flags, describing the encoding of the document on the server side.',
+'Couchbase\Document::token' => 'The optional, opaque mutation token set after a successful mutation.
+
+Note that the mutation token is always NULL, unless they are explicitly enabled on the
+connection string (`?fetch_mutation_tokens=true`), the server version is supported (>= 4.0.0)
+and the mutation operation succeeded.
+
+If set, it can be used for enhanced durability requirements, as well as optimized consistency
+for N1QL queries.',
+'Couchbase\Document::value' => 'The value stored in the Couchbase.',
+'Couchbase\DocumentFragment::cas' => 'The last known CAS value of the document',
+'Couchbase\DocumentFragment::error' => 'exception object in case of error, or NULL',
+'Couchbase\DocumentFragment::token' => 'The optional, opaque mutation token related to updated document the environment.
+
+Note that the mutation token is always NULL, unless they are explicitly enabled on the
+connection string (`?fetch_mutation_tokens=true`), the server version is supported (>= 4.0.0)
+and the mutation operation succeeded.
+
+If set, it can be used for enhanced durability requirements, as well as optimized consistency
+for N1QL queries.',
+'Couchbase\DocumentFragment::value' => 'The value sub-document command returned.',
+'Couchbase\N1qlIndex::condition' => 'Return the string representation of the index\'s condition (the WHERE clause
+of the index), or an empty String if no condition was set.
+
+Note that the query service can present the condition in a slightly different
+manner from when you declared the index: for instance it will wrap expressions
+with parentheses and show the fields in an escaped format (surrounded by backticks).',
+'Couchbase\N1qlIndex::fields' => 'The fields covered by index',
+'Couchbase\N1qlIndex::isPrimary' => 'Is it primary index',
+'Couchbase\N1qlIndex::keyspace' => 'The keyspace for the index, typically the bucket name',
+'Couchbase\N1qlIndex::name' => 'Name of the index',
+'Couchbase\N1qlIndex::namespace' => 'The namespace for the index. A namespace is a resource pool that contains multiple keyspaces',
+'Couchbase\N1qlIndex::state' => 'The descriptive state of the index',
+'Couchbase\N1qlIndex::type' => 'Type of the index',
 'CURLFile::mime' => 'MIME type of the file (default is `application/octet-stream`).',
 'CURLFile::name' => 'Name of the file to be uploaded.',
 'CURLFile::postname' => 'The name of the file in the upload data (defaults to the name property).',
@@ -120,6 +160,7 @@ Before PHP 5.4.20/5.5.4 instead of `false` you will receive -99999 upon accessin
 'DOMNode::textContent' => 'The text content of this node and its descendants.',
 'DOMNodeList::length' => 'The number of nodes in the list. The range of valid child node indices is 0 to `length - 1` inclusive.',
 'DOMText::wholeText' => 'Holds all the text of logically-adjacent (not separated by Element, Comment or Processing Instruction) Text nodes.',
+'errorObj::code' => '//See error code constants above',
 'EvChild::pid' => '*Readonly* . The process ID this watcher watches out for, or `0` , meaning any process ID.',
 'EvChild::rpid' => '*Readonly* .The process ID that detected a status change.',
 'EvChild::rstatus' => '*Readonly* . The process exit status caused by rpid .',
@@ -159,12 +200,70 @@ That is, after instanciating an `EvTimer` with an after value of `5.0` and repea
 'FANNConnection::from_neuron' => 'The neuron where the connection starts.',
 'FANNConnection::to_neuron' => 'The neuron where the connection ends.',
 'FANNConnection::weight' => 'The weight of the connection.',
+'GearmanException::code' => 'Prop description.',
+'http\Env\Request::cookie' => 'The request’s cookies. ($_COOKIE)',
+'http\Env\Request::files' => 'The request’s form uploads. ($_FILES)',
+'http\Env\Request::form' => 'The request’s form parameters. ($_POST)',
+'http\Env\Request::query' => 'The request’s query parameters. ($_GET)',
+'http\Env\Response::cacheControl' => 'How the client should treat this response in regards to caching',
+'http\Env\Response::contentDisposition' => 'The response’s MIME content disposition',
+'http\Env\Response::contentEncoding' => 'See http\Env\Response::CONTENT_ENCODING_* constants',
+'http\Env\Response::contentType' => 'The response’s MIME content type',
+'http\Env\Response::cookies' => 'The response’s cookies.',
+'http\Env\Response::etag' => 'A custom ETag',
+'http\Env\Response::lastModified' => 'A “Last-Modified” time stamp.',
+'http\Env\Response::request' => 'A request instance which overrides the environments default request',
+'http\Env\Response::throttleChunk' => 'The chunk to send every $throttleDelay seconds.',
+'http\Env\Response::throttleDelay' => 'Any throttling delay.',
+'http\QueryString::instance' => 'The global instance. See http\QueryString::getGlobalInstance().',
+'http\QueryString::queryArray' => 'The data',
+'imageObj::height' => 'read-only',
+'imageObj::resolution' => 'read-only',
+'imageObj::resolutionfactor' => 'read-only',
+'imageObj::width' => 'read-only',
+'labelcacheMemberObj::classindex' => 'read-only',
+'labelcacheMemberObj::featuresize' => 'read-only',
+'labelcacheMemberObj::layerindex' => 'read-only',
+'labelcacheMemberObj::markerid' => 'read-only',
+'labelcacheMemberObj::numstyles' => 'read-only',
+'labelcacheMemberObj::shapeindex' => 'read-only',
+'labelcacheMemberObj::status' => 'read-only',
+'labelcacheMemberObj::text' => 'read-only',
+'labelcacheMemberObj::tileindex' => 'read-only',
+'labelObj::backgroundcolor' => '(deprecated since 6.0)',
+'labelObj::backgroundshadowcolor' => '(deprecated since 6.0)',
+'labelObj::backgroundshadowsizex' => '(deprecated since 6.0)',
+'labelObj::backgroundshadowsizey' => '(deprecated since 6.0)',
+'layerObj::connectiontype' => 'read-only, use setConnectionType() to set it',
+'layerObj::dump' => 'deprecated since 6.0',
+'layerObj::grid' => 'only available on a layer defined as grid (MS_GRATICULE)',
+'layerObj::index' => 'read-only',
+'layerObj::numclasses' => 'read-only',
+'layerObj::status' => 'MS_ON, MS_OFF, MS_DEFAULT or MS_DELETE',
+'legendObj::outlinecolor' => 'Color of outline of box, -1 for no outline',
+'legendObj::position' => 'for embedded legends, MS_UL, MS_UC, ...',
+'legendObj::postlabelcache' => 'MS_TRUE, MS_FALSE',
+'legendObj::status' => 'MS_ON, MS_OFF, MS_EMBED',
 'libXMLError::code' => 'The error\'s code.',
 'libXMLError::column' => 'The column where the error occurred.',
 'libXMLError::file' => 'The filename, or empty if the XML was loaded from a string.',
 'libXMLError::level' => 'the severity of the error (one of the following constants: `LIBXML_ERR_WARNING`, `LIBXML_ERR_ERROR` or `LIBXML_ERR_FATAL`)',
 'libXMLError::line' => 'The line where the error occurred.',
 'libXMLError::message' => 'The error message, if any.',
+'lineObj::numpoints' => 'read-only',
+'mapObj::defresolution' => 'pixels per inch, defaults to 72',
+'mapObj::extent' => ';',
+'mapObj::fontsetfilename' => 'read-only, set by setFontSet()',
+'mapObj::height' => 'see setSize()',
+'mapObj::labelcache' => 'no members. Used only to free the
+label cache (map->labelcache->free()',
+'mapObj::numlayers' => 'read-only',
+'mapObj::numoutputformats' => 'read-only',
+'mapObj::resolution' => 'pixels per inch, defaults to 72',
+'mapObj::scaledenom' => 'read-only, set by drawMap()',
+'mapObj::symbolsetfilename' => 'read-only, set by setSymbolSet()',
+'mapObj::units' => 'map units type',
+'mapObj::width' => 'see setSize()',
 'MongoClient::connected' => 'This property will be set to `true` if we have a open connection to the database, `false` otherwise. If the connection is to a replica set, this property will only be `true` if the driver has a connection to a node matching the current read preference. This property does not take authentication into account.
 
 This property is *deprecated* since version 1.5.0.',
@@ -189,6 +288,10 @@ Unless `wtimeout` is set, the server waits forever for replicating to `w` server
 'MongoDB\Driver\Exception\CommandException::resultDocument' => 'The result document associated with the failed command.',
 'MongoDB\Driver\Exception\RuntimeException::errorLabels' => 'Contains an array of error labels to go with an exception. For example, error labels can be used to detect whether a transaction can be retried safely if the `TransientTransactionError` label is present. The existence of a specific error label should be tested for with the `MongoDB\Driver\Exception\RuntimeException::hasErrorLabel`, instead of interpreting this `errorLabels` property manually.',
 'MongoDB\Driver\Exception\WriteException::writeResult' => 'The `MongoDB\Driver\WriteResult` associated with the failed write operation.',
+'MongoGridFS::chunks' => 'MongoCollection',
+'MongoGridFS::chunksName' => 'string',
+'MongoGridFS::filesName' => 'string',
+'MongoId::id' => '<p> Note: The property name begins with a $ character. It may be accessed using',
 'MongoResultException::document' => 'The raw result document as an array.',
 'mysqli_driver::client_info' => 'The Client API header version',
 'mysqli_driver::client_version' => 'The Client version',
@@ -201,6 +304,9 @@ Unless `wtimeout` is set, the server waits forever for replicating to `w` server
 'mysqli_warning::message' => 'Message string',
 'mysqli_warning::sqlstate' => 'SQL state',
 'OAuthException::lastResponse' => 'The response of the exception which occurred, if any',
+'outputformatObj::imagemode' => 'MS_IMAGEMODE_* value.',
+'OwsrequestObj::numparams' => '(read-only)',
+'OwsrequestObj::type' => '(read-only): MS_GET_REQUEST or MS_POST_REQUEST',
 'Parle\ErrorInfo::id' => 'Error id.',
 'Parle\ErrorInfo::position' => 'Position in the input, where the error occurred.',
 'Parle\ErrorInfo::token' => 'If applicable - the `Parle\Token` related to the error, otherwise `null`.',
@@ -227,11 +333,14 @@ Unless `wtimeout` is set, the server waits forever for replicating to `w` server
 'PDOException::errorInfo' => 'Corresponds to `PDO::errorInfo` or `PDOStatement::errorInfo`',
 'PDOStatement::queryString' => 'Used query string.',
 'php_user_filter::filtername' => 'Name of the filter registered by `stream_filter_append`.',
+'pointObj::m' => 'used only for measured shape files - set to 0 for other types',
+'pointObj::z' => 'used for 3d shape files. set to 0 for other types',
 'Pool::class' => 'the class of the Worker',
 'Pool::ctor' => 'the arguments for constructor of new Workers',
 'Pool::last' => 'offset in workers of the last Worker used',
 'Pool::size' => 'maximum number of Workers this Pool can use',
 'Pool::workers' => 'references to Workers',
+'querymapObj::style' => 'MS_NORMAL, MS_HILITE, MS_SELECTED',
 'ReflectionClass::name' => 'Name of the class. Read-only, throws `ReflectionException` in attempt to write.',
 'ReflectionClassConstant::class' => 'Name of the class where the class constant is defined. Read-only, throws `ReflectionException` in attempt to write.',
 'ReflectionClassConstant::name' => 'Name of the class constant. Read-only, throws `ReflectionException` in attempt to write.',
@@ -245,6 +354,22 @@ Unless `wtimeout` is set, the server waits forever for replicating to `w` server
 'ReflectionProperty::class' => 'Name of the class where the property is defined. Read-only, throws `ReflectionException` in attempt to write.',
 'ReflectionProperty::name' => 'Name of the property. Read-only, throws `ReflectionException` in attempt to write.',
 'ReflectionZendExtension::name' => 'Name of the extension. Read-only, throws `ReflectionException` in attempt to write.',
+'resultObj::classindex' => 'read-only',
+'resultObj::resultindex' => 'read-only',
+'resultObj::shapeindex' => 'read-only',
+'resultObj::tileindex' => 'read-only',
+'scalebarObj::position' => 'for embedded scalebars, MS_UL, MS_UC, ...',
+'scalebarObj::status' => 'MS_ON, MS_OFF, MS_EMBED',
+'shapefileObj::bounds' => 'read-only',
+'shapefileObj::numshapes' => 'read-only',
+'shapefileObj::source' => 'read-only',
+'shapefileObj::type' => 'read-only',
+'shapeObj::bounds' => 'read-only',
+'shapeObj::numlines' => 'read-only',
+'shapeObj::numvalues' => 'read-only',
+'shapeObj::tileindex' => 'read-only',
+'shapeObj::type' => 'read-only',
+'shapeObj::values' => 'read-only',
 'SNMP::enum_print' => 'Controls the way enum values are printed
 
 Parameter toggles if walk/get etc. should automatically lookup enum values in the MIB and return them together with their human readable string.',
@@ -260,6 +385,7 @@ Some SNMP agents are known for returning OIDs out of order but can complete the 
 Sets the value of quick_print within the NET-SNMP library. When this is set (1), the SNMP library will return \'quick printed\' values. This means that just the value will be printed. When quick_print is not enabled (default) the UCD SNMP library prints extra information including the type of the value (i.e. IpAddress or OID). Additionally, if quick_print is not enabled, the library prints additional hex values for all strings of three characters or less.',
 'SNMP::valueretrieval' => 'Controls the method how the SNMP values will be returned',
 'SNMPException::code' => '`SNMP`library error code. Use `Exception::getCode` to access it.',
+'SNMPException::message' => 'Textual error message. Exception::getMessage() to access it.',
 'SolrDocumentField::boost' => 'The boost value for the field',
 'SolrDocumentField::name' => 'The name of the field.',
 'SolrDocumentField::values' => 'An array of values for this field',
@@ -292,6 +418,13 @@ Sets the value of quick_print within the NET-SNMP library. When this is set (1),
 'streamWrapper::context' => 'The current context, or `null` if no context was passed to the caller function.
 
 Use the `stream_context_get_options` to parse the context.',
+'styleObj::opacity' => 'only supported for the AGG driver',
+'symbolObj::imagepath' => 'read-only',
+'symbolObj::inmapfile' => 'If set to TRUE, the symbol will be saved
+inside the mapfile.',
+'symbolObj::numpoints' => 'read-only',
+'symbolObj::patternlength' => 'read-only',
+'Threaded::worker' => 'Worker object in which this Threaded is being executed',
 'tidyNode::attribute' => 'An array of string, representing the attributes names (as keys) of the current node.',
 'tidyNode::child' => 'An array of `tidyNode`, representing the children of the current node.',
 'tidyNode::column' => 'The column number at which the tags is located in the file',
@@ -316,6 +449,9 @@ Use the `stream_context_get_options` to parse the context.',
 'UI\Size::height' => 'Holds the height, can be read/written directly',
 'UI\Size::width' => 'Holds the width, can be read/written directly',
 'UI\Window::controls' => 'Contains controls, should not be manipulated directly',
+'webObj::empty' => 'read-only',
+'webObj::error' => 'read-only',
+'webObj::extent' => 'read-only',
 'XMLReader::attributeCount' => 'The number of attributes on the node',
 'XMLReader::baseURI' => 'The base URI of the node',
 'XMLReader::depth' => 'Depth of the node in the tree, starting at 0',
@@ -330,6 +466,15 @@ Use the `stream_context_get_options` to parse the context.',
 'XMLReader::prefix' => 'The prefix of the namespace associated with the node',
 'XMLReader::value' => 'The text value of the node',
 'XMLReader::xmlLang' => 'The xml:lang scope which the node resides',
+'Yaf\Controller_Abstract::_module' => 'module name',
+'Yaf\Controller_Abstract::_name' => 'controller name',
+'Yaf\Controller_Abstract::_request' => 'current request object',
+'Yaf\Controller_Abstract::_response' => 'current response object',
+'Yaf\Controller_Abstract::_view' => 'view engine object',
+'Yaf\Controller_Abstract::actions' => 'You can also define a action method in a separate PHP script by using this property and \Yaf\Action_Abstract.',
+'Yaf\Loader::_library' => 'By default, this value is application.directory . "/library", you can change this either in the application.ini(application.library) or call to \Yaf\Loader::setLibraryPath()',
+'Yaf\Router::_current' => 'after routing phase, this indicated the name of which route is used to route current request. you can get this name by \Yaf\Router::getCurrentRoute()',
+'Yaf\Router::_routes' => 'registered routes stack',
 'Yaf_Controller_Abstract::_module' => 'module name',
 'Yaf_Controller_Abstract::_name' => 'controller name',
 'Yaf_Controller_Abstract::_request' => 'current request object',
@@ -339,6 +484,50 @@ Use the `stream_context_get_options` to parse the context.',
 'Yaf_Loader::_library' => 'By default, this value is application.directory . "/library", you can change this either in the application.ini(application.library) or call to `Yaf_Loader::setLibraryPath`',
 'Yaf_Router::_current' => 'after routing phase, this indicated the name of which route is used to route current request. you can get this name by `Yaf_Router::getCurrentRoute`.',
 'Yaf_Router::_routes' => 'registered routes stack',
+'ZendAPI_Job::_application_id' => 'The application id of the job
+If the application id is not set, this job may get an application id automatically from the queue
+(if the queue was assigned one). By default it is null (which indicates no application id is assigned)',
+'ZendAPI_Job::_end_time' => 'UNIX timestamp that it\'s the last time this job should occurs. If _interval was set, and _end_time
+was not, then this job will run forever.
+By default there is no end_time, so recurrent job will run forever. If the job is not recurrent
+(occurs only once) then the job will run at most once. If end_time has reached and the job was not
+execute yet, it will not run.',
+'ZendAPI_Job::_global_variables' => 'Bit mask holding the global variables that the user want the job\'s script to have when it\'s called
+ Options are prefixed with "JOB_QUEUE_SAVE_" and may be:
+POST|GET|COOKIE|SESSION|RAW_POST|SERVER|FILES|ENV
+ By default there are no global variables we want to add to the job\'s script
+ i.e. In order to save the current GET and COOKIE global variables,
+this property should be JOB_QUEUE_SAVE_GET|JOB_QUEUE_SAVE_COOKIE (or the integer 6)
+In that case (of GET and COOKIE), when the job is added, the current $_GET and
+$_COOKIE variables  should be saved, and when the job\'s script is called,
+those global variables should be populated',
+'ZendAPI_Job::_host' => 'The host that the job was submit from',
+'ZendAPI_Job::_id' => 'Unique id of the Job in the job queue',
+'ZendAPI_Job::_interval' => 'The job running frequency in seconds. The job should run every _internal seconds
+This property applys only to recurrent job.
+By default, its value is 0 e.g. run it only once.',
+'ZendAPI_Job::_name' => 'A short string describing the job',
+'ZendAPI_Job::_output' => 'The job output after executing',
+'ZendAPI_Job::_predecessor' => 'The job may have a dependency (another job that must be performed before this job)
+ This property hold the id of the job that must be performed. if this variable is an array of integers,
+it means that there are several jobs that must be performed before this job
+ By default there are no dependencies',
+'ZendAPI_Job::_preserved' => 'A bit that determine whether job can be deleted from history. When set, removeJob will not
+delete the job from history.',
+'ZendAPI_Job::_priority' => 'The priority of the job, options are the priority constants
+By default the priority is set to normal (JOB_QUEUE_PRIORITY_NORMAL)',
+'ZendAPI_Job::_scheduled_time' => 'The time that this job should be performed, this variables is the UNIX timestamp.
+If set to 0, it means that the job should be performed now (or at least as soon as possible)
+By default there is no scheduled time, which means we want to perform the job as soon as possible',
+'ZendAPI_Job::_script' => 'Full path of the script that this job calls when it\'s processed',
+'ZendAPI_Job::_status' => 'The status of the job
+By default, the job status is waiting to being execute.
+The status is determent by the queue and can not be modify by the user.',
+'ZendAPI_Job::_user_variables' => 'Array holding all the variables that the user wants the job\'s script to have when it\'s called
+ The structure is variable_name => variable_value
+i.e. if the user_variables array is array(\'my_var\' => 8), when the script is called,
+a global variable called $my_var will have the int value of 8
+ By default there are no variables that we want to add to the job\'s script',
 'ZipArchive::comment' => 'Comment for the archive',
 'ZipArchive::filename' => 'File name in the file system',
 'ZipArchive::numFiles' => 'Number of files in archive',
