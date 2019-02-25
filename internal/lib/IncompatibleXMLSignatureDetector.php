@@ -783,6 +783,43 @@ class IncompatibleXMLSignatureDetector extends IncompatibleSignatureDetectorBase
     }
 
     /**
+     * @return array<string,string>
+     * @override
+     */
+    protected function getAvailablePropertyPHPDocSummaries() : array
+    {
+        return $this->memoize(__METHOD__, /** @return array<string,string> */ function () : array {
+            $map = [];
+            foreach ($this->getClassXMLFiles() as $xml) {
+                $class_name = $xml->xpath('//a:classsynopsis/a:ooclass/a:classname');
+                if (!is_array($class_name) || count($class_name) !== 1) {
+                    continue;
+                }
+                $class_name = (string)$class_name[0];
+                if (!$class_name) {
+                    continue;
+                }
+                $property_entries = $xml->xpath('//a:section/a:variablelist/a:varlistentry');
+                foreach ($property_entries as $entry) {
+                    $property_name = $entry->term->varname;
+                    if (count($property_name) !== 1) {
+                        continue;
+                    }
+                    $property_name = (string)$property_name[0];
+                    $paragraphs = iterator_to_array($entry->listitem->para, false);
+                    $text = self::extractDescriptionFromParagraphElements($paragraphs);
+                    if (!$text) {
+                        continue;
+                    }
+                    $property_fqsen = "$class_name::$property_name";
+                    $map[$property_fqsen] = $text;
+                }
+            }
+            return $map;
+        });
+    }
+
+    /**
      * Returns short phpdoc summaries of function and method signatures
      *
      * @return array<string,string>

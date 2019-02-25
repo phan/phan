@@ -7,6 +7,7 @@ define('ORIGINAL_SIGNATURE_PATH', dirname(dirname(__DIR__)) . '/src/Phan/Languag
 define('ORIGINAL_FUNCTION_DOCUMENTATION_PATH', dirname(dirname(__DIR__)) . '/src/Phan/Language/Internal/FunctionDocumentationMap.php');
 define('ORIGINAL_CONSTANT_DOCUMENTATION_PATH', dirname(dirname(__DIR__)) . '/src/Phan/Language/Internal/ConstantDocumentationMap.php');
 define('ORIGINAL_CLASS_DOCUMENTATION_PATH', dirname(dirname(__DIR__)) . '/src/Phan/Language/Internal/ClassDocumentationMap.php');
+define('ORIGINAL_PROPERTY_DOCUMENTATION_PATH', dirname(dirname(__DIR__)) . '/src/Phan/Language/Internal/PropertyDocumentationMap.php');
 
 /**
  * Implementations of this can be used to check Phan's function signature map.
@@ -69,12 +70,13 @@ EOT;
     }
 
     /**
-     * Update phpdoc summaries of elements with the docs from php.net
+     * Update markdown summaries of elements with the docs from php.net
      *
      * @return void
      */
     protected function updatePHPDocSummaries()
     {
+        $this->updatePHPDocPropertySummaries();
         $this->updatePHPDocFunctionSummaries();
         $this->updatePHPDocConstantSummaries();
         $this->updatePHPDocClassSummaries();
@@ -110,6 +112,27 @@ EOT;
     /**
      * @return void
      */
+    protected function updatePHPDocPropertySummaries()
+    {
+        $old_property_documentation = $this->readPropertyDocumentationMap();
+        $new_property_documentation = $this->getAvailablePropertyPHPDocSummaries();
+        $new_property_documentation = self::mergeSignatureMaps($old_property_documentation, $new_property_documentation);
+
+        $new_property_documentation_path = ORIGINAL_PROPERTY_DOCUMENTATION_PATH . '.new';
+        static::info("Saving modified property descriptions to $new_property_documentation_path\n");
+        static::savePropertyDocumentationMap($new_property_documentation_path, $new_property_documentation);
+    }
+
+    /**
+     * Returns short markdown summaries of property signatures
+     *
+     * @return array<string,string>
+     */
+    abstract protected function getAvailablePropertyPHPDocSummaries() : array;
+
+    /**
+     * @return void
+     */
     protected function updatePHPDocFunctionSummaries()
     {
         $old_function_documentation = $this->readFunctionDocumentationMap();
@@ -122,7 +145,7 @@ EOT;
     }
 
     /**
-     * Returns short phpdoc summaries of function and method signatures
+     * Returns short markdown summaries of function and method signatures
      *
      * @return array<string,string>
      */
@@ -394,6 +417,14 @@ EOT;
     /**
      * @throws RuntimeException if the file could not be read
      */
+    public static function readPropertyDocumentationHeader() : string
+    {
+        return self::readArrayFileHeader(ORIGINAL_PROPERTY_DOCUMENTATION_PATH);
+    }
+
+    /**
+     * @throws RuntimeException if the file could not be read
+     */
     public static function readClassDocumentationHeader() : string
     {
         return self::readArrayFileHeader(ORIGINAL_CLASS_DOCUMENTATION_PATH);
@@ -423,7 +454,14 @@ EOT;
     }
 
     /**
-     * @suppress PhanUnreferencedPublicMethod
+     * @return array<string,string>
+     */
+    public static function readPropertyDocumentationMap() : array
+    {
+        return require(ORIGINAL_PROPERTY_DOCUMENTATION_PATH);
+    }
+
+    /**
      * @return array<string,string>
      */
     public static function readFunctionDocumentationMap() : array
@@ -432,7 +470,6 @@ EOT;
     }
 
     /**
-     * @suppress PhanUnreferencedPublicMethod
      * @return array<string,string>
      */
     public static function readConstantDocumentationMap() : array
@@ -441,7 +478,6 @@ EOT;
     }
 
     /**
-     * @suppress PhanUnreferencedPublicMethod
      * @return array<string,string>
      */
     public static function readClassDocumentationMap() : array
@@ -474,6 +510,19 @@ EOT;
         }
         $parts .= "];\n";
         return $parts;
+    }
+
+    /**
+     * @param array<string,string> $phan_documentation
+     * @return void
+     */
+    public static function savePropertyDocumentationMap(string $new_documentation_path, array $phan_documentation, bool $include_header = true)
+    {
+        $contents = static::serializeDocumentation($phan_documentation);
+        if ($include_header) {
+            $contents = static::readPropertyDocumentationHeader() . $contents;
+        }
+        file_put_contents($new_documentation_path, $contents);
     }
 
     /**

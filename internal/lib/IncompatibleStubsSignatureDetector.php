@@ -12,6 +12,7 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\MarkupDescription;
 use Phan\Language\Element\Method;
+use Phan\Language\Element\Property;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -238,6 +239,45 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
                 $function_name_map[$function_name] = $method->toFunctionSignatureArray();
             }
             return $function_name_map;
+        });
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    protected function getAvailablePropertyPHPDocSummaries() : array
+    {
+        return $this->memoize(__METHOD__, /** @return array<string,string> */ function () : array {
+            $code_base = $this->code_base;
+            $map = [];
+            $classes = array_merge(
+                iterator_to_array($code_base->getInternalClassMap(), false),
+                iterator_to_array($code_base->getUserDefinedClassMap(), false)
+            );
+            foreach ($classes as $class) {
+                foreach ($class->getPropertyMap($code_base) as $property) {
+                    if ($property->getFQSEN() !== $property->getDefiningFQSEN()) {
+                        // Skip this, Phan should be able to inherit this long term
+                        continue;
+                    }
+                    if (!($property instanceof Property)) {
+                        throw new AssertionError('expected $property to be a Property');
+                    }
+                    $description = (string)MarkupDescription::extractDescriptionFromDocComment($property, null);
+                    $description = preg_replace('(^`@var [^`]*`\s*)', '', $description);
+                    $description = self::removeBoilerplateFromDescription($description);
+                    if (!$description) {
+                        continue;
+                    }
+                    $property_name = ltrim((string)$property->getFQSEN(), "\\");
+                    if (preg_match(self::FUNCTIONLIKE_BLACKLIST, $property_name)) {
+                        continue;
+                    }
+                    echo "$property_name: $description\n";
+                    $map[$property_name] = $description;
+                }
+            }
+            return $map;
         });
     }
 
