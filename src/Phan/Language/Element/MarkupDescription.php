@@ -51,6 +51,24 @@ class MarkupDescription
     }
 
     /**
+     * Eagerly load all of the hover signatures into memory before potentially forking.
+     *
+     * @return void
+     */
+    public static function eagerlyLoadAllDescriptionMaps()
+    {
+        if (!extension_loaded('pcntl')) {
+            // There's no forking, so descriptions will always be available after the first time they're loaded.
+            // No need to force phan to load these prior to forking.
+            return;
+        }
+        self::loadClassDescriptionMap();
+        self::loadConstantDescriptionMap();
+        self::loadFunctionDescriptionMap();
+        self::loadPropertyDescriptionMap();
+    }
+
+    /**
      * @return array<string,string> mapping lowercase function/method FQSENs to short summaries.
      * @internal - The data format may change
      */

@@ -13,6 +13,7 @@ use Phan\Daemon\Request;
 use Phan\Daemon\Transport\CapturerResponder;
 use Phan\Daemon\Transport\StreamResponder;
 use Phan\Issue;
+use Phan\Language\Element\MarkupDescription;
 use Phan\Language\FileRef;
 use Phan\LanguageServer\Protocol\ClientCapabilities;
 use Phan\LanguageServer\Protocol\CompletionContext;
@@ -486,6 +487,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $this->discardPreviousNodeInfoRequest();
         $request = new GoToDefinitionRequest($uri, $position, GoToDefinitionRequest::REQUEST_HOVER);
         $this->most_recent_node_info_request = $request;
+        MarkupDescription::eagerlyLoadAllDescriptionMaps();
 
         // We analyze this url so that Phan is aware enough of the types and namespace maps to trigger "Go to definition"
         // E.g. going to the definition of `Bar` in `use Foo as Bar; Bar::method();` requires parsing other statements in this file, not just the name in question.
