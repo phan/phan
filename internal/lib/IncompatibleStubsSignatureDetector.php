@@ -244,6 +244,14 @@ class IncompatibleStubsSignatureDetector extends IncompatibleSignatureDetectorBa
     /**
      * @return array<string,string>
      */
+    protected function getAvailablePropertyPHPDocSummaries() : array
+    {
+        return [];
+    }
+
+    /**
+     * @return array<string,string>
+     */
     protected function getAvailableClassPHPDocSummaries() : array
     {
         return $this->memoize(__METHOD__, /** @return array<string,string> */ function () : array {
