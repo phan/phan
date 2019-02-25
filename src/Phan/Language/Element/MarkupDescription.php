@@ -37,6 +37,20 @@ class MarkupDescription
     }
 
     /**
+     * @template T
+     * @param array<string,T> $signatures
+     * @return array<string,T>
+     */
+    private static function signaturesToLower(array $signatures) : array
+    {
+        $result = [];
+        foreach ($signatures as $fqsen => $summary) {
+            $result[strtolower($fqsen)] = $summary;
+        }
+        return $result;
+    }
+
+    /**
      * @return array<string,string> mapping lowercase function/method FQSENs to short summaries.
      * @internal - The data format may change
      */
@@ -46,11 +60,7 @@ class MarkupDescription
         if (is_array($descriptions)) {
             return $descriptions;
         }
-        $descriptions = [];
-        foreach (require(dirname(__DIR__) . '/Internal/FunctionDocumentationMap.php') as $fqsen => $summary) {
-            $descriptions[strtolower($fqsen)] = $summary;
-        }
-        return $descriptions;
+        return $descriptions = self::signaturesToLower(require(dirname(__DIR__) . '/Internal/FunctionDocumentationMap.php'));
     }
 
     /**
@@ -63,11 +73,7 @@ class MarkupDescription
         if (is_array($descriptions)) {
             return $descriptions;
         }
-        $descriptions = [];
-        foreach (require(dirname(__DIR__) . '/Internal/ConstantDocumentationMap.php') as $fqsen => $summary) {
-            $descriptions[strtolower($fqsen)] = $summary;
-        }
-        return $descriptions;
+        return $descriptions = self::signaturesToLower(require(dirname(__DIR__) . '/Internal/ConstantDocumentationMap.php'));
     }
 
     /**
@@ -80,11 +86,20 @@ class MarkupDescription
         if (is_array($descriptions)) {
             return $descriptions;
         }
-        $descriptions = [];
-        foreach (require(dirname(__DIR__) . '/Internal/ClassDocumentationMap.php') as $fqsen => $summary) {
-            $descriptions[strtolower($fqsen)] = $summary;
+        return $descriptions = self::signaturesToLower(require(dirname(__DIR__) . '/Internal/ClassDocumentationMap.php'));
+    }
+
+    /**
+     * @return array<string,string> mapping property FQSENs to short summaries.
+     * @internal - The data format may change
+     */
+    public static function loadPropertyDescriptionMap() : array
+    {
+        static $descriptions = null;
+        if (is_array($descriptions)) {
+            return $descriptions;
         }
-        return $descriptions;
+        return $descriptions = self::signaturesToLower(require(dirname(__DIR__) . '/Internal/PropertyDocumentationMap.php'));
     }
 
     /**
@@ -130,6 +145,9 @@ class MarkupDescription
             } elseif ($element instanceof Clazz) {
                 $key = strtolower(ltrim((string)$element->getFQSEN(), '\\'));
                 return self::loadClassDescriptionMap()[$key] ?? null;
+            } elseif ($element instanceof Property) {
+                $key = strtolower(ltrim((string)$element->getFQSEN(), '\\'));
+                return self::loadPropertyDescriptionMap()[$key] ?? null;
             }
         }
         return null;

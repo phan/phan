@@ -888,7 +888,9 @@ function example2($strVal, array $arrVal) {
 function test(ExampleClass $c) {  // line 25
     var_export($c->propWithDefault);
     echo JSON_PRETTY_PRINT;
-    throw new AssertionError('some condition failed');
+    if (rand() % 2 > 0) { throw new AssertionError('some condition failed'); }
+    $n = ast\parse_code('<?php $x = 2;', 50);
+    var_export($n->kind);  // line 30
 }
 EOT;
         return [
@@ -1110,7 +1112,7 @@ EOT
             ],
             [
                 $example_file_contents,
-                new Position(28, 16),  // AssertionError
+                new Position(28, 45),  // AssertionError
                 <<<'EOT'
 ```php
 public function __construct()
@@ -1119,6 +1121,20 @@ public function __construct()
 Construct an instance of `\AssertionError`.
 
 `AssertionError` is thrown when an assertion made via `assert` fails.
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(30, 20),  // ast\Node->children
+                <<<'EOT'
+```php
+public $kind
+```
+
+AST Node Kind. Values are one of `ast\AST_*` constants.
 EOT
                 ,
                 null,

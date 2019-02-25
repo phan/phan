@@ -38,6 +38,14 @@ namespace Phan\Language\Internal;
  *   Note that the summaries are used in a wide variety of contexts, and what makes sense for Phan may not make sense for those projects, and vice versa.
  */
 return [
+'ast\Metadata::kind' => 'AST node kind (one of the `ast\AST_*` constants).',
+'ast\Metadata::name' => 'Name of the node kind (e.g. "AST_NAME").',
+'ast\Metadata::flags' => 'Array of supported flags. The flags are given as names of constants, such as "ast\flags\TYPE_STRING".',
+'ast\Metadata::flagsCombinable' => 'Whether the flags are exclusive or combinable. Exclusive flags should be checked using ===, while combinable flags should be checked using &.',
+'ast\Node::children' => 'Child nodes (may be empty)',
+'ast\Node::flags' => 'Certain node kinds have flags that can be set. These will be a bitfield of `ast\flags\*` constants.',
+'ast\Node::kind' => 'AST Node Kind. Values are one of `ast\AST_*` constants.',
+'ast\Node::lineno' => 'Line the node starts in',
 'classObj::label' => 'Removed (6.2) - use addLabel, getLabel, ...',
 'classObj::numlabels' => 'read-only (since 6.2)',
 'classObj::numstyles' => 'read-only',
