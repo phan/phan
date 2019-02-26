@@ -1572,6 +1572,14 @@ If possible, exclude one of the files containing the conflicting definitions.
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0278_class_alias.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0278_class_alias.php#L36).
 
+## PhanRedefineClassConstant
+
+```
+Class constant {CONST} defined at {FILE}:{LINE} was previously defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0639_duplicate_const_prop.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0639_duplicate_const_prop.php#L9).
+
 ## PhanRedefineClassInternal
 
 If you attempt to create a class that has the same name and namespace as a class that is internal to PHP, you'll see this issue.
@@ -1614,6 +1622,14 @@ You'll see this issue with code like
 ```php
 function strlen() {}
 ```
+
+## PhanRedefineProperty
+
+```
+Property ${PROPERTY} defined at {FILE}:{LINE} was previously defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/files/expected/0639_duplicate_const_prop.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/files/src/0639_duplicate_const_prop.php#L5).
 
 ## PhanRedefinedExtendedClass
 
@@ -3305,7 +3321,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0
 ## PhanMisspelledAnnotation
 
 ```
-Saw misspelled annotation {COMMENT}, should be one of {COMMENT}
+Saw misspelled annotation {COMMENT}. {SUGGESTION}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0301_comment_checks.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0301_comment_checks.php#L7).

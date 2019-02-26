@@ -328,6 +328,8 @@ class Issue
     const RedefineClassInternal     = 'PhanRedefineClassInternal';
     const RedefineFunction          = 'PhanRedefineFunction';
     const RedefineFunctionInternal  = 'PhanRedefineFunctionInternal';
+    const RedefineClassConstant     = 'PhanRedefineClassConstant';
+    const RedefineProperty          = 'PhanRedefineProperty';
     const IncompatibleCompositionProp = 'PhanIncompatibleCompositionProp';
     const IncompatibleCompositionMethod = 'PhanIncompatibleCompositionMethod';
     const RedefinedUsedTrait            = 'PhanRedefinedUsedTrait';
@@ -2876,6 +2878,7 @@ class Issue
                 self::REMEDIATION_B,
                 8001
             ),
+            // TODO: Split into RedefineMethod, which would be fatal
             new Issue(
                 self::RedefineFunction,
                 self::CATEGORY_REDEFINE,
@@ -2939,6 +2942,22 @@ class Issue
                 "{CLASS} extends {CLASS} declared at {FILE}:{LINE} which is also declared at {FILE}:{LINE}. This may lead to confusing errors.",
                 self::REMEDIATION_B,
                 8009
+            ),
+            new Issue(
+                self::RedefineClassConstant,
+                self::CATEGORY_REDEFINE,
+                self::SEVERITY_CRITICAL,
+                "Class constant {CONST} defined at {FILE}:{LINE} was previously defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                8010
+            ),
+            new Issue(
+                self::RedefineProperty,
+                self::CATEGORY_REDEFINE,
+                self::SEVERITY_CRITICAL,
+                'Property ${PROPERTY} defined at {FILE}:{LINE} was previously defined at {FILE}:{LINE}',
+                self::REMEDIATION_B,
+                8011
             ),
 
             // Issue::CATEGORY_ACCESS
