@@ -28,6 +28,7 @@ Plugins:
 + Add `SuspiciousParamOrderPlugin` which guesses if arguments to functions are out of order based on the names used in the argument expressions.
 
   E.g. warns about invoking `function example($first, $second, $third)` as `example($mySecond, $myThird, $myFirst)`
++ Warn if too many arguments are passed to `emitIssue`, `emitPluginIssue`, etc. (#2481)
 
 Bug fixes:
 + Support parsing nullable template types in PHPDoc (e.g. `@return ?T`)

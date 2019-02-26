@@ -12,7 +12,7 @@ use Phan\Language\Element\TypedElement;
  */
 class ElementContext extends Context
 {
-    /** @var AddressableElement $element */
+    /** @var ?AddressableElement $element */
     private $element;
     public function __construct(AddressableElement $element)
     {
@@ -25,9 +25,21 @@ class ElementContext extends Context
         return true;
     }
 
-    public function getElementInScope(CodeBase $unused_code_base) : TypedElement
+    /**
+     * Manually free the element reference to avoid the gc loop of
+     * Element -> Parameter -> ElementContext -> Element
+     *
+     * (Phan runs without garbage collection for performance reasons)
+     * @return void
+     */
+    public function freeElementReference()
     {
-        return $this->element;
+        $this->element = null;
+    }
+
+    public function getElementInScope(CodeBase $code_base) : TypedElement
+    {
+        return $this->element ?? parent::getElementInScope($code_base);
     }
 
     public function isInGlobalScope() : bool
