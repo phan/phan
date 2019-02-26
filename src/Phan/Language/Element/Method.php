@@ -11,6 +11,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Language\Context;
+use Phan\Language\ElementContext;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type\GenericArrayType;
@@ -395,11 +396,12 @@ class Method extends ClassElement implements FunctionInterface
         // See PostOrderAnalysisVisitor->analyzeCallToMethod
         $method->setComment($comment);
 
+        $element_context = new ElementContext($method);
         // @var array<int,Parameter>
         // The list of parameters specified on the
         // method
         $parameter_list = Parameter::listFromNode(
-            $method->getContext(),
+            $element_context,
             $code_base,
             $node->children['params']
         );
@@ -493,6 +495,7 @@ class Method extends ClassElement implements FunctionInterface
             $method->setUnionType($method->getUnionType()->withUnionType($comment_return_union_type));
             $method->setPHPDocReturnType($comment_return_union_type);
         }
+        $element_context->freeElementReference();
 
         return $method;
     }

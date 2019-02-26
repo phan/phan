@@ -57,6 +57,9 @@ class IssueInstance
         $this->line = $line;
         $this->suggestion = $suggestion;
 
+        if ($issue->getExpectedArgumentCount() !== count($template_parameters)) {
+            fprintf(STDERR, "Unexpected argument count for %s: Expected %d args, got %d\n", $issue->getTemplate(), $issue->getExpectedArgumentCount(), count($template_parameters));
+        }
         // color_issue_message will interfere with some formatters, such as xml.
         if (Config::getValue('color_issue_messages')) {
             $this->message = self::generateColorizedMessage($issue, $template_parameters);

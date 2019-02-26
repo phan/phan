@@ -10,6 +10,7 @@ use Phan\Language\Element\UnaddressableTypedElement;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Phan\Library\ConversionSpec;
 use Phan\Plugin\ConfigPluginSet;
 
 /**
@@ -553,6 +554,9 @@ class Issue
 
     /** @var string The printf format string for this issue type. If --color is enabled, this will have unix color codes. */
     private $template;
+
+    /** @var int the expected number of arguments to the format string $this->template */
+    private $argument_count;
 
     /** @var int self::REMEDIATION_* */
     private $remediation_difficulty;
@@ -3717,6 +3721,23 @@ class Issue
     public function getTemplate() : string
     {
         return $this->template;
+    }
+
+    /**
+     * Returns the number of arguments expected for the format string $this->getTemplate()
+     */
+    public function getExpectedArgumentCount() : int
+    {
+        return $this->argument_count ?? $this->argument_count = $this->computeExpectedArgumentCount();
+    }
+
+    private function computeExpectedArgumentCount() : int
+    {
+        $result = 0;
+        foreach (ConversionSpec::extractAll($this->template) as $i => $_) {
+            $result = \max($result, $i);
+        }
+        return $result;
     }
 
     /**

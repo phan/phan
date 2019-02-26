@@ -11,6 +11,7 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\ElementContext;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Scope\ClosureScope;
@@ -181,11 +182,13 @@ class Func extends AddressableElement implements FunctionInterface
         // See PreOrderAnalysisVisitor->visitFuncDecl and visitClosure
         $func->setComment($comment);
 
+        $element_context = new ElementContext($func);
+
         // @var array<int,Parameter>
         // The list of parameters specified on the
         // method
         $parameter_list = Parameter::listFromNode(
-            $func->getContext(),
+            $element_context,
             $code_base,
             $node->children['params']
         );
@@ -298,6 +301,7 @@ class Func extends AddressableElement implements FunctionInterface
             $func->setUnionType($func->getUnionType()->withUnionType($union_type));
             $func->setPHPDocReturnType($union_type);
         }
+        $element_context->freeElementReference();
 
         return $func;
     }
