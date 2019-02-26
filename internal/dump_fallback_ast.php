@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php declare(strict_types=1);
 
 /**
@@ -41,6 +42,19 @@ dump_main();
  */
 function dump_main()
 {
+    $print_help = static function (int $exit_code) {
+        global $argv;
+        $help = <<<"EOB"
+Usage: php [--help|-h|help] [--php-ast] {$argv[0]} 'snippet'
+E.g.
+  {$argv[0]} '2+2;'
+  {$argv[0]} '<?php function test() {}'
+  {$argv[0]} "$(cat 'path/to/file.php')"
+
+EOB;
+        echo $help;
+        exit($exit_code);
+    };
     error_reporting(E_ALL);
     global $argv;
 
@@ -54,21 +68,14 @@ function dump_main()
             $as_php_ast = true;
             $as_php_ast_with_placeholders = true;
             unset($argv[$i]);
+        } elseif (in_array($argv[$i], ['help', '-h', '--help'])) {
+            $print_help(0);
         }
     }
     $argv = array_values($argv);
 
     if (count($argv) !== 2) {
-        $help = <<<"EOB"
-Usage: php [--php-ast] {$argv[0]} 'snippet'
-E.g.
-  {$argv[0]} '2+2;'
-  {$argv[0]} '<?php function test() {}'
-  {$argv[0]} "$(cat 'path/to/file.php')"
-
-EOB;
-        echo $help;
-        exit(1);
+        $print_help(1);
     }
     $expr = $argv[1];
     if (!is_string($expr)) {
