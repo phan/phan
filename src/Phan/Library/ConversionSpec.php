@@ -116,4 +116,3 @@ class ConversionSpec
         return self::ARG_TYPE_LOOKUP[$this->arg_type] ?? 'string';
     }
 }
-

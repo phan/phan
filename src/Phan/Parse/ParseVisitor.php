@@ -460,6 +460,26 @@ class ParseVisitor extends ScopeVisitor
                 $class->getFQSEN(),
                 $property_name
             );
+            if ($this->code_base->hasPropertyWithFQSEN($property_fqsen)) {
+                $old_property = $this->code_base->getPropertyByFQSEN($property_fqsen);
+                if ($old_property->getDefiningFQSEN() === $property_fqsen) {
+                    // Note: PHPDoc properties are parsed by Phan before real properties, so they take precedence (e.g. they are more visible)
+                    // PhanRedefineMagicProperty is a separate check.
+                    if ($old_property->isFromPHPDoc()) {
+                        continue;
+                    }
+                    $this->emitIssue(
+                        Issue::RedefineProperty,
+                        $child_node->lineno,
+                        $property_name,
+                        $this->context->getFile(),
+                        $child_node->lineno,
+                        $this->context->getFile(),
+                        $old_property->getContext()->getLineNumberStart()
+                    );
+                    continue;
+                }
+            }
 
             $property = new Property(
                 $context_for_property,
@@ -597,6 +617,21 @@ class ParseVisitor extends ScopeVisitor
                 $class->getFQSEN(),
                 $name
             );
+            if ($this->code_base->hasClassConstantWithFQSEN($fqsen)) {
+                $old_constant = $this->code_base->getClassConstantByFQSEN($fqsen);
+                if ($old_constant->getDefiningFQSEN() === $fqsen) {
+                    $this->emitIssue(
+                        Issue::RedefineClassConstant,
+                        $child_node->lineno,
+                        $name,
+                        $this->context->getFile(),
+                        $child_node->lineno,
+                        $this->context->getFile(),
+                        $old_constant->getContext()->getLineNumberStart()
+                    );
+                    continue;
+                }
+            }
 
             // Get a comment on the declaration
             $doc_comment = $child_node->children['docComment'] ?? '';
