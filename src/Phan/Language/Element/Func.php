@@ -154,15 +154,6 @@ class Func extends AddressableElement implements FunctionInterface
         Node $node,
         FullyQualifiedFunctionName $fqsen
     ) : Func {
-        // @var array<int,Parameter>
-        // The list of parameters specified on the
-        // function
-        $parameter_list = Parameter::listFromNode(
-            $context,
-            $code_base,
-            $node->children['params']
-        );
-
         // Create the skeleton function object from what
         // we know so far
         $func = new Func(
@@ -171,7 +162,7 @@ class Func extends AddressableElement implements FunctionInterface
             UnionType::empty(),
             $node->flags ?? 0,
             $fqsen,
-            $parameter_list
+            null
         );
         $doc_comment = $node->children['docComment'] ?? '';
         $func->setDocComment($doc_comment);
@@ -185,6 +176,20 @@ class Func extends AddressableElement implements FunctionInterface
             $node->lineno ?? 0,
             Comment::ON_FUNCTION
         );
+
+        // Defer adding params to the local scope for user functions. (FunctionTrait::addParamsToScopeOfFunctionOrMethod)
+        // See PreOrderAnalysisVisitor->visitFuncDecl and visitClosure
+        $func->setComment($comment);
+
+        // @var array<int,Parameter>
+        // The list of parameters specified on the
+        // method
+        $parameter_list = Parameter::listFromNode(
+            $func->getContext(),
+            $code_base,
+            $node->children['params']
+        );
+        $func->setParameterList($parameter_list);
 
         // Redefine the function's internal scope to point to the new class before adding any variables to the scope.
 
@@ -293,10 +298,6 @@ class Func extends AddressableElement implements FunctionInterface
             $func->setUnionType($func->getUnionType()->withUnionType($union_type));
             $func->setPHPDocReturnType($union_type);
         }
-
-        // Defer adding params to the local scope for user functions. (FunctionTrait::addParamsToScopeOfFunctionOrMethod)
-        // See PreOrderAnalysisVisitor->visitFuncDecl and visitClosure
-        $func->setComment($comment);
 
         return $func;
     }

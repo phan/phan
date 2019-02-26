@@ -20,6 +20,9 @@ New features(CLI):
 Language Server/Daemon mode:
 + Show plaintext summaries of internal classes, functions, methods, constants, and properties when hover text is requested.
 
+Maintenance
++ Render the constents in `PhanUndeclaredMagicConstant` as `__METHOD__` instead of `MAGIC_METHOD`
+
 Plugins:
 + Add `HandleLazyLoadInternalFunctionCapability` so that plugins can modify Phan's information about internal global functions when those functions are loaded after analysis starts.
 + Add `SuspiciousParamOrderPlugin` which guesses if arguments to functions are out of order based on the names used in the argument expressions.
@@ -29,6 +32,8 @@ Plugins:
 Bug fixes:
 + Support parsing nullable template types in PHPDoc (e.g. `@return ?T`)
 + Allow casting `null` to `?\MyClass<\Something>`.
++ Fix false positive PhanUndeclaredMagicConstant for `__METHOD__` and `__FUNCTION__` in function/method parameters (#2490)
++ More consistently emit `PhanParamReqAfterOpt` in methods (#1843).
 
 18 Feb 2019, Phan 1.2.4
 -----------------------

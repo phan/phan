@@ -882,11 +882,12 @@ class Clazz extends AddressableElement
                 $class_fqsen,
                 $method_name
             );
-            $real_parameter_list = \array_map(static function (\Phan\Language\Element\Comment\Parameter $parameter) use ($context) : Parameter {
-                return $parameter->asRealParameter($context);
+            $method_context = clone($context)->withLineNumberStart($comment_method->getLine());
+            $real_parameter_list = \array_map(static function (\Phan\Language\Element\Comment\Parameter $parameter) use ($method_context) : Parameter {
+                return $parameter->asRealParameter($method_context);
             }, $comment_method->getParameterList());
             $method = new Method(
-                clone($context)->withLineNumberStart($comment_method->getLine()),
+                $method_context,
                 $method_name,
                 $comment_method->getUnionType(),
                 $flags,

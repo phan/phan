@@ -74,8 +74,22 @@ class ParameterTypesAnalyzer
 
         // Look at each parameter to make sure their types
         // are valid
+        $is_optional_seen = false;
         foreach ($method->getParameterList() as $parameter) {
             $union_type = $parameter->getUnionType();
+
+            if ($parameter->isOptional()) {
+                $is_optional_seen = true;
+            } else {
+                if ($is_optional_seen) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::ParamReqAfterOpt,
+                        $parameter->getFileRef()->getLineNumberStart()
+                    );
+                }
+            }
 
             // Look at each type in the parameter's Union Type
             foreach ($union_type->getReferencedClasses() as $outer_type => $type) {

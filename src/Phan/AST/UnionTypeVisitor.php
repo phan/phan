@@ -370,14 +370,14 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     const MAGIC_CONST_NAME_MAP = [
-        ast\flags\MAGIC_LINE => 'MAGIC_LINE',
-        ast\flags\MAGIC_FILE => 'MAGIC_FILE',
-        ast\flags\MAGIC_DIR => 'MAGIC_DIR',
-        ast\flags\MAGIC_NAMESPACE => 'MAGIC_NAMESPACE',
-        ast\flags\MAGIC_FUNCTION => 'MAGIC_FUNCTION',
-        ast\flags\MAGIC_METHOD => 'MAGIC_METHOD',
-        ast\flags\MAGIC_CLASS => 'MAGIC_CLASS',
-        ast\flags\MAGIC_TRAIT => 'MAGIC_TRAIT',
+        ast\flags\MAGIC_LINE => '__LINE__',
+        ast\flags\MAGIC_FILE => '__FILE__',
+        ast\flags\MAGIC_DIR => '__DIR__',
+        ast\flags\MAGIC_NAMESPACE => '__NAME__',
+        ast\flags\MAGIC_FUNCTION => '__FUNCTION__',
+        ast\flags\MAGIC_METHOD => '__METHOD__',
+        ast\flags\MAGIC_CLASS => '__CLASS__',
+        ast\flags\MAGIC_TRAIT => '__TRAIT__',
     ];
 
     /**

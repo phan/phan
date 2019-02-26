@@ -180,24 +180,9 @@ class Parameter extends Variable
         Node $node
     ) : array {
         $parameter_list = [];
-        $is_optional_seen = false;
         foreach ($node->children as $child_node) {
             $parameter =
                 Parameter::fromNode($context, $code_base, $child_node);
-
-            if (!$parameter->isOptional() && $is_optional_seen) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::ParamReqAfterOpt,
-                    $node->lineno ?? 0
-                );
-            } elseif ($parameter->isOptional()
-                && !$is_optional_seen
-                && $parameter->getNonVariadicUnionType()->isEmpty()
-            ) {
-                $is_optional_seen = true;
-            }
 
             $parameter_list[] = $parameter;
         }
