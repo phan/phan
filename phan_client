@@ -2,7 +2,7 @@
 <?php
 /**
  * Usage: phan_client -l path/to/file.php
- * Compatible with php 5.6, 7.0 and php 7.1.
+ * Compatible with php 5.6 and php 7.x
  * (The server itself requires a newer php version)
  *
  * See plugins/vim/snippet.vim for an example of a use of this program.
