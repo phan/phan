@@ -324,14 +324,16 @@ class DefinitionResolver
         if (!is_string($name)) {
             return;
         }
-        if (!$context->getScope()->hasVariableWithName($name)) {
-            return;
-        }
         if (!$request->getIsTypeDefinitionRequest() && !$request->getIsHoverRequest()) {
             // TODO: Implement "Go To Definition" for variables with heuristics or create a new plugin
             return;
         }
-        $variable = $context->getScope()->getVariableByName($name);
+        // Get the variable or superglobal
+        try {
+            $variable = (new ContextNode($code_base, $context, $node))->getVariable();
+        } catch (Exception $_) {
+            return;
+        }
 
         $request->recordDefinitionOfVariableType($code_base, $context, $variable);
     }

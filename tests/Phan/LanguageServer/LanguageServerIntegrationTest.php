@@ -875,7 +875,7 @@ function example(MyClass $arg) {
     var_export($c->descriptionlessProp); var_export(ExampleClass::$typelessProp);
 }
 /**
- * @param string|false $strVal line 15
+ * @param string|false $strVal line 15 description text
  * @param array<string,stdClass> $arrVal
  */
 function example2($strVal, array $arrVal) {
@@ -891,6 +891,7 @@ function test(ExampleClass $c) {  // line 25
     if (rand() % 2 > 0) { throw new AssertionError('some condition failed'); }
     $n = ast\parse_code('<?php $x = 2;', 50);
     var_export($n->kind);  // line 30
+    var_export($_ENV);
 }
 EOT;
         return [
@@ -1041,7 +1042,7 @@ EOT
             [
                 $example_file_contents,
                 new Position(19, 15),  // $strVal
-                '`false|string`',
+                '`false|string` line 15 description text',
                 null,
                 true
             ],
@@ -1135,6 +1136,16 @@ public $kind
 ```
 
 AST Node Kind. Values are one of `ast\AST_*` constants.
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(31, 18),  // $_ENV
+                <<<'EOT'
+`array<string,string>` An associative array of variables passed to the current script via the environment method.
 EOT
                 ,
                 null,

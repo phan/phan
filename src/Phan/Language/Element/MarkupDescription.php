@@ -195,7 +195,7 @@ class MarkupDescription
     /**
      * @return array<string,string> information about the param tags
      */
-    public static function extractParamTagsFromDocComment(AddressableElementInterface $element) : array
+    public static function extractParamTagsFromDocComment(AddressableElementInterface $element, bool $with_param_details = true) : array
     {
         $doc_comment = $element->getDocComment();
         if (!$doc_comment) {
@@ -214,7 +214,7 @@ class MarkupDescription
         $lines = explode("\n", $doc_comment);
         foreach ($lines as $i => $line) {
             $line = self::trimLine($line);
-            if (!is_string($line) || preg_match('/^\s*@param(\s|$)@/', $line) > 0) {
+            if (preg_match('/^\s*@param(\s|$)/', $line) > 0) {
                 // Extract all of the (at)param annotations.
                 $param_tag_summary = self::extractTagSummary($lines, $i);
                 if (end($param_tag_summary) === '') {
@@ -226,13 +226,20 @@ class MarkupDescription
                 if (!$matched) {
                     continue;
                 }
-                if (!isset($match[21])) {
+                if (!isset($match[17])) {
                     continue;
                 }
 
-                $name = $match[21];
-                // @phan-suppress-next-line PhanAccessClassConstantInternal
-                $full_comment = \preg_replace(Builder::PARAM_COMMENT_REGEX, '`\0`', $full_comment);
+                $name = $match[17];
+                if ($with_param_details) {
+                    // Keep the param details and put them in a markdown quote
+                    // @phan-suppress-next-line PhanAccessClassConstantInternal
+                    $full_comment = \preg_replace(Builder::PARAM_COMMENT_REGEX, '`\0`', $full_comment);
+                } else {
+                    // Drop the param details
+                    // @phan-suppress-next-line PhanAccessClassConstantInternal
+                    $full_comment = \trim(\preg_replace(Builder::PARAM_COMMENT_REGEX, '', $full_comment));
+                }
                 $results[$name] = $full_comment;
             }
         }
