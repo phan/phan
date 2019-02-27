@@ -491,7 +491,7 @@ class CLI
                     break;
                 case 'i':
                 case 'ignore-undeclared':
-                    $mask |= Issue::CATEGORY_UNDEFINED;
+                    $mask &= ~Issue::CATEGORY_UNDEFINED;
                     break;
                 case '3':
                 case 'exclude-directory-list':
