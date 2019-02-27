@@ -9,6 +9,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\MarkupDescription;
+use Phan\Language\Element\TypedElementInterface;
 use Phan\Language\Element\Variable;
 use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
@@ -17,7 +18,6 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type\StaticOrSelfType;
 use Phan\Language\Type\TemplateType;
-use Phan\Language\UnionType;
 use Phan\LanguageServer\Protocol\Hover;
 use Phan\LanguageServer\Protocol\Location;
 use Phan\LanguageServer\Protocol\MarkupContent;
@@ -79,7 +79,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     ) {
         if ($this->getIsTypeDefinitionRequest() && $resolve_type_definition_if_needed) {
             if (!($element instanceof Clazz)) {
-                $this->recordTypeOfElement($code_base, $element->getContext(), $element->getUnionType());
+                $this->recordTypeOfElement($code_base, $element->getContext(), $element);
                 return;
             }
         }
@@ -112,20 +112,33 @@ final class GoToDefinitionRequest extends NodeInfoRequest
 
     /**
      * Precondition: $this->getIsHoverRequest()
+     * @return void
      */
     private function recordHoverTextForElementType(
         CodeBase $code_base,
         Context $context,
-        UnionType $union_type
+        TypedElementInterface $element
     ) {
+        $union_type = $element->getUnionType();
         $type_set = $union_type->getTypeSet();
+        $description = null;
+        if ($element instanceof Variable) {
+            $description = $this->getDescriptionOfVariable($code_base, $context, $element);
+        }
         if (count($type_set) === 0) {
-            // Don't bother generating hover text if there are no known types, maybe a subsequent call will have types
+            if ($description) {
+                $this->setHoverMarkdown($description);
+            }
+            // Don't bother generating hover text if there are no known types or descriptions, maybe a subsequent call will have types
             return;
         }
-        $maybe_set_markdown_to_union_type = function () use ($union_type) {
+        $maybe_set_markdown_to_union_type = function () use ($union_type, $description) {
             if ($this->hover_response === null) {
-                $this->setHoverMarkdown(sprintf('`%s`', (string)$union_type));
+                $markdown = sprintf('`%s`', (string)$union_type);
+                if ($description) {
+                    $markdown = sprintf("%s %s", $markdown, $description);
+                }
+                $this->setHoverMarkdown($markdown);
             }
         };
         if (count($type_set) >= 2) {
@@ -164,6 +177,55 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     }
 
     /**
+     * Based on https://secure.php.net/manual/en/reserved.variables.php
+     */
+    const GLOBAL_DESCRIPTIONS = [
+        'argc' => 'The number of arguments passed to the script',
+        'argv' => 'Array of arguments passed to the script. The first argument `$argv[0]` is always the name that was used to run the script.',
+        '_COOKIE' => 'An associative array of variables passed to the current script via HTTP Cookies.',
+        '_ENV' => 'An associative array of variables passed to the current script via the environment method.',
+        '_FILES' => 'An associative array of items uploaded to the current script via the HTTP POST method.',
+        '_GET' => 'An associative array of variables passed to the current script via the URL parameters (aka. query string).',
+        '_GLOBALS' => 'References all variables available in global scope',
+        '_POST' => 'An associative array of variables passed to the current script via the HTTP POST method when using *application/x-www-form-urlencoded* or *multipart/form-data* as the HTTP Content-Type in the request.',
+        '_REQUEST' => 'An associative array that by default contains the contents of $_GET, $_POST and $_COOKIE.',
+        '_SERVER' => 'An array containing information such as headers, paths, and script locations. The entries in this array are created by the web server.',
+        '_SESSION' => 'An associative array containing session variables available to the current script.',
+    ];
+
+    /**
+     * @return ?string
+     */
+    public function getDescriptionOfVariable(
+        CodeBase $code_base,
+        Context $context,
+        Variable $variable
+    ) {
+        $variable_name = $variable->getName();
+        $description = self::GLOBAL_DESCRIPTIONS[$variable_name] ?? null;
+        if ($description) {
+            return $description;
+        }
+        if (!$context->isInFunctionLikeScope()) {
+            return null;
+        }
+        $function = $context->getFunctionLikeInScope($code_base);
+        // TODO(optional): Use inheritance to find descriptions for the corresponding parameters of ancestor classes/interfaces
+        // TODO(optional): Could support (at)var
+        $param_tags = MarkupDescription::extractParamTagsFromDocComment($function, false);
+        $variable_description = $param_tags[$variable_name] ?? null;
+        if (!$variable_description) {
+            return null;
+        }
+        // Remove the first part of '`@param int $x` description'
+        $variable_description = preg_replace('@^`[^`]*`\s*@', '', $variable_description);
+        if (!$variable_description) {
+            return null;
+        }
+        return $variable_description;
+    }
+
+    /**
      * @param CodeBase $code_base used for resolving type location in "Go To Type Definition"
      * @param Context $context used for resolving 'self'/'static', etc.
      * @return void
@@ -173,7 +235,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         Context $context,
         Variable $variable
     ) {
-        $this->recordTypeOfElement($code_base, $context, $variable->getUnionType());
+        $this->recordTypeOfElement($code_base, $context, $variable);
     }
 
     /**
@@ -182,12 +244,13 @@ final class GoToDefinitionRequest extends NodeInfoRequest
     private function recordTypeOfElement(
         CodeBase $code_base,
         Context $context,
-        UnionType $union_type
+        TypedElementInterface $element
     ) {
         if ($this->getIsHoverRequest()) {
-            $this->recordHoverTextForElementType($code_base, $context, $union_type);
+            $this->recordHoverTextForElementType($code_base, $context, $element);
             return;
         }
+        $union_type = $element->getUnionType();
 
         // Do something similar to the check for undeclared classes
         foreach ($union_type->getTypeSet() as $type) {

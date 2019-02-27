@@ -20,6 +20,7 @@ New features(CLI):
 
 Language Server/Daemon mode:
 + Show plaintext summaries of internal classes, functions, methods, constants, and properties when hover text is requested.
++ Show descriptions of superglobals and function parameters when hovering over a variable.
 
 Maintenance
 + Render the constents in `PhanUndeclaredMagicConstant` as `__METHOD__` instead of `MAGIC_METHOD`
