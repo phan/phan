@@ -126,5 +126,6 @@ return [
         'SleepCheckerPlugin',
         'DuplicateExpressionPlugin',
         'SuspiciousParamOrderPlugin',
+        'WhitespacePlugin',
     ],
 ];

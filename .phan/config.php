@@ -459,6 +459,8 @@ return [
         'NoAssertPlugin',
 
         'HasPHPDocPlugin',
+        // warns about carriage returns("\r"), trailing whitespace, and tabs in PHP files.
+        'WhitespacePlugin',
 
         ////////////////////////////////////////////////////////////////////////
         // End plugins for Phan's self-analysis
