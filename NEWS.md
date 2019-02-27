@@ -6,6 +6,9 @@ Phan NEWS
 Language Server/Daemon mode:
 + Fix an error in the language server on didChangeConfiguration
 
+Bug fixes:
++ Fix bug: `--ignore-undeclared` failed to properly ignore undeclared elements since 1.2.3 (#2502)
+
 27 Feb 2019, Phan 1.2.5
 -----------------------
 
