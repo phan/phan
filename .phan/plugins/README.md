@@ -237,7 +237,7 @@ Enforces that loose equality is used for numeric operands (e.g. `2 == 2.0`), and
 
 - **PhanPluginNumericalComparison**: nonnumerical values compared by the operators '==' or '!=='; numerical values compared by the operators '===' or '!=='
 
-#### PHPUnitNotDeadCodePlugin
+#### PHPUnitNotDeadCodePlugin.php
 
 Marks unit tests and dataProviders of subclasses of PHPUnit\Framework\TestCase as referenced.
 Avoids false positives when `--dead-code-detection` is enabled.
@@ -278,6 +278,14 @@ that are likely to be a bug. (e.g. `expr1 == expr`)
 - **PhanPluginDuplicateConditionalTernaryDuplication**: `"X ? X : Y" can usually be simplified to "X ?: Y". The duplicated expression X was {CODE}`
 - **PhanPluginDuplicateConditionalNullCoalescing**: `"isset(X) ? X : Y" can usually be simplified to "X ?? Y" in PHP 7. The duplicated expression X was {CODE}`
 - **PhanPluginBothLiteralsBinaryOp**: `Suspicious usage of a binary operator where both operands are literals. Expression: {CODE} {OPERATOR} {CODE} (result is {CODE})` (e.g. warns about `null == 'a literal` in `$x ?? null == 'a literal'`)
+
+#### WhitespacePlugin.php
+
+This plugin checks for unexpected whitespace in PHP files.
+
+- **PhanPluginWhitespaceCarriageReturn**: `The first occurrence of a carriage return ("\r") was seen here. Running "dos2unix" can fix that.`
+- **PhanPluginWhitespaceTab**: `The first occurrence of a tab was seen here. Running "expand" can fix that.`
+- **PhanPluginWhitespaceTrailing**: `The first occurrence of trailing whitespace was seen here.`
 
 #### SuspiciousParamOrderPlugin.php
 

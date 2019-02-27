@@ -25,6 +25,7 @@ Maintenance
 + Render the constents in `PhanUndeclaredMagicConstant` as `__METHOD__` instead of `MAGIC_METHOD`
 
 Plugins:
++ Add `WhitespacePlugin` to check for trailing whitespace, tabs, and carriage returns in PHP files.
 + Add `HandleLazyLoadInternalFunctionCapability` so that plugins can modify Phan's information about internal global functions when those functions are loaded after analysis starts.
 + Add `SuspiciousParamOrderPlugin` which guesses if arguments to functions are out of order based on the names used in the argument expressions.
 
