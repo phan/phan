@@ -1,5 +1,11 @@
 Phan NEWS
 
+?? ??? 2019, Phan 1.2.6 (dev)
+-----------------------
+
+Language Server/Daemon mode:
++ Fix an error in the language server on didChangeConfiguration
+
 27 Feb 2019, Phan 1.2.5
 -----------------------
 

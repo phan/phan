@@ -83,7 +83,8 @@ class Workspace
      * TODO: Define this so that Phan can respond to changes in client configuration.
      * @suppress PhanUnreferencedPublicMethod called by client via AdvancedJsonRpc
      *
-     * @param array<string,mixed> $settings @phan-unused-param
+     * @param array $settings @phan-unused-param
+     * @phan-param array<string,mixed> $settings @phan-unused-param NOTE: reflection-docblock does not support generic arrays
      * @return void (unimplemented)
      */
     public function didChangeConfiguration($settings)
