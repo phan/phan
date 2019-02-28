@@ -19,6 +19,7 @@ use Phan\Library\Cache;
 use Phan\Library\DiskCache;
 use Phan\Phan;
 use Phan\Plugin\ConfigPluginSet;
+use function error_reporting;
 
 /**
  * Parser parses the passed in PHP code based on configuration settings.
@@ -103,11 +104,21 @@ class Parser
                 // It may throw a ParseException, which is unintentionally not caught here.
                 return self::parseCodePolyfill($code_base, $context, $file_path, $file_contents, $suppress_parse_errors, $request);
             }
-            return \ast\parse_code(
-                $file_contents,
-                Config::AST_VERSION,
-                $file_path
-            );
+            // Suppress "declare(encoding=...) ignored because Zend multibyte feature is turned off by settings" (#1076)
+            // E_COMPILE_WARNING can't be caught by a PHP error handler,
+            // the errors are printed to stderr by default (can't be captured),
+            // and those errors might mess up language servers, etc. if ever printed to stdout
+            $original_error_reporting = error_reporting();
+            error_reporting($original_error_reporting & ~\E_COMPILE_WARNING);
+            try {
+                return \ast\parse_code(
+                    $file_contents,
+                    Config::AST_VERSION,
+                    $file_path
+                );
+            } finally {
+                error_reporting($original_error_reporting);
+            }
         } catch (ParseError $native_parse_error) {
             return self::handleParseError($code_base, $context, $file_path, $file_contents, $suppress_parse_errors, $native_parse_error);
         } catch (CompileError $native_parse_error) {
