@@ -17,9 +17,11 @@ rm $ACTUAL_PATH -f || exit 1
 # We use the polyfill parser because it behaves consistently in all php versions.
 ../../phan --force-polyfill-parser --memory-limit 1G | tee $ACTUAL_PATH
 
-sed -i 's,\<closure_[0-9a-f]\{12\}\>,closure_%s,g' $ACTUAL_PATH $EXPECTED_PATH
-sed -i "s,[^\\']*plugin_test[/\\\\],,g" $ACTUAL_PATH $EXPECTED_PATH
-# php 7.3 compat
+sed -i -e 's,\<closure_[0-9a-f]\{12\}\>,closure_%s,g' \
+    -e "s,[^\\']*plugin_test[/\\\\],,g" \
+    -e 's,\(PhanTypeErrorInInternalCall.*\)integer given,\1int given,g' \
+    $ACTUAL_PATH $EXPECTED_PATH
+
 sed -i 's,missing closing parenthesis,missing ),g' $ACTUAL_PATH
 
 # diff returns a non-zero exit code if files differ or are missing
