@@ -24,3 +24,9 @@ expect_zero(strlen('test'));
 expect_zero(ord('x'));
 expect_zero(strtoupper('Test'));
 expect_zero(strtolower('Test'));
+function test_json_decode(string $x) {
+    // inferred array types of json_decode are in the issue message
+    fwrite(json_decode($x, true), 'argument');
+    fwrite(json_decode($x, false), 'argument');
+}
+test_json_decode('[]');

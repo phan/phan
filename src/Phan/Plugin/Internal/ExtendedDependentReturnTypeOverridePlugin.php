@@ -37,6 +37,7 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV2 implement
     private static function getReturnTypeOverridesStatic(CodeBase $code_base) : array
     {
         $string_union_type = StringType::instance(false)->asUnionType();
+        $mixed_union_type = MixedType::instance(false)->asUnionType();
         /**
          * @param callable-string $function
          * @return Closure(CodeBase,Context,Func,array):UnionType
@@ -92,6 +93,29 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV2 implement
                 return Type::fromObjectExtended($result)->asUnionType();
             };
         };
+        $basic_return_type_overrides = (new DependentReturnTypeOverridePlugin())->getReturnTypeOverrides($code_base);
+        /**
+         * @param callable-string $function
+         */
+        $wrap_n_argument_function_with_fallback = static function (callable $function, int $min, int $max = null) use ($basic_return_type_overrides, $wrap_n_argument_function, $mixed_union_type) : Closure {
+            $cb = $wrap_n_argument_function($function, $min, $max, $mixed_union_type);
+            $cb_fallback = $basic_return_type_overrides[$function];
+            /**
+             * @param array<int,Node|string|int|float> $args
+             */
+            return static function (
+                CodeBase $code_base,
+                Context $context,
+                Func $function_decl,
+                array $args
+            ) use ($cb, $cb_fallback, $mixed_union_type) : UnionType {
+                $result = $cb($code_base, $context, $function_decl, $args);
+                if ($result !== $mixed_union_type) {
+                    return $result;
+                }
+                return $cb_fallback($code_base, $context, $function_decl, $args);
+            };
+        };
         $int_union_type = IntType::instance(false)->asUnionType();
 
         return [
@@ -103,7 +127,7 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV2 implement
             'explode'      => $wrap_n_argument_function('explode', 2, 3, UnionType::fromFullyQualifiedString('array<int,string>')),
             'implode'      => $wrap_n_argument_function('implode', 1, 2),
             // TODO: Improve this to warn about invalid json with json_error_last()
-            'json_decode'  => $wrap_n_argument_function('json_decode', 1, 4, MixedType::instance(false)->asUnionType()),
+            'json_decode'  => $wrap_n_argument_function_with_fallback('json_decode', 1, 4),
             'json_encode'  => $wrap_n_argument_function('json_encode', 1, 3, UnionType::fromFullyQualifiedString('string|false')),
             'substr'       => $wrap_n_argument_function('substr', 1, 3),
             'strlen'       => $wrap_n_argument_function('strlen', 1, 3),

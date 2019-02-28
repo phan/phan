@@ -36,11 +36,13 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
     ReturnTypeOverrideCapability
 {
     /**
+     * A static method to compute the return type override methods
      * @param CodeBase $code_base @phan-unused-param
      * @return array<string,\Closure>
      * @phan-return array<string, Closure(CodeBase,Context,Func,array):UnionType>
+     * @internal
      */
-    private static function getReturnTypeOverridesStatic(CodeBase $code_base) : array
+    public static function getReturnTypeOverridesStatic(CodeBase $code_base) : array
     {
         $string_union_type = StringType::instance(false)->asUnionType();
         $true_union_type = TrueType::instance(false)->asUnionType();
