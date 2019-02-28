@@ -26,12 +26,6 @@ trait Analyzable
     private $node = null;
 
     /**
-     * @var bool has $this->node already been annotated with any extra information
-     * from the class using this trait?
-     */
-    private $did_annotate_node = false;
-
-    /**
      * @var int
      * The depth of recursion on this analyzable
      * object
@@ -74,6 +68,24 @@ trait Analyzable
     }
 
     /**
+     * Ensure that annotations about what flags a function declaration has have been added
+     *
+     * @return void
+     * @suppress PhanUndeclaredProperty deliberately using dynamic properties
+     */
+    public static function ensureDidAnnotate(Node $node)
+    {
+        if (!isset($node->did_annotate_node)) {
+            // Set this to true to indicate that this node has already
+            // been annotated with any extra information
+            // from the class.
+            // (Nodes for a FunctionInterface can be both from the parse phase and the analysis phase)
+            $node->did_annotate_node = true;
+            PhanAnnotationAdder::applyToScope($node);
+        }
+    }
+
+    /**
      * @return Context
      * Analyze the node associated with this object
      * in the given context
@@ -90,10 +102,7 @@ trait Analyzable
         if (!$definition_node) {
             return $context;
         }
-        if (!$this->did_annotate_node) {
-            $this->did_annotate_node = true;
-            PhanAnnotationAdder::applyToScope($definition_node);
-        }
+        self::ensureDidAnnotate($definition_node);
 
         // Closures depend on the context surrounding them such
         // as for getting `use(...)` variables. Since we don't
