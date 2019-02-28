@@ -44,7 +44,7 @@ Language Server/Daemon mode:
 + Show descriptions of superglobals and function parameters when hovering over a variable.
 
 Maintenance
-+ Render the constents in `PhanUndeclaredMagicConstant` as `__METHOD__` instead of `MAGIC_METHOD`
++ Render the constants in `PhanUndeclaredMagicConstant` as `__METHOD__` instead of `MAGIC_METHOD`
 
 Plugins:
 + Add `WhitespacePlugin` to check for trailing whitespace, tabs, and carriage returns in PHP files.
