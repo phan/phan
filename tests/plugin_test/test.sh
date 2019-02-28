@@ -33,6 +33,8 @@ if [[ "$(php -r 'echo PHP_VERSION_ID;')" < 70100 ]]; then
     # TODO: If we imitate the reflection of php 7.1 in php 7.0, we can restore this.
     sed -i "/^.*PhanNativePHPSyntaxCheckPlugin.*unexpected '\\?'/d" $ACTUAL_PATH
 fi
+# Normalize PHP_VERSION_ID
+sed -i 's/^\(src.020_bool.php.*of type\) [0-9]\+ \(evaluated\)/\1 int \2/g' $ACTUAL_PATH
 
 diff $EXPECTED_PATH $ACTUAL_PATH
 EXIT_CODE=$?

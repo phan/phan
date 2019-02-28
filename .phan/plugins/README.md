@@ -86,7 +86,8 @@ This plugin is able to resolve literals, global constants, and class constants a
 - **PhanPluginPrintfWidthNotPosition**: `Format string {STRING_LITERAL} is specifying a width({STRING_LITERAL}) instead of a position({STRING_LITERAL})`
 - **PhanPluginPrintfIncompatibleSpecifier**: `Format string {STRING_LITERAL} refers to argument #{INDEX} in different ways: {DETAILS}` (e.g. `"%1$s of #%1$d"`. May be an off by one error.)
 - **PhanPluginPrintfIncompatibleArgumentTypeWeak**: `Format string {STRING_LITERAL} refers to argument #{INDEX} as {DETAILS}, so type {TYPE} is expected. However, {FUNCTION} was passed the type {TYPE} (which is weaker than {TYPE})`
-- **PhanPluginPrintfIncompatibleArgumentType**: `PhanPluginPrintfIncompatibleArgumentType`
+- **PhanPluginPrintfIncompatibleArgumentType**: `Format string {STRING_LITERAL} refers to argument #{INDEX} as {DETAILS}, so type {TYPE} is expected, but {FUNCTION} was passed incompatible type {TYPE}`
+- **PhanPluginPrintfVariableFormatString**: `Code {CODE} has a dynamic format string that could not be inferred by Phan`
 
 Note (for projects using `gettext`):
 Subclassing this plugin (and overriding `gettextForAllLocales`) will allow you to analyze translations of a project for compatibility.

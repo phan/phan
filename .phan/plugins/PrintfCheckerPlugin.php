@@ -4,6 +4,7 @@ namespace Phan\Plugin\PrintfCheckerPlugin;  // Don't pollute the global namespac
 
 use ast;
 use ast\Node;
+use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -58,6 +59,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
     const ERR_UNTRANSLATED_INCOMPATIBLE_ARGUMENT   = 1306;  // E.g. passing a string where an int is expected
     const ERR_UNTRANSLATED_INCOMPATIBLE_ARGUMENT_WEAK = 1307;  // E.g. passing an int where a string is expected
     const ERR_UNTRANSLATED_WIDTH_INSTEAD_OF_POSITION = 1308; // e.g. _('%1s'). Change to _('%1$1s' if you really mean that the width is 1, add positions for others ('%2$s', etc.)
+    const ERR_UNTRANSLATED_UNKNOWN_FORMAT_STRING   = 1310;
     const ERR_TRANSLATED_INCOMPATIBLE              = 1309;
     const ERR_TRANSLATED_HAS_MORE_ARGS             = 1311;
 
@@ -88,32 +90,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             return new PrimitiveValue($ast_node);
         }
         switch ($ast_node->kind) {
-            case \ast\AST_CONST:
-                $name_node = $ast_node->children['name'];
-                if ($name_node->kind === \ast\AST_NAME) {
-                    $name = $name_node->children['name'];
-                    if (!\is_string($name)) {
-                        return null;
-                    }
-
-                    if (\strcasecmp($name, '__DIR__') === 0) {
-                        // Relative to the directory of that file... Hopefully doesn't contain a format specifier
-                        return new PrimitiveValue('(__DIR__ literal)');
-                    } elseif (\strcasecmp($name, '__FILE__') === 0) {
-                        // Relative to the directory of that file... Hopefully doesn't contain a format specifier
-                        return new PrimitiveValue('(__FILE__ literal)');
-                    } elseif (\defined($name)) {
-                        // TODO: This can be an array, which is almost definitely wrong in printf contexts
-                        // FIXME use GlobalConstant to retrieve the literal's value
-                        $value = \constant($name);
-                        if (!\is_scalar($value)) {
-                            return null;
-                        }
-                        return new PrimitiveValue($value);
-                    }
-                }
-                return null;
-        // TODO: Resolve class constant access when those are format strings. Same for PregRegexCheckerPlugin.
+            // TODO: Resolve class constant access when those are format strings. Same for PregRegexCheckerPlugin.
             case \ast\AST_CALL:
                 $name_node = $ast_node->children['expr'];
                 if ($name_node->kind === \ast\AST_NAME) {
@@ -121,34 +98,42 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                     // TODO: ngettext?
                     $name = $name_node->children['name'];
                     if (!\is_string($name)) {
-                        return null;
+                        break;
                     }
                     if ($name === '_' || strcasecmp($name, 'gettext') === 0) {
                         $child_arg = $ast_node->children['args']->children[0] ?? null;
                         if ($child_arg === null) {
-                            return null;
+                            break;
                         }
                         $prim = self::astNodeToPrimitive($code_base, $context, $child_arg);
                         if ($prim === null) {
-                            return null;
+                            break;
                         }
                         return new PrimitiveValue($prim->value, true);
                     }
                 }
-                return null;
+                break;
             case \ast\AST_BINARY_OP:
                 if ($ast_node->flags !== ast\flags\BINARY_CONCAT) {
-                    return null;
+                    break;
                 }
                 $left = $this->astNodeToPrimitive($code_base, $context, $ast_node->children['left']);
                 if ($left === null) {
-                    return null;
+                    break;
                 }
                 $right = $this->astNodeToPrimitive($code_base, $context, $ast_node->children['right']);
                 if ($right === null) {
-                    return null;
+                    break;
                 }
-                return $this->concatenateToPrimitive($left, $right);
+                $result = $this->concatenateToPrimitive($left, $right);
+                if ($result) {
+                    return $result;
+                }
+                break;
+        }
+        $result = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $ast_node)->asSingleScalarValueOrNullOrSelf();
+        if (!is_object($result)) {
+            return new PrimitiveValue($result);
         }
         // We don't know how to convert this to a primitive, give up.
         // (Subclasses may add their own logic first, then call self::astNodeToPrimitive)
@@ -224,6 +209,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 $result = with_disabled_phan_error_handler(
                     /** @return string */
                     static function () use ($format_string, $sprintf_args) {
+                        // @phan-suppress-next-line PhanPluginPrintfVariableFormatString
                         return @vsprintf($format_string, $sprintf_args);
                     }
                 );
@@ -371,14 +357,21 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         // Given a node, extract the printf directive and whether or not it could be translated
         $primitive_for_fmtstr = $this->astNodeToPrimitive($code_base, $context, $pattern_node);
         if ($primitive_for_fmtstr === null) {
+            $this->emitIssue(
+                $code_base,
+                $context,
+                'PhanPluginPrintfVariableFormatString',
+                'Code {CODE} has a dynamic format string that could not be inferred by Phan',
+                [ASTReverter::toShortString($pattern_node)],
+                Issue::SEVERITY_LOW,
+                Issue::REMEDIATION_B,
+                self::ERR_UNTRANSLATED_UNKNOWN_FORMAT_STRING
+            );
             // TODO: Add a verbose option
             return;
         }
         // Make sure that the untranslated format string is being used correctly.
         // If the format string will be translated, also check the translations.
-        //
-        // Outputs any errors found to log and stdout.
-        // Check that the untranslated format string is being used correctly.
 
         $fmt_str = $primitive_for_fmtstr->value;
         $is_translated = $primitive_for_fmtstr->is_translated;

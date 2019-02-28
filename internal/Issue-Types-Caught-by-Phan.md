@@ -1954,6 +1954,16 @@ array to {TYPE} conversion
 
 e.g. [this issue](https://github.com/phan/phan/tree/1.1.2/tests/files/expected/0532_empty_array_element.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/1.1.2/tests/files/src/0532_empty_array_element.php#L2).
 
+## PhanTypeErrorInInternalCall
+
+NOTE: This is only emitted for the functions that `enable_extended_internal_return_type_plugins` would try to infer literal return values of.
+
+```
+Saw a call to an internal function {FUNCTION}() with what would be invalid arguments in strict mode, when trying to infer the return value literal type: {DETAILS}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/101_extended_return_inferences.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/101_extended_return_inferences.php#L22).
+
 ## PhanTypeExpectedObject
 
 ```

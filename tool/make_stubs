@@ -260,7 +260,7 @@ class StubCollection
         foreach ($this->toCombinedStubs() as $namespace => $stubs) {
             $concatenated_stubs_representation = implode('', $stubs);
             $namespace_repr = ($namespace === '' ? '' : "$namespace ");
-            $parts[] = sprintf("namespace $namespace_repr{\n%s}\n", $concatenated_stubs_representation);
+            $parts[] = sprintf("namespace %s{\n%s}\n", $namespace_repr, $concatenated_stubs_representation);
         }
         return implode("\n", $parts);
     }

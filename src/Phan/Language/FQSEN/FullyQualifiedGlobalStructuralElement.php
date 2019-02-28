@@ -7,7 +7,6 @@ use Phan\Exception\EmptyFQSENException;
 use Phan\Exception\FQSENException;
 use Phan\Exception\InvalidFQSENException;
 use Phan\Language\Context;
-use Phan\Language\Type;
 
 use function array_slice;
 
@@ -224,7 +223,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             return static::fromFullyQualifiedString($fqsen_string);
         }
         $namespace_map_type = static::getNamespaceMapType();
-        if ($namespace_map_type === \ast\AST_CONST && Type::fromReservedConstantName($fqsen_string)->isDefined()) {
+        if ($namespace_map_type === \ast\AST_CONST && \in_array(\strtolower($fqsen_string), ['true', 'false', 'null'], true)) {
             return static::fromFullyQualifiedString($fqsen_string);
         }
 
