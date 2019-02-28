@@ -338,7 +338,7 @@ class CLI
         if ($config_file_override !== null) {
             if (!is_string($config_file_override)) {
                 // Doesn't work for a mix of -k and --config-file, but low priority
-                throw new ExitException(sprintf("Expected exactly one file for --config-file, but saw " . StringUtil::jsonEncode($config_file_override) . "\n"), 1);
+                throw new ExitException("Expected exactly one file for --config-file, but saw " . StringUtil::jsonEncode($config_file_override) . "\n", 1);
             }
             if (!is_file($config_file_override)) {
                 throw new ExitException("Could not find the config file override " . StringUtil::jsonEncode($config_file_override) . "\n", 1);

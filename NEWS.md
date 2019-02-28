@@ -3,6 +3,17 @@ Phan NEWS
 ?? ??? 2019, Phan 1.2.6 (dev)
 -----------------------
 
+New features(CLI,Configs)
++ Add config `enable_extended_internal_return_type_plugins` to more aggressively
+  infer literal values for functions such as `json_decode`, `strtolower`, `implode`, etc. (disabled by default),
+
+New features(Analysis):
++ Make Phan infer more precise literal types for internal constants such as `PHP_EOF`.
+  These depend on the PHP binary used to run Phan.
+
+  In most cases, that shouldn't matter.
++ Emit `PhanPluginPrintfVariableFormatString` in `PrintfCheckerPlugin` if the inferred format string isn't a single literal (#2431)
+
 Language Server/Daemon mode:
 + Fix an error in the language server on didChangeConfiguration
 

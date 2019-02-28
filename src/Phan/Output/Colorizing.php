@@ -130,6 +130,7 @@ class Colorizing
             }
             $format_str = $matches[0];
             if ($format_str[0] === '%') {
+                // @phan-suppress-next-line PhanPluginPrintfVariableFormatString this is %s, %d, or %f
                 return sprintf($format_str, $arg);
             }
             $template = $matches[1];
@@ -155,6 +156,7 @@ class Colorizing
         }
         // TODO: Add more complicated color coding, e.g. MyClass::method should have the option for multiple colors.
         // TODO: Allow choosing color schemes via .phan/config.php
+        // @phan-suppress-next-line PhanPluginPrintfVariableFormatString this is %s/%d/%f
         $arg_str = sprintf($fmt_directive, (string)$arg);
         $color = self::colorForTemplate($template_type);
         if ($color === null) {

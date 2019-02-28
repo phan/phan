@@ -25,7 +25,7 @@ function test_inline_var_creation($y) {
     // Some unanalyzable code that creates $x
     $a = substr('ytra', 0, 1);
     $x = $$a;
-    echo strlen($x);  // fails to infer the type of $x
+    echo strlen($x);  // infers that $x is TInner when extended return analysis is on
     '@phan-var TInner $x';
     echo strlen($x);  // should warn about misusing TInner
 
@@ -45,7 +45,7 @@ class ClassWithTemplateMethod {
         // Some unanalyzable code that creates $x
         $a = substr('ytra', 0, 1);
         $x = $$a;
-        echo strlen($x);  // fails to infer the type of $x
+        echo strlen($x);  // guesses the type of x when extended return type analysis is on.
         '@phan-var TInner $x';
         echo strlen($x);  // should warn about misusing TInner
         /**

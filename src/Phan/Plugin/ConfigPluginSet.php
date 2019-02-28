@@ -33,6 +33,7 @@ use Phan\Plugin\Internal\CallableParamPlugin;
 use Phan\Plugin\Internal\ClosureReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\CompactPlugin;
 use Phan\Plugin\Internal\DependentReturnTypeOverridePlugin;
+use Phan\Plugin\Internal\ExtendedDependentReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\MiscParamPlugin;
 use Phan\Plugin\Internal\NodeSelectionPlugin;
 use Phan\Plugin\Internal\NodeSelectionVisitor;
@@ -808,6 +809,9 @@ final class ConfigPluginSet extends PluginV2 implements
                 new StringFunctionPlugin(),
                 new MiscParamPlugin(),
             ];
+            if (Config::getValue('enable_extended_internal_return_type_plugins')) {
+                array_unshift($internal_return_type_plugins, new ExtendedDependentReturnTypeOverridePlugin());
+            }
             $plugin_set = array_merge($internal_return_type_plugins, $plugin_set);
         }
         if (Config::getValue('enable_include_path_checks')) {

@@ -1712,20 +1712,6 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         if ($node->children['name']->kind == \ast\AST_NAME) {
             $name = $node->children['name']->children['name'];
-            if (\defined($name)) {
-                // This constant is internal to php
-                $result = Type::fromReservedConstantName($name);
-                if ($result->isDefined()) {
-                    // And it's a reserved keyword such as false, null, E_ALL, etc.
-                    return $result->get()->asUnionType();
-                }
-                // TODO: use the CodeBase for all internal constants.
-                // defined() doesn't account for use statements in the codebase (`use ... as aliased_name`)
-                // TODO: The below code will act as though some constants from Phan exist in other codebases (e.g. EXIT_STATUS).
-                return Type::fromObject(
-                    \constant($name)
-                )->asUnionType();
-            }
 
             // Figure out the name of the constant if it's
             // a string.

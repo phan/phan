@@ -753,6 +753,11 @@ class Config
         // Phan is slightly faster when these are disabled.
         'enable_internal_return_type_plugins' => true,
 
+        // Set this to true to enable the plugins that Phan uses to infer more accurate return types of `implode`, `json_decode`, and many other functions.
+        //
+        // Phan is slightly faster when these are disabled.
+        'enable_extended_internal_return_type_plugins' => false,
+
         // If a literal string type exceeds this length,
         // then Phan converts it to a regular string type.
         // This setting cannot be less than 50.

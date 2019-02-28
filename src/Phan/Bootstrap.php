@@ -110,7 +110,7 @@ function phan_error_handler($errno, $errstr, $errfile, $errline)
         // Don't execute the PHP internal error handler
         return true;
     }
-    fprintf(STDERR, "$errfile:$errline [$errno] $errstr\n");
+    fwrite(STDERR, "$errfile:$errline [$errno] $errstr\n");
     if (error_reporting() === 0) {
         // https://secure.php.net/manual/en/language.operators.errorcontrol.php
         // Don't make Phan terminate if the @-operator was being used on an expression.
@@ -192,6 +192,6 @@ if (extension_loaded('ast')) {
         }
     }
     if (version_compare($ast_version, '0.1.5') < 0) {
-        fprintf(STDERR, "Phan supports php-ast version 0.1.5 or newer, but the installed php-ast version is $ast_version. You may see bugs in some edge cases\n");
+        fprintf(STDERR, "Phan supports php-ast version 0.1.5 or newer, but the installed php-ast version is %s. You may see bugs in some edge cases\n", $ast_version);
     }
 }

@@ -98,6 +98,7 @@ class IssueInstance
                 $template
             );
         }
+        // @phan-suppress-next-line PhanPluginPrintfVariableFormatString the template is provided by Phan/its plugins
         return vsprintf(
             $template,
             $template_parameters

@@ -154,6 +154,7 @@ final class UnionTypeTest extends BaseTest
         $this->assertUnionTypeStringEqual('$x = rand() ? "a string" : 1; assert(!is_numeric($x)); $x', "'a string'");
         $this->assertUnionTypeStringEqual('$x = rand() ? 2.4 : new stdClass(); assert(!is_numeric($x)); $x', '\stdClass');
         $this->assertUnionTypeStringEqual('$x = rand() ? $argv[0] : $argc; assert(!is_numeric($x)); $x', 'string');
+        $this->assertUnionTypeStringEqual('"foo" . PHP_EOL', "'foo" . addcslashes(PHP_EOL, "\r\n") . "'");
     }
 
     public function testString()
