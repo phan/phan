@@ -20,6 +20,7 @@ Language Server/Daemon mode:
 Bug fixes:
 + Fix bug: `--ignore-undeclared` failed to properly ignore undeclared elements since 1.2.3 (#2502)
 + Fix false positive `PhanTypeInvalidDimOffset` for functions nested within other functions.
++ Support commas in the union types of parameters of magic methods (#2507)
 
 27 Feb 2019, Phan 1.2.5
 -----------------------
