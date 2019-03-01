@@ -997,7 +997,7 @@ final class Builder
             if ($arg_list !== '') {
                 // TODO: Would need to use a different approach if templates were ever supported
                 //       e.g. The magic method parsing doesn't support commas?
-                $params_strings = explode(',', $arg_list);
+                $params_strings = self::extractMethodParts($arg_list);
                 $failed = false;
                 foreach ($params_strings as $i => $param_string) {
                     $param = $this->magicParamFromMagicMethodParamString($param_string, $i, $comment_line_offset);
@@ -1034,6 +1034,64 @@ final class Builder
         }
 
         return null;
+    }
+
+    /**
+     * @return array<int,string>
+     */
+    private static function extractMethodParts(string $type_string) : array
+    {
+        $parts = [];
+        foreach (\explode(',', $type_string) as $part) {
+            $parts[] = \trim($part);
+        }
+
+        if (\count($parts) <= 1) {
+            return $parts;
+        }
+        if (!\preg_match('/[<({]/', $type_string)) {
+            return $parts;
+        }
+        return self::mergeMethodParts($parts);
+    }
+
+    /**
+     * @param string[] $parts (already trimmed)
+     * @return string[]
+     * @see Type::extractTemplateParameterTypeNameList() (Similar method)
+     */
+    private static function mergeMethodParts(array $parts) : array
+    {
+        $prev_parts = [];
+        $delta = 0;
+        $results = [];
+        foreach ($parts as $part) {
+            if (\count($prev_parts) > 0) {
+                $prev_parts[] = $part;
+                $delta += \substr_count($part, '<') + \substr_count($part, '(') + \substr_count($part, '{') - \substr_count($part, '>') - \substr_count($part, ')') - \substr_count($part, '}');
+                if ($delta <= 0) {
+                    if ($delta === 0) {
+                        $results[] = \implode(',', $prev_parts);
+                    }  // ignore unparsable data such as "<T,T2>>"
+                    $prev_parts = [];
+                    $delta = 0;
+                    continue;
+                }
+                continue;
+            }
+            $bracket_count = \substr_count($part, '<') + \substr_count($part, '(') + \substr_count($part, '{');
+            if ($bracket_count === 0) {
+                $results[] = $part;
+                continue;
+            }
+            $delta = $bracket_count - \substr_count($part, '>') - \substr_count($part, ')') - \substr_count($part, '}');
+            if ($delta === 0) {
+                $results[] = $part;
+            } elseif ($delta > 0) {
+                $prev_parts[] = $part;
+            }  // otherwise ignore unparsable data such as ">" (should be impossible)
+        }
+        return $results;
     }
 
     /**
