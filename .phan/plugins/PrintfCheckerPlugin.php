@@ -333,7 +333,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         ];
     }
 
-    protected function encodeString(string $str) : string
+    protected static function encodeString(string $str) : string
     {
         $result = \json_encode($str, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE);
         if ($result !== false) {
@@ -357,7 +357,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         // Given a node, extract the printf directive and whether or not it could be translated
         $primitive_for_fmtstr = $this->astNodeToPrimitive($code_base, $context, $pattern_node);
         if ($primitive_for_fmtstr === null) {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $context,
                 'PhanPluginPrintfVariableFormatString',
@@ -398,8 +398,8 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
          *
          * @param int $issue_type_id An issue id for pylint
          */
-        $emit_issue = function (string $issue_type, string $issue_message_format, array $issue_message_args, int $severity, int $issue_type_id) use ($code_base, $context) {
-            $this->emitIssue(
+        $emit_issue = static function (string $issue_type, string $issue_message_format, array $issue_message_args, int $severity, int $issue_type_id) use ($code_base, $context) {
+            self::emitIssue(
                 $code_base,
                 $context,
                 $issue_type,
@@ -417,13 +417,13 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 $largest_positional = \max(\array_keys($specs));
                 $examples = [];
                 foreach ($specs[$largest_positional] as $example_spec) {
-                    $examples[] = $this->encodeString($example_spec->directive);
+                    $examples[] = self::encodeString($example_spec->directive);
                 }
                 // emit issues with 1-based offsets
                 $emit_issue(
                     'PhanPluginPrintfNonexistentArgument',
                     'Format string {STRING_LITERAL} refers to nonexistent argument #{INDEX} in {STRING_LITERAL}',
-                    [$this->encodeString($fmt_str), $largest_positional, \implode(',', $examples)],
+                    [self::encodeString($fmt_str), $largest_positional, \implode(',', $examples)],
                     Issue::SEVERITY_NORMAL,
                     self::ERR_UNTRANSLATED_NONEXISTENT
                 );
@@ -432,7 +432,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             $emit_issue(
                 "PhanPluginPrintfNoArguments",
                 "No format string arguments are given for {STRING_LITERAL}, consider using {FUNCTION} instead",
-                [$this->encodeString($fmt_str), $replacement_function_name],
+                [self::encodeString($fmt_str), $replacement_function_name],
                 Issue::SEVERITY_LOW,
                 self::ERR_UNTRANSLATED_USE_ECHO
             );
@@ -442,7 +442,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             $emit_issue(
                 'PhanPluginPrintfNoSpecifiers',
                 'None of the formatting arguments passed alongside format string {STRING_LITERAL} are used',
-                [$this->encodeString($fmt_str)],
+                [self::encodeString($fmt_str)],
                 Issue::SEVERITY_LOW,
                 self::ERR_UNTRANSLATED_NONE_USED
             );
@@ -454,13 +454,13 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             if ($largest_positional > \count($arg_nodes)) {
                 $examples = [];
                 foreach ($specs[$largest_positional] as $example_spec) {
-                    $examples[] = $this->encodeString($example_spec->directive);
+                    $examples[] = self::encodeString($example_spec->directive);
                 }
                 // emit issues with 1-based offsets
                 $emit_issue(
                     'PhanPluginPrintfNonexistentArgument',
                     'Format string {STRING_LITERAL} refers to nonexistent argument #{INDEX} in {STRING_LITERAL}',
-                    [$this->encodeString($fmt_str), $largest_positional, \implode(',', $examples)],
+                    [self::encodeString($fmt_str), $largest_positional, \implode(',', $examples)],
                     Issue::SEVERITY_NORMAL,
                     self::ERR_UNTRANSLATED_NONEXISTENT
                 );
@@ -468,7 +468,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 $emit_issue(
                     'PhanPluginPrintfUnusedArgument',
                     'Format string {STRING_LITERAL} does not use provided argument #{INDEX}',
-                    [$this->encodeString($fmt_str), $largest_positional + 1],
+                    [self::encodeString($fmt_str), $largest_positional + 1],
                     Issue::SEVERITY_NORMAL,
                     self::ERR_UNTRANSLATED_UNUSED
                 );
@@ -491,7 +491,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                         'PhanPluginPrintfNotPercent',
                         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                         "Format string {STRING_LITERAL} contains something that is not a percent sign, it will be treated as a format string '{STRING_LITERAL}' with padding. Use {DETAILS} for a literal percent sign, or '{STRING_LITERAL}' to be less ambiguous",
-                        [$this->encodeString($fmt_str), $spec->directive, '%%', $canonical],
+                        [self::encodeString($fmt_str), $spec->directive, '%%', $canonical],
                         Issue::SEVERITY_NORMAL,
                         self::ERR_UNTRANSLATED_NOT_PERCENT
                     );
@@ -502,7 +502,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                     $emit_issue(
                         'PhanPluginPrintfWidthNotPosition',
                         "Format string {STRING_LITERAL} is specifying a width({STRING_LITERAL}) instead of a position({STRING_LITERAL})",
-                        [$this->encodeString($fmt_str), $this->encodeString($canonical), $this->encodeString($intended_string)],
+                        [self::encodeString($fmt_str), self::encodeString($canonical), self::encodeString($intended_string)],
                         Issue::SEVERITY_NORMAL,
                         self::ERR_UNTRANSLATED_WIDTH_INSTEAD_OF_POSITION
                     );
@@ -515,7 +515,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 $emit_issue(
                     'PhanPluginPrintfIncompatibleSpecifier',
                     'Format string {STRING_LITERAL} refers to argument #{INDEX} in different ways: {DETAILS}',
-                    [$this->encodeString($fmt_str), $i, implode(',', array_keys($types))],
+                    [self::encodeString($fmt_str), $i, implode(',', array_keys($types))],
                     Issue::SEVERITY_LOW,
                     self::ERR_UNTRANSLATED_INCOMPATIBLE_SPECIFIER
                 );
@@ -575,7 +575,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                         'Format string {STRING_LITERAL} refers to argument #{INDEX} as {DETAILS}, so type {TYPE} is expected. However, {FUNCTION} was passed the type {TYPE} (which is weaker than {TYPE})',
                         [
-                            $this->encodeString($fmt_str),
+                            self::encodeString($fmt_str),
                             $i,
                             $this->getSpecStringsRepresentation($spec_group),
                             $expected_union_type_string,
@@ -592,7 +592,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                         'PhanPluginPrintfIncompatibleArgumentType',
                         'Format string {STRING_LITERAL} refers to argument #{INDEX} as {DETAILS}, so type {TYPE} is expected, but {FUNCTION} was passed incompatible type {TYPE}',
                         [
-                            $this->encodeString($fmt_str),
+                            self::encodeString($fmt_str),
                             $i,
                             $this->getSpecStringsRepresentation($spec_group),
                             $expected_union_type_string,
@@ -660,7 +660,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      *                                         each position in the untranslated format string.
      * @return void
      */
-    protected function validateTranslations(CodeBase $code_base, Context $context, string $fmt_str, array $types_of_arg)
+    protected static function validateTranslations(CodeBase $code_base, Context $context, string $fmt_str, array $types_of_arg)
     {
         $translations = static::gettextForAllLocales($fmt_str);
         foreach ($translations as $locale => $translated_fmt_str) {
@@ -687,20 +687,20 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                             $issue_type_id = self::ERR_TRANSLATED_HAS_MORE_ARGS;
                             $issue_type = 'PhanPluginPrintfTranslatedHasMoreArgs';
                         }
-                        $this->emitIssue(
+                        self::emitIssue(
                             $code_base,
                             $context,
                             $issue_type,
                             // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                             'Translated string {STRING_LITERAL} has local {DETAILS} which refers to argument #{INDEX} as {STRING_LITERAL}, but the original format string treats it as {DETAILS} (ORIGINAL: {STRING_LITERAL}, TRANSLATION: {STRING_LITERAL})',
                             [
-                                $this->encodeString($fmt_str),
+                                self::encodeString($fmt_str),
                                 $locale,
                                 $i,
                                 $canonical,
                                 $expected_types,
-                                $this->encodeString($fmt_str),
-                                $this->encodeString($translated_fmt_str),
+                                self::encodeString($fmt_str),
+                                self::encodeString($translated_fmt_str),
                             ],
                             $severity,
                             Issue::REMEDIATION_B,

@@ -41,8 +41,6 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
     private $processes = [];
 
     /**
-     * TODO: Disable in LSP mode?
-     *
      * @param CodeBase $code_base @phan-unused-param
      * The code base in which the node exists
      *
@@ -68,8 +66,6 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
     }
 
     /**
-     * TODO: Disable in LSP mode?
-     *
      * @param CodeBase $code_base
      * The code base in which the node exists
      *
@@ -103,7 +99,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
                 continue;
             }
             unset($this->processes[$i]);
-            $this->handleError($code_base, $process);
+            self::handleError($code_base, $process);
         }
         $max_incomplete_processes = max(0, $max_incomplete_processes);
         while (count($this->processes) > $max_incomplete_processes) {
@@ -112,7 +108,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
                 throw new AssertionError("Process list should be non-empty");
             }
             $process->blockingRead();
-            $this->handleError($code_base, $process);
+            self::handleError($code_base, $process);
         }
     }
 
@@ -144,7 +140,7 @@ class InvokePHPNativeSyntaxCheckPlugin extends PluginV2 implements
         $check_error_message = preg_replace(self::STDIN_FILENAME_REGEX, '', $check_error_message);
 
 
-        $this->emitIssue(
+        self::emitIssue(
             $code_base,
             clone($context)->withLineNumberStart($lineno),
             'PhanNativePHPSyntaxCheckPlugin',

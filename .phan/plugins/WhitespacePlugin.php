@@ -46,7 +46,7 @@ class WhitespacePlugin extends PluginV2 implements
         }
         $newline_position = strpos($file_contents, "\r");
         if ($newline_position !== false) {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 clone($context)->withLineNumberStart(self::calculateLine($file_contents, $newline_position)),
                 self::CarriageReturn,
@@ -55,7 +55,7 @@ class WhitespacePlugin extends PluginV2 implements
         }
         $tab_position = strpos($file_contents, "\t");
         if ($tab_position !== false) {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 clone($context)->withLineNumberStart(self::calculateLine($file_contents, $tab_position)),
                 self::Tab,
@@ -63,7 +63,7 @@ class WhitespacePlugin extends PluginV2 implements
             );
         }
         if (preg_match('/[ \t]$/m', $file_contents, $match, PREG_OFFSET_CAPTURE)) {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 clone($context)->withLineNumberStart(self::calculateLine($file_contents, $match[0][1])),
                 self::WhitespaceTrailing,

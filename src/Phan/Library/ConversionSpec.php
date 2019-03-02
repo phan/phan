@@ -52,6 +52,20 @@ class ConversionSpec
     const FORMAT_STRING_REGEX = '/%%|' . self::FORMAT_STRING_INNER_REGEX_PART . '/';
 
     /**
+     * Compute the number of additional arguments expected when sprintf is called
+     * with a format string of $fmt_str.
+     * @param string $fmt_str
+     */
+    public static function computeExpectedArgumentCount($fmt_str) : int
+    {
+        $result = 0;
+        foreach (self::extractAll($fmt_str) as $i => $_) {
+            $result = \max($result, $i);
+        }
+        return $result;
+    }
+
+    /**
      * Extract a list of directives from a format string.
      * @param string $fmt_str a format string to extract directives from.
      * @return array<int,array<int,ConversionSpec>> array(int position => array of ConversionSpec referring to arg at that position)

@@ -589,7 +589,10 @@ class Issue
         $this->type_id = $type_id;
     }
 
-    private static function templateToFormatString(
+    /**
+     * Converts the Phan template string to a regular format string.
+     */
+    public static function templateToFormatString(
         string $template
     ) : string {
         /** @param array<int,string> $matches */
@@ -3756,16 +3759,7 @@ class Issue
      */
     public function getExpectedArgumentCount() : int
     {
-        return $this->argument_count ?? $this->argument_count = $this->computeExpectedArgumentCount();
-    }
-
-    private function computeExpectedArgumentCount() : int
-    {
-        $result = 0;
-        foreach (ConversionSpec::extractAll($this->template) as $i => $_) {
-            $result = \max($result, $i);
-        }
-        return $result;
+        return $this->argument_count ?? $this->argument_count = ConversionSpec::computeExpectedArgumentCount($this->template);
     }
 
     /**
