@@ -79,6 +79,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
 
     /**
      * @return void
+     * @override
      */
     public function finalizeProcess(CodeBase $code_base)
     {
@@ -116,7 +117,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
                     $line = (int)$matches[1];
                     $context = $context->withLineNumberStart($line);
                     if ($known_must_use_return_value) {
-                        $this->emitIssue(
+                        self::emitIssue(
                             $code_base,
                             $context,
                             self::UseReturnValueInternalKnown,
@@ -124,7 +125,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
                             [$fqsen]
                         );
                     } elseif ($counter->is_internal) {
-                        $this->emitIssue(
+                        self::emitIssue(
                             $code_base,
                             $context,
                             self::UseReturnValueInternal,
@@ -132,7 +133,7 @@ class UseReturnValuePlugin extends PluginV2 implements PostAnalyzeNodeCapability
                             [$fqsen, $percentage_string]
                         );
                     } else {
-                        $this->emitIssue(
+                        self::emitIssue(
                             $code_base,
                             $context,
                             self::UseReturnValue,

@@ -108,7 +108,11 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV2 implement
                 Context $context,
                 Func $function_decl,
                 array $args
-            ) use ($cb, $cb_fallback, $mixed_union_type) : UnionType {
+            ) use (
+                $cb,
+                $cb_fallback,
+                $mixed_union_type
+) : UnionType {
                 $result = $cb($code_base, $context, $function_decl, $args);
                 if ($result !== $mixed_union_type) {
                     return $result;

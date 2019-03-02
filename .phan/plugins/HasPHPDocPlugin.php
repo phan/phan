@@ -64,7 +64,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
     ) {
         $doc_comment = $class->getDocComment();
         if (!$doc_comment) {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $class->getContext(),
                 'PhanPluginNoCommentOnClass',
@@ -75,7 +75,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
         }
         $description = MarkupDescription::extractDescriptionFromDocComment($class);
         if (!$description) {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $class->getContext(),
                 'PhanPluginDescriptionlessCommentOnClass',
@@ -117,7 +117,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
         $doc_comment = $property->getDocComment();
         if (!$doc_comment) {
             $visibility_upper = ucfirst($property->getVisibilityName());
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $property->getContext(),
                 "PhanPluginNoCommentOn${visibility_upper}Property",
@@ -129,7 +129,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
         $description = MarkupDescription::extractDescriptionFromDocComment($property);
         if (!$description) {
             $visibility_upper = ucfirst($property->getVisibilityName());
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $property->getContext(),
                 "PhanPluginDescriptionlessCommentOn${visibility_upper}Property",
@@ -184,7 +184,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
         $doc_comment = $method->getDocComment();
         if (!$doc_comment) {
             $visibility_upper = ucfirst($method->getVisibilityName());
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $method->getContext(),
                 "PhanPluginNoCommentOn${visibility_upper}Method",
@@ -196,7 +196,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
         $description = MarkupDescription::extractDescriptionFromDocComment($method);
         if (!$description) {
             $visibility_upper = ucfirst($method->getVisibilityName());
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $method->getContext(),
                 "PhanPluginDescriptionlessCommentOn${visibility_upper}Method",
@@ -236,7 +236,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
             return;
         }
         if (!$doc_comment) {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $function->getContext(),
                 "PhanPluginNoCommentOnFunction",
@@ -247,7 +247,7 @@ final class HasPHPDocPlugin extends PluginV2 implements
         }
         $description = MarkupDescription::extractDescriptionFromDocComment($function);
         if (!$description) {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $function->getContext(),
                 "PhanPluginDescriptionlessCommentOnFunction",

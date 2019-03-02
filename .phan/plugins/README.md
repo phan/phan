@@ -328,3 +328,14 @@ Checks for complex variable access expressions `$$x`, which may be hard to read,
   - Mark elements in inline doc comments (which Phan doesn't parse) as referencing types from `use statements` as not dead code.
 
 - https://github.com/TysonAndre/PhanTypoCheckPlugin checks of calls to `gettext()` by default, and can optionally check all strings.
+
+### 6. Self-analysis plugins:
+
+#### PhanSelfCheckPlugin.php
+
+This plugin checks for invalid calls to `PluginV2::emitIssue`, `Issue::maybeEmit()`, etc.
+This is useful for developing Phan and Phan plugins.
+
+- **PhanPluginTooFewArgumentsForIssue**: `Too few arguments for issue {STRING_LITERAL}: expected {COUNT}, got {COUNT}`
+- **PhanPluginTooManyArgumentsForIssue**: `Too many arguments for issue {STRING_LITERAL}: expected {COUNT}, got {COUNT}`
+- **PhanPluginUnknownIssueType**: `Unknown issue type {STRING_LITERAL} in a call to {METHOD}(). (may be a false positive - check if the version of Phan running PhanSelfCheckPlugin is the same version that the analyzed codebase is using)`

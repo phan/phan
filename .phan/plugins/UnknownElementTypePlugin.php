@@ -54,7 +54,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
             return;
         }
 
-        $this->performChecks(
+        self::performChecks(
             $code_base,
             $method,
             'PhanPluginUnknownMethodReturnType',
@@ -65,7 +65,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
         foreach ($method->getParameterList() as $parameter) {
             if ($parameter->getUnionType()->isEmpty()) {
-                $this->emitIssue(
+                self::emitIssue(
                     $code_base,
                     $parameter->createContext($method),
                     'PhanPluginUnknownMethodParamType',
@@ -73,7 +73,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
                     [(string)$method->getFQSEN(), $parameter->getName()]
                 );
             } elseif (self::isRegularArray($parameter->getUnionType())) {
-                $this->emitIssue(
+                self::emitIssue(
                     $code_base,
                     $parameter->createContext($method),
                     'PhanPluginUnknownArrayMethodParamType',
@@ -84,7 +84,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
         }
     }
 
-    private function performChecks(
+    private static function performChecks(
         CodeBase $code_base,
         AddressableElement $element,
         string $issue_type_for_empty,
@@ -94,7 +94,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
     ) {
         $union_type = $element->getUnionType();
         if ($union_type->isEmpty()) {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $element->getContext(),
                 $issue_type_for_empty,
@@ -102,7 +102,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
                 [(string)$element->getFQSEN()]
             );
         } elseif (self::isRegularArray($union_type)) {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $element->getContext(),
                 $issue_type_for_unknown_array,
@@ -136,7 +136,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
                 $issue = 'PhanPluginUnknownFunctionReturnType';
                 $message = 'Function {FUNCTION} has no declared or inferred return type';
             }
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $function->getContext(),
                 $issue,
@@ -151,7 +151,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
                 $issue = 'PhanPluginUnknownArrayFunctionReturnType';
                 $message = 'Function {FUNCTION} has a return type of array, but does not specify key or value types';
             }
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $function->getContext(),
                 $issue,
@@ -168,7 +168,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
                     $issue = 'PhanPluginUnknownFunctionParamType';
                     $message = 'Function {FUNCTION} has no declared or inferred return type for ${PARAMETER}';
                 }
-                $this->emitIssue(
+                self::emitIssue(
                     $code_base,
                     $parameter->createContext($function),
                     $issue,
@@ -183,7 +183,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
                     $issue = 'PhanPluginUnknownArrayFunctionParamType';
                     $message = 'Function {FUNCTION} has a parameter type of array for ${PARAMETER}, but does not specify any key types or value types';
                 }
-                $this->emitIssue(
+                self::emitIssue(
                     $code_base,
                     $parameter->createContext($function),
                     $issue,
@@ -212,7 +212,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
         if ($property->getFQSEN() !== $property->getRealDefiningFQSEN()) {
             return;
         }
-        $this->performChecks(
+        self::performChecks(
             $code_base,
             $property,
             'PhanPluginUnknownPropertyType',

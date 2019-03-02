@@ -17,6 +17,10 @@ New features(Analysis):
 Language Server/Daemon mode:
 + Fix an error in the language server on didChangeConfiguration
 
+Plugins:
++ Write `PhanSelfCheckPlugin` for self-analysis of Phan and plugins for Phan. (#1576)
+  This warns if too many/too few arguments are provided for the issue template when emitting an issue.
+
 Bug fixes:
 + Fix bug: `--ignore-undeclared` failed to properly ignore undeclared elements since 1.2.3 (#2502)
 + Fix false positive `PhanTypeInvalidDimOffset` for functions nested within other functions.

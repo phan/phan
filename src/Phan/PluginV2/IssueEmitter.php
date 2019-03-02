@@ -58,7 +58,7 @@ trait IssueEmitter
      *
      * @return void
      */
-    public function emitPluginIssue(
+    public static function emitPluginIssue(
         CodeBase $code_base,
         Context $context,
         string $issue_type,

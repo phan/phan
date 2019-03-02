@@ -2917,7 +2917,6 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->emitIssue(
                 Issue::StaticCallToNonStatic,
                 $context->getLineNumberStart(),
-                "{$class->getFQSEN()}::{$method_name}()",
                 (string)$method->getFQSEN(),
                 $method->getFileRef()->getFile(),
                 (string)$method->getFileRef()->getLineNumberStart()

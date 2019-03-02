@@ -88,7 +88,7 @@ class DemoPlugin extends PluginV2 implements
         // the name is not allowed.
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
         if ($class->getName() == 'Class') {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $class->getContext(),
                 'DemoPluginClassName',
@@ -117,7 +117,7 @@ class DemoPlugin extends PluginV2 implements
         // method is `function`, and emit an issue if it is.
         // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
         if ($method->getName() == 'function') {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $method->getContext(),
                 'DemoPluginMethodName',
@@ -145,7 +145,7 @@ class DemoPlugin extends PluginV2 implements
         // As an example, we test to see if the name of the
         // function is `function`, and emit an issue if it is.
         if ($function->getName() == 'function') {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $function->getContext(),
                 'DemoPluginFunctionName',
@@ -173,7 +173,7 @@ class DemoPlugin extends PluginV2 implements
         // As an example, we test to see if the name of the
         // property is `property`, and emit an issue if it is.
         if ($property->getName() == 'property') {
-            $this->emitIssue(
+            self::emitIssue(
                 $code_base,
                 $property->getContext(),
                 'DemoPluginPropertyName',

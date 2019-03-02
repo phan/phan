@@ -86,7 +86,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
         // Check to see if any are unused
         foreach ($suppress_issue_list as $issue_type => $use_count) {
             if (0 === $use_count) {
-                $this->emitIssue(
+                self::emitIssue(
                     $code_base,
                     $element->getContext(),
                     'UnusedSuppression',
@@ -184,7 +184,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
     public function finalizeProcess(CodeBase $code_base)
     {
         foreach ($this->elements_for_postponed_analysis as $element) {
-            $this->analyzeAddressableElement($code_base, $element);
+            self::analyzeAddressableElement($code_base, $element);
         }
         $this->analyzePluginSuppressions($code_base);
     }
@@ -237,7 +237,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
                 if (isset($plugin_suppressions[$issue_kind][$lineno_of_comment])) {
                     continue;
                 }
-                $this->emitIssue(
+                self::emitIssue(
                     $code_base,
                     (new Context())->withFile($relative_file_path)->withLineNumberStart($lineno_of_comment),
                     $issue_kind,

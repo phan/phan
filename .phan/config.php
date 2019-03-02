@@ -451,6 +451,8 @@ return [
         // UnknownElementTypePlugin warns about unknown types in element signatures.
         'UnknownElementTypePlugin',
         'DuplicateExpressionPlugin',
+        // warns about carriage returns("\r"), trailing whitespace, and tabs in PHP files.
+        'WhitespacePlugin',
         ////////////////////////////////////////////////////////////////////////
         // Plugins for Phan's self-analysis
         ////////////////////////////////////////////////////////////////////////
@@ -459,8 +461,9 @@ return [
         'NoAssertPlugin',
 
         'HasPHPDocPlugin',
-        // warns about carriage returns("\r"), trailing whitespace, and tabs in PHP files.
-        'WhitespacePlugin',
+
+        // This should only be enabled if the code being analyzed contains Phan plugins.
+        '.phan/plugins/PhanSelfCheckPlugin.php',
 
         ////////////////////////////////////////////////////////////////////////
         // End plugins for Phan's self-analysis
