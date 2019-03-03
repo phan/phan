@@ -110,6 +110,19 @@ function phan_error_handler($errno, $errstr, $errfile, $errline)
         // Don't execute the PHP internal error handler
         return true;
     }
+    if ($errno === E_DEPRECATED && preg_match('/ast\\\\parse_/', $errstr)) {
+        static $did_warn = false;
+        if (!$did_warn) {
+            $did_warn = true;
+            if (!getenv('PHAN_SUPPRESS_AST_DEPRECATION')) {
+                fprintf(STDERR, "php-ast AST version %d used by Phan %s has been deprecated. Check if a newer version of Phan is available." . PHP_EOL,
+                    Config::AST_VERSION, CLI::PHAN_VERSION);
+                fwrite(STDERR, "(Set PHAN_SUPPRESS_AST_DEPRECATION=1 to suppress this message)" . PHP_EOL);
+            }
+        }
+        // Don't execute the PHP internal error handler
+        return true;
+    }
     fwrite(STDERR, "$errfile:$errline [$errno] $errstr\n");
     if (error_reporting() === 0) {
         // https://secure.php.net/manual/en/language.operators.errorcontrol.php
