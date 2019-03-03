@@ -199,7 +199,7 @@ See also FUNCTIONS CONTROLLING EVENT LOOPS .',
 'EvStat::path' => '*Readonly* . The path to wait for status changes on.',
 'EvTimer::remaining' => 'Returns the remaining time until a timer fires. If the timer is active, then this time is relative to the current event loop time, otherwise it\'s the timeout value currently configured.
 
-That is, after instanciating an `EvTimer` with an after value of `5.0` and repeat value of `7.0` , remaining returns `5.0` . When the timer is started and one second passes, remaining will return `4.0` . When the timer expires and is restarted, it will return roughly `7.0` (likely slightly less as callback invocation takes some time too), and so on.',
+That is, after instantiating an `EvTimer` with an after value of `5.0` and repeat value of `7.0` , remaining returns `5.0` . When the timer is started and one second passes, remaining will return `4.0` . When the timer expires and is restarted, it will return roughly `7.0` (likely slightly less as callback invocation takes some time too), and so on.',
 'EvTimer::repeat' => 'If repeat is `0.0` , then it will automatically be stopped once the timeout is reached. If it is positive, then the timer will automatically be configured to trigger again every repeat seconds later, until stopped manually.',
 'EvWatcher::data' => 'User custom data associated with the watcher',
 'EvWatcher::is_active' => '*Readonly* . `true` if the watcher is active. `false` otherwise.',
@@ -512,7 +512,7 @@ those global variables should be populated',
 'ZendAPI_Job::_host' => 'The host that the job was submit from',
 'ZendAPI_Job::_id' => 'Unique id of the Job in the job queue',
 'ZendAPI_Job::_interval' => 'The job running frequency in seconds. The job should run every _internal seconds
-This property applys only to recurrent job.
+This property applies only to recurrent job.
 By default, its value is 0 e.g. run it only once.',
 'ZendAPI_Job::_name' => 'A short string describing the job',
 'ZendAPI_Job::_output' => 'The job output after executing',

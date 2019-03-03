@@ -73,7 +73,7 @@ When you want to iterate over the same array multiple times you need to instanti
 'CairoContent' => '`CairoContent` is used to describe the content that a surface will contain, whether color information, alpha information (translucence vs. opacity), or both.
 
 Note: The large values here are designed to keep `CairoContent` values distinct from `CairoContent` values so that the implementation can detect the error if users confuse the two types.',
-'CairoContext' => 'Context is the main object used when drawing with cairo. To draw with cairo, you create a `CairoContext`, set the target `CairoSurface`, and drawing options for the `CairoContext`, create shapes with functions . like `CairoContext::moveTo` and `CairoContext::lineTo`, and then draw shapes with `CairoContext::stroke` or `CairoContext::fill`. Contexts can be pushed to a stack via `CairoContext::save`. They may then safely be changed, without loosing the current state. Use `CairoContext::restore` to restore to the saved state.',
+'CairoContext' => 'Context is the main object used when drawing with cairo. To draw with cairo, you create a `CairoContext`, set the target `CairoSurface`, and drawing options for the `CairoContext`, create shapes with functions . like `CairoContext::moveTo` and `CairoContext::lineTo`, and then draw shapes with `CairoContext::stroke` or `CairoContext::fill`. Contexts can be pushed to a stack via `CairoContext::save`. They may then safely be changed, without losing the current state. Use `CairoContext::restore` to restore to the saved state.',
 'CairoException' => '`Exception` class thrown by `Cairo` functions and methods',
 'CairoFillRule' => 'A `CairoFillRule` is used to select how paths are filled. For both fill rules, whether or not a point is included in the fill is determined by taking a ray from that point to infinity and looking at intersections with the path. The ray can be in any direction, as long as it doesn\'t pass through the end point of a segment or have a tricky intersection such as intersecting tangent to the path. (Note that filling is not actually implemented in this way. This is just a description of the rule that is applied.)
 
@@ -159,7 +159,7 @@ as well as for each bucket.',
 'Couchbase\Cluster' => 'Represents a Couchbase Server Cluster.
 
 It is an entry point to the library, and in charge of opening connections to the Buckets.
-In addition it can instantiate \Couchbase\ClusterManager to peform cluster-wide operations.',
+In addition it can instantiate \Couchbase\ClusterManager to perform cluster-wide operations.',
 'Couchbase\ClusterManager' => 'Provides management capabilities for a Couchbase Server Cluster',
 'Couchbase\ConjunctionSearchQuery' => 'A compound FTS query that performs a logical AND between all its sub-queries (conjunction).',
 'Couchbase\DateRangeSearchFacet' => 'A facet that categorizes hits inside date ranges (or buckets) provided by the user.',
@@ -202,7 +202,7 @@ inclusiveness of each bound can be configured.',
 'Couchbase\PasswordAuthenticator' => 'Authenticator based on RBAC feature of Couchbase Server 5+.
 
 This authenticator uses single credentials for all operations (data and management).',
-'Couchbase\PhraseSearchQuery' => 'A FTS query that matches several terms (a "phrase") as is. The order of the terms mater and no further processing is
+'Couchbase\PhraseSearchQuery' => 'A FTS query that matches several terms (a "phrase") as is. The order of the terms matter and no further processing is
 applied to them, so they must appear in the index exactly as provided.  Usually for debugging purposes, prefer
 MatchPhraseQuery.',
 'Couchbase\PrefixSearchQuery' => 'A FTS query that allows for simple matching on a given prefix.',
@@ -295,7 +295,7 @@ Also, `EvCheck` watchers should not activate/feed events. While *libev* fully su
 
 It is allowed to register `EvChild` watchers in the *default loop* only.',
 'EvEmbed' => 'Used to embed one event loop into another.',
-'Event' => '`Event` class represents and event firing on a file descriptor being ready to read from or write to; a file descriptor becoming ready to read from or write to(edge-triggered I/O only); a timeout expiring; a signal occuring; a user-triggered event.
+'Event' => '`Event` class represents and event firing on a file descriptor being ready to read from or write to; a file descriptor becoming ready to read from or write to(edge-triggered I/O only); a timeout expiring; a signal occurring; a user-triggered event.
 
 Every event is associated with `EventBase` . However, event will never fire until it is *added* (via `Event::add` ). An added event remains in *pending* state until the registered event occurs, thus turning it to *active* state. To handle events user may register a callback which is called when event becomes active. If event is configured *persistent* , it remains pending. If it is not persistent, it stops being pending when it\'s callback runs. `Event::del` method *deletes* event, thus making it non-pending. By means of `Event::add` method it could be added again.',
 'EventBase' => '`EventBase` class represents libevent\'s event base structure. It holds a set of events and can poll to determine which events are active.
@@ -312,7 +312,7 @@ Usually an application wants to perform some amount of data buffering in additio
 
 This buffered I/O pattern is common enough that Libevent provides a generic mechanism for it. A "buffer event" consists of an underlying transport (like a socket), a read buffer, and a write buffer. Instead of regular events, which give callbacks when the underlying transport is ready to be read or written, a buffer event invokes its user-supplied callbacks when it has read or written enough data.',
 'EventConfig' => 'Represents configuration structure which could be used in construction of the `EventBase` .',
-'EventDnsBase' => 'Represents Libevent\'s DNS base structure. Used to resolve DNS asyncronously, parse configuration files like resolv.conf etc.',
+'EventDnsBase' => 'Represents Libevent\'s DNS base structure. Used to resolve DNS asynchronously, parse configuration files like resolv.conf etc.',
 'EventHttp' => 'Represents HTTP server.',
 'EventHttpConnection' => 'Represents an HTTP connection.',
 'EventHttpRequest' => 'Represents an HTTP request.',
@@ -457,7 +457,7 @@ See http\Client\Request and http\Client\Response, as well as http\Env\Request an
 'InfiniteIterator' => 'The `InfiniteIterator` allows one to infinitely iterate over an iterator without having to manually rewind the iterator upon reaching its end.',
 'IntlBreakIterator' => 'A “break iterator” is an ICU object that exposes methods for locating boundaries in text (e.g. word or sentence boundaries). The PHP `IntlBreakIterator` serves as the base class for all types of ICU break iterators. Where extra functionality is available, the intl extension may expose the ICU break iterator with suitable subclasses, such as `IntlRuleBasedBreakIterator` or `IntlCodePointBreakIterator`.
 
-This class implements `Traversable`. Traversing an `IntlBreakIterator` yields non-negative integer values representing the successive locations of the text boundaries, expressed as UTF-8 code units (byte) counts, taken from the beggining of the text (which has the location `0`). The keys yielded by the iterator simply form the sequence of natural numbers `{0, 1, 2, …}`.',
+This class implements `Traversable`. Traversing an `IntlBreakIterator` yields non-negative integer values representing the successive locations of the text boundaries, expressed as UTF-8 code units (byte) counts, taken from the beginning of the text (which has the location `0`). The keys yielded by the iterator simply form the sequence of natural numbers `{0, 1, 2, …}`.',
 'IntlChar' => '`IntlChar` provides access to a number of utility methods that can be used to access information about Unicode characters.
 
 The methods and constants adhere closely to the names and behavior used by the underlying ICU library.',
@@ -673,7 +673,7 @@ For example, the files document is something like: 123456789, "filename" => "foo
 'MongoGridFSCursor' => 'Cursor for database file results.',
 'MongoGridFSException' => 'Thrown when there are errors reading or writing files to or from the database.',
 'MongoGridFSFile' => 'A database file object.',
-'MongoId' => 'A unique identifier created for database objects. If an object is inserted into the database without an _id field, an _id field will be added to it with a `MongoId` instance as its value. If the data has a naturally occuring unique field (e.g. username or timestamp) it is fine to use this as the _id field instead, and it will not be replaced with a `MongoId`.
+'MongoId' => 'A unique identifier created for database objects. If an object is inserted into the database without an _id field, an _id field will be added to it with a `MongoId` instance as its value. If the data has a naturally occurring unique field (e.g. username or timestamp) it is fine to use this as the _id field instead, and it will not be replaced with a `MongoId`.
 
 Instances of the `MongoId` class fulfill the role that autoincrementing does in a relational database: to provide a unique key if the data does not naturally have one. Autoincrementing does not work well with a sharded database, as it is difficult to determine the next number in the sequence. This class fulfills the constraints of quickly generating a value that is unique across shards.
 
@@ -1037,7 +1037,7 @@ See `V8Js::__construct` for more information.',
 When a Worker is started, the run method will be executed, but the Thread will not leave until one of the following conditions are met:
 
 This means the programmer can reuse the context throughout execution; placing objects on the stack of the Worker will cause the Worker to execute the stacked objects run method.',
-'XMLDiff\Base' => 'Base abstract class for all the comparsion classes in the extension.',
+'XMLDiff\Base' => 'Base abstract class for all the comparison classes in the extension.',
 'XMLReader' => 'The XMLReader extension is an XML Pull parser. The reader acts as a cursor going forward on the document stream and stopping at each node on the way.',
 'Yaconf' => 'Yaconf is a configurations container, it parses INIT files, stores the result in PHP when PHP is started, the result lives with the whole PHP lifecycle.',
 'Yaf\Action_Abstract' => '<p>A action can be defined in a separate file in Yaf(see \Yaf\Controller_Abstract). that is a action method can also be a <b>\Yaf\Action_Abstract</b> class.</P>
@@ -1115,14 +1115,14 @@ You may use &#64;backupGlobals annotation of PHPUnit to control the backup and r
 <br/>
 <p>** See examples by opening the external documentation</p>',
 'Yaf\View\Simple' => '<b>\Yaf\View\Simple</b> is the built-in template engine in Yaf, it is a simple but fast template engine, and only support PHP script template.',
-'Yaf\View_Interface' => 'Yaf provides a ability for developers to use custom view engine instead of build-in engine which is \Yaf\View\Simple. There is a example to explain how to do this, please see \Yaf\Dispatcher::setView()',
+'Yaf\View_Interface' => 'Yaf provides a ability for developers to use custom view engine instead of built-in engine which is \Yaf\View\Simple. There is a example to explain how to do this, please see \Yaf\Dispatcher::setView()',
 'Yaf_Action_Abstract' => 'A action can be defined in a separate file in Yaf(see `Yaf_Controller_Abstract`). that is a action method can also be a `Yaf_Action_Abstract` class.
 
 Since there should be a entry point which can be called by Yaf (as of PHP 5.3, there is a new magic method __invoke, but Yaf is not only works with PHP 5.3+, Yaf choose another magic method execute), you must implement the abstract method `Yaf_Action_Abstract::execute` in your custom action class.',
 'Yaf_Application' => '`Yaf_Application` provides a bootstrapping facility for applications which provides reusable resources, common- and module-based bootstrap classes and dependency checking.
 
 `Yaf_Application` implements the singleton pattern, and `Yaf_Application` can not be serialized or unserialized which will cause problem when you try to use PHPUnit to write some test case for Yaf. You may use @backupGlobals annotation of PHPUnit to control the backup and restore operations for global variables. thus can solve this problem.',
-'Yaf_Bootstrap_Abstract' => 'Bootstrap is a mechanism used to do some intial config before a Application run.
+'Yaf_Bootstrap_Abstract' => 'Bootstrap is a mechanism used to do some initial config before a Application run.
 
 User may define their own Bootstrap class by inheriting `Yaf_Bootstrap_Abstract`
 
@@ -1144,29 +1144,29 @@ Action may have arguments, when a request coming, if there are the same name var
 
 The first time an instance of `Yaf_Application` is retrieved, `Yaf_Loader` will instance a singleton, and registers itself with spl_autoload. You retrieve an instance using the `Yaf_Loader::getInstance`
 
-`Yaf_Loader` attempt to load a class only one shot, if failed, depend on yaf.use_spl_auload, if this config is On `Yaf_Loader::autoload` will return `false`, thus give the chance to other autoload function. if it is Off (by default), `Yaf_Loader::autoload` will return `true`, and more important is that a very usefull warning will be triggerd (very usefull to find out why a class could not be loaded). Please keep yaf.use_spl_autoload Off unless there is some library have their own autoload mechanism and impossible to rewrite it.
+`Yaf_Loader` attempt to load a class only one shot, if failed, depend on yaf.use_spl_auload, if this config is On `Yaf_Loader::autoload` will return `false`, thus give the chance to other autoload function. if it is Off (by default), `Yaf_Loader::autoload` will return `true`, and more important is that a very useful warning will be triggered (very useful to find out why a class could not be loaded). Please keep yaf.use_spl_autoload Off unless there is some library have their own autoload mechanism and impossible to rewrite it.
 
 By default, `Yaf_Loader` assume all library (class defined script) store in the global library directory, which is defined in the php.ini(yaf.library).
 
 If you want `Yaf_Loader` search some classes(libraries) in the local class directory(which is defined in application.ini, and by default, it is application.directory . "/library"), you should register the class prefix using the `Yaf_Loader::registerLocalNameSpace`
 
-Let\'s see some examples(assuming APPLICATION_PATH is application.directory): Config example Assuming the following local name space registerd: Register localnamespace registerLocalNameSpace(array("Foo", "Bar")); } ?> ]]> Then the autoload examples: Load class example // APPLICATION_PATH/library/Foo/Bar/Test.php class GLO_Name => // /global_dir/Glo/Name.php class BarNon_Test // /global_dir/Barnon/Test.php ]]> As of PHP 5.3, you can use namespace: Load namespace class example // APPLICATION_PATH/library/Foo/Bar/Dummy.php class \FooBar\Bar\Dummy => // /global_dir/FooBar/Bar/Dummy.php ]]>
+Let\'s see some examples(assuming APPLICATION_PATH is application.directory): Config example Assuming the following local name space registered: Register localnamespace registerLocalNameSpace(array("Foo", "Bar")); } ?> ]]> Then the autoload examples: Load class example // APPLICATION_PATH/library/Foo/Bar/Test.php class GLO_Name => // /global_dir/Glo/Name.php class BarNon_Test // /global_dir/Barnon/Test.php ]]> As of PHP 5.3, you can use namespace: Load namespace class example // APPLICATION_PATH/library/Foo/Bar/Dummy.php class \FooBar\Bar\Dummy => // /global_dir/FooBar/Bar/Dummy.php ]]>
 
-You may noticed that all the folder wth the first letter capitalized, you can make them lowercase by set yaf.lowcase_path = On in php.ini
+You may noticed that all the folder with the first letter capitalized, you can make them lowercase by set yaf.lowcase_path = On in php.ini
 
 `Yaf_Loader` is also designed to load the MVC classes, and the rule is: MVC class loading example // APPLICATION_PATH/controllers/ Model Classes => // APPLICATION_PATH/models/ Plugin Classes => // APPLICATION_PATH/plugins/ ]]> Yaf identify a class\'s suffix(this is by default, you can also change to the prefix by change the configure yaf.name_suffix) to decide whether it is a MVC class: MVC class distinctions // ***Controller Model Classes => // ***Model Plugin Classes => // ***Plugin ]]> some examples: MVC loading example // APPLICATION_PATH/models/Data.php class DummyPlugin => // APPLICATION_PATH/plugins/Dummy.php class A_B_TestModel => // APPLICATION_PATH/models/A/B/Test.php ]]> As of 2.1.18, Yaf supports Controllers autoloading for user script side, (which means the autoloading triggered by user php script, eg: access a controller static property in Bootstrap or Plugins), but autoloader only try to locate controller class script under the default module folder, which is "APPLICATION_PATH/controllers/". also, the directory will be affected by yaf.lowcase_path.',
 'Yaf_Plugin_Abstract' => 'Plugins allow for easy extensibility and customization of the framework.
 
 Plugins are classes. The actual class definition will vary based on the component -- you may need to implement this interface, but the fact remains that the plugin is itself a class.
 
-A plugin could be loaded into Yaf by using `Yaf_Dispatcher::registerPlugin`, after registerd, All the methods which the plugin implemented according to this interface, will be called at the proper time.',
+A plugin could be loaded into Yaf by using `Yaf_Dispatcher::registerPlugin`, after registering, All the methods which the plugin implemented according to this interface, will be called at the proper time.',
 'Yaf_Registry' => 'All methods of `Yaf_Registry` declared as static, making it unversally accessible. This provides the ability to get or set any custom data from anyway in your code as necessary.',
-'Yaf_Request_Http' => 'Any request from client is initialized as a `Yaf_Request_Http`. you can get the rquest information like, uri query and post parameters via methods of this class. For security, $_GET/$_POST are readonly in Yaf, which means if you set a value to these global variables, you can not get it from `Yaf_Request_Http::getQuery` or `Yaf_Request_Http::getPost`. But there do is some usage need such feature, like unit testing. thus Yaf can be built with --enable-yaf-debug, which will allow Yaf read the value user set via script. in such case, Yaf will throw a E_STRICT warning to remind you about that: Strict Standards: you are running yaf in debug mode',
+'Yaf_Request_Http' => 'Any request from client is initialized as a `Yaf_Request_Http`. you can get the request information like, uri query and post parameters via methods of this class. For security, $_GET/$_POST are readonly in Yaf, which means if you set a value to these global variables, you can not get it from `Yaf_Request_Http::getQuery` or `Yaf_Request_Http::getPost`. But there do is some usage need such feature, like unit testing. thus Yaf can be built with --enable-yaf-debug, which will allow Yaf read the value user set via script. in such case, Yaf will throw a E_STRICT warning to remind you about that: Strict Standards: you are running yaf in debug mode',
 'Yaf_Request_Simple' => '`Yaf_Request_Simple` is particularlly used for test puporse. ie. simulate some espacial request under CLI mode.',
 'Yaf_Route_Interface' => '`Yaf_Route_Interface` used for developer defined their custom route.',
-'Yaf_Route_Map' => '`Yaf_Route_Map` is a built-in route, it simply convert a URI endpoint (that part of the URI which comes after the base URI: see `Yaf_Request_Abstract::setBaseUri`) to a controller name or action name(depends on the paramter passed to `Yaf_Route_Map::__construct`) in following rule: A =&gt; controller A. A/B/C =&gt; controller A_B_C. A/B/C/D/E =&gt; controller A_B_C_D_E.
+'Yaf_Route_Map' => '`Yaf_Route_Map` is a built-in route, it simply convert a URI endpoint (that part of the URI which comes after the base URI: see `Yaf_Request_Abstract::setBaseUri`) to a controller name or action name(depends on the parameter passed to `Yaf_Route_Map::__construct`) in following rule: A =&gt; controller A. A/B/C =&gt; controller A_B_C. A/B/C/D/E =&gt; controller A_B_C_D_E.
 
-If the second parameter of `Yaf_Route_Map::__construct` is specificed, then only the part before delimeter of URI will used to routing, the part after it is used to routing request parameters (see the example section of `Yaf_Route_Map::__construct`).',
+If the second parameter of `Yaf_Route_Map::__construct` is specified, then only the part before delimiter of URI will used to routing, the part after it is used to routing request parameters (see the example section of `Yaf_Route_Map::__construct`).',
 'Yaf_Route_Regex' => '`Yaf_Route_Regex` is the most flexible route among the Yaf built-in routes.',
 'Yaf_Route_Rewrite' => 'For usage, please see the example section of `Yaf_Route_Rewrite::__construct`',
 'Yaf_Route_Simple' => '`Yaf_Route_Simple` will match the query string, and find the route info.
@@ -1178,9 +1178,9 @@ all you need to do is tell `Yaf_Route_Simple` what key in the $_GET is module, w
 
 And `Yaf_Route_Static` is designed to handle the 80% requirement.
 
-please *NOTE* that it is unecessary to instance a `Yaf_Route_Static`, also unecesary to add it into `Yaf_Router`\'s routes stack, since there is always be one in `Yaf_Router`\'s routes stack, and always be called at the last time.',
+please *NOTE* that it is unnecessary to instance a `Yaf_Route_Static`, also unecesary to add it into `Yaf_Router`\'s routes stack, since there is always be one in `Yaf_Router`\'s routes stack, and always be called at the last time.',
 'Yaf_Router' => '`Yaf_Router` is the standard framework router. Routing is the process of taking a URI endpoint (that part of the URI which comes after the base URI: see `Yaf_Request_Abstract::setBaseUri`) and decomposing it into parameters to determine which module, controller, and action of that controller should receive the request. This values of the module, controller, action and other parameters are packaged into a `Yaf_Request_Abstract` object which is then processed by `Yaf_Dispatcher`. Routing occurs only once: when the request is initially received and before the first controller is dispatched. `Yaf_Router` is designed to allow for mod_rewrite-like functionality using pure PHP structures. It is very loosely based on Ruby on Rails routing and does not require any prior knowledge of webserver URL rewriting. It is designed to work with a single Apache mod_rewrite rule (one of): Rewrite rule for Apache or (preferred): Rewrite rule for Apache If using Lighttpd, the following rewrite rule is valid: Rewrite rule for Lighttpd "/index.php?$1", ".*\.(js|ico|gif|jpg|png|css|html)$" => "$0", "" => "/index.php" ) ]]> If using Nginx, use the following rewrite rule: Rewrite rule for Nginx',
-'Yaf_View_Interface' => 'Yaf provides a ability for developers to use coustom view engine instead of build-in engine which is `Yaf_View_Simple`. There is a example to explain how to do this, please see `Yaf_Dispatcher::setView`.',
+'Yaf_View_Interface' => 'Yaf provides a ability for developers to use coustom view engine instead of built-in engine which is `Yaf_View_Simple`. There is a example to explain how to do this, please see `Yaf_Dispatcher::setView`.',
 'Yaf_View_Simple' => '`Yaf_View_Simple` is the built-in template engine in Yaf, it is a simple but fast template engine, and only support PHP script template.',
 'Yar_Client_Exception' => 'Class Yar_Client_Exception
 Date 2018/6/9 下午3:05',

@@ -136,7 +136,7 @@ AMQPConnection::connect() is called.
 
      TLS support (see https://www.rabbitmq.com/ssl.html for details):
      \'cacert\' => Path to the CA cert file in PEM format..
-     \'cert\'   => Path to the client certificate in PEM foramt.
+     \'cert\'   => Path to the client certificate in PEM format.
      \'key\'    => Path to the client key in PEM format.
      \'verify\' => Enable or disable peer verification. If peer verification is enabled then the common name in the
                  server certificate must match the server name. Peer verification is enabled by default.
@@ -710,7 +710,7 @@ All other argument settings will be wiped.',
 'cairofontoptions::setHintStyle' => 'The setHintStyle purpose',
 'cairofontoptions::setSubpixelOrder' => 'The setSubpixelOrder purpose',
 'cairofontoptions::status' => 'The status purpose',
-'cairoformat::strideForWidth' => 'Provides an appropiate stride to use',
+'cairoformat::strideForWidth' => 'Provides an appropriate stride to use',
 'cairogradientpattern::addColorStopRgb' => 'The addColorStopRgb purpose',
 'cairogradientpattern::addColorStopRgba' => 'The addColorStopRgba purpose',
 'cairogradientpattern::getColorStopCount' => 'The getColorStopCount purpose',
@@ -1727,7 +1727,7 @@ with the same key selected into the same page.',
 'die' => 'Equivalent to exit',
 'dio_close' => 'Closes the file descriptor given by fd',
 'dio_fcntl' => 'Performs a c library fcntl on fd',
-'dio_open' => 'Opens a file (creating it if necessary) at a lower level than the C library input/ouput stream functions allow',
+'dio_open' => 'Opens a file (creating it if necessary) at a lower level than the C library input/output stream functions allow',
 'dio_read' => 'Reads bytes from a file descriptor',
 'dio_seek' => 'Seeks to pos on fd from whence',
 'dio_stat' => 'Gets stat information about the file descriptor fd',
@@ -2397,7 +2397,7 @@ Marks the watcher as inactive. Note that only active watchers will receive event
 'eventbufferevent::__construct' => 'Constructs EventBufferEvent object',
 'eventbufferevent::close' => 'Closes file descriptor associated with the current buffer event',
 'eventbufferevent::connect' => 'Connect buffer event\'s file descriptor to given address or UNIX socket',
-'eventbufferevent::connectHost' => 'Connects to a hostname with optionally asyncronous DNS resolving',
+'eventbufferevent::connectHost' => 'Connects to a hostname with optionally asynchronous DNS resolving',
 'eventbufferevent::createPair' => 'Creates two buffer events connected to each other',
 'eventbufferevent::disable' => 'Disable events read, write, or both on a buffer event',
 'eventbufferevent::enable' => 'Enable events read, write, or both on a buffer event',
@@ -2956,8 +2956,8 @@ Tries to clone the Exception, which results in Fatal error.',
 'fann_train_on_data' => 'Trains on an entire dataset for a period of time',
 'fann_train_on_file' => 'Trains on an entire dataset, which is read from file, for a period of time',
 'fannconnection::__construct' => 'The connection constructor',
-'fannconnection::getFromNeuron' => 'Returns the postions of starting neuron',
-'fannconnection::getToNeuron' => 'Returns the postions of terminating neuron',
+'fannconnection::getFromNeuron' => 'Returns the positions of starting neuron',
+'fannconnection::getToNeuron' => 'Returns the positions of terminating neuron',
 'fannconnection::getWeight' => 'Returns the connection weight',
 'fannconnection::setWeight' => 'Sets the connections weight',
 'fastcgi_finish_request' => 'Flushes all response data to the client',
@@ -4041,7 +4041,7 @@ reached',
 'http\QueryString::mod' => 'Set additional $params to a clone of this instance',
 'http\QueryString::set' => 'Set additional querystring entries',
 'http\QueryString::toArray' => 'Returns http\QueryString::$queryArray',
-'http\QueryString::toString' => 'Get the string represenation of the querystring (x-www-form-urlencoded)',
+'http\QueryString::toString' => 'Get the string representation of the querystring (x-www-form-urlencoded)',
 'http\QueryString::xlate' => 'Translate character encodings of the querystring with ext/iconv',
 'http\Url::__construct' => 'Url constructor.',
 'http\Url::__toString' => 'Alias of Url::toString()',
@@ -5561,14 +5561,14 @@ error.',
 The matching between the sld document and the layer will be done
 using the layer\'s name.
 If a namedlayer argument is passed (argument is optional),
-the NamedLayer in the sld that matchs it will be used to style
+the NamedLayer in the sld that matches it will be used to style
 the layer.
 See :ref:`SLD HowTo <sld>` for more information on the SLD support.',
 'layerObj::applySLDURL' => 'Apply the :ref:`SLD <sld>` document pointed by the URL to the
 layer object. The matching between the sld document and the layer
 will be done using the layer\'s name.  If a namedlayer argument is
 passed (argument is optional), the NamedLayer in the sld that
-matchs it will be used to style the layer.  See :ref:`SLD HowTo
+matches it will be used to style the layer.  See :ref:`SLD HowTo
 <sld>` for more information on the SLD support.',
 'layerObj::clearProcessing' => 'Clears all the processing strings.',
 'layerObj::close' => 'Close layer previously opened with open().',
@@ -5638,7 +5638,7 @@ infoFormat is the format the format in which the result should be
 requested.  Depends on remote server\'s capabilities.  MapServer
 WMS servers support only "MIME" (and should support "GML.1" soon).
 Returns "" and outputs a warning if layer is not a WMS layer
-or if it is not queriable.',
+or if it is not queryable.',
 'layerObj::isVisible' => 'Returns MS_TRUE/MS_FALSE depending on whether the layer is
 currently visible in the map (i.e. turned on, in scale, etc.).',
 'layerObj::moveclassdown' => 'The class specified by the class index will be moved down into
@@ -6013,7 +6013,7 @@ If there are no layers, it returns an empty array.',
 'mapObj::getColorbyIndex' => 'Returns a colorObj corresponding to the color index in the
 palette.',
 'mapObj::getConfigOption' => 'Returns the config value associated with the key.
-Returns an empty sting if key not found.',
+Returns an empty string if key not found.',
 'mapObj::getLabel' => 'Returns a labelcacheMemberObj from the map given an index value
 (0=first label).  Labelcache has to be enabled.
 .. code-block:: php
@@ -6732,12 +6732,12 @@ Serializes a PHP array or object (e.g. document) to its BSON representation. The
 'mongodb\bson\minkey::serialize' => 'Serialize a MinKey',
 'mongodb\bson\minkey::unserialize' => 'Unserialize a MinKey',
 'mongodb\bson\objectid::__construct' => 'Construct a new ObjectId',
-'mongodb\bson\objectid::__toString' => 'Returns the hexidecimal representation of this ObjectId',
+'mongodb\bson\objectid::__toString' => 'Returns the hexadecimal representation of this ObjectId',
 'mongodb\bson\objectid::getTimestamp' => 'Returns the timestamp component of this ObjectId',
 'mongodb\bson\objectid::jsonSerialize' => 'Returns a representation that can be converted to JSON',
 'mongodb\bson\objectid::serialize' => 'Serialize an ObjectId',
 'mongodb\bson\objectid::unserialize' => 'Unserialize an ObjectId',
-'mongodb\bson\objectidinterface::__toString' => 'Returns the hexidecimal representation of this ObjectIdInterface',
+'mongodb\bson\objectidinterface::__toString' => 'Returns the hexadecimal representation of this ObjectIdInterface',
 'mongodb\bson\objectidinterface::getTimestamp' => 'Returns the timestamp component of this ObjectIdInterface',
 'mongodb\bson\regex::__construct' => 'Construct a new Regex',
 'mongodb\bson\regex::__toString' => 'Returns the string representation of this Regex',
@@ -6769,7 +6769,7 @@ Serializes a PHP array or object (e.g. document) to its BSON representation. The
 Converts a BSON string to its extended JSON representation.',
 'MongoDB\BSON\toPHP' => 'Returns the PHP representation of a BSON value
 Unserializes a BSON document (i.e. binary string) to its PHP representation.
-The typeMap paramater may be used to control the PHP types used for converting BSON arrays and documents (both root and embedded).',
+The typeMap parameter may be used to control the PHP types used for converting BSON arrays and documents (both root and embedded).',
 'mongodb\bson\undefined::__construct' => 'Construct a new Undefined (unused)',
 'mongodb\bson\undefined::__toString' => 'Returns an empty string',
 'mongodb\bson\undefined::jsonSerialize' => 'Returns a representation that can be converted to JSON',
@@ -7014,7 +7014,7 @@ This method will override the static class variable slaveOkay.',
 'mongogridfsfile::write' => 'Writes this file to the filesystem',
 'mongoid::__construct' => 'Creates a new id',
 'mongoid::__set_state' => 'Create a dummy MongoId',
-'mongoid::__toString' => 'Returns a hexidecimal representation of this id',
+'mongoid::__toString' => 'Returns a hexadecimal representation of this id',
 'mongoid::getHostname' => 'Gets the hostname being used for this machine\'s ids',
 'mongoid::getInc' => 'Gets the incremented value to create this id',
 'mongoid::getPID' => 'Gets the process ID',
@@ -7772,7 +7772,7 @@ as individual tokens.',
 'ncurses_vidattr' => 'Display the string on the terminal in the video attribute mode',
 'ncurses_vline' => 'Draw a vertical line at current position using an attributed character and max. n characters long',
 'ncurses_waddch' => 'Adds character at current position in a window and advance cursor',
-'ncurses_waddstr' => 'Outputs text at current postion in window',
+'ncurses_waddstr' => 'Outputs text at current position in window',
 'ncurses_wattroff' => 'Turns off attributes for a window',
 'ncurses_wattron' => 'Turns on attributes for a window',
 'ncurses_wattrset' => 'Set the attributes for a window',
@@ -8235,7 +8235,7 @@ Alias of {@see OCI-Lob::writeTemporary()}',
 'openssl_seal' => 'Seal (encrypt) data',
 'openssl_sign' => 'Generate signature',
 'openssl_spki_export' => 'Exports a valid PEM formatted public key signed public key and challenge',
-'openssl_spki_export_challenge' => 'Exports the challenge assoicated with a signed public key and challenge',
+'openssl_spki_export_challenge' => 'Exports the challenge associated with a signed public key and challenge',
 'openssl_spki_new' => 'Generate a new signed public key and challenge',
 'openssl_spki_verify' => 'Verifies a signed public key and challenge',
 'openssl_verify' => 'Verify signature',
@@ -8458,7 +8458,7 @@ $request->setparameter(\'REQUEST\', \'GetMap\');',
 'pdf_fit_table' => 'Place table on page',
 'pdf_fit_textflow' => 'Format textflow in rectangular area',
 'pdf_fit_textline' => 'Place single line of text',
-'pdf_get_apiname' => 'Get name of unsuccessfull API function',
+'pdf_get_apiname' => 'Get name of unsuccessful API function',
 'pdf_get_buffer' => 'Get PDF output buffer',
 'pdf_get_errmsg' => 'Get error text',
 'pdf_get_errnum' => 'Get error number',
@@ -9027,7 +9027,7 @@ $poPoint->project($projInObj, $projOutObj);',
 'ps_fill' => 'Fills the current path',
 'ps_fill_stroke' => 'Fills and strokes the current path',
 'ps_findfont' => 'Loads a font',
-'ps_get_buffer' => 'Fetches the full buffer containig the generated PS data',
+'ps_get_buffer' => 'Fetches the full buffer containing the generated PS data',
 'ps_get_parameter' => 'Gets certain parameters',
 'ps_get_value' => 'Gets certain values',
 'ps_hyphenate' => 'Hyphenates a word',
@@ -9393,7 +9393,7 @@ the SCRIPT LOAD command.',
 'Redis::getBit' => 'Return a single bit out of a larger string',
 'Redis::getLastError' => 'The last error message (if any)',
 'Redis::getMode' => 'Detect whether we\'re in ATOMIC/MULTI/PIPELINE mode.',
-'Redis::getMultiple' => 'Get the values of all the specified keys. If one or more keys dont exist, the array will contain FALSE at the
+'Redis::getMultiple' => 'Get the values of all the specified keys. If one or more keys don\'t exist, the array will contain FALSE at the
 position of the key.',
 'Redis::getOption' => 'Get client option',
 'Redis::getRange' => 'Return a substring of a larger string',
@@ -9435,9 +9435,9 @@ the command returns 0. If the data type identified by Key is not a list, the com
 If the key exists and is not a list, FALSE is returned.',
 'Redis::lPushx' => 'Adds the string value to the head (left) of the list if the list exists.',
 'Redis::lRange' => 'Returns the specified elements of the list stored at the specified key in
-the range [start, end]. start and stop are interpretated as indices: 0 the first element,
+the range [start, end]. start and stop are interpreted as indices: 0 the first element,
 1 the second ... -1 the last element, -2 the penultimate ...',
-'Redis::lRem' => 'Removes the first count occurences of the value element from the list.
+'Redis::lRem' => 'Removes the first count occurrences of the value element from the list.
 If count is zero, all the matching elements are removed. If count is negative,
 elements are removed from tail to head.',
 'Redis::lSet' => 'Set the list at index with the new value.',
@@ -9506,7 +9506,7 @@ These are the counters that are reset:
 Also return this value.',
 'Redis::rPush' => 'Adds the string values to the tail (right) of the list. Creates the list if the key didn\'t exist.
 If the key exists and is not a list, FALSE is returned.',
-'Redis::rPushx' => 'Adds the string value to the tail (right) of the list if the ist exists. FALSE in case of Failure.',
+'Redis::rPushx' => 'Adds the string value to the tail (right) of the list if the list exists. FALSE in case of Failure.',
 'Redis::sAdd' => 'Adds a values to the set value stored at key.
 If this value is already in the set, FALSE is returned.',
 'Redis::sAddArray' => 'Adds a values to the set value stored at key.',
@@ -9597,7 +9597,7 @@ with the smallest score. zRevRank starts at 0 for the item with the largest scor
 'Redis::zRemRangeByRank' => 'Deletes the elements of the sorted set stored at the specified key which have rank in the range [start,end].',
 'Redis::zRemRangeByScore' => 'Deletes the elements of the sorted set stored at the specified key which have scores in the range [start,end].',
 'Redis::zRevRange' => 'Returns the elements of the sorted set stored at the specified key in the range [start, end]
-in reverse order. start and stop are interpretated as zero-based indices:
+in reverse order. start and stop are interpreted as zero-based indices:
 0 the first element,
 1 the second ...
 -1 the last element,
@@ -9720,9 +9720,9 @@ the command returns 0. If the data type identified by Key is not a list, the com
 If the key exists and is not a list, FALSE is returned.',
 'RedisCluster::lPushx' => 'Adds the string value to the head (left) of the list if the list exists.',
 'RedisCluster::lRange' => 'Returns the specified elements of the list stored at the specified key in
-the range [start, end]. start and stop are interpretated as indices: 0 the first element,
+the range [start, end]. start and stop are interpreted as indices: 0 the first element,
 1 the second ... -1 the last element, -2 the penultimate ...',
-'RedisCluster::lRem' => 'Removes the first count occurences of the value element from the list.
+'RedisCluster::lRem' => 'Removes the first count occurrences of the value element from the list.
 If count is zero, all the matching elements are removed. If count is negative,
 elements are removed from tail to head.',
 'RedisCluster::lSet' => 'Set the list at index with the new value.',
@@ -9774,7 +9774,7 @@ This is the same behaviour as setNx.',
 Also return this value.',
 'RedisCluster::rPush' => 'Adds the string values to the tail (right) of the list. Creates the list if the key didn\'t exist.
 If the key exists and is not a list, FALSE is returned.',
-'RedisCluster::rPushx' => 'Adds the string value to the tail (right) of the list if the ist exists. FALSE in case of Failure.',
+'RedisCluster::rPushx' => 'Adds the string value to the tail (right) of the list if the list exists. FALSE in case of Failure.',
 'RedisCluster::sAdd' => 'Adds a values to the set value stored at key.
 If this value is already in the set, FALSE is returned.',
 'RedisCluster::sAddArray' => 'Adds a values to the set value stored at key.
@@ -9846,7 +9846,7 @@ with the smallest score. zRevRank starts at 0 for the item with the largest scor
 'RedisCluster::zRemRangeByRank' => 'Deletes the elements of the sorted set stored at the specified key which have rank in the range [start,end].',
 'RedisCluster::zRemRangeByScore' => 'Deletes the elements of the sorted set stored at the specified key which have scores in the range [start,end].',
 'RedisCluster::zRevRange' => 'Returns the elements of the sorted set stored at the specified key in the range [start, end]
-in reverse order. start and stop are interpretated as zero-based indices:
+in reverse order. start and stop are interpreted as zero-based indices:
 0 the first element,
 1 the second ...
 -1 the last element,
@@ -10539,7 +10539,7 @@ pointObj  getMeasureUsingPoint(pointObj point)
 Apply only on Measured shape files. Given an XY Location, find the
 nearest point on the shape object. Return a point object
 of this point with the m value set.',
-'shapeObj::getPointUsingMeasure' => 'Apply only on Measured shape files. Given a measure m, retun the
+'shapeObj::getPointUsingMeasure' => 'Apply only on Measured shape files. Given a measure m, return the
 corresponding XY location on the shapeobject.',
 'shapeObj::getValue' => 'Returns the value for a given field name.',
 'shapeObj::intersection' => 'Returns a shape object representing the intersection of the shape
@@ -11019,7 +11019,7 @@ https://secure.php.net/manual/en/solrquery.getgroup.php',
 'SolrDisMaxQuery::getMltMaxNumQueryTerms' => 'Returns the maximum number of query terms that will be included in any generated query',
 'SolrDisMaxQuery::getMltMaxNumTokens' => 'Returns the maximum number of tokens to parse in each document field that is not stored with TermVector support',
 'SolrDisMaxQuery::getMltMaxWordLength' => 'Returns the maximum word length above which words will be ignored',
-'SolrDisMaxQuery::getMltMinDocFrequency' => 'Returns the treshold frequency at which words will be ignored which do not occur in at least this many docs',
+'SolrDisMaxQuery::getMltMinDocFrequency' => 'Returns the threshold frequency at which words will be ignored which do not occur in at least this many docs',
 'SolrDisMaxQuery::getMltMinTermFrequency' => 'Returns the frequency below which terms will be ignored in the source document',
 'SolrDisMaxQuery::getMltMinWordLength' => 'Returns the minimum word length below which words will be ignored',
 'SolrDisMaxQuery::getMltQueryFields' => 'Returns the query fields and their boosts',
@@ -11363,7 +11363,7 @@ group.format=simple.',
 'solrquery::getMltMaxNumQueryTerms' => 'Returns the maximum number of query terms that will be included in any generated query',
 'solrquery::getMltMaxNumTokens' => 'Returns the maximum number of tokens to parse in each document field that is not stored with TermVector support',
 'solrquery::getMltMaxWordLength' => 'Returns the maximum word length above which words will be ignored',
-'solrquery::getMltMinDocFrequency' => 'Returns the treshold frequency at which words will be ignored which do not occur in at least this many docs',
+'solrquery::getMltMinDocFrequency' => 'Returns the threshold frequency at which words will be ignored which do not occur in at least this many docs',
 'solrquery::getMltMinTermFrequency' => 'Returns the frequency below which terms will be ignored in the source document',
 'solrquery::getMltMinWordLength' => 'Returns the minimum word length below which words will be ignored',
 'solrquery::getMltQueryFields' => 'Returns the query fields and their boosts',
@@ -11887,7 +11887,7 @@ Seek to a particular row number of a buffered result set',
 <br />When specifying the PHP data type of a value being returned from the server, this allows you to specify the encoding
 used to process the value if the value is a stream.<br />
 
-In the documentation this is presented as a constant that accepts an arguement.<br />
+In the documentation this is presented as a constant that accepts an argument.<br />
 
 When you use SQLSRV_PHPTYPE_STREAM, the encoding must be specified. If no parameter is supplied, an error will be
 returned.<br />
@@ -11903,7 +11903,7 @@ Additional Information at:
 <br />When specifying the PHP data type of a value being returned from the server, this allows you to specify the
 encoding used to process the value if the value is a string.<br />
 
-In the documentation this is presented as a constant that accepts an arguement.<br />
+In the documentation this is presented as a constant that accepts an argument.<br />
 
 When you use SQLSRV_PHPTYPE_STRING, the encoding must be specified. If no parameter is supplied, an error will be
 returned.<br />
@@ -11922,42 +11922,42 @@ Additional Information at:
 'sqlsrv_server_info' => 'Returns information about the server',
 'SQLSRV_SQLTYPE_BINARY' => 'Specifies a SQL Server binary field.
 
-<br />In the documentation this is presented as a constant that accepts an arguement.<br />
+<br />In the documentation this is presented as a constant that accepts an argument.<br />
 
 Additional Information at {@link http://msdn.microsoft.com/en-us/library/cc296152.aspx SQLSRV Driver API Reference}<br />',
 'SQLSRV_SQLTYPE_CHAR' => 'Specifies a SQL Server char field.
 
-<br />In the documentation this is presented as a constant that accepts an arguement.<br />
+<br />In the documentation this is presented as a constant that accepts an argument.<br />
 
 Additional Information at {@link http://msdn.microsoft.com/en-us/library/cc296152.aspx SQLSRV Driver API Reference}<br />',
 'SQLSRV_SQLTYPE_DECIMAL' => 'Specifies a SQL Server decimal field.
 
-<br />In the documentation this is presented as a constant that accepts an arguement.<br />
+<br />In the documentation this is presented as a constant that accepts an argument.<br />
 
 Additional Information at {@link http://msdn.microsoft.com/en-us/library/cc296152.aspx SQLSRV Driver API Reference}<br />',
 'SQLSRV_SQLTYPE_NCHAR' => 'Specifies a SQL Server nchar field.
 
-<br />In the documentation this is presented as a constant that accepts an arguement.<br />
+<br />In the documentation this is presented as a constant that accepts an argument.<br />
 
 Additional Information at {@link http://msdn.microsoft.com/en-us/library/cc296152.aspx SQLSRV Driver API Reference}<br />',
 'SQLSRV_SQLTYPE_NUMERIC' => 'Specifies a SQL Server numeric field.
 
-<br />In the documentation this is presented as a constant that accepts an arguement.<br />
+<br />In the documentation this is presented as a constant that accepts an argument.<br />
 
 Additional Information at {@link http://msdn.microsoft.com/en-us/library/cc296152.aspx SQLSRV Driver API Reference}<br />',
 'SQLSRV_SQLTYPE_NVARCHAR' => 'Specifies a SQL Server nvarchar field.
 
-<br />In the documentation this is presented as a constant that accepts an arguement.<br />
+<br />In the documentation this is presented as a constant that accepts an argument.<br />
 
 Additional Information at {@link http://msdn.microsoft.com/en-us/library/cc296152.aspx SQLSRV Driver API Reference}<br />',
 'SQLSRV_SQLTYPE_VARBINARY' => 'Specifies a SQL Server varbinary field.
 
-<br />In the documentation this is presented as a constant that accepts an arguement.<br />
+<br />In the documentation this is presented as a constant that accepts an argument.<br />
 
 Additional Information at {@link http://msdn.microsoft.com/en-us/library/cc296152.aspx SQLSRV Driver API Reference}<br />',
 'SQLSRV_SQLTYPE_VARCHAR' => 'Specifies a SQL Server varchar filed.
 
-<br />In the documentation this is presented as a constant that accepts an arguement.<br />
+<br />In the documentation this is presented as a constant that accepts an argument.<br />
 
 Additional Information at {@link http://msdn.microsoft.com/en-us/library/cc296152.aspx SQLSRV Driver API Reference}<br />',
 'sqrt' => 'Square root',
@@ -12480,7 +12480,7 @@ the value of the color from the field called "FIELD_NAME_COLOR"',
 'swoole\connection\iterator::current' => 'Return current connection entry.',
 'swoole\connection\iterator::key' => 'Return key of the current connection.',
 'swoole\connection\iterator::next' => 'Move to the next connection.',
-'swoole\connection\iterator::offsetExists' => 'Check if offet exists.',
+'swoole\connection\iterator::offsetExists' => 'Check if offset exists.',
 'swoole\connection\iterator::offsetGet' => 'Offset to retrieve.',
 'swoole\connection\iterator::offsetSet' => 'Assign a Connection to the specified offset.',
 'swoole\connection\iterator::offsetUnset' => 'Unset an offset.',
@@ -12505,7 +12505,7 @@ the value of the color from the field called "FIELD_NAME_COLOR"',
 'swoole\http\client::on' => 'Register callback function by event name.',
 'swoole\http\client::post' => 'Send POST http request to the remote server.',
 'swoole\http\client::push' => 'Push data to websocket client.',
-'swoole\http\client::set' => 'Update the HTTP client paramters.',
+'swoole\http\client::set' => 'Update the HTTP client parameters.',
 'swoole\http\client::setCookies' => 'Set the http request cookies.',
 'swoole\http\client::setData' => 'Set the HTTP request body data.',
 'swoole\http\client::setHeaders' => 'Set the HTTP request headers.',
@@ -12565,7 +12565,7 @@ the value of the color from the field called "FIELD_NAME_COLOR"',
 'swoole\server::addProcess' => 'Add a user defined swoole_process to the server.',
 'swoole\server::after' => 'Trigger a callback function after a period of time.',
 'swoole\server::bind' => 'Bind the connection to a user defined user ID.',
-'swoole\server::clearTimer' => 'Stop and destory a timer.',
+'swoole\server::clearTimer' => 'Stop and destroy a timer.',
 'swoole\server::close' => 'Close a connection to the client.',
 'swoole\server::confirm' => 'Check status of the connection.',
 'swoole\server::connection_info' => 'Get the connection info by file description.',
@@ -12582,7 +12582,7 @@ the value of the color from the field called "FIELD_NAME_COLOR"',
 'swoole\server::pause' => 'Stop receiving data from the connection.',
 'swoole\server::protect' => 'Set the connection to be protected mode.',
 'swoole\server::reload' => 'Restart all the worker process.',
-'swoole\server::resume' => 'Start receving data from the connection.',
+'swoole\server::resume' => 'Start receiving data from the connection.',
 'swoole\server::send' => 'Send data to the client.',
 'swoole\server::sendfile' => 'Send file to the connection.',
 'swoole\server::sendMessage' => 'Send message to worker processes by ID.',
@@ -13095,7 +13095,7 @@ referenced object',
 'uconverter::getErrorCode' => 'Get last error code on the object',
 'uconverter::getErrorMessage' => 'Get last error message on the object',
 'uconverter::getSourceEncoding' => 'Get the source encoding',
-'uconverter::getSourceType' => 'Get the source convertor type',
+'uconverter::getSourceType' => 'Get the source converter type',
 'uconverter::getStandards' => 'Get standards associated to converter names',
 'uconverter::getSubstChars' => 'Get substitution chars',
 'uconverter::reasonText' => 'Get string representation of the callback reason',
@@ -13394,7 +13394,7 @@ V8\'s "amount of external memory" is adjusted by this value for every exported o
 The loader function will receive the normalised module path and should return Javascript code to be executed.',
 'V8Js::setModuleNormaliser' => 'Provide a function or method to be used to normalise module paths. This can be any valid PHP callable.
 This can be used in combination with setModuleLoader to influence normalisation of the module path (which
-is normally done by V8Js itself but can be overriden this way).
+is normally done by V8Js itself but can be overridden this way).
 The normaliser function will receive the base path of the current module (if any; otherwise an empty string)
 and the literate string provided to the require method and should return an array of two strings (the new
 module base path as well as the normalised name).  Both are joined by a \'/\' and then passed on to the
@@ -13824,7 +13824,7 @@ return response to client finally.',
 'Yaf\Dispatcher::autoRender' => '<p>\Yaf\Dispatcher will render automatically after dispatches an incoming request, you can prevent the rendering by calling this method with $flag TRUE</p><br/>
 <b>Note:</b>
 <p>you can simply return FALSE in a action to prevent the auto-rendering of that action</p>',
-'Yaf\Dispatcher::catchException' => '<p>While the application.dispatcher.throwException is On(you can also calling to <b>\Yaf\Dispatcher::throwException(TRUE)</b> to enable it), Yaf will throw \Exception whe error occurs instead of trigger error.</p><br/>
+'Yaf\Dispatcher::catchException' => '<p>While the application.dispatcher.throwException is On(you can also calling to <b>\Yaf\Dispatcher::throwException(TRUE)</b> to enable it), Yaf will throw \Exception when error occurs instead of trigger error.</p><br/>
 <p>then if you enable <b>\Yaf\Dispatcher::catchException()</b>(also can enabled by set application.dispatcher.catchException), all uncaught \Exceptions will be caught by ErrorController::error if you have defined one.</p>',
 'Yaf\Dispatcher::disableView' => '<p>disable view engine, used in some app that user will output by himself</p><br/>
 <b>Note:</b>
@@ -13861,7 +13861,7 @@ return response to client finally.',
 'Yaf\Plugin_Abstract::postDispatch' => '`@return bool` true',
 'Yaf\Plugin_Abstract::preDispatch' => '`@return bool` true',
 'Yaf\Plugin_Abstract::preResponse' => '`@return bool` true',
-'Yaf\Plugin_Abstract::routerShutdown' => 'This hook will be trigged after the route process finished, this hook is usually used for login check.',
+'Yaf\Plugin_Abstract::routerShutdown' => 'This hook will be triggered after the route process finished, this hook is usually used for login check.',
 'Yaf\Plugin_Abstract::routerStartup' => 'This is the earliest hook in Yaf plugin hook system, if a custom plugin implement this method, then it will be called before routing a request.',
 'Yaf\Registry::get' => 'Retrieve an item from registry',
 'Yaf\Registry::has' => 'Check whether an item exists',
@@ -14138,7 +14138,7 @@ This method depends on the request header: HTTP_X_REQUESTED_WITH, some Javascrip
 'yaf_request_abstract::getControllerName' => 'The getControllerName purpose',
 'yaf_request_abstract::getEnv' => 'Retrieve ENV varialbe',
 'yaf_request_abstract::getException' => 'The getException purpose',
-'yaf_request_abstract::getLanguage' => 'Retrieve client\'s prefered language',
+'yaf_request_abstract::getLanguage' => 'Retrieve client\'s preferred language',
 'yaf_request_abstract::getMethod' => 'Retrieve the request method',
 'yaf_request_abstract::getModuleName' => 'The getModuleName purpose',
 'yaf_request_abstract::getParam' => 'Retrieve calling parameter',
@@ -14210,7 +14210,7 @@ This method depends on the request header: HTTP_X_REQUESTED_WITH, some Javascrip
 'yaf_response_abstract::response' => 'Send response',
 'yaf_response_abstract::setAllHeaders' => 'The setAllHeaders purpose',
 'yaf_response_abstract::setBody' => 'Set content to response',
-'yaf_response_abstract::setHeader' => 'Set reponse header',
+'yaf_response_abstract::setHeader' => 'Set response header',
 'yaf_response_abstract::setRedirect' => 'The setRedirect purpose',
 'Yaf_Response_Cli::appendBody' => 'append a content to a exists content block',
 'Yaf_Response_Cli::clearBody' => 'Clear existing content',
@@ -14307,7 +14307,7 @@ This method depends on the request header: HTTP_X_REQUESTED_WITH, some Javascrip
 'yaf_view_simple::eval' => 'Render template',
 'yaf_view_simple::getScriptPath' => 'Get templates directory',
 'yaf_view_simple::render' => 'Render template',
-'yaf_view_simple::setScriptPath' => 'Set tempaltes directory',
+'yaf_view_simple::setScriptPath' => 'Set templates directory',
 'yaml_emit' => 'Returns the YAML representation of a value',
 'yaml_emit_file' => 'Send the YAML representation of a value to a file',
 'yaml_parse' => 'Parse a YAML stream',
@@ -14390,7 +14390,7 @@ Jobs are sorted by job id descending.',
 'ZendAPI_Queue::getJob' => 'Return a Job object that describing a job in the queue',
 'ZendAPI_Queue::getJobsInQueue' => 'Return a list of jobs in the queue according to the options given in the filter_options parameter, doesn\'t return jobs in "final states" (failed, complete)
 If application id is set for this queue, only jobs with this application id will be returned',
-'ZendAPI_Queue::getLastError' => 'Return description of the last error occured in the queue object. After every
+'ZendAPI_Queue::getLastError' => 'Return description of the last error occurred in the queue object. After every
    method invoked an error string describing the error is store in the queue object.',
 'ZendAPI_Queue::getNumOfJobsInQueue' => 'Return the number of jobs in the queue according to the options given in the filter_options parameter',
 'ZendAPI_Queue::getStatistics' => 'returns job statistics',
