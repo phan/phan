@@ -3113,4 +3113,42 @@ class Clazz extends AddressableElement
             }
         );
     }
+
+    /**
+     * Given the FQSEN of an ancestor class and an element definition,
+     * return the overriden element's definition or null if this didn't override anything.
+     *
+     * TODO: Handle renamed elements from traits.
+     *
+     * @return ?ClassElement if non-null, this is of the same type as $element
+     */
+    public static function getAncestorElement(CodeBase $code_base, FullyQualifiedClassName $ancestor_fqsen, ClassElement $element)
+    {
+        if (!$code_base->hasClassWithFQSEN($ancestor_fqsen)) {
+            return null;
+        }
+        $ancestor_class = $code_base->getClassByFQSEN($ancestor_fqsen);
+        $name = $element->getName();
+        if ($element instanceof Method) {
+            if (!$ancestor_class->hasMethodWithName($code_base, $name)) {
+                return null;
+            }
+            return $ancestor_class->getMethodByName($code_base, $name);
+        } elseif ($element instanceof ClassConstant) {
+            if (!$ancestor_class->hasConstantWithName($code_base, $name)) {
+                return null;
+            }
+            $constant_fqsen = FullyQualifiedClassConstantName::make(
+                $ancestor_fqsen,
+                $name
+            );
+            return $code_base->getClassConstantByFQSEN($constant_fqsen);
+        } elseif ($element instanceof Property) {
+            if (!$ancestor_class->hasPropertyWithName($code_base, $name)) {
+                return null;
+            }
+            return $ancestor_class->getPropertyByName($code_base, $name);
+        }
+        return null;
+    }
 }

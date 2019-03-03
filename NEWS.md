@@ -20,6 +20,7 @@ New features(Analysis):
 
 Language Server/Daemon mode:
 + Fix an error in the language server on didChangeConfiguration
++ Show hover text of ancestors for class elements (methods, constants, and properties) when no summary is available for the class element. (#1945)
 
 Maintenance
 + Don't exit if the AST version Phan uses (currently version 50) is deprecated by php-ast (#1134)
