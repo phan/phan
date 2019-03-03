@@ -18,6 +18,9 @@ New features(Analysis):
 Language Server/Daemon mode:
 + Fix an error in the language server on didChangeConfiguration
 
+Maintenance
++ Don't exit if the AST version Phan uses (currently version 50) is deprecated by php-ast (#1134)
+
 Plugins:
 + Write `PhanSelfCheckPlugin` for self-analysis of Phan and plugins for Phan. (#1576)
   This warns if too many/too few arguments are provided for the issue template when emitting an issue.
