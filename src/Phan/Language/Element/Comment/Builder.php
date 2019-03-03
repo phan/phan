@@ -872,15 +872,25 @@ final class Builder
 
     /**
      * This regex contains a single pattern, which matches a valid PHP identifier.
-     * (e.g. for variable names, magic property names, etc.
+     * (e.g. for variable names, magic property names, etc.)
      * This does not allow backslashes.
      */
     const WORD_REGEX = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)';
 
     /**
+     * This regex contains a single pattern, which matches a reasonable Phan issue name
+     * (e.g. for variable names, magic property names, etc.)
+     *
+     * E.g. "PhanPluginSomeIssueName" (preferred), "PhanPlugin_some_issue_name", and "PhanPlugin-some-issue-name".
+     *
+     * Note that Phan doesn't forbid using names not matching this regex in the Issue constructor at the time of writing.
+     */
+    const ISSUE_REGEX = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(-[a-zA-Z0-9_\x7f-\xff]+)*)';
+
+    /**
      * @internal
      */
-    const SUPPRESS_ISSUE_LIST = '(' . self::WORD_REGEX . '(,\s*' . self::WORD_REGEX . ')*)';
+    const SUPPRESS_ISSUE_LIST = '(' . self::ISSUE_REGEX . '(,\s*' . self::ISSUE_REGEX . ')*)';
 
     /**
      * @internal

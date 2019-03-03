@@ -15,6 +15,8 @@ New features(Analysis):
   In most cases, that shouldn't matter.
 + Emit `PhanPluginPrintfVariableFormatString` in `PrintfCheckerPlugin` if the inferred format string isn't a single literal (#2431)
 + Don't emit `PhanWriteOnlyPrivateProperty` with dead code detection when at least one assignment is by reference (#1658)
++ Allow a single hyphen between words in `@suppress issue-name` annotations. (#2515)
+  Note that CamelCase issue names are conventional for Phan and its plugins.
 
 Language Server/Daemon mode:
 + Fix an error in the language server on didChangeConfiguration
