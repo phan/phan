@@ -2793,12 +2793,18 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (!$property->hasReadReference() && !$this->isAssignmentOrNestedAssignment($node)) {
             $property->setHasReadReference();
         }
-        if (!$property->hasWriteReference() && $this->isAssignmentOrNestedAssignmentOrModification($node)) {
+        if (!$property->hasWriteReference() && $this->isAssignmentOrNestedAssignmentOrModification($node) !== false) {
             $property->setHasWriteReference();
         }
     }
 
-    private function isAssignmentOrNestedAssignment(Node $node) : bool
+    /**
+     * @return ?bool
+     * - false if this is a read reference
+     * - true if this is a write reference
+     * - null if this is both, e.g. $a &= $b for $a and $b
+     */
+    private function isAssignmentOrNestedAssignment(Node $node)
     {
         $parent_node_list = $this->parent_node_list;
         $parent_node = \end($parent_node_list);
@@ -2816,8 +2822,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         if ($parent_kind === ast\AST_DIM) {
             return $parent_node->children['expr'] === $node && $this->shouldSkipNestedAssignDim($parent_node_list);
-        } elseif ($parent_kind === ast\AST_ASSIGN || $parent_kind === ast\AST_ASSIGN_REF || $parent_kind === ast\AST_ASSIGN_OP) {
+        } elseif ($parent_kind === ast\AST_ASSIGN || $parent_kind === ast\AST_ASSIGN_OP) {
             return $parent_node->children['var'] === $node;
+        } elseif ($parent_kind === ast\AST_ASSIGN_REF) {
+            return null;
         }
         return false;
     }
@@ -2831,7 +2839,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         ast\AST_POST_DEC,
     ];
 
-    private function isAssignmentOrNestedAssignmentOrModification(Node $node) : bool
+    /**
+     * @return ?bool
+     * - false if this is a read reference
+     * - true if this is a write reference
+     * - null if this is both, e.g. $a &= $b for $a and $b
+     */
+    private function isAssignmentOrNestedAssignmentOrModification(Node $node)
     {
         $parent_node_list = $this->parent_node_list;
         $parent_node = \end($parent_node_list);
@@ -2849,8 +2863,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         if ($parent_kind === ast\AST_DIM) {
             return $parent_node->children['expr'] === $node && self::shouldSkipNestedAssignDim($parent_node_list);
-        } elseif ($parent_kind === ast\AST_ASSIGN || $parent_kind === ast\AST_ASSIGN_REF || $parent_kind === ast\AST_ASSIGN_OP) {
+        } elseif ($parent_kind === ast\AST_ASSIGN || $parent_kind === ast\AST_ASSIGN_OP) {
             return $parent_node->children['var'] === $node;
+        } elseif ($parent_kind === ast\AST_ASSIGN_REF) {
+            return null;
         } else {
             return \in_array($parent_kind, self::_READ_AND_WRITE_KINDS, true);
         }
