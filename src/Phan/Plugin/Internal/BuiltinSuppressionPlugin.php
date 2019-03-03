@@ -6,7 +6,7 @@ use Generator;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
-use Phan\Language\Element\Comment;
+use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\UnaddressableTypedElement;
 use Phan\Language\FQSEN;
@@ -188,7 +188,8 @@ final class BuiltinSuppressionPlugin extends PluginV2 implements
         return $suggestion_list;
     }
 
-    const SUPPRESS_ISSUE_REGEX = '/@phan-(suppress-(next(?:-next)?|current|previous)-line|file-suppress)\s+(' . Comment::WORD_REGEX . '(,\s*' . Comment::WORD_REGEX . ')*)/';
+    // @phan-suppress-next-line PhanAccessClassConstantInternal
+    const SUPPRESS_ISSUE_REGEX = '/@phan-(suppress-(next(?:-next)?|current|previous)-line|file-suppress)\s+' . Builder::SUPPRESS_ISSUE_LIST . '/';
 
     /**
      * @return Generator<array{0:string,1:int,2:int,3:string,4:string}>
