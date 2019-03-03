@@ -70,6 +70,7 @@ class CLI
      */
     const GETOPT_LONG_OPTIONS = [
         'allow-polyfill-parser',
+        'automatic-fix',
         'backward-compatibility-checks',
         'color',
         'config-file:',
@@ -476,6 +477,12 @@ class CLI
                     Config::setValue('plugins', array_merge(
                         Config::getValue('plugins'),
                         [__DIR__ . '/Plugin/Internal/MethodSearcherPluginLoader.php']
+                    ));
+                    break;
+                case 'automatic-fix':
+                    Config::setValue('plugins', array_merge(
+                        Config::getValue('plugins'),
+                        [__DIR__ . '/Plugin/Internal/IssueFixingPlugin.php']
                     ));
                     break;
                 case 'o':
@@ -1080,6 +1087,11 @@ Extended help:
  --dump-signatures-file <filename>
   Emit JSON serialized signatures to the given file.
   This uses a method signature format similar to FunctionSignatureMap.php.
+
+ --automatic-fix
+  Automatically fix any issues Phan is capable of fixing.
+  NOTE: This is a work in progress and limited to a small subset of issues
+  (e.g. unused imports on their own line)
 
  --find-signature 'paramUnionType1->paramUnionType2->returnUnionType'
   Find a signature in the analyzed codebase that is similar to the argument.
