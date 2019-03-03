@@ -892,6 +892,10 @@ function test(ExampleClass $c) {  // line 25
     $n = ast\parse_code('<?php $x = 2;', 50);
     var_export($n->kind);  // line 30
     var_export($_ENV);
+    $y = new class extends ArrayObject { public function count() : int {return 0;} };  // no comment
+    var_export($y->count());
+    $z = new class extends ArrayObject {};
+    var_export($z->count());
 }
 EOT;
         return [
@@ -1146,6 +1150,34 @@ EOT
                 new Position(31, 18),  // $_ENV
                 <<<'EOT'
 `array<string,string>` An associative array of variables passed to the current script via the environment method.
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(33, 22),  // ArrayObject->count() (override)
+                <<<'EOT'
+```php
+public function count() : int
+```
+
+Get the number of public properties in the ArrayObject
+EOT
+                ,
+                null,
+                true
+            ],
+            [
+                $example_file_contents,
+                new Position(35, 22),  // ArrayObject->count() (inherited)
+                <<<'EOT'
+```php
+public function count() : int
+```
+
+Get the number of public properties in the ArrayObject
 EOT
                 ,
                 null,

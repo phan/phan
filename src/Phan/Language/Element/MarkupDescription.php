@@ -28,7 +28,7 @@ class MarkupDescription
         // TODO: Use the doc comments of the ancestors if unavailable or if (at)inheritDoc is used.
         $markup = $element->getMarkupDescription();
         $result = "```php\n$markup\n```";
-        $extracted_doc_comment = self::extractDescriptionFromDocComment($element, $code_base);
+        $extracted_doc_comment = self::extractDescriptionFromDocCommentOrAncestor($element, $code_base);
         if ($extracted_doc_comment) {
             $result .= "\n\n" . $extracted_doc_comment;
         }
@@ -121,6 +121,67 @@ class MarkupDescription
     }
 
     /**
+     * Extracts a plaintext description of the element from the doc comment of an element or its ancestor.
+     * (or from FunctionDocumentationMap.php)
+     *
+     * @param array<string,true> $checked_class_fqsens
+     *
+     * @return ?string
+     */
+    public static function extractDescriptionFromDocCommentOrAncestor(
+        AddressableElementInterface $element,
+        CodeBase $code_base,
+        array &$checked_class_fqsens = []
+    ) {
+        $extracted_doc_comment = self::extractDescriptionFromDocComment($element, $code_base);
+        if ($extracted_doc_comment) {
+            return $extracted_doc_comment;
+        }
+        if ($element instanceof ClassElement) {
+            try {
+                $fqsen_string = $element->getClassFQSEN()->__toString();
+                if (isset($checked_class_fqsens[$fqsen_string])) {
+                    // We already checked this and either succeeded or returned null
+                    return null;
+                }
+                $checked_class_fqsens[$fqsen_string] = true;
+                return self::extractDescriptionFromDocCommentOfAncestorOfClassElement($element, $code_base);
+            } catch (Exception $_) {
+                // ignore
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param array<string,true> $checked_class_fqsens
+     * @return ?string
+     */
+    private static function extractDescriptionFromDocCommentOfAncestorOfClassElement(
+        ClassElement $element,
+        CodeBase $code_base,
+        array &$checked_class_fqsens = []
+    ) {
+        if (!$element->getIsOverride() && $element->getRealDefiningFQSEN() === $element->getFQSEN()) {
+            return null;
+        }
+        $class_fqsen = $element->getDefiningClassFQSEN();
+        $class = $code_base->getClassByFQSEN($class_fqsen);
+        foreach ($class->getAncestorFQSENList() as $ancestor_fqsen) {
+            $ancestor_element = Clazz::getAncestorElement($code_base, $ancestor_fqsen, $element);
+            if (!$ancestor_element) {
+                continue;
+            }
+
+            $extracted_doc_comment = self::extractDescriptionFromDocCommentOrAncestor($ancestor_element, $code_base, $checked_class_fqsens);
+            if ($extracted_doc_comment) {
+                return $extracted_doc_comment;
+            }
+            $extracted_doc_comment = self::extractDescriptionFromDocCommentOfAncestorOfClassElement($ancestor_element, $code_base, $checked_class_fqsens);
+        }
+    }
+
+    /**
      * Extracts a plaintext description of the element from the doc comment of an element.
      * (or from FunctionDocumentationMap.php)
      *
@@ -139,7 +200,12 @@ class MarkupDescription
         if ($element->isPHPInternal()) {
             if ($element instanceof FunctionInterface) {
                 // This is a function/method - Use Phan's FunctionDocumentationMap.php to try to load a markup description.
-                $key = strtolower(ltrim((string)$element->getFQSEN(), '\\'));
+                if ($element instanceof Method) {
+                    $fqsen = $element->getDefiningFQSEN();
+                } else {
+                    $fqsen = $element->getFQSEN();
+                }
+                $key = strtolower(ltrim((string)$fqsen, '\\'));
                 $result = self::loadFunctionDescriptionMap()[$key] ?? null;
                 if ($result) {
                     return $result;
@@ -158,13 +224,18 @@ class MarkupDescription
                 }
             } elseif ($element instanceof ConstantInterface) {
                 // This is a class or global constant - Use Phan's ConstantDocumentationMap.php to try to load a markup description.
-                $key = strtolower(ltrim((string)$element->getFQSEN(), '\\'));
+                if ($element instanceof ClassConstant) {
+                    $fqsen = $element->getDefiningFQSEN();
+                } else {
+                    $fqsen = $element->getFQSEN();
+                }
+                $key = strtolower(ltrim((string)$fqsen, '\\'));
                 return self::loadConstantDescriptionMap()[$key] ?? null;
             } elseif ($element instanceof Clazz) {
                 $key = strtolower(ltrim((string)$element->getFQSEN(), '\\'));
                 return self::loadClassDescriptionMap()[$key] ?? null;
             } elseif ($element instanceof Property) {
-                $key = strtolower(ltrim((string)$element->getFQSEN(), '\\'));
+                $key = strtolower(ltrim((string)$element->getDefiningFQSEN(), '\\'));
                 return self::loadPropertyDescriptionMap()[$key] ?? null;
             }
         }
