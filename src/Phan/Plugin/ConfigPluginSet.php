@@ -763,39 +763,40 @@ final class ConfigPluginSet extends PluginV2 implements
         if (!is_null($this->plugin_set)) {
             return;
         }
+        $load_plugin = static function (string $plugin_file_name) : PluginV2 {
+            $plugin_file_name = self::normalizePluginPath($plugin_file_name);
+
+            try {
+                $plugin_instance = require($plugin_file_name);
+            } catch (Throwable $e) {
+                // An unexpected error.
+                // E.g. a plugin class threw a SyntaxError because it required PHP 7.1 or newer but 7.0 was used.
+                $message = sprintf(
+                    "Failed to initialize plugin %s, exiting: %s: %s at %s:%d\nStack Trace:\n%s",
+                    $plugin_file_name,
+                    get_class($e),
+                    $e->getMessage(),
+                    $e->getFile(),
+                    $e->getLine(),
+                    $e->getTraceAsString()
+                );
+                error_log($message);
+                exit(EXIT_FAILURE);
+            }
+
+            if (!is_object($plugin_instance)) {
+                throw new AssertionError("Plugins must return an instance of the plugin. The plugin at $plugin_file_name does not.");
+            }
+
+            if (!($plugin_instance instanceof PluginV2)) {
+                throw new AssertionError("Plugins must extend \Phan\PluginV2. The plugin at $plugin_file_name does not.");
+            }
+
+            return $plugin_instance;
+        };
         // Add user-defined plugins.
         $plugin_set = array_map(
-            static function (string $plugin_file_name) : PluginV2 {
-                $plugin_file_name = self::normalizePluginPath($plugin_file_name);
-
-                try {
-                    $plugin_instance = require($plugin_file_name);
-                } catch (Throwable $e) {
-                    // An unexpected error.
-                    // E.g. a plugin class threw a SyntaxError because it required PHP 7.1 or newer but 7.0 was used.
-                    $message = sprintf(
-                        "Failed to initialize plugin %s, exiting: %s: %s at %s:%d\nStack Trace:\n%s",
-                        $plugin_file_name,
-                        get_class($e),
-                        $e->getMessage(),
-                        $e->getFile(),
-                        $e->getLine(),
-                        $e->getTraceAsString()
-                    );
-                    error_log($message);
-                    exit(EXIT_FAILURE);
-                }
-
-                if (!is_object($plugin_instance)) {
-                    throw new AssertionError("Plugins must return an instance of the plugin. The plugin at $plugin_file_name does not.");
-                }
-
-                if (!($plugin_instance instanceof PluginV2)) {
-                    throw new AssertionError("Plugins must extend \Phan\PluginV2. The plugin at $plugin_file_name does not.");
-                }
-
-                return $plugin_instance;
-            },
+            $load_plugin,
             Config::getValue('plugins')
         );
         // Add internal plugins. Can be disabled by disable_internal_return_type_plugins.
@@ -830,6 +831,9 @@ final class ConfigPluginSet extends PluginV2 implements
                 fwrite(STDERR, "ext-tokenizer is required for file-based and line-based suppressions to work, as well as the error-tolerant parser fallback." . PHP_EOL);
                 fwrite(STDERR, "(This warning can be disabled by setting skip_missing_tokenizer_warning in the project's config)" . PHP_EOL);
             }
+        }
+        if (Config::getValue('dead_code_detection') && count(self::filterByClass($plugin_set, \UnreachableCodePlugin::class)) === 0) {
+            $plugin_set[] = $load_plugin('UnreachableCodePlugin');
         }
 
         // Register the entire set.
