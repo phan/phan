@@ -352,7 +352,7 @@ class Comment
                 unset($this->variable_list[$i]);
             }
         }
-        $this->variable_list = array_merge($this->variable_list, $override_comment_vars);
+        $this->variable_list = \array_merge($this->variable_list, $override_comment_vars);
     }
 
 

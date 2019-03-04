@@ -50,7 +50,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         int $alternate_id = 0
     ) {
         if ($name === '') {
-            throw new EmptyFQSENException("The name of an FQSEN cannot be empty", rtrim($namespace, '\\') . '\\');
+            throw new EmptyFQSENException("The name of an FQSEN cannot be empty", \rtrim($namespace, '\\') . '\\');
         }
 
         if ($namespace === '') {
@@ -100,7 +100,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         if ($name === '') {
             throw new EmptyFQSENException(
                 "Empty name of fqsen",
-                rtrim($namespace, "\\") . "\\" . implode("\\", array_merge($name_parts, [$name]))
+                \rtrim($namespace, "\\") . "\\" . \implode("\\", \array_merge($name_parts, [$name]))
             );
         }
         foreach ($name_parts as $i => $part) {
@@ -108,7 +108,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
                 if ($i > 0) {
                     throw new InvalidFQSENException(
                         "Invalid part '' of fqsen",
-                        rtrim($namespace, "\\") . "\\" . implode('\\', array_merge(array_slice($name_parts, $i), [$name]))
+                        \rtrim($namespace, "\\") . "\\" . \implode('\\', \array_merge(array_slice($name_parts, $i), [$name]))
                     );
                 }
                 continue;
@@ -116,7 +116,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             if (!\preg_match(self::VALID_STRUCTURAL_ELEMENT_REGEX_PART, $part)) {
                 throw new InvalidFQSENException(
                     "Invalid part '$part' of fqsen",
-                    rtrim($namespace, "\\") . "\\$part\\" . implode('\\', array_merge(array_slice($name_parts, $i), [$name]))
+                    \rtrim($namespace, "\\") . "\\$part\\" . \implode('\\', \array_merge(array_slice($name_parts, $i), [$name]))
                 );
             }
             if ($namespace === '\\') {
@@ -186,7 +186,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
 
                 $namespace = '\\' . \implode('\\', $parts);
                 if ($namespace !== '\\') {
-                    if (!preg_match(self::VALID_STRUCTURAL_ELEMENT_REGEX, $namespace)) {
+                    if (!\preg_match(self::VALID_STRUCTURAL_ELEMENT_REGEX, $namespace)) {
                         throw new InvalidFQSENException("The namespace $namespace is invalid", $fqsen_string);
                     }
                 } elseif (\count($parts) > 0) {

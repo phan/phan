@@ -39,9 +39,9 @@ final class ASTSimplifierTest extends AbstractPhanFileTest
         list($original_file_path) = $test_file_list;
         // Read the expected output
         $original_src =
-            file_get_contents($original_file_path);
+            \file_get_contents($original_file_path);
         $expected_src =
-            file_get_contents($expected_file_path);
+            \file_get_contents($expected_file_path);
         $this->assertNotEquals(false, $original_src);
         $this->assertNotEquals(false, $expected_src);
 
@@ -50,7 +50,7 @@ final class ASTSimplifierTest extends AbstractPhanFileTest
         $before_transform = \ast\parse_code($original_src, $ast_version);
 
         // We use identical files for testing ASTs which aren't expected to change.
-        if (trim($expected_src) !== trim($original_src)) {
+        if (\trim($expected_src) !== \trim($original_src)) {
             $this->assertNotEquals(Debug::astDump($expected), Debug::astDump($before_transform), 'Expected the input asts to be different');
         }
         $actual = ASTSimplifier::applyStatic($before_transform);

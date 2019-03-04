@@ -26,7 +26,7 @@ final class FileCache
      */
     public static function setMaxCacheSize(int $max_size)
     {
-        self::$max_size = max($max_size, self::MINIMUM_CACHE_SIZE);
+        self::$max_size = \max($max_size, self::MINIMUM_CACHE_SIZE);
         while (\count(self::$cache_entries) > self::$max_size) {
             \array_shift(self::$cache_entries);
         }
@@ -91,7 +91,7 @@ final class FileCache
         if (!\is_readable($file_name)) {
             throw new RuntimeException("FileCache::getOrReadEntry: unable to read '$file_name'\n");
         }
-        $contents = file_get_contents($file_name);
+        $contents = \file_get_contents($file_name);
         if (!\is_string($contents)) {
             throw new RuntimeException("FileCache::getOrReadEntry: file_get_contents failed for '$file_name'\n");
         }
@@ -113,6 +113,6 @@ final class FileCache
      */
     public static function getCachedFileList() : array
     {
-        return array_keys(self::$cache_entries);
+        return \array_keys(self::$cache_entries);
     }
 }

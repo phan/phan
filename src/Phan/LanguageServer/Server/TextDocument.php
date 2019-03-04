@@ -95,7 +95,7 @@ class TextDocument
         try {
             Utils::pathToUri(Utils::uriToPath($textDocument->uri));
         } catch (InvalidArgumentException $e) {
-            Logger::logError(sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
             return;
         }
         // TODO: Look into replacing this call with the normalized URI.
@@ -125,7 +125,7 @@ class TextDocument
         try {
             Utils::pathToUri(Utils::uriToPath($textDocument->uri));
         } catch (InvalidArgumentException $e) {
-            Logger::logError(sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
             return;
         }
         // TODO: Look into replacing this with the normalized URI
@@ -170,7 +170,7 @@ class TextDocument
         try {
             $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
         } catch (InvalidArgumentException $e) {
-            Logger::logError(sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
             return;
         }
         $this->client->textDocument->publishDiagnostics($uri, []);
@@ -193,7 +193,7 @@ class TextDocument
         try {
             $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
         } catch (InvalidArgumentException $e) {
-            Logger::logError(sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
             return null;
         }
         return $this->server->awaitDefinition($uri, $position, false);
@@ -214,7 +214,7 @@ class TextDocument
         try {
             $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
         } catch (InvalidArgumentException $e) {
-            Logger::logError(sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
             return null;
         }
         return $this->server->awaitDefinition($uri, $position, true);
@@ -245,7 +245,7 @@ class TextDocument
         try {
             $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
         } catch (InvalidArgumentException $e) {
-            Logger::logError(sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
             return null;
         }
         return $this->server->awaitHover($uri, $position);
@@ -273,12 +273,12 @@ class TextDocument
         try {
             $uri = Utils::pathToUri(Utils::uriToPath($textDocument->uri));
         } catch (InvalidArgumentException $e) {
-            Logger::logError(sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
+            Logger::logError(\sprintf("Language server could not understand uri %s in %s: %s\n", $textDocument->uri, __METHOD__, $e->getMessage()));
             return null;
         }
         // Workaround: Phan needs the cursor to be on the character that's within the expression in order to select it.
         // So shift the cursor left by one.
-        $position->character = max(0, $position->character - 1);
+        $position->character = \max(0, $position->character - 1);
         return $this->server->awaitCompletion($uri, $position, $context);
     }
 }

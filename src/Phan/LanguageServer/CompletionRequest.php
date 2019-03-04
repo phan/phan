@@ -110,8 +110,8 @@ final class CompletionRequest extends NodeInfoRequest
             if ($element instanceof Property && $element->isStatic()) {
                 $insert_text = '$' . $element->getName();
             }
-            if (is_string($prefix) && is_string($insert_text) && strncmp($insert_text, $prefix, strlen($prefix)) === 0) {
-                $insert_text = (string)substr($insert_text, strlen($prefix));
+            if (is_string($prefix) && is_string($insert_text) && \strncmp($insert_text, $prefix, strlen($prefix)) === 0) {
+                $insert_text = (string)\substr($insert_text, strlen($prefix));
             }
         }
         $item->insertText = $insert_text;
@@ -171,7 +171,7 @@ final class CompletionRequest extends NodeInfoRequest
      */
     public function getCompletions() : array
     {
-        return array_values($this->completions);
+        return \array_values($this->completions);
     }
 
     public function finalize()
@@ -182,19 +182,19 @@ final class CompletionRequest extends NodeInfoRequest
             if ($result !== null) {
                 // Sort completion suggestions alphabetically,
                 // ignoring the leading `$` in variables/static properties.
-                uksort(
+                \uksort(
                     $result,
                     /**
                      * @param string $a
                      * @param string $b
                      */
                     static function ($a, $b) : int {
-                        $a = ltrim((string)$a, '$');
-                        $b = ltrim((string)$b, '$');
-                        return (strtolower($a) <=> strtolower($b)) ?: ($a <=> $b);
+                        $a = \ltrim((string)$a, '$');
+                        $b = \ltrim((string)$b, '$');
+                        return (\strtolower($a) <=> \strtolower($b)) ?: ($a <=> $b);
                     }
                 );
-                $result_list = new CompletionList(array_values($result));
+                $result_list = new CompletionList(\array_values($result));
             } else {
                 $result_list = null;
             }

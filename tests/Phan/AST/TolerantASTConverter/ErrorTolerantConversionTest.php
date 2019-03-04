@@ -352,8 +352,8 @@ EOT;
         $php_parser_node = $converter->phpParserParse($incomplete_contents, $errors);
         $fallback_ast = $converter->phpParserToPhpAst($php_parser_node, $ast_version, $incomplete_contents);
         $this->assertInstanceOf('\ast\Node', $fallback_ast, 'The fallback must also return a tree of php-ast nodes');
-        $fallback_ast_repr = var_export($fallback_ast, true);
-        $original_ast_repr = var_export($ast, true);
+        $fallback_ast_repr = \var_export($fallback_ast, true);
+        $original_ast_repr = \var_export($ast, true);
 
         if ($fallback_ast_repr !== $original_ast_repr) {
             $placeholders_used_str = $should_add_placeholders ? 'Yes' : 'No';

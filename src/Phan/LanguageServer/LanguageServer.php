@@ -261,8 +261,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         if (!$code_base->isUndoTrackingEnabled()) {
             throw new AssertionError("Expected undo tracking to be enabled");
         }
-        if (function_exists('pcntl_signal')) {
-            pcntl_signal(
+        if (\function_exists('pcntl_signal')) {
+            \pcntl_signal(
                 SIGCHLD,
                 /**
                  * @param int $signo
@@ -346,12 +346,12 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         if (isset($options['tcp'])) {
             // Connect to a TCP server
             $address = $options['tcp'];
-            $socket = stream_socket_client('tcp://' . $address, $errno, $errstr);
+            $socket = \stream_socket_client('tcp://' . $address, $errno, $errstr);
             if ($socket === false) {
-                fwrite(STDERR, "Could not connect to language client. Error $errno\n$errstr");
+                \fwrite(STDERR, "Could not connect to language client. Error $errno\n$errstr");
                 exit(1);
             }
-            stream_set_blocking($socket, false);
+            \stream_set_blocking($socket, false);
             $ls = $make_language_server(new ProtocolStreamReader($socket), new ProtocolStreamWriter($socket));
             Logger::logInfo("Connected to $address to receive requests");
             Loop\run();
@@ -362,18 +362,18 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         } elseif (isset($options['tcp-server'])) {
             // Run a TCP Server
             $address = $options['tcp-server'];
-            $tcpServer = stream_socket_server('tcp://' . $address, $errno, $errstr);
+            $tcpServer = \stream_socket_server('tcp://' . $address, $errno, $errstr);
             if ($tcpServer === false) {
-                fwrite(STDERR, "Could not listen on $address. Error $errno\n$errstr");
+                \fwrite(STDERR, "Could not listen on $address. Error $errno\n$errstr");
                 exit(1);
             }
-            fwrite(STDOUT, "Server listening on $address\n");
-            if (!extension_loaded('pcntl')) {
-                fwrite(STDERR, "PCNTL is not available. Only a single connection will be accepted\n");
+            \fwrite(STDOUT, "Server listening on $address\n");
+            if (!\extension_loaded('pcntl')) {
+                \fwrite(STDERR, "PCNTL is not available. Only a single connection will be accepted\n");
             }
-            while ($socket = stream_socket_accept($tcpServer, -1)) {
-                fwrite(STDOUT, "Connection accepted\n");
-                stream_set_blocking($socket, false);
+            while ($socket = \stream_socket_accept($tcpServer, -1)) {
+                \fwrite(STDOUT, "Connection accepted\n");
+                \stream_set_blocking($socket, false);
                 /**if (false && extension_loaded('pcntl')) {  // FIXME re-enable, this was disabled to simplify testing
                     // TODO: This will work, but does it make sense?
 
@@ -419,7 +419,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                 throw new AssertionError("Expected either 'stdin', 'tcp-server', or 'tcp' as the language server communication option");
             }
             // Use STDIO
-            stream_set_blocking(STDIN, false);
+            \stream_set_blocking(STDIN, false);
             $ls = $make_language_server(
                 new ProtocolStreamReader(STDIN),
                 new ProtocolStreamWriter(STDOUT)
@@ -591,9 +591,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         }
 
         // TODO: check if $path_to_analyze can be analyzed first.
-        $sockets = stream_socket_pair(\STREAM_PF_UNIX, \STREAM_SOCK_STREAM, \STREAM_IPPROTO_IP);
+        $sockets = \stream_socket_pair(\STREAM_PF_UNIX, \STREAM_SOCK_STREAM, \STREAM_IPPROTO_IP);
         if (!$sockets) {
-            error_log("unable to create stream socket pair");
+            \error_log("unable to create stream socket pair");
             exit(EXIT_FAILURE);
         }
 
@@ -601,12 +601,12 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
         // Give our signal handler time to collect the status of any zombie processes
         // so that they don't accumulate.
-        pcntl_signal_dispatch();
+        \pcntl_signal_dispatch();
 
         // Fork a new process to handle the analysis request
-        $pid = pcntl_fork();
+        $pid = \pcntl_fork();
         if ($pid < 0) {
-            error_log(posix_strerror(posix_get_last_error()));
+            \error_log(\posix_strerror(\posix_get_last_error()));
             exit(EXIT_FAILURE);
         }
 
@@ -616,8 +616,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             Request::handleBecomingParentOfChildAnalysisProcess($pid);
             $read_stream = self::streamForParent($sockets);
             $concatenated = '';
-            while (!feof($read_stream)) {
-                $buffer = fread($read_stream, 1024);
+            while (!\feof($read_stream)) {
+                $buffer = \fread($read_stream, 1024);
                 if ($buffer === false) {
                     Logger::logError("fread from language client failed");
                     break;
@@ -626,7 +626,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                     $concatenated .= $buffer;
                 }
             }
-            $json_contents = json_decode($concatenated, true);
+            $json_contents = \json_decode($concatenated, true);
             if (!\is_array($json_contents)) {
                 Logger::logInfo("Fetched non-json: " . $concatenated);
                 return;
@@ -638,7 +638,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         Request::handleBecomingChildAnalysisProcess();
 
         $child_stream = self::streamForChild($sockets);
-        $paths_to_analyze = array_keys($uris_to_analyze);
+        $paths_to_analyze = \array_keys($uris_to_analyze);
         $this->most_recent_request = Request::makeLanguageServerAnalysisRequest(
             new StreamResponder($child_stream, false),
             $paths_to_analyze,
@@ -667,7 +667,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      */
     private function finishAnalyzingURIsWithoutPcntl(array $uris_to_analyze)
     {
-        $paths_to_analyze = array_keys($uris_to_analyze);
+        $paths_to_analyze = \array_keys($uris_to_analyze);
         Logger::logInfo('in ' . __METHOD__ . ' paths: ' . StringUtil::jsonEncode($paths_to_analyze));
         // When there is no pcntl:
         // Create a fake request object.
@@ -791,7 +791,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $description = $issue['description'];
         if (Config::getValue('language_server_hide_category_of_issues')) {
             // See JSONPrinter.php for how $description is built
-            $description = explode(' ', $description, 2)[1];
+            $description = \explode(' ', $description, 2)[1];
         }
         if (isset($issue['suggestion'])) {
             $description .= ' (' . $issue['suggestion'] . ')';
@@ -801,7 +801,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $path = Config::projectPath($issue['location']['path']);
         $issue_uri = Utils::pathToUri($path);
         $start_line = $issue['location']['lines']['begin'];
-        $start_line = (int)max($start_line, 1);
+        $start_line = (int)\max($start_line, 1);
         // If we ever supported end_line:
         // $end_line = $issue['location']['lines']['end'] ?? $start_line;
         // $end_line = max($end_line, 1);
@@ -842,12 +842,12 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
         // The parent will not use the write channel, so it
         // must be closed to prevent deadlock.
-        fclose($for_write);
+        \fclose($for_write);
 
         // stream_select will be used to read multiple streams, so these
         // must be set to non-blocking mode.
-        if (!stream_set_blocking($for_read, false)) {
-            error_log('unable to set read stream to non-blocking');
+        if (!\stream_set_blocking($for_read, false)) {
+            \error_log('unable to set read stream to non-blocking');
             exit(EXIT_FAILURE);
         }
 
@@ -867,7 +867,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
 
         // The while will not use the read channel, so it must
         // be closed to prevent deadlock.
-        fclose($for_read);
+        \fclose($for_read);
         return $for_write;
     }
 

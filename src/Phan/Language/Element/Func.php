@@ -340,7 +340,7 @@ class Func extends AddressableElement implements FunctionInterface
 
         $string .= 'function ' . $this->getName();
 
-        $string .= '(' . implode(', ', $this->getParameterList()) . ')';
+        $string .= '(' . \implode(', ', $this->getParameterList()) . ')';
 
         if (!$this->getUnionType()->isEmpty()) {
             $string .= ' : ' . (string)$this->getUnionType();
@@ -384,14 +384,14 @@ class Func extends AddressableElement implements FunctionInterface
     {
         list($namespace, $string) = $this->toStubInfo();
         $namespace_text = $namespace === '' ? '' : "$namespace ";
-        $string = sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
+        $string = \sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
         return $string;
     }
 
     public function getMarkupDescription() : string
     {
         $fqsen = $this->getFQSEN();
-        $namespace = ltrim($fqsen->getNamespace(), '\\');
+        $namespace = \ltrim($fqsen->getNamespace(), '\\');
         $stub = '';
         if ($namespace) {
             $stub = "namespace $namespace;\n";
@@ -431,7 +431,7 @@ class Func extends AddressableElement implements FunctionInterface
             $stub .= ' : ' . (string)$return_type;
         }
         $stub .= " {}\n";
-        $namespace = ltrim($fqsen->getNamespace(), '\\');
+        $namespace = \ltrim($fqsen->getNamespace(), '\\');
         return [$namespace, $stub];
     }
 
@@ -460,7 +460,7 @@ class Func extends AddressableElement implements FunctionInterface
         if ($this->returnsRef()) {
             $stub .= '&';
         }
-        $stub .= '(' . implode(', ', array_map(static function (Parameter $parameter) : string {
+        $stub .= '(' . \implode(', ', \array_map(static function (Parameter $parameter) : string {
             return $parameter->toStubString();
         }, $this->getRealParameterList())) . ')';
         if ($this->real_return_type && !$this->getRealReturnType()->isEmpty()) {

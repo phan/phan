@@ -226,7 +226,7 @@ class Context extends FileRef
             $last_part_index = \strrpos($alias, '\\');
             if ($last_part_index !== false) {
                 // Convert the namespace to lowercase, but not the constant name.
-                $alias = \strtolower(\substr($alias, 0, $last_part_index + 1)) . substr($alias, $last_part_index + 1);
+                $alias = \strtolower(\substr($alias, 0, $last_part_index + 1)) . \substr($alias, $last_part_index + 1);
             }
         }
         // we may have imported this namespace map from the parse phase, making the target already exist

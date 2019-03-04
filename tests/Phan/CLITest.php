@@ -77,9 +77,9 @@ final class CLITest extends BaseTest
      */
     public function testSetsConfigOptions(array $expected_changed_options, array $opts, array $extra = [])
     {
-        $opts += ['project-root-directory' => dirname(__DIR__) . '/misc/config/'];
+        $opts += ['project-root-directory' => \dirname(__DIR__) . '/misc/config/'];
         $expected_changed_options += ['directory_list' => ['src']];
-        if (!extension_loaded('pcntl')) {
+        if (!\extension_loaded('pcntl')) {
             $expected_changed_options += ['language_server_use_pcntl_fallback' => true];
         }
         $cli = CLI::fromRawValues($opts, []);
@@ -90,11 +90,11 @@ final class CLITest extends BaseTest
                 $changed[$key] = $new_value;
             }
         }
-        ksort($changed);
-        ksort($expected_changed_options);
+        \ksort($changed);
+        \ksort($expected_changed_options);
         $this->assertSame($expected_changed_options, $changed);
 
-        $this->assertSame(['src' . DIRECTORY_SEPARATOR . 'empty.php'], $cli->getFileList());
+        $this->assertSame(['src' . \DIRECTORY_SEPARATOR . 'empty.php'], $cli->getFileList());
 
         $printer_class = $extra['printer_class'] ?? null;
         unset($extra['printer_class']);
@@ -194,7 +194,7 @@ final class CLITest extends BaseTest
      */
     public function testVersionOpt(array $opts)
     {
-        ob_start();
+        \ob_start();
         try {
             CLI::fromRawValues($opts, []);
             $this->fail('should throw');
@@ -202,9 +202,9 @@ final class CLITest extends BaseTest
             $this->assertSame(0, $e->getCode());
             $this->assertSame('', $e->getMessage());
         } finally {
-            $stdout = ob_get_clean();
+            $stdout = \ob_get_clean();
         }
-        $this->assertSame(sprintf("Phan %s\n", CLI::PHAN_VERSION), $stdout);
+        $this->assertSame(\sprintf("Phan %s\n", CLI::PHAN_VERSION), $stdout);
     }
 
     /** @return array<int,array> */

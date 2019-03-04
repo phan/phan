@@ -141,7 +141,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         $result = $this->params[$i] ?? null;
         if (!$result) {
             // @phan-suppress-next-line PhanPossiblyFalseTypeReturn is_variadic implies at least one parameter exists.
-            return $this->is_variadic ? end($this->params) : null;
+            return $this->is_variadic ? \end($this->params) : null;
         }
         return $result;
     }
@@ -809,7 +809,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
                 $fragment = "$signature $fragment";
             }
         }
-        $signature = static::NAME . '(' . implode(',', $fragments) . ')';
+        $signature = static::NAME . '(' . \implode(',', $fragments) . ')';
         if ($return_type) {
             // TODO: Make this unambiguous
             $signature .= ':' . $return_type;
@@ -905,7 +905,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function withTemplateParameterTypeMap(
         array $template_parameter_type_map
     ) : UnionType {
-        $new_params = array_map(static function (ClosureDeclarationParameter $param) use ($template_parameter_type_map) : ClosureDeclarationParameter {
+        $new_params = \array_map(static function (ClosureDeclarationParameter $param) use ($template_parameter_type_map) : ClosureDeclarationParameter {
             return $param->withTemplateParameterTypeMap($template_parameter_type_map);
         }, $this->params);
         $new_return_type = $this->return_type->withTemplateParameterTypeMap($template_parameter_type_map);

@@ -7,10 +7,10 @@ global $internal_interface_name_list;
 global $internal_trait_name_list;
 global $internal_function_name_list;
 
-$internal_class_name_list = get_declared_classes();
-$internal_interface_name_list = get_declared_interfaces();
-$internal_trait_name_list = get_declared_traits();
-$internal_function_name_list = get_defined_functions()['internal'];
+$internal_class_name_list = \get_declared_classes();
+$internal_interface_name_list = \get_declared_interfaces();
+$internal_trait_name_list = \get_declared_traits();
+$internal_function_name_list = \get_defined_functions()['internal'];
 
 use Phan\CodeBase;
 use PHPUnit\Framework\Test;

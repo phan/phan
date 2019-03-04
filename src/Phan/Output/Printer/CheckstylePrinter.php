@@ -58,7 +58,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
                 // Write each element of the error as an attribute
                 // of the error
                 $error->appendChild(
-                    new \DOMAttr('line', htmlspecialchars((string)$error_map['line'], ENT_NOQUOTES, 'UTF-8'))
+                    new \DOMAttr('line', \htmlspecialchars((string)$error_map['line'], ENT_NOQUOTES, 'UTF-8'))
                 );
 
                 // Map phan severity to Jenkins/Checkstyle severity levels
@@ -76,15 +76,15 @@ final class CheckstylePrinter implements BufferedPrinterInterface
                 }
 
                 $error->appendChild(
-                    new \DOMAttr('severity', htmlspecialchars((string)$level, ENT_NOQUOTES, 'UTF-8'))
+                    new \DOMAttr('severity', \htmlspecialchars((string)$level, ENT_NOQUOTES, 'UTF-8'))
                 );
 
                 $error->appendChild(
-                    new \DOMAttr('message', htmlspecialchars((string)$error_map['message'], ENT_NOQUOTES, 'UTF-8'))
+                    new \DOMAttr('message', \htmlspecialchars((string)$error_map['message'], ENT_NOQUOTES, 'UTF-8'))
                 );
 
                 $error->appendChild(
-                    new \DOMAttr('source', htmlspecialchars((string)$error_map['source'], ENT_NOQUOTES, 'UTF-8'))
+                    new \DOMAttr('source', \htmlspecialchars((string)$error_map['source'], ENT_NOQUOTES, 'UTF-8'))
                 );
             }
         }

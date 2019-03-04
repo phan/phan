@@ -49,7 +49,7 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
         });
 
         Loop\addReadStream($this->input, function () {
-            if (feof($this->input)) {
+            if (\feof($this->input)) {
                 // If stream_select reported a status change for this stream,
                 // but the stream is EOF, it means it was closed.
                 $this->emitClose();
@@ -73,7 +73,7 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
     private function readMessages() : int
     {
         $emitted_messages = 0;
-        while (($c = fgetc($this->input)) !== false && $c !== '') {
+        while (($c = \fgetc($this->input)) !== false && $c !== '') {
             $this->buffer .= $c;
             switch ($this->parsing_mode) {
                 case self::PARSE_HEADERS:
@@ -81,9 +81,9 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
                         $this->parsing_mode = self::PARSE_BODY;
                         $this->content_length = (int)$this->headers['Content-Length'];
                         $this->buffer = '';
-                    } elseif (substr($this->buffer, -2) === "\r\n") {
-                        $parts = explode(':', $this->buffer);
-                        $this->headers[$parts[0]] = trim($parts[1]);
+                    } elseif (\substr($this->buffer, -2) === "\r\n") {
+                        $parts = \explode(':', $this->buffer);
+                        $this->headers[$parts[0]] = \trim($parts[1]);
                         $this->buffer = '';
                     }
                     break;

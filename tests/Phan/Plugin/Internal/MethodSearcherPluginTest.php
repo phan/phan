@@ -73,8 +73,8 @@ final class MethodSearcherPluginTest extends BaseTest
      */
     public function testMatchesParamTypes(float $expected_score, array $actual, array $desired)
     {
-        $actual_signature_types = array_map('\Phan\Language\UnionType::fromFullyQualifiedString', $actual);
-        $desired_signature_types = array_map('\Phan\Language\UnionType::fromFullyQualifiedString', $desired);
+        $actual_signature_types = \array_map('\Phan\Language\UnionType::fromFullyQualifiedString', $actual);
+        $desired_signature_types = \array_map('\Phan\Language\UnionType::fromFullyQualifiedString', $desired);
         // @phan-suppress-next-line PhanAccessMethodInternal, PhanPossiblyNullTypeArgument
         $this->assertSame($expected_score, MethodSearcherPlugin::matchesParamTypes(self::$code_base, $actual_signature_types, $desired_signature_types));
     }

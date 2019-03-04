@@ -70,13 +70,13 @@ final class ExtendedDependentReturnTypeOverridePlugin extends PluginV2 implement
                 $values = [];
                 foreach ($args as $arg) {
                     $value = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg)->asValueOrNullOrSelf();
-                    if (is_object($value)) {
+                    if (\is_object($value)) {
                         return $default_type;
                     }
                     $values[] = $value;
                 }
                 try {
-                    $result = with_disabled_phan_error_handler(/** @return mixed */ static function () use ($function, $values) {
+                    $result = \with_disabled_phan_error_handler(/** @return mixed */ static function () use ($function, $values) {
                         return $function(...$values);
                     });
                 } catch (Throwable $e) {

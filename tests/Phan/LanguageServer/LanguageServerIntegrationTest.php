@@ -39,7 +39,7 @@ final class LanguageServerIntegrationTest extends BaseTest
      */
     public static function getLSPFolder() : string
     {
-        return dirname(dirname(__DIR__)) . '/misc/lsp';
+        return \dirname(\dirname(__DIR__)) . '/misc/lsp';
     }
 
     /**
@@ -66,27 +66,27 @@ final class LanguageServerIntegrationTest extends BaseTest
      */
     private function createPhanLanguageServer(bool $pcntlEnabled, bool $prefer_stdio = true, array $option_array = [])
     {
-        if (getenv('PHAN_RUN_INTEGRATION_TEST') != '1') {
+        if (\getenv('PHAN_RUN_INTEGRATION_TEST') != '1') {
             $this->markTestSkipped('skipping integration tests - set PHAN_RUN_INTEGRATION_TEST=1 to allow');
         }
-        if (!function_exists('proc_open')) {
+        if (!\function_exists('proc_open')) {
             $this->markTestSkipped('proc_open not available');
         }
 
-        if ($pcntlEnabled && !function_exists('pcntl_fork')) {
+        if ($pcntlEnabled && !\function_exists('pcntl_fork')) {
             $this->markTestSkipped('requires pcntl extension');
         }
-        $is_windows = DIRECTORY_SEPARATOR === "\\";
+        $is_windows = \DIRECTORY_SEPARATOR === "\\";
         if ($is_windows) {
             // Work around 'The filename, directory name, or volume label syntax is incorrect.', include the path to the PHP binary used to run this test.
             // Might not work with file names including spaces?
             // @see InvokePHPNativeSyntaxCheckPlugin
 
-            $escaped_command = PHP_BINARY . " " . escapeshellarg(__DIR__ . '/../../../src/phan.php');
+            $escaped_command = \PHP_BINARY . " " . \escapeshellarg(__DIR__ . '/../../../src/phan.php');
             // XXX create an OOP language client abstraction for this test, with shutdown() methods
             $use_stdio = false;
         } else {
-            $escaped_command = escapeshellarg(__DIR__ . '/../../../phan');
+            $escaped_command = \escapeshellarg(__DIR__ . '/../../../phan');
             // Most of the tests for unix/linux will use stdio - A tiny number will use TCP
             // to properly test that TCP is working.
             $use_stdio = $prefer_stdio;
@@ -97,7 +97,7 @@ final class LanguageServerIntegrationTest extends BaseTest
             $address = '127.0.0.1:14846';
             $options = '--language-server-tcp-connect ' . $address;
 
-            $tcpServer = stream_socket_server('tcp://' . $address, $errno, $errstr);
+            $tcpServer = \stream_socket_server('tcp://' . $address, $errno, $errstr);
             if ($tcpServer === false) {
                 $this->fail("Could not listen on $address. Error $errno\n$errstr");
             }
@@ -105,30 +105,30 @@ final class LanguageServerIntegrationTest extends BaseTest
         if ($option_array['vscode_compatible_completions'] ?? false) {
             $options = "$options --language-server-completion-vscode";
         }
-        $command = sprintf(
+        $command = \sprintf(
             '%s -d %s --quick --use-fallback-parser %s --language-server-enable-hover --language-server-enable-completion --language-server-enable-go-to-definition %s',
             $escaped_command,
-            escapeshellarg(self::getLSPFolder()),
+            \escapeshellarg(self::getLSPFolder()),
             $options,
             ($pcntlEnabled ? '' : '--language-server-force-missing-pcntl')
         );
         if ($use_stdio) {
-            $proc = proc_open(
+            $proc = \proc_open(
                 $command,
                 [
                     0 => ['pipe', 'r'],
                     1 => ['pipe', 'w'],
-                    2 => STDERR,  // Pass stderr from this process directly to output stderr so it doesn't get buffered up or ignored
+                    2 => \STDERR,  // Pass stderr from this process directly to output stderr so it doesn't get buffered up or ignored
                 ],
                 $pipes
             );
             list($proc_in, $proc_out) = $pipes;
         } else {
-            $proc = proc_open(
+            $proc = \proc_open(
                 $command,
                 [
-                    1 => STDERR,
-                    2 => STDERR,  // Pass stderr from this process directly to output stderr so it doesn't get buffered up or ignored
+                    1 => \STDERR,
+                    2 => \STDERR,  // Pass stderr from this process directly to output stderr so it doesn't get buffered up or ignored
                 ],
                 $pipes
             );
@@ -136,9 +136,9 @@ final class LanguageServerIntegrationTest extends BaseTest
                 throw new RuntimeException("Failed to create a proc");
             }
             '@phan-var-force resource $tcpServer';
-            $socket = stream_socket_accept($tcpServer, 5);
+            $socket = \stream_socket_accept($tcpServer, 5);
             if (!$socket) {
-                proc_close($proc);
+                \proc_close($proc);
                 throw new RuntimeException("Failed to receive a connection from language server in 5 seconds");
             }
             // Don't set this to async - the rest of this test assumes synchronous streams.
@@ -163,7 +163,7 @@ final class LanguageServerIntegrationTest extends BaseTest
             [false, true],
             [true, true],
         ];
-        if (DIRECTORY_SEPARATOR !== "\\") {
+        if (\DIRECTORY_SEPARATOR !== "\\") {
             $results[] = [true, false];
         }
 
@@ -198,18 +198,18 @@ final class LanguageServerIntegrationTest extends BaseTest
             // TODO: Make these pipes async if they aren't already
             if ($proc_in === $proc_out) {
                 // This is synchronous TCP
-                $unread_contents = fread($proc_out, 10000);
+                $unread_contents = \fread($proc_out, 10000);
                 $this->assertSame('', $unread_contents);
-                fclose($proc_in);
+                \fclose($proc_in);
             } else {
                 // this is stdio
-                fclose($proc_in);
-                $unread_contents = fread($proc_out, 10000);
+                \fclose($proc_in);
+                $unread_contents = \fread($proc_out, 10000);
                 $this->assertSame('', $unread_contents);
-                fclose($proc_out);
+                \fclose($proc_out);
             }
         } finally {
-            proc_close($proc);
+            \proc_close($proc);
         }
     }
 
@@ -394,7 +394,7 @@ EOT;
      */
     private function runTestCompletionWithAndWithoutPcntl(Position $position, array $expected_completions, bool $for_vscode, string $file_contents)
     {
-        if (function_exists('pcntl_fork')) {
+        if (\function_exists('pcntl_fork')) {
             $this->runTestCompletionWithPcntlSetting($position, $expected_completions, $for_vscode, $file_contents, true);
         }
         $this->runTestCompletionWithPcntlSetting($position, $expected_completions, $for_vscode, $file_contents, false);
@@ -558,7 +558,7 @@ EOT;
             $property_completion_item,
         ];
         $static_property_completions_substr = [
-            array_merge($property_completion_item, ['insertText' => $insert_text_for_substr]),
+            \array_merge($property_completion_item, ['insertText' => $insert_text_for_substr]),
         ];
         $all_static_completions = [
             $my_class_class_item,
@@ -591,7 +591,7 @@ EOT;
      */
     public function completionBasicProvider() : array
     {
-        return array_merge(
+        return \array_merge(
             $this->createCompletionBasicTestCases('myVar', 'myVar', 'Var', false),
             $this->createCompletionBasicTestCases('$myVar', null, null, true)
         );
@@ -800,7 +800,7 @@ EOT;
      */
     public function completionVariableProvider() : array
     {
-        return array_merge(
+        return \array_merge(
             $this->createCompletionVariableTestCases('', false),
             $this->createCompletionVariableTestCases('$', true)
         );
@@ -813,7 +813,7 @@ EOT;
      */
     public function testDefinitionInOtherFile(string $new_file_contents, Position $position, string $expected_definition_uri, $expected_definition_line, string $requested_uri = null)
     {
-        if (function_exists('pcntl_fork')) {
+        if (\function_exists('pcntl_fork')) {
             $this->runTestDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, true);
         }
         $this->runTestDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, false);
@@ -826,7 +826,7 @@ EOT;
      */
     public function testTypeDefinitionInOtherFile(string $new_file_contents, Position $position, string $expected_definition_uri, $expected_definition_line, string $requested_uri = null)
     {
-        if (function_exists('pcntl_fork')) {
+        if (\function_exists('pcntl_fork')) {
             $this->runTestTypeDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, true);
         }
         $this->runTestTypeDefinitionInOtherFileWithPcntlSetting($new_file_contents, $position, $expected_definition_uri, $expected_definition_line, $requested_uri, false);
@@ -838,10 +838,10 @@ EOT;
      */
     public function testHoverInOtherFile(string $new_file_contents, Position $position, $expected_hover_markup, string $requested_uri = null, bool $require_php71_or_newer = false)
     {
-        if (PHP_VERSION_ID < 70100 && $require_php71_or_newer) {
+        if (\PHP_VERSION_ID < 70100 && $require_php71_or_newer) {
             $this->markTestSkipped('This test requires php 7.1');
         }
-        if (function_exists('pcntl_fork')) {
+        if (\function_exists('pcntl_fork')) {
             $this->runTestHoverInOtherFileWithPcntlSetting(
                 $new_file_contents,
                 $position,
@@ -1191,7 +1191,7 @@ EOT
      */
     private static function shouldExpectDiagnosticNotificationForURI($requested_uri) : bool
     {
-        if ($requested_uri && basename(dirname($requested_uri)) !== 'src') {
+        if ($requested_uri && \basename(\dirname($requested_uri)) !== 'src') {
             return false;
         }
         return true;
@@ -1249,9 +1249,9 @@ EOT
                 'jsonrpc' => '2.0',
             ];
 
-            $cur_line = explode("\n", $new_file_contents)[$position->line] ?? '';
+            $cur_line = \explode("\n", $new_file_contents)[$position->line] ?? '';
 
-            $message = "Unexpected definition for {$position->line}:{$position->character} (0-based) on line \"" . $cur_line . '"' . ' at "' . substr($cur_line, $position->character, 10) . '"';
+            $message = "Unexpected definition for {$position->line}:{$position->character} (0-based) on line \"" . $cur_line . '"' . ' at "' . \substr($cur_line, $position->character, 10) . '"';
             $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_definition_response, $definition_response, $message);
 
@@ -1267,7 +1267,7 @@ EOT
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
         } catch (\Throwable $e) {
-            fwrite(STDERR, "Unexpected exception in " . __METHOD__ . ": " . $e->getMessage());
+            \fwrite(\STDERR, "Unexpected exception in " . __METHOD__ . ": " . $e->getMessage());
             throw $e;
         } finally {
             $this->performCleanLanguageServerShutdown($proc, $proc_in, $proc_out);
@@ -1326,14 +1326,14 @@ EOT
                 'jsonrpc' => '2.0',
             ];
 
-            $cur_line = explode("\n", $new_file_contents)[$position->line] ?? '';
+            $cur_line = \explode("\n", $new_file_contents)[$position->line] ?? '';
 
-            $message = sprintf(
+            $message = \sprintf(
                 "Unexpected type definition for %d:%d (0-based) on line %s at \"%s\"",
                 $position->line,
                 $position->character,
-                (string)json_encode($cur_line),
-                (string)substr($cur_line, $position->character, 10)
+                (string)\json_encode($cur_line),
+                (string)\substr($cur_line, $position->character, 10)
             );
             $this->assertEquals($expected_definition_response, $definition_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_definition_response, $definition_response, $message);
@@ -1350,7 +1350,7 @@ EOT
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
         } catch (\Throwable $e) {
-            fwrite(STDERR, "Unexpected exception in " . __METHOD__ . ": " . $e->getMessage());
+            \fwrite(\STDERR, "Unexpected exception in " . __METHOD__ . ": " . $e->getMessage());
             throw $e;
         } finally {
             $this->performCleanLanguageServerShutdown($proc, $proc_in, $proc_out);
@@ -1405,14 +1405,14 @@ EOT
                 'jsonrpc' => '2.0',
             ];
 
-            $cur_line = explode("\n", $new_file_contents)[$position->line] ?? '';
+            $cur_line = \explode("\n", $new_file_contents)[$position->line] ?? '';
 
-            $message = sprintf(
+            $message = \sprintf(
                 "Unexpected hover response for %d:%d (0-based) on line %s at \"%s\"",
                 $position->line,
                 $position->character,
-                (string)json_encode($cur_line),
-                (string)substr($cur_line, $position->character, 10)
+                (string)\json_encode($cur_line),
+                (string)\substr($cur_line, $position->character, 10)
             );
             $this->assertEquals($expected_hover_response, $hover_response, $message);  // slightly better diff view than assertSame
             $this->assertSame($expected_hover_response, $hover_response, $message);
@@ -1429,7 +1429,7 @@ EOT
             $this->writeShutdownRequestAndAwaitResponse($proc_in, $proc_out);
             $this->writeExitNotification($proc_in);
         } catch (\Throwable $e) {
-            fwrite(STDERR, "Unexpected exception in " . __METHOD__ . ": " . $e->getMessage());
+            \fwrite(\STDERR, "Unexpected exception in " . __METHOD__ . ": " . $e->getMessage());
             throw $e;
         } finally {
             $this->performCleanLanguageServerShutdown($proc, $proc_in, $proc_out);
@@ -1667,7 +1667,7 @@ EOT;
     {
         $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
         $diagnostics_response = $this->awaitResponse($proc_out);
-        $error_message = "Unexpected response: " . json_encode($diagnostics_response);
+        $error_message = "Unexpected response: " . \json_encode($diagnostics_response);
         $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method'] ?? null, $error_message);
         $uri = $diagnostics_response['params']['uri'];
         $this->assertSame($uri, $requested_uri, $error_message);
@@ -1683,7 +1683,7 @@ EOT;
     {
         $requested_uri = $requested_uri ?? $this->getDefaultFileURI();
         $diagnostics_response = $this->awaitResponse($proc_out);
-        $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method'] ?? null, "Unexpected response: " . json_encode($diagnostics_response));
+        $this->assertSame('textDocument/publishDiagnostics', $diagnostics_response['method'] ?? null, "Unexpected response: " . \json_encode($diagnostics_response));
         $uri = $diagnostics_response['params']['uri'];
         $this->assertSame($uri, $requested_uri);
         $diagnostics = $diagnostics_response['params']['diagnostics'];
@@ -1707,7 +1707,7 @@ EOT;
     {
         $issue = Issue::fromType($issue_type);
 
-        $expected_message = sprintf(
+        $expected_message = \sprintf(
             '%s %s %s',
             $issue->getCategoryName(),
             $issue->getType(),
@@ -1745,7 +1745,7 @@ EOT;
         $params = [
             'capabilities' => new ClientCapabilities(),
             'rootPath' => '/ignored',
-            'processId' => getmypid(),
+            'processId' => \getmypid(),
         ];
         $this->writeMessage($proc_in, 'initialize', $params);
         $response = $this->awaitResponse($proc_out);
@@ -1915,7 +1915,7 @@ EOT;
         $params = [
             'capabilities' => new stdClass(),
             'rootPath' => '/ignored',
-            'processId' => getmypid(),
+            'processId' => \getmypid(),
         ];
         $this->writeNotification($proc_in, 'initialized', $params);
     }
@@ -1976,7 +1976,7 @@ EOT;
         $headers = [];
         '@phan-var array<string,string> $headers';
         $parsing_mode = ProtocolStreamReader::PARSE_HEADERS;
-        while (($c = fgetc($proc_out)) !== false && $c !== '') {
+        while (($c = \fgetc($proc_out)) !== false && $c !== '') {
             $buffer .= $c;
             switch ($parsing_mode) {
                 case ProtocolStreamReader::PARSE_HEADERS:
@@ -1984,19 +1984,19 @@ EOT;
                         $parsing_mode = ProtocolStreamReader::PARSE_BODY;
                         $content_length = (int)$headers['Content-Length'];
                         if (!$content_length) {
-                            throw new InvalidArgumentException('Failed to read json. Response headers: ' . json_encode($headers));
+                            throw new InvalidArgumentException('Failed to read json. Response headers: ' . \json_encode($headers));
                         }
                         $buffer = '';
-                    } elseif (substr($buffer, -2) === "\r\n") {
-                        $parts = explode(':', $buffer);
-                        $headers[$parts[0]] = trim($parts[1]);
+                    } elseif (\substr($buffer, -2) === "\r\n") {
+                        $parts = \explode(':', $buffer);
+                        $headers[$parts[0]] = \trim($parts[1]);
                         $buffer = '';
                     }
                     break;
                 case ProtocolStreamReader::PARSE_BODY:
                     if (strlen($buffer) === $content_length) {
                         // If we fork, don't read any bytes in the input buffer from the worker process.
-                        $result = json_decode($buffer, true);
+                        $result = \json_decode($buffer, true);
                         if (!is_array($result)) {
                             throw new InvalidArgumentException("Invalid decoded buffer: value=$buffer");
                         }
@@ -2005,7 +2005,7 @@ EOT;
                     break;
             }
         }
-        throw new InvalidArgumentException('Failed to read a full response: ' . json_encode($buffer));
+        throw new InvalidArgumentException('Failed to read a full response: ' . \json_encode($buffer));
         // TODO: parse headers and body the same way the language client does
     }
 
@@ -2046,8 +2046,8 @@ EOT;
     {
         if (self::DEBUG_ENABLED) {
             echo $message;
-            flush();
-            ob_flush();
+            \flush();
+            \ob_flush();
         }
     }
     // TODO: Test the ability to create a Request
@@ -2059,12 +2059,12 @@ EOT;
      */
     private function writeEncodedBody($proc_in, array $body)
     {
-        $body_raw = json_encode($body, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\r\n";
-        $raw = sprintf(
+        $body_raw = \json_encode($body, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE) . "\r\n";
+        $raw = \sprintf(
             "Content-Length: %d\r\nContent-Type: application/vscode-jsonrpc; charset=utf-8\r\n\r\n%s",
             strlen($body_raw),
             $body_raw
         );
-        fwrite($proc_in, $raw);
+        \fwrite($proc_in, $raw);
     }
 }

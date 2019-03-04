@@ -206,11 +206,11 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                     }
                     $sprintf_args[] = $arg;
                 }
-                $result = with_disabled_phan_error_handler(
+                $result = \with_disabled_phan_error_handler(
                     /** @return string */
                     static function () use ($format_string, $sprintf_args) {
                         // @phan-suppress-next-line PhanPluginPrintfVariableFormatString
-                        return @vsprintf($format_string, $sprintf_args);
+                        return @\vsprintf($format_string, $sprintf_args);
                     }
                 );
                 $result_union_type = $result_union_type->withType(Type::fromObject($result));
@@ -515,7 +515,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 $emit_issue(
                     'PhanPluginPrintfIncompatibleSpecifier',
                     'Format string {STRING_LITERAL} refers to argument #{INDEX} in different ways: {DETAILS}',
-                    [self::encodeString($fmt_str), $i, implode(',', array_keys($types))],
+                    [self::encodeString($fmt_str), $i, implode(',', \array_keys($types))],
                     Issue::SEVERITY_LOW,
                     self::ERR_UNTRANSLATED_INCOMPATIBLE_SPECIFIER
                 );
@@ -675,7 +675,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 foreach ($spec_group as $spec) {
                     $canonical = $spec->toCanonicalString();
                     if (!isset($expected[$canonical])) {
-                        $expected_types = $expected ? implode(',', array_keys($expected))
+                        $expected_types = $expected ? implode(',', \array_keys($expected))
                                                     : 'unused';
 
                         if ($expected_types !== 'unused') {

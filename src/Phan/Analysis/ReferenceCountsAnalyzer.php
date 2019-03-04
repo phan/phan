@@ -198,7 +198,7 @@ class ReferenceCountsAnalyzer
             }
             if ($element instanceof ClassConstant) {
                 // should not warn about self::class
-                if (strcasecmp($element->getName(), 'class') === 0) {
+                if (\strcasecmp($element->getName(), 'class') === 0) {
                     continue;
                 }
             }

@@ -106,7 +106,7 @@ class IssueFixSuggester
         }
         $namespace = $function_fqsen->getNamespace();
         $name = $function_fqsen->getName();
-        $suggested_fqsens = array_merge(
+        $suggested_fqsens = \array_merge(
             $code_base->suggestSimilarGlobalFunctionInOtherNamespace($namespace, $name, $context),
             $code_base->suggestSimilarGlobalFunctionInSameNamespace($namespace, $name, $context, $suggest_in_global_namespace)
         );
@@ -120,7 +120,7 @@ class IssueFixSuggester
         $generate_type_representation = static function ($fqsen) : string {
             return $fqsen . '()';
         };
-        $suggestion_text = $prefix . ' ' . implode(' or ', array_map($generate_type_representation, $suggested_fqsens));
+        $suggestion_text = $prefix . ' ' . \implode(' or ', \array_map($generate_type_representation, $suggested_fqsens));
 
         return Suggestion::fromString($suggestion_text);
     }
@@ -150,12 +150,12 @@ class IssueFixSuggester
         if (!$prefix) {
             $prefix = self::DEFAULT_CLASS_SUGGESTION_PREFIX;
         }
-        $suggested_fqsens = array_merge(
+        $suggested_fqsens = \array_merge(
             $code_base->suggestSimilarClassInOtherNamespace($class_fqsen, $context),
             $code_base->suggestSimilarClassInSameNamespace($class_fqsen, $context, $class_suggest_type)
         );
         if ($filter) {
-            $suggested_fqsens = array_filter($suggested_fqsens, $filter);
+            $suggested_fqsens = \array_filter($suggested_fqsens, $filter);
         }
         if (count($suggested_fqsens) === 0) {
             return null;
@@ -181,7 +181,7 @@ class IssueFixSuggester
             }
             return $category . ' ' . $fqsen->__toString();
         };
-        $suggestion_text = $prefix . ' ' . implode(' or ', array_map($generate_type_representation, $suggested_fqsens));
+        $suggestion_text = $prefix . ' ' . \implode(' or ', \array_map($generate_type_representation, $suggested_fqsens));
 
         return Suggestion::fromString($suggestion_text);
     }
@@ -198,7 +198,7 @@ class IssueFixSuggester
         if (count($method_set) === 0) {
             return null;
         }
-        uksort($method_set, 'strcmp');
+        \uksort($method_set, 'strcmp');
         $suggestions = [];
         foreach ($method_set as $method) {
             // We lose the original casing of the method name in the array keys, so use $method->getName()
@@ -206,7 +206,7 @@ class IssueFixSuggester
             $suggestions[] = $prefix . $method->getName() . '()';
         }
         return Suggestion::fromString(
-            'Did you mean ' . implode(' or ', $suggestions)
+            'Did you mean ' . \implode(' or ', $suggestions)
         );
     }
 
@@ -308,9 +308,9 @@ class IssueFixSuggester
         if (count($suggestions) === 0) {
             return null;
         }
-        uksort($suggestions, 'strcmp');
+        \uksort($suggestions, 'strcmp');
         return Suggestion::fromString(
-            'Did you mean ' . implode(' or ', $suggestions)
+            'Did you mean ' . \implode(' or ', $suggestions)
         );
     }
 
@@ -376,13 +376,13 @@ class IssueFixSuggester
         if (count($class_constant_map) === 0) {
             return null;
         }
-        uksort($class_constant_map, 'strcmp');
+        \uksort($class_constant_map, 'strcmp');
         $suggestions = [];
         foreach ($class_constant_map as $constant_name => $_) {
             $suggestions[] = $class_fqsen . '::' . $constant_name;
         }
         return Suggestion::fromString(
-            'Did you mean ' . implode(' or ', $suggestions)
+            'Did you mean ' . \implode(' or ', $suggestions)
         );
     }
 
@@ -398,7 +398,7 @@ class IssueFixSuggester
         if (strlen($constant_name) <= 1) {
             return null;
         }
-        $suggestions = array_merge(
+        $suggestions = \array_merge(
             self::suggestSimilarFunctionsToConstant($code_base, $context, $fqsen),
             self::suggestSimilarClassConstantsToGlobalConstant($code_base, $context, $fqsen),
             self::suggestSimilarClassPropertiesToGlobalConstant($code_base, $context, $fqsen),
@@ -408,9 +408,9 @@ class IssueFixSuggester
         if (count($suggestions) === 0) {
             return null;
         }
-        $suggestions = array_map('strval', $suggestions);
+        $suggestions = \array_map('strval', $suggestions);
         return Suggestion::fromString(
-            'Did you mean ' . implode(' or ', $suggestions)
+            'Did you mean ' . \implode(' or ', $suggestions)
         );
     }
 
@@ -425,7 +425,7 @@ class IssueFixSuggester
             $context,
             true
         );
-        return array_map(static function (FullyQualifiedFunctionName $fqsen) : string {
+        return \array_map(static function (FullyQualifiedFunctionName $fqsen) : string {
             return $fqsen . '()';
         }, $suggested_fqsens);
     }
@@ -439,7 +439,7 @@ class IssueFixSuggester
         if (!$context->isInClassScope()) {
             return [];
         }
-        if (ltrim($fqsen->getNamespace(), '\\') !== '') {
+        if (\ltrim($fqsen->getNamespace(), '\\') !== '') {
             return [];
         }
         try {
@@ -463,7 +463,7 @@ class IssueFixSuggester
         if (!$context->isInClassScope()) {
             return [];
         }
-        if (ltrim($fqsen->getNamespace(), '\\') !== '') {
+        if (\ltrim($fqsen->getNamespace(), '\\') !== '') {
             return [];
         }
         $name = $fqsen->getName();
@@ -495,7 +495,7 @@ class IssueFixSuggester
         if ($context->isInGlobalScope()) {
             return [];
         }
-        if (ltrim($fqsen->getNamespace(), '\\') !== '') {
+        if (\ltrim($fqsen->getNamespace(), '\\') !== '') {
             // Give up if requesting a namespaced constant
             // TODO: Better heuristics
             return [];
@@ -574,10 +574,10 @@ class IssueFixSuggester
         if (count($suggestions) === 0) {
             return null;
         }
-        sort($suggestions);
+        \sort($suggestions);
 
         return Suggestion::fromString(
-            $prefix . ' ' . implode(' or ', $suggestions)
+            $prefix . ' ' . \implode(' or ', $suggestions)
         );
     }
 
@@ -590,7 +590,7 @@ class IssueFixSuggester
         if (strlen($variable_name) > 1) {
             $variable_candidates = $context->getScope()->getVariableMap();
             if (count($variable_candidates) <= Config::getValue('suggestion_check_limit')) {
-                $variable_candidates = array_merge($variable_candidates, Variable::_BUILTIN_SUPERGLOBAL_TYPES);
+                $variable_candidates = \array_merge($variable_candidates, Variable::_BUILTIN_SUPERGLOBAL_TYPES);
                 $variable_suggestions = self::getSuggestionsForStringSet($variable_name, $variable_candidates);
 
                 foreach ($variable_suggestions as $suggested_variable_name => $_) {
@@ -623,7 +623,7 @@ class IssueFixSuggester
             if (\abs(strlen($name) - $target_length) > $max_levenshtein_distance) {
                 continue;
             }
-            $distance = levenshtein(strtolower($name), $search_name);
+            $distance = \levenshtein(strtolower($name), $search_name);
             if ($distance <= $min_found_distance) {
                 if ($distance < $min_found_distance) {
                     $min_found_distance = $distance;

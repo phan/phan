@@ -801,7 +801,7 @@ class Config
      */
     public static function getProjectRootDirectory() : string
     {
-        return self::$project_root_directory ?? getcwd();
+        return self::$project_root_directory ?? \getcwd();
     }
 
     /**
@@ -1006,22 +1006,22 @@ class Config
                 break;
             case 'target_php_version':
                 if (is_float($value)) {
-                    $value = sprintf("%.1f", $value);
+                    $value = \sprintf("%.1f", $value);
                 }
                 $value = (string) ($value ?: PHP_VERSION);
-                if (strtolower($value) === 'native') {
+                if (\strtolower($value) === 'native') {
                     $value = PHP_VERSION;
                 }
 
-                if (version_compare($value, '6.0') < 0) {
+                if (\version_compare($value, '6.0') < 0) {
                     self::$closest_target_php_version_id = 50600;
-                } elseif (version_compare($value, '7.1') < 0) {
+                } elseif (\version_compare($value, '7.1') < 0) {
                     self::$closest_target_php_version_id = 70000;
-                } elseif (version_compare($value, '7.2') < 0) {
+                } elseif (\version_compare($value, '7.2') < 0) {
                     self::$closest_target_php_version_id = 70100;
-                } elseif (version_compare($value, '7.3') < 0) {
+                } elseif (\version_compare($value, '7.3') < 0) {
                     self::$closest_target_php_version_id = 70200;
-                } elseif (version_compare($value, '7.4') < 0) {
+                } elseif (\version_compare($value, '7.4') < 0) {
                     self::$closest_target_php_version_id = 70300;
                 } else {
                     self::$closest_target_php_version_id = 70400;
@@ -1064,7 +1064,7 @@ class Config
          * @return ?string
          */
         $is_scalar = static function ($value) {
-            if (is_null($value) || is_scalar($value)) {
+            if (is_null($value) || \is_scalar($value)) {
                 return null;
             }
             return 'Expected a scalar' . self::errSuffixGotType($value);
@@ -1271,7 +1271,7 @@ class Config
     {
         $errors = self::getConfigErrors(self::$configuration);
         foreach ($errors as $error) {
-            fwrite(STDERR, $error . PHP_EOL);
+            \fwrite(STDERR, $error . PHP_EOL);
         }
     }
 }

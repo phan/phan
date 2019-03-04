@@ -76,7 +76,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
 
         // For functions we don't use the context's namespace if
         // there is no NS on the call.
-        $namespace = \implode('\\', array_filter($parts));
+        $namespace = \implode('\\', \array_filter($parts));
 
         return static::make(
             $namespace,
@@ -98,7 +98,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement i
             $node->lineno . '|' .
             $node->children['__declId'];
 
-        $name = 'closure_' . substr(md5($hash_material), 0, 12);
+        $name = 'closure_' . \substr(\md5($hash_material), 0, 12);
 
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall this is valid
         return static::fromStringInContext(

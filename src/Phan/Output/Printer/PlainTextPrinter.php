@@ -55,7 +55,7 @@ final class PlainTextPrinter implements IssuePrinterInterface
                 $issue .= Colorizing::colorizeTemplate(" ({SUGGESTION})", [$suggestion_message]);
             }
         } else {
-            $issue = sprintf(
+            $issue = \sprintf(
                 '%s:%d %s %s',
                 $file,
                 $line,

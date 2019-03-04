@@ -50,7 +50,7 @@ class DefinitionResolver
                 return;
             }
 
-            $parent_node = end($parent_node_list);
+            $parent_node = \end($parent_node_list);
             if ($parent_node instanceof Node) {
                 if ($node->kind === ast\AST_NAME && $parent_node->kind === ast\AST_NEW) {
                     $node = $parent_node;
@@ -63,7 +63,7 @@ class DefinitionResolver
             // $location = new Location($go_to_definition_request->getUri(), $node->lineno);
 
             // Log as strings in case TolerantASTConverter generates the wrong type
-            Logger::logInfo(sprintf("Saw a node of kind %s at line %s", (string)$node->kind, (string)$node->lineno));
+            Logger::logInfo(\sprintf("Saw a node of kind %s at line %s", (string)$node->kind, (string)$node->lineno));
 
             switch ($node->kind) {
                 case ast\AST_NAME:
@@ -165,7 +165,7 @@ class DefinitionResolver
         }
         // fwrite(STDERR, "Looking up function with fqsen $fqsen\n");
         if (!$code_base->hasFunctionWithFQSEN($fqsen)) {
-            if (substr($selected_fragment, 0, 1) !== '\\') {
+            if (\substr($selected_fragment, 0, 1) !== '\\') {
                 try {
                     $fqsen = FullyQualifiedFunctionName::make($context->getNamespace(), $selected_fragment);
                 } catch (Exception $_) {
@@ -194,7 +194,7 @@ class DefinitionResolver
         }
         // fwrite(STDERR, "Looking up function with fqsen $fqsen\n");
         if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
-            if (substr($selected_fragment, 0, 1) !== '\\') {
+            if (\substr($selected_fragment, 0, 1) !== '\\') {
                 try {
                     $fqsen = FullyQualifiedGlobalConstantName::make($context->getNamespace(), $selected_fragment);
                 } catch (Exception $_) {
@@ -280,7 +280,7 @@ class DefinitionResolver
         if (!is_string($name)) {
             return;
         }
-        if (strtolower($name) === 'class') {
+        if (\strtolower($name) === 'class') {
             self::locateClassDefinition($request, $code_base, $context, $node->children['class']);
             return;
         }
@@ -452,7 +452,7 @@ class DefinitionResolver
             $name = $use_elem->children['name'];
             if (is_string($name)) {
                 try {
-                    $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\' . ltrim($name, '\\'));
+                    $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\' . \ltrim($name, '\\'));
                 } catch (AssertionError $_) {
                     return;  // ignore, probably still typing the requested definition
                 } catch (FQSENException $_) {

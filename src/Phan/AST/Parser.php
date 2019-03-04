@@ -62,11 +62,11 @@ class Parser
      */
     private static function makeNewCache() : DiskCache
     {
-        $igbinary_version = phpversion('igbinary') ?: '';
-        $use_igbinary = version_compare($igbinary_version, '2.0.5') >= 0;
+        $igbinary_version = \phpversion('igbinary') ?: '';
+        $use_igbinary = \version_compare($igbinary_version, '2.0.5') >= 0;
 
-        $user = getenv('USERNAME') ?: getenv('USER');
-        $directory = sys_get_temp_dir() . '/phan';
+        $user = \getenv('USERNAME') ?: \getenv('USER');
+        $directory = \sys_get_temp_dir() . '/phan';
         if ($user) {
             $directory .= "-$user";
         }

@@ -48,7 +48,7 @@ final class MethodSearcherPlugin extends PluginV2 implements
     public static function setSearchString(string $search_string)
     {
         // XXX improve parsing this
-        $parts = array_map('trim', explode('->', $search_string));
+        $parts = \array_map('trim', \explode('->', $search_string));
         $result = [];
         if (count($parts) === 0) {
             throw new InvalidArgumentException("Empty string passed in when searching for function/method signature");
@@ -61,15 +61,15 @@ final class MethodSearcherPlugin extends PluginV2 implements
                 $result[] = UnionType::empty();
                 continue;
             }
-            if (!preg_match('(' . UnionType::union_type_regex . ')', $part)) {
+            if (!\preg_match('(' . UnionType::union_type_regex . ')', $part)) {
                 throw new InvalidArgumentException("Invalid union type '$part'");
             }
             $result[] = UnionType::fromStringInContext($part, new Context(), Type::FROM_PHPDOC);
         }
         // @phan-suppress-next-line PhanPossiblyFalseTypeMismatchProperty
-        self::$return_type = array_pop($result);
+        self::$return_type = \array_pop($result);
         self::$param_types = $result;
-        echo "Searching for function/method signatures similar to: " . implode(' -> ', array_merge(self::$param_types, [self::$return_type])) . "\n";
+        echo "Searching for function/method signatures similar to: " . \implode(' -> ', \array_merge(self::$param_types, [self::$return_type])) . "\n";
     }
 
     /**
@@ -119,10 +119,10 @@ final class MethodSearcherPlugin extends PluginV2 implements
         }
         $fqsens = $code_base->suggestSimilarClassInOtherNamespace($fqsen, new Context());
         if (!$fqsens) {
-            fwrite(\STDERR, "Phoogle could not find '$fqsen' in any namespace\n");
+            \fwrite(\STDERR, "Phoogle could not find '$fqsen' in any namespace\n");
             exit(\EXIT_FAILURE);
         }
-        return array_map(static function (FullyQualifiedClassName $fqsen) use ($type) : Type {
+        return \array_map(static function (FullyQualifiedClassName $fqsen) use ($type) : Type {
             return $fqsen->asType()->withIsNullable($type->getIsNullable());
         }, $fqsens);
     }
@@ -137,7 +137,7 @@ final class MethodSearcherPlugin extends PluginV2 implements
         self::$return_type = self::addMissingNamespaces($code_base, self::$return_type);
 
         if ($original_return_type !== self::$return_type || $original_param_types !== self::$param_types) {
-            echo "Phoogle is searching for " . implode(' -> ', array_merge(self::$param_types, [self::$return_type])) . " instead (some classes had missing namespaces)\n";
+            echo "Phoogle is searching for " . \implode(' -> ', \array_merge(self::$param_types, [self::$return_type])) . " instead (some classes had missing namespaces)\n";
         }
     }
 
@@ -162,7 +162,7 @@ final class MethodSearcherPlugin extends PluginV2 implements
             $this->checkFunction($code_base, $function);
         }
         $results = $this->results;
-        sort($results);
+        \sort($results);
         $num_results = count($results);
         // TODO: Make this configurable
         $limit = 10;
@@ -177,7 +177,7 @@ final class MethodSearcherPlugin extends PluginV2 implements
             } else {
                 $return_type = $function->getUnionType();
             }
-            printf(
+            \printf(
                 "    (%s)%s\n",
                 \implode(', ', $function->getParameterList()),
                 $return_type->isEmpty() ? '' : (' : ' . $return_type)
@@ -215,7 +215,7 @@ final class MethodSearcherPlugin extends PluginV2 implements
             }
         }
         // TODO: Set strict type casting rules here?
-        if ($function instanceof Method && \in_array(strtolower($function->getName()), ['__construct', '__clone'], true)) {
+        if ($function instanceof Method && \in_array(\strtolower($function->getName()), ['__construct', '__clone'], true)) {
             $return_type = $function->getFQSEN()->getFullyQualifiedClassName()->asType()->asUnionType();
         } else {
             $return_type = $function->getUnionType();
@@ -245,7 +245,7 @@ final class MethodSearcherPlugin extends PluginV2 implements
         if (!$result) {
             return 0;
         }
-        return max(0.1, $result + $adjustment + self::getTypeMatchingBonus($code_base, $return_type, self::$return_type));
+        return \max(0.1, $result + $adjustment + self::getTypeMatchingBonus($code_base, $return_type, self::$return_type));
     }
 
     private static function guessUnionType(FunctionInterface $function) : UnionType
@@ -313,10 +313,10 @@ final class MethodSearcherPlugin extends PluginV2 implements
     {
         if (\count($search_param_types) === 0) {
             // Award extra points for having the same number of matches
-            return max(1, 5 - count($signature_param_types)) / 2;
+            return \max(1, 5 - count($signature_param_types)) / 2;
         }
         $best = 0;
-        $desired_param_type = array_pop($search_param_types);
+        $desired_param_type = \array_pop($search_param_types);
         if (!($desired_param_type instanceof UnionType)) {
             // Phan can't tell this array is non-empty
             throw new TypeError("Expected signature_param_types to be an array of UnionType");

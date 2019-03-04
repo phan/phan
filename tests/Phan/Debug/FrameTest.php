@@ -31,8 +31,8 @@ final class FrameTest extends BaseTest
     public function testToString()
     {
         $this->assertHasEncodedValue('[0, "", false, null]', [0, '', false, null]);
-        $this->assertHasEncodedValue('[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]', range(1, 10));
-        $this->assertHasEncodedValue('[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ... 5 more element(s)]', range(1, 15));
+        $this->assertHasEncodedValue('[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]', \range(1, 10));
+        $this->assertHasEncodedValue('[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ... 5 more element(s)]', \range(1, 15));
         $this->assertHasEncodedValue('{"key":"value://something"}', ['key' => 'value://something']);
         $this->assertHasEncodedValue('[]', []);
         $this->assertHasEncodedValue('Closure', static function () {

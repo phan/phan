@@ -46,11 +46,11 @@ class Utils
         $parts = \explode('/', $filepath);
         // Don't %-encode the colon after a Windows drive letter
         $first = (string)\array_shift($parts);
-        if (substr($first, -1) !== ':') {
+        if (\substr($first, -1) !== ':') {
             $first = \rawurlencode($first);
         }
         $parts = \array_map('rawurlencode', $parts);
-        array_unshift($parts, $first);
+        \array_unshift($parts, $first);
         $filepath = \implode('/', $parts);
         return 'file:///' . $filepath;
     }
@@ -82,7 +82,7 @@ class Utils
      */
     public static function normalizePathFromWindowsURI(string $filepath) : string
     {
-        if (!preg_match('@[a-zA-Z]:[\\\\/]@', $filepath)) {
+        if (!\preg_match('@[a-zA-Z]:[\\\\/]@', $filepath)) {
             return $filepath;
         }
         if ($filepath[0] === '/') {

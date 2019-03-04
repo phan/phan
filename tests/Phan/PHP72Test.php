@@ -39,8 +39,8 @@ class PHP72Test extends AbstractPhanFileTest
     {
         $skip_reason = null;
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
-        $main_path = basename(reset($test_file_list));
-        if (PHP_VERSION_ID < 70200) {
+        $main_path = \basename(\reset($test_file_list));
+        if (\PHP_VERSION_ID < 70200) {
             switch ($main_path) {
                 case '0002_hash.php':
                     $skip_reason = 'Skip HashContext has no stub';

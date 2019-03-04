@@ -19,8 +19,8 @@ abstract class BaseTest extends TestCase
     {
         parent::setUpBeforeClass();
         // Need more than 1G to generate code coverage reports
-        ini_set('memory_limit', '2G');
-        chdir(dirname(__DIR__, 2));
+        \ini_set('memory_limit', '2G');
+        \chdir(\dirname(__DIR__, 2));
         Config::reset();
     }
 

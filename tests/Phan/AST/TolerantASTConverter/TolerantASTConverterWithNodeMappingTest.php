@@ -86,7 +86,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
         // @phan-suppress-next-line PhanThrowTypeAbsentForCall don't care in unit test
         $ast = $converter->parseCodeAsPHPAST($file_contents, TolerantASTConverter::AST_VERSION, $errors);
         if (\count($errors) > 0) {
-            throw new InvalidArgumentException("Unexpected errors: " . json_encode($errors));
+            throw new InvalidArgumentException("Unexpected errors: " . \json_encode($errors));
         }
         return $ast;
     }
@@ -98,7 +98,7 @@ final class TolerantASTConverterWithNodeMappingTest extends BaseTest
         $byte_offset = 0;
         while ($line > 1) {
             $line--;
-            $newline_pos = strpos($file_contents, "\n", $byte_offset);
+            $newline_pos = \strpos($file_contents, "\n", $byte_offset);
             if ($newline_pos === false) {
                 throw new \InvalidArgumentException("too many lines");
             }

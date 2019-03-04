@@ -134,9 +134,9 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         }
         $maybe_set_markdown_to_union_type = function () use ($union_type, $description) {
             if ($this->hover_response === null) {
-                $markdown = sprintf('`%s`', (string)$union_type);
+                $markdown = \sprintf('`%s`', (string)$union_type);
                 if ($description) {
-                    $markdown = sprintf("%s %s", $markdown, $description);
+                    $markdown = \sprintf("%s %s", $markdown, $description);
                 }
                 $this->setHoverMarkdown($markdown);
             }
@@ -218,7 +218,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
             return null;
         }
         // Remove the first part of '`@param int $x` description'
-        $variable_description = preg_replace('@^`[^`]*`\s*@', '', $variable_description);
+        $variable_description = \preg_replace('@^`[^`]*`\s*@', '', $variable_description);
         if (!$variable_description) {
             return null;
         }
@@ -359,7 +359,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
      */
     public function getDefinitionLocations() : array
     {
-        return array_values($this->locations);
+        return \array_values($this->locations);
     }
 
     /**
@@ -395,7 +395,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
             if ($this->request_type === self::REQUEST_HOVER) {
                 $result = $this->hover_response;
             } else {
-                $result = $this->locations ? array_values($this->locations) : null;
+                $result = $this->locations ? \array_values($this->locations) : null;
             }
             $promise->fulfill($result);
             $this->promise = null;

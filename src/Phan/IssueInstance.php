@@ -57,8 +57,8 @@ class IssueInstance
         $this->line = $line;
         $this->suggestion = $suggestion;
 
-        if ($issue->getExpectedArgumentCount() !== count($template_parameters)) {
-            fprintf(STDERR, "Unexpected argument count for %s: Expected %d args, got %d\n", $issue->getTemplate(), $issue->getExpectedArgumentCount(), count($template_parameters));
+        if ($issue->getExpectedArgumentCount() !== \count($template_parameters)) {
+            \fprintf(\STDERR, "Unexpected argument count for %s: Expected %d args, got %d\n", $issue->getTemplate(), $issue->getExpectedArgumentCount(), \count($template_parameters));
         }
         // color_issue_message will interfere with some formatters, such as xml.
         if (Config::getValue('color_issue_messages')) {
@@ -92,14 +92,14 @@ class IssueInstance
         // markdown_issue_messages doesn't make sense with color, unless you add <span style="color:red">msg</span>
         // Not sure if codeclimate supports that.
         if (Config::getValue('markdown_issue_messages')) {
-            $template = preg_replace(
+            $template = \preg_replace(
                 '/([^ ]*%s[^ ]*)/',
                 '`\1`',
                 $template
             );
         }
         // @phan-suppress-next-line PhanPluginPrintfVariableFormatString the template is provided by Phan/its plugins
-        return vsprintf(
+        return \vsprintf(
             $template,
             $template_parameters
         );

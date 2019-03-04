@@ -39,8 +39,8 @@ final class PHP74Test extends AbstractPhanFileTest
     {
         $skip_reason = null;
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
-        $main_path = basename(reset($test_file_list));
-        if (PHP_VERSION_ID < 70400) {
+        $main_path = \basename(\reset($test_file_list));
+        if (\PHP_VERSION_ID < 70400) {
             $skip_reason = 'Skip PHP 7.4 is required';
         }
         if ($skip_reason !== null) {

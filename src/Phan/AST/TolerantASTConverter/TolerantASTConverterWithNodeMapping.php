@@ -102,7 +102,7 @@ class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
         self::$handle_selected_node = $this->instance_handle_selected_node;
 
         if (!\in_array($version, self::SUPPORTED_AST_VERSIONS)) {
-            throw new InvalidArgumentException(sprintf("Unexpected version: want %s, got %d", \implode(', ', self::SUPPORTED_AST_VERSIONS), $version));
+            throw new InvalidArgumentException(\sprintf("Unexpected version: want %s, got %d", \implode(', ', self::SUPPORTED_AST_VERSIONS), $version));
         }
 
         // Aside: this can be implemented as a stub.

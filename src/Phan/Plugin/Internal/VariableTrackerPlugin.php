@@ -189,7 +189,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
             if ($variable_name === 'this') {
                 continue;
             }
-            if (preg_match('/^(_$|(unused|raii))/i', $variable_name) > 0) {
+            if (\preg_match('/^(_$|(unused|raii))/i', $variable_name) > 0) {
                 // Skip over $_, $unused*, and $raii*
                 continue;
             }
@@ -211,7 +211,7 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
                 if ($issue_type === Issue::UnusedPublicMethodParameter) {
                     // Narrow down issues about parameters into more specific issues
                     $doc_comment = $method_node->children['docComment'] ?? null;
-                    if ($doc_comment && preg_match('/@param[^$]*\$' . preg_quote($variable_name) . '\b.*@phan-unused-param\b/', $doc_comment)) {
+                    if ($doc_comment && \preg_match('/@param[^$]*\$' . \preg_quote($variable_name) . '\b.*@phan-unused-param\b/', $doc_comment)) {
                         // Don't warn about parameters marked with phan-unused-param
                         break;
                     }
@@ -267,8 +267,8 @@ final class VariableTrackerElementVisitor extends PluginAwarePostAnalysisVisitor
         foreach ($suggestion_set as $suggested_variable_name => $_) {
             $suggestions[] = '$' . $suggested_variable_name;
         }
-        sort($suggestions);
+        \sort($suggestions);
 
-        return Suggestion::fromString('Did you mean ' . implode(' or ', $suggestions));
+        return Suggestion::fromString('Did you mean ' . \implode(' or ', $suggestions));
     }
 }

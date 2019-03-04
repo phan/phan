@@ -435,7 +435,7 @@ class Method extends ClassElement implements FunctionInterface
         // Keep an copy of the original parameter list, to check for fatal errors later on.
         $method->setRealParameterList($parameter_list);
 
-        $method->setNumberOfRequiredParameters(array_reduce(
+        $method->setNumberOfRequiredParameters(\array_reduce(
             $parameter_list,
             static function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isRequired() ? 1 : 0));
@@ -443,7 +443,7 @@ class Method extends ClassElement implements FunctionInterface
             0
         ));
 
-        $method->setNumberOfOptionalParameters(array_reduce(
+        $method->setNumberOfOptionalParameters(\array_reduce(
             $parameter_list,
             static function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isOptional() ? 1 : 0));
@@ -614,7 +614,7 @@ class Method extends ClassElement implements FunctionInterface
             }
         }
         // Return abstract methods before concrete methods, in order to best check method compatibility.
-        $method_list = array_merge($abstract_method_list, $method_list);
+        $method_list = \array_merge($abstract_method_list, $method_list);
         if (\count($method_list) > 0) {
             return $method_list;
         }

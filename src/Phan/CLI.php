@@ -188,16 +188,16 @@ class CLI
     public static function readCommaSeparatedListOrLists($value) : array
     {
         if (is_array($value)) {
-            $value = implode(',', $value);
+            $value = \implode(',', $value);
         }
         $value_set = [];
-        foreach (explode(',', (string)$value) as $file) {
+        foreach (\explode(',', (string)$value) as $file) {
             if ($file === '') {
                 continue;
             }
             $value_set[$file] = true;
         }
-        return array_map('strval', array_keys($value_set));
+        return \array_map('strval', \array_keys($value_set));
     }
 
     /**
@@ -210,11 +210,11 @@ class CLI
         $pruneargv = [];
         foreach ($opts as $opt => $value) {
             foreach ($argv as $key => $chunk) {
-                $regex = '/^' . (isset($opt[1]) ? '--' : '-') . preg_quote((string) $opt, '/') . '/';
+                $regex = '/^' . (isset($opt[1]) ? '--' : '-') . \preg_quote((string) $opt, '/') . '/';
 
                 if (in_array($chunk, is_array($value) ? $value : [$value])
                     && $argv[$key - 1][0] == '-'
-                    || preg_match($regex, $chunk)
+                    || \preg_match($regex, $chunk)
                 ) {
                     $pruneargv[] = $key;
                 }
@@ -222,7 +222,7 @@ class CLI
         }
 
         while (count($pruneargv) > 0) {
-            $key = array_pop($pruneargv);
+            $key = \array_pop($pruneargv);
             unset($argv[$key]);
         }
 
@@ -241,7 +241,7 @@ class CLI
         global $argv;
 
         // Parse command line args
-        $opts = getopt(self::GETOPT_SHORT_OPTIONS, self::GETOPT_LONG_OPTIONS);
+        $opts = \getopt(self::GETOPT_SHORT_OPTIONS, self::GETOPT_LONG_OPTIONS);
         $opts = $opts ?? [];
 
         try {
@@ -252,7 +252,7 @@ class CLI
         } catch (ExitException $e) {
             $message = $e->getMessage();
             if ($message) {
-                fwrite(STDERR, $message);
+                \fwrite(STDERR, $message);
             }
             exit($e->getCode());
         }
@@ -293,17 +293,17 @@ class CLI
             throw new UsageException();  // --help prints help and calls exit(0)
         }
         if (\array_key_exists('help-annotations', $opts)) {
-            $result = "See https://github.com/phan/phan/wiki/Annotating-Your-Source-Code for more details." . PHP_EOL . PHP_EOL;
+            $result = "See https://github.com/phan/phan/wiki/Annotating-Your-Source-Code for more details." . \PHP_EOL . \PHP_EOL;
 
-            $result .= "Annotations specific to Phan:" . PHP_EOL;
+            $result .= "Annotations specific to Phan:" . \PHP_EOL;
             // @phan-suppress-next-line PhanAccessClassConstantInternal
             foreach (Builder::SUPPORTED_ANNOTATIONS as $key => $_) {
-                $result .= "- " . $key . PHP_EOL;
+                $result .= "- " . $key . \PHP_EOL;
             }
             throw new ExitException($result, EXIT_SUCCESS);
         }
         if (\array_key_exists('v', $opts ?? []) || \array_key_exists('version', $opts ?? [])) {
-            printf("Phan %s\n", self::PHAN_VERSION);
+            \printf("Phan %s\n", self::PHAN_VERSION);
             throw new ExitException('', EXIT_SUCCESS);
         }
 
@@ -320,7 +320,7 @@ class CLI
         }
         $cwd = \getcwd();
         if (!is_string($cwd)) {
-            fwrite(STDERR, "Failed to find current working directory\n");
+            \fwrite(STDERR, "Failed to find current working directory\n");
             exit(1);
         }
         Config::setProjectRootDirectory($cwd);
@@ -341,7 +341,7 @@ class CLI
                 // Doesn't work for a mix of -k and --config-file, but low priority
                 throw new ExitException("Expected exactly one file for --config-file, but saw " . StringUtil::jsonEncode($config_file_override) . "\n", 1);
             }
-            if (!is_file($config_file_override)) {
+            if (!\is_file($config_file_override)) {
                 throw new ExitException("Could not find the config file override " . StringUtil::jsonEncode($config_file_override) . "\n", 1);
             }
             $this->config_file = $config_file_override;
@@ -351,7 +351,7 @@ class CLI
             Config::setValue('language_server_use_pcntl_fallback', true);
         } elseif (!isset($opts['language-server-require-pcntl'])) {
             // --language-server-allow-missing-pcntl is now the default
-            if (!extension_loaded('pcntl')) {
+            if (!\extension_loaded('pcntl')) {
                 Config::setValue('language_server_use_pcntl_fallback', true);
             }
         }
@@ -385,21 +385,21 @@ class CLI
                     $file_list = \is_array($value) ? $value : [$value];
                     foreach ($file_list as $file_name) {
                         if (!is_string($file_name)) {
-                            error_log("invalid argument for --file-list");
+                            \error_log("invalid argument for --file-list");
                             continue;
                         }
                         $file_path = Config::projectPath($file_name);
-                        if (is_file($file_path) && is_readable($file_path)) {
-                            $lines = file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+                        if (\is_file($file_path) && \is_readable($file_path)) {
+                            $lines = \file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
                             if (is_array($lines)) {
-                                $this->file_list_in_config = array_merge(
+                                $this->file_list_in_config = \array_merge(
                                     $this->file_list_in_config,
                                     $lines
                                 );
                                 continue;
                             }
                         }
-                        error_log("Unable to read file $file_path");
+                        \error_log("Unable to read file $file_path");
                     }
                     break;
                 case 'l':
@@ -408,12 +408,12 @@ class CLI
                         $directory_list = \is_array($value) ? $value : [$value];
                         foreach ($directory_list as $directory_name) {
                             if (!is_string($directory_name)) {
-                                error_log("Invalid --directory setting");
+                                \error_log("Invalid --directory setting");
                                 return;
                             }
-                            $this->file_list_in_config = array_merge(
+                            $this->file_list_in_config = \array_merge(
                                 $this->file_list,
-                                array_values($this->directoryNameToFileList(
+                                \array_values($this->directoryNameToFileList(
                                     $directory_name
                                 ))
                             );
@@ -427,10 +427,10 @@ class CLI
                 case 'output-mode':
                     if (!is_string($value) || !in_array($value, $factory->getTypes(), true)) {
                         throw new UsageException(
-                            sprintf(
+                            \sprintf(
                                 'Unknown output mode %s. Known values are [%s]',
                                 StringUtil::jsonEncode($value),
-                                implode(',', $factory->getTypes())
+                                \implode(',', $factory->getTypes())
                             ),
                             EXIT_FAILURE
                         );
@@ -439,7 +439,7 @@ class CLI
                     break;
                 case 'c':
                 case 'parent-constructor-required':
-                    Config::setValue('parent_constructor_required', explode(',', $value));
+                    Config::setValue('parent_constructor_required', \explode(',', $value));
                     break;
                 case 'q':
                 case 'quick':
@@ -466,7 +466,7 @@ class CLI
                 case 'find-signature':
                     try {
                         if (!is_string($value)) {
-                            throw new InvalidArgumentException("Expected a string, got " . json_encode($value));
+                            throw new InvalidArgumentException("Expected a string, got " . \json_encode($value));
                         }
                         // @phan-suppress-next-line PhanAccessMethodInternal
                         MethodSearcherPlugin::setSearchString($value);
@@ -474,13 +474,13 @@ class CLI
                         throw new UsageException("Invalid argument '$value' to --find-signature. Error: " . $e->getMessage() . "\n", EXIT_FAILURE);
                     }
 
-                    Config::setValue('plugins', array_merge(
+                    Config::setValue('plugins', \array_merge(
                         Config::getValue('plugins'),
                         [__DIR__ . '/Plugin/Internal/MethodSearcherPluginLoader.php']
                     ));
                     break;
                 case 'automatic-fix':
-                    Config::setValue('plugins', array_merge(
+                    Config::setValue('plugins', \array_merge(
                         Config::getValue('plugins'),
                         [__DIR__ . '/Plugin/Internal/IssueFixingPlugin.php']
                     ));
@@ -488,9 +488,9 @@ class CLI
                 case 'o':
                 case 'output':
                     if (!is_string($value)) {
-                        throw new UsageException(sprintf("Invalid arguments to --output: args=%s\n", StringUtil::jsonEncode($value)), EXIT_FAILURE);
+                        throw new UsageException(\sprintf("Invalid arguments to --output: args=%s\n", StringUtil::jsonEncode($value)), EXIT_FAILURE);
                     }
-                    $output_file = fopen($value, 'w');
+                    $output_file = \fopen($value, 'w');
                     if (!is_resource($output_file)) {
                         throw new UsageException("Failed to open output file '$value'\n", EXIT_FAILURE);
                     }
@@ -506,7 +506,7 @@ class CLI
                     Config::setValue('exclude_analysis_directory_list', self::readCommaSeparatedListOrLists($value));
                     break;
                 case 'exclude-file':
-                    Config::setValue('exclude_file_list', array_merge(
+                    Config::setValue('exclude_file_list', \array_merge(
                         Config::getValue('exclude_file_list'),
                         \is_array($value) ? $value : [$value]
                     ));
@@ -563,7 +563,7 @@ class CLI
                     }
                     Config::setValue(
                         'plugins',
-                        array_unique(array_merge(Config::getValue('plugins'), $value))
+                        \array_unique(\array_merge(Config::getValue('plugins'), $value))
                     );
                     break;
                 case 'use-fallback-parser':
@@ -592,11 +592,11 @@ class CLI
                 case 'daemonize-socket':
                     $this->checkCanDaemonize('unix', $key);
                     if (!is_string($value)) {
-                        throw new UsageException(sprintf("Invalid arguments to --daemonize-socket: args=%s", StringUtil::jsonEncode($value)), EXIT_FAILURE);
+                        throw new UsageException(\sprintf("Invalid arguments to --daemonize-socket: args=%s", StringUtil::jsonEncode($value)), EXIT_FAILURE);
                     }
-                    $socket_dirname = realpath(dirname($value));
-                    if (!is_string($socket_dirname) || !file_exists($socket_dirname) || !is_dir($socket_dirname)) {
-                        $msg = sprintf(
+                    $socket_dirname = \realpath(\dirname($value));
+                    if (!is_string($socket_dirname) || !\file_exists($socket_dirname) || !\is_dir($socket_dirname)) {
+                        $msg = \sprintf(
                             'Requested to create Unix socket server in %s, but folder %s does not exist',
                             StringUtil::jsonEncode($value),
                             StringUtil::jsonEncode($socket_dirname)
@@ -610,8 +610,8 @@ class CLI
                 case 'daemonize-tcp-host':
                     $this->checkCanDaemonize('tcp', $key);
                     Config::setValue('daemonize_tcp', true);
-                    $host = filter_var($value, FILTER_VALIDATE_IP);
-                    if (strcasecmp($value, 'default') !== 0 && !$host) {
+                    $host = \filter_var($value, FILTER_VALIDATE_IP);
+                    if (\strcasecmp($value, 'default') !== 0 && !$host) {
                         throw new UsageException("daemonize-tcp-host must be the string 'default' or a valid hostname, got '$value'", 1);
                     }
                     if ($host) {
@@ -621,8 +621,8 @@ class CLI
                 case 'daemonize-tcp-port':
                     $this->checkCanDaemonize('tcp', $key);
                     Config::setValue('daemonize_tcp', true);
-                    $port = filter_var($value, FILTER_VALIDATE_INT);
-                    if (strcasecmp($value, 'default') !== 0 && !($port >= 1024 && $port <= 65535)) {
+                    $port = \filter_var($value, FILTER_VALIDATE_INT);
+                    if (\strcasecmp($value, 'default') !== 0 && !($port >= 1024 && $port <= 65535)) {
                         throw new UsageException("daemonize-tcp-port must be the string 'default' or a value between 1024 and 65535, got '$value'", 1);
                     }
                     if ($port) {
@@ -672,12 +672,12 @@ class CLI
                 case 'allow-polyfill-parser':
                     // Just check if it's installed and of a new enough version.
                     // Assume that if there is an installation, it works, and warn later in ensureASTParserExists()
-                    if (!extension_loaded('ast')) {
+                    if (!\extension_loaded('ast')) {
                         Config::setValue('use_polyfill_parser', true);
                         break;
                     }
                     $ast_version = (new ReflectionExtension('ast'))->getVersion();
-                    if (version_compare($ast_version, '0.1.5') < 0) {
+                    if (\version_compare($ast_version, '0.1.5') < 0) {
                         Config::setValue('use_polyfill_parser', true);
                         break;
                     }
@@ -686,10 +686,10 @@ class CLI
                     Config::setValue('use_polyfill_parser', true);
                     break;
                 case 'memory-limit':
-                    if (preg_match('@^([1-9][0-9]*)([KMG])?$@', $value, $match)) {
-                        ini_set('memory_limit', $value);
+                    if (\preg_match('@^([1-9][0-9]*)([KMG])?$@', $value, $match)) {
+                        \ini_set('memory_limit', $value);
                     } else {
-                        fwrite(STDERR, "Invalid --memory-limit '$value', ignoring\n");
+                        \fwrite(STDERR, "Invalid --memory-limit '$value', ignoring\n");
                     }
                     break;
                 case 'print-memory-usage-summary':
@@ -725,7 +725,7 @@ class CLI
         Phan::setIssueCollector($collector);
         if (!$this->file_list_only) {
             // Merge in any remaining args on the CLI
-            $this->file_list_in_config = array_merge(
+            $this->file_list_in_config = \array_merge(
                 $this->file_list_in_config,
                 array_slice($argv, 1)
             );
@@ -750,9 +750,9 @@ class CLI
         foreach (Config::getValue('plugins') as $plugin_path_or_name) {
             // @phan-suppress-next-line PhanAccessMethodInternal
             $plugin_file_name = ConfigPluginSet::normalizePluginPath($plugin_path_or_name);
-            if (!is_file($plugin_file_name)) {
+            if (!\is_file($plugin_file_name)) {
                 $details = $plugin_file_name === $plugin_path_or_name ? '' : ' (Referenced as ' . StringUtil::jsonEncode($plugin_path_or_name) . ')';
-                fprintf(
+                \fprintf(
                     STDERR,
                     "Phan could not find plugin %s%s\n",
                     StringUtil::jsonEncode($plugin_file_name),
@@ -762,7 +762,7 @@ class CLI
             }
         }
         if (!$all_plugins_exist) {
-            fwrite(STDERR, "Exiting due to invalid plugin config.\n");
+            \fwrite(STDERR, "Exiting due to invalid plugin config.\n");
             exit(1);
         }
     }
@@ -777,21 +777,21 @@ class CLI
         if (!$this->file_list_only) {
             // Merge in any files given in the config
             /** @var array<int,string> */
-            $this->file_list = array_merge(
+            $this->file_list = \array_merge(
                 $this->file_list,
                 Config::getValue('file_list')
             );
 
             // Merge in any directories given in the config
             foreach (Config::getValue('directory_list') as $directory_name) {
-                $this->file_list = array_merge(
+                $this->file_list = \array_merge(
                     $this->file_list,
-                    array_values($this->directoryNameToFileList($directory_name))
+                    \array_values($this->directoryNameToFileList($directory_name))
                 );
             }
 
             // Don't scan anything twice
-            $this->file_list = array_unique($this->file_list);
+            $this->file_list = \array_unique($this->file_list);
         }
 
         // Exclude any files that should be excluded from
@@ -799,12 +799,12 @@ class CLI
         if (count(Config::getValue('exclude_file_list')) > 0) {
             $exclude_file_set = [];
             foreach (Config::getValue('exclude_file_list') as $file) {
-                $normalized_file = str_replace('\\', '/', $file);
+                $normalized_file = \str_replace('\\', '/', $file);
                 $exclude_file_set[$normalized_file] = true;
                 $exclude_file_set["./$normalized_file"] = true;
             }
 
-            $this->file_list = array_filter(
+            $this->file_list = \array_filter(
                 $this->file_list,
                 static function (string $file) use ($exclude_file_set) : bool {
                     // Handle edge cases such as 'mydir/subdir\subsubdir' on Windows, if mydir/subdir was in the Phan config.
@@ -821,10 +821,10 @@ class CLI
     private function checkCanDaemonize(string $protocol, string $opt)
     {
         $opt = strlen($opt) >= 2 ? "--$opt" : "-$opt";
-        if (!in_array($protocol, stream_get_transports())) {
+        if (!in_array($protocol, \stream_get_transports())) {
             throw new UsageException("The $protocol:///path/to/file schema is not supported on this system, cannot create a daemon with $opt", 1);
         }
-        if (!Config::getValue('language_server_use_pcntl_fallback') && !function_exists('pcntl_fork')) {
+        if (!Config::getValue('language_server_use_pcntl_fallback') && !\function_exists('pcntl_fork')) {
             throw new UsageException("The pcntl extension is not available to fork a new process, so $opt will not be able to create workers to respond to requests.", 1);
         }
         if ($opt === '--daemonize-socket' && Config::getValue('daemonize_tcp')) {
@@ -1193,18 +1193,18 @@ EOB;
         string $key
     ) : string {
         $trim = static function (string $s) : string {
-            return rtrim($s, ':');
+            return \rtrim($s, ':');
         };
         $generate_suggestion = static function (string $suggestion) : string {
             return (strlen($suggestion) === 1 ? '-' : '--') . $suggestion;
         };
         $generate_suggestion_text = static function (string $suggestion, string ...$other_suggestions) use ($generate_suggestion) : string {
-            $suggestions = array_merge([$suggestion], $other_suggestions);
-            return ' (did you mean ' . implode(' or ', array_map($generate_suggestion, $suggestions)) . '?)';
+            $suggestions = \array_merge([$suggestion], $other_suggestions);
+            return ' (did you mean ' . \implode(' or ', \array_map($generate_suggestion, $suggestions)) . '?)';
         };
-        $short_options = array_filter(array_map($trim, str_split(self::GETOPT_SHORT_OPTIONS)));
+        $short_options = \array_filter(\array_map($trim, \str_split(self::GETOPT_SHORT_OPTIONS)));
         if (strlen($key) === 1) {
-            $alternate = ctype_lower($key) ? strtoupper($key) : strtolower($key);
+            $alternate = \ctype_lower($key) ? \strtoupper($key) : \strtolower($key);
             if (in_array($alternate, $short_options)) {
                 return $generate_suggestion_text($alternate);
             }
@@ -1213,28 +1213,28 @@ EOB;
             return '';
         }
         // include short options in case a typo is made like -aa instead of -a
-        $known_flags = array_merge(self::GETOPT_LONG_OPTIONS, $short_options);
+        $known_flags = \array_merge(self::GETOPT_LONG_OPTIONS, $short_options);
 
-        $known_flags = array_map($trim, $known_flags);
+        $known_flags = \array_map($trim, $known_flags);
 
         $similarities = [];
 
-        $key_lower = strtolower($key);
+        $key_lower = \strtolower($key);
         foreach ($known_flags as $flag) {
-            if (strlen($flag) === 1 && stripos($key, $flag) === false) {
+            if (strlen($flag) === 1 && \stripos($key, $flag) === false) {
                 // Skip over suggestions of flags that have no common characters
                 continue;
             }
-            $distance = levenshtein($key_lower, strtolower($flag));
+            $distance = \levenshtein($key_lower, \strtolower($flag));
             // distance > 5 is to far off to be a typo
             if ($distance <= 5) {
                 $similarities[$flag] = $distance;
             }
         }
 
-        asort($similarities); // retain keys and sort descending
-        $similar_flags = array_keys($similarities);
-        $similarity_values = array_values($similarities);
+        \asort($similarities); // retain keys and sort descending
+        $similar_flags = \array_keys($similarities);
+        $similarity_values = \array_values($similarities);
 
         if (count($similar_flags) >= 2 && ($similarity_values[1] <= $similarity_values[0] + 1)) {
             // If the next-closest suggestion isn't close to as similar as the closest suggestion, just return the closest suggestion
@@ -1284,7 +1284,7 @@ EOB;
 
                     if (!$file_info->isFile() || !$file_info->isReadable()) {
                         $file_path = $file_info->getRealPath();
-                        error_log("Unable to read file {$file_path}");
+                        \error_log("Unable to read file {$file_path}");
                         return false;
                     }
 
@@ -1298,18 +1298,18 @@ EOB;
                 }
             );
 
-            $file_list = array_keys(iterator_to_array($iterator));
+            $file_list = \array_keys(\iterator_to_array($iterator));
         } catch (\Exception $exception) {
-            error_log($exception->getMessage());
+            \error_log($exception->getMessage());
         }
 
         // Normalize leading './' in paths.
         $normalized_file_list = [];
         foreach ($file_list as $file_path) {
-            $file_path = preg_replace('@^(\.[/\\\\]+)+@', '', $file_path);
+            $file_path = \preg_replace('@^(\.[/\\\\]+)+@', '', $file_path);
             $normalized_file_list[$file_path] = $file_path;
         }
-        usort($normalized_file_list, static function (string $a, string $b) : int {
+        \usort($normalized_file_list, static function (string $a, string $b) : int {
             // Sort lexicographically by paths **within the results for a directory**,
             // to work around some file systems not returning results lexicographically.
             // Keep directories together by replacing directory separators with the null byte
@@ -1348,9 +1348,9 @@ EOB;
     ) : bool {
         // Make this behave the same way on Linux/Unix and on Windows.
         if (DIRECTORY_SEPARATOR === '\\') {
-            $path_name = str_replace(DIRECTORY_SEPARATOR, '/', $path_name);
+            $path_name = \str_replace(DIRECTORY_SEPARATOR, '/', $path_name);
         }
-        return preg_match($exclude_file_regex, $path_name) > 0;
+        return \preg_match($exclude_file_regex, $path_name) > 0;
     }
 
     /**
@@ -1374,10 +1374,10 @@ EOB;
         }
 
         // Bound the percentage to [0, 1]
-        $p = min(max($p, 0.0), 1.0);
+        $p = \min(\max($p, 0.0), 1.0);
 
         static $previous_update_time = 0.0;
-        $time = microtime(true);
+        $time = \microtime(true);
 
 
         // If not enough time has elapsed, then don't update the progress bar.
@@ -1390,28 +1390,28 @@ EOB;
 
         // If we're on windows, just print a dot to show we're
         // working
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            fwrite(STDERR, '.');
+        if (\strtoupper(\substr(PHP_OS, 0, 3)) === 'WIN') {
+            \fwrite(STDERR, '.');
             return;
         }
-        $memory = memory_get_usage() / 1024 / 1024;
-        $peak = memory_get_peak_usage() / 1024 / 1024;
+        $memory = \memory_get_usage() / 1024 / 1024;
+        $peak = \memory_get_peak_usage() / 1024 / 1024;
 
-        $left_side = str_pad($msg, 10, ' ', STR_PAD_LEFT) .  ' ';
+        $left_side = \str_pad($msg, 10, ' ', STR_PAD_LEFT) .  ' ';
         $right_side =
-               " " . sprintf("%1$ 3d", (int)(100 * $p)) . "%" .
-               sprintf(' %0.2dMB/%0.2dMB', $memory, $peak);
+               " " . \sprintf("%1$ 3d", (int)(100 * $p)) . "%" .
+               \sprintf(' %0.2dMB/%0.2dMB', $memory, $peak);
 
         $columns = (new Terminal())->getWidth();
         // strlen("  99% 999MB/999MB") == 17
-        $used_length = strlen($left_side) + max(17, strlen($right_side));
+        $used_length = strlen($left_side) + \max(17, strlen($right_side));
         $remaining_length = $columns - $used_length;
-        $remaining_length = min(60, max(0, $remaining_length));
+        $remaining_length = \min(60, \max(0, $remaining_length));
         if ($remaining_length > 0) {
             $progress_bar = self::renderInnerProgressBar($remaining_length, $p);
         } else {
             $progress_bar = '';
-            $right_side = ltrim($right_side);
+            $right_side = \ltrim($right_side);
         }
 
         // Build up a string, then make a single call to fwrite(). Should be slightly faster and smoother to render to the console.
@@ -1419,7 +1419,7 @@ EOB;
                $progress_bar .
                $right_side .
                "\r";
-        fwrite(STDERR, $msg);
+        \fwrite(STDERR, $msg);
     }
 
     /**
@@ -1431,17 +1431,17 @@ EOB;
     {
         $current_float = $p * $length;
         $current = (int)$current_float;
-        $rest = max($length - $current, 0);
+        $rest = \max($length - $current, 0);
         // The left-most characters are "Light shade"
-        $progress_bar = str_repeat("\u{2588}", $current);
+        $progress_bar = \str_repeat("\u{2588}", $current);
         $delta = $current_float - $current;
         if ($delta > 1.0 / 3) {
             // The between character is "Full block" or "Medium shade" or "solid shade".
             // The remaining characters on the right are "Full block" (darkest)
             $first = $delta > 2.0 / 3 ? "\u{2593}" : "\u{2592}";
-            $progress_bar .= $first . str_repeat("\u{2591}", $rest - 1);
+            $progress_bar .= $first . \str_repeat("\u{2591}", $rest - 1);
         } else {
-            $progress_bar .= str_repeat("\u{2591}", $rest);
+            $progress_bar .= \str_repeat("\u{2591}", $rest);
         }
         return $progress_bar;
     }
@@ -1459,22 +1459,22 @@ EOB;
         $config_file_name = $this->config_file;
         $config_file_name =
             $config_file_name
-            ? realpath($config_file_name)
-            : implode(DIRECTORY_SEPARATOR, [
+            ? \realpath($config_file_name)
+            : \implode(DIRECTORY_SEPARATOR, [
                 Config::getProjectRootDirectory(),
                 '.phan',
                 'config.php'
             ]);
 
         // Totally cool if the file isn't there
-        if ($config_file_name === false || !file_exists($config_file_name)) {
+        if ($config_file_name === false || !\file_exists($config_file_name)) {
             if ($require_config_exists) {
                 // But if the CLI option --require-config-exists is provided, exit immediately.
                 // (Include extended help documenting that option)
                 if ($config_file_name !== false) {
                     throw new UsageException("Could not find a config file at '$config_file_name', but --require-config-exists was set", EXIT_FAILURE, true);
                 } else {
-                    $msg = sprintf(
+                    $msg = \sprintf(
                         "Could not figure out the path for config file %s, but --require-config-exists was set",
                         StringUtil::encodeValue($this->config_file)
                     );
@@ -1503,8 +1503,8 @@ EOB;
         if (Config::getValue('use_polyfill_parser')) {
             return;
         }
-        if (!extension_loaded('ast')) {
-            fwrite(
+        if (!\extension_loaded('ast')) {
+            \fwrite(
                 STDERR,
                 // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                 "The php-ast extension must be loaded in order for Phan to work. See https://github.com/phan/phan#getting-started for more details. Alternately, invoke Phan with the CLI option --allow-polyfill-parser (which is noticeably slower)\n"
@@ -1519,7 +1519,7 @@ EOB;
                 Config::AST_VERSION
             );
         } catch (\LogicException $_) {
-            fwrite(
+            \fwrite(
                 STDERR,
                 'Unknown AST version ('
                 . Config::AST_VERSION
@@ -1535,7 +1535,7 @@ EOB;
                 '<' . '?php syntaxerror',
                 Config::AST_VERSION
             );
-            fwrite(
+            \fwrite(
                 STDERR,
                 'Expected ast\\parse_code to throw ParseError on invalid inputs. Configured AST version: '
                 . Config::AST_VERSION
@@ -1555,10 +1555,10 @@ EOB;
      */
     public static function getDevelopmentVersionId() : string
     {
-        $news_path = dirname(__DIR__) . '/NEWS.md';
+        $news_path = \dirname(__DIR__) . '/NEWS.md';
         $version = self::PHAN_VERSION;
-        if (file_exists($news_path)) {
-            $version .= '-' . filesize($news_path);
+        if (\file_exists($news_path)) {
+            $version .= '-' . \filesize($news_path);
         }
         return $version;
     }

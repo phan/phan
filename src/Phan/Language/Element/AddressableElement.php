@@ -203,7 +203,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
 
         // Test to see if the context is within the same
         // namespace as where the element is defined
-        return (0 === strcasecmp($context_namespace, $element_namespace));
+        return (0 === \strcasecmp($context_namespace, $element_namespace));
     }
 
     /**

@@ -85,7 +85,7 @@ class NodeDumper
     public function dumpClassName(Node $ast_node) : string
     {
         $name = get_class($ast_node);
-        if (stripos($name, 'Microsoft\\PhpParser\\') === 0) {
+        if (\stripos($name, 'Microsoft\\PhpParser\\') === 0) {
             // Remove the PhpParser namespace
             $name = (string)substr($name, 20);
         }
@@ -99,7 +99,7 @@ class NodeDumper
     public function dumpTokenClassName(Token $ast_node) : string
     {
         $name = get_class($ast_node);
-        if (stripos($name, 'Microsoft\\PhpParser\\') === 0) {
+        if (\stripos($name, 'Microsoft\\PhpParser\\') === 0) {
             // Remove the PhpParser namespace
             $name = (string)substr($name, 20);
         }

@@ -45,7 +45,7 @@ class NamespaceMapEntry implements \Serializable
      */
     public function serialize()
     {
-        return serialize([
+        return \serialize([
             \get_class($this->fqsen),
             (string)$this->fqsen,
             $this->original_name,
@@ -59,7 +59,7 @@ class NamespaceMapEntry implements \Serializable
      */
     public function unserialize($representation)
     {
-        list($fqsen_class, $fqsen, $this->original_name, $this->lineno, $this->is_used) = unserialize($representation);
+        list($fqsen_class, $fqsen, $this->original_name, $this->lineno, $this->is_used) = \unserialize($representation);
         if (!\is_string($fqsen_class)) {
             throw new RuntimeException("Failed to unserialize a string from the representation");
         }

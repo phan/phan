@@ -55,7 +55,7 @@ class Debug
      */
     public static function printNodeName($node, $indent = 0)
     {
-        print str_repeat("\t", $indent);
+        print \str_repeat("\t", $indent);
         print self::nodeName($node);
         print "\n";
     }
@@ -68,7 +68,7 @@ class Debug
      */
     public static function print(string $message, int $indent = 0)
     {
-        print str_repeat("\t", $indent);
+        print \str_repeat("\t", $indent);
         print $message . "\n";
     }
 
@@ -116,7 +116,7 @@ class Debug
         $name = null,
         int $indent = 0
     ) : string {
-        $string = str_repeat("\t", $indent);
+        $string = \str_repeat("\t", $indent);
 
         if ($name !== null) {
             $string .= "$name => ";
@@ -189,7 +189,7 @@ class Debug
             }
         }
 
-        return implode('|', $flag_names);
+        return \implode('|', $flag_names);
     }
 
     /**
@@ -215,7 +215,7 @@ class Debug
                 }
             }
             if (\count($names) > 0) {
-                return implode(" | ", $names) . " ($flags)";
+                return \implode(" | ", $names) . " ($flags)";
             }
         }
         return (string) $flags;
@@ -230,7 +230,7 @@ class Debug
      */
     public static function backtrace(int $levels = 0)
     {
-        $bt = debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, $levels + 1);
+        $bt = \debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, $levels + 1);
         foreach ($bt as $level => $context) {
             if (!$level) {
                 continue;
@@ -270,7 +270,7 @@ class Debug
                 }
             }
             foreach ($ast->children as $i => $child) {
-                $result .= "\n    $i: " . str_replace("\n", "\n    ", self::astDump($child, $options));
+                $result .= "\n    $i: " . \str_replace("\n", "\n    ", self::astDump($child, $options));
             }
             return $result;
         } elseif ($ast === null) {

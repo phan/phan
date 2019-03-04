@@ -187,7 +187,7 @@ class Phan implements IgnoredFilesFilterInterface
         if (Config::getValue('dump_parsed_file_list') === true) {
             // If --dump-parsed-file-list is provided,
             // print the files in the order they would be parsed.
-            echo implode("\n", $file_path_list) . (count($file_path_list) > 0 ? "\n" : "");
+            echo \implode("\n", $file_path_list) . (count($file_path_list) > 0 ? "\n" : "");
             exit(EXIT_SUCCESS);
         }
 
