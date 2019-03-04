@@ -534,7 +534,7 @@ final class TypeTest extends BaseTest
         $actual_type = self::makePHPDocType($type_string);
         $expected_flattened_type = UnionType::fromStringInContext($normalized_union_type_string, new Context(), Type::FROM_PHPDOC);
         if (!$actual_type instanceof ArrayShapeType) {
-            throw new \RuntimeException(sprintf("Failed to create expected class for %s: saw %s instead of %s", $type_string, get_class($actual_type), ArrayShapeType::class));
+            throw new \RuntimeException(\sprintf("Failed to create expected class for %s: saw %s instead of %s", $type_string, get_class($actual_type), ArrayShapeType::class));
         }
         $actual_flattened_type = UnionType::of($actual_type->withFlattenedArrayShapeOrLiteralTypeInstances());
         $this->assertTrue($expected_flattened_type->isEqualTo($actual_flattened_type), "expected $actual_flattened_type to equal $expected_flattened_type");

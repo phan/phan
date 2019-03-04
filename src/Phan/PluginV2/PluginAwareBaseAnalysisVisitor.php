@@ -100,7 +100,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
     private static function isDefinedInSubclass(string $method_name) : bool
     {
         $method = new \ReflectionMethod(static::class, $method_name);
-        return is_subclass_of($method->getDeclaringClass()->name, self::class);
+        return \is_subclass_of($method->getDeclaringClass()->name, self::class);
     }
     // End of methods for internal use.
 }

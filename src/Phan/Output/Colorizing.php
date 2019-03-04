@@ -118,10 +118,10 @@ class Colorizing
     ) : string {
         $i = 0;
         /** @param array<int,string> $matches */
-        return preg_replace_callback('/{([A-Z_]+)}|%[sdf]/', static function (array $matches) use ($template, $template_parameters, &$i) : string {
+        return \preg_replace_callback('/{([A-Z_]+)}|%[sdf]/', static function (array $matches) use ($template, $template_parameters, &$i) : string {
             $j = $i++;
             if ($j >= \count($template_parameters)) {
-                error_log("Missing argument for colorized output ($template), offset $j");
+                \error_log("Missing argument for colorized output ($template), offset $j");
                 return '(MISSING)';
             }
             $arg = $template_parameters[$j];
@@ -131,7 +131,7 @@ class Colorizing
             $format_str = $matches[0];
             if ($format_str[0] === '%') {
                 // @phan-suppress-next-line PhanPluginPrintfVariableFormatString this is %s, %d, or %f
-                return sprintf($format_str, $arg);
+                return \sprintf($format_str, $arg);
             }
             $template = $matches[1];
             return self::colorizeField($template, $arg);
@@ -147,32 +147,32 @@ class Colorizing
     {
         $fmt_directive = Issue::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE[$template_type] ?? null;
         if ($fmt_directive === null) {
-            error_log(sprintf(
+            \error_log(\sprintf(
                 "Unknown template type '%s'. Known template types: %s",
                 $template_type,
-                implode(', ', array_keys(Issue::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE))
+                \implode(', ', \array_keys(Issue::UNCOLORED_FORMAT_STRING_FOR_TEMPLATE))
             ));
             return (string)$arg;
         }
         // TODO: Add more complicated color coding, e.g. MyClass::method should have the option for multiple colors.
         // TODO: Allow choosing color schemes via .phan/config.php
         // @phan-suppress-next-line PhanPluginPrintfVariableFormatString this is %s/%d/%f
-        $arg_str = sprintf($fmt_directive, (string)$arg);
+        $arg_str = \sprintf($fmt_directive, (string)$arg);
         $color = self::colorForTemplate($template_type);
         if ($color === null) {
-            error_log("No color information for template type $template_type");
+            \error_log("No color information for template type $template_type");
             return $arg_str;
         }
         // TODO: Could extend this to support background colors.
         $color_code = self::STYLES[$color] ?? null;
         if ($color_code === null) {
-            error_log("Invalid color name ($color) for template type $template_type");
+            \error_log("Invalid color name ($color) for template type $template_type");
             return $arg_str;
         }
         if ($color_code == '0') {
             return $arg_str;
         }
-        return sprintf(self::ESC_PATTERN, $color_code) . ((string) $arg) . self::ESC_RESET;
+        return \sprintf(self::ESC_PATTERN, $color_code) . ((string) $arg) . self::ESC_RESET;
     }
 
     /**
@@ -194,11 +194,11 @@ class Colorizing
         self::$color_scheme = self::DEFAULT_COLOR_FOR_TEMPLATE;
         foreach (Config::getValue('color_scheme') ?? [] as $template_type => $color_name) {
             if (!\is_string($color_name) || !\array_key_exists($color_name, self::STYLES)) {
-                error_log("Invalid color name ($color_name)");
+                \error_log("Invalid color name ($color_name)");
                 continue;
             }
             if (!\array_key_exists($template_type, Colorizing::DEFAULT_COLOR_FOR_TEMPLATE)) {
-                error_log("Unknown template_type ($template_type)");
+                \error_log("Unknown template_type ($template_type)");
                 continue;
             }
             self::$color_scheme[$template_type] = $color_name;

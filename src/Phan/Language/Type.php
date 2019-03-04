@@ -604,7 +604,7 @@ class Type
     public static function fromArray(array $array) : ArrayShapeType
     {
         return ArrayShapeType::fromFieldTypes(
-            array_map(
+            \array_map(
                 /**
                  * @param mixed $value
                  * @return UnionType

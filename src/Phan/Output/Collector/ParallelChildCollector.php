@@ -30,9 +30,9 @@ class ParallelChildCollector implements IssueCollectorInterface
         self::assertSharedMemoryCommunicationEnabled();
 
         // Create a message queue for this process group
-        $message_queue_key = posix_getpgid(posix_getpid());
+        $message_queue_key = \posix_getpgid(\posix_getpid());
         $this->message_queue_resource =
-            msg_get_queue($message_queue_key);
+            \msg_get_queue($message_queue_key);
     }
 
     /**
@@ -42,13 +42,13 @@ class ParallelChildCollector implements IssueCollectorInterface
      */
     final public static function assertSharedMemoryCommunicationEnabled()
     {
-        if (!extension_loaded('sysvsem')) {
+        if (!\extension_loaded('sysvsem')) {
             throw new AssertionError(
                 'PHP must be compiled with --enable-sysvsem in order to use -j(>=2).'
             );
         }
 
-        if (!extension_loaded('sysvmsg')) {
+        if (!\extension_loaded('sysvmsg')) {
             throw new AssertionError(
                 'PHP must be compiled with --enable-sysvmsg in order to use -j(>=2).'
             );
@@ -68,7 +68,7 @@ class ParallelChildCollector implements IssueCollectorInterface
         // Send messages along to the message queue
         // that is hopefully being listened to by a
         // ParallelParentCollector.
-        $success = msg_send(
+        $success = \msg_send(
             $this->message_queue_resource,
             ParallelParentCollector::MESSAGE_TYPE_ISSUE,
             $issue,

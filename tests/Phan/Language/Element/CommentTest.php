@@ -332,26 +332,26 @@ EOT;
     public function testParseReturnCommentCallableString()
     {
         // @phan-suppress-next-line PhanAccessClassConstantInternal
-        preg_match(\Phan\Language\Element\Comment\Builder::RETURN_COMMENT_REGEX, '/** @return callable-string description */', $matches);
+        \preg_match(\Phan\Language\Element\Comment\Builder::RETURN_COMMENT_REGEX, '/** @return callable-string description */', $matches);
         $this->assertSame('@return callable-string', $matches[0]);
     }
 
     public function testParseSuppressCommentString()
     {
         // @phan-suppress-next-line PhanAccessClassConstantInternal
-        preg_match(\Phan\Language\Element\Comment\Builder::PHAN_SUPPRESS_REGEX, '/** @suppress MyPlugin-string description */', $matches);
+        \preg_match(\Phan\Language\Element\Comment\Builder::PHAN_SUPPRESS_REGEX, '/** @suppress MyPlugin-string description */', $matches);
         $this->assertSame('MyPlugin-string', $matches[1]);
 
         // @phan-suppress-next-line PhanAccessClassConstantInternal
-        preg_match(\Phan\Language\Element\Comment\Builder::PHAN_SUPPRESS_REGEX, '/** @suppress MyPlugin_Issue- description of why this was suppressed */', $matches);
+        \preg_match(\Phan\Language\Element\Comment\Builder::PHAN_SUPPRESS_REGEX, '/** @suppress MyPlugin_Issue- description of why this was suppressed */', $matches);
         $this->assertSame('MyPlugin_Issue', $matches[1]);
 
         // @phan-suppress-next-line PhanAccessClassConstantInternal
-        preg_match(\Phan\Language\Element\Comment\Builder::PHAN_SUPPRESS_REGEX, '/** @suppress MyPlugin--description of why this was suppressed */', $matches);
+        \preg_match(\Phan\Language\Element\Comment\Builder::PHAN_SUPPRESS_REGEX, '/** @suppress MyPlugin--description of why this was suppressed */', $matches);
         $this->assertSame('MyPlugin', $matches[1]);
 
         // @phan-suppress-next-line PhanAccessClassConstantInternal
-        preg_match(\Phan\Language\Element\Comment\Builder::PHAN_SUPPRESS_REGEX, '/** @suppress MyPluginIssue, MyOtherPlugin-Issue--description of why this was suppressed */', $matches);
+        \preg_match(\Phan\Language\Element\Comment\Builder::PHAN_SUPPRESS_REGEX, '/** @suppress MyPluginIssue, MyOtherPlugin-Issue--description of why this was suppressed */', $matches);
         $this->assertSame('MyPluginIssue, MyOtherPlugin-Issue', $matches[1]);
     }
 }

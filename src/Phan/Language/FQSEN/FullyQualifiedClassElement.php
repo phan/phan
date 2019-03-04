@@ -114,7 +114,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
     ) {
-        $parts = explode('::', $fully_qualified_string);
+        $parts = \explode('::', $fully_qualified_string);
         if (\count($parts) !== 2) {
             throw new InvalidArgumentException("Fully qualified class element lacks '::' delimiter");
         }
@@ -130,7 +130,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
             );
 
         // Split off the alternate ID
-        $parts = explode(',', $name_string);
+        $parts = \explode(',', $name_string);
         $name = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
 

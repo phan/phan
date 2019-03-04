@@ -234,12 +234,12 @@ class Request
         $contents = $file_mapping_contents[$file] ?? null;
         if ($contents) {
             $position = $completion_request->getPosition();
-            $lines = explode("\n", $contents);
+            $lines = \explode("\n", $contents);
             $line = $lines[$position->line] ?? null;
             // $len = strlen($line ?? ''); fwrite(STDERR, "Looking at $line : $position of $len\n");
             if (is_string($line) && strlen($line) === $position->character + 1 && $position->character > 0) {
                 // fwrite(STDERR, "cursor at the end of the line\n");
-                if (preg_match('/(::|->)$/', $line, $matches)) {
+                if (\preg_match('/(::|->)$/', $line, $matches)) {
                     // fwrite(STDERR, "Updating the file\n");
                     if ($matches[1] === '::') {
                         $addition = TolerantASTConverter::INCOMPLETE_CLASS_CONST;
@@ -247,7 +247,7 @@ class Request
                         $addition = TolerantASTConverter::INCOMPLETE_PROPERTY;
                     }
                     $lines[$position->line] .= $addition;
-                    $new_contents = implode("\n", $lines);
+                    $new_contents = \implode("\n", $lines);
                     $file_mapping_contents[$file] = $new_contents;
                     // fwrite(STDERR, "Going to complete\n$new_contents\n====\nA");
                 }
@@ -306,9 +306,9 @@ class Request
     {
         $raw_issues = $this->buffered_output->fetch();
         if (($this->request_config[self::PARAM_FORMAT] ?? null) === 'json') {
-            $issues = json_decode($raw_issues, true);
+            $issues = \json_decode($raw_issues, true);
             if (!\is_array($issues)) {
-                $issues = "(Failed to decode) " . json_last_error_msg() . ': ' . $raw_issues;
+                $issues = "(Failed to decode) " . \json_last_error_msg() . ': ' . $raw_issues;
             }
         } else {
             $issues = $raw_issues;
@@ -350,7 +350,7 @@ class Request
             return $analyze_file_path_list;
         }
 
-        $analyze_file_path_set = array_flip($analyze_file_path_list);
+        $analyze_file_path_set = \array_flip($analyze_file_path_list);
         $filtered_files = [];
         foreach ($this->files as $file) {
             // Must be relative to project, allow absolute paths to be passed in.
@@ -378,7 +378,7 @@ class Request
         if (!is_array($mapping)) {
             $mapping = [];
         }
-        Daemon::debugf("Have the following files in mapping: %s", StringUtil::jsonEncode(array_keys($mapping)));
+        Daemon::debugf("Have the following files in mapping: %s", StringUtil::jsonEncode(\array_keys($mapping)));
         return $mapping;
     }
 
@@ -427,7 +427,7 @@ class Request
         if ($responder) {
             $responder->sendResponseAndClose([
                 'status' => self::STATUS_ERROR_UNKNOWN,
-                'message' => 'failed to send a response - Possibly encountered an exception. See daemon output: ' . StringUtil::jsonEncode(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)),
+                'message' => 'failed to send a response - Possibly encountered an exception. See daemon output: ' . StringUtil::jsonEncode(\debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)),
             ]);
             $this->responder = null;
         }
@@ -446,15 +446,15 @@ class Request
             return;
         }
         if (!$pid) {
-            $pid = pcntl_waitpid(-1, $status, WNOHANG);
+            $pid = \pcntl_waitpid(-1, $status, WNOHANG);
         }
         Daemon::debugf("Got signal pid=%s", StringUtil::jsonEncode($pid));
 
         while ($pid > 0) {
             if (\array_key_exists($pid, self::$child_pids)) {
-                $exit_code = pcntl_wexitstatus($status);
+                $exit_code = \pcntl_wexitstatus($status);
                 if ($exit_code != 0) {
-                    error_log(sprintf("child process %d exited with status %d\n", $pid, $exit_code));
+                    \error_log(\sprintf("child process %d exited with status %d\n", $pid, $exit_code));
                 } else {
                     Daemon::debugf("child process %d completed successfully", $pid);
                 }
@@ -462,7 +462,7 @@ class Request
             } elseif ($pid > 0) {
                 self::$exited_pid_status[$pid] = $status;
             }
-            $pid = pcntl_waitpid(-1, $status, WNOHANG);
+            $pid = \pcntl_waitpid(-1, $status, WNOHANG);
         }
     }
 
@@ -560,7 +560,7 @@ class Request
                 break;
                 // TODO(optional): add APIs to resolve types of variables/properties/etc (e.g. accept byte offset or line/column offset)
             default:
-                $message = sprintf("expected method to be analyze_all or analyze_files, got %s", StringUtil::jsonEncode($method));
+                $message = \sprintf("expected method to be analyze_all or analyze_files, got %s", StringUtil::jsonEncode($method));
                 Daemon::debugf($message);
                 $responder->sendResponseAndClose([
                     'status'  => self::STATUS_INVALID_METHOD,
@@ -587,9 +587,9 @@ class Request
             return $request_obj;
         }
 
-        $fork_result = pcntl_fork();
+        $fork_result = \pcntl_fork();
         if ($fork_result < 0) {
-            error_log("The daemon failed to fork. Going to terminate");
+            \error_log("The daemon failed to fork. Going to terminate");
         } elseif ($fork_result == 0) {
             Daemon::debugf("This is the fork");
             self::handleBecomingChildAnalysisProcess();
@@ -651,7 +651,7 @@ class Request
             // Parse the files in lexicographic order.
             // If there are duplicate class/function definitions,
             // this ensures they are added to the maps in the same order.
-            sort($file_list, SORT_STRING);
+            \sort($file_list, SORT_STRING);
         }
 
         $changed_or_added_files = $code_base->updateFileList($file_list, $file_mapping_contents, $file_names);
@@ -670,8 +670,8 @@ class Request
             $code_base->flushDependenciesForFile($file_path);
 
             // If the file is gone, no need to continue
-            $real = realpath($file_path);
-            if ($real === false || !file_exists($real)) {
+            $real = \realpath($file_path);
+            if ($real === false || !\file_exists($real)) {
                 Daemon::debugf("file $file_path does not exist");
                 continue;
             }
@@ -680,7 +680,7 @@ class Request
                 // Parse the file
                 Analysis::parseFile($code_base, $file_path, false, $file_mapping_contents[$file_path] ?? null);
             } catch (\Throwable $throwable) {
-                error_log(sprintf("Analysis::parseFile threw %s for %s: %s\n%s", get_class($throwable), $file_path, $throwable->getMessage(), $throwable->getTraceAsString()));
+                \error_log(\sprintf("Analysis::parseFile threw %s for %s: %s\n%s", get_class($throwable), $file_path, $throwable->getMessage(), $throwable->getTraceAsString()));
             }
         }
         Daemon::debugf("Done parsing modified files");
@@ -708,7 +708,7 @@ class Request
                 $changes_to_add[$file_name] = $contents;
             }
         }
-        Daemon::debugf("Done setting temporary file contents: Will replace contents of the following files: %s", StringUtil::jsonEncode(array_keys($changes_to_add)));
+        Daemon::debugf("Done setting temporary file contents: Will replace contents of the following files: %s", StringUtil::jsonEncode(\array_keys($changes_to_add)));
         if (count($changes_to_add) === 0) {
             return;
         }
@@ -720,8 +720,8 @@ class Request
             $code_base->flushDependenciesForFile($file_path);
 
             // If the file is gone, no need to continue
-            $real = realpath($file_path);
-            if ($real === false || !file_exists($real)) {
+            $real = \realpath($file_path);
+            if ($real === false || !\file_exists($real)) {
                 Daemon::debugf("file $file_path no longer exists on disk, but we tried to replace it?");
                 continue;
             }
@@ -730,7 +730,7 @@ class Request
                 // Parse the file
                 Analysis::parseFile($code_base, $file_path, false, $new_contents);
             } catch (\Throwable $throwable) {
-                error_log(sprintf("Analysis::parseFile threw %s for %s: %s\n%s", get_class($throwable), $file_path, $throwable->getMessage(), $throwable->getTraceAsString()));
+                \error_log(\sprintf("Analysis::parseFile threw %s for %s: %s\n%s", get_class($throwable), $file_path, $throwable->getMessage(), $throwable->getTraceAsString()));
             }
         }
     }

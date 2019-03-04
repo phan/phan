@@ -47,10 +47,10 @@ class StreamResponder implements Responder
             }
             Daemon::debugf("Got a connection");  // debugging code
             $request_bytes = '';
-            while (!feof($response_connection)) {
-                $request_bytes .= fgets($response_connection);
+            while (!\feof($response_connection)) {
+                $request_bytes .= \fgets($response_connection);
             }
-            $request = json_decode($request_bytes, true);
+            $request = \json_decode($request_bytes, true);
             if (!\is_array($request)) {
                 Daemon::debugf("Received invalid request, expected JSON: %s", StringUtil::jsonEncode($request_bytes));
                 $request = null;
@@ -75,13 +75,13 @@ class StreamResponder implements Responder
         if ($connection === null) {
             throw new \RuntimeException("Called sendAndClose twice: data = " . StringUtil::jsonEncode($data));
         }
-        fwrite($connection, StringUtil::jsonEncode($data) . "\n");
+        \fwrite($connection, StringUtil::jsonEncode($data) . "\n");
         // disable further receptions and transmissions
         // Note: This is likely a giant hack,
         // and pcntl and sockets may break in the future if used together. (multiple processes owning a single resource).
         // Not sure how to do that safely.
-        stream_socket_shutdown($connection, \STREAM_SHUT_RDWR);
-        fclose($connection);
+        \stream_socket_shutdown($connection, \STREAM_SHUT_RDWR);
+        \fclose($connection);
         $this->connection = null;
     }
 }

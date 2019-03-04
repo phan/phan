@@ -517,7 +517,7 @@ class Parameter extends Variable
             if ($default_value instanceof Node) {
                 $string .= ' = null';
             } else {
-                $string .= ' = ' . var_export($default_value, true);
+                $string .= ' = ' . \var_export($default_value, true);
             }
         }
 
@@ -570,9 +570,9 @@ class Parameter extends Variable
                     $default_repr = 'null';
                 }
             } else {
-                $default_repr = var_export($this->getDefaultValue(), true);
+                $default_repr = \var_export($this->getDefaultValue(), true);
             }
-            if (strtolower($default_repr) === 'null') {
+            if (\strtolower($default_repr) === 'null') {
                 $default_repr = 'null';
                 // If we're certain the parameter isn't nullable,
                 // then render the default as `default`, not `null`

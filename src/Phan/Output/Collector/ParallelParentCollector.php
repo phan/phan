@@ -48,14 +48,14 @@ class ParallelParentCollector implements IssueCollectorInterface
         $this->base_collector = $base_collector;
 
         // Create a message queue for this process group
-        $message_queue_key = posix_getpgid(posix_getpid());
+        $message_queue_key = \posix_getpgid(\posix_getpid());
         $this->message_queue_resource =
-            msg_get_queue($message_queue_key);
+            \msg_get_queue($message_queue_key);
 
         // Listen for ALARMS that indicate we should flush
         // the queue
-        pcntl_sigprocmask(\SIG_UNBLOCK, [\SIGUSR1], $old);
-        pcntl_signal(\SIGUSR1, function () {
+        \pcntl_sigprocmask(\SIG_UNBLOCK, [\SIGUSR1], $old);
+        \pcntl_signal(\SIGUSR1, function () {
             $this->readQueuedIssues();
         });
     }
@@ -63,7 +63,7 @@ class ParallelParentCollector implements IssueCollectorInterface
     public function __destruct()
     {
         // Shut down and remove the queue
-        $success = msg_remove_queue(
+        $success = \msg_remove_queue(
             $this->message_queue_resource
         );
         if (!$success) {
@@ -90,7 +90,7 @@ class ParallelParentCollector implements IssueCollectorInterface
     public function readQueuedIssues()
     {
         // Get the status of the queue
-        $status = msg_stat_queue(
+        $status = \msg_stat_queue(
             $this->message_queue_resource
         );
 
@@ -102,7 +102,7 @@ class ParallelParentCollector implements IssueCollectorInterface
 
             // Receive the message, populating $message by
             // reference
-            if (false !== msg_receive(
+            if (false !== \msg_receive(
                 $this->message_queue_resource,
                 self::MESSAGE_TYPE_ISSUE,
                 $message_type,
@@ -120,7 +120,7 @@ class ParallelParentCollector implements IssueCollectorInterface
                 break;
             }
 
-            $status = msg_stat_queue(
+            $status = \msg_stat_queue(
                 $this->message_queue_resource
             );
         }

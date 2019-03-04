@@ -64,10 +64,10 @@ class ProtocolStreamWriter implements ProtocolWriter
             $message = $this->messages[0]['message'];
             $promise = $this->messages[0]['promise'];
 
-            $bytesWritten = @fwrite($this->output, $message);
+            $bytesWritten = @\fwrite($this->output, $message);
 
             if ($bytesWritten > 0) {
-                $message = substr($message, $bytesWritten);
+                $message = \substr($message, $bytesWritten);
             }
 
             // Determine if this message was completely sent

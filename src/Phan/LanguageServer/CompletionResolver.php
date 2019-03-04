@@ -51,7 +51,7 @@ class CompletionResolver
             // $location = new Location($go_to_definition_request->getUri(), $node->lineno);
 
             // Log as strings in case TolerantASTConverter generates the wrong type
-            Logger::logInfo(sprintf("Saw a node of kind %s at line %s", (string)$node->kind, (string)$node->lineno));
+            Logger::logInfo(\sprintf("Saw a node of kind %s at line %s", (string)$node->kind, (string)$node->lineno));
 
             $kind = $node->kind;
 
@@ -150,7 +150,7 @@ class CompletionResolver
 
             foreach ($visible_properties as $prop) {
                 // fprintf(STDERR, "Looking for %s in '%s'\n", $prop->getName(), $incomplete_prop_name);
-                if ($incomplete_prop_name !== '' && stripos($prop->getName(), $incomplete_prop_name) === false) {
+                if ($incomplete_prop_name !== '' && \stripos($prop->getName(), $incomplete_prop_name) === false) {
                     continue;
                 }
                 // fprintf(STDERR, "Adding %s", $prop->getName());
@@ -199,7 +199,7 @@ class CompletionResolver
                 $class->getConstantMap($code_base)
             );
             foreach ($visible_constant_map as $name => $constant) {
-                if (!$is_static && strcasecmp($name, 'class') === 0) {
+                if (!$is_static && \strcasecmp($name, 'class') === 0) {
                     // Dynamic class names are not allowed in compile-time ::class fetch, it's a fatal error
                     continue;
                 }
@@ -242,7 +242,7 @@ class CompletionResolver
             // @phan-suppress-next-line PhanAccessMethodInternal
             $filtered_methods = IssueFixSuggester::filterSimilarMethods($code_base, $context, $methods, $is_static);
             foreach ($filtered_methods as $method) {
-                if ($incomplete_method_name !== '' && stripos($method->getName(), $incomplete_method_name) === false) {
+                if ($incomplete_method_name !== '' && \stripos($method->getName(), $incomplete_method_name) === false) {
                     // Skip suggestions that don't have the original method as a substring
                     continue;
                 }
@@ -264,20 +264,20 @@ class CompletionResolver
     ) {
         // TODO: Limit this check to constants that are visible from the current namespace, with the shortest name from the alias map
         // TODO: Use the alias map
-        $current_namespace = ltrim($context->getNamespace(), "\\");
+        $current_namespace = \ltrim($context->getNamespace(), "\\");
 
         foreach ($code_base->getGlobalConstantMap() as $constant) {
             if (!$constant instanceof GlobalConstant) {
                 // TODO: Make Map templatized, this is impossible
                 continue;
             }
-            $namespace = ltrim($constant->getFQSEN()->getNamespace(), "\\");
-            if ($namespace !== '' && strcasecmp($namespace, $current_namespace) !== 0) {
+            $namespace = \ltrim($constant->getFQSEN()->getNamespace(), "\\");
+            if ($namespace !== '' && \strcasecmp($namespace, $current_namespace) !== 0) {
                 // Only allow accessing global constants in the same namespace or the global namespace
                 continue;
             }
             $fqsen_string = (string)$constant->getFQSEN();
-            if ($incomplete_constant_name !== '' && stripos($fqsen_string, $incomplete_constant_name) === false) {
+            if ($incomplete_constant_name !== '' && \stripos($fqsen_string, $incomplete_constant_name) === false) {
                 continue;
             }
             $request->recordCompletionElement($code_base, $constant, $fqsen_string);
@@ -301,9 +301,9 @@ class CompletionResolver
         $class_names_in_namespace = $code_base->getClassNamesOfNamespace($context->getNamespace());
 
         foreach ($class_names_in_namespace as $class_name) {
-            $class_name = ltrim($class_name, "\\");
+            $class_name = \ltrim($class_name, "\\");
             // fwrite(STDERR, "Checking $class_name\n");
-            if (stripos($class_name, $incomplete_class_name) === false) {
+            if (\stripos($class_name, $incomplete_class_name) === false) {
                 continue;
             }
             // @phan-suppress-next-line PhanThrowTypeAbsentForCall should be impossible if found in codebase
@@ -331,7 +331,7 @@ class CompletionResolver
         string $incomplete_function_name
     ) {
         // TODO: Include FQSENs which have a namespace matching what was typed so far
-        $current_namespace = ltrim($context->getNamespace(), "\\");
+        $current_namespace = \ltrim($context->getNamespace(), "\\");
 
         // TODO: Use the alias map
         // TODO: Remove the namespace
@@ -341,13 +341,13 @@ class CompletionResolver
                 continue;
             }
             $fqsen = $func->getFQSEN();
-            $namespace = ltrim($fqsen->getNamespace(), "\\");
-            if ($namespace !== '' && strcasecmp($namespace, $current_namespace) !== 0) {
+            $namespace = \ltrim($fqsen->getNamespace(), "\\");
+            if ($namespace !== '' && \strcasecmp($namespace, $current_namespace) !== 0) {
                 // Only allow accessing global functions in the same namespace or the global namespace
                 continue;
             }
             $function_name = $fqsen->getName();
-            if ($incomplete_function_name !== '' && stripos($function_name, $incomplete_function_name) === false) {
+            if ($incomplete_function_name !== '' && \stripos($function_name, $incomplete_function_name) === false) {
                 continue;
             }
             $request->recordCompletionElement(
@@ -370,7 +370,7 @@ class CompletionResolver
         // TODO: Remove the namespace
         foreach ($variable_candidates as $suggested_variable_name => $variable) {
             $suggested_variable_name = (string)$suggested_variable_name;
-            if ($incomplete_variable_name !== '' && stripos($suggested_variable_name, $incomplete_variable_name) === false) {
+            if ($incomplete_variable_name !== '' && \stripos($suggested_variable_name, $incomplete_variable_name) === false) {
                 continue;
             }
             $request->recordCompletionElement(
@@ -379,9 +379,9 @@ class CompletionResolver
                 $prefix . $incomplete_variable_name
             );
         }
-        $superglobal_names = array_merge(array_keys(Variable::_BUILTIN_SUPERGLOBAL_TYPES), Config::getValue('runkit_superglobals'));
+        $superglobal_names = \array_merge(\array_keys(Variable::_BUILTIN_SUPERGLOBAL_TYPES), Config::getValue('runkit_superglobals'));
         foreach ($superglobal_names as $superglobal_name) {
-            if ($incomplete_variable_name !== '' && stripos($superglobal_name, $incomplete_variable_name) === false) {
+            if ($incomplete_variable_name !== '' && \stripos($superglobal_name, $incomplete_variable_name) === false) {
                 continue;
             }
             $request->recordCompletionElement(

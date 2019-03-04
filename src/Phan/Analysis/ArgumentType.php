@@ -139,7 +139,7 @@ final class ArgumentType
         int $argcount
     ) {
         $max = $method->getNumberOfParameters();
-        $caused_by_variadic = $argcount === $max + 1 && (end($node->children['args']->children)->kind ?? null) === \ast\AST_UNPACK;
+        $caused_by_variadic = $argcount === $max + 1 && (\end($node->children['args']->children)->kind ?? null) === \ast\AST_UNPACK;
         if ($method->isPHPInternal()) {
             Issue::maybeEmit(
                 $code_base,

@@ -36,14 +36,14 @@ final class ConversionTest extends BaseTest
             $filename = $file_info->getFilename();
             if ($filename &&
                 !in_array($filename, ['.', '..'], true) &&
-                substr($filename, 0, 1) !== '.' &&
-                strpos($filename, '.') !== false &&
-                pathinfo($filename)['extension'] === 'php') {
+                \substr($filename, 0, 1) !== '.' &&
+                \strpos($filename, '.') !== false &&
+                \pathinfo($filename)['extension'] === 'php') {
                 $files[] = $file_path;
             }
         }
         if (count($files) === 0) {
-            throw new \InvalidArgumentException(sprintf("RecursiveDirectoryIterator iteration returned no files for %s\n", $source_dir));
+            throw new \InvalidArgumentException(\sprintf("RecursiveDirectoryIterator iteration returned no files for %s\n", $source_dir));
         }
         return $files;
     }
@@ -71,13 +71,13 @@ final class ConversionTest extends BaseTest
     {
         $token_counts = [];
         foreach ($files as $file) {
-            $contents = file_get_contents($file);
+            $contents = \file_get_contents($file);
             if (!is_string($contents)) {
                 throw new AssertionError("Failed to read $file");
             }
-            $token_counts[$file] = count(token_get_all($contents));
+            $token_counts[$file] = count(\token_get_all($contents));
         }
-        usort($files, static function (string $path1, string $path2) use ($token_counts) : int {
+        \usort($files, static function (string $path1, string $path2) use ($token_counts) : int {
             return $token_counts[$path1] <=> $token_counts[$path2];
         });
     }
@@ -91,7 +91,7 @@ final class ConversionTest extends BaseTest
     {
         $tests = [];
         // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
-        $source_dir = dirname(dirname(dirname(realpath(__DIR__)))) . '/misc/fallback_ast_src';
+        $source_dir = \dirname(\dirname(\dirname(\realpath(__DIR__)))) . '/misc/fallback_ast_src';
         $paths = $this->scanSourceDirForPHP($source_dir);
 
         self::sortByTokenCount($paths);
@@ -151,13 +151,13 @@ final class ConversionTest extends BaseTest
     /** @dataProvider astValidFileExampleProvider */
     public function testFallbackFromParser(string $file_name, int $ast_version)
     {
-        $test_folder_name = basename(dirname($file_name));
-        if (PHP_VERSION_ID < 70100 && $test_folder_name === 'php71_or_newer') {
+        $test_folder_name = \basename(\dirname($file_name));
+        if (\PHP_VERSION_ID < 70100 && $test_folder_name === 'php71_or_newer') {
             $this->markTestIncomplete('php-ast cannot parse php7.1 syntax when running in php7.0');
-        } elseif (PHP_VERSION_ID < 70300 && $test_folder_name === 'php73_or_newer') {
+        } elseif (\PHP_VERSION_ID < 70300 && $test_folder_name === 'php73_or_newer') {
             $this->markTestIncomplete('php-ast cannot parse php7.3 syntax when running in php7.2 or older');
         }
-        $contents = file_get_contents($file_name);
+        $contents = \file_get_contents($file_name);
         if ($contents === false) {
             $this->fail("Failed to read $file_name");
             return;  // unreachable
@@ -166,7 +166,7 @@ final class ConversionTest extends BaseTest
         self::normalizeOriginalAST($ast);
         $this->assertInstanceOf('\ast\Node', $ast, 'Examples must be syntactically valid PHP parsable by php-ast');
         $converter = new TolerantASTConverter();
-        $converter->setPHPVersionId(PHP_VERSION_ID);
+        $converter->setPHPVersionId(\PHP_VERSION_ID);
         try {
             $fallback_ast = $converter->parseCodeAsPHPAST($contents, $ast_version);
         } catch (\Throwable $e) {
@@ -180,8 +180,8 @@ final class ConversionTest extends BaseTest
             $ast          = self::normalizeLineNumbers($ast);
         }
         // TODO: Remove $ast->parent recursively
-        $fallback_ast_repr = var_export($fallback_ast, true);
-        $original_ast_repr = var_export($ast, true);
+        $fallback_ast_repr = \var_export($fallback_ast, true);
+        $original_ast_repr = \var_export($ast, true);
 
         if ($fallback_ast_repr !== $original_ast_repr) {
             $node_dumper = new NodeDumper($contents);

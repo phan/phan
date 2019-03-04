@@ -113,7 +113,7 @@ class RegexAnalyzer
         array $regex_group_keys,
         UnionType $type
     ) : UnionType {
-        $field_types = array_map(
+        $field_types = \array_map(
             /** @param true $_ */
             static function ($_) use ($type) : UnionType {
                 return $type;

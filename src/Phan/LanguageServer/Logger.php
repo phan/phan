@@ -35,7 +35,7 @@ class Logger
         if (!self::shouldLog()) {
             return;
         }
-        self::logInfo(sprintf("Request:\n%s\nData:\n%s\n\n", StringUtil::jsonEncode($headers), $buffer));
+        self::logInfo(\sprintf("Request:\n%s\nData:\n%s\n\n", StringUtil::jsonEncode($headers), $buffer));
     }
 
     /**
@@ -48,7 +48,7 @@ class Logger
         if (!self::shouldLog()) {
             return;
         }
-        self::logInfo(sprintf("Response:\n%s\nData:\n%s\n\n", StringUtil::jsonEncode($headers), $buffer));
+        self::logInfo(\sprintf("Response:\n%s\nData:\n%s\n\n", StringUtil::jsonEncode($headers), $buffer));
     }
 
     /**
@@ -66,7 +66,7 @@ class Logger
             return;
         }
         $file = self::getLogFile();
-        fwrite($file, $msg . "\n");
+        \fwrite($file, $msg . "\n");
     }
 
     /**
@@ -77,7 +77,7 @@ class Logger
     public static function logError(string $msg)
     {
         $file = self::getLogFile();
-        fwrite($file, $msg . "\n");
+        \fwrite($file, $msg . "\n");
     }
 
     /**
@@ -109,7 +109,7 @@ class Logger
                 return;
             }
             if ($old_file !== STDERR) {
-                fclose($old_file);
+                \fclose($old_file);
             }
         }
         self::$file = $new_file;

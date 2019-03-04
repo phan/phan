@@ -36,7 +36,7 @@ final class DumpPHPDocPlugin extends PluginV2 implements
 
     private function generatePHPMarkdownBlock(string $php_snippet) : string
     {
-        $php_snippet = trim($php_snippet);
+        $php_snippet = \trim($php_snippet);
         return "```php\n$php_snippet\n```";
     }
 
@@ -72,7 +72,7 @@ final class DumpPHPDocPlugin extends PluginV2 implements
         if (Phan::isExcludedAnalysisFile($element->getFileRef()->getFile())) {
             return;
         }
-        $markup = "## " . ltrim($element->getFQSEN()->__toString(), "\\") . "\n\n";
+        $markup = "## " . \ltrim($element->getFQSEN()->__toString(), "\\") . "\n\n";
         $markup .= $header_text . "\n\n";
         if ($doc_comment_markup !== null) {
             $markup .= "Description:\n\n";
@@ -214,9 +214,9 @@ final class DumpPHPDocPlugin extends PluginV2 implements
      */
     public function finalizeProcess(CodeBase $unused_code_base)
     {
-        ksort($this->stubs);
+        \ksort($this->stubs);
         echo "# Phan Signatures\n\n";
-        echo implode('', $this->stubs);
+        echo \implode('', $this->stubs);
         exit(\EXIT_SUCCESS);
     }
 }

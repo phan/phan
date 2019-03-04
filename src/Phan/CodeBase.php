@@ -401,7 +401,7 @@ class CodeBase
         foreach ($const_name_list as $const_name) {
             if (!$const_name) {
                 // #1015 workaround for empty constant names ('' and '0').
-                fprintf(STDERR, "Saw constant with empty name of %s. There may be a bug in a PECL extension you are using (php -m will list those)\n", var_export($const_name, true));
+                \fprintf(STDERR, "Saw constant with empty name of %s. There may be a bug in a PECL extension you are using (php -m will list those)\n", \var_export($const_name, true));
                 continue;
             }
             try {
@@ -425,7 +425,7 @@ class CodeBase
         if (\strncmp($const_name, "\x00apc_", 5) === 0) {
             return;
         }
-        fprintf(STDERR, "Failed to load global constant value for %s, continuing: %s\n", var_export($const_name, true), $e->getMessage());
+        \fprintf(STDERR, "Failed to load global constant value for %s, continuing: %s\n", \var_export($const_name, true), $e->getMessage());
     }
 
     /**
@@ -589,7 +589,7 @@ class CodeBase
         // Create a deep copy of this CodeBase
         $clone = clone($this);
         // make a deep copy of the NamespaceMapEntry objects within parsed_namespace_maps
-        $clone->parsed_namespace_maps = unserialize(serialize($clone->parsed_namespace_maps));
+        $clone->parsed_namespace_maps = \unserialize(\serialize($clone->parsed_namespace_maps));
         /** @var array<int,?Closure()> */
         $callbacks = [];
         // Create callbacks to restore classes
@@ -1727,7 +1727,7 @@ class CodeBase
     public function getClassNamesOfNamespace(string $namespace) : array
     {
         $namespace = strtolower($namespace);
-        if (substr($namespace, 0, 1) !== '\\') {
+        if (\substr($namespace, 0, 1) !== '\\') {
             $namespace = "\\$namespace";
         }
         return $this->getClassNamesInNamespaceMap()[$namespace] ?? [];
@@ -1739,7 +1739,7 @@ class CodeBase
     public function getFunctionNamesOfNamespace(string $namespace) : array
     {
         $namespace = strtolower($namespace);
-        if (substr($namespace, 0, 1) !== '\\') {
+        if (\substr($namespace, 0, 1) !== '\\') {
             $namespace = "\\$namespace";
         }
         return $this->getFunctionNamesInNamespaceMap()[$namespace] ?? [];
@@ -1864,12 +1864,12 @@ class CodeBase
         }
         // We're looking for similar names, not identical ones
         unset($namespaces_for_class[strtolower($missing_class->getNamespace())]);
-        $namespaces_for_class = array_values($namespaces_for_class);
+        $namespaces_for_class = \array_values($namespaces_for_class);
 
-        usort($namespaces_for_class, 'strcmp');
+        \usort($namespaces_for_class, 'strcmp');
 
         /** @suppress PhanThrowTypeAbsentForCall */
-        return array_map(static function (string $namespace_name) use ($class_name) : FullyQualifiedClassName {
+        return \array_map(static function (string $namespace_name) use ($class_name) : FullyQualifiedClassName {
             return FullyQualifiedClassName::make($namespace_name, $class_name);
         }, $namespaces_for_class);
     }
@@ -1894,12 +1894,12 @@ class CodeBase
             // We're looking for similar names, not identical ones
             unset($namespaces_for_function[strtolower($namespace)]);
         }
-        $namespaces_for_function = array_values($namespaces_for_function);
+        $namespaces_for_function = \array_values($namespaces_for_function);
 
-        usort($namespaces_for_function, 'strcmp');
+        \usort($namespaces_for_function, 'strcmp');
 
         /** @suppress PhanThrowTypeAbsentForCall */
-        return array_map(static function (string $namespace_name) use ($function_name) : FullyQualifiedFunctionName {
+        return \array_map(static function (string $namespace_name) use ($function_name) : FullyQualifiedFunctionName {
             return FullyQualifiedFunctionName::make($namespace_name, $function_name);
         }, $namespaces_for_function);
     }
@@ -1938,7 +1938,7 @@ class CodeBase
     ) : array {
         $suggestions = $this->suggestSimilarGlobalFunctionForNamespaceAndName($namespace, $name, $context);
         if ($namespace !== "\\" && $suggest_in_global_namespace) {
-            $suggestions = array_merge(
+            $suggestions = \array_merge(
                 $suggestions,
                 $this->suggestSimilarGlobalFunctionForNamespaceAndName("\\", $name, $context)
             );
@@ -1953,7 +1953,7 @@ class CodeBase
     {
         $map = $this->getConstantLookupMapForName();
         $results = $map[strtolower($name)] ?? [];
-        return array_values($results);
+        return \array_values($results);
     }
 
     /**
@@ -2007,12 +2007,12 @@ class CodeBase
         if (\count($suggested_function_names) === 0) {
             return [];
         }
-        usort($suggested_function_names, 'strcmp');
+        \usort($suggested_function_names, 'strcmp');
 
         /**
          * @suppress PhanThrowTypeAbsentForCall
          */
-        return array_map(static function (string $function_name_lower) use ($namespace, $function_names_in_namespace) : FullyQualifiedFunctionName {
+        return \array_map(static function (string $function_name_lower) use ($namespace, $function_names_in_namespace) : FullyQualifiedFunctionName {
             $function_name = $function_names_in_namespace[$function_name_lower];
             return FullyQualifiedFunctionName::make($namespace, $function_name);
         }, $suggested_function_names);
@@ -2061,13 +2061,13 @@ class CodeBase
         if (\count($suggested_class_names) === 0) {
             return [];
         }
-        usort($suggested_class_names, 'strcmp');
+        \usort($suggested_class_names, 'strcmp');
 
         /**
          * @return string|FullyQualifiedClassName
          * @suppress PhanThrowTypeAbsentForCall
          */
-        return array_map(static function (string $class_name_lower) use ($namespace, $class_names_in_namespace) {
+        return \array_map(static function (string $class_name_lower) use ($namespace, $class_names_in_namespace) {
             if (!\array_key_exists($class_name_lower, $class_names_in_namespace)) {
                 // This is a builtin type
                 return $class_name_lower;

@@ -2996,10 +2996,10 @@ class TolerantASTConverter
     {
         static $details = null;
         if ($details === null) {
-            $details = sha1(var_export([
-                PHP_VERSION,
-                PHP_BINARY,
-                ini_get('short_open_tag'),
+            $details = \sha1(var_export([
+                \PHP_VERSION,
+                \PHP_BINARY,
+                \ini_get('short_open_tag'),
                 class_exists(CLI::class) ? CLI::getDevelopmentVersionId() : 'unknown'
             ], true));
         }
@@ -3012,13 +3012,13 @@ class TolerantASTConverter
     public function generateCacheKey(string $file_contents, int $version)
     {
         $details = var_export([
-            sha1($file_contents),
+            \sha1($file_contents),
             $version,
             self::getEnvironmentDetails(),
             $this->instance_should_add_placeholders,
             $this->instance_parse_all_doc_comments,
         ], true);
-        return sha1($details);
+        return \sha1($details);
     }
 }
 class_exists(TolerantASTConverterWithNodeMapping::class);

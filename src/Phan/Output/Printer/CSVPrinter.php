@@ -23,7 +23,7 @@ final class CSVPrinter implements BufferedPrinterInterface
     /** @param IssueInstance $instance */
     public function print(IssueInstance $instance)
     {
-        fputcsv($this->stream, [
+        \fputcsv($this->stream, [
             $instance->getFile(),
             $instance->getLine(),
             $instance->getIssue()->getSeverity(),
@@ -37,13 +37,13 @@ final class CSVPrinter implements BufferedPrinterInterface
     /** flush printer buffer */
     public function flush()
     {
-        fseek($this->stream, 0);
-        $contents = stream_get_contents($this->stream);
+        \fseek($this->stream, 0);
+        $contents = \stream_get_contents($this->stream);
         if (!\is_string($contents)) {
             throw new AssertionError("Failed to read in-memory csv stream");
         }
         $this->output->write($contents);
-        fclose($this->stream);
+        \fclose($this->stream);
         $this->initStream();
     }
 
@@ -60,12 +60,12 @@ final class CSVPrinter implements BufferedPrinterInterface
     {
         // Because fputcsv works on file pointers we need to do a bit
         // of dancing around with a memory stream.
-        $stream = fopen("php://memory", "rw");
+        $stream = \fopen("php://memory", "rw");
         if (!\is_resource($stream)) {
             throw new AssertionError('php://memory should always be openable');
         }
         $this->stream = $stream;
-        fputcsv($this->stream, [
+        \fputcsv($this->stream, [
             "filename", "line", "severity_ord", "severity_name",
             "category", "check_name", "message"
         ]);

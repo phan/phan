@@ -57,6 +57,6 @@ class Paths
     {
         // If possible, use json_encode.
         // If json_encode failed (e.g. invalid unicode), then use var_export
-        return json_encode($path, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE) ?: var_export($path, true);
+        return \json_encode($path, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE) ?: \var_export($path, true);
     }
 }

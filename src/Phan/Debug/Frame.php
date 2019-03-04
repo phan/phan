@@ -51,9 +51,9 @@ class Frame
         }
         if (!is_array($value)) {
             if (is_resource($value)) {
-                ob_start();
-                var_dump($value);
-                return trim(ob_get_clean() ?: 'resource');
+                \ob_start();
+                \var_dump($value);
+                return \trim(\ob_get_clean() ?: 'resource');
             }
             return StringUtil::jsonEncode($value);
         }
@@ -79,7 +79,7 @@ class Frame
                 }
                 $result[] = self::encodeValue($inner_value);
             }
-            return '[' . implode(', ', $result) . ']';
+            return '[' . \implode(', ', $result) . ']';
         }
         $result = [];
         $i = 0;
@@ -91,7 +91,7 @@ class Frame
             }
             $result[] = StringUtil::jsonEncode($key) . ':' . self::encodeValue($inner_value);
         }
-        return '{' . implode(', ', $result) . '}';
+        return '{' . \implode(', ', $result) . '}';
     }
 
     /**
@@ -100,7 +100,7 @@ class Frame
      */
     public static function frameToString(array $frame) : string
     {
-        return with_disabled_phan_error_handler(static function () use ($frame) : string {
+        return \with_disabled_phan_error_handler(static function () use ($frame) : string {
             $invocation = $frame['function'] ?? '(unknown)';
             if (isset($frame['class'])) {
                 $invocation = $frame['class'] . ($frame['type'] ?? '::') . $invocation;
@@ -120,7 +120,7 @@ class Frame
     public static function getExpandedTypesDetails() : string
     {
         $result = [];
-        foreach (debug_backtrace() as $frame) {
+        foreach (\debug_backtrace() as $frame) {
             if (($frame['function'] ?? null) === 'asExpandedTypes' && isset($frame['object'])) {
                 $object = $frame['object'];
                 if ($object instanceof Type) {
@@ -130,6 +130,6 @@ class Frame
                 }
             }
         }
-        return implode("\n", $result);
+        return \implode("\n", $result);
     }
 }

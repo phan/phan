@@ -192,7 +192,7 @@ final class ConfigPluginSet extends PluginV2 implements
         } catch (Throwable $e) {
             // An unexpected error.
             // E.g. a third party plugin class threw when building the list of return types to analyze.
-            $message = sprintf(
+            $message = \sprintf(
                 "Failed to initialize plugins, exiting: %s: %s at %s:%d\nStack Trace:\n%s",
                 get_class($e),
                 $e->getMessage(),
@@ -200,7 +200,7 @@ final class ConfigPluginSet extends PluginV2 implements
                 $e->getLine(),
                 $e->getTraceAsString()
             );
-            error_log($message);
+            \error_log($message);
             exit(EXIT_FAILURE);
         }
     }
@@ -641,7 +641,7 @@ final class ConfigPluginSet extends PluginV2 implements
     {
         $node_selection_plugin = $this->node_selection_plugin;
         if (!$node_selection_plugin) {
-            fwrite(STDERR, "Error: " . __METHOD__ . " called before node selection plugin was created\n");
+            \fwrite(STDERR, "Error: " . __METHOD__ . " called before node selection plugin was created\n");
             return;
         }
 
@@ -750,7 +750,7 @@ final class ConfigPluginSet extends PluginV2 implements
     public static function normalizePluginPath(string $plugin_file_name) : string
     {
         if (\preg_match('@^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$@', $plugin_file_name) > 0) {
-            return dirname(__DIR__, 3) . '/.phan/plugins/' . $plugin_file_name . '.php';
+            return \dirname(__DIR__, 3) . '/.phan/plugins/' . $plugin_file_name . '.php';
         }
         return $plugin_file_name;
     }
@@ -771,7 +771,7 @@ final class ConfigPluginSet extends PluginV2 implements
             } catch (Throwable $e) {
                 // An unexpected error.
                 // E.g. a plugin class threw a SyntaxError because it required PHP 7.1 or newer but 7.0 was used.
-                $message = sprintf(
+                $message = \sprintf(
                     "Failed to initialize plugin %s, exiting: %s: %s at %s:%d\nStack Trace:\n%s",
                     $plugin_file_name,
                     get_class($e),
@@ -780,7 +780,7 @@ final class ConfigPluginSet extends PluginV2 implements
                     $e->getLine(),
                     $e->getTraceAsString()
                 );
-                error_log($message);
+                \error_log($message);
                 exit(EXIT_FAILURE);
             }
 
@@ -795,7 +795,7 @@ final class ConfigPluginSet extends PluginV2 implements
             return $plugin_instance;
         };
         // Add user-defined plugins.
-        $plugin_set = array_map(
+        $plugin_set = \array_map(
             $load_plugin,
             Config::getValue('plugins')
         );
@@ -811,9 +811,9 @@ final class ConfigPluginSet extends PluginV2 implements
                 new MiscParamPlugin(),
             ];
             if (Config::getValue('enable_extended_internal_return_type_plugins')) {
-                array_unshift($internal_return_type_plugins, new ExtendedDependentReturnTypeOverridePlugin());
+                \array_unshift($internal_return_type_plugins, new ExtendedDependentReturnTypeOverridePlugin());
             }
-            $plugin_set = array_merge($internal_return_type_plugins, $plugin_set);
+            $plugin_set = \array_merge($internal_return_type_plugins, $plugin_set);
         }
         if (Config::getValue('enable_include_path_checks')) {
             $plugin_set[] = new RequireExistsPlugin();
@@ -828,11 +828,11 @@ final class ConfigPluginSet extends PluginV2 implements
             if (\function_exists('token_get_all')) {
                 $plugin_set[] = new BuiltinSuppressionPlugin();
             } else {
-                fwrite(STDERR, "ext-tokenizer is required for file-based and line-based suppressions to work, as well as the error-tolerant parser fallback." . PHP_EOL);
-                fwrite(STDERR, "(This warning can be disabled by setting skip_missing_tokenizer_warning in the project's config)" . PHP_EOL);
+                \fwrite(STDERR, "ext-tokenizer is required for file-based and line-based suppressions to work, as well as the error-tolerant parser fallback." . PHP_EOL);
+                \fwrite(STDERR, "(This warning can be disabled by setting skip_missing_tokenizer_warning in the project's config)" . PHP_EOL);
             }
         }
-        if (Config::getValue('dead_code_detection') && count(self::filterByClass($plugin_set, \UnreachableCodePlugin::class)) === 0) {
+        if (Config::getValue('dead_code_detection') && \count(self::filterByClass($plugin_set, \UnreachableCodePlugin::class)) === 0) {
             $plugin_set[] = $load_plugin('UnreachableCodePlugin');
         }
 
@@ -899,7 +899,7 @@ final class ConfigPluginSet extends PluginV2 implements
         $plugin_analysis_class = $plugin->getPreAnalyzeNodeVisitorClassName();
         if (!\is_subclass_of($plugin_analysis_class, PluginAwarePreAnalysisVisitor::class)) {
             throw new \TypeError(
-                sprintf(
+                \sprintf(
                     "Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not",
                     \get_class($plugin),
                     PluginAwarePreAnalysisVisitor::class,
@@ -911,7 +911,7 @@ final class ConfigPluginSet extends PluginV2 implements
         $closure = self::getGenericClosureForPluginAwarePreAnalysisVisitor($plugin_analysis_class);
         $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
         if (\count($handled_node_kinds) === 0) {
-            fprintf(
+            \fprintf(
                 STDERR,
                 "Plugin %s has a preAnalyzeNode visitor %s (subclass of %s) which doesn't override any known visit<Suffix>() methods, but expected at least one method to be overridden\n",
                 \get_class($plugin),
@@ -1002,7 +1002,7 @@ final class ConfigPluginSet extends PluginV2 implements
         $plugin_analysis_class = $plugin->getPostAnalyzeNodeVisitorClassName();
         if (!\is_subclass_of($plugin_analysis_class, PluginAwarePostAnalysisVisitor::class)) {
             throw new \TypeError(
-                sprintf(
+                \sprintf(
                     "Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not",
                     \get_class($plugin),
                     PluginAwarePostAnalysisVisitor::class,
@@ -1016,7 +1016,7 @@ final class ConfigPluginSet extends PluginV2 implements
 
         $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
         if (\count($handled_node_kinds) === 0) {
-            fprintf(
+            \fprintf(
                 STDERR,
                 "Plugin %s has an analyzeNode visitor %s (subclass of %s) which doesn't override any known visit<Suffix>() methods, but expected at least one method to be overridden\n",
                 \get_class($plugin),

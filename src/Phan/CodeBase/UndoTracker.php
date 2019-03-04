@@ -57,7 +57,7 @@ class UndoTracker
      */
     public function getParsedFilePathList() : array
     {
-        return array_keys($this->file_modification_state);
+        return \array_keys($this->file_modification_state);
     }
 
     /**
@@ -88,20 +88,20 @@ class UndoTracker
      */
     public static function getFileState(string $path)
     {
-        clearstatcache(true, $path);  // TODO: does this work properly with symlinks? seems to.
-        $real = realpath($path);
+        \clearstatcache(true, $path);  // TODO: does this work properly with symlinks? seems to.
+        $real = \realpath($path);
         if (!$real) {
             return null;
         }
-        if (!file_exists($real)) {
+        if (!\file_exists($real)) {
             return null;
         }
-        $stat = @stat($real);  // Double check: suppress to prevent Phan's error_handler from terminating on error.
+        $stat = @\stat($real);  // Double check: suppress to prevent Phan's error_handler from terminating on error.
         if (!$stat) {
             return null;  // It was missing or unreadable.
         }
         // @phan-suppress-next-line PhanPossiblyNullTypeArgumentInternal
-        return sprintf('%d_%d', $stat['mtime'], $stat['size']);
+        return \sprintf('%d_%d', $stat['mtime'], $stat['size']);
     }
 
     /**
@@ -183,7 +183,7 @@ class UndoTracker
             // TODO: Always invalidate the parsed file if we're about to analyze it?
             if (isset($file_mapping_contents[$path])) {
                 // TODO: Move updateFileList to be called before fork()?
-                $new_state = 'daemon:' . sha1($file_mapping_contents[$path]);
+                $new_state = 'daemon:' . \sha1($file_mapping_contents[$path]);
             } else {
                 $new_state = self::getFileState($path);
             }

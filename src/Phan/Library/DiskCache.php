@@ -54,21 +54,21 @@ class DiskCache implements Cache
     public function getIfExists(string $key)
     {
         $path = $this->getPath($key);
-        if (!file_exists($path)) {
+        if (!\file_exists($path)) {
             return null;
         }
-        $contents = file_get_contents($path);
+        $contents = \file_get_contents($path);
         if (!$contents) {
             return null;
         }
         if ($this->use_igbinary) {
-            if (strncmp($contents, "\x00\x00\x00\x02", 4) !== 0) {
-                fwrite(STDERR, "Saw invalid igbinary serialized data at $path: wrong header\n");
+            if (\strncmp($contents, "\x00\x00\x00\x02", 4) !== 0) {
+                \fwrite(\STDERR, "Saw invalid igbinary serialized data at $path: wrong header\n");
                 return null;
             }
-            return igbinary_unserialize($contents);
+            return \igbinary_unserialize($contents);
         } else {
-            return unserialize($contents);
+            return \unserialize($contents);
         }
     }
 
@@ -76,9 +76,9 @@ class DiskCache implements Cache
     {
         if ($this->directory_exists === null) {
             $this->directory_exists = false;
-            if (!is_dir($this->directory)) {
-                if (!mkdir($this->directory, 0755, true)) {
-                    fwrite(STDERR, "Failed to create AST cache directory $this->directory\n");
+            if (!\is_dir($this->directory)) {
+                if (!\mkdir($this->directory, 0755, true)) {
+                    \fwrite(\STDERR, "Failed to create AST cache directory $this->directory\n");
                     return false;
                 }
             }
@@ -100,18 +100,18 @@ class DiskCache implements Cache
 
         $class_name = $this->class_name;
         if (!($value instanceof $class_name)) {
-            throw new InvalidArgumentException("Expected to cache an instance of $class_name, got " . (is_object($value) ? get_class($value) : gettype($value)));
+            throw new InvalidArgumentException("Expected to cache an instance of $class_name, got " . (\is_object($value) ? \get_class($value) : \gettype($value)));
         }
         if ($this->use_igbinary) {
-            $contents = igbinary_serialize($value);
+            $contents = \igbinary_serialize($value);
         } else {
-            $contents = serialize($value);
+            $contents = \serialize($value);
         }
         if (!$contents) {
             return false;
         }
         $path = $this->getPath($key);
         // XXX save and rename to be atomic
-        return file_put_contents($path, $contents) !== false;
+        return \file_put_contents($path, $contents) !== false;
     }
 }

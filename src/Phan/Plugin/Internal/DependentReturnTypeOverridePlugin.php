@@ -263,7 +263,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV2 implements
                 return $string_union_type;
             }
 
-            $result = dirname($arg, $levels);
+            $result = \dirname($arg, $levels);
             return Type::fromObject($result)->asUnionType();
         };
 

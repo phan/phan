@@ -497,7 +497,7 @@ final class MiscParamPlugin extends PluginV2 implements
             $prefix = isset($args[2]) ? (new ContextNode($code_base, $context, $args[2]))->getEquivalentPHPScalarValue() : null;
 
             $shape = ArrayShapeType::union($array_shape_types);
-            if (!is_scalar($prefix)) {
+            if (!\is_scalar($prefix)) {
                 $prefix = '';
             }
             $prefix = (string)$prefix;

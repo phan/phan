@@ -703,7 +703,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         $result = [];
         foreach ($this->field_types as $key => $field_type) {
             $field_value = $field_type->asValueOrNullOrSelf();
-            if (is_object($field_value)) {
+            if (\is_object($field_value)) {
                 return null;
             }
             $result[$key] = $field_value;

@@ -151,7 +151,7 @@ class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 if (!$issue) {
                     return;
                 }
-                if ((end($args)->kind ?? null) === \ast\AST_UNPACK) {
+                if ((\end($args)->kind ?? null) === \ast\AST_UNPACK) {
                     // give up
                     return;
                 }
@@ -256,7 +256,7 @@ class PhanSelfCheckPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             return null;
         }
         $types = $union_type->getTypeSet();
-        $array_shape_type = reset($types);
+        $array_shape_type = \reset($types);
         if (!$array_shape_type instanceof ArrayShapeType) {
             return null;
         }

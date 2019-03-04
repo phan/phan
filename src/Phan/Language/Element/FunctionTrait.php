@@ -538,7 +538,7 @@ trait FunctionTrait
         }
         $raw_bytes = \md5($param_repr, true);
         // @phan-suppress-next-line PhanPossiblyNullTypeReturn we checked
-        return unpack(\PHP_INT_SIZE === 8 ? 'q' : 'l', $raw_bytes)[1];
+        return \unpack(\PHP_INT_SIZE === 8 ? 'q' : 'l', $raw_bytes)[1];
     }
 
     /**
@@ -548,7 +548,7 @@ trait FunctionTrait
     public function getRealParameterList()
     {
         // Excessive cloning, to ensure that this stays immutable.
-        return array_map(/** @return Parameter */ static function (Parameter $param) {
+        return \array_map(/** @return Parameter */ static function (Parameter $param) {
             return clone($param);
         }, $this->real_parameter_list);
     }
@@ -561,7 +561,7 @@ trait FunctionTrait
      */
     public function setRealParameterList(array $parameter_list)
     {
-        $this->real_parameter_list = array_map(/** @return Parameter */ static function (Parameter $param) {
+        $this->real_parameter_list = \array_map(/** @return Parameter */ static function (Parameter $param) {
             return clone($param);
         }, $parameter_list);
 
@@ -1162,7 +1162,7 @@ trait FunctionTrait
 
     private function createFunctionLikeDeclarationType() : FunctionLikeDeclarationType
     {
-        $params = array_map(static function (Parameter $parameter) : ClosureDeclarationParameter {
+        $params = \array_map(static function (Parameter $parameter) : ClosureDeclarationParameter {
             return $parameter->asClosureDeclarationParameter();
         }, $this->getParameterList());
 
@@ -1473,7 +1473,7 @@ trait FunctionTrait
          * @param array<int,Node|mixed> $args
          */
         $analyzer = static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args) use ($parameter_extracter_map) : UnionType {
-            $args_types = array_map(
+            $args_types = \array_map(
                 /**
                  * @param mixed $node
                  */
@@ -1733,7 +1733,7 @@ trait FunctionTrait
      */
     protected function getParameterStubText() : string
     {
-        return implode(', ', array_map(function (Parameter $parameter) : string {
+        return \implode(', ', \array_map(function (Parameter $parameter) : string {
             return $parameter->toStubString($this->isPHPInternal());
         }, $this->getParameterList()));
     }
@@ -1743,7 +1743,7 @@ trait FunctionTrait
      */
     protected function getRealParameterStubText() : string
     {
-        return implode(', ', array_map(static function (Parameter $parameter) : string {
+        return \implode(', ', \array_map(static function (Parameter $parameter) : string {
             return $parameter->toStubString();
         }, $this->getRealParameterList()));
     }

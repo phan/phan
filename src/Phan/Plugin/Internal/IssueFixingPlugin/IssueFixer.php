@@ -62,18 +62,18 @@ class IssueFixer
                 $expected_token_kind = TokenKind::ConstKeyword;
                 break;
             default:
-                self::debug(sprintf("Unexpected kind %s in %s\n", $type, __METHOD__));
+                self::debug(\sprintf("Unexpected kind %s in %s\n", $type, __METHOD__));
                 return false;
         }
 
         $actual_token_kind = $declaration->functionOrConst->kind ?? null;
         if ($expected_token_kind !== $actual_token_kind) {
-            self::debug(sprintf("DEBUG: Unexpected type %s in %s\n", $actual_token_kind ?? 'null', __METHOD__));
+            self::debug(\sprintf("DEBUG: Unexpected type %s in %s\n", $actual_token_kind ?? 'null', __METHOD__));
             return false;
         }
         $list = $declaration->useClauses->children ?? [];
-        if (count($list) !== 1) {
-            self::debug(sprintf("DEBUG: Unexpected count %d in %s\n", count($list), __METHOD__));
+        if (\count($list) !== 1) {
+            self::debug(\sprintf("DEBUG: Unexpected count %d in %s\n", \count($list), __METHOD__));
             return false;
         }
         $element = $list[0];
@@ -98,7 +98,7 @@ class IssueFixer
         // Possibly zero references to use statement for classlike/namespace {CLASSLIKE} ({CLASSLIKE})
         $expected_use_name = $issue_instance->getTemplateParameters()[1];
 
-        if (strcasecmp(ltrim((string)$expected_use_name, "\\"), ltrim($actual_use_name, "\\")) !== 0) {
+        if (\strcasecmp(\ltrim((string)$expected_use_name, "\\"), \ltrim($actual_use_name, "\\")) !== 0) {
             // Not the same fully qualified name.
             return false;
         }
@@ -128,12 +128,12 @@ class IssueFixer
     private static function skipTrailingWhitespaceAndNewlines(string $file_contents, int $end) : int
     {
         // Handles \r\n and \n, but doesn't bother handling \r
-        $next = strpos($file_contents, "\n", $end);
+        $next = \strpos($file_contents, "\n", $end);
         if ($next === false) {
             return $end;
         }
-        $remaining = (string)substr($file_contents, $end, $next - $end);
-        if (trim($remaining) === '') {
+        $remaining = (string)\substr($file_contents, $end, $next - $end);
+        if (\trim($remaining) === '') {
             return $next + 1;
         }
         return $end;
@@ -156,7 +156,7 @@ class IssueFixer
             $line = $issue_instance->getLine();
             $edits = [];
             foreach (self::getNodesAtLine($file_contents, $root_node, $line) as $candidate_node) {
-                self::debug(sprintf("Handling %s for %s\n", get_class($candidate_node), (string)$issue_instance));
+                self::debug(\sprintf("Handling %s for %s\n", \get_class($candidate_node), (string)$issue_instance));
                 if ($candidate_node instanceof NamespaceUseDeclaration) {
                     $edit = self::maybeRemoveNamespaceUseDeclaration($file_contents, $candidate_node, $issue_instance);
                     if ($edit) {
@@ -206,7 +206,7 @@ class IssueFixer
             $issue = $instance->getIssue();
             $type = $issue->getType();
             $closure = $closures[$type] ?? null;
-            self::debug("Found closure for $type: " . json_encode((bool)$closure));
+            self::debug("Found closure for $type: " . \json_encode((bool)$closure));
             if ($closure) {
                 /**
                  * @return ?FileEditSet
@@ -278,12 +278,12 @@ class IssueFixer
         }
         // Sort file edits in order of start position
         $absolute_path = Config::projectPath($file);
-        if (!file_exists($absolute_path)) {
+        if (!\file_exists($absolute_path)) {
             // This file should exist - always warn
             self::error("Giving up on saving changes to $file: expected $absolute_path to exist already\n");
             return;
         }
-        file_put_contents($absolute_path, $new_contents);
+        \file_put_contents($absolute_path, $new_contents);
     }
 
     /**
@@ -295,7 +295,7 @@ class IssueFixer
      */
     public static function computeNewContents(string $file, string $contents, array $all_edits)
     {
-        usort($all_edits, static function (FileEdit $a, FileEdit $b) : int {
+        \usort($all_edits, static function (FileEdit $a, FileEdit $b) : int {
             return ($a->replace_start <=> $b->replace_start) ?: ($a->replace_end <=> $b->replace_end);
         });
         self::debug("Going to apply these fixes for $file: " . StringUtil::jsonEncode($all_edits) . "\n");
@@ -306,22 +306,22 @@ class IssueFixer
                 self::debug("Giving up on $file: replacement starts before end of another replacement\n");
                 return null;
             }
-            $new_contents .= substr($contents, $last_end, $edit->replace_start - $last_end);
+            $new_contents .= \substr($contents, $last_end, $edit->replace_start - $last_end);
             $last_end = $edit->replace_end;
         }
-        $new_contents .= substr($contents, $last_end);
+        $new_contents .= \substr($contents, $last_end);
         return $new_contents;
     }
 
     private static function error(string $message)
     {
-        fwrite(STDERR, $message);
+        \fwrite(\STDERR, $message);
     }
 
     private static function debug(string $message)
     {
-        if (getenv('PHAN_DEBUG_AUTOMATIC_FIX')) {
-            fwrite(STDERR, $message);
+        if (\getenv('PHAN_DEBUG_AUTOMATIC_FIX')) {
+            \fwrite(\STDERR, $message);
         }
     }
 }

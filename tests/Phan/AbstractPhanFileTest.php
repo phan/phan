@@ -94,31 +94,31 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      */
     protected function scanSourceFilesDir(string $source_dir, string $expected_dir)
     {
-        $files = array_filter(
-            scandir($source_dir) ?: [],
+        $files = \array_filter(
+            \scandir($source_dir) ?: [],
             static function (string $filename) : bool {
                 // Ignore directories and hidden files.
-                return !in_array($filename, ['.', '..'], true) && substr($filename, 0, 1) !== '.' && preg_match('@\.php$@', $filename);
+                return !in_array($filename, ['.', '..'], true) && \substr($filename, 0, 1) !== '.' && \preg_match('@\.php$@', $filename);
             }
         );
 
         // NOTE: To avoid ParseError in php-ast
-        if (PHP_VERSION_ID < 70100) {
+        if (\PHP_VERSION_ID < 70100) {
             $suffix = '70';
-        } elseif (PHP_VERSION_ID < 70200) {
+        } elseif (\PHP_VERSION_ID < 70200) {
             $suffix = '71';
         } else {
             $suffix = '72';
         }
 
-        return array_combine(
+        return \array_combine(
             $files,
-            array_map(
+            \array_map(
                 /** @return array{0:array{0:string},1:string} */
                 static function (string $filename) use ($source_dir, $expected_dir, $suffix) : array {
                     return [
-                        [self::getFileForPHPVersion($source_dir . DIRECTORY_SEPARATOR . $filename, $suffix)],
-                        self::getFileForPHPVersion($expected_dir . DIRECTORY_SEPARATOR . $filename . self::EXPECTED_SUFFIX, $suffix),
+                        [self::getFileForPHPVersion($source_dir . \DIRECTORY_SEPARATOR . $filename, $suffix)],
+                        self::getFileForPHPVersion($expected_dir . \DIRECTORY_SEPARATOR . $filename . self::EXPECTED_SUFFIX, $suffix),
                     ];
                 },
                 $files
@@ -129,7 +129,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     protected static function getFileForPHPVersion(string $path, string $suffix) : string
     {
         $suffix_path = $path . $suffix;
-        if (file_exists($suffix_path)) {
+        if (\file_exists($suffix_path)) {
             return $suffix_path;
         }
         return $path;
@@ -154,12 +154,12 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     public function testFiles($test_file_list, $expected_file_path, $config_file_path = null)
     {
         $expected_output = '';
-        if (is_file($expected_file_path)) {
+        if (\is_file($expected_file_path)) {
             // Read the expected output
             // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
-            $expected_output = trim(file_get_contents($expected_file_path));
+            $expected_output = \trim(\file_get_contents($expected_file_path));
         }
-        if (!in_array(basename($expected_file_path), self::WHITELIST)) {
+        if (!in_array(\basename($expected_file_path), self::WHITELIST)) {
             $this->assertNotRegExp('@tests[/\\\\]files[/\\\\]@', $expected_output, 'Expected output should contain a %s placeholder instead of the relative path to the file');
         }
 
@@ -203,19 +203,19 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             trim(file_get_contents($expected_file_path));
         */
 
-        $output    = preg_replace('/\r\n/', "\n", $output);
+        $output    = \preg_replace('/\r\n/', "\n", $output);
 
-        $wanted_re = preg_replace('/\r\n/', "\n", $expected_output);
+        $wanted_re = \preg_replace('/\r\n/', "\n", $expected_output);
         // do preg_quote, but miss out any %r delimited sections
         $temp = "";
         $r = "%r";
         $start_offset = 0;
         $length = strlen($wanted_re);
         while ($start_offset < $length) {
-            $start = strpos($wanted_re, $r, $start_offset);
+            $start = \strpos($wanted_re, $r, $start_offset);
             if ($start !== false) {
                 // we have found a start tag
-                $end = strpos($wanted_re, $r, $start + 2);
+                $end = \strpos($wanted_re, $r, $start + 2);
                 if ($end === false) {
                     // unbalanced tag, ignore it.
                     $end = $start = $length;
@@ -226,30 +226,30 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
             }
             // quote a non re portion of the string
             // @phan-suppress-next-line PhanPossiblyFalseTypeArgumentInternal
-            $temp .= preg_quote(substr($wanted_re, $start_offset, ($start - $start_offset)), '/');
+            $temp .= \preg_quote(\substr($wanted_re, $start_offset, ($start - $start_offset)), '/');
             // add the re unquoted.
             if ($end > $start) {
-                $temp .= '(' . substr($wanted_re, $start + 2, ($end - $start - 2)) . ')';
+                $temp .= '(' . \substr($wanted_re, $start + 2, ($end - $start - 2)) . ')';
             }
             $start_offset = $end + 2;
         }
         $wanted_re = $temp;
-        $wanted_re = str_replace(['%binary_string_optional%'], 'string', $wanted_re);
-        $wanted_re = str_replace(['%unicode_string_optional%'], 'string', $wanted_re);
-        $wanted_re = str_replace(['%unicode\|string%', '%string\|unicode%'], 'string', $wanted_re);
-        $wanted_re = str_replace(['%u\|b%', '%b\|u%'], '', $wanted_re);
+        $wanted_re = \str_replace(['%binary_string_optional%'], 'string', $wanted_re);
+        $wanted_re = \str_replace(['%unicode_string_optional%'], 'string', $wanted_re);
+        $wanted_re = \str_replace(['%unicode\|string%', '%string\|unicode%'], 'string', $wanted_re);
+        $wanted_re = \str_replace(['%u\|b%', '%b\|u%'], '', $wanted_re);
         // Stick to basics
-        $wanted_re = str_replace('%e', '\\' . DIRECTORY_SEPARATOR, $wanted_re);
-        $wanted_re = str_replace('%s', '[^\r\n]+', $wanted_re);
-        $wanted_re = str_replace('%S', '[^\r\n]*', $wanted_re);
-        $wanted_re = str_replace('%a', '.+', $wanted_re);
-        $wanted_re = str_replace('%A', '.*', $wanted_re);
-        $wanted_re = str_replace('%w', '\s*', $wanted_re);
-        $wanted_re = str_replace('%i', '[+-]?\d+', $wanted_re);
-        $wanted_re = str_replace('%d', '\d+', $wanted_re);
-        $wanted_re = str_replace('%x', '[0-9a-fA-F]+', $wanted_re);
-        $wanted_re = str_replace('%f', '[+-]?\.?\d+\.?\d*(?:[Ee][+-]?\d+)?', $wanted_re);
-        $wanted_re = str_replace('%c', '.', $wanted_re);
+        $wanted_re = \str_replace('%e', '\\' . \DIRECTORY_SEPARATOR, $wanted_re);
+        $wanted_re = \str_replace('%s', '[^\r\n]+', $wanted_re);
+        $wanted_re = \str_replace('%S', '[^\r\n]*', $wanted_re);
+        $wanted_re = \str_replace('%a', '.+', $wanted_re);
+        $wanted_re = \str_replace('%A', '.*', $wanted_re);
+        $wanted_re = \str_replace('%w', '\s*', $wanted_re);
+        $wanted_re = \str_replace('%i', '[+-]?\d+', $wanted_re);
+        $wanted_re = \str_replace('%d', '\d+', $wanted_re);
+        $wanted_re = \str_replace('%x', '[0-9a-fA-F]+', $wanted_re);
+        $wanted_re = \str_replace('%f', '[+-]?\.?\d+\.?\d*(?:[Ee][+-]?\d+)?', $wanted_re);
+        $wanted_re = \str_replace('%c', '.', $wanted_re);
         // %f allows two points "-.0.0" but that is the best *simple* expression
 
         $this->assertRegExp(

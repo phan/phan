@@ -35,7 +35,7 @@ final class JSONPrinter implements BufferedPrinterInterface
                 $instance->getMessage(),  // suggestion included separately
             'severity' => $issue->getSeverity(),
             'location' => [
-                'path' => preg_replace('/^\/code\//', '', $instance->getFile()),
+                'path' => \preg_replace('/^\/code\//', '', $instance->getFile()),
                 'lines' => [
                     'begin' => $instance->getLine(),
                     'end' => $instance->getLine(),
@@ -54,7 +54,7 @@ final class JSONPrinter implements BufferedPrinterInterface
     {
         // NOTE: Need to use OUTPUT_RAW for JSON.
         // Otherwise, error messages such as "...Unexpected << (T_SL)" don't get formatted properly (They get escaped into unparsable JSON)
-        $encoded_message = json_encode($this->messages, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_PARTIAL_OUTPUT_ON_ERROR);
+        $encoded_message = \json_encode($this->messages, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_PARTIAL_OUTPUT_ON_ERROR);
         if (!\is_string($encoded_message)) {
             throw new AssertionError("Failed to encode anything for what should be an array");
         }

@@ -35,7 +35,7 @@ final class ConfigTest extends BaseTest
 
     public function testWarnsInvalid()
     {
-        $config = array_merge(
+        $config = \array_merge(
             Config::DEFAULT_CONFIGURATION,
             [
                 'plugins' => 'SomePlugin',

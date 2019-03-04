@@ -172,7 +172,7 @@ class FileRef implements \Serializable
      */
     public function unserialize($serialized)
     {
-        $map = explode(':', $serialized);
+        $map = \explode(':', $serialized);
         $this->file = $map[0];
         $this->line_number_start = (int)$map[1];
         $this->line_number_end = (int)($map[2] ?? 0);

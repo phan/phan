@@ -228,7 +228,7 @@ final class Builder
             $this->emitIssue(
                 Issue::UnextractableAnnotation,
                 $this->guessActualLineLocation($i),
-                trim($line)
+                \trim($line)
             );
         }
         // Not emitting any issues about failing to extract, e.g. `@return - Description of what this returns` is a valid comment.
@@ -316,7 +316,7 @@ final class Builder
             $this->comment_flags,
             $this->variable_list,
             $this->parameter_list,
-            array_values($this->template_type_list),
+            \array_values($this->template_type_list),
             $this->inherited_type,
             $this->return_comment,
             $this->suppress_issue_list,
@@ -438,7 +438,7 @@ final class Builder
                 $this->emitIssue(
                     Issue::UnextractableAnnotation,
                     $this->guessActualLineLocation($i),
-                    trim($line)
+                    \trim($line)
                 );
             }
         } else {
@@ -485,7 +485,7 @@ final class Builder
      */
     private function assertFromCommentLine(string $line)
     {
-        if (!preg_match(self::ASSERT_REGEX, $line, $match)) {
+        if (!\preg_match(self::ASSERT_REGEX, $line, $match)) {
             return null;
         }
         $extra_text = $match[1];
@@ -555,12 +555,12 @@ final class Builder
     {
         $suppress_issue_types = $this->suppressIssuesFromCommentLine($line);
         if (count($suppress_issue_types) > 0) {
-            array_push($this->suppress_issue_list, ...$suppress_issue_types);
+            \array_push($this->suppress_issue_list, ...$suppress_issue_types);
         } else {
             $this->emitIssue(
                 Issue::UnextractableAnnotation,
                 $this->guessActualLineLocation($i),
-                trim($line)
+                \trim($line)
             );
         }
     }
@@ -634,7 +634,7 @@ final class Builder
                         $this->emitIssue(
                             Issue::UnextractableAnnotation,
                             $this->guessActualLineLocation($i),
-                            trim($line)
+                            \trim($line)
                         );
                     }
                 } else {
@@ -666,7 +666,7 @@ final class Builder
                 return;
             case 'phan-inherits':
             case 'phan-extends':
-                $this->maybeParsePhanInherits($i, $line, (string)substr($type, 5));
+                $this->maybeParsePhanInherits($i, $line, (string)\substr($type, 5));
                 return;
             case 'phan-read-only':
                 $this->setPhanAccessFlag($i, false);
@@ -728,12 +728,12 @@ final class Builder
     {
         $suppress_issue_types = $this->suppressIssuesFromCommentLine($line);
         if (count($suppress_issue_types) > 0) {
-            array_push($this->suppress_issue_list, ...$suppress_issue_types);
+            \array_push($this->suppress_issue_list, ...$suppress_issue_types);
         } else {
             $this->emitIssue(
                 Issue::UnextractableAnnotation,
                 $this->guessActualLineLocation($i),
-                trim($line)
+                \trim($line)
             );
         }
     }
@@ -835,7 +835,7 @@ final class Builder
         string $line
     ) {
         // Backslashes or nested templates wouldn't make sense, so use WORD_REGEX.
-        if (preg_match('/@(?:phan-)?template\s+(' . self::WORD_REGEX . ')/', $line, $match)) {
+        if (\preg_match('/@(?:phan-)?template\s+(' . self::WORD_REGEX . ')/', $line, $match)) {
             $template_type_identifier = $match[1];
             return TemplateType::instanceForId($template_type_identifier, false);
         }
@@ -854,7 +854,7 @@ final class Builder
         string $line
     ) {
         $match = [];
-        if (preg_match('/@(?:phan-)?(?:inherits|extends)\s+(' . Type::type_regex . ')/', $line, $match)) {
+        if (\preg_match('/@(?:phan-)?(?:inherits|extends)\s+(' . Type::type_regex . ')/', $line, $match)) {
             $type_string = $match[1];
 
             $type = new Some(Type::fromStringInContext(
@@ -907,8 +907,8 @@ final class Builder
     private static function suppressIssuesFromCommentLine(
         string $line
     ) : array {
-        if (preg_match(self::PHAN_SUPPRESS_REGEX, $line, $match)) {
-            return array_map('trim', explode(',', $match[1]));
+        if (\preg_match(self::PHAN_SUPPRESS_REGEX, $line, $match)) {
+            return \array_map('trim', \explode(',', $match[1]));
         }
 
         return [];
@@ -926,7 +926,7 @@ final class Builder
         int $param_index,
         int $comment_line_offset
     ) {
-        $param_string = trim($param_string);
+        $param_string = \trim($param_string);
         // Don't support trailing commas, or omitted params. Provide at least one of [type] or [parameter]
         if ($param_string === '') {
             return null;
@@ -935,7 +935,7 @@ final class Builder
         // https://github.com/phpDocumentor/phpDocumentor2/pull/1271/files - phpdoc allows passing an default value.
         // Phan allows `=.*`, to indicate that a parameter is optional
         // TODO: in another PR, check that optional parameters aren't before required parameters.
-        if (preg_match(self::MAGIC_PARAM_REGEX, $param_string, $param_match)) {
+        if (\preg_match(self::MAGIC_PARAM_REGEX, $param_string, $param_match)) {
             // Note: a magic method parameter can be variadic, but it can't be pass-by-reference? (No support in __call)
             $union_type_string = $param_match[1];
             $union_type = UnionType::fromStringInContext(
@@ -948,8 +948,8 @@ final class Builder
             $default_str = $param_match[17];
             $has_default_value = $default_str !== '';
             if ($has_default_value) {
-                $default_value_repr = trim(explode('=', $default_str, 2)[1]);
-                if (strcasecmp($default_value_repr, 'null') === 0) {
+                $default_value_repr = \trim(\explode('=', $default_str, 2)[1]);
+                if (\strcasecmp($default_value_repr, 'null') === 0) {
                     $union_type = $union_type->nullableClone();
                 }
             }
@@ -983,7 +983,7 @@ final class Builder
         //    Assumes the parameters end at the first ")" after "("
         //    As an exception, allows one level of matching brackets
         //    to support old style arrays such as $x = array(), $x = array(2) (Default values are ignored)
-        if (preg_match('/@(?:phan-)?method(?:\s+(static))?(?:(?:\s+(' . UnionType::union_type_regex_or_this . '))?)\s+' . self::WORD_REGEX . '\s*\(((?:[^()]|\([()]*\))*)\)\s*(.*)/', $line, $match)) {
+        if (\preg_match('/@(?:phan-)?method(?:\s+(static))?(?:(?:\s+(' . UnionType::union_type_regex_or_this . '))?)\s+' . self::WORD_REGEX . '\s*\(((?:[^()]|\([()]*\))*)\)\s*(.*)/', $line, $match)) {
             $is_static = $match[1] === 'static';
             $return_union_type_string = $match[2];
             if ($return_union_type_string !== '') {
@@ -1001,7 +1001,7 @@ final class Builder
             }
             $method_name = $match[22];
 
-            $arg_list = trim($match[23]);
+            $arg_list = \trim($match[23]);
             $comment_params = [];
             // Special check if param list has 0 params.
             if ($arg_list !== '') {
@@ -1039,7 +1039,7 @@ final class Builder
             $this->emitIssue(
                 Issue::UnextractableAnnotation,
                 $this->guessActualLineLocation($comment_line_offset),
-                trim($line)
+                \trim($line)
             );
         }
 
@@ -1155,7 +1155,7 @@ final class Builder
             $this->emitIssue(
                 Issue::UnextractableAnnotation,
                 $this->guessActualLineLocation($i),
-                trim($line)
+                \trim($line)
             );
         }
 
@@ -1183,7 +1183,7 @@ final class Builder
         // a Closure would be bound with bind() or bindTo(), so using a custom tag.
         //
         // TODO: Also add a version which forbids using $this in the closure?
-        if (preg_match('/@(PhanClosureScope|phan-closure-scope)\s+(' . Type::type_regex . ')/', $line, $match)) {
+        if (\preg_match('/@(PhanClosureScope|phan-closure-scope)\s+(' . Type::type_regex . ')/', $line, $match)) {
             $closure_scope_union_type_string = $match[2];
         }
 
@@ -1198,7 +1198,7 @@ final class Builder
         $this->emitIssue(
             Issue::UnextractableAnnotation,
             $this->guessActualLineLocation($comment_line_offset),
-            trim($line)
+            \trim($line)
         );
         return new None();
     }

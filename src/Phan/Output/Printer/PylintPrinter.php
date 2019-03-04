@@ -18,12 +18,12 @@ final class PylintPrinter implements IssuePrinterInterface
     /** @param IssueInstance $instance */
     public function print(IssueInstance $instance)
     {
-        $message = sprintf(
+        $message = \sprintf(
             "%s: %s",
             $instance->getIssue()->getType(),
             $instance->getMessage()
         );
-        $line = sprintf(
+        $line = \sprintf(
             "%s:%d: [%s] %s",
             $instance->getFile(),
             $instance->getLine(),
@@ -54,7 +54,7 @@ final class PylintPrinter implements IssuePrinterInterface
             case Issue::SEVERITY_CRITICAL:
                 return 'E' . $category_id;
             default:
-                fwrite(\STDERR, "Unrecognized severity for " . $instance . ": " . $issue->getSeverity() . " (expected 0, 5, or 10)\n");
+                \fwrite(\STDERR, "Unrecognized severity for " . $instance . ": " . $issue->getSeverity() . " (expected 0, 5, or 10)\n");
                 return 'E' . $category_id;
         }
     }

@@ -60,7 +60,7 @@ class ForkPool
             throw new InvalidArgumentException('The pool size must be >= 2 to use the fork pool.');
         }
 
-        if (!extension_loaded('pcntl')) {
+        if (!\extension_loaded('pcntl')) {
             throw new AssertionError('The pcntl extension must be loaded in order for Phan to be able to fork.');
         }
 
@@ -72,16 +72,16 @@ class ForkPool
         // pool size
         for ($proc_id = 0; $proc_id < $pool_size; $proc_id++) {
             // Create an IPC socket pair.
-            $sockets = stream_socket_pair(\STREAM_PF_UNIX, \STREAM_SOCK_STREAM, \STREAM_IPPROTO_IP);
+            $sockets = \stream_socket_pair(\STREAM_PF_UNIX, \STREAM_SOCK_STREAM, \STREAM_IPPROTO_IP);
             if (!$sockets) {
-                error_log("unable to create stream socket pair");
+                \error_log("unable to create stream socket pair");
                 exit(EXIT_FAILURE);
             }
 
             // Fork
-            $pid = pcntl_fork();
+            $pid = \pcntl_fork();
             if ($pid < 0) {
-                error_log(posix_strerror(posix_get_last_error()));
+                \error_log(\posix_strerror(\posix_get_last_error()));
                 exit(EXIT_FAILURE);
             }
 
@@ -113,7 +113,7 @@ class ForkPool
         $startup_closure();
 
         // Get the work for this process
-        $task_data_iterator = array_values($process_task_data_iterator)[$proc_id];
+        $task_data_iterator = \array_values($process_task_data_iterator)[$proc_id];
         foreach ($task_data_iterator as $i => $task_data) {
             $task_closure($i, $task_data);
         }
@@ -123,9 +123,9 @@ class ForkPool
         $results = $shutdown_closure();
 
         // Serialize this child's produced results and send them to the parent.
-        fwrite($write_stream, serialize($results ?: []));
+        \fwrite($write_stream, \serialize($results ?: []));
 
-        fclose($write_stream);
+        \fclose($write_stream);
 
         // Children exit after completing their work
         exit(EXIT_SUCCESS);
@@ -144,12 +144,12 @@ class ForkPool
 
         // The parent will not use the write channel, so it
         // must be closed to prevent deadlock.
-        fclose($for_write);
+        \fclose($for_write);
 
         // stream_select will be used to read multiple streams, so these
         // must be set to non-blocking mode.
-        if (!stream_set_blocking($for_read, false)) {
-            error_log('unable to set read stream to non-blocking');
+        if (!\stream_set_blocking($for_read, false)) {
+            \error_log('unable to set read stream to non-blocking');
             exit(EXIT_FAILURE);
         }
 
@@ -169,7 +169,7 @@ class ForkPool
 
         // The while will not use the read channel, so it must
         // be closed to prevent deadlock.
-        fclose($for_read);
+        \fclose($for_read);
         return $for_write;
     }
 
@@ -191,26 +191,26 @@ class ForkPool
 
         // Create an array for the content received on each stream,
         // indexed by resource id.
-        $content = array_fill_keys(array_keys($streams), '');
+        $content = \array_fill_keys(\array_keys($streams), '');
 
         // Read the data off of all the stream.
         while (count($streams) > 0) {
-            $needs_read = array_values($streams);
+            $needs_read = \array_values($streams);
             $needs_write = null;
             $needs_except = null;
 
             // Wait for data on at least one stream.
-            $num = stream_select($needs_read, $needs_write, $needs_except, null /* no timeout */);
+            $num = \stream_select($needs_read, $needs_write, $needs_except, null /* no timeout */);
             if ($num === false) {
-                error_log("unable to select on read stream");
+                \error_log("unable to select on read stream");
                 exit(EXIT_FAILURE);
             }
 
             // For each stream that was ready, read the content.
             foreach ($needs_read as $file) {
-                $buffer = fread($file, 1024);
+                $buffer = \fread($file, 1024);
                 if ($buffer === false) {
-                    error_log("unable to read from stream of worker process");
+                    \error_log("unable to read from stream of worker process");
                     exit(EXIT_FAILURE);
                 }
                 if (strlen($buffer) > 0) {
@@ -218,8 +218,8 @@ class ForkPool
                 }
 
                 // If the stream has closed, stop trying to select on it.
-                if (feof($file)) {
-                    fclose($file);
+                if (\feof($file)) {
+                    \fclose($file);
                     unset($streams[intval($file)]);
                 }
             }
@@ -230,10 +230,10 @@ class ForkPool
          * @param string $data
          * @return mixed[]
          */
-        return array_values(array_map(function ($data) {
-            $result = unserialize($data);
+        return \array_values(\array_map(function ($data) {
+            $result = \unserialize($data);
             if (!\is_array($result)) {
-                error_log("Child terminated without returning a serialized array (threw or crashed - not enough memory?): response type=" . gettype($result));
+                \error_log("Child terminated without returning a serialized array (threw or crashed - not enough memory?): response type=" . gettype($result));
                 $this->did_have_error = true;
             }
             return $result;
@@ -251,16 +251,16 @@ class ForkPool
 
         // Wait for all children to return
         foreach ($this->child_pid_list as $child_pid) {
-            if (pcntl_waitpid($child_pid, $status) < 0) {
-                error_log(posix_strerror(posix_get_last_error()));
+            if (\pcntl_waitpid($child_pid, $status) < 0) {
+                \error_log(\posix_strerror(\posix_get_last_error()));
             }
 
             // Check to see if the child died a graceful death
-            if (pcntl_wifsignaled($status)) {
-                $return_code = pcntl_wexitstatus($status);
-                $term_sig = pcntl_wtermsig($status);
+            if (\pcntl_wifsignaled($status)) {
+                $return_code = \pcntl_wexitstatus($status);
+                $term_sig = \pcntl_wtermsig($status);
                 $this->did_have_error = true;
-                error_log("Child terminated with return code $return_code and signal $term_sig");
+                \error_log("Child terminated with return code $return_code and signal $term_sig");
             }
         }
 

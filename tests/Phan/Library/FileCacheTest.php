@@ -52,7 +52,7 @@ final class FileCacheTest extends BaseTest
         // @phan-suppress-next-line PhanPossiblyNonClassMethodCall this expects to load it
         $this->assertSame("contents of 0", FileCache::getEntry("/path/to/0")->getContents());
 
-        $first_entry = array_shift($expected_paths);
+        $first_entry = \array_shift($expected_paths);
         $expected_paths[] = $first_entry;
         $this->assertSame($expected_paths, FileCache::getCachedFileList());
 
