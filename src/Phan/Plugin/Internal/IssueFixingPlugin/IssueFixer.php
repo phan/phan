@@ -12,6 +12,7 @@ use Microsoft\PhpParser\Node\Statement\NamespaceUseDeclaration;
 use Microsoft\PhpParser\Parser;
 use Microsoft\PhpParser\TokenKind;
 use Phan\AST\TolerantASTConverter\NodeUtils;
+use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
 use Phan\IssueInstance;
@@ -27,9 +28,10 @@ class IssueFixer
 {
 
     /**
+     * Get the nodes for a specific line number
      * @return Generator<void,PhpParser\Node,void,void>
      */
-    private static function getNodesAtLine(string $file_contents, PhpParser\Node $node, int $line)
+    public static function getNodesAtLine(string $file_contents, PhpParser\Node $node, int $line)
     {
         $file_position_map = new FilePositionMap($file_contents);
         foreach ($node->getDescendantNodes() as $node) {
@@ -140,7 +142,24 @@ class IssueFixer
     }
 
     /**
-     * @return array<string,Closure(string,PhpParser\Node,IssueInstance):(?FileEditSet)>
+     * @var array<string,callable(CodeBase,string,PhpParser\Node,IssueInstance):(?FileEditSet)>
+     */
+    private static $fixer_closures = [];
+
+    /**
+     * Registers a fixer that can be used to generate a fix for $issue_name
+     *
+     * @param callable(CodeBase,string,PhpParser\Node,IssueInstance):(?FileEditSet) $fixer
+     *        this is neither a real type hint nor a real closure so that the implementation can optionally be moved to classes that aren't loaded by the PHP interpreter yet.
+     * @return void
+     */
+    public static function registerFixerClosure(string $issue_name, $fixer)
+    {
+        self::$fixer_closures[$issue_name] = $fixer;
+    }
+
+    /**
+     * @return array<string,callable(CodeBase,string,PhpParser\Node,IssueInstance):(?FileEditSet)>
      */
     private static function createClosures() : array
     {
@@ -148,6 +167,7 @@ class IssueFixer
          * @return ?FileEditSet
          */
         $handle_unreferenced_use = static function (
+            CodeBase $unused_code_base,
             string $file_contents,
             PhpParser\Node $root_node,
             IssueInstance $issue_instance
@@ -170,11 +190,11 @@ class IssueFixer
             }
             return null;
         };
-        return [
+        return \array_merge(self::$fixer_closures, [
             Issue::UnreferencedUseNormal => $handle_unreferenced_use,
             Issue::UnreferencedUseConstant => $handle_unreferenced_use,
             Issue::UnreferencedUseFunction => $handle_unreferenced_use,
-        ];
+        ]);
     }
 
     /**
@@ -183,11 +203,11 @@ class IssueFixer
      * @param IssueInstance[] $instances
      * @return void
      */
-    public static function applyFixes(array $instances)
+    public static function applyFixes(CodeBase $code_base, array $instances)
     {
         $fixers_for_files = self::computeFixersForInstances($instances);
         foreach ($fixers_for_files as $file => $fixers) {
-            self::attemptFixForIssues((string)$file, $fixers);
+            self::attemptFixForIssues($code_base, (string)$file, $fixers);
         }
     }
 
@@ -196,7 +216,7 @@ class IssueFixer
      * return arrays of Closures to fix fixable instances in their corresponding files.
      *
      * @param IssueInstance[] $instances
-     * @return array<string,array<int,Closure(string,PhpParser\Node):(?FileEditSet)>>
+     * @return array<string,array<int,Closure(CodeBase,string,PhpParser\Node):(?FileEditSet)>>
      */
     public static function computeFixersForInstances(array $instances)
     {
@@ -206,12 +226,13 @@ class IssueFixer
             $issue = $instance->getIssue();
             $type = $issue->getType();
             $closure = $closures[$type] ?? null;
-            self::debug("Found closure for $type: " . \json_encode((bool)$closure));
+            // self::debug("Found closure for $type: " . \json_encode((bool)$closure) . "\n");
             if ($closure) {
                 /**
                  * @return ?FileEditSet
                  */
                 $fixers_for_files[$instance->getFile()][] = static function (
+                    CodeBase $code_base,
                     string $file_contents,
                     PhpParser\Node $ast
                 ) use (
@@ -219,7 +240,7 @@ class IssueFixer
                     $instance
 ) {
                     self::debug("Calling for $instance\n");
-                    return $closure($file_contents, $ast, $instance);
+                    return $closure($code_base, $file_contents, $ast, $instance);
                 };
             }
         }
@@ -228,10 +249,11 @@ class IssueFixer
 
     /**
      * @param string $file the file name, for debugging
-     * @param array<int,Closure(string,PhpParser\Node):(?FileEditSet)> $fixers one or more fixers. These return 0 edits if nothing works.
+     * @param array<int,Closure(CodeBase,string,PhpParser\Node):(?FileEditSet)> $fixers one or more fixers. These return 0 edits if nothing works.
      * @return ?string the new contents, if fixes could be applied
      */
     public static function computeNewContentForFixers(
+        CodeBase $code_base,
         string $file,
         string $contents,
         array $fixers
@@ -245,7 +267,7 @@ class IssueFixer
 
         $all_edits = [];
         foreach ($fixers as $fix) {
-            $edit_set = $fix($contents, $ast);
+            $edit_set = $fix($code_base, $contents, $ast);
             foreach ($edit_set->edits ?? [] as $edit) {
                 $all_edits[] = $edit;
             }
@@ -258,10 +280,11 @@ class IssueFixer
     }
 
     /**
-     * @param array<int,Closure(string,PhpParser\Node):(?FileEditSet)> $fixers one or more fixers. These return 0 edits if nothing works.
+     * @param array<int,Closure(CodeBase,string,PhpParser\Node):(?FileEditSet)> $fixers one or more fixers. These return 0 edits if nothing works.
      * @return void
      */
     private static function attemptFixForIssues(
+        CodeBase $code_base,
         string $file,
         array $fixers
     ) {
@@ -272,7 +295,7 @@ class IssueFixer
             return;
         }
         $contents = $entry->getContents();
-        $new_contents = self::computeNewContentForFixers($file, $contents, $fixers);
+        $new_contents = self::computeNewContentForFixers($code_base, $file, $contents, $fixers);
         if ($new_contents === null) {
             return;
         }
@@ -307,18 +330,28 @@ class IssueFixer
                 return null;
             }
             $new_contents .= \substr($contents, $last_end, $edit->replace_start - $last_end);
+            // Append the empty string if this is a deletion, or a non-empty string for an insertion/replacement.
+            $new_contents .= $edit->new_text;
             $last_end = $edit->replace_end;
         }
         $new_contents .= \substr($contents, $last_end);
         return $new_contents;
     }
 
-    private static function error(string $message)
+    /**
+     * Log an error message to be shown to users for unexpected errors.
+     * @return void
+     */
+    public static function error(string $message)
     {
         \fwrite(\STDERR, $message);
     }
 
-    private static function debug(string $message)
+    /**
+     * Log an extremely verbose message - used for debugging why automatic fixing doesn't work.
+     * @return void
+     */
+    public static function debug(string $message)
     {
         if (\getenv('PHAN_DEBUG_AUTOMATIC_FIX')) {
             \fwrite(\STDERR, $message);

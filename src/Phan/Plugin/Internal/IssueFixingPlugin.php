@@ -22,11 +22,11 @@ class IssueFixingPlugin extends PluginV2 implements
      * @override
      * @throws Error if a syntax check process fails to shut down.
      */
-    public function finalizeProcess(CodeBase $unused_code_base)
+    public function finalizeProcess(CodeBase $code_base)
     {
         $instances = Phan::getIssueCollector()->getCollectedIssues();
         if (\count($instances) > 0) {
-            IssueFixer::applyFixes($instances);
+            IssueFixer::applyFixes($code_base, $instances);
         }
     }
 }

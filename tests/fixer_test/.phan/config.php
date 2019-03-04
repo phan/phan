@@ -132,5 +132,6 @@ return [
         'DuplicateExpressionPlugin',
         'SuspiciousParamOrderPlugin',
         'WhitespacePlugin',
+        'NotFullyQualifiedUsagePlugin',
     ],
 ];

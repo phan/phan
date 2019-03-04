@@ -2,16 +2,26 @@
 
 namespace Phan\Tests\Plugin\Internal;
 
+use Phan\CodeBase;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
 use Phan\Tests\BaseTest;
+use Phan\Tests\CodeBaseAwareTestInterface;
 
 /**
  * Unit tests of fixes to issues
  */
-final class IssueFixingPluginTest extends BaseTest
+final class IssueFixingPluginTest extends BaseTest implements CodeBaseAwareTestInterface
 {
+    /** @var CodeBase|null The code base within which this unit test is operating */
+    private $code_base = null;
+
+    public function setCodeBase(CodeBase $code_base = null)
+    {
+        $this->code_base = $code_base;
+    }
+
     const FILE = 'fix_test.php';
 
     /**
@@ -26,7 +36,8 @@ final class IssueFixingPluginTest extends BaseTest
         $this->assertCount(1, $fixers);
         $fixers_for_file = $fixers[self::FILE];
         // echo "Going to apply to \n$original_contents\n";
-        $new_contents = IssueFixer::computeNewContentForFixers(self::FILE, $original_contents, $fixers_for_file);
+        // @phan-suppress-next-line PhanPossiblyNullTypeArgument
+        $new_contents = IssueFixer::computeNewContentForFixers($this->code_base, self::FILE, $original_contents, $fixers_for_file);
         $this->assertSame($expected_contents, $new_contents, 'unexpected contents after applying fixes');
     }
 
