@@ -2,6 +2,7 @@
 
 use ast\Node;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\PluginV2;
 use Phan\PluginV2\AfterAnalyzeFileCapability;
@@ -62,7 +63,7 @@ class WhitespacePlugin extends PluginV2 implements
                 'The first occurrence of a tab was seen here. Running "expand" can fix that.'
             );
         }
-        if (preg_match('/[ \t]$/m', $file_contents, $match, PREG_OFFSET_CAPTURE)) {
+        if (preg_match('/[ \t]\r?$/m', $file_contents, $match, PREG_OFFSET_CAPTURE)) {
             self::emitIssue(
                 $code_base,
                 clone($context)->withLineNumberStart(self::calculateLine($file_contents, $match[0][1])),
@@ -71,6 +72,9 @@ class WhitespacePlugin extends PluginV2 implements
             );
         }
     }
+}
+if (Config::isIssueFixingPluginEnabled()) {
+    require_once __DIR__ . '/WhitespacePlugin/fixers.php';
 }
 
 // Every plugin needs to return an instance of itself at the

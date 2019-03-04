@@ -2,6 +2,8 @@
 
 namespace Phan\Plugin\Internal\IssueFixingPlugin;
 
+use InvalidArgumentException;
+
 /**
  * Represents a change to be made to file contents.
  * The structure of this will change.
@@ -22,6 +24,12 @@ class FileEdit
      */
     public function __construct(int $replace_start, int $replace_end, string $new_text = '')
     {
+        if ($replace_end < $replace_start) {
+            throw new InvalidArgumentException("Out of order: end $replace_end < start $replace_start");
+        }
+        if ($replace_start < 0) {
+            throw new InvalidArgumentException("Out of range: start $replace_start < 0");
+        }
         $this->replace_start = $replace_start;
         $this->replace_end = $replace_end;
         $this->new_text = $new_text;

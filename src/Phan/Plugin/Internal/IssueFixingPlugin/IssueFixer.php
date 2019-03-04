@@ -3,13 +3,10 @@
 namespace Phan\Plugin\Internal\IssueFixingPlugin;
 
 use Closure;
-use Generator;
 use Microsoft\PhpParser;
-use Microsoft\PhpParser\FilePositionMap;
 use Microsoft\PhpParser\Node\NamespaceUseClause;
 use Microsoft\PhpParser\Node\QualifiedName;
 use Microsoft\PhpParser\Node\Statement\NamespaceUseDeclaration;
-use Microsoft\PhpParser\Parser;
 use Microsoft\PhpParser\TokenKind;
 use Phan\AST\TolerantASTConverter\NodeUtils;
 use Phan\CodeBase;
@@ -26,25 +23,6 @@ use RuntimeException;
  */
 class IssueFixer
 {
-
-    /**
-     * Get the nodes for a specific line number
-     * @return Generator<void,PhpParser\Node,void,void>
-     */
-    public static function getNodesAtLine(string $file_contents, PhpParser\Node $node, int $line)
-    {
-        $file_position_map = new FilePositionMap($file_contents);
-        foreach ($node->getDescendantNodes() as $node) {
-            $line_for_node = $file_position_map->getStartLine($node);
-            if ($line_for_node < $line) {
-                continue;
-            }
-            if ($line_for_node > $line) {
-                return;
-            }
-            yield $node;
-        }
-    }
 
     private static function isMatchingNamespaceUseDeclaration(
         string $file_contents,
@@ -142,14 +120,14 @@ class IssueFixer
     }
 
     /**
-     * @var array<string,callable(CodeBase,string,PhpParser\Node,IssueInstance):(?FileEditSet)>
+     * @var array<string,callable(CodeBase,FileContents,IssueInstance):(?FileEditSet)>
      */
     private static $fixer_closures = [];
 
     /**
      * Registers a fixer that can be used to generate a fix for $issue_name
      *
-     * @param callable(CodeBase,string,PhpParser\Node,IssueInstance):(?FileEditSet) $fixer
+     * @param callable(CodeBase,FileContents,IssueInstance):(?FileEditSet) $fixer
      *        this is neither a real type hint nor a real closure so that the implementation can optionally be moved to classes that aren't loaded by the PHP interpreter yet.
      * @return void
      */
@@ -159,7 +137,7 @@ class IssueFixer
     }
 
     /**
-     * @return array<string,callable(CodeBase,string,PhpParser\Node,IssueInstance):(?FileEditSet)>
+     * @return array<string,callable(CodeBase,FileContents,IssueInstance):(?FileEditSet)>
      */
     private static function createClosures() : array
     {
@@ -168,17 +146,16 @@ class IssueFixer
          */
         $handle_unreferenced_use = static function (
             CodeBase $unused_code_base,
-            string $file_contents,
-            PhpParser\Node $root_node,
+            FileContents $file_contents,
             IssueInstance $issue_instance
         ) {
             // 1-based line
             $line = $issue_instance->getLine();
             $edits = [];
-            foreach (self::getNodesAtLine($file_contents, $root_node, $line) as $candidate_node) {
+            foreach ($file_contents->getNodesAtLine($line) as $candidate_node) {
                 self::debug(\sprintf("Handling %s for %s\n", \get_class($candidate_node), (string)$issue_instance));
                 if ($candidate_node instanceof NamespaceUseDeclaration) {
-                    $edit = self::maybeRemoveNamespaceUseDeclaration($file_contents, $candidate_node, $issue_instance);
+                    $edit = self::maybeRemoveNamespaceUseDeclaration($file_contents->getContents(), $candidate_node, $issue_instance);
                     if ($edit) {
                         $edits[] = $edit;
                     }
@@ -216,7 +193,7 @@ class IssueFixer
      * return arrays of Closures to fix fixable instances in their corresponding files.
      *
      * @param IssueInstance[] $instances
-     * @return array<string,array<int,Closure(CodeBase,string,PhpParser\Node):(?FileEditSet)>>
+     * @return array<string,array<int,Closure(CodeBase,FileContents):(?FileEditSet)>>
      */
     public static function computeFixersForInstances(array $instances)
     {
@@ -233,14 +210,13 @@ class IssueFixer
                  */
                 $fixers_for_files[$instance->getFile()][] = static function (
                     CodeBase $code_base,
-                    string $file_contents,
-                    PhpParser\Node $ast
+                    FileContents $file_contents
                 ) use (
                     $closure,
                     $instance
 ) {
                     self::debug("Calling for $instance\n");
-                    return $closure($code_base, $file_contents, $ast, $instance);
+                    return $closure($code_base, $file_contents, $instance);
                 };
             }
         }
@@ -249,17 +225,18 @@ class IssueFixer
 
     /**
      * @param string $file the file name, for debugging
-     * @param array<int,Closure(CodeBase,string,PhpParser\Node):(?FileEditSet)> $fixers one or more fixers. These return 0 edits if nothing works.
+     * @param array<int,Closure(CodeBase,FileContents):(?FileEditSet)> $fixers one or more fixers. These return 0 edits if nothing works.
      * @return ?string the new contents, if fixes could be applied
      */
     public static function computeNewContentForFixers(
         CodeBase $code_base,
         string $file,
-        string $contents,
+        string $raw_contents,
         array $fixers
     ) {
         // A tolerantparser ast node
-        $ast = (new Parser())->parseSourceFile($contents);
+
+        $contents = new FileContents($raw_contents);
 
         // $dumper = new \Phan\AST\TolerantASTConverter\NodeDumper($contents);
         // $dumper->setIncludeTokenKind(true);
@@ -267,7 +244,7 @@ class IssueFixer
 
         $all_edits = [];
         foreach ($fixers as $fix) {
-            $edit_set = $fix($code_base, $contents, $ast);
+            $edit_set = $fix($code_base, $contents);
             foreach ($edit_set->edits ?? [] as $edit) {
                 $all_edits[] = $edit;
             }
@@ -276,7 +253,7 @@ class IssueFixer
             self::debug("Phan cannot create any automatic fixes for $file\n");
             return null;
         }
-        return self::computeNewContents($file, $contents, $all_edits);
+        return self::computeNewContents($file, $contents->getContents(), $all_edits);
     }
 
     /**
