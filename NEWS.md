@@ -9,7 +9,10 @@ New features(CLI,Configs)
 + Make `--dead-code-detection` load `UnreachableCodePlugin` if that plugin isn't already loaded (#1824)
 + Add `--automatic-fix` to fix any issues Phan is capable of fixing
   (currently a prototype. Fixes are guessed base on line numbers).
-  This is currently limited to unreferenced use statements on their own line (requires `--dead-code-detection`).
+  This is currently limited to:
+  - unreferenced use statements on their own line (requires `--dead-code-detection`).
+  - unqualified global function calls/constant uses from namespaces (requires `NotFullyQualifiedUsagePlugin`)
+    (will do the wrong thing for functions that are both global and in the same namespace)
 
 New features(Analysis):
 + Make Phan infer more precise literal types for internal constants such as `PHP_EOF`.

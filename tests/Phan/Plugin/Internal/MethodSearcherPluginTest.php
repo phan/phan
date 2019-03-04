@@ -6,38 +6,19 @@ use Phan\CodeBase;
 use Phan\Language\UnionType;
 use Phan\Plugin\Internal\MethodSearcherPlugin;
 use Phan\Tests\BaseTest;
+use Phan\Tests\CodeBaseAwareTestInterface;
 
 /**
  * Unit tests of Context and scopes
  */
-final class MethodSearcherPluginTest extends BaseTest
+final class MethodSearcherPluginTest extends BaseTest implements CodeBaseAwareTestInterface
 {
     /** @var CodeBase|null The code base within which this unit test is operating */
-    protected static $code_base = null;
+    private $code_base = null;
 
-    protected function setUp()
+    public function setCodeBase(CodeBase $code_base = null)
     {
-        // Deliberately not calling parent::setUp()
-        global $internal_class_name_list;
-        global $internal_interface_name_list;
-        global $internal_trait_name_list;
-        global $internal_function_name_list;
-        if (self::$code_base === null) {
-            self::$code_base = new CodeBase(
-                $internal_class_name_list,
-                $internal_interface_name_list,
-                $internal_trait_name_list,
-                CodeBase::getPHPInternalConstantNameList(),
-                $internal_function_name_list
-            );
-        }
-    }
-
-    public static function tearDownAfterClass()
-    {
-        parent::tearDownAfterClass();
-        // @phan-suppress-next-line PhanTypeMismatchProperty
-        self::$code_base = null;
+        $this->code_base = $code_base;
     }
 
     /**
@@ -48,7 +29,7 @@ final class MethodSearcherPluginTest extends BaseTest
         $actual_signature_type = UnionType::fromFullyQualifiedString($actual);
         $desired_signature_type = UnionType::fromFullyQualifiedString($desired);
         // @phan-suppress-next-line PhanAccessMethodInternal, PhanPossiblyNullTypeArgument
-        $this->assertSame($expected_score, MethodSearcherPlugin::getTypeMatchingBonus(self::$code_base, $actual_signature_type, $desired_signature_type));
+        $this->assertSame($expected_score, MethodSearcherPlugin::getTypeMatchingBonus($this->code_base, $actual_signature_type, $desired_signature_type));
     }
 
     /**
@@ -76,7 +57,7 @@ final class MethodSearcherPluginTest extends BaseTest
         $actual_signature_types = \array_map('\Phan\Language\UnionType::fromFullyQualifiedString', $actual);
         $desired_signature_types = \array_map('\Phan\Language\UnionType::fromFullyQualifiedString', $desired);
         // @phan-suppress-next-line PhanAccessMethodInternal, PhanPossiblyNullTypeArgument
-        $this->assertSame($expected_score, MethodSearcherPlugin::matchesParamTypes(self::$code_base, $actual_signature_types, $desired_signature_types));
+        $this->assertSame($expected_score, MethodSearcherPlugin::matchesParamTypes($this->code_base, $actual_signature_types, $desired_signature_types));
     }
 
     /**
