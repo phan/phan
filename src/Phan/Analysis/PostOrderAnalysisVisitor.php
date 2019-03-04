@@ -2802,7 +2802,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @return ?bool
      * - false if this is a read reference
      * - true if this is a write reference
-     * - null if this is both, e.g. $a &= $b for $a and $b
+     * - null if this is both, e.g. $a =& $b for $a and $b
      */
     private function isAssignmentOrNestedAssignment(Node $node)
     {
@@ -2843,7 +2843,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @return ?bool
      * - false if this is a read reference
      * - true if this is a write reference
-     * - null if this is both, e.g. $a &= $b for $a and $b
+     * - null if this is both, e.g. $a =& $b for $a and $b
      */
     private function isAssignmentOrNestedAssignmentOrModification(Node $node)
     {
