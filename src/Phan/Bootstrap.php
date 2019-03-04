@@ -115,8 +115,12 @@ function phan_error_handler($errno, $errstr, $errfile, $errline)
         if (!$did_warn) {
             $did_warn = true;
             if (!getenv('PHAN_SUPPRESS_AST_DEPRECATION')) {
-                fprintf(STDERR, "php-ast AST version %d used by Phan %s has been deprecated. Check if a newer version of Phan is available." . PHP_EOL,
-                    Config::AST_VERSION, CLI::PHAN_VERSION);
+                fprintf(
+                    STDERR,
+                    "php-ast AST version %d used by Phan %s has been deprecated. Check if a newer version of Phan is available." . PHP_EOL,
+                    Config::AST_VERSION,
+                    CLI::PHAN_VERSION
+                );
                 fwrite(STDERR, "(Set PHAN_SUPPRESS_AST_DEPRECATION=1 to suppress this message)" . PHP_EOL);
             }
         }

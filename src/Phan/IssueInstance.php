@@ -123,14 +123,14 @@ class IssueInstance
     }
 
     /**
-     * @return ?Suggestion
+     * @return ?Suggestion If this is non-null, this contains suggestions on how to resolve the error.
      */
     public function getSuggestion()
     {
         return $this->suggestion;
     }
 
-    /** @return array<int,string|int|float|FQSEN|Type|UnionType> $template_parameters If this is non-null, this contains suggestions on how to resolve the error. */
+    /** @return array<int,string|int|float|FQSEN|Type|UnionType> $template_parameters */
     public function getTemplateParameters() : array
     {
         return $this->template_parameters;

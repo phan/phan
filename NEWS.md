@@ -7,6 +7,9 @@ New features(CLI,Configs)
 + Add config `enable_extended_internal_return_type_plugins` to more aggressively
   infer literal values for functions such as `json_decode`, `strtolower`, `implode`, etc. (disabled by default),
 + Make `--dead-code-detection` load `UnreachableCodePlugin` if that plugin isn't already loaded (#1824)
++ Add `--automatic-fix` to fix any issues Phan is capable of fixing
+  (currently a prototype. Fixes are guessed base on line numbers).
+  This is currently limited to unreferenced use statements on their own line (requires `--dead-code-detection`).
 
 New features(Analysis):
 + Make Phan infer more precise literal types for internal constants such as `PHP_EOF`.
