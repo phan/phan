@@ -2,7 +2,6 @@
 
 namespace Phan\Tests\Plugin\Internal;
 
-use Phan\CodeBase;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
@@ -13,9 +12,6 @@ use Phan\Tests\BaseTest;
  */
 final class IssueFixingPluginTest extends BaseTest
 {
-    /** @var CodeBase|null The code base within which this unit test is operating */
-    protected static $code_base = null;
-
     const FILE = 'fix_test.php';
 
     /**
