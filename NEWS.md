@@ -11,6 +11,7 @@ New features(CLI,Configs)
   (currently a prototype. Fixes are guessed base on line numbers).
   This is currently limited to:
   - unreferenced use statements on their own line (requires `--dead-code-detection`).
+  - issues emitted by `WhitespacePlugin` (#2523)
   - unqualified global function calls/constant uses from namespaces (requires `NotFullyQualifiedUsagePlugin`)
     (will do the wrong thing for functions that are both global and in the same namespace)
 

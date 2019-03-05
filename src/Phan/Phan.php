@@ -303,11 +303,12 @@ class Phan implements IgnoredFilesFilterInterface
 
     private static function checkForOptionsConflictingWithServerModes()
     {
-        if (in_array(__DIR__ . '/Plugin/Internal/IssueFixingPlugin.php', Config::getValue('plugins'))) {
+        if (Config::isIssueFixingPluginEnabled()) {
             fwrite(STDERR, "Cannot use --automatic-fix in daemon mode or with the language server\n");
             exit(EXIT_FAILURE);
         }
     }
+
     /**
      * Finish analyzing any files that need to be analyzed.
      * (for full analysis, or a limited number of files for daemon mode, etc.)

@@ -1281,6 +1281,14 @@ class Config
             \fwrite(STDERR, $error . PHP_EOL);
         }
     }
+
+    /**
+     * Check if the issue fixing plugin (from --automatic-fix) is enabled.
+     */
+    public static function isIssueFixingPluginEnabled() : bool
+    {
+        return in_array(__DIR__ . '/Plugin/Internal/IssueFixingPlugin.php', Config::getValue('plugins'));
+    }
 }
 
 // Call init() to trigger the magic setters.
