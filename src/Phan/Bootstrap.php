@@ -43,7 +43,7 @@ assert_options(ASSERT_WARNING, false);
 assert_options(ASSERT_BAIL, false);
 // ASSERT_QUIET_EVAL has been removed starting with PHP 8
 if (defined('ASSERT_QUIET_EVAL')) {
-    assert_options(ASSERT_QUIET_EVAL, false);
+    assert_options(ASSERT_QUIET_EVAL, false); // @phan-suppress-current-line PhanUndeclaredConstant, UnusedPluginSuppression
 }
 assert_options(ASSERT_CALLBACK, '');  // Can't explicitly set ASSERT_CALLBACK to null?
 
@@ -91,7 +91,6 @@ function with_disabled_phan_error_handler(Closure $closure)
  * The error handler for PHP notices, etc.
  * This is a named function instead of a closure to make stack traces easier to read.
  *
- * @suppress PhanUnreferencedFunction
  * @suppress PhanAccessMethodInternal
  * @param int $errno
  * @param string $errstr
