@@ -1013,23 +1013,30 @@ class Config
                     $value = PHP_VERSION;
                 }
 
-                if (\version_compare($value, '6.0') < 0) {
-                    self::$closest_target_php_version_id = 50600;
-                } elseif (\version_compare($value, '7.1') < 0) {
-                    self::$closest_target_php_version_id = 70000;
-                } elseif (\version_compare($value, '7.2') < 0) {
-                    self::$closest_target_php_version_id = 70100;
-                } elseif (\version_compare($value, '7.3') < 0) {
-                    self::$closest_target_php_version_id = 70200;
-                } elseif (\version_compare($value, '7.4') < 0) {
-                    self::$closest_target_php_version_id = 70300;
-                } else {
-                    self::$closest_target_php_version_id = 70400;
-                }
+                self::$closest_target_php_version_id = self::computeClosestTargetPHPVersionId($value);
                 if ((self::$configuration['allow_method_param_type_widening_original'] ?? null) === null) {
                     self::$configuration['allow_method_param_type_widening'] = self::$closest_target_php_version_id >= 70200;
                 }
                 break;
+        }
+    }
+
+    private static function computeClosestTargetPHPVersionId(string $version) : int
+    {
+        if (\version_compare($version, '6.0') < 0) {
+            return 50600;
+        } elseif (\version_compare($version, '7.1') < 0) {
+            return 70000;
+        } elseif (\version_compare($version, '7.2') < 0) {
+            return 70100;
+        } elseif (\version_compare($version, '7.3') < 0) {
+            return 70200;
+        } elseif (\version_compare($version, '7.4') < 0) {
+            return 70300;
+        } elseif (\version_compare($version, '8.0') < 0) {
+            return 70400;
+        } else {
+            return 80000;
         }
     }
 

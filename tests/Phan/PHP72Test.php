@@ -50,6 +50,13 @@ class PHP72Test extends AbstractPhanFileTest
                     break;
             }
         }
+        if (\PHP_VERSION_ID >= 80000) {
+            switch ($main_path) {
+                case '0006_deprecated_create_internal_function.php':
+                    $skip_reason = 'Skip create_internal_function was removed';
+                    break;
+            }
+        }
         if ($skip_reason !== null) {
             $this->markTestSkipped("Skipping test for $main_path: $skip_reason");
             return;

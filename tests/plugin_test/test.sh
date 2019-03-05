@@ -36,7 +36,10 @@ if [[ "$(php -r 'echo PHP_VERSION_ID;')" < 70100 ]]; then
     sed -i "/^.*PhanNativePHPSyntaxCheckPlugin.*unexpected '\\?'/d" $ACTUAL_PATH
 fi
 # Normalize PHP_VERSION_ID
-sed -i 's/^\(src.020_bool.php.*of type\) [0-9]\+ \(evaluated\)/\1 int \2/g' $ACTUAL_PATH
+# and remove php 8.0 warnings
+sed -i -e 's/^\(src.020_bool.php.*of type\) [0-9]\+ \(evaluated\)/\1 int \2/g' \
+    -e '/__autoload() is no longer supported, use spl_autoload_register/d' \
+    $ACTUAL_PATH
 
 diff $EXPECTED_PATH $ACTUAL_PATH
 EXIT_CODE=$?
