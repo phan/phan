@@ -85,15 +85,19 @@ class UnusedSuppressionPlugin extends PluginV2 implements
 
         // Check to see if any are unused
         foreach ($suppress_issue_list as $issue_type => $use_count) {
-            if (0 === $use_count) {
-                self::emitIssue(
-                    $code_base,
-                    $element->getContext(),
-                    'UnusedSuppression',
-                    "Element {FUNCTIONLIKE} suppresses issue {ISSUETYPE} but does not use it",
-                    [(string)$element->getFQSEN(), $issue_type]
-                );
+            if (0 !== $use_count) {
+                continue;
             }
+            if (in_array($issue_type, self::getUnusedSuppressionIgnoreList())) {
+                continue;
+            }
+            self::emitIssue(
+                $code_base,
+                $element->getContext(),
+                'UnusedSuppression',
+                "Element {FUNCTIONLIKE} suppresses issue {ISSUETYPE} but does not use it",
+                [(string)$element->getFQSEN(), $issue_type]
+            );
         }
     }
 
@@ -204,6 +208,14 @@ class UnusedSuppressionPlugin extends PluginV2 implements
     }
 
     /**
+     * @return array<int,string>
+     */
+    private static function getUnusedSuppressionIgnoreList() : array
+    {
+        return Config::getValue('plugin_config')['unused_suppression_ignore_list'] ?? [];
+    }
+
+    /**
      * @return void
      */
     private function analyzePluginSuppressionsForFile(CodeBase $code_base, SuppressionCapability $plugin, string $relative_file_path)
@@ -218,6 +230,8 @@ class UnusedSuppressionPlugin extends PluginV2 implements
         }
         $plugin_suppressions = $plugin->getIssueSuppressionList($code_base, $absolute_file_path);
         $plugin_successful_suppressions = $this->plugin_active_suppression_list[$plugin_class][$absolute_file_path] ?? null;
+
+        $unused_suppression_ignore_list = self::getUnusedSuppressionIgnoreList();
 
         foreach ($plugin_suppressions as $issue_type => $line_list) {
             foreach ($line_list as $lineno => $lineno_of_comment) {
@@ -235,6 +249,9 @@ class UnusedSuppressionPlugin extends PluginV2 implements
                     continue;
                 }
                 if (isset($plugin_suppressions[$issue_kind][$lineno_of_comment])) {
+                    continue;
+                }
+                if (in_array($issue_type, $unused_suppression_ignore_list, true)) {
                     continue;
                 }
                 self::emitIssue(

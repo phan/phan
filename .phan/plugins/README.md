@@ -36,6 +36,9 @@ or if the relevant parts of the codebase fixed the bug/added annotations)
 - **UnusedPluginSuppression**: `Plugin {STRING_LITERAL} suppresses issue {ISSUETYPE} on this line but this suppression is unused or suppressed elsewhere`
 - **UnusedPluginFileSuppression**: `Plugin {STRING_LITERAL} suppresses issue {ISSUETYPE} in this file but this suppression is unused or suppressed elsewhere`
 
+The setting `'plugin_config' => ['unused_suppression_ignore_list' => ['FlakyPluginIssueName']]` can be used in `.phan/config.php`
+to make this plugin avoid emitting `Unused*Suppression` for a list of issue names.
+
 ### 2. General-Use Plugins
 
 These plugins are useful across a wide variety of code styles, and should give low false positives.
