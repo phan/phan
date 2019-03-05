@@ -83,6 +83,7 @@ class FileContents
 
     /**
      * Fetches the shared file position map
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function getFilePositionMap() : FilePositionMap
     {
@@ -91,6 +92,7 @@ class FileContents
 
     /**
      * @return ?int the byte offset of the start of the given line (1-based)
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function getLineOffset(int $line)
     {
