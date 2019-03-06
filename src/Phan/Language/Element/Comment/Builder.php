@@ -56,7 +56,6 @@ final class Builder
     public $return_comment;
     /**
      * @var array<int,string> the list of issue names from (at)suppress annotations
-     * @suppress PhanReadOnlyPublicProperty FIXME: array_push doesn't count as a write-reference
      */
     public $suppress_issue_list = [];
     /** @var array<int,Property> the list of (at)property annotations (and property-read, property-write) */

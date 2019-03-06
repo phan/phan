@@ -12,8 +12,6 @@ use Phan\PluginV2\FinalizeProcessCapability;
 /**
  * This plugin fixes a small number of issues automatically.
  * This uses heuristics to guess where the fix should be applied.
- *
- * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod
  */
 class IssueFixingPlugin extends PluginV2 implements
     FinalizeProcessCapability

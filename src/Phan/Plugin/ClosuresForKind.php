@@ -82,7 +82,6 @@ class ClosuresForKind
                 $merged_closures[$kind] = $closure;
             }
         }
-        // @phan-suppress-next-line PhanPartialTypeMismatchReturn TODO: investigate
         return $merged_closures;
     }
 }
