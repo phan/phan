@@ -393,6 +393,7 @@ class Issue
     const CompatibleUseObjectPHP71           = 'PhanCompatibleUseObjectPHP71';
     const CompatibleMultiExceptionCatchPHP70 = 'PhanCompatibleMultiExceptionCatchPHP70';
     const CompatibleNegativeStringOffset     = 'PhanCompatibleNegativeStringOffset';
+    const CompatibleAutoload                 = 'PhanCompatibleAutoload';
 
     // Issue::CATEGORY_GENERIC
     const TemplateTypeConstant       = 'PhanTemplateTypeConstant';
@@ -3334,6 +3335,15 @@ class Issue
                 "Using negative string offsets is not supported before PHP 7.1 (emits an 'Uninitialized string offset' notice)",
                 self::REMEDIATION_B,
                 3012
+            ),
+            // TODO: Increase the severity when PHP 8.0 alphas are released
+            new Issue(
+                self::CompatibleAutoload,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                "Declaring an autoloader with function __autoload() was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0. Use spl_autoload_register() instead (supported since PHP 5.1).",
+                self::REMEDIATION_B,
+                3013
             ),
 
             // Issue::CATEGORY_GENERIC
