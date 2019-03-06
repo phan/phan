@@ -308,6 +308,9 @@ return [
         'internal/sanitycheck.php',
         'internal/update_wiki_config_types.php',
         'internal/update_wiki_issue_types.php',
+        'vendor/phpdocumentor/type-resolver/src/Types/ContextFactory.php',
+        'vendor/phpdocumentor/reflection-docblock/src/DocBlockFactory.php',
+        'vendor/phpdocumentor/reflection-docblock/src/DocBlock.php',
         // 'vendor/phpunit/phpunit/src/Framework/TestCase.php',
     ],
 
