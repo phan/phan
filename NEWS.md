@@ -24,6 +24,7 @@ New features(Analysis):
 + Don't emit `PhanWriteOnlyPrivateProperty` with dead code detection when at least one assignment is by reference (#1658)
 + Allow a single hyphen between words in `@suppress issue-name` annotations (and `@phan-suppress-next-line issue-name`, etc.) (#2515)
   Note that CamelCase issue names are conventional for Phan and its plugins.
++ Emit `PhanCompatibleAutoload` when using `function __autoload() {}` instead of `spl_autoload_register() {}` (#2528)
 
 Language Server/Daemon mode:
 + Fix an error in the language server on didChangeConfiguration

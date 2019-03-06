@@ -2418,6 +2418,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $method =
             $this->context->getFunctionLikeInScope($this->code_base);
 
+        if (\strcasecmp($method->getName(), '__autoload') === 0) {
+            $this->emitIssue(
+                Issue::CompatibleAutoload,
+                $node->lineno
+            );
+        }
+
         $return_type = $method->getUnionType();
 
         if (!$return_type->isEmpty()
