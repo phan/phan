@@ -1538,7 +1538,6 @@ class CodeBase
         static $constant_name_list = null;
         if ($constant_name_list === null) {
             // 'true', 'false', and 'null' aren't actually defined constants, they're keywords? Add them so that analysis won't break.
-            // @phan-suppress-next-line PhanPossiblyNullTypeArgumentInternal
             $constant_name_list = \array_keys(\array_merge(['true' => true, 'false' => false, 'null' => null], ...\array_values(
                 \array_diff_key(\get_defined_constants(true), ['user' => []])
             )));

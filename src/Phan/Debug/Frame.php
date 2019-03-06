@@ -26,7 +26,6 @@ class Frame
     /**
      * Utilities to encode values might be seen in Phan or its plugins in a crash.
      * @param mixed $value
-     * @suppress PhanTypeSuspiciousStringExpression
      */
     public static function encodeValue($value, int $max_depth = 2) : string
     {

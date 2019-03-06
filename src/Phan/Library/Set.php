@@ -31,8 +31,6 @@ class Set extends \SplObjectStorage
     /**
      * @param iterable<T> $element_iterator
      * An optional set of items to add to the set
-     *
-     * @suppress PhanGenericConstructorTypes TODO: Support inferring the template from iterable<T>
      */
     public function __construct($element_iterator = null)
     {

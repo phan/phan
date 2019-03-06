@@ -537,7 +537,6 @@ trait FunctionTrait
             $param_repr .= $param->getUnionType()->__toString() . ',';
         }
         $raw_bytes = \md5($param_repr, true);
-        // @phan-suppress-next-line PhanPossiblyNullTypeReturn we checked
         return \unpack(\PHP_INT_SIZE === 8 ? 'q' : 'l', $raw_bytes)[1];
     }
 
@@ -1580,7 +1579,6 @@ trait FunctionTrait
      * @param int $i the index of the parameter which $assertion acts upon.
      * @return ?Closure(CodeBase, Context, FunctionInterface, array):void
      * @suppress PhanAccessPropertyInternal
-     * @suppress PhanAccessClassConstantInternal
      * @internal
      */
     public function createClosureForAssertion(CodeBase $code_base, Assertion $assertion, int $i)
