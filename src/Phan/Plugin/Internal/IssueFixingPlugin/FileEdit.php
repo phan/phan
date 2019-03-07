@@ -7,7 +7,6 @@ use InvalidArgumentException;
 /**
  * Represents a change to be made to file contents.
  * The structure of this will change.
- * @internal
  */
 class FileEdit
 {

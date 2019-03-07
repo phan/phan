@@ -9,8 +9,6 @@ use Microsoft\PhpParser\Parser;
 /**
  * Represents file contents to be edited,
  * and utilities for working with the contents in fixers.
- *
- * @internal
  */
 class FileContents
 {
