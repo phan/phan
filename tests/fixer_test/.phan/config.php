@@ -94,7 +94,7 @@ return [
 
     'minimum_severity' => Issue::SEVERITY_LOW,
 
-    'directory_list' => ['src'],
+    'directory_list' => ['src_copy'],
 
     'analyzed_file_extensions' => ['php'],
 
