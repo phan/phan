@@ -22,6 +22,7 @@ use Phan\Memoize;
  * Phan's representation of a class's method.
  *
  * @phan-file-suppress PhanPartialTypeMismatchArgument
+ * @method FullyQualifiedMethodName getDefiningFQSEN() @phan-suppress-current-line PhanParamSignaturePHPDocMismatchReturnType
  */
 class Method extends ClassElement implements FunctionInterface
 {
@@ -167,6 +168,32 @@ class Method extends ClassElement implements FunctionInterface
                 $is_override_intended
             )
         );
+    }
+
+    /**
+     * @return bool
+     * True if this element is overridden by at least one other element
+     */
+    public function getIsOverriddenByAnother() : bool
+    {
+        return $this->getPhanFlagsHasState(Flags::IS_OVERRIDEN_BY_ANOTHER);
+    }
+
+    /**
+     * Sets whether this method is overridden by another method
+     *
+     * @param bool $is_overriden_by_another
+     * True if this method is overridden by another method
+     *
+     * @return void
+     */
+    public function setIsOverriddenByAnother(bool $is_overriden_by_another)
+    {
+        $this->setPhanFlags(Flags::bitVectorWithState(
+            $this->getPhanFlags(),
+            Flags::IS_OVERRIDEN_BY_ANOTHER,
+            $is_overriden_by_another
+        ));
     }
 
     /**

@@ -50,6 +50,8 @@ class Flags
     const HAS_STATIC_UNION_TYPE = (1 << 23);
     const HAS_TEMPLATE_TYPE = (1 << 24);
 
+    const IS_OVERRIDEN_BY_ANOTHER = (1 << 25);
+
     /**
      * Either enable or disable the given flag on
      * the given bit vector.

@@ -413,6 +413,11 @@ class Config
         // This has a few known false positives, e.g. for loops or branches.
         'unused_variable_detection' => false,
 
+        // Set to true in order to emit issues such as `PhanUnusedPublicMethodParameter` instead of `PhanUnusedPublicNoOverrideMethodParameter`
+        // (i.e. assume any non-final non-private method can have overrides).
+        // This is useful in situations when parsing only a subset of the available files.
+        'unused_variable_detection_assume_override_exists' => false,
+
         // Set to true in order to force tracking references to elements
         // (functions/methods/consts/protected).
         //

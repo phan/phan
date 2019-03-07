@@ -106,4 +106,7 @@ return [
     // Enable this to warn about the use of relative paths in `require_once`, `include`, etc.
     // Relative paths are harder to reason about, and opcache may have issues with relative paths in edge cases.
     'warn_about_relative_include_statement' => true,
+
+    // Not changing all of these tests to `PhanUnusedPublicNoOverrideMethodParameter` from `PhanUnusedPublicMethodParameter`
+    'unused_variable_detection_assume_override_exists' => true,
 ];

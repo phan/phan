@@ -10,6 +10,12 @@ New features(Analysis):
 + Suggest typo fixes in `PhanMisspelledAnnotation` for `@phan-*` annotations. (#2640)
 + Emit `PhanUnreferencedClass` when the only references to a class or its elements are within that class.
   Previously, it would fail to be emitted when a class referenced itself.
++ Emit `PhanUnusedPublicNoOverrideMethodParameter` for method parameters that are not overridden and are not overrides. (#2539)
+
+  This is expected to have a lower false positive rate than `PhanUnusedPublicMethodParameter` because parameters
+  might be unused by some of the classes overriding/implementing a method.
+
+  Setting `unused_variable_detection_assume_override_exists` to true in `.phan/config.php` can be used to continue emitting the old issue names instead of `*NoOverride*` equivalents.
 
 Language Server/Daemon mode:
 + Analyze new but unsaved files, if they would be analyzed by Phan once they actually were saved to disk.

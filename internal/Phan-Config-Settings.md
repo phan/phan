@@ -755,6 +755,14 @@ This has a few known false positives, e.g. for loops or branches.
 
 (Default: `false`)
 
+## unused_variable_detection_assume_override_exists
+
+Set to true in order to emit issues such as `PhanUnusedPublicMethodParameter` instead of `PhanUnusedPublicNoOverrideMethodParameter`
+(i.e. assume any non-final non-private method can have overrides).
+This is useful in situations when parsing only a subset of the available files.
+
+(Default: `false`)
+
 ## warn_about_redundant_use_namespaced_class
 
 Enable this to warn about harmless redundant use for classes and namespaces such as `use Foo\bar` in namespace Foo.
