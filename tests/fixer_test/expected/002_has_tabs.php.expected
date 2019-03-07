@@ -1,0 +1,3 @@
+src_copy/002_has_tabs.php:2 PhanPluginWhitespaceTab The first occurrence of a tab was seen here. Running "expand" can fix that.
+src_copy/002_has_tabs.php:4 PhanUnreferencedClass Possibly zero references to class \X
+src_copy/002_has_tabs.php:5 PhanUnreferencedPublicMethod Possibly zero references to public method \X::test()
