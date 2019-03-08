@@ -288,11 +288,8 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
                     $code_base,
                     $get_argument_type_for_array_map
                 );
-                if ($map_function->hasDependentReturnType()) {
-                    $possible_return_types = $possible_return_types->withUnionType($map_function->getDependentReturnType($code_base, $context, $arguments));
-                } else {
-                    $possible_return_types = $possible_return_types->withUnionType($map_function->getUnionType());
-                }
+                // TODO: fix https://github.com/phan/phan/issues/2554
+                $possible_return_types = $possible_return_types->withUnionType($map_function->getUnionType());
             }
             if (Config::get_track_references()) {
                 foreach ($function_like_list as $map_function) {
