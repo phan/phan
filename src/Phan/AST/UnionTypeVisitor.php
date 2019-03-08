@@ -1451,7 +1451,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                 StringUtil::jsonEncode($dim_value),
                 (string)$union_type
             );
-            return null;
+            // $union_type is exclusively array shape types, but those don't contain the field $dim_value.
+            // It's undefined (which becomes null)
+            return NullType::instance(false)->asUnionType();
         }
         return $resulting_element_type;
     }
@@ -1465,6 +1467,10 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public static function resolveArrayShapeElementTypesForOffset(UnionType $union_type, $dim_value)
     {
+        /**
+         * @var bool $has_non_array_shape_type this will be true if there are types that support array access
+         *           but have unknown array shapes in $union_type
+         */
         $has_non_array_shape_type = false;
         $resulting_element_type = null;
         foreach ($union_type->getTypeSet() as $type) {
@@ -1472,17 +1478,20 @@ class UnionTypeVisitor extends AnalysisVisitor
                 if ($type instanceof StringType) {
                     if (\is_int($dim_value)) {
                         // If we request a string offset from a string, that's not valid. Only accept integer dimensions as valid.
-                        $has_non_array_shape_type = true;
                         // in php, indices of strings can be negative
                         if ($resulting_element_type !== null) {
                             $resulting_element_type = $resulting_element_type->withType(StringType::instance(false));
                         } else {
                             $resulting_element_type = StringType::instance(false)->asUnionType();
                         }
-                    } // TODO: Warn about string indices of strings?
-                } elseif ($type->isArrayLike() || $type instanceof MixedType) {
-                    // TODO: Be more precise for objects implementing ArrayAccess?
+                    } else {
+                        // TODO: Warn about string indices of strings?
+                        $has_non_array_shape_type = true;
+                    }
+                } elseif ($type->isArrayLike() || $type->isObject() || $type instanceof MixedType) {
+                    // TODO: Could be more precise about check for ArrayAccess
                     $has_non_array_shape_type = true;
+                    continue;
                 }
                 continue;
             }
@@ -1499,6 +1508,8 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         if ($resulting_element_type === null) {
             if (!$has_non_array_shape_type) {
+                // This is exclusively array shape types.
+                // Return false to indicate that the offset doesn't exist in any of those array shape types.
                 return false;
             }
             return null;
