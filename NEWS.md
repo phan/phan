@@ -14,7 +14,6 @@ New features(CLI,Configs)
   - issues emitted by `WhitespacePlugin` (#2523)
   - unqualified global function calls/constant uses from namespaces (requires `NotFullyQualifiedUsagePlugin`)
     (will do the wrong thing for functions that are both global and in the same namespace)
-+ Be more aggressive about inferring that the result is `null` when accessing array offsets that don't exist. (#2541)
 
 New features(Analysis):
 + Make Phan infer more precise literal types for internal constants such as `PHP_EOF`.
@@ -26,6 +25,8 @@ New features(Analysis):
 + Allow a single hyphen between words in `@suppress issue-name` annotations (and `@phan-suppress-next-line issue-name`, etc.) (#2515)
   Note that CamelCase issue names are conventional for Phan and its plugins.
 + Emit `PhanCompatibleAutoload` when using `function __autoload() {}` instead of `spl_autoload_register() {}` (#2528)
++ Be more aggressive about inferring that the result is `null` when accessing array offsets that don't exist. (#2541)
++ Fix a false positive analyzing `array_map` when the closure has a dependent return type. (#2554)
 
 Language Server/Daemon mode:
 + Fix an error in the language server on didChangeConfiguration
