@@ -3116,7 +3116,7 @@ class Clazz extends AddressableElement
 
     /**
      * Given the FQSEN of an ancestor class and an element definition,
-     * return the overriden element's definition or null if this didn't override anything.
+     * return the overridden element's definition or null if this didn't override anything.
      *
      * TODO: Handle renamed elements from traits.
      *

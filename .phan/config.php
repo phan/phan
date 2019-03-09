@@ -300,6 +300,7 @@ return [
     'file_list' => [
         'phan',
         'phan_client',
+        'plugins/codeclimate/engine',
         'tool/make_stubs',
         'internal/dump_fallback_ast.php',
         'internal/internalsignatures.php',
