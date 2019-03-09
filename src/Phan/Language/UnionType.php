@@ -38,6 +38,7 @@ use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use Serializable;
+use function substr;
 
 if (!\function_exists('spl_object_id')) {
     require_once __DIR__ . '/../../spl_object_id.php';
@@ -275,16 +276,30 @@ class UnionType implements Serializable
         foreach (self::extractTypeParts($type_string) as $type_name) {
             // Exclude empty type names
             // Exclude namespaces without type names (e.g. `\`, `\NS\`)
-            if ($type_name !== '' && \preg_match('@\\\\[\[\]]*$@', $type_name) === 0) {
-                if (($type_name[0] ?? '') === '(' && \substr($type_name, -1) === ')') {
+            if ($type_name === '' || \preg_match('@\\\\[\[\]]*$@', $type_name)) {
+                $parts[] = $type_name;
+                continue;
+            }
+            if (substr($type_name, -1) === ')') {
+                if (substr($type_name, 0, 1) === '(') {
                     // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
-                    foreach (self::extractTypePartsForStringInContext(\substr($type_name, 1, -1)) as $inner_type_name) {
+                    foreach (self::extractTypePartsForStringInContext(substr($type_name, 1, -1)) as $inner_type_name) {
                         $parts[] = $inner_type_name;
                     }
-                } else {
-                    $parts[] = $type_name;
+                    continue;
+                } elseif (substr($type_name, 0, 2) === '?(') {
+                    // @phan-suppress-next-line PhanPossiblyFalseTypeArgument
+                    foreach (self::extractTypePartsForStringInContext(substr($type_name, 2, -1)) as $inner_type_name) {
+                        if (substr($inner_type_name, 0, 1) === '?') {
+                            $parts[] = $inner_type_name;
+                        } else {
+                            $parts[] = '?' . $inner_type_name;
+                        }
+                    }
+                    continue;
                 }
             }
+            $parts[] = $type_name;
         }
         $cache[$type_string] = $parts;
         return $parts;
