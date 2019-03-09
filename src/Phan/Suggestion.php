@@ -52,7 +52,8 @@ final class Suggestion
      * @return void
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function setInternalData($data) {
+    public function setInternalData($data)
+    {
         $this->internal_data = $data;
     }
 
@@ -62,7 +63,8 @@ final class Suggestion
      * @return mixed
      * @suppress PhanUnreferencedPublicMethod
      */
-    public function getInternalData() {
+    public function getInternalData()
+    {
         return $this->internal_data;
     }
 }

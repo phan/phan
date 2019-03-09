@@ -16,3 +16,4 @@ all_output.*
 nohup.out
 *.md.new
 .idea/
+src_copy

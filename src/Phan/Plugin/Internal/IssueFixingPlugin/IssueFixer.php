@@ -296,16 +296,32 @@ class IssueFixer
     public static function computeNewContents(string $file, string $contents, array $all_edits)
     {
         \usort($all_edits, static function (FileEdit $a, FileEdit $b) : int {
-            return ($a->replace_start <=> $b->replace_start) ?: ($a->replace_end <=> $b->replace_end);
+            return ($a->replace_start <=> $b->replace_start)
+                ?: ($a->replace_end <=> $b->replace_end)
+                ?: strcmp($a->new_text, $b->new_text);
         });
         self::debug("Going to apply these fixes for $file: " . StringUtil::jsonEncode($all_edits) . "\n");
         $last_end = 0;
+        $last_replace_start = -1;
         $new_contents = '';
+        $prev_edit = null;
         foreach ($all_edits as $edit) {
+            if ($prev_edit && $edit->isEqualTo($prev_edit)) {
+                continue;
+            }
+            $prev_edit = $edit;
             if ($edit->replace_start < $last_end) {
                 self::debug("Giving up on $file: replacement starts before end of another replacement\n");
                 return null;
             }
+            if ($edit->new_text !== '') {
+                if ($edit->replace_start <= $last_replace_start) {
+                    self::debug("Giving up on $file: replacement conflicts with another replacement at $last_replace_start\n");
+                    return null;
+                }
+                $last_replace_start = $edit->replace_start;
+            }
+
             $new_contents .= \substr($contents, $last_end, $edit->replace_start - $last_end);
             // Append the empty string if this is a deletion, or a non-empty string for an insertion/replacement.
             $new_contents .= $edit->new_text;
