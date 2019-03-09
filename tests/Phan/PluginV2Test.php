@@ -18,7 +18,7 @@ final class PluginV2Test extends BaseTest
         $this->assertInternalType('string', $comment);
 
         $capabilities = [];
-        foreach (scandir(dirname(__DIR__, 3) . '/src/Phan/PluginV2') as $file) {
+        foreach (scandir(dirname(__DIR__, 2) . '/src/Phan/PluginV2') as $file) {
             if (!preg_match('/^(\w+Capability)\.php$/', $file, $matches)) {
                 continue;
             }

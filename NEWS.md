@@ -1,6 +1,6 @@
 Phan NEWS
 
-?? ??? 2019, Phan 1.2.6 (dev)
+09 Mar 2019, Phan 1.2.6
 -----------------------
 
 New features(CLI,Configs)
@@ -8,7 +8,7 @@ New features(CLI,Configs)
   infer literal values for functions such as `json_decode`, `strtolower`, `implode`, etc. (disabled by default),
 + Make `--dead-code-detection` load `UnreachableCodePlugin` if that plugin isn't already loaded (#1824)
 + Add `--automatic-fix` to fix any issues Phan is capable of fixing
-  (currently a prototype. Fixes are guessed base on line numbers).
+  (currently a prototype. Fixes are guessed based on line numbers).
   This is currently limited to:
   - unreferenced use statements on their own line (requires `--dead-code-detection`).
   - issues emitted by `WhitespacePlugin` (#2523)
