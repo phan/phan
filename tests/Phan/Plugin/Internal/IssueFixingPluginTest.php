@@ -5,6 +5,7 @@ namespace Phan\Tests\Plugin\Internal;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\IssueInstance;
+use Phan\Plugin\Internal\IssueFixingPlugin\FileEdit;
 use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
 use Phan\Tests\BaseTest;
 use Phan\Tests\CodeBaseAwareTestInterface;
@@ -78,6 +79,77 @@ EOT
                     $make(Issue::UnreferencedUseFunction, 4, 'foo', '\foo'),
                     $make(Issue::UnreferencedUseConstant, 6, 'AST_VERSION', '\ast\AST_VERSION'),
                 ],
+            ],
+        ];
+    }
+
+    /**
+     * @param ?string $expected_contents
+     * @param string $contents
+     * @param FileEdit[] $all_edits
+     * @dataProvider computeNewContentsProvider
+     */
+    public function testComputeNewContents($expected_contents, string $contents, array $all_edits)
+    {
+        $this->assertSame($expected_contents, IssueFixer::computeNewContents(self::FILE, $contents, $all_edits));
+    }
+
+    /**
+     * @return array<int,array{0:?string,1:string,2:FileEdit[]}>
+     */
+    public function computeNewContentsProvider() : array
+    {
+        return [
+            [
+                //    5   10
+                '<?php  // post',
+                '<?php  // test',
+                [
+                    new FileEdit(10, 11, 'p'),
+                    new FileEdit(11, 12, 'o'),
+                ]
+            ],
+            [
+                //    5   10
+                '<?php  // post',
+                '<?php  // test',
+                [
+                    new FileEdit(10, 12, ''),
+                    new FileEdit(12, 12, 'po'),
+                ]
+            ],
+            [
+                //    5   10
+                '<?php  // post',
+                '<?php  // test',
+                [
+                    // should discard duplicate edits
+                    new FileEdit(10, 12, ''),
+                    new FileEdit(12, 12, 'po'),
+                    new FileEdit(10, 12, ''),
+                    new FileEdit(12, 12, 'po'),
+                ]
+            ],
+            [
+                //    5   10
+                null,
+                '<?php  // test',
+                [
+                    // should give up for conflicting edits
+                    new FileEdit(10, 12, ''),
+                    new FileEdit(12, 12, 'be'),
+                    new FileEdit(12, 12, 'po'),
+                ]
+            ],
+            [
+                //    5   10
+                null,
+                '<?php  // test',
+                [
+                    // should give up for conflicting edits
+                    new FileEdit(10, 13, 'ab'),
+                    new FileEdit(12, 14, 'cd'),
+                ]
             ],
         ];
     }

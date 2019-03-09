@@ -33,4 +33,14 @@ class FileEdit
         $this->replace_end = $replace_end;
         $this->new_text = $new_text;
     }
+
+    /**
+     * Returns true if this has the same effect as $other
+     */
+    public function isEqualTo(FileEdit $other) : bool
+    {
+        return $this->replace_start === $other->replace_start &&
+            $this->replace_end === $other->replace_end &&
+            $this->new_text === $other->new_text;
+    }
 }
