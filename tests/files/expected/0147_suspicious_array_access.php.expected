@@ -1,3 +1,4 @@
+%s:5 PhanNoopArrayAccess Unused array offset fetch
 %s:5 PhanTypeArraySuspicious Suspicious array access to \C147
 %s:6 PhanTypeArraySuspicious Suspicious array access to \C147
 %s:7 PhanTypeArraySuspicious Suspicious array access to \C147
