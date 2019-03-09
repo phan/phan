@@ -8,6 +8,9 @@ Maintenance
   (fix parsing of some edge cases, minor performance improvement, prepare to support php 7.4 in polyfill)
 + Use paratest for phpunit tests in Travis/Appveyor
 
+Bug fixes:
++ Make the codeclimate plugin analyze the correct directory. Update the dependencies of the codeclimate plugin. (#2139)
+
 09 Mar 2019, Phan 1.2.6
 -----------------------
 
