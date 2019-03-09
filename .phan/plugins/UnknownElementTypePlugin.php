@@ -141,7 +141,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
                 $function->getContext(),
                 $issue,
                 $message,
-                [(string)$function->getFQSEN()]
+                [(string)$function->getNameForIssue()]
             );
         } elseif (self::isRegularArray($function->getUnionType())) {
             if ($function->getFQSEN()->isClosure()) {
@@ -156,7 +156,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
                 $function->getContext(),
                 $issue,
                 $message,
-                [(string)$function->getFQSEN()]
+                [(string)$function->getNameForIssue()]
             );
         }
         foreach ($function->getParameterList() as $parameter) {
@@ -173,7 +173,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
                     $parameter->createContext($function),
                     $issue,
                     $message,
-                    [(string)$function->getFQSEN(), $parameter->getName()]
+                    [(string)$function->getNameForIssue(), $parameter->getName()]
                 );
             } elseif (self::isRegularArray($parameter->getUnionType())) {
                 if ($function->getFQSEN()->isClosure()) {
@@ -188,7 +188,7 @@ class UnknownElementTypePlugin extends PluginV2 implements
                     $parameter->createContext($function),
                     $issue,
                     $message,
-                    [(string)$function->getFQSEN(), $parameter->getName()]
+                    [(string)$function->getNameForIssue(), $parameter->getName()]
                 );
             }
         }
