@@ -520,6 +520,12 @@ final class UnionTypeTest extends BaseTest
         $this->assertSame(1, $union_type->typeCount());
     }
 
+    public function testNullableBasicType()
+    {
+        $union_type = self::makePHPDocUnionType('?(int|string|float|false)');
+        $this->assertSame('?false|?float|?int|?string', (string)$union_type);
+    }
+
     public function testNullableBasicArrayType()
     {
         $union_type = self::makePHPDocUnionType('?(int|string)[]');

@@ -235,11 +235,16 @@ class Debug
             if (!$level) {
                 continue;
             }
-            echo "#" . ($level - 1) . " {$context['file']}:{$context['line']} {$context['class']} ";
+            $file = $context['file'] ?? 'unknown';
+            $line = $context['line'] ?? 1;
+            $class = $context['class'] ?? 'global';
+            $function = $context['function'] ?? '';
+
+            echo "#" . ($level - 1) . " $file:$line $class ";
             if (isset($context['type'])) {
                 echo $context['class'] . $context['type'];
             }
-            echo $context['function'];
+            echo $function;
             echo "\n";
         }
     }
