@@ -58,7 +58,7 @@ case "$TEST_SUITE" in
 		exit $?
 		;;
 	__FakeAllPHPUnitTests)
-		vendor/bin/phpunit
+		vendor/bin/paratest --processes 2
 		exit $?
 		;;
 	__FakeConfigOverrideTest)

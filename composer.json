@@ -38,6 +38,7 @@
         "ext-tokenizer": "Needed for non-AST support and file/line-based suppressions."
     },
     "require-dev": {
+        "brianium/paratest": "^1.1",
         "phpunit/phpunit": "^6.3.0"
     },
     "autoload": {
