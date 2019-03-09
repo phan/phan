@@ -1,5 +1,12 @@
 Phan NEWS
 
+?? ??? 2019, Phan 1.2.7 (dev)
+-----------------------
+
+Maintenance
++ Update tolerant-php-parser version to 0.0.17
+  (fix parsing of some edge cases, minor performance improvement, prepare to support php 7.4 in polyfill)
+
 09 Mar 2019, Phan 1.2.6
 -----------------------
 
