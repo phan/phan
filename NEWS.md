@@ -27,6 +27,7 @@ New features(Analysis):
 + Emit `PhanCompatibleAutoload` when using `function __autoload() {}` instead of `spl_autoload_register() {}` (#2528)
 + Be more aggressive about inferring that the result is `null` when accessing array offsets that don't exist. (#2541)
 + Fix a false positive analyzing `array_map` when the closure has a dependent return type. (#2554)
++ Emit `PhanNoopArrayAccess` when an array field is fetched but not used (#2538)
 
 Language Server/Daemon mode:
 + Fix an error in the language server on didChangeConfiguration

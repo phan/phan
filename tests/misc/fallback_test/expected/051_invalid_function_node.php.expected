@@ -1,3 +1,4 @@
+src/051_invalid_function_node.php:2 PhanNoopArrayAccess Unused array offset fetch
 src/051_invalid_function_node.php:2 PhanSyntaxError syntax error, unexpected '('
 src/051_invalid_function_node.php:2 PhanTypeInvalidCallable Saw type 0 which cannot be a callable
 src/051_invalid_function_node.php:2 PhanUndeclaredConstant Reference to undeclared constant \stdClass

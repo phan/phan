@@ -2590,6 +2590,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $node->children['dim'],
             true
         );
+        $this->analyzeNoOp($node, Issue::NoopArrayAccess);
 
         if ($node->flags & PhanAnnotationAdder::FLAG_IGNORE_NULLABLE_AND_UNDEF) {
             return $context;
@@ -2724,6 +2725,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         if (isset($property)) {
+            // TODO could be more specific about checking if this is a magic property
+            // Right now it warns if it is magic but (at)property is used, etc.
             $this->analyzeNoOp($node, Issue::NoopProperty);
         } else {
             $expr_or_class_node = $node->children['expr'] ?? $node->children['class'];

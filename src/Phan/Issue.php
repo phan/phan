@@ -273,6 +273,7 @@ class Issue
     const NoopClosure                   = 'PhanNoopClosure';
     const NoopConstant                  = 'PhanNoopConstant';
     const NoopProperty                  = 'PhanNoopProperty';
+    const NoopArrayAccess               = 'PhanNoopArrayAccess';
     const NoopVariable                  = 'PhanNoopVariable';
     const NoopUnaryOperator             = 'PhanNoopUnaryOperator';
     const NoopBinaryOperator            = 'PhanNoopBinaryOperator';
@@ -2872,6 +2873,14 @@ class Issue
                 'The use statement for constant {CONST} has no effect',
                 self::REMEDIATION_A,
                 6050
+            ),
+            new Issue(
+                self::NoopArrayAccess,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_LOW,
+                "Unused array offset fetch",
+                self::REMEDIATION_B,
+                6054
             ),
 
             // Issue::CATEGORY_REDEFINE
