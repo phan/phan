@@ -209,6 +209,8 @@ EOT;
 
     public function testMissingMember()
     {
+        // in 0.0.17, this starts trying to parse a typed property declaration
+        // and discards all of it because it's invalid.
         $incomplete_contents = <<<'EOT'
 <?php
 class Test {
@@ -221,8 +223,29 @@ EOT;
         $valid_contents = <<<'EOT'
 <?php
 class Test {
-} notAFunction()[];
+}
 function aFunction() {}
+EOT;
+        $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
+    }
+
+    public function testIncompleteTypedProperty()
+    {
+        $incomplete_contents = <<<'EOT'
+<?php
+class Test {
+    // Starting to input a typed property
+    public int
+    public function aFunction() {}
+}
+EOT;
+        $valid_contents = <<<'EOT'
+<?php
+class Test {
+    // Starting to input a typed property
+
+    public function aFunction() {}
+}
 EOT;
         $this->runTestFallbackFromParser($incomplete_contents, $valid_contents, false);
     }
