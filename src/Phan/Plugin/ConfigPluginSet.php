@@ -28,6 +28,7 @@ use Phan\LanguageServer\DefinitionResolver;
 use Phan\LanguageServer\GoToDefinitionRequest;
 use Phan\Library\RAII;
 use Phan\Plugin\Internal\ArrayReturnTypeOverridePlugin;
+use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
 use Phan\Plugin\Internal\BuiltinSuppressionPlugin;
 use Phan\Plugin\Internal\CallableParamPlugin;
 use Phan\Plugin\Internal\ClosureReturnTypeOverridePlugin;
@@ -48,6 +49,7 @@ use Phan\PluginV2\AnalyzeFunctionCallCapability;
 use Phan\PluginV2\AnalyzeFunctionCapability;
 use Phan\PluginV2\AnalyzeMethodCapability;
 use Phan\PluginV2\AnalyzePropertyCapability;
+use Phan\PluginV2\AutomaticFixCapability;
 use Phan\PluginV2\BeforeAnalyzeCapability;
 use Phan\PluginV2\BeforeAnalyzeFileCapability;
 use Phan\PluginV2\FinalizeProcessCapability;
@@ -854,6 +856,26 @@ final class ConfigPluginSet extends PluginV2 implements
         $this->analyze_function_call_plugin_set = self::filterByClass($plugin_set, AnalyzeFunctionCallCapability::class);
         $this->handle_lazy_load_internal_function_plugin_set = self::filterByClass($plugin_set, HandleLazyLoadInternalFunctionCapability::class);
         $this->unused_suppression_plugin        = self::findUnusedSuppressionPlugin($plugin_set);
+        self::registerIssueFixerClosures($plugin_set);
+    }
+
+    /**
+     * @param array<int,PluginV2> $plugin_set
+     * @return void
+     */
+    private static function registerIssueFixerClosures($plugin_set)
+    {
+        if (!Config::isIssueFixingPluginEnabled()) {
+            // Don't load these if we won't need them.
+            return;
+        }
+        // NOTE: Currently limited to exactly one closure per issue type
+        // (the last plugin ends up taking precedence)
+        foreach (self::filterByClass($plugin_set, AutomaticFixCapability::class) as $fixer) {
+            foreach ($fixer->getAutomaticFixers() as $issue_type => $closure) {
+                IssueFixer::registerFixerClosure($issue_type, $closure);
+            }
+        }
     }
 
     private static function requiresPluginBasedBuiltinSuppressions() : bool

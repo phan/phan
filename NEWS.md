@@ -39,6 +39,7 @@ Maintenance
 Plugins:
 + Write `PhanSelfCheckPlugin` for self-analysis of Phan and plugins for Phan. (#1576)
   This warns if too many/too few arguments are provided for the issue template when emitting an issue.
++ Add `AutomaticFixCapability` for plugins to provide fixes for issues for `--automatic-fix` (#2549)
 + Change issue messages for closures in `UnknownElementTypePlugin` (#2543)
 
 Bug fixes:

@@ -2,16 +2,17 @@
 
 use ast\Node;
 use Phan\CodeBase;
-use Phan\Config;
 use Phan\Language\Context;
 use Phan\PluginV2;
 use Phan\PluginV2\AfterAnalyzeFileCapability;
+use Phan\PluginV2\AutomaticFixCapability;
 
 /**
  * This plugin checks the whitespace in analyzed PHP files for (1) tabs, (2) windows newlines, and (3) trailing whitespace.
  */
 class WhitespacePlugin extends PluginV2 implements
-    AfterAnalyzeFileCapability
+    AfterAnalyzeFileCapability,
+    AutomaticFixCapability
 {
     const CarriageReturn = 'PhanPluginWhitespaceCarriageReturn';
     const Tab = 'PhanPluginWhitespaceTab';
@@ -72,9 +73,14 @@ class WhitespacePlugin extends PluginV2 implements
             );
         }
     }
-}
-if (Config::isIssueFixingPluginEnabled()) {
-    require_once __DIR__ . '/WhitespacePlugin/fixers.php';
+
+    /**
+     * @return array<string,Closure(CodeBase,FileContents,IssueInstance):(?FileEditSet)>
+     */
+    public function getAutomaticFixers() : array
+    {
+        return require(__DIR__ . '/WhitespacePlugin/fixers.php');
+    }
 }
 
 // Every plugin needs to return an instance of itself at the
