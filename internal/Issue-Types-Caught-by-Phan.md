@@ -389,6 +389,14 @@ Unable to determine the method(s) which {METHOD} overrides, but Phan inferred th
 
 This category of issue is emitted when there are compatibility issues. They will be thrown if there is an expression that may be treated differently in PHP7 than it was in previous major versions of the PHP runtime. Take a look at the [PHP7 Migration Manual](http://php.net/manual/en/migration70.incompatible.php) to understand changes in behavior.
 
+## PhanCompatibleAutoload
+
+```
+Declaring an autoloader with function __autoload() was deprecated in PHP 7.2 and will become a fatal error in PHP 8.0. Use spl_autoload_register() instead (supported since PHP 5.1).
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/plugin_test/expected/000_plugins.php.expected#L20) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/plugin_test/src/000_plugins.php#L64).
+
 ## PhanCompatibleExpressionPHP7
 
 This issue will be thrown if there is an expression that may be treated differently in PHP7 than it was in previous major versions of the PHP runtime. Take a look at the [PHP7 Migration Manual](http://php.net/manual/en/migration70.incompatible.php) to understand changes in behavior.
@@ -624,6 +632,14 @@ This will be emitted for the following code.
 ```php
 [1,2,3];
 ```
+
+## PhanNoopArrayAccess
+
+```
+Unused array offset fetch
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/expected/062_test.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/master/tests/misc/fallback_test/src/062_test.php#L2).
 
 ## PhanNoopBinaryOperator
 

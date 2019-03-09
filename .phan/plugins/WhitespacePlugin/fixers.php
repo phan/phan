@@ -11,12 +11,12 @@ use Phan\Plugin\Internal\IssueFixingPlugin\IssueFixer;
 /**
  * Fixers for --automatic-fix and WhitespacePlugin
  */
-call_user_func(static function () {
+return [
     /**
      * @return ?FileEditSet
      * @suppress PhanAccessMethodInternal
      */
-    $fix_tabs = static function (CodeBase $unused_code_base, FileContents $contents, IssueInstance $instance) {
+    WhitespacePlugin::Tab => static function (CodeBase $unused_code_base, FileContents $contents, IssueInstance $instance) {
         $spaces_per_tab = (int)(Config::getValue('plugin_config')['spaces_per_tab'] ?? 4);
         if ($spaces_per_tab <= 0) {
             $spaces_per_tab = 4;
@@ -64,12 +64,12 @@ call_user_func(static function () {
         IssueFixer::debug("Resulting edits for tab fixes: " . json_encode($edits) . "\n");
         //$line = $instance->getLine();
         return new FileEditSet($edits);
-    };
+    },
     /**
      * @return ?FileEditSet
      * @suppress PhanAccessMethodInternal
      */
-    $fix_trailing_whitespace = static function (CodeBase $unused_code_base, FileContents $contents, IssueInstance $instance) {
+    WhitespacePlugin::WhitespaceTrailing => static function (CodeBase $unused_code_base, FileContents $contents, IssueInstance $instance) {
         IssueFixer::debug("Calling trailing whitespace fixer {$instance->getFile()}\n");
         $raw_contents = $contents->getContents();
         $byte_offset = 0;
@@ -91,12 +91,13 @@ call_user_func(static function () {
         IssueFixer::debug("Resulting edits for trailing whitespace: " . json_encode($edits) . "\n");
         //$line = $instance->getLine();
         return new FileEditSet($edits);
-    };
+    },
+
     /**
      * @return ?FileEditSet
      * @suppress PhanAccessMethodInternal
      */
-    $fix_carriage_returns = static function (CodeBase $unused_code_base, FileContents $contents, IssueInstance $instance) {
+    WhitespacePlugin::CarriageReturn => static function (CodeBase $unused_code_base, FileContents $contents, IssueInstance $instance) {
         IssueFixer::debug("Calling trailing whitespace fixer {$instance->getFile()}\n");
         $raw_contents = $contents->getContents();
         $byte_offset = 0;
@@ -115,8 +116,5 @@ call_user_func(static function () {
         IssueFixer::debug("Resulting edits for trailing whitespace: " . json_encode($edits) . "\n");
         //$line = $instance->getLine();
         return new FileEditSet($edits);
-    };
-    IssueFixer::registerFixerClosure(WhitespacePlugin::Tab, $fix_tabs);
-    IssueFixer::registerFixerClosure(WhitespacePlugin::WhitespaceTrailing, $fix_trailing_whitespace);
-    IssueFixer::registerFixerClosure(WhitespacePlugin::CarriageReturn, $fix_carriage_returns);
-});
+    },
+];

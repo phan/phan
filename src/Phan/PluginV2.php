@@ -82,6 +82,23 @@ use Phan\PluginV2\IssueEmitter;
  *     NOTE: This does not run on empty files.
  *
  *     (implement \Phan\PluginV2\BeforeAnalyzeFileCapability)
+ * 13. public function afterAnalyzeFile(CodeBase $code_base, Context $context, string $file_contents, Node $node);
+ *
+ *     This method is called after Phan analyzes a file.
+ *
+ *     (implement \Phan\PluginV2\AfterAnalyzeFileCapability)
+ * 14. public function handleLazyLoadInternalFunction(CodeBase $code_base, Func $function)
+ *
+ *     This method is called after Phan lazily loads a global internal function.
+ *     This is useful to handle functions getAnalyzeFunctionCallClosures did not pick up
+ *
+ *     (implement \Phan\PluginV2\HandleLazyLoadInternalFunctionCapability)
+ * 15. getAutomaticFixers() : array<string,Closure(CodeBase,FileContents,IssueInstance):(?FileEditSet)>
+ *
+ *     This method is called to fetch the issue names the plugin can sometimes automatically fix.
+ *     Returns a map from issue name to the closure to generate a fix for instances of that issue.
+ *
+ *     (implement \Phan\PluginV2\AutomaticFixCapability)
  *
  * TODO: Implement a way to notify plugins that a parsed file is no longer valid,
  * if the replacement for pcntl is being used.
