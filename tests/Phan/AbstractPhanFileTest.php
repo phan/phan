@@ -92,7 +92,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
      * @param string $source_dir
      * @return array<string,array{0:array,1:string}>
      */
-    protected function scanSourceFilesDir(string $source_dir, string $expected_dir)
+    protected final function scanSourceFilesDir(string $source_dir, string $expected_dir)
     {
         $files = \array_filter(
             \scandir($source_dir) ?: [],

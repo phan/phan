@@ -58,7 +58,12 @@ case "$TEST_SUITE" in
 		exit $?
 		;;
 	__FakeAllPHPUnitTests)
-		vendor/bin/paratest --processes 2
+		PROCESSORS=$(nproc || echo 2)
+		if [[ "$PROCESSORS" > 1 ]]; then
+			vendor/bin/paratest --processes "$PROCESSORS"
+		else
+			vendor/bin/phpunit
+		fi
 		exit $?
 		;;
 	__FakeConfigOverrideTest)
