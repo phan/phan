@@ -120,6 +120,7 @@ class ConfigEntry
         'ignore_undeclared_functions_with_known_signatures' => self::CATEGORY_ANALYSIS,
         'use_fallback_parser' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'use_polyfill_parser' => self::CATEGORY_HIDDEN_CLI_ONLY,
+        'cache_polyfill_asts' => self::CATEGORY_ANALYSIS,
         'daemonize_socket' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'daemonize_tcp' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'daemonize_tcp_host' => self::CATEGORY_HIDDEN_CLI_ONLY,
