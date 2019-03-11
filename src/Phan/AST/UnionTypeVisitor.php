@@ -1484,9 +1484,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                         } else {
                             $resulting_element_type = StringType::instance(false)->asUnionType();
                         }
+                        $has_non_array_shape_type = true;
                     } else {
                         // TODO: Warn about string indices of strings?
-                        $has_non_array_shape_type = true;
                     }
                 } elseif ($type->isArrayLike() || $type->isObject() || $type instanceof MixedType) {
                     // TODO: Could be more precise about check for ArrayAccess
