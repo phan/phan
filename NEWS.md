@@ -3,13 +3,14 @@ Phan NEWS
 ?? ??? 2019, Phan 1.2.7 (dev)
 -----------------------
 
-Maintenance
+Maintenance:
 + Update tolerant-php-parser version to 0.0.17
   (fix parsing of some edge cases, minor performance improvement, prepare to support php 7.4 in polyfill)
 + Use paratest for phpunit tests in Travis/Appveyor
 
 Bug fixes:
 + Make the codeclimate plugin analyze the correct directory. Update the dependencies of the codeclimate plugin. (#2139)
++ Fix false positive checking for undefined offset with `$foo['strVal']` when strings are in the union type of `$foo` (#2541)
 
 09 Mar 2019, Phan 1.2.6
 -----------------------
