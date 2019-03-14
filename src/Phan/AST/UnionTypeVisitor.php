@@ -2904,6 +2904,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $context->getLineNumberStart(),
                 $e->getFQSEN()
             );
+            return [];
         }
         if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
             $this->emitIssue(
